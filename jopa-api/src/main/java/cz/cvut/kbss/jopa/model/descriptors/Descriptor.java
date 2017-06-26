@@ -27,12 +27,13 @@ import java.util.Set;
  * Defines base descriptor, which is used to specify context information for entities and their fields.
  * <p>
  * The descriptor hierarchy is a classical <b>Composite</b> pattern.
- *
- * @author ledvima1
  */
 public abstract class Descriptor {
 
     protected final URI context;
+
+    private String language;
+    private boolean hasLanguage;
 
     protected Descriptor() {
         this(null);
@@ -51,6 +52,53 @@ public abstract class Descriptor {
      */
     public URI getContext() {
         return context;
+    }
+
+    /**
+     * Gets the language set for this descriptor.
+     *
+     * @return Language tag (e.g. en, cs), can be {@code null}, meaning any language is supported or the language tag
+     * has not been set (see {@link #hasLanguage()})
+     */
+    public String getLanguage() {
+        return language;
+    }
+
+    /**
+     * Gets information about whether language tag has been set on this descriptor.
+     * <p>
+     * The language tag can be explicitly set to {@code null}, meaning any language is supported. This can be used
+     * to override PU-level language setting.
+     *
+     * @return {@code true} if a language tag has been set on this descriptor, {@code false} otherwise
+     */
+    public boolean hasLanguage() {
+        return hasLanguage;
+    }
+
+    /**
+     * Sets language tag of this descriptor.
+     * <p>
+     * Applies to any possible sub-descriptors as well.
+     *
+     * @param languageTag The language tag to use, possibly {@code null}, meaning no language preference should be used
+     * @see #anyLanguage()
+     */
+    public void setLanguage(String languageTag) {
+        this.language = languageTag;
+        this.hasLanguage = true;
+    }
+
+    /**
+     * Configures this descriptor to support any language tag (including no language tags).
+     * <p>
+     * This is useful for overriding previously set language tag expectations (either on PU level or parent descriptor
+     * level).
+     * <p>
+     * This does the same as calling {@link #setLanguage(String)} with {@code null} argument, but is more explicit.
+     */
+    public void anyLanguage() {
+        setLanguage(null);
     }
 
     /**
@@ -89,6 +137,17 @@ public abstract class Descriptor {
     public abstract void addAttributeContext(Field attribute, URI context);
 
     /**
+     * Sets language to be used when working (retrieving, persisting) with values of the specified attribute.
+     * <p>
+     * Note that setting language in this manner will not have any effect on descriptors of the
+     * specified attribute previously retrieved from this descriptor.
+     *
+     * @param attribute   The attribute concerned
+     * @param languageTag Language tag to use, possibly {@code null}
+     */
+    public abstract void setAttributeLanguage(Field attribute, String languageTag);
+
+    /**
      * Gets all contexts present in this descriptor.
      * <p>
      * If any of the descriptors specifies the default context, an empty set is returned.
@@ -100,7 +159,7 @@ public abstract class Descriptor {
     public Set<URI> getAllContexts() {
         Set<URI> contexts = new HashSet<>();
         contexts = getContextsInternal(contexts, new HashSet<>());
-        return contexts != null ? contexts : Collections.<URI>emptySet();
+        return contexts != null ? contexts : Collections.emptySet();
     }
 
     /**
@@ -113,28 +172,23 @@ public abstract class Descriptor {
     protected abstract Set<URI> getContextsInternal(Set<URI> contexts, Set<Descriptor> visited);
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Descriptor)) return false;
+
+        Descriptor that = (Descriptor) o;
+
+        if (hasLanguage != that.hasLanguage) return false;
+        if (context != null ? !context.equals(that.context) : that.context != null) return false;
+        return language != null ? language.equals(that.language) : that.language == null;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Descriptor other = (Descriptor) obj;
-        if (context == null) {
-            if (other.context != null)
-                return false;
-        } else if (!context.equals(other.context))
-            return false;
-        return true;
+    public int hashCode() {
+        int result = context != null ? context.hashCode() : 0;
+        result = 31 * result + (language != null ? language.hashCode() : 0);
+        result = 31 * result + (hasLanguage ? 1 : 0);
+        return result;
     }
 
     @Override

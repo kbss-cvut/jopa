@@ -142,7 +142,7 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -188,7 +188,7 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     private QueryImpl queryWithRollbackMarker(String query) {
@@ -205,7 +205,7 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -216,7 +216,7 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -227,7 +227,7 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -238,7 +238,7 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -249,7 +249,7 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -260,6 +260,6 @@ public class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 }

@@ -14,40 +14,40 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+
 import java.net.URI;
 import java.util.Set;
 
 /**
  * This interface defines basic methods for accessing the shared live object cache.
- *
- * @author kidney
  */
 public interface CacheManager extends Cache {
 
     /**
      * Adds the specified object into the shared session cache.
      * <p>
-     * If the cache already contains object with the specified primary key (and it is in the same repository context),
+     * If the cache already contains object with the specified identifier (and it is in the same repository context),
      * it is replaced with the one passed as argument.
      *
-     * @param primaryKey Primary key of the specified object
+     * @param identifier Identifier of the specified object
      * @param entity     The object to be added into the cache
-     * @param context    Repository context URI
+     * @param descriptor    Instance descriptor, contains info about repository context(s) and language tags
      */
-    void add(Object primaryKey, Object entity, URI context);
+    void add(Object identifier, Object entity, Descriptor descriptor);
 
     /**
-     * Gets entity with the specified primary key from the cache.
+     * Gets entity with the specified identifier from the cache.
      * <p>
-     * The entity is searched for in the context specified by {@code entityOrigin} . Thus all three conditions - class,
-     * primary key and origin must match to return a result.
+     * The entity is searched for in the context specified by {@code descriptor}. Thus all three conditions - class,
+     * identifier and descriptor must match to return a result.
      *
      * @param cls        Class of the entity
-     * @param primaryKey Primary key of the entity
-     * @param context    Repository context URI
+     * @param identifier Primary key of the entity
+     * @param descriptor    Instance descriptor, contains info about repository context(s) and language tags
      * @return Entity with the specified primary key or {@code null}
      */
-    <T> T get(Class<T> cls, Object primaryKey, URI context);
+    <T> T get(Class<T> cls, Object identifier, Descriptor descriptor);
 
     /**
      * Remove objects with inferred attributes from the cache, since there are changes in the ontology that might

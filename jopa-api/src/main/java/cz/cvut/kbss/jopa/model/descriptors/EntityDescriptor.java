@@ -60,10 +60,27 @@ public class EntityDescriptor extends Descriptor {
     }
 
     @Override
+    public void setLanguage(String languageTag) {
+        super.setLanguage(languageTag);
+        fieldDescriptors.values().forEach(d -> d.setLanguage(languageTag));
+    }
+
+    @Override
+    public void setAttributeLanguage(Field attribute, String languageTag) {
+        Objects.requireNonNull(attribute);
+
+        fieldDescriptors.putIfAbsent(attribute, new FieldDescriptor(null, attribute));
+        fieldDescriptors.get(attribute).setLanguage(languageTag);
+    }
+
+    @Override
     public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
         Descriptor d = getFieldDescriptor(attribute.getJavaField());
         if (d == null) {
             d = createDescriptor(attribute, context);
+            if (hasLanguage()) {
+                d.setLanguage(getLanguage());
+            }
         }
         return d;
     }
@@ -117,28 +134,21 @@ public class EntityDescriptor extends Descriptor {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((fieldDescriptors == null) ? 0 : fieldDescriptors.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EntityDescriptor)) return false;
+        if (!super.equals(o)) return false;
+
+        EntityDescriptor that = (EntityDescriptor) o;
+
+        return fieldDescriptors != null ? fieldDescriptors.equals(that.fieldDescriptors) :
+               that.fieldDescriptors == null;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        EntityDescriptor other = (EntityDescriptor) obj;
-        if (fieldDescriptors == null) {
-            if (other.fieldDescriptors != null)
-                return false;
-        } else if (!fieldDescriptors.equals(other.fieldDescriptors))
-            return false;
-        return true;
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (fieldDescriptors != null ? fieldDescriptors.hashCode() : 0);
+        return result;
     }
-
 }

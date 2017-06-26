@@ -242,7 +242,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -288,7 +288,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     private <T> TypedQueryImpl<T> queryWithRollbackMarker(String query, Class<T> cls) {
@@ -305,7 +305,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -316,7 +316,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -327,7 +327,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -338,7 +338,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -349,7 +349,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 
     @Test
@@ -360,6 +360,6 @@ public class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).run();
+        verify(handler).execute();
     }
 }

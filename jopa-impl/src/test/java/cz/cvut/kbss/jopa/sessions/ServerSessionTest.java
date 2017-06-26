@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +49,7 @@ public class ServerSessionTest {
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
                 URI.create("file://tmp/jopa")).driver(DataSourceStub.class.getCanonicalName()).build();
         when(metamodelMock.getEntities()).thenReturn(Collections.emptySet());
-        this.session = new ServerSession(storageProperties, Collections.emptyMap(), metamodelMock);
+        this.session = new ServerSession(storageProperties, new Configuration(Collections.emptyMap()), metamodelMock);
     }
 
     @Test

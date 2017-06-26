@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class MetamodelImpl implements Metamodel {
 
@@ -131,9 +131,7 @@ public class MetamodelImpl implements Metamodel {
 
     @Override
     public void addUriToModuleExtractionSignature(URI uri) {
-        if (uri == null) {
-            throw new NullPointerException();
-        }
+        Objects.requireNonNull(uri);
         synchronized (this) {
             getSignatureInternal().add(uri);
         }
@@ -142,17 +140,17 @@ public class MetamodelImpl implements Metamodel {
     private synchronized Set<URI> getSignatureInternal() {
         // This can be lazily loaded since we don'attributeType know if we'll need it
         if (moduleExtractionSignature == null) {
-            final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE);
-            if (sig == null) {
+            final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, "");
+            if (sig.isEmpty()) {
                 this.moduleExtractionSignature = new HashSet<>();
             } else {
-                final String[] signature = sig.split(OntoDriverProperties.SIGNATURE_DELIMITER);
-                this.moduleExtractionSignature = new HashSet<>(signature.length);
+                final String[] signature = sig.split(Pattern.quote(OntoDriverProperties.SIGNATURE_DELIMITER));
+                this.moduleExtractionSignature = new HashSet<>((int) (signature.length / 0.75 + 1));
                 try {
                     for (String uri : signature) {
-                        moduleExtractionSignature.add(new URI(uri));
+                        moduleExtractionSignature.add(URI.create(uri));
                     }
-                } catch (URISyntaxException e) {
+                } catch (IllegalArgumentException e) {
                     throw new OWLPersistenceException("Invalid URI encountered in module extraction signature.", e);
                 }
             }

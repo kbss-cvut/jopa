@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.test.integration.owlapi;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import cz.cvut.kbss.jopa.test.environment.OwlapiDataPersist;
+import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.DeleteOperationsRunner;
 import org.junit.Ignore;
@@ -32,12 +32,12 @@ public class DeleteOperationsTest extends DeleteOperationsRunner {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteOperationsTest.class);
 
     private final OwlapiPersistenceFactory persistenceFactory;
-    private final OwlapiDataPersist dataPersist;
+    private final OwlapiDataAccessor dataAccessor;
 
     public DeleteOperationsTest() throws Exception {
         super(LOG);
         this.persistenceFactory = new OwlapiPersistenceFactory();
-        this.dataPersist = new OwlapiDataPersist();
+        this.dataAccessor = new OwlapiDataAccessor();
     }
 
     @Override
@@ -53,7 +53,12 @@ public class DeleteOperationsTest extends DeleteOperationsRunner {
 
     @Override
     protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
-        dataPersist.persistTestData(data, em);
+        dataAccessor.persistTestData(data, em);
+    }
+
+    @Override
+    protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
+        dataAccessor.verifyDataPresence(expected, em);
     }
 
     @Ignore

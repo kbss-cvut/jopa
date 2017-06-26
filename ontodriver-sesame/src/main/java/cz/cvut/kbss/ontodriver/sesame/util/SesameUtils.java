@@ -25,8 +25,6 @@ import java.util.Date;
 
 /**
  * Utility methods for the Sesame driver.
- *
- * @author ledvima1
  */
 public final class SesameUtils {
 
@@ -35,19 +33,22 @@ public final class SesameUtils {
     }
 
     /**
-     * Gets value of the specified data property literal as the corresponding Java object. Primitives are returned
-     * boxed.
+     * Gets value of the specified data property literal as the corresponding Java object.
+     * <p>
+     * Primitives are returned boxed.
      *
      * @param literal DataProperty value
-     * @return Java value corresponding to the XML Schema datatype of the literal
+     * @return Java value corresponding to the XML Schema datatype
      * @throws IllegalArgumentException If literal's datatype is not supported
      */
     public static Object getDataPropertyValue(Literal literal) {
         assert literal != null;
 
         final IRI datatype = literal.getDatatype();
-        if (datatype == null || datatype.equals(XMLSchema.STRING)
-                || datatype.equals(XMLSchema.NORMALIZEDSTRING) || datatype.equals(RDF.LANGSTRING)) {
+        assert datatype != null;
+
+        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
+                datatype.equals(RDF.LANGSTRING)) {
             return literal.stringValue();
         } else if (datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT)) {
             return literal.intValue();
@@ -77,10 +78,31 @@ public final class SesameUtils {
     }
 
     /**
+     * Checks whether the language of the specified string literal matches the expected one.
+     * <p>
+     * If the literal is not a string, it always matches.
+     *
+     * @param literal  Literal to check
+     * @param language Expected language, can be {@code null}
+     * @return {@code false} if the literal is a string literal and its language does not match the expected one, {@code
+     * true} otherwise
+     */
+    public static boolean doesLanguageMatch(Literal literal, String language) {
+        assert literal != null;
+        final IRI datatype = literal.getDatatype();
+        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
+                datatype.equals(RDF.LANGSTRING)) {
+            return language == null || !literal.getLanguage().isPresent() ||
+                    literal.getLanguage().get().equals(language);
+        }
+        return true;
+    }
+
+    /**
      * Creates Sesame literal from the specified value, which can be used as data property object.
      *
      * @param value    The value to transform
-     * @param language Language to add to string literals
+     * @param language Language to add to string literals, optional
      * @param vf       Sesame value factory
      * @return Sesame Literal
      * @throws IllegalArgumentException If the type of the value is not supported
@@ -91,7 +113,7 @@ public final class SesameUtils {
         if (value instanceof Integer) {
             return vf.createLiteral((Integer) value);
         } else if (value instanceof String) {
-            return vf.createLiteral((String) value, language);
+            return language != null ? vf.createLiteral((String) value, language) : vf.createLiteral((String) value);
         } else if (value instanceof Byte) {
             return vf.createLiteral((Byte) value);
         } else if (value instanceof Short) {

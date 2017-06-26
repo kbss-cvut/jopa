@@ -268,4 +268,10 @@ public class IndirectListTest {
     public void testContainsAll() {
         assertTrue(target.containsAll(list));
     }
+
+    @Test
+    public void sublistReturnsAnotherIndirectList() {
+        final List<OWLClassA> result = target.subList(0, target.size() / 2);
+        assertTrue(result instanceof IndirectList);
+    }
 }

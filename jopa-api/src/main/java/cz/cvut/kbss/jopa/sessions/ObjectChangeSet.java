@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+
 import java.net.URI;
 import java.util.Set;
 
@@ -76,6 +78,13 @@ public interface ObjectChangeSet {
      * @return Original
      */
     Object getChangedObject();
+
+    /**
+     * Gets descriptor of the changed object.
+     *
+     * @return Instance descriptor
+     */
+    Descriptor getEntityDescriptor();
 
     /**
      * Gets ontology context URI, to which the changed object belongs.

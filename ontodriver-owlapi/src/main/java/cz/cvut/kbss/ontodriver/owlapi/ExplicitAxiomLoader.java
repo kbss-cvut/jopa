@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,17 +14,15 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.*;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class ExplicitAxiomLoader implements AxiomLoader {
@@ -36,21 +34,22 @@ class ExplicitAxiomLoader implements AxiomLoader {
 
     private final OwlapiAdapter adapter;
     private final AxiomAdapter axiomAdapter;
+    private final String language;
 
-    private Set<Assertion> assertions;
-    private Set<URI> assertionUris;
+    private Map<URI, Assertion> assertionMap;
 
     ExplicitAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
         this.axiomAdapter = new AxiomAdapter(dataFactory, adapter.getLanguage());
+        this.language = adapter.getLanguage();
     }
 
     @Override
     public Collection<Axiom<?>> loadAxioms(NamedResource subject, Set<Assertion> assertions) {
-        this.assertions = assertions;
-        this.assertionUris = assertions.stream().map(NamedResource::getIdentifier).collect(Collectors.toSet());
+        this.assertionMap = new HashMap<>(assertions.size());
+        assertions.forEach(a -> assertionMap.put(a.getIdentifier(), a));
         final OWLNamedIndividual individual = OwlapiUtils.getIndividual(subject, dataFactory);
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         if (assertions.contains(Assertion.createClassAssertion(false))) {
@@ -71,29 +70,57 @@ class ExplicitAxiomLoader implements AxiomLoader {
 
     private Collection<Axiom<?>> dataPropertyValuesToAxioms(NamedResource subject,
                                                             Collection<OWLDataPropertyAssertionAxiom> axioms) {
-        return axioms.stream().filter(axiom ->
-                assertions.contains(UNSPECIFIED_ASSERTION) ||
-                        assertionUris.contains(axiom.getProperty().asOWLDataProperty().getIRI().toURI()))
+        return axioms.stream().filter(this::shouldLoadDataPropertyValue)
                      .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
+    }
+
+    private boolean shouldLoadDataPropertyValue(OWLDataPropertyAssertionAxiom axiom) {
+        final OWLLiteral value = axiom.getObject();
+        final IRI dpIri = axiom.getProperty().asOWLDataProperty().getIRI();
+        final boolean propertyExists = doesPropertyExist(dpIri);
+        if (!propertyExists) {
+            return false;
+        }
+        final URI dpUri = dpIri.toURI();
+        // Note: I don't really like the fact that we are basing this on a randomly generated identifier of the unspecified
+        // property. Perhaps the strategy of using unspecified properties should be revisited.
+        final Assertion assertion = assertionMap.containsKey(dpUri) ? assertionMap.get(dpUri) :
+                                    assertionMap.get(UNSPECIFIED_ASSERTION.getIdentifier());
+        return OwlapiUtils.doesLanguageMatch(value, assertion.hasLanguage() ? assertion.getLanguage() : language);
+    }
+
+    private boolean doesPropertyExist(IRI o) {
+        return assertionMap.containsKey(o.toURI()) || assertionMap.containsKey(UNSPECIFIED_ASSERTION.getIdentifier());
     }
 
     private Collection<Axiom<?>> objectPropertyValuesToAxioms(NamedResource subject,
                                                               Collection<OWLObjectPropertyAssertionAxiom> axioms) {
         return axioms.stream().filter(axiom ->
-                assertions.contains(UNSPECIFIED_ASSERTION) ||
-                        assertionUris.contains(axiom.getProperty().asOWLObjectProperty().getIRI().toURI()))
+                doesPropertyExist(axiom.getProperty().asOWLObjectProperty().getIRI()))
                      .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
     }
 
     private Collection<Axiom<?>> annotationPropertyValuesToAxioms(NamedResource subject,
                                                                   Collection<OWLAnnotationAssertionAxiom> axioms) {
-        return axioms.stream().filter(axiom ->
-                assertions.contains(UNSPECIFIED_ASSERTION) ||
-                        assertionUris.contains(axiom.getProperty().asOWLAnnotationProperty().getIRI().toURI()))
+        return axioms.stream().filter(this::shouldLoadAnnotationPropertyValue)
                      .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
+    }
+
+    private boolean shouldLoadAnnotationPropertyValue(OWLAnnotationAssertionAxiom axiom) {
+        final OWLAnnotationValue value = axiom.getValue();
+        final IRI apIri = axiom.getProperty().asOWLAnnotationProperty().getIRI();
+        final boolean propertyExists = doesPropertyExist(apIri);
+        if (!propertyExists) {
+            return false;
+        }
+        final URI apUri = apIri.toURI();
+        final Assertion assertion = assertionMap.containsKey(apUri) ? assertionMap.get(apUri) :
+                                    assertionMap.get(UNSPECIFIED_ASSERTION.getIdentifier());
+        return !value.asLiteral().isPresent() || OwlapiUtils.doesLanguageMatch(value.asLiteral().get(),
+                assertion.hasLanguage() ? assertion.getLanguage() : language);
     }
 
     @Override

@@ -59,6 +59,14 @@ public class FieldDescriptor extends Descriptor {
         // Do nothing
     }
 
+    /**
+     * Use {@link #setLanguage(String)} instead.
+     */
+    @Override
+    public void setAttributeLanguage(Field attribute, String languageTag) {
+        // Do nothing
+    }
+
     private Descriptor getFieldDescriptor(Field field) {
         if (this.field.equals(field)) {
             return this;
@@ -97,8 +105,6 @@ public class FieldDescriptor extends Descriptor {
         if (getClass() != obj.getClass())
             return false;
         FieldDescriptor other = (FieldDescriptor) obj;
-        if (!field.equals(other.field))
-            return false;
-        return true;
+        return field.equals(other.field);
     }
 }

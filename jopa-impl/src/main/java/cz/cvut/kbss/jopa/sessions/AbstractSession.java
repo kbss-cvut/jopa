@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +24,16 @@ import org.slf4j.LoggerFactory;
  * This is the implementation of the basic Session operations. Other more
  * specific methods are to be implemented in descendants.
  */
-public abstract class AbstractSession implements Session, MetamodelProvider {
+public abstract class AbstractSession implements Session, MetamodelProvider, ConfigurationHolder {
+
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractSession.class);
+
+
+    private final Configuration configuration;
+
+    protected AbstractSession(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @Override
     public UnitOfWork acquireUnitOfWork() {
@@ -43,6 +52,11 @@ public abstract class AbstractSession implements Session, MetamodelProvider {
     @Override
     public void release() {
         getLiveObjectCache().evictAll();
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     /**

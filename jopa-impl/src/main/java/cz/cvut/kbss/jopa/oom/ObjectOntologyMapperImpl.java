@@ -67,7 +67,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.cache = uow.getLiveObjectCache();
         this.storageConnection = Objects.requireNonNull(connection);
         this.metamodel = uow.getMetamodel();
-        this.descriptorFactory = new AxiomDescriptorFactory();
+        this.descriptorFactory = new AxiomDescriptorFactory(uow.getConfiguration());
         this.instanceRegistry = new InstanceRegistry();
         this.pendingPersists = new PendingChangeRegistry();
         this.entityBuilder = new EntityConstructor(this);
@@ -115,7 +115,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             result = defaultInstanceLoader.loadEntity(loadingParameters);
         }
         if (result != null) {
-            cache.add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor().getContext());
+            cache.add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor());
         }
         return result;
     }
@@ -188,8 +188,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (orig != null) {
             return orig;
         }
-        if (cache.contains(cls, primaryKey, descriptor.getContext())) {
-            return cache.get(cls, primaryKey, descriptor.getContext());
+        if (cache.contains(cls, primaryKey, descriptor)) {
+            return cache.get(cls, primaryKey, descriptor);
         } else if (instanceRegistry.containsInstance(primaryKey, descriptor.getContext())) {
             // This prevents endless cycles in bidirectional relationships
             return cls.cast(instanceRegistry.getInstance(primaryKey, descriptor.getContext()));

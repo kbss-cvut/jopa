@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,14 +26,14 @@ public class OWLClassN {
     @Id(generated = true)
     private String id;
 
-    @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationProperty")
+    @OWLAnnotationProperty(iri = Vocabulary.P_N_STR_ANNOTATION_PROPERTY)
     private String annotationProperty;
 
     @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationUri")
     private URI annotationUri;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
+    @OWLDataProperty(iri = Vocabulary.P_N_STRING_ATTRIBUTE)
     private String stringAttribute;
 
     @Inferred

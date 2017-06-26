@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,18 +17,18 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -494,5 +494,78 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
         assertNotNull(result);
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
+    }
+
+    @Test
+    public void persistSetsStringLiteralLanguageTagAccordingToDescriptor() throws Exception {
+        this.em = getEntityManager("persistSetsStringLiteralLanguageTagAccordingToDescriptor", false);
+        em.getTransaction().begin();
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), "cs");
+        em.persist(entityA, descriptor);
+        em.getTransaction().commit();
+
+        verifyStatementsPresent(Collections.singleton(
+                new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
+                        "cs")), em);
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt()
+            throws Exception {
+        this.em = getEntityManager(
+                "persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt", false);
+        em.getTransaction().begin();
+        em.persist(entityA);
+        em.getTransaction().commit();
+
+        verifyStatementsPresent(Collections.singleton(
+                new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
+                        "en")), em);
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void persistAllowsOverridingGlobalLanguageWithLocalEmptyTag() throws Exception {
+        this.em = getEntityManager("persistAllowsOverridingGlobalLanguageWithLocalEmptyTag", false);
+        em.getTransaction().begin();
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), null);
+        em.persist(entityA, descriptor);
+        em.getTransaction().commit();
+
+        verifyStatementsPresent(Collections.singleton(
+                new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
+                        null)), em);
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        assertNotNull(result);
+        // The string attribute should be loaded even though PU language is set to en, because the persisted value has no lang tag
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
+
+    @Test
+    public void persistAllowsToSpecifyLanguageTagPerEntityAndOverrideItOnAttributeLevel() throws Exception {
+        this.em = getEntityManager("persistAllowsToSpecifyLanguageTagPerEntityAndOverrideItOnAttributeLevel", false);
+        entityN.setStringAttribute("retezec v cestine");
+        entityN.setAnnotationProperty("entity descriptor ist in Deutsch");
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("de");
+        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("stringAttribute"), "cs");
+
+        em.getTransaction().begin();
+        em.persist(entityN, descriptor);
+        em.getTransaction().commit();
+
+        final Set<Triple> statements = new HashSet<>(4);
+        statements.add(new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
+                entityN.getAnnotationProperty(), "de"));
+        statements.add(new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE),
+                entityN.getStringAttribute(), "cs"));
+        verifyStatementsPresent(statements, em);
+
+        final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
+        assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
+        assertEquals(entityN.getStringAttribute(), result.getStringAttribute());
     }
 }

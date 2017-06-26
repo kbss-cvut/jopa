@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.test.environment.SesameDataPersist;
+import cz.cvut.kbss.jopa.test.environment.SesameDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.jopa.test.runner.PersistenceUnitTestRunner;
@@ -42,12 +42,12 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
     private static final Logger LOG = LoggerFactory.getLogger(PersistenceUnitTest.class);
 
     private final SesamePersistenceFactory persistenceFactory;
-    private final SesameDataPersist dataPersist;
+    private final SesameDataAccessor dataAccessor;
 
     public PersistenceUnitTest() {
         super(LOG);
         this.persistenceFactory = new SesamePersistenceFactory();
-        this.dataPersist = new SesameDataPersist();
+        this.dataAccessor = new SesameDataAccessor();
     }
 
     @Override
@@ -63,7 +63,12 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
 
     @Override
     protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
-        dataPersist.persistTestData(data, em);
+        dataAccessor.persistTestData(data, em);
+    }
+
+    @Override
+    protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
+        dataAccessor.verifyDataPresence(expected, em);
     }
 
     @Test

@@ -61,7 +61,7 @@ public class IntegrityConstraintsValidatorTest {
         final OWLClassN clone = createInstanceWithMissingRequiredField();
         clone.setStringAttribute("newString");
         final OWLClassN orig = createInstanceWithMissingRequiredField();
-        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
+        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, new EntityDescriptor());
         changeSet.addChangeRecord(new ChangeRecordImpl(
                 metamodel.entity(OWLClassN.class).getFieldSpecification(OWLClassN.getStringAttributeField().getName()),
                 "newString"));
@@ -95,7 +95,7 @@ public class IntegrityConstraintsValidatorTest {
     public void missingRequiredAttributeInChangeSetFailsValidation() throws Exception {
         final OWLClassN clone = createInstanceWithMissingRequiredField();
         final OWLClassN orig = createInstanceWithMissingRequiredField();
-        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
+        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, new EntityDescriptor());
         changeSet.addChangeRecord(new ChangeRecordImpl(
                 metamodel.entity(OWLClassN.class).getFieldSpecification(OWLClassN.getStringAttributeField().getName()),
                 null));
@@ -132,7 +132,7 @@ public class IntegrityConstraintsValidatorTest {
         for (int i = 0; i < max + 1; i++) {
             clone.getReferencedList().add(new OWLClassA());
         }
-        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
+        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, new EntityDescriptor());
         changeSet.addChangeRecord(
                 new ChangeRecordImpl(metamodel.entity(OWLClassL.class)
                                               .getFieldSpecification(OWLClassL.getReferencedListField().getName()),

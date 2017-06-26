@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,8 +18,10 @@ import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
@@ -50,6 +52,9 @@ public class PluralDataPropertyStrategyTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        final Configuration configuration = new Configuration(
+                Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
+        when(mapperMock.getConfiguration()).thenReturn(configuration);
 
         this.gatherer = new AxiomValueGatherer(INDIVIDUAL, null);
         this.mocks = new MetamodelMocks();
@@ -167,5 +172,32 @@ public class PluralDataPropertyStrategyTest {
         final List<Value<?>> values = valueDescriptor.getAssertionValues(assertionForMIntegerSet());
         assertEquals(1, values.size());
         assertTrue(values.contains(Value.nullValue()));
+    }
+
+    @Test
+    public void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
+        descriptor.setLanguage("en");
+        buildAxiomsAndVerifyLanguageTag();
+    }
+
+    private void buildAxiomsAndVerifyLanguageTag() throws Exception {
+        // Yes, the plural attribute contains integers, but it is not important on this level
+        final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
+        final OWLClassM m = new OWLClassM();
+        m.setIntegerSet(Collections.singleton(117));
+
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        strategy.buildAxiomValuesFromInstance(m, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final Assertion assertion = valueDescriptor.getAssertions().iterator().next();
+        assertTrue(assertion.hasLanguage());
+        assertEquals("en", assertion.getLanguage());
+    }
+
+    @Test
+    public void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
+            throws Exception {
+        buildAxiomsAndVerifyLanguageTag();
     }
 }

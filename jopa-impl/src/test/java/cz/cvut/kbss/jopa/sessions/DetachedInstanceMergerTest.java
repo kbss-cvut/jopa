@@ -93,6 +93,6 @@ public class DetachedInstanceMergerTest {
     }
 
     private ObjectChangeSet createChangeSet(Object original, Object clone) {
-        return new ObjectChangeSetImpl(original, clone, null);
+        return new ObjectChangeSetImpl(original, clone, new EntityDescriptor());
     }
 }

@@ -216,13 +216,12 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void testGetEntityFromCacheOrOntologyFromCache() {
-        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.TRUE);
-        when(cacheMock.get(OWLClassA.class, ENTITY_PK, null)).thenReturn(entityA);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK,
-                aDescriptor);
+        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, aDescriptor)).thenReturn(Boolean.TRUE);
+        when(cacheMock.get(OWLClassA.class, ENTITY_PK, aDescriptor)).thenReturn(entityA);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK, aDescriptor);
         assertNotNull(res);
         assertSame(entityA, res);
-        verify(cacheMock).get(OWLClassA.class, ENTITY_PK, null);
+        verify(cacheMock).get(OWLClassA.class, ENTITY_PK, aDescriptor);
     }
 
     @Test
@@ -371,12 +370,12 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void loadEntityLoadsInstanceFromCacheWhenItIsPresentThere() throws Exception {
-        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(true);
-        when(cacheMock.get(OWLClassA.class, ENTITY_PK, null)).thenReturn(entityA);
+        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, loadingParameters.getDescriptor())).thenReturn(true);
+        when(cacheMock.get(OWLClassA.class, ENTITY_PK, loadingParameters.getDescriptor())).thenReturn(entityA);
 
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertSame(entityA, result);
-        verify(cacheMock).get(OWLClassA.class, ENTITY_PK, null);
+        verify(cacheMock).get(OWLClassA.class, ENTITY_PK, loadingParameters.getDescriptor());
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
 
@@ -384,8 +383,8 @@ public class ObjectOntologyMapperTest {
     public void loadEntityDeterminesConcreteEntityTypeAndLoadsItFromCacheWhenItIsPresentThere() throws Exception {
         final OWLClassR entity = new OWLClassR();
         entity.setUri(ENTITY_PK);
-        when(cacheMock.contains(OWLClassR.class, ENTITY_PK, null)).thenReturn(true);
-        when(cacheMock.get(OWLClassR.class, ENTITY_PK, null)).thenReturn(entity);
+        when(cacheMock.contains(OWLClassR.class, ENTITY_PK, aDescriptor)).thenReturn(true);
+        when(cacheMock.get(OWLClassR.class, ENTITY_PK, aDescriptor)).thenReturn(entity);
         final Types typesMock = mock(Types.class);
         final NamedResource individual = NamedResource.create(ENTITY_PK);
         final URI typeUri = URI.create(Vocabulary.C_OWLClassR);
@@ -397,7 +396,7 @@ public class ObjectOntologyMapperTest {
                 aDescriptor);
         final OWLClassS result = mapper.loadEntity(loadingParameters);
         assertSame(entity, result);
-        verify(cacheMock).get(OWLClassR.class, ENTITY_PK, null);
+        verify(cacheMock).get(OWLClassR.class, ENTITY_PK, aDescriptor);
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
 
@@ -407,7 +406,7 @@ public class ObjectOntologyMapperTest {
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertNotNull(result);
-        verify(cacheMock).add(ENTITY_PK, result, null);
+        verify(cacheMock).add(ENTITY_PK, result, loadingParameters.getDescriptor());
     }
 
     @Test
@@ -425,8 +424,8 @@ public class ObjectOntologyMapperTest {
         });
         final OWLClassD result = mapper.loadEntity(new LoadingParameters<>(OWLClassD.class, identifier, aDescriptor));
         assertNotNull(result);
-        verify(cacheMock).add(identifier, result, null);
-        verify(cacheMock).add(ENTITY_PK, result.getOwlClassA(), null);
+        verify(cacheMock).add(identifier, result, aDescriptor);
+        verify(cacheMock).add(ENTITY_PK, result.getOwlClassA(), aDescriptor);
     }
 
     private Collection<Axiom<?>> axiomsForD(URI identifier) {

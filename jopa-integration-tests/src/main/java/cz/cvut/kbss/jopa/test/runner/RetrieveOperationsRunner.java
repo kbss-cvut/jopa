@@ -14,10 +14,14 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.Test;
 import org.slf4j.Logger;
+import sun.security.krb5.internal.crypto.Des;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -209,5 +213,87 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final Set<String> expectedUris = v.getThings().stream().map(Thing::getUri).collect(Collectors.toSet());
         assertEquals(v.getThings().size(), result.getThings().size());
         result.getThings().forEach(t -> assertTrue(expectedUris.contains(t.getUri())));
+    }
+
+    @Test
+    public void retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor() throws Exception {
+        this.em = getEntityManager("retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor",
+                false);
+        persist(entityA);
+        final String value = "v cestine";
+        final String lang = "cs";
+        persistTestData(Collections
+                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, lang)), em);
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage(lang);
+
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(result);
+        assertEquals(value, result.getStringAttribute());
+        assertEquals(entityA.getTypes(), result.getTypes());
+    }
+
+    @Test
+    public void retrieveGetsStringAttributesWithDifferentLanguageTagsSpecifiedInDescriptor() throws Exception {
+        this.em = getEntityManager("retrieveGetsStringAttributesWithDifferentLanguageTagsSpecifiedInDescriptor", false);
+        entityN.setAnnotationProperty("english annotation");
+        entityN.setStringAttribute("english string");
+        persist(entityN);
+        final String csAnnotation = "anotace cesky";
+        final String csString = "retezec cesky";
+        final Set<Triple> testData = new HashSet<>();
+        testData.add(new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
+                csAnnotation, "cs"));
+        testData.add(
+                new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE), csString, "cs"));
+        persistTestData(testData, em);
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("annotationProperty"), "en");
+        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("stringAttribute"), "cs");
+        final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
+        assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
+        assertEquals(csString, result.getStringAttribute());
+    }
+
+    @Test
+    public void retrieveAllowsToOverridePULevelLanguageSpecification() throws Exception {
+        this.em = getEntityManager("retrieveAllowsToOverridePULevelLanguageSpecification", false);
+        entityA.setStringAttribute(null);
+        // PU-level language is en
+        persist(entityA);
+        final String value = "cestina";
+        persistTestData(Collections
+                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
+
+        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri());
+        assertNull(resOne.getStringAttribute());
+        em.clear();
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("cs");
+        final OWLClassA resTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
+        assertEquals(value, resTwo.getStringAttribute());
+    }
+
+    @Test
+    public void retrieveLoadsStringLiteralWithCorrectLanguageTagWhenCachedValueHasDifferentLanguageTag()
+            throws Exception {
+        this.em = getEntityManager(
+                "retrieveLoadsStringLiteralWithCorrectLanguageTagWhenCachedValueHasDifferentLanguageTag", true);
+        persist(entityA);   // persisted with @en
+        final String value = "cestina";
+        persistTestData(Collections
+                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
+
+        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri());
+        assertEquals(entityA.getStringAttribute(), resOne.getStringAttribute());
+        em.clear();
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("cs");
+        final OWLClassA resTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
+        assertEquals(value, resTwo.getStringAttribute());
     }
 }

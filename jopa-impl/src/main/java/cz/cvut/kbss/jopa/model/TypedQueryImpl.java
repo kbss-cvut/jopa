@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -49,7 +50,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     private boolean useBackupOntology;
     private int maxResults;
 
-    private Runnable rollbackOnlyMarker;
+    private Procedure rollbackOnlyMarker;
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
@@ -91,7 +92,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
 
     private void markTransactionForRollback() {
         if (rollbackOnlyMarker != null) {
-            rollbackOnlyMarker.run();
+            rollbackOnlyMarker.execute();
         }
     }
 
@@ -360,7 +361,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
      *
      * @param rollbackOnlyMarker The marker to invoke on exceptions
      */
-    void setRollbackOnlyMarker(Runnable rollbackOnlyMarker) {
+    void setRollbackOnlyMarker(Procedure rollbackOnlyMarker) {
         this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 }

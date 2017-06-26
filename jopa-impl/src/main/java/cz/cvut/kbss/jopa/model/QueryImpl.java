@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -42,7 +43,7 @@ public class QueryImpl implements Query {
     private int maxResults;
     private boolean useBackupOntology;
 
-    private Runnable rollbackOnlyMarker;
+    private Procedure rollbackOnlyMarker;
 
     public QueryImpl(final QueryHolder query, final ConnectionWrapper connection) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
@@ -77,7 +78,7 @@ public class QueryImpl implements Query {
 
     private void markTransactionForRollback() {
         if (rollbackOnlyMarker != null) {
-            rollbackOnlyMarker.run();
+            rollbackOnlyMarker.execute();
         }
     }
 
@@ -92,7 +93,7 @@ public class QueryImpl implements Query {
             markTransactionForRollback();
             throw queryEvaluationException(e);
         } catch (RuntimeException e) {
-            rollbackOnlyMarker.run();
+            markTransactionForRollback();
             throw e;
         }
     }
@@ -332,7 +333,7 @@ public class QueryImpl implements Query {
      *
      * @param rollbackOnlyMarker The marker to invoke on exceptions
      */
-    void setRollbackOnlyMarker(Runnable rollbackOnlyMarker) {
+    void setRollbackOnlyMarker(Procedure rollbackOnlyMarker) {
         this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 }

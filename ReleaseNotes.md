@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.9.8 - June 26, 2017
+- Added support for language tag specification of String attributes.
+
 ## 0.9.7 - May 27, 2017
 - Fixed issue with handling cascading cycles (Bug #4).
 - Fixed issue with parsing queries without spaces after variables (Bug #6).

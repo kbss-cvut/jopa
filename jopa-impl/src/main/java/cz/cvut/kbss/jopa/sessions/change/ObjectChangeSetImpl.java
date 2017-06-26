@@ -14,26 +14,24 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ObjectChangeSetImpl implements ObjectChangeSet {
 
-    // Class this ObjectChangeSet represents
-    private Class<?> objectClass;
+    // Type of the object represented by this change set
+    private final Class<?> objectClass;
 
     // The object the changes are bound to
-    private Object changedObject;
+    private final Object changedObject;
 
     // Reference to the clone
-    private Object cloneObject;
+    private final Object cloneObject;
 
     // A map of attributeName-ChangeRecord pairs to easily find the attributes to change
     private final Map<FieldSpecification<?, ?>, ChangeRecord> attributesToChange = new HashMap<>();
@@ -41,13 +39,13 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
     // Does this change set represent a new object
     private boolean isNew;
 
-    private URI context;
+    private Descriptor descriptor;
 
-    public ObjectChangeSetImpl(Object changedObject, Object cloneObject, URI context) {
-        this.changedObject = changedObject;
-        this.cloneObject = cloneObject;
+    public ObjectChangeSetImpl(Object changedObject, Object cloneObject, Descriptor descriptor) {
+        this.changedObject = Objects.requireNonNull(changedObject);
+        this.cloneObject = Objects.requireNonNull(cloneObject);
         this.objectClass = cloneObject.getClass();
-        this.context = context;
+        this.descriptor = Objects.requireNonNull(descriptor);
     }
 
     @Override
@@ -82,10 +80,6 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
         return cloneObject;
     }
 
-    public void setCloneObject(Object cloneObject) {
-        this.cloneObject = cloneObject;
-    }
-
     @Override
     public void setNew(boolean isNew) {
         this.isNew = isNew;
@@ -98,6 +92,11 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
 
     @Override
     public URI getEntityContext() {
-        return context;
+        return descriptor.getContext();
+    }
+
+    @Override
+    public Descriptor getEntityDescriptor() {
+        return descriptor;
     }
 }
