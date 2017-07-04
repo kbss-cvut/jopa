@@ -16,70 +16,31 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-public class QueryImpl implements Query {
-
-    private static final Logger LOG = LoggerFactory.getLogger(QueryImpl.class);
-
-    private final QueryHolder query;
-    private final Set<URI> contexts;
-    private final ConnectionWrapper connection;
+public class QueryImpl extends AbstractQuery implements Query {
 
     private int maxResults;
-    private boolean useBackupOntology;
-
-    private Procedure rollbackOnlyMarker;
 
     public QueryImpl(final QueryHolder query, final ConnectionWrapper connection) {
-        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
-        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
-        this.contexts = new HashSet<>();
-        this.useBackupOntology = false;
+        super(query, connection);
         this.maxResults = Integer.MAX_VALUE;
     }
 
     @Override
     public void executeUpdate() {
-        final Statement stmt = connection.createStatement();
-        try {
-            setTargetOntology(stmt);
-            URI[] uris = new URI[contexts.size()];
-            uris = contexts.toArray(uris);
-            stmt.executeUpdate(query.assembleQuery(), uris);
-        } catch (OntoDriverException e) {
-            markTransactionForRollback();
-            throw queryEvaluationException(e);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after update execution.", e);
-            }
-        }
-    }
-
-    private void markTransactionForRollback() {
-        if (rollbackOnlyMarker != null) {
-            rollbackOnlyMarker.execute();
-        }
+        executeUpdateImpl();
     }
 
     @Override
@@ -96,11 +57,6 @@ public class QueryImpl implements Query {
             markTransactionForRollback();
             throw e;
         }
-    }
-
-    private OWLPersistenceException queryEvaluationException(OntoDriverException e) {
-        final String executedQuery = query.assembleQuery();
-        return new OWLPersistenceException("Exception caught when evaluating query " + executedQuery, e);
     }
 
     @Override
@@ -161,14 +117,10 @@ public class QueryImpl implements Query {
         return getParameterValue(param);
     }
 
-    private static IllegalStateException unboundParam(Object param) {
-        return new IllegalStateException("Parameter " + param + " is not bound.");
-    }
-
     @Override
     public <T> T getParameterValue(Parameter<T> parameter) {
         if (!isBound(parameter)) {
-            throw unboundParam(parameter);
+            throw new IllegalStateException("Parameter " + parameter + " is not bound.");
         }
         return (T) query.getParameterValue(parameter);
     }
@@ -249,25 +201,13 @@ public class QueryImpl implements Query {
         return this;
     }
 
-    /**
-     * Sets ontology used for processing of this query.
-     *
-     * @param useBackupOntology If true, the backup (central) ontology is used, otherwise the transactional ontology is
-     *                          used (default)
-     */
-    public void setUseBackupOntology(boolean useBackupOntology) {
-        this.useBackupOntology = useBackupOntology;
-    }
-
     private List<?> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
 
         final Statement stmt = connection.createStatement();
         try {
             setTargetOntology(stmt);
-            URI[] uris = new URI[contexts.size()];
-            uris = contexts.toArray(uris);
-            final ResultSet rs = stmt.executeQuery(query.assembleQuery(), uris);
+            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
             final int columnCount = rs.getColumnCount();
             int cnt = 0;
             final List<Object> res = new ArrayList<>();
@@ -291,14 +231,6 @@ public class QueryImpl implements Query {
         }
     }
 
-    private void setTargetOntology(Statement stmt) {
-        if (useBackupOntology) {
-            stmt.useOntology(Statement.StatementOntology.CENTRAL);
-        } else {
-            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
-        }
-    }
-
     private static Object[] extractResultRow(ResultSet rs, int columnCount) throws OntoDriverException {
         final Object[] row = new Object[columnCount];
         for (int i = 0; i < columnCount; i++) {
@@ -306,34 +238,5 @@ public class QueryImpl implements Query {
             row[i] = ob;
         }
         return row;
-    }
-
-    @Override
-    public Query addContext(URI context) {
-        Objects.requireNonNull(context);
-        contexts.add(context);
-        return this;
-    }
-
-    @Override
-    public Query addContexts(Collection<URI> contexts) {
-        Objects.requireNonNull(contexts);
-        this.contexts.addAll(contexts);
-        return this;
-    }
-
-    @Override
-    public Query clearContexts() {
-        contexts.clear();
-        return this;
-    }
-
-    /**
-     * Registers reference to a method which marks current transaction (if active) for rollback on exceptions.
-     *
-     * @param rollbackOnlyMarker The marker to invoke on exceptions
-     */
-    void setRollbackOnlyMarker(Procedure rollbackOnlyMarker) {
-        this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 }

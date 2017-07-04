@@ -19,8 +19,6 @@ import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 
-import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -51,38 +49,6 @@ public interface TypedQuery<X> extends Query {
      */
     @Override
     X getSingleResult();
-
-    /**
-     * Adds URI of context against which this query will be executed.
-     * <p>
-     * If no context was specified, the query is run against the default repository context.
-     *
-     * @param context Context URI
-     * @return This instance
-     */
-    @Override
-    TypedQuery<X> addContext(URI context);
-
-    /**
-     * Adds URIs of contexts against which this query will be executed.
-     * <p>
-     * If no context was specified, the query is run against the default repository context.
-     *
-     * @param contexts Context URIs
-     * @return This instance
-     */
-    @Override
-    TypedQuery<X> addContexts(Collection<URI> contexts);
-
-    /**
-     * Clears the previously set contexts.
-     *
-     * @return This instance
-     * @see #addContext(URI)
-     * @see #addContexts(Collection)
-     */
-    @Override
-    TypedQuery<X> clearContexts();
 
     /**
      * Set the maximum number of results to retrieve.

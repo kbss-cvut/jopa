@@ -26,7 +26,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Mockito.*;
 
 public class QueryImplTest extends QueryTestBase {
@@ -79,7 +78,7 @@ public class QueryImplTest extends QueryTestBase {
         final List result = q.getResultList();
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(statementMock, never()).executeQuery(anyString(), anyVararg());
+        verify(statementMock, never()).executeQuery(anyString());
     }
 
     @Test

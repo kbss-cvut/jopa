@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,8 +19,6 @@ import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 
-import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -56,35 +54,6 @@ public interface Query {
      * @throws NoUniqueResultException There are more than one results
      */
     Object getSingleResult();
-
-    /**
-     * Adds URI of context against which this query will be executed.
-     *
-     * If no context was specified, the query is run against the default repository context.
-     *
-     * @param context Context URI
-     * @return This instance
-     */
-    Query addContext(URI context);
-
-    /**
-     * Adds URIs of contexts against which this query will be executed.
-     *
-     * If no context was specified, the query is run against the default repository context.
-     *
-     * @param contexts Context URIs
-     * @return This instance
-     */
-    Query addContexts(Collection<URI> contexts);
-
-    /**
-     * Clears the previously set contexts.
-     *
-     * @return This instance
-     * @see #addContext(URI)
-     * @see #addContexts(Collection)
-     */
-    Query clearContexts();
 
     /**
      * Set the maximum number of results to retrieve.

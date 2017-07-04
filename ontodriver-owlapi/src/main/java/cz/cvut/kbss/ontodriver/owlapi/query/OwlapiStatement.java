@@ -19,7 +19,6 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
 
-import java.net.URI;
 import java.util.Objects;
 
 public class OwlapiStatement implements Statement {
@@ -45,7 +44,7 @@ public class OwlapiStatement implements Statement {
     }
 
     @Override
-    public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException {
+    public ResultSet executeQuery(String sparql) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(sparql);
         closeExistingResultSet();
@@ -58,7 +57,7 @@ public class OwlapiStatement implements Statement {
     }
 
     @Override
-    public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
+    public void executeUpdate(String sparql) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(sparql);
         closeExistingResultSet();

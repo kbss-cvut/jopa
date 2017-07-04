@@ -22,7 +22,6 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-import java.net.URI;
 import java.util.Objects;
 
 public class SesameStatement implements Statement {
@@ -39,7 +38,7 @@ public class SesameStatement implements Statement {
     }
 
     @Override
-    public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException {
+    public ResultSet executeQuery(String sparql) throws OntoDriverException {
         ensureOpen();
         validateQueryParams(sparql);
         closeCurrentResultSet();
@@ -65,7 +64,7 @@ public class SesameStatement implements Statement {
     }
 
     @Override
-    public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
+    public void executeUpdate(String sparql) throws OntoDriverException {
         ensureOpen();
         validateQueryParams(sparql);
         closeCurrentResultSet();

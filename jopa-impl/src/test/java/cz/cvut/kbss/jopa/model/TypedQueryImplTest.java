@@ -139,26 +139,6 @@ public class TypedQueryImplTest extends QueryTestBase {
         query.setMaxResults(-1).getResultList();
     }
 
-    @Test
-    public void addingContextsExecutesTheQueryInContexts() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_ENTITY_QUERY);
-        final List<String> uris = initDataForQuery(1);
-        final URI contextOne = URI.create("http://contextOne");
-        final URI contextTwo = URI.create("http://contextTwo");
-        query.addContext(contextOne).addContext(contextTwo);
-
-        final List<OWLClassA> res = query.getResultList();
-        assertNotNull(res);
-        verifyResults(uris, res, 1);
-        final ArgumentCaptor<URI[]> captor = ArgumentCaptor.forClass(URI[].class);
-        verify(statementMock).executeQuery(anyString(), captor.capture());
-        final List<URI[]> contexts = captor.getAllValues();
-        assertEquals(2, contexts.size());
-        // This works, because Mockito captor returns the values as singular URIs instead of a field of URIs
-        assertTrue(contexts.contains(contextOne));
-        assertTrue(contexts.contains(contextTwo));
-    }
-
     @Test(expected = NoResultException.class)
     public void throwsNoResultExceptionWhenThereIsNoResultForGetSingle() throws Exception {
         final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_ENTITY_QUERY);
