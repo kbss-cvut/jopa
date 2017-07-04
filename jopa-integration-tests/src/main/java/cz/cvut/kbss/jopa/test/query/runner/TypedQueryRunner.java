@@ -263,7 +263,6 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
                                                          .setDescriptor(descriptor).getResultList();
         assertEquals(expected.size(), result.size());
-        System.out.println(result);
         result.forEach(a -> assertNull(a.getStringAttribute()));    // Because the data has @en language tag
     }
 }
