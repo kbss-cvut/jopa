@@ -120,7 +120,7 @@ public class QueryImpl extends AbstractQuery implements Query {
     @Override
     public <T> T getParameterValue(Parameter<T> parameter) {
         if (!isBound(parameter)) {
-            throw new IllegalStateException("Parameter " + parameter + " is not bound.");
+            throw unboundParam(parameter);
         }
         return (T) query.getParameterValue(parameter);
     }

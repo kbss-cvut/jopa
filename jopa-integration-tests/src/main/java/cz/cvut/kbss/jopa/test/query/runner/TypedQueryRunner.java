@@ -17,6 +17,8 @@ package cz.cvut.kbss.jopa.test.query.runner;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -250,5 +252,18 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                       .getResultList();
         assertEquals(expected.size(), res.size());
         res.forEach(a -> assertTrue(uris.contains(a.getUri())));
+    }
+
+    @Test
+    public void usingDescriptorAllowsToCustomizeQueryResults() throws Exception {
+        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
+        expected.forEach(a -> assertNotNull(a.getStringAttribute()));
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("cs");
+        final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
+                                                         .setDescriptor(descriptor).getResultList();
+        assertEquals(expected.size(), result.size());
+        System.out.println(result);
+        result.forEach(a -> assertNull(a.getStringAttribute()));    // Because the data has @en language tag
     }
 }

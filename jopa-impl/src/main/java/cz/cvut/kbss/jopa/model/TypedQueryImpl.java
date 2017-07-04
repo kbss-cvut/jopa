@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -40,6 +41,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     private UnitOfWork uow;
 
     private int maxResults;
+
+    private Descriptor descriptor;
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
@@ -147,10 +150,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         return getParameterValue(param);
     }
 
-    private static IllegalStateException unboundParam(Object param) {
-        return new IllegalStateException("Parameter " + param + " is not bound.");
-    }
-
     @Override
     public <T> T getParameterValue(Parameter<T> parameter) {
         if (!isBound(parameter)) {
@@ -225,6 +224,12 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         return this;
     }
 
+    @Override
+    public TypedQuery<X> setDescriptor(Descriptor descriptor) {
+        this.descriptor = descriptor;
+        return this;
+    }
+
     private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
         final Statement stmt = connection.createStatement();
@@ -235,11 +240,11 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             int cnt = 0;
             final boolean isTypeManaged = metamodelProvider.isTypeManaged(resultType);
+            final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
             while (rs.hasNext() && cnt < maxResults) {
                 rs.next();
                 if (isTypeManaged) {
-                    // TODO
-                    loadEntityInstance(rs, null).ifPresent(res::add);
+                    loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
                 } else {
                     res.add(loadResultValue(rs));
                 }
@@ -255,15 +260,13 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         }
     }
 
-    private Optional<X> loadEntityInstance(ResultSet resultSet, URI context) throws OntoDriverException {
+    private Optional<X> loadEntityInstance(ResultSet resultSet, Descriptor instanceDescriptor)
+            throws OntoDriverException {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
         final URI uri = URI.create(resultSet.getString(0));
-        // TODO Setting the context like this won't work for queries over multiple contexts
-        final EntityDescriptor descriptor = new EntityDescriptor(context);
-
-        return Optional.ofNullable(uow.readObject(resultType, uri, descriptor));
+        return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
     }
 
     private X loadResultValue(ResultSet resultSet) throws OntoDriverException {

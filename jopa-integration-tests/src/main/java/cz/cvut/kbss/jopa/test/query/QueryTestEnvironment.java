@@ -106,11 +106,10 @@ public final class QueryTestEnvironment {
         data = map;
     }
 
-    private static void persistIntoContext(EntityManager em, Map<Class<?>, List<?>> data,
-                                           URI context) {
+    private static void persistIntoContext(EntityManager em, Map<Class<?>, List<?>> data, URI context) {
         final EntityDescriptor desc = new EntityDescriptor(context);
-        em.getTransaction().begin();
         try {
+            em.getTransaction().begin();
             for (List<?> l : data.values()) {
                 for (Object o : l) {
                     em.persist(o, desc);

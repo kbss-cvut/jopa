@@ -66,9 +66,11 @@ public class QueryImplTest extends QueryTestBase {
         // Three results
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
         when(resultSetMock.getObject(anyInt())).thenReturn("str");
-        q.setMaxResults(2);
+        final int expectedCount = 2;
+        q.setMaxResults(expectedCount);
+        assertEquals(expectedCount, q.getMaxResults());
         final List result = q.getResultList();
-        assertEquals(2, result.size());
+        assertEquals(expectedCount, result.size());
     }
 
     @Test

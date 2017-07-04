@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.util.List;
 
@@ -132,4 +133,20 @@ public interface TypedQuery<X> extends Query {
      */
     @Override
     TypedQuery<X> setParameter(Parameter<String> parameter, String value, String language);
+
+    /**
+     * Sets descriptor to use with this query.
+     * <p>
+     * The descriptor may specify contexts and languages for the retrieved query results. Note that the descriptor
+     * applies only to results of managed types, i.e. when the result type of the query is a managed type. Otherwise,
+     * the descriptor is ignored.
+     * <p>
+     * Use of descriptor may lead to additional result filtering, e.g. when the individual, which is a result of the
+     * query, does not match criteria in the descriptor (it is in a different context, for instance), it is not returned
+     * by {@link #getResultList()} and {@link #getSingleResult()}.
+     *
+     * @param descriptor The descriptor to use
+     * @return This query instance
+     */
+    TypedQuery<X> setDescriptor(Descriptor descriptor);
 }

@@ -90,4 +90,8 @@ abstract class AbstractQuery {
     void setRollbackOnlyMarker(Procedure rollbackOnlyMarker) {
         this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
+
+    static IllegalStateException unboundParam(Object param) {
+        return new IllegalStateException("Parameter " + param + " is not bound.");
+    }
 }

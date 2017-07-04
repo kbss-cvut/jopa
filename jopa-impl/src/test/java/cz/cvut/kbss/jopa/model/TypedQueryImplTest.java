@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryParameter;
@@ -27,7 +28,6 @@ import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -37,7 +37,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -110,9 +109,11 @@ public class TypedQueryImplTest extends QueryTestBase {
     public void setMaxResultsReturnsSpecifiedMaxResults() throws Exception {
         final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_ENTITY_QUERY);
         final int count = 10;
+        final int expectedCount = 5;
         final List<String> uris = initDataForQuery(count);
-        final List<OWLClassA> res = query.setMaxResults(count - 5).getResultList();
-        verifyResults(uris, res, count - 5);
+        final List<OWLClassA> res = query.setMaxResults(expectedCount).getResultList();
+        assertEquals(expectedCount, query.getMaxResults());
+        verifyResults(uris, res, expectedCount);
     }
 
     @Test
@@ -341,5 +342,17 @@ public class TypedQueryImplTest extends QueryTestBase {
             // Swallow the exception
         }
         verify(handler).execute();
+    }
+
+    @Test
+    public void setDescriptorPassesDescriptorToInstanceLoading() throws Exception {
+        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_ENTITY_QUERY);
+        final int count = 10;
+        final List<String> uris = initDataForQuery(count);
+        final Descriptor descriptor = new EntityDescriptor(URI.create("http://contextOne"));
+        query.setDescriptor(descriptor).getResultList();
+        for (String uri : uris) {
+            verify(uowMock).readObject(OWLClassA.class, URI.create(uri), descriptor);
+        }
     }
 }
