@@ -39,3 +39,8 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
+
+- [ ] Fix pending persist handling:
+    - [ ] Add property assertion to pending persist when persist/merge should add new instance which is not cascaded
+    - [ ] Remove property assertion from pending persist when the original persist is cancelled
+    - [ ] Remove property assertion from pending persist when the attribute is set to another value

@@ -17,10 +17,14 @@ package cz.cvut.kbss.jopa.oom;
 import java.net.URI;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 abstract class CascadeResolver {
 
-    protected ObjectOntologyMapperImpl mapper;
+    ObjectOntologyMapperImpl mapper;
+
+    NamedResource subject;
+
 
     CascadeResolver(ObjectOntologyMapperImpl mapper) {
         this.mapper = mapper;
@@ -36,5 +40,13 @@ abstract class CascadeResolver {
      * @param fieldValue Value of the field
      * @param context    Ontology context identifier
      */
-    protected abstract void resolveFieldCascading(FieldSpecification<?, ?> fieldSpec, Object fieldValue, URI context);
+    abstract void resolveFieldCascading(FieldSpecification<?, ?> fieldSpec, Object fieldValue, URI context);
+
+    /**
+     * Sets the subject on which cascading will be resolved.
+     * @param subject The subject identifier
+     */
+    public void setSubject(NamedResource subject) {
+        this.subject = subject;
+    }
 }

@@ -26,7 +26,7 @@ public class Value<T> {
     /**
      * Represents a null value - empty value
      */
-    public static final Value<Void> NULL_VALUE = new NullValue();
+    private static final Value NULL_VALUE = new NullValue();
 
     private final T value;
 
@@ -66,8 +66,9 @@ public class Value<T> {
      * @return Null value
      * @see <a href="http://en.wikipedia.org/wiki/Null_Object_pattern">http://en.wikipedia.org/wiki/Null_Object_pattern</a>
      */
-    public static Value<Void> nullValue() {
-        return NULL_VALUE;
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> nullValue() {
+        return (Value<T>) NULL_VALUE;
     }
 
     @Override

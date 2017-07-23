@@ -49,6 +49,10 @@ class AxiomValueGatherer {
         axiomDescriptor.setSubjectContext(subjectContext);
     }
 
+    NamedResource getSubjectIdentifier() {
+        return axiomDescriptor.getSubject();
+    }
+
     void addValue(Assertion assertion, Value<?> value, URI context) {
         addValues(assertion, Collections.singleton(value), context);
     }

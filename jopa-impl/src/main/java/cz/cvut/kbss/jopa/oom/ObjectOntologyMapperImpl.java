@@ -58,6 +58,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final EntityDeconstructor entityBreaker;
     private final InstanceRegistry instanceRegistry;
     private final PendingChangeRegistry pendingPersists;
+    private final PendingAssertionRegistry pendingAssertions;
 
     private final EntityInstanceLoader defaultInstanceLoader;
     private final EntityInstanceLoader twoStepInstanceLoader;
@@ -70,6 +71,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.descriptorFactory = new AxiomDescriptorFactory(uow.getConfiguration());
         this.instanceRegistry = new InstanceRegistry();
         this.pendingPersists = new PendingChangeRegistry();
+        this.pendingAssertions = new PendingAssertionRegistry();
         this.entityBuilder = new EntityConstructor(this);
         this.entityBreaker = new EntityDeconstructor(this);
 
@@ -164,6 +166,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 EntityPropertiesUtils.setPrimaryKey(primaryKey, entity, et);
             }
             entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
+            entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
             final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey,
                     entity, et, descriptor);
             axiomBuilder.persist(storageConnection);
@@ -204,6 +207,10 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         return (T) uow.getOriginal(clone);
     }
 
+    boolean isManaged(Object instance) {
+        return uow.isObjectManaged(instance);
+    }
+
     <T> void registerInstance(URI primaryKey, T instance, URI context) {
         instanceRegistry.registerInstance(primaryKey, instance, context);
     }
@@ -238,6 +245,10 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         pendingPersists.registerInstance(primaryKey, entity, context);
     }
 
+    void registerPendingAssertion(NamedResource owner, Assertion assertion, Object object, URI context) {
+        pendingAssertions.addPendingAssertion(owner, assertion, object, context);
+    }
+
     @Override
     public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor) {
         final EntityType<T> et = getEntityType(cls);
@@ -256,6 +267,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
         entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
+        entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field,
                 et, descriptor);
         axiomBuilder.update(storageConnection);

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -69,22 +69,28 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
         final Object extractedValue = extractFieldValueFromInstance(instance);
-        Value<?> val = extractedValue != null ? extractReferenceIdentifier(extractedValue) : Value.nullValue();
-        valueBuilder.addValue(createAssertion(), val, getAttributeContext());
+        if (referenceSavingResolver.shouldSaveReference(attribute, extractedValue, getAttributeContext())) {
+            final Value<NamedResource> value = extractReferenceIdentifier(extractedValue);
+            valueBuilder.addValue(createAssertion(), value, getAttributeContext());
+        } else {
+            referenceSavingResolver
+                    .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), extractedValue,
+                            getAttributeContext());
+        }
     }
 
     private <V> Value<NamedResource> extractReferenceIdentifier(final V value) {
+        if (value == null) {
+            return Value.nullValue();
+        }
         if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
             return new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value)));
         }
-        final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
-        if (valEt == null) {
-            throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
-                    + " is not a recognized entity.");
-        }
-        final URI id = resolveValueIdentifier(value, valEt);
-        cascadeResolver.resolveFieldCascading(attribute, value, getAttributeContext());
-        return new Value<>(NamedResource.create(id));
+        final EntityType<? super V> valEt = (EntityType<? super V>) mapper.getEntityType(attribute.getJavaType());
+        assert valEt != null;
+
+        final URI id = EntityPropertiesUtils.getPrimaryKey(value, valEt);
+        return id != null ? new Value<>(NamedResource.create(id)) : Value.nullValue();
     }
 
     @Override

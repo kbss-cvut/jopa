@@ -568,4 +568,19 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
         assertEquals(entityN.getStringAttribute(), result.getStringAttribute());
     }
+
+    @Test
+    public void persistSavesInstanceWithReferenceToExistingInstance() {
+        this.em = getEntityManager("persistSavesInstanceWithReferenceToExistingInstance", false);
+        persist(entityA);
+
+        em.clear();
+        em.getTransaction().begin();
+        em.persist(entityD);
+        em.getTransaction().commit();
+
+        final OWLClassD resultD = em.find(OWLClassD.class, entityD.getUri());
+        assertNotNull(resultD);
+        assertNotNull(resultD.getOwlClassA());
+    }
 }

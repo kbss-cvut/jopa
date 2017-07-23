@@ -30,6 +30,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     final T attribute;
     final Descriptor attributeDescriptor;
     final EntityMappingHelper mapper;
+    ReferenceSavingResolver referenceSavingResolver;
     CascadeResolver cascadeResolver;
 
     FieldStrategy(EntityType<X> et, T att, Descriptor attributeDescriptor, EntityMappingHelper mapper) {
@@ -111,6 +112,10 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         this.cascadeResolver = resolver;
     }
 
+    void setReferenceSavingResolver(ReferenceSavingResolver referenceSavingResolver) {
+        this.referenceSavingResolver = referenceSavingResolver;
+    }
+
     /**
      * Sets the specified value on the specified instance, the field is taken from the attribute represented by this
      * strategy. </p>
@@ -150,7 +155,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      */
     String getLanguage() {
         return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
-               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
+                mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**
