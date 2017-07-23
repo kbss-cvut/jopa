@@ -38,13 +38,13 @@ public class ReferenceSavingResolverTest {
 
     @Test
     public void shouldSaveReferenceReturnsTrueForNullValue() {
-        assertTrue(resolver.shouldSaveReference(metamodelMocks.forOwlClassD().owlClassAAtt(), null, null));
+        assertTrue(resolver.shouldSaveReference(OWLClassA.class, null, null));
     }
 
     @Test
     public void shouldSaveReferenceReturnsTrueForPlainIdentifierValue() {
         final URI value = Generators.createIndividualIdentifier();
-        assertTrue(resolver.shouldSaveReference(metamodelMocks.forOwlClassP().pUriAttribute(), value, null));
+        assertTrue(resolver.shouldSaveReference(value.getClass(), value, null));
     }
 
     @Test
@@ -52,14 +52,14 @@ public class ReferenceSavingResolverTest {
         // Because it means it is not managed and does not exist in the storage either
         final OWLClassA value = new OWLClassA();
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
-        assertFalse(resolver.shouldSaveReference(metamodelMocks.forOwlClassD().owlClassAAtt(), value, null));
+        assertFalse(resolver.shouldSaveReference(OWLClassA.class, value, null));
     }
 
     @Test
     public void shouldSaveReferenceReturnsTrueForValueBeingManaged() {
         final OWLClassA value = Generators.generateOwlClassAInstance();
         when(mapperMock.isManaged(value)).thenReturn(true);
-        assertTrue(resolver.shouldSaveReference(metamodelMocks.forOwlClassD().owlClassAAtt(), value, null));
+        assertTrue(resolver.shouldSaveReference(OWLClassA.class, value, null));
         verify(mapperMock).isManaged(value);
     }
 
@@ -69,7 +69,7 @@ public class ReferenceSavingResolverTest {
         when(mapperMock.isManaged(value)).thenReturn(false);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
         when(mapperMock.containsEntity(eq(OWLClassA.class), eq(value.getUri()), any())).thenReturn(true);
-        assertTrue(resolver.shouldSaveReference(metamodelMocks.forOwlClassD().owlClassAAtt(), value, null));
+        assertTrue(resolver.shouldSaveReference(OWLClassA.class, value, null));
         verify(mapperMock).containsEntity(OWLClassA.class, value.getUri(), new EntityDescriptor());
     }
 
@@ -80,7 +80,7 @@ public class ReferenceSavingResolverTest {
         when(mapperMock.isManaged(value)).thenReturn(false);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
         when(mapperMock.containsEntity(eq(OWLClassA.class), eq(value.getUri()), any())).thenReturn(true);
-        assertTrue(resolver.shouldSaveReference(metamodelMocks.forOwlClassD().owlClassAAtt(), value, context));
+        assertTrue(resolver.shouldSaveReference(OWLClassA.class, value, context));
         verify(mapperMock).containsEntity(OWLClassA.class, value.getUri(), new EntityDescriptor(context));
     }
 

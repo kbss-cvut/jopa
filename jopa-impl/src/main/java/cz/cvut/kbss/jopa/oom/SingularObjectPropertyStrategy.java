@@ -69,7 +69,8 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
         final Object extractedValue = extractFieldValueFromInstance(instance);
-        if (referenceSavingResolver.shouldSaveReference(attribute, extractedValue, getAttributeContext())) {
+        if (referenceSavingResolver
+                .shouldSaveReference(attribute.getJavaType(), extractedValue, getAttributeContext())) {
             final Value<NamedResource> value = extractReferenceIdentifier(extractedValue);
             valueBuilder.addValue(createAssertion(), value, getAttributeContext());
         } else {

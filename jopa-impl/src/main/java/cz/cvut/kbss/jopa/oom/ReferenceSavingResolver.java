@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -31,19 +30,26 @@ class ReferenceSavingResolver {
      * <p>
      * Otherwise, the reference should not be saved and should be registered as pending.
      *
-     * @param fieldSpec Specification of the attribute
+     * @param valueType Java type of the value
      * @param value     The value to save
      * @param context   Storage context
      * @return Whether to save the corresponding assertion or not
      */
-    boolean shouldSaveReference(FieldSpecification<?, ?> fieldSpec, Object value, URI context) {
-        if (value == null || IdentifierTransformer.isValidIdentifierType(fieldSpec.getJavaType())) {
-            return true;
-        }
+    boolean shouldSaveReference(Class<?> valueType, Object value, URI context) {
+        return value == null || IdentifierTransformer.isValidIdentifierType(valueType) || shouldSaveReferenceToItem(
+                valueType, value, context);
+    }
+
+    /**
+     * Same as {@link #shouldSaveReference(Class, Object, URI)}, but skips null-check and check whether the value is a plain identifier.
+     * <p>
+     * Used for collections.
+     */
+    boolean shouldSaveReferenceToItem(Class<?> valueType, Object value, URI context) {
         if (mapper.isManaged(value)) {
             return true;
         }
-        final EntityType<?> et = mapper.getEntityType(fieldSpec.getJavaType());
+        final EntityType<?> et = mapper.getEntityType(valueType);
         assert et != null;
         final URI identifier = EntityPropertiesUtils.getPrimaryKey(value, et);
         return identifier != null && mapper.containsEntity(et.getJavaType(), identifier, new EntityDescriptor(context));

@@ -100,7 +100,7 @@ public class SingularObjectPropertyStrategyTest {
                 strategy(metamodelMocks.forOwlClassP().entityType(), metamodelMocks.forOwlClassP().pUriAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);
         when(referenceResolverMock
-                .shouldSaveReference(metamodelMocks.forOwlClassP().pUriAttribute(), p.getIndividualUri(), null))
+                .shouldSaveReference(URI.class, p.getIndividualUri(), null))
                 .thenReturn(true);
         strategy.buildAxiomValuesFromInstance(p, gatherer);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
@@ -123,7 +123,7 @@ public class SingularObjectPropertyStrategyTest {
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 
         verify(referenceResolverMock)
-                .shouldSaveReference(metamodelMocks.forOwlClassD().owlClassAAtt(), d.getOwlClassA(),
+                .shouldSaveReference(OWLClassA.class, d.getOwlClassA(),
                         descriptor.getContext());
     }
 
@@ -136,7 +136,7 @@ public class SingularObjectPropertyStrategyTest {
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
-        when(referenceResolverMock.shouldSaveReference(att, d.getOwlClassA(), null)).thenReturn(false);
+        when(referenceResolverMock.shouldSaveReference(att.getJavaType(), d.getOwlClassA(), null)).thenReturn(false);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 
@@ -153,7 +153,7 @@ public class SingularObjectPropertyStrategyTest {
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
-        when(referenceResolverMock.shouldSaveReference(att, d.getOwlClassA(), null)).thenReturn(true);
+        when(referenceResolverMock.shouldSaveReference(att.getJavaType(), d.getOwlClassA(), null)).thenReturn(true);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 

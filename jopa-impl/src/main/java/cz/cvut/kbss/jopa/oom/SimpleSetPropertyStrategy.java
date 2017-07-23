@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -30,7 +31,7 @@ import java.util.Set;
 class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
 
     SimpleSetPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor descriptor,
-                                     EntityMappingHelper mapper) {
+                              EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
 
@@ -57,9 +58,16 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
                 if (val == null) {
                     continue;
                 }
-                final URI id = resolveValueIdentifier(val, et);
-                cascadeResolver.resolveFieldCascading(attribute, val, getAttributeContext());
-                assertionValues.add(new Value<>(NamedResource.create(id)));
+                if (referenceSavingResolver
+                        .shouldSaveReferenceToItem(pluralAtt.getBindableJavaType(), val, getAttributeContext())) {
+                    final URI valId = EntityPropertiesUtils.getPrimaryKey(val, et);
+                    assert valId != null;
+                    assertionValues.add(new Value<>(NamedResource.create(valId)));
+                } else {
+                    referenceSavingResolver
+                            .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), val,
+                                    getAttributeContext());
+                }
             }
         }
         valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
