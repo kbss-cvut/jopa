@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
@@ -30,6 +29,7 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -40,9 +40,8 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 
 public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMappingHelper {
 
@@ -167,10 +166,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             }
             entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
             entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
-            final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey,
-                    entity, et, descriptor);
+            final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey, entity, et, descriptor);
             axiomBuilder.persist(storageConnection);
-            pendingPersists.removeInstance(primaryKey, descriptor.getContext());
+            persistPendingAssertions(entity, axiomBuilder.getSubjectIdentifier());
         } catch (IllegalArgumentException e) {
             throw new EntityDeconstructionException("Unable to deconstruct entity " + entity, e);
         }
@@ -180,6 +178,20 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public URI generateIdentifier(EntityType<?> et) {
         try {
             return storageConnection.generateIdentifier(et.getIRI().toURI());
+        } catch (OntoDriverException e) {
+            throw new StorageAccessException(e);
+        }
+    }
+
+    private <T> void persistPendingAssertions(T instance, NamedResource identifier) {
+        final Set<PendingAssertionRegistry.PendingAssertion> pas =
+                pendingAssertions.removeAndGetPendingAssertionsWith(instance);
+        try {
+            for (PendingAssertionRegistry.PendingAssertion pa : pas) {
+                final AxiomValueDescriptor desc = new AxiomValueDescriptor(pa.getOwner());
+                desc.addAssertionValue(pa.getAssertion(), new Value<>(identifier));
+                storageConnection.persist(desc);
+            }
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }
@@ -217,27 +229,11 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     @Override
     public void checkForUnpersistedChanges() {
-        try {
-            final Map<URI, Map<URI, Object>> persists = pendingPersists.getInstances();
-            if (!persists.isEmpty()) {
-                for (Entry<URI, Map<URI, Object>> entry : persists.entrySet()) {
-                    for (Entry<URI, Object> e : entry.getValue().entrySet()) {
-                        verifyInstanceExistInOntology(entry.getKey(), e.getKey(), e.getValue());
-                    }
-                }
-            }
-        } catch (OntoDriverException e) {
-            throw new StorageAccessException(e);
-        }
-    }
-
-    private void verifyInstanceExistInOntology(URI ctx, URI primaryKey, Object instance)
-            throws OntoDriverException {
-        boolean exists = containsEntity(instance.getClass(), primaryKey, new EntityDescriptor(ctx));
-        if (!exists) {
+        final Set<Object> pendingInstances = pendingAssertions.getPendingResources();
+        if (!pendingInstances.isEmpty()) {
             throw new UnpersistedChangeException(
-                    "Encountered an instance that was neither persisted nor marked as cascade for persist. The instance: "
-                            + instance);
+                    "The following instances were neither persisted nor marked as cascade for persist: "
+                            + pendingInstances);
         }
     }
 

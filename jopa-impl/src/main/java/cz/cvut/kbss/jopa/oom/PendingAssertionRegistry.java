@@ -47,6 +47,10 @@ class PendingAssertionRegistry {
         return pending != null ? pending : Collections.emptySet();
     }
 
+    Set<Object> getPendingResources() {
+        return Collections.unmodifiableSet(pendingAssertions.keySet());
+    }
+
     public static class PendingAssertion {
         private final NamedResource owner;
         private final Assertion assertion;

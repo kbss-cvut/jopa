@@ -32,6 +32,7 @@ import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -49,6 +50,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -261,18 +263,6 @@ public class ObjectOntologyMapperTest {
     }
 
     @Test
-    public void checksForUnpersistedChangesAndThereAreNone() {
-        mapper.checkForUnpersistedChanges();
-    }
-
-    @Test(expected = UnpersistedChangeException.class)
-    public void checksForUnpersistedChangesThrowsExceptionWhenThereAre() throws Exception {
-        mapper.registerPendingPersist(ENTITY_PK, entityA, null);
-        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(Collections.emptyList());
-        mapper.checkForUnpersistedChanges();
-    }
-
-    @Test
     public void removesEntityWithEmptyDescriptor() throws Exception {
         final LoadingParameters<OWLClassA> p = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor, true);
         when(descriptorFactoryMock.createForEntityLoading(p, etAMock)).thenReturn(axiomDescriptor);
@@ -444,5 +434,48 @@ public class ObjectOntologyMapperTest {
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertNull(result);
         verify(cacheMock, never()).add(any(), any(), any());
+    }
+
+    @Test
+    public void persistRemovesPendingAssertionsWithTargetBeingPersistedObject() throws Exception {
+        final OWLClassA a = new OWLClassA();
+        a.setStringAttribute("string");
+        final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
+        d.setOwlClassA(a);
+        when(entityDeconstructorMock
+                .mapEntityToAxioms(d.getUri(), d, metamodelMock.entity(OWLClassD.class), aDescriptor))
+                .then(invocationOnMock -> {
+                    final Assertion assertion =
+                            Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+                    mapper.registerPendingAssertion(NamedResource.create(d.getUri()), assertion, a, null);
+                    return new AxiomValueGatherer(NamedResource.create(d.getUri()), null);
+                });
+        mapper.persistEntity(d.getUri(), d, aDescriptor);
+        a.setUri(Generators.createIndividualIdentifier());
+        final NamedResource aIndividual = NamedResource.create(a.getUri());
+        when(entityDeconstructorMock.mapEntityToAxioms(a.getUri(), a, etAMock, aDescriptor))
+                .thenReturn(new AxiomValueGatherer(aIndividual, null));
+        mapper.persistEntity(a.getUri(), a, aDescriptor);
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock, times(3)).persist(captor.capture());
+        final AxiomValueDescriptor assertionDesc = captor.getAllValues().get(2);
+        assertEquals(d.getUri(), assertionDesc.getSubject().getIdentifier());
+        assertEquals(1, assertionDesc.getAssertions().size());
+        final Assertion assertion = assertionDesc.getAssertions().iterator().next();
+        assertEquals(URI.create(Vocabulary.P_HAS_A), assertion.getIdentifier());
+        assertEquals(1, assertionDesc.getAssertionValues(assertion).size());
+        assertEquals(aIndividual, assertionDesc.getAssertionValues(assertion).get(0).getValue());
+    }
+
+    @Test
+    public void checkForUnpersistedChangesThrowsPendingPersistExceptionWhenThereArePendingChanges() {
+        final URI subject = Generators.createIndividualIdentifier();
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+        mapper.checkForUnpersistedChanges();
+        mapper.registerPendingAssertion(NamedResource.create(subject), assertion, entityA, null);
+        thrown.expect(UnpersistedChangeException.class);
+        thrown.expectMessage(containsString(entityA.toString()));
+        mapper.checkForUnpersistedChanges();
     }
 }
