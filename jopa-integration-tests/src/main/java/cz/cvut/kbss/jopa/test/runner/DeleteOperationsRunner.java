@@ -534,4 +534,17 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         assertTrue(result.getIntegerSet() == null || result.getIntegerSet().isEmpty());
         verifyDatatypePropertiesRemoved();
     }
+
+    @Test
+    public void removingNewlyPersistedInstanceRemovesPendingPersistsAndAllowsTransactionToFinish() {
+        this.em = getEntityManager("removingNewlyPersistedInstanceRemovesPendingPersistsAndAllowsTransactionToFinish",
+                true);
+        em.getTransaction().begin();
+        em.persist(entityD);
+        em.remove(entityD);
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassD.class, entityD.getUri()));
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
 }

@@ -246,8 +246,7 @@ public class ObjectOntologyMapperTest {
         loader = spy(loader);
         instanceLoaderField.set(mapper, loader);
         doReturn(entityA).when(loader).loadEntity(loadingParameters);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK,
-                aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK, aDescriptor);
         assertSame(entityA, res);
         verify(loader).loadEntity(loadingParameters);
     }
@@ -293,6 +292,9 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void removeEntityCreatesDescriptorForRemovalOfAllEntityAttributes() throws Exception {
+        when(descriptorFactoryMock
+                .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor, true),
+                        etAMock)).thenReturn(axiomDescriptor);
         mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
         final ArgumentCaptor<LoadingParameters> captor = ArgumentCaptor.forClass(LoadingParameters.class);
         verify(descriptorFactoryMock).createForEntityLoading(captor.capture(), eq(etAMock));
@@ -508,5 +510,31 @@ public class ObjectOntologyMapperTest {
         thrown.expect(UnpersistedChangeException.class);
         thrown.expectMessage(containsString(entityA.toString()));
         mapper.checkForUnpersistedChanges();
+    }
+
+    @Test
+    public void removeEntityRemovesPendingReferenceWhenOwnerIsRemoved() throws Exception {
+        final OWLClassD owner = new OWLClassD(ENTITY_PK);
+        owner.setOwlClassA(entityA);
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+        final Descriptor descriptor = new EntityDescriptor();
+        mapper.registerPendingAssertion(NamedResource.create(ENTITY_PK), assertion, entityA, null);
+        final AxiomDescriptor axiomDescriptor = new AxiomDescriptor(NamedResource.create(ENTITY_PK));
+        axiomDescriptor.addAssertion(Assertion.createClassAssertion(false));
+        axiomDescriptor.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false));
+        when(descriptorFactoryMock
+                .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, ENTITY_PK, descriptor, true),
+                        metamodelMock.entity(OWLClassD.class))).thenReturn(axiomDescriptor);
+
+        mapper.removeEntity(ENTITY_PK, OWLClassD.class, descriptor);
+        final PendingAssertionRegistry registry = getPendingAssertionRegistry();
+        assertFalse(registry.getPendingResources().contains(entityA));
+    }
+
+    private PendingAssertionRegistry getPendingAssertionRegistry() throws Exception {
+        final Field field = mapper.getClass().getDeclaredField("pendingAssertions");
+        field.setAccessible(true);
+        return (PendingAssertionRegistry) field.get(mapper);
     }
 }

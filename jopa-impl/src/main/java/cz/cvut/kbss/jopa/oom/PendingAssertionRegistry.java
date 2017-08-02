@@ -2,6 +2,8 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
@@ -12,6 +14,8 @@ import java.util.*;
  * The general rule is that on commit, this registry should be empty.
  */
 class PendingAssertionRegistry {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PendingAssertionRegistry.class);
 
     private final Map<Object, Set<PendingAssertion>> pendingAssertions = new HashMap<>();
 
@@ -49,6 +53,21 @@ class PendingAssertionRegistry {
 
     Set<Object> getPendingResources() {
         return Collections.unmodifiableSet(pendingAssertions.keySet());
+    }
+
+    /**
+     * Removes all pending assertions which have the same subject (owner).
+     *
+     * @param subject The subject of assertions to remove
+     */
+    void removePendingAssertions(NamedResource subject) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Removing pending assertions for subject {}.", subject);
+        }
+        for (Set<PendingAssertion> pending : pendingAssertions.values()) {
+            pending.removeIf(item -> item.owner.equals(subject));
+        }
+        pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
     }
 
     public static class PendingAssertion {

@@ -43,6 +43,6 @@
 - [ ] Fix pending persist handling:
     - [x] Add property assertion to pending persist when persist/merge should add new instance which is not cascaded
     - [x] Remove property assertion from pending persist and persist it when the target is persisted
-    - [ ] Remove property assertion from pending persist when the original persist is cancelled
+    - [x] Remove property assertion from pending persist when the original persist is cancelled
     - [ ] Remove property assertion from pending persist when the attribute is set to another value
     - [ ] Handling of simple and reference lists

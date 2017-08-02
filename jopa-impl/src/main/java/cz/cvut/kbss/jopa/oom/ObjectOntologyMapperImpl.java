@@ -246,6 +246,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 new LoadingParameters<>(cls, primaryKey, descriptor, true), et);
         try {
             storageConnection.remove(axiomDescriptor);
+            pendingAssertions.removePendingAssertions(axiomDescriptor.getSubject());
         } catch (OntoDriverException e) {
             throw new StorageAccessException("Exception caught when removing entity.", e);
         }
