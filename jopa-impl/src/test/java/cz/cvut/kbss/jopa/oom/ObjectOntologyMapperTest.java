@@ -537,4 +537,23 @@ public class ObjectOntologyMapperTest {
         field.setAccessible(true);
         return (PendingAssertionRegistry) field.get(mapper);
     }
+
+    @Test
+    public void updateFieldValueRemovesPendingReference() throws Exception {
+        final OWLClassD owner = new OWLClassD(ENTITY_PK);
+        owner.setOwlClassA(entityA);
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+        final Descriptor descriptor = new EntityDescriptor();
+        mapper.registerPendingAssertion(NamedResource.create(ENTITY_PK), assertion, entityA, null);
+        final OWLClassA differentA = new OWLClassA(Generators.createIndividualIdentifier());
+        owner.setOwlClassA(differentA);
+        when(entityDeconstructorMock.mapFieldToAxioms(ENTITY_PK, owner, OWLClassD.getOwlClassAField(),
+                metamodelMock.entity(OWLClassD.class), descriptor))
+                .thenReturn(new AxiomValueGatherer(NamedResource.create(ENTITY_PK), null));
+
+        mapper.updateFieldValue(owner, OWLClassD.getOwlClassAField(), descriptor);
+        final PendingAssertionRegistry registry = getPendingAssertionRegistry();
+        assertFalse(registry.getPendingResources().contains(entityA));
+    }
 }

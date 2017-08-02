@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
@@ -33,6 +34,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
 
@@ -1049,5 +1052,43 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptorTwo);
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
         assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorTwo));
+    }
+
+    @Test
+    public void updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue() throws Exception {
+        this.em = getEntityManager("updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue", true);
+        entityD.setOwlClassA(null);
+        persist(entityD, entityA2);
+
+        em.getTransaction().begin();
+        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        d.setOwlClassA(entityA);
+        d.setOwlClassA(em.find(OWLClassA.class, entityA2.getUri()));
+        em.getTransaction().commit();
+
+        final OWLClassD dResult = em.find(OWLClassD.class, entityD.getUri());
+        assertNotNull(dResult.getOwlClassA());
+        assertEquals(entityA2.getUri(), dResult.getOwlClassA().getUri());
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void updatesKeepsPendingAssertionPluralAttribute() throws Exception {
+        this.em = getEntityManager("updatesKeepsPendingAssertionPluralAttribute", true);
+        final OWLClassL entityL = new OWLClassL();
+        entityL.setSet(new HashSet<>());
+        entityL.getSet().add(entityA2);
+        entityL.setSimpleList(Collections.singletonList(entityA2));
+        entityL.setSingleA(entityA2);
+        entityL.setUri(Generators.generateUri());
+        persist(entityL, entityA2);
+
+        em.getTransaction().begin();
+        final OWLClassL inst = em.find(OWLClassL.class, entityL.getUri());
+        inst.getSet().add(entityA);
+        thrown.expect(RollbackException.class);
+        thrown.expectCause(isA(UnpersistedChangeException.class));
+        thrown.expectMessage(containsString(entityA.toString()));
+        em.getTransaction().commit();
     }
 }

@@ -17,8 +17,10 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
@@ -258,9 +260,21 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
+        // It is OK to do it like this, because if necessary, the mapping will re-register a pending assertion
+        removePendingAssertions(et, field, pkUri);
         final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field,
                 et, descriptor);
         axiomBuilder.update(storageConnection);
+    }
+
+    private <T> void removePendingAssertions(EntityType<T> et, Field field, URI identifier) {
+        final FieldSpecification<? super T, ?> fs = et.getFieldSpecification(field.getName());
+        if (fs instanceof Attribute) {
+            final Attribute<?, ?> att = (Attribute<?, ?>) fs;
+            // We care only about object property assertions, others are never pending
+            final Assertion assertion = Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
+            pendingAssertions.removePendingAssertions(NamedResource.create(identifier), assertion);
+        }
     }
 
     @Override

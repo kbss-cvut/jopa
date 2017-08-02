@@ -83,4 +83,16 @@ public class PendingAssertionsRegistryTest {
         assertTrue(registry.getPendingResources().contains(object));
         assertFalse(registry.getPendingResources().contains(anotherObject));
     }
+
+    @Test
+    public void removePendingAssertionsRemovesAssertionsWithSubjectAndAssertion() throws Exception {
+        registry.addPendingAssertion(owner, assertion, object, null);
+        registry.addPendingAssertion(NamedResource.create(Generators.createIndividualIdentifier()), assertion, object,
+                null);
+        registry.removePendingAssertions(owner, assertion);
+        final Map<Object, Set<PendingAssertionRegistry.PendingAssertion>> result = getPendingAssertions();
+        assertEquals(1, result.get(object).size());
+        final PendingAssertionRegistry.PendingAssertion pa = result.get(object).iterator().next();
+        assertNotEquals(owner, pa.getOwner());
+    }
 }

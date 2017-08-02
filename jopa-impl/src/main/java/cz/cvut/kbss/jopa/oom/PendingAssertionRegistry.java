@@ -70,6 +70,22 @@ class PendingAssertionRegistry {
         pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
     }
 
+    /**
+     * Removes pending assertions representing the specified assertion about the specified subject.
+     *
+     * @param subject   Assertion subject
+     * @param assertion The assertion
+     */
+    void removePendingAssertions(NamedResource subject, Assertion assertion) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Removing pending assertions {} for subject {}.", assertion, subject);
+        }
+        for (Set<PendingAssertion> pending : pendingAssertions.values()) {
+            pending.removeIf(item -> item.owner.equals(subject) && item.assertion.equals(assertion));
+        }
+        pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
+    }
+
     public static class PendingAssertion {
         private final NamedResource owner;
         private final Assertion assertion;
