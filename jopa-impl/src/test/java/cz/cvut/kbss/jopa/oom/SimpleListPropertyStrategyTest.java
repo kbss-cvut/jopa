@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,16 +30,13 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase {
 
@@ -54,7 +51,6 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         this.simpleList = mocks.forOwlClassC().simpleListAtt();
         this.strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList, descriptor, mapperMock);
-        strategy.setCascadeResolver(cascadeResolverMock);
     }
 
     @Test
@@ -157,9 +153,6 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
             assertEquals(c.getSimpleList().get(i).getUri(), res.getValues()
                                                                .get(i).getIdentifier());
         }
-        verify(cascadeResolverMock, times(c.getSimpleList().size()))
-                .resolveFieldCascading(eq(simpleList), any(Object.class),
-                        eq((URI) null));
     }
 
     private SimpleListValueDescriptor listValueDescriptor() throws Exception {
@@ -183,8 +176,6 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
                                     .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
                                                                     .toString());
         assertTrue(res.getValues().isEmpty());
-        verify(cascadeResolverMock, never()).resolveFieldCascading(
-                eq(simpleList), any(Object.class), eq((URI) null));
     }
 
     @Test
@@ -201,8 +192,6 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
                                     .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
                                                                     .toString());
         assertTrue(res.getValues().isEmpty());
-        verify(cascadeResolverMock, never()).resolveFieldCascading(
-                eq(simpleList), any(Object.class), eq((URI) null));
     }
 
     @Test
@@ -213,7 +202,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
 
         strategy.buildAxiomValuesFromInstance(c, builder);
         final SimpleListValueDescriptor res = listValueDescriptor();
-        final List<URI> expected = c.getSimpleList().stream().filter(item -> item != null).map(OWLClassA::getUri)
+        final List<URI> expected = c.getSimpleList().stream().filter(Objects::nonNull).map(OWLClassA::getUri)
                                     .collect(
                                             Collectors.toList());
         verifyListItems(expected, res);
@@ -239,7 +228,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
         setRandomListItemsToNull(p.getSimpleList());
-        final List<URI> nonNulls = p.getSimpleList().stream().filter(i -> i != null).collect(Collectors.toList());
+        final List<URI> nonNulls = p.getSimpleList().stream().filter(Objects::nonNull).collect(Collectors.toList());
         final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);

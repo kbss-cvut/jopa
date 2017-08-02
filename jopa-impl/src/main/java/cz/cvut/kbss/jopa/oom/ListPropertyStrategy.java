@@ -60,7 +60,6 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
                     continue;
                 }
                 final URI itemUri = resolveValueIdentifier(item, valueType);
-                cascadeResolver.resolveFieldCascading(pluralAtt, item, getAttributeContext());
                 listDescriptor.addValue(NamedResource.create(itemUri));
             }
         }

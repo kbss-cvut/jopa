@@ -56,7 +56,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final EntityConstructor entityBuilder;
     private final EntityDeconstructor entityBreaker;
     private final InstanceRegistry instanceRegistry;
-    private final PendingChangeRegistry pendingPersists;
     private final PendingAssertionRegistry pendingAssertions;
 
     private final EntityInstanceLoader defaultInstanceLoader;
@@ -69,7 +68,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.metamodel = uow.getMetamodel();
         this.descriptorFactory = new AxiomDescriptorFactory(uow.getConfiguration());
         this.instanceRegistry = new InstanceRegistry();
-        this.pendingPersists = new PendingChangeRegistry();
         this.pendingAssertions = new PendingAssertionRegistry();
         this.entityBuilder = new EntityConstructor(this);
         this.entityBreaker = new EntityDeconstructor(this);
@@ -164,7 +162,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 assert primaryKey != null;
                 EntityPropertiesUtils.setPrimaryKey(primaryKey, entity, et);
             }
-            entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
             entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
             final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey, entity, et, descriptor);
             axiomBuilder.persist(storageConnection);
@@ -238,10 +235,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
-    <T> void registerPendingPersist(URI primaryKey, T entity, URI context) {
-        pendingPersists.registerInstance(primaryKey, entity, context);
-    }
-
     void registerPendingAssertion(NamedResource owner, Assertion assertion, Object object, URI context) {
         pendingAssertions.addPendingAssertion(owner, assertion, object, context);
     }
@@ -263,7 +256,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
-        entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field,
                 et, descriptor);
