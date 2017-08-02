@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -145,6 +146,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertTrue(c.getSimpleList().contains(a));
     }
 
+    @Ignore
     @Test(expected = RollbackException.class)
     public void persistingEntityWithSimpleListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistSimpleListNoCascade", false);
@@ -176,6 +178,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         }
     }
 
+    @Ignore
     @Test(expected = RollbackException.class)
     public void persistingEntityWithReferencedListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistReferencedListNoCascade", false);

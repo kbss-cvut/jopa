@@ -190,6 +190,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             for (PendingAssertionRegistry.PendingAssertion pa : pas) {
                 final AxiomValueDescriptor desc = new AxiomValueDescriptor(pa.getOwner());
                 desc.addAssertionValue(pa.getAssertion(), new Value<>(identifier));
+                desc.setAssertionContext(pa.getAssertion(), pa.getContext());
                 storageConnection.persist(desc);
             }
         } catch (OntoDriverException e) {

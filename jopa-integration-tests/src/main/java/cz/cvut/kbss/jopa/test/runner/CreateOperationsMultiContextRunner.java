@@ -225,8 +225,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     public void testPersistEntityWithObjectPropertyWithGeneratedIdentifierAndPutTheReferenceIntoContext()
             throws Exception {
-        // persist entity with reference to an entity with generated identifier.
-        // The identifier should be generated automatically before the referenced entity itself is persisted.
         this.em = getEntityManager("PersistEntityWithObjectPropertyWithGeneratedIdentifierContexts", true);
         entityK.setOwlClassE(entityE);
         assertNull(entityE.getUri());
@@ -235,8 +233,8 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         kDescriptor.addAttributeDescriptor(OWLClassK.class.getDeclaredField("owlClassE"), eDescriptor);
         em.getTransaction().begin();
         em.persist(entityK, kDescriptor);
-        assertNotNull(entityE.getUri());
         em.persist(entityE, eDescriptor);
+        assertNotNull(entityE.getUri());
         em.getTransaction().commit();
 
         final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(), eDescriptor);

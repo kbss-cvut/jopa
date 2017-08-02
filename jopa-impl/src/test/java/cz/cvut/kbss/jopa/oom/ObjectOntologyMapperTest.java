@@ -87,6 +87,7 @@ public class ObjectOntologyMapperTest {
     @Mock
     private EntityDeconstructor entityDeconstructorMock;
 
+    private MetamodelMocks mocks;
     private EntityType<OWLClassA> etAMock;
     private LoadingParameters<OWLClassA> loadingParameters;
 
@@ -111,7 +112,7 @@ public class ObjectOntologyMapperTest {
         when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
         when(uowMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         this.loadingParameters = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor);
-        final MetamodelMocks mocks = new MetamodelMocks();
+        this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etAMock = mocks.forOwlClassA().entityType();
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, etAMock)).thenReturn(axiomDescriptor);
@@ -442,14 +443,7 @@ public class ObjectOntologyMapperTest {
         a.setStringAttribute("string");
         final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
         d.setOwlClassA(a);
-        when(entityDeconstructorMock
-                .mapEntityToAxioms(d.getUri(), d, metamodelMock.entity(OWLClassD.class), aDescriptor))
-                .then(invocationOnMock -> {
-                    final Assertion assertion =
-                            Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
-                    mapper.registerPendingAssertion(NamedResource.create(d.getUri()), assertion, a, null);
-                    return new AxiomValueGatherer(NamedResource.create(d.getUri()), null);
-                });
+        initDeconstructorMock(d, aDescriptor);
         mapper.persistEntity(d.getUri(), d, aDescriptor);
         a.setUri(Generators.createIndividualIdentifier());
         final NamedResource aIndividual = NamedResource.create(a.getUri());
@@ -465,6 +459,43 @@ public class ObjectOntologyMapperTest {
         assertEquals(URI.create(Vocabulary.P_HAS_A), assertion.getIdentifier());
         assertEquals(1, assertionDesc.getAssertionValues(assertion).size());
         assertEquals(aIndividual, assertionDesc.getAssertionValues(assertion).get(0).getValue());
+    }
+
+    private void initDeconstructorMock(OWLClassD d, Descriptor descriptor) {
+        when(entityDeconstructorMock
+                .mapEntityToAxioms(d.getUri(), d, metamodelMock.entity(OWLClassD.class), descriptor))
+                .then(invocationOnMock -> {
+                    final Assertion assertion =
+                            Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+                    final Descriptor attDescriptor =
+                            descriptor.getAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt());
+                    mapper.registerPendingAssertion(NamedResource.create(d.getUri()), assertion, d.getOwlClassA(),
+                            attDescriptor.getContext());
+                    return new AxiomValueGatherer(NamedResource.create(d.getUri()), descriptor.getContext());
+                });
+    }
+
+    @Test
+    public void persistPersistsPendingAssertionIntoCorrectContext() throws Exception {
+        final OWLClassA a = new OWLClassA();
+        final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
+        final Descriptor descriptor = new EntityDescriptor();
+        final Descriptor aDescriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
+        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        d.setOwlClassA(a);
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+        initDeconstructorMock(d, descriptor);
+        mapper.persistEntity(d.getUri(), d, descriptor);
+        a.setUri(Generators.createIndividualIdentifier());
+        final NamedResource aIndividual = NamedResource.create(a.getUri());
+        when(entityDeconstructorMock.mapEntityToAxioms(a.getUri(), a, etAMock, aDescriptor))
+                .thenReturn(new AxiomValueGatherer(aIndividual, null));
+        mapper.persistEntity(a.getUri(), a, aDescriptor);
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock, times(3)).persist(captor.capture());
+        final AxiomValueDescriptor assertionDesc = captor.getAllValues().get(2);
+        assertEquals(aDescriptor.getContext(), assertionDesc.getAssertionContext(assertion));
     }
 
     @Test

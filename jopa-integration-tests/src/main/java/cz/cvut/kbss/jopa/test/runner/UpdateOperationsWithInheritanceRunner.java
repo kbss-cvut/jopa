@@ -54,7 +54,7 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
     public void testUpdateObjectPropertyInMappedSuperclass() {
         this.em = getEntityManager("UpdateObjectPropertyInMappedSuperclass", true);
         persist(entityQ, entityA);
-        final OWLClassA entityA2 = new OWLClassA();
+        final OWLClassA entityA2 = new OWLClassA(Generators.generateUri());
         entityA2.setStringAttribute("entityA2StringAttribute");
 
         entityQ.setOwlClassA(entityA2);
