@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -169,7 +167,7 @@ public class UnitOfWorkTest {
         final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertSame(clone, res);
         // Had to cast, otherwise ajc refused to compile this
-        verify(storageMock, never()).find(any(LoadingParameters.class));
+        verify(storageMock, never()).find(any());
     }
 
     @Test
@@ -834,7 +832,7 @@ public class UnitOfWorkTest {
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
                 .thenReturn(entityA);
-        OWLClassA result = uow.mergeDetached(clone, descriptor);
+        uow.mergeDetached(clone, descriptor);
 
         assertTrue(uow.hasChanges());
         final UnitOfWorkChangeSet changeSet = uow.getUowChangeSet();
@@ -949,5 +947,12 @@ public class UnitOfWorkTest {
         assertEquals(entityA.getStringAttribute(), merged.getStringAttribute());
         uow.commit();
         verify(cacheManagerMock).add(entityA.getUri(), original, descriptor);
+    }
+
+    @Test
+    public void clearResetsCloneBuilder() {
+        uow.registerExistingObject(entityA, descriptor);
+        uow.clear();
+        verify(cloneBuilder).reset();
     }
 }

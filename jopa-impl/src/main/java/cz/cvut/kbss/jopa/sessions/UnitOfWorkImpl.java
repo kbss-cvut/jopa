@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -229,10 +227,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
+        cloneBuilder.reset();
+        this.repoMap = new RepositoryMap();
+        repoMap.initDescriptors();
+        this.uowChangeSet = null;
     }
 
     private void detachAllManagedInstances() {
-        cloneMapping.keySet().forEach(this::unregisterObjectFromPersistenceContext);
+        cloneMapping.keySet().forEach(instance -> {
+            removeIndirectCollections(instance);
+            deregisterEntityFromPersistenceContext(instance, this);
+        });
     }
 
     @Override
@@ -276,23 +281,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * Clean up after the commit.
      */
     private void postCommit() {
-        // Remove indirect collections from clones
-        cloneMapping.keySet().forEach(this::removeIndirectCollections);
-        getNewObjectsCloneToOriginal().clear();
-        getNewObjectsOriginalToClone().clear();
-        newObjectsKeyToClone.clear();
-        getDeletedObjects().clear();
-        cloneToOriginals.clear();
-        cloneMapping.clear();
-        keysToClones.clear();
-        this.hasChanges = false;
-        this.hasDeleted = false;
-        this.hasNew = false;
+        clear();
         this.inCommit = false;
-        cloneBuilder.reset();
-        this.repoMap = new RepositoryMap();
-        repoMap.initDescriptors();
-        this.uowChangeSet = null;
         if (shouldClearCacheAfterCommit) {
             cacheManager.evictAll();
             this.shouldReleaseAfterCommit = true;
