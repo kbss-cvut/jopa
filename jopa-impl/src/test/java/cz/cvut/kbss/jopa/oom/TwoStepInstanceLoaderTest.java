@@ -57,7 +57,7 @@ public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        this.loadingParameters = new LoadingParameters<>(OWLClassS.class, ENTITY_PK, descriptor);
+        this.loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER, descriptor);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         when(connectionMock.types()).thenReturn(typesMock);
@@ -90,7 +90,7 @@ public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         final Collection<Axiom<?>> axioms = new HashSet<>(types);
         when(connectionMock.find(axiomDescriptor)).thenReturn(axioms);
         when(entityConstructorMock
-                .reconstructEntity(ENTITY_PK, metamodelMock.entity(OWLClassR.class), descriptor, axioms))
+                .reconstructEntity(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, axioms))
                 .thenReturn(entityR);
 
         final OWLClassS result = instanceLoader.loadEntity(loadingParameters);

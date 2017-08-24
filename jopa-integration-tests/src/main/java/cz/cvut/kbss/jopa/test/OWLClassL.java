@@ -52,6 +52,13 @@ public class OWLClassL {
     })
     private OWLClassA singleA;
 
+    public OWLClassL() {
+    }
+
+    public OWLClassL(URI uri) {
+        this.uri = uri;
+    }
+
     public URI getUri() {
         return uri;
     }

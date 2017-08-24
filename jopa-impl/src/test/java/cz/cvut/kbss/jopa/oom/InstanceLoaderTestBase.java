@@ -30,8 +30,8 @@ import java.net.URI;
 
 public abstract class InstanceLoaderTestBase {
 
-    static final URI ENTITY_PK = Generators.createIndividualIdentifier();
-    static final NamedResource INDIVIDUAL = NamedResource.create(ENTITY_PK);
+    static final URI IDENTIFIER = Generators.createIndividualIdentifier();
+    static final NamedResource INDIVIDUAL = NamedResource.create(IDENTIFIER);
 
     static Descriptor descriptor;
     static AxiomDescriptor axiomDescriptor;
@@ -58,6 +58,6 @@ public abstract class InstanceLoaderTestBase {
 
     static void staticSetup() {
         descriptor = new EntityDescriptor();
-        axiomDescriptor = new AxiomDescriptor(NamedResource.create(ENTITY_PK));
+        axiomDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
     }
 }

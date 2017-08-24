@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -23,13 +21,14 @@ public final class LoadingParameters<T> {
     private final Class<T> cls;
     private final URI identifier;
     private final Descriptor descriptor;
-    private final boolean forceLoad;
+    private final boolean forceEager;
+    private boolean bypassCache;
 
     public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
         this.cls = cls;
         this.identifier = identifier;
         this.descriptor = descriptor;
-        this.forceLoad = false;
+        this.forceEager = false;
         assert paramsLoaded();
     }
 
@@ -37,11 +36,11 @@ public final class LoadingParameters<T> {
         return cls != null && identifier != null && descriptor != null;
     }
 
-    public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor, boolean forceLoad) {
+    public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor, boolean forceEager) {
         this.cls = cls;
         this.identifier = identifier;
         this.descriptor = descriptor;
-        this.forceLoad = forceLoad;
+        this.forceEager = forceEager;
         assert paramsLoaded();
     }
 
@@ -57,22 +56,30 @@ public final class LoadingParameters<T> {
         return descriptor;
     }
 
-    public boolean isForceLoad() {
-        return forceLoad;
+    public boolean isForceEager() {
+        return forceEager;
+    }
+
+    public boolean shouldBypassCache() {
+        return bypassCache;
+    }
+
+    public void bypassCache() {
+        this.bypassCache = true;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof LoadingParameters)) return false;
 
-        LoadingParameters that = (LoadingParameters) o;
+        LoadingParameters<?> that = (LoadingParameters<?>) o;
 
-        if (forceLoad != that.forceLoad) return false;
+        if (forceEager != that.forceEager) return false;
+        if (bypassCache != that.bypassCache) return false;
         if (!cls.equals(that.cls)) return false;
-        if (!descriptor.equals(that.descriptor)) return false;
-        return identifier.equals(that.identifier);
-
+        if (!identifier.equals(that.identifier)) return false;
+        return descriptor.equals(that.descriptor);
     }
 
     @Override
@@ -80,7 +87,8 @@ public final class LoadingParameters<T> {
         int result = cls.hashCode();
         result = 31 * result + identifier.hashCode();
         result = 31 * result + descriptor.hashCode();
-        result = 31 * result + (forceLoad ? 1 : 0);
+        result = 31 * result + (forceEager ? 1 : 0);
+        result = 31 * result + (bypassCache ? 1 : 0);
         return result;
     }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -23,6 +21,7 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -1075,7 +1074,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     @Test
     public void updatesKeepsPendingAssertionPluralAttribute() throws Exception {
         this.em = getEntityManager("updatesKeepsPendingAssertionPluralAttribute", true);
-        final OWLClassL entityL = new OWLClassL();
+        final OWLClassL entityL = new OWLClassL(Generators.generateUri());
         entityL.setSet(new HashSet<>());
         entityL.getSet().add(entityA2);
         entityL.setSimpleList(Collections.singletonList(entityA2));
@@ -1090,5 +1089,61 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         thrown.expectCause(isA(UnpersistedChangeException.class));
         thrown.expectMessage(containsString(entityA.toString()));
         em.getTransaction().commit();
+    }
+
+    @Test
+    public void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributePreviouslyMerged() {
+        this.em = getEntityManager("mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributePreviouslyMerged",
+                true);
+        persist(entityD, entityA);
+
+        final String newString = "updatedString";
+        final OWLClassD dUpdate = new OWLClassD(entityD.getUri());
+        final OWLClassA aUpdate = new OWLClassA(entityA.getUri());
+        aUpdate.setStringAttribute(newString);
+        aUpdate.setTypes(new HashSet<>(entityA.getTypes()));
+        dUpdate.setOwlClassA(aUpdate);
+        em.clear();
+        em.getTransaction().begin();
+        em.merge(aUpdate);
+        em.merge(dUpdate);
+        em.getTransaction().commit();
+
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        assertEquals(newString, result.getOwlClassA().getStringAttribute());
+    }
+
+    @Ignore
+    @Test
+    public void mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache() {
+        this.em = getEntityManager("mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache", true);
+        final OWLClassL entityL = new OWLClassL(Generators.generateUri());
+        entityL.setSet(new HashSet<>());
+        entityL.getSet().add(entityA);
+        entityL.getSet().add(entityA2);
+        entityL.setSimpleList(Collections.singletonList(entityA2));
+        entityL.setSingleA(entityA2);
+        persist(entityL, entityA, entityA2);
+
+        final OWLClassL toUpdate = new OWLClassL(entityL.getUri());
+        toUpdate.setSet(new HashSet<>(entityL.getSet()));
+        toUpdate.getSet().remove(entityA2);
+        toUpdate.setSimpleList(Collections.singletonList(entityA2));
+        toUpdate.setSingleA(entityA2);
+        em.getTransaction().begin();
+        final OWLClassL original = em.find(OWLClassL.class, entityL.getUri());
+        for (OWLClassA a : original.getSet()) {
+            if (a.getUri().equals(entityA2.getUri())) {
+                original.getSet().remove(a);
+                break;
+            }
+        }
+        assertEquals(2, original.getSet().size());
+        toUpdate.getSet().forEach(a -> em.merge(a));
+        em.merge(toUpdate);
+        em.getTransaction().commit();
+
+        final OWLClassL result = em.find(OWLClassL.class, entityL.getUri());
+        assertEquals(1, result.getSet().size());
     }
 }

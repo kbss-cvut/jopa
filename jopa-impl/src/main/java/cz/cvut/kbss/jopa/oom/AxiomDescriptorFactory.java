@@ -45,7 +45,7 @@ class AxiomDescriptorFactory {
         addForProperties(loadingParams, et, descriptor);
         this.puLanguage = configuration.get(JOPAPersistenceProperties.LANG);
         for (Attribute<?, ?> att : et.getAttributes()) {
-            if (!shouldLoad(att.getFetchType(), loadingParams.isForceLoad())) {
+            if (!shouldLoad(att.getFetchType(), loadingParams.isForceEager())) {
                 continue;
             }
             final Assertion a = createAssertion(att, loadingParams.getDescriptor().getAttributeDescriptor(att));
@@ -56,7 +56,7 @@ class AxiomDescriptorFactory {
 
     private void addForTypes(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final TypesSpecification<?, ?> types = et.getTypes();
-        if (types != null && shouldLoad(types.getFetchType(), loadingParams.isForceLoad())) {
+        if (types != null && shouldLoad(types.getFetchType(), loadingParams.isForceEager())) {
             final Assertion typesAssertion = Assertion.createClassAssertion(types.isInferred());
             addAssertionToDescriptor(loadingParams.getDescriptor(), types, descriptor, typesAssertion);
         }
@@ -77,7 +77,7 @@ class AxiomDescriptorFactory {
 
     private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final PropertiesSpecification<?, ?, ?, ?> props = et.getProperties();
-        if (props != null && shouldLoad(props.getFetchType(), loadingParams.isForceLoad())) {
+        if (props != null && shouldLoad(props.getFetchType(), loadingParams.isForceEager())) {
             final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(props.isInferred());
             addAssertionToDescriptor(loadingParams.getDescriptor(), props, descriptor, propsAssertion);
         }

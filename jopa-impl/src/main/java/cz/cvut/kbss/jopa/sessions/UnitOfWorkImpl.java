@@ -582,7 +582,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final Object iri = getIdentifier(entity);
         final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
         final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
-        T original = storage.find(new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true));
+        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
+        params.bypassCache();
+        T original = storage.find(params);
         assert original != null;
 
         final Object clone = registerExistingObject(original, descriptor);

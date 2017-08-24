@@ -668,8 +668,7 @@ public class UnitOfWorkTest {
         final Iterator<String> it = orig.getTypes().iterator();
         it.next();
         it.remove();
-        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
-                .thenReturn(orig);
+        when(storageMock.find(any())).thenReturn(orig);
 
         final OWLClassA res = uow.mergeDetached(entityA, descriptor);
         assertNotNull(res);
@@ -830,8 +829,7 @@ public class UnitOfWorkTest {
         clone.setStringAttribute("changedStringAttribute");
         clone.setTypes(Collections.emptySet());
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
-                .thenReturn(entityA);
+        when(storageMock.find(any())).thenReturn(entityA);
         uow.mergeDetached(clone, descriptor);
 
         assertTrue(uow.hasChanges());
@@ -901,8 +899,10 @@ public class UnitOfWorkTest {
         entityA.setStringAttribute("differentString");
         entityA.getTypes().add(Vocabulary.CLASS_BASE + "addedType");
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(), descriptor, true)))
-                .thenReturn(dOriginal);
+        final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
+                descriptor, true);
+        dParams.bypassCache();
+        when(storageMock.find(dParams)).thenReturn(dOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);
         assertEquals(aOriginal.getStringAttribute(), result.getOwlClassA().getStringAttribute());
@@ -915,8 +915,10 @@ public class UnitOfWorkTest {
         final OWLClassD dOriginal = new OWLClassD(entityD.getUri());
         dOriginal.setOwlClassA(aOriginal);
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(), descriptor, true)))
-                .thenReturn(dOriginal);
+        final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
+                descriptor, true);
+        dParams.bypassCache();
+        when(storageMock.find(dParams)).thenReturn(dOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);
         assertEquals(entityA.getUri(), result.getOwlClassA().getUri());
@@ -939,8 +941,7 @@ public class UnitOfWorkTest {
         final OWLClassA original = new OWLClassA(entityA.getUri());
         original.setStringAttribute("originalStringAttribute");
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
-                .thenReturn(original);
+        when(storageMock.find(any())).thenReturn(original);
 
         final OWLClassA merged = uow.mergeDetached(entityA, descriptor);
         assertNotNull(merged);
