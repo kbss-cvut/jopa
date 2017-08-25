@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,12 +14,8 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
@@ -27,18 +23,16 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
+import java.lang.reflect.Field;
+import java.net.URI;
+
 class EntityDeconstructor {
 
     private final EntityMappingHelper mapper;
-    private CascadeResolver cascadeResolver;
     private ReferenceSavingResolver referenceSavingResolver;
 
     EntityDeconstructor(ObjectOntologyMapperImpl mapper) {
         this.mapper = mapper;
-    }
-
-    void setCascadeResolver(CascadeResolver cascadeResolver) {
-        this.cascadeResolver = cascadeResolver;
     }
 
     void setReferenceSavingResolver(ReferenceSavingResolver referenceSavingResolver) {
@@ -80,7 +74,6 @@ class EntityDeconstructor {
                                    final AxiomValueGatherer valueBuilder) throws IllegalAccessException {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
-        fs.setCascadeResolver(cascadeResolver);
         fs.setReferenceSavingResolver(referenceSavingResolver);
         fs.buildAxiomValuesFromInstance(entity, valueBuilder);
     }

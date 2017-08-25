@@ -61,9 +61,6 @@ public class EntityDeconstructorTest {
     @Mock
     private ObjectOntologyMapperImpl oomMock;
 
-    @Mock
-    private CascadeResolver cascadeResolverMock;
-
     private EntityDeconstructor entityBreaker;
 
     @BeforeClass
@@ -102,7 +99,6 @@ public class EntityDeconstructorTest {
         entityB.setProperties(null);
         entityE.setUri(null);
         this.entityBreaker = new EntityDeconstructor(oomMock);
-        entityBreaker.setCascadeResolver(cascadeResolverMock);
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(oomMock));
     }
 

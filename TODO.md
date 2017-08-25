@@ -45,4 +45,5 @@
     - [x] Remove property assertion from pending persist and persist it when the target is persisted
     - [x] Remove property assertion from pending persist when the original persist is cancelled
     - [x] Remove property assertion from pending persist when the attribute is set to another value
-    - [ ] Handling of simple and reference lists
+    - [ ] Handling of simple lists
+    - [ ] Handling of reference lists

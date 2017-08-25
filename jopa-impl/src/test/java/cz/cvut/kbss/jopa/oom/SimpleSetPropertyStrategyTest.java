@@ -53,9 +53,6 @@ public class SimpleSetPropertyStrategyTest {
     private EntityMappingHelper mapperMock;
 
     @Mock
-    private CascadeResolver cascadeResolverMock;
-
-    @Mock
     private ReferenceSavingResolver referenceResolverMock;
 
     private AxiomValueGatherer gatherer;
@@ -76,7 +73,6 @@ public class SimpleSetPropertyStrategyTest {
     public void extractsValuesFromInstance() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
-        strategy.setCascadeResolver(cascadeResolverMock);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet(true));
@@ -107,7 +103,6 @@ public class SimpleSetPropertyStrategyTest {
     public void extractValuesSkipsNullItem() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
-        strategy.setCascadeResolver(cascadeResolverMock);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet(true));
@@ -136,7 +131,6 @@ public class SimpleSetPropertyStrategyTest {
     public void extractValuesFromInstanceWhenSetIsNullCreatesNullValueAxiom() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
-        strategy.setCascadeResolver(cascadeResolverMock);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(null);
@@ -237,7 +231,6 @@ public class SimpleSetPropertyStrategyTest {
     public void extractValuesRegistersPendingChangesForInstancesWithNullIdentifier() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
-        strategy.setCascadeResolver(cascadeResolverMock);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet(false));

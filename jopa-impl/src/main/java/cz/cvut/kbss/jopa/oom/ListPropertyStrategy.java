@@ -25,6 +25,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValueDescriptor, X>
         extends PluralObjectPropertyStrategy<X> {
@@ -50,7 +51,7 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
             return;
         }
         if (IdentifierTransformer.isValidIdentifierType(pluralAtt.getBindableJavaType())) {
-            list.stream().filter(item -> item != null)
+            list.stream().filter(Objects::nonNull)
                 .forEach(item -> listDescriptor.addValue(NamedResource.create(IdentifierTransformer.valueAsUri(item))));
         } else {
             final Class<K> elemType = (Class<K>) listAttribute.getBindableJavaType();

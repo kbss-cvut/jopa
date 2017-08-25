@@ -25,7 +25,6 @@ import java.util.Objects;
 /**
  * Represents values of a simple sequence.
  *
- * @author kidney
  * @see SimpleListDescriptorImpl
  */
 public class SimpleListValueDescriptor extends SimpleListDescriptorImpl implements
@@ -65,10 +64,7 @@ public class SimpleListValueDescriptor extends SimpleListDescriptorImpl implemen
         if (obj == null || getClass() != obj.getClass())
             return false;
         SimpleListValueDescriptor other = (SimpleListValueDescriptor) obj;
-        if (!descriptor.equals(other.descriptor)) {
-            return false;
-        }
-        return values.equals(other.values);
+        return descriptor.equals(other.descriptor) && values.equals(other.values);
     }
 
     @Override

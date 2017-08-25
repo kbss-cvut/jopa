@@ -31,7 +31,6 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     final Descriptor attributeDescriptor;
     final EntityMappingHelper mapper;
     ReferenceSavingResolver referenceSavingResolver;
-    CascadeResolver cascadeResolver;
 
     FieldStrategy(EntityType<X> et, T att, Descriptor attributeDescriptor, EntityMappingHelper mapper) {
         this.et = et;
@@ -106,10 +105,6 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
                 throw new NotYetImplementedException(
                         "Unsupported list attribute sequence type " + attribute.getSequenceType());
         }
-    }
-
-    void setCascadeResolver(CascadeResolver resolver) {
-        this.cascadeResolver = resolver;
     }
 
     void setReferenceSavingResolver(ReferenceSavingResolver referenceSavingResolver) {
