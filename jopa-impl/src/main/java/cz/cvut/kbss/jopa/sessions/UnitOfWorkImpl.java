@@ -663,7 +663,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private void registerClone(Object clone, Object original, Descriptor descriptor) {
         cloneMapping.put(clone, clone);
         cloneToOriginals.put(clone, original);
-        final Object identifier = EntityPropertiesUtils.getPrimaryKey(clone, getMetamodel());
+        final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
         registerEntityWithPersistenceContext(clone, this);
         registerEntityWithOntologyContext(descriptor, clone);
@@ -806,7 +806,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         cloneMapping.remove(object);
         final Object original = cloneToOriginals.remove(object);
-        keysToClones.remove(EntityPropertiesUtils.getPrimaryKey(object, getMetamodel()));
+        keysToClones.remove(EntityPropertiesUtils.getIdentifier(object, getMetamodel()));
 
         getDeletedObjects().remove(object);
         if (hasNew) {
@@ -1067,7 +1067,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private Object getIdentifier(Object entity) {
         assert entity != null;
-        return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
+        return EntityPropertiesUtils.getIdentifier(entity, getMetamodel());
     }
 
     private void unregisterEntityFromOntologyContext(Object entity) {

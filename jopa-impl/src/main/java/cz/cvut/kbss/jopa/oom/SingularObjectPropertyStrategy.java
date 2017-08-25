@@ -90,7 +90,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
         final EntityType<? super V> valEt = (EntityType<? super V>) mapper.getEntityType(attribute.getJavaType());
         assert valEt != null;
 
-        final URI id = EntityPropertiesUtils.getPrimaryKey(value, valEt);
+        final URI id = EntityPropertiesUtils.getIdentifier(value, valEt);
         return id != null ? new Value<>(NamedResource.create(id)) : Value.nullValue();
     }
 

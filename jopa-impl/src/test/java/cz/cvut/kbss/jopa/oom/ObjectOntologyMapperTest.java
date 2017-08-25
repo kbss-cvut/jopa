@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -31,10 +32,7 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.Types;
-import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
@@ -58,7 +56,7 @@ import static org.mockito.Mockito.*;
 
 public class ObjectOntologyMapperTest {
 
-    private static final URI ENTITY_PK = Generators.createIndividualIdentifier();
+    private static final URI IDENTIFIER = Generators.createIndividualIdentifier();
 
     private static OWLClassA entityA;
     private static Descriptor aDescriptor;
@@ -96,13 +94,13 @@ public class ObjectOntologyMapperTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         entityA = new OWLClassA();
-        entityA.setUri(ENTITY_PK);
+        entityA.setUri(IDENTIFIER);
         entityA.setStringAttribute("SomeStringAttribute");
         aTypes = new HashSet<>();
         aTypes.add("http://krizik.felk.cvut.cz/ontologies/entityU");
         aTypes.add("http://krizik.felk.cvut.cz/ontologies/entityV");
         aDescriptor = new EntityDescriptor();
-        axiomDescriptor = new AxiomDescriptor(NamedResource.create(ENTITY_PK));
+        axiomDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
     }
 
     @Before
@@ -111,13 +109,13 @@ public class ObjectOntologyMapperTest {
         when(uowMock.getMetamodel()).thenReturn(metamodelMock);
         when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
         when(uowMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
-        this.loadingParameters = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor);
+        this.loadingParameters = new LoadingParameters<>(OWLClassA.class, IDENTIFIER, aDescriptor);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etAMock = mocks.forOwlClassA().entityType();
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, etAMock)).thenReturn(axiomDescriptor);
         when(
-                descriptorFactoryMock.createForFieldLoading(ENTITY_PK, OWLClassA.getTypesField(),
+                descriptorFactoryMock.createForFieldLoading(IDENTIFIER, OWLClassA.getTypesField(),
                         aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
         this.mapper = new ObjectOntologyMapperImpl(uowMock, connectionMock);
@@ -134,7 +132,7 @@ public class ObjectOntologyMapperTest {
 
     private Collection<Axiom<?>> getAxiomsForEntityA() {
         final List<Axiom<?>> res = new ArrayList<>();
-        final NamedResource identifier = NamedResource.create(ENTITY_PK);
+        final NamedResource identifier = NamedResource.create(IDENTIFIER);
         res.add(new AxiomImpl<>(identifier, Assertion.createClassAssertion(false),
                 new Value<Object>(NamedResource.create(Vocabulary.c_OwlClassA))));
         res.add(new AxiomImpl<>(identifier,
@@ -195,9 +193,9 @@ public class ObjectOntologyMapperTest {
     @Test
     public void testPersistEntity() throws Exception {
         final AxiomValueGatherer madMock = mock(AxiomValueGatherer.class);
-        when(entityDeconstructorMock.mapEntityToAxioms(ENTITY_PK, entityA, etAMock, aDescriptor))
+        when(entityDeconstructorMock.mapEntityToAxioms(IDENTIFIER, entityA, etAMock, aDescriptor))
                 .thenReturn(madMock);
-        mapper.persistEntity(ENTITY_PK, entityA, aDescriptor);
+        mapper.persistEntity(IDENTIFIER, entityA, aDescriptor);
         verify(madMock).persist(connectionMock);
     }
 
@@ -219,19 +217,19 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void testGetEntityFromCacheOrOntologyFromCache() {
-        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, aDescriptor)).thenReturn(Boolean.TRUE);
-        when(cacheMock.get(OWLClassA.class, ENTITY_PK, aDescriptor)).thenReturn(entityA);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK, aDescriptor);
+        when(cacheMock.contains(OWLClassA.class, IDENTIFIER, aDescriptor)).thenReturn(Boolean.TRUE);
+        when(cacheMock.get(OWLClassA.class, IDENTIFIER, aDescriptor)).thenReturn(entityA);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, aDescriptor);
         assertNotNull(res);
         assertSame(entityA, res);
-        verify(cacheMock).get(OWLClassA.class, ENTITY_PK, aDescriptor);
+        verify(cacheMock).get(OWLClassA.class, IDENTIFIER, aDescriptor);
     }
 
     @Test
     public void testGetEntityFromCacheOrOntologyFromRegisteredInstances() {
-        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.FALSE);
-        mapper.registerInstance(ENTITY_PK, entityA, null);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK,
+        when(cacheMock.contains(OWLClassA.class, IDENTIFIER, null)).thenReturn(Boolean.FALSE);
+        mapper.registerInstance(IDENTIFIER, entityA, null);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER,
                 aDescriptor);
         assertNotNull(res);
         assertSame(entityA, res);
@@ -239,14 +237,14 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void getEntityFromCacheOrOntologyLoadsEntityWhenItIsNotInCache() throws Exception {
-        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.FALSE);
+        when(cacheMock.contains(OWLClassA.class, IDENTIFIER, null)).thenReturn(Boolean.FALSE);
         final Field instanceLoaderField = ObjectOntologyMapperImpl.class.getDeclaredField("defaultInstanceLoader");
         instanceLoaderField.setAccessible(true);
         EntityInstanceLoader loader = (EntityInstanceLoader) instanceLoaderField.get(mapper);
         loader = spy(loader);
         instanceLoaderField.set(mapper, loader);
         doReturn(entityA).when(loader).loadEntity(loadingParameters);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK, aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, aDescriptor);
         assertSame(entityA, res);
         verify(loader).loadEntity(loadingParameters);
     }
@@ -257,16 +255,16 @@ public class ObjectOntologyMapperTest {
         final Field regField = mapper.getClass().getDeclaredField("instanceRegistry");
         regField.setAccessible(true);
         final InstanceRegistry reg = (InstanceRegistry) regField.get(mapper);
-        assertFalse(reg.containsInstance(ENTITY_PK, context));
-        mapper.registerInstance(ENTITY_PK, entityA, context);
-        assertTrue(reg.containsInstance(ENTITY_PK, context));
+        assertFalse(reg.containsInstance(IDENTIFIER, context));
+        mapper.registerInstance(IDENTIFIER, entityA, context);
+        assertTrue(reg.containsInstance(IDENTIFIER, context));
     }
 
     @Test
     public void removesEntityWithEmptyDescriptor() throws Exception {
-        final LoadingParameters<OWLClassA> p = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor, true);
+        final LoadingParameters<OWLClassA> p = new LoadingParameters<>(OWLClassA.class, IDENTIFIER, aDescriptor, true);
         when(descriptorFactoryMock.createForEntityLoading(p, etAMock)).thenReturn(axiomDescriptor);
-        mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
+        mapper.removeEntity(IDENTIFIER, OWLClassA.class, aDescriptor);
         verify(descriptorFactoryMock).createForEntityLoading(p, etAMock);
         verify(connectionMock).remove(axiomDescriptor);
     }
@@ -274,18 +272,18 @@ public class ObjectOntologyMapperTest {
     @Test(expected = StorageAccessException.class)
     public void throwsStorageAccessWhenRemovingEntity() throws Exception {
         doThrow(OntoDriverException.class).when(connectionMock).remove(any(AxiomDescriptor.class));
-        mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
+        mapper.removeEntity(IDENTIFIER, OWLClassA.class, aDescriptor);
     }
 
     @Test
     public void updatesFieldValueInTheOntology() throws Exception {
         final AxiomValueGatherer axiomBuilderMock = mock(AxiomValueGatherer.class);
         when(
-                entityDeconstructorMock.mapFieldToAxioms(ENTITY_PK, entityA,
+                entityDeconstructorMock.mapFieldToAxioms(IDENTIFIER, entityA,
                         OWLClassA.getStrAttField(), etAMock, aDescriptor)).thenReturn(
                 axiomBuilderMock);
         mapper.updateFieldValue(entityA, OWLClassA.getStrAttField(), aDescriptor);
-        verify(entityDeconstructorMock).mapFieldToAxioms(ENTITY_PK, entityA,
+        verify(entityDeconstructorMock).mapFieldToAxioms(IDENTIFIER, entityA,
                 OWLClassA.getStrAttField(), etAMock, aDescriptor);
         verify(axiomBuilderMock).update(connectionMock);
     }
@@ -293,9 +291,9 @@ public class ObjectOntologyMapperTest {
     @Test
     public void removeEntityCreatesDescriptorForRemovalOfAllEntityAttributes() throws Exception {
         when(descriptorFactoryMock
-                .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor, true),
+                .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, aDescriptor, true),
                         etAMock)).thenReturn(axiomDescriptor);
-        mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
+        mapper.removeEntity(IDENTIFIER, OWLClassA.class, aDescriptor);
         final ArgumentCaptor<LoadingParameters> captor = ArgumentCaptor.forClass(LoadingParameters.class);
         verify(descriptorFactoryMock).createForEntityLoading(captor.capture(), eq(etAMock));
         final LoadingParameters p = captor.getValue();
@@ -309,9 +307,9 @@ public class ObjectOntologyMapperTest {
         thrown.expect(StorageAccessException.class);
         thrown.expectMessage(message);
 
-        mapper.containsEntity(OWLClassA.class, ENTITY_PK, aDescriptor);
+        mapper.containsEntity(OWLClassA.class, IDENTIFIER, aDescriptor);
         verify(connectionMock).contains(
-                new AxiomImpl<>(NamedResource.create(ENTITY_PK), Assertion.createClassAssertion(false),
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
                         new Value<>(NamedResource.create(OWLClassA.getClassIri()))), null);
     }
 
@@ -352,7 +350,7 @@ public class ObjectOntologyMapperTest {
         twoStepLoader = spy(twoStepLoader);
         twoStepLoaderField.set(mapper, twoStepLoader);
         final OWLClassS entity = new OWLClassR();
-        final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, ENTITY_PK,
+        final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER,
                 aDescriptor);
         doReturn(entity).when(twoStepLoader).loadEntity(loadingParameters);
 
@@ -363,33 +361,33 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void loadEntityLoadsInstanceFromCacheWhenItIsPresentThere() throws Exception {
-        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, loadingParameters.getDescriptor())).thenReturn(true);
-        when(cacheMock.get(OWLClassA.class, ENTITY_PK, loadingParameters.getDescriptor())).thenReturn(entityA);
+        when(cacheMock.contains(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor())).thenReturn(true);
+        when(cacheMock.get(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor())).thenReturn(entityA);
 
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertSame(entityA, result);
-        verify(cacheMock).get(OWLClassA.class, ENTITY_PK, loadingParameters.getDescriptor());
+        verify(cacheMock).get(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor());
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
 
     @Test
     public void loadEntityDeterminesConcreteEntityTypeAndLoadsItFromCacheWhenItIsPresentThere() throws Exception {
         final OWLClassR entity = new OWLClassR();
-        entity.setUri(ENTITY_PK);
-        when(cacheMock.contains(OWLClassR.class, ENTITY_PK, aDescriptor)).thenReturn(true);
-        when(cacheMock.get(OWLClassR.class, ENTITY_PK, aDescriptor)).thenReturn(entity);
+        entity.setUri(IDENTIFIER);
+        when(cacheMock.contains(OWLClassR.class, IDENTIFIER, aDescriptor)).thenReturn(true);
+        when(cacheMock.get(OWLClassR.class, IDENTIFIER, aDescriptor)).thenReturn(entity);
         final Types typesMock = mock(Types.class);
-        final NamedResource individual = NamedResource.create(ENTITY_PK);
+        final NamedResource individual = NamedResource.create(IDENTIFIER);
         final URI typeUri = URI.create(Vocabulary.C_OWLClassR);
-        when(typesMock.getTypes(NamedResource.create(ENTITY_PK), null, false)).thenReturn(Collections.singleton(
+        when(typesMock.getTypes(NamedResource.create(IDENTIFIER), null, false)).thenReturn(Collections.singleton(
                 new AxiomImpl<>(individual, Assertion.createClassAssertion(false), new Value<>(typeUri))));
         when(connectionMock.types()).thenReturn(typesMock);
 
-        final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, ENTITY_PK,
+        final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER,
                 aDescriptor);
         final OWLClassS result = mapper.loadEntity(loadingParameters);
         assertSame(entity, result);
-        verify(cacheMock).get(OWLClassR.class, ENTITY_PK, aDescriptor);
+        verify(cacheMock).get(OWLClassR.class, IDENTIFIER, aDescriptor);
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
 
@@ -399,7 +397,7 @@ public class ObjectOntologyMapperTest {
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertNotNull(result);
-        verify(cacheMock).add(ENTITY_PK, result, loadingParameters.getDescriptor());
+        verify(cacheMock).add(IDENTIFIER, result, loadingParameters.getDescriptor());
     }
 
     @Test
@@ -418,7 +416,7 @@ public class ObjectOntologyMapperTest {
         final OWLClassD result = mapper.loadEntity(new LoadingParameters<>(OWLClassD.class, identifier, aDescriptor));
         assertNotNull(result);
         verify(cacheMock).add(identifier, result, aDescriptor);
-        verify(cacheMock).add(ENTITY_PK, result.getOwlClassA(), aDescriptor);
+        verify(cacheMock).add(IDENTIFIER, result.getOwlClassA(), aDescriptor);
     }
 
     private Collection<Axiom<?>> axiomsForD(URI identifier) {
@@ -427,7 +425,7 @@ public class ObjectOntologyMapperTest {
         axioms.add(new AxiomImpl<>(id, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Vocabulary.c_OwlClassD))));
         axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false),
-                new Value<Object>(NamedResource.create(ENTITY_PK))));
+                new Value<Object>(NamedResource.create(IDENTIFIER))));
         return axioms;
     }
 
@@ -514,46 +512,92 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void removeEntityRemovesPendingReferenceWhenOwnerIsRemoved() throws Exception {
-        final OWLClassD owner = new OWLClassD(ENTITY_PK);
+        final OWLClassD owner = new OWLClassD(IDENTIFIER);
         owner.setOwlClassA(entityA);
         final Assertion assertion =
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
         final Descriptor descriptor = new EntityDescriptor();
-        mapper.registerPendingAssertion(NamedResource.create(ENTITY_PK), assertion, entityA, null);
-        final AxiomDescriptor axiomDescriptor = new AxiomDescriptor(NamedResource.create(ENTITY_PK));
+        mapper.registerPendingAssertion(NamedResource.create(IDENTIFIER), assertion, entityA, null);
+        final AxiomDescriptor axiomDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
         axiomDescriptor.addAssertion(Assertion.createClassAssertion(false));
         axiomDescriptor.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false));
         when(descriptorFactoryMock
-                .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, ENTITY_PK, descriptor, true),
+                .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, IDENTIFIER, descriptor, true),
                         metamodelMock.entity(OWLClassD.class))).thenReturn(axiomDescriptor);
 
-        mapper.removeEntity(ENTITY_PK, OWLClassD.class, descriptor);
-        final PendingAssertionRegistry registry = getPendingAssertionRegistry();
+        mapper.removeEntity(IDENTIFIER, OWLClassD.class, descriptor);
+        final PendingReferenceRegistry registry = getPendingAssertionRegistry();
         assertFalse(registry.getPendingResources().contains(entityA));
     }
 
-    private PendingAssertionRegistry getPendingAssertionRegistry() throws Exception {
-        final Field field = mapper.getClass().getDeclaredField("pendingAssertions");
+    private PendingReferenceRegistry getPendingAssertionRegistry() throws Exception {
+        final Field field = mapper.getClass().getDeclaredField("pendingReferences");
         field.setAccessible(true);
-        return (PendingAssertionRegistry) field.get(mapper);
+        return (PendingReferenceRegistry) field.get(mapper);
     }
 
     @Test
     public void updateFieldValueRemovesPendingReference() throws Exception {
-        final OWLClassD owner = new OWLClassD(ENTITY_PK);
+        final OWLClassD owner = new OWLClassD(IDENTIFIER);
         owner.setOwlClassA(entityA);
         final Assertion assertion =
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
         final Descriptor descriptor = new EntityDescriptor();
-        mapper.registerPendingAssertion(NamedResource.create(ENTITY_PK), assertion, entityA, null);
+        mapper.registerPendingAssertion(NamedResource.create(IDENTIFIER), assertion, entityA, null);
         final OWLClassA differentA = new OWLClassA(Generators.createIndividualIdentifier());
         owner.setOwlClassA(differentA);
-        when(entityDeconstructorMock.mapFieldToAxioms(ENTITY_PK, owner, OWLClassD.getOwlClassAField(),
+        when(entityDeconstructorMock.mapFieldToAxioms(IDENTIFIER, owner, OWLClassD.getOwlClassAField(),
                 metamodelMock.entity(OWLClassD.class), descriptor))
-                .thenReturn(new AxiomValueGatherer(NamedResource.create(ENTITY_PK), null));
+                .thenReturn(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), null));
 
         mapper.updateFieldValue(owner, OWLClassD.getOwlClassAField(), descriptor);
-        final PendingAssertionRegistry registry = getPendingAssertionRegistry();
+        final PendingReferenceRegistry registry = getPendingAssertionRegistry();
         assertFalse(registry.getPendingResources().contains(entityA));
+    }
+
+    @Test
+    public void persistSavesPendingSimpleListContainingPersistedInstance() throws Exception {
+        final OWLClassC owner = new OWLClassC(IDENTIFIER);
+        owner.setSimpleList(Generators.generateInstances(5));
+        final OWLClassA pending = owner.getSimpleList().get(0);
+        final Assertion listProp =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_SIMPLE_LIST), false);
+        final Assertion nextProp =
+                Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
+        final SimpleListValueDescriptor listDesc =
+                new SimpleListValueDescriptor(NamedResource.create(IDENTIFIER), listProp, nextProp);
+        mapper.registerPendingListReference(pending, listDesc, owner.getSimpleList());
+
+        when(entityDeconstructorMock.mapEntityToAxioms(pending.getUri(), pending, etAMock, aDescriptor))
+                .thenReturn(new AxiomValueGatherer(NamedResource.create(pending.getUri()), null));
+        final Lists listsMock = mock(Lists.class);
+        when(connectionMock.lists()).thenReturn(listsMock);
+        mapper.persistEntity(pending.getUri(), pending, aDescriptor);
+        verify(connectionMock).lists();
+        verify(listsMock).updateSimpleList(any());
+    }
+
+    @Test
+    public void persistSavesPendingReferencedListContainingPersistedInstance() throws Exception {
+        final OWLClassC owner = new OWLClassC(IDENTIFIER);
+        owner.setReferencedList(Generators.generateInstances(5));
+        final OWLClassA pending = owner.getReferencedList().get(Generators.randomInt(5));
+        final Assertion listProp =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_REFERENCED_LIST), false);
+        final Assertion nextProp =
+                Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
+        final Assertion valueProp =
+                Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
+        final ReferencedListValueDescriptor listDesc =
+                new ReferencedListValueDescriptor(NamedResource.create(IDENTIFIER), listProp, nextProp, valueProp);
+        mapper.registerPendingListReference(pending, listDesc, owner.getReferencedList());
+
+        when(entityDeconstructorMock.mapEntityToAxioms(pending.getUri(), pending, etAMock, aDescriptor))
+                .thenReturn(new AxiomValueGatherer(NamedResource.create(pending.getUri()), null));
+        final Lists listsMock = mock(Lists.class);
+        when(connectionMock.lists()).thenReturn(listsMock);
+        mapper.persistEntity(pending.getUri(), pending, aDescriptor);
+        verify(connectionMock).lists();
+        verify(listsMock).updateReferencedList(any());
     }
 }

@@ -97,8 +97,8 @@ class CollectionChangeDetector implements ChangeDetector {
     private Comparator<Object> getSetComparator(Class<?> elemType) {
         if (metamodelProvider.isTypeManaged(elemType)) {
             return (o1, o2) -> {
-                final Object keyOne = EntityPropertiesUtils.getPrimaryKey(o1, metamodelProvider.getMetamodel());
-                final Object keyTwo = EntityPropertiesUtils.getPrimaryKey(o2, metamodelProvider.getMetamodel());
+                final Object keyOne = EntityPropertiesUtils.getIdentifier(o1, metamodelProvider.getMetamodel());
+                final Object keyTwo = EntityPropertiesUtils.getIdentifier(o2, metamodelProvider.getMetamodel());
                 if (keyOne == null || keyTwo == null) {
                     return 0;
                 }

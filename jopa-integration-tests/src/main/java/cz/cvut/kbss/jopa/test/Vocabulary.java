@@ -58,6 +58,11 @@ public class Vocabulary {
 
     public static final String V_HAS_THING = ATTRIBUTE_IRI_BASE + "hasThing";
 
+    public static final String P_HAS_SIMPLE_LIST =
+            "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
+    public static final String P_HAS_REFERENCED_LIST =
+            "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+
     private Vocabulary() {
         throw new AssertionError();
     }

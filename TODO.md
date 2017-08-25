@@ -2,6 +2,7 @@
 
 ## High Priority
 
+- [ ] Fix merge semantics
 - [ ] Inheritance support
     - [x] Mapped superclass
     - [x] Single inheritance
@@ -46,4 +47,8 @@
     - [x] Remove property assertion from pending persist when the original persist is cancelled
     - [x] Remove property assertion from pending persist when the attribute is set to another value
     - [ ] Handling of simple lists
+        - [x] Persist
+        - [ ] Removal
     - [ ] Handling of reference lists
+        - [x] Persist
+        - [ ] Removal

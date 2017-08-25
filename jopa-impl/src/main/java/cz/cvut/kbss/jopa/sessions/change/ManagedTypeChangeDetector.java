@@ -13,8 +13,8 @@ public class ManagedTypeChangeDetector implements ChangeDetector {
 
     @Override
     public boolean hasChanges(Object clone, Object original) {
-        final Object idOrig = EntityPropertiesUtils.getPrimaryKey(original, metamodelProvider.getMetamodel());
-        final Object idClone = EntityPropertiesUtils.getPrimaryKey(clone, metamodelProvider.getMetamodel());
+        final Object idOrig = EntityPropertiesUtils.getIdentifier(original, metamodelProvider.getMetamodel());
+        final Object idClone = EntityPropertiesUtils.getIdentifier(clone, metamodelProvider.getMetamodel());
 
         if (idOrig == null && idClone != null || idOrig != null && idClone == null) {
             return true;

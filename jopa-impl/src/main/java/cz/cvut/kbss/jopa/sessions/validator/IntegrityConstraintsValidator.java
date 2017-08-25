@@ -53,7 +53,7 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(instance, ErrorUtils.getNPXMessageSupplier("instance"));
         Objects.requireNonNull(et, ErrorUtils.getNPXMessageSupplier("et"));
 
-        final Object id = EntityPropertiesUtils.getPrimaryKey(instance, et);
+        final Object id = EntityPropertiesUtils.getIdentifier(instance, et);
         for (Attribute<? super T, ?> att : et.getAttributes()) {
             if (skipLazy && att.getFetchType() == FetchType.LAZY) {
                 continue;
@@ -74,7 +74,7 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(metamodel, ErrorUtils.getNPXMessageSupplier("metamodel"));
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
-        final Object id = EntityPropertiesUtils.getPrimaryKey(changeSet.getCloneObject(), et);
+        final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getCloneObject(), et);
         for (ChangeRecord change : changeSet.getChanges()) {
             validate(id, change.getAttribute(), change.getNewValue());
         }

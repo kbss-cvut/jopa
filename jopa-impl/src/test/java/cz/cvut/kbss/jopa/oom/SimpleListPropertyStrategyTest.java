@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase {
 
@@ -51,6 +51,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         this.simpleList = mocks.forOwlClassC().simpleListAtt();
         this.strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList, descriptor, mapperMock);
+        strategy.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
     }
 
     @Test
@@ -209,7 +210,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractsValuesFromListOfPlainIdentifiersForPersist() throws Exception {
+    public void extractValuesFromListOfPlainIdentifiersForPersist() throws Exception {
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
@@ -236,5 +237,17 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         strategy.buildAxiomValuesFromInstance(p, builder);
         final SimpleListValueDescriptor valueDescriptor = listValueDescriptor();
         verifyListItems(nonNulls, valueDescriptor);
+    }
+
+    @Test
+    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() throws Exception {
+        final OWLClassC c = new OWLClassC(PK);
+        c.setSimpleList(generateList());
+        c.getSimpleList()
+         .forEach(a -> when(mapperMock.containsEntity(OWLClassA.class, a.getUri(), descriptor)).thenReturn(false));
+        strategy.buildAxiomValuesFromInstance(c, builder);
+        c.getSimpleList()
+         .forEach(item -> verify(mapperMock).registerPendingListReference(eq(item), any(), eq(c.getSimpleList())));
+        verify(builder, never()).addSimpleListValues(any());
     }
 }

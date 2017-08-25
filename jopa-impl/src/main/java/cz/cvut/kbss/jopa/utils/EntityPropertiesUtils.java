@@ -52,7 +52,7 @@ public class EntityPropertiesUtils {
      * @throws NullPointerException    If {@code entity} or {@code metamodel} is null
      * @throws OWLPersistenceException If {@code entity} is not an entity or if the identifier is of an unknown type
      */
-    public static Object getPrimaryKey(Object entity, Metamodel metamodel) {
+    public static Object getIdentifier(Object entity, Metamodel metamodel) {
         Objects.requireNonNull(entity);
         Objects.requireNonNull(metamodel);
 
@@ -114,13 +114,13 @@ public class EntityPropertiesUtils {
     }
 
     /**
-     * Extracts entity's primary key according to the specified entity type.
+     * Extracts entity's identifier according to the specified entity type.
      *
      * @param entity Entity
      * @param et     Entity type
      * @return Primary key, possibly null
      */
-    public static <T> URI getPrimaryKey(T entity, EntityType<?> et) {
+    public static <T> URI getIdentifier(T entity, EntityType<?> et) {
         try {
             final Object id = getFieldValue(et.getIdentifier().getJavaField(), entity);
             if (id == null) {

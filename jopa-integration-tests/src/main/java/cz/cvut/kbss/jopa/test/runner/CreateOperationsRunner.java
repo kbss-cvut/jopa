@@ -23,13 +23,14 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -146,12 +147,40 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertTrue(c.getSimpleList().contains(a));
     }
 
-    @Ignore
     @Test(expected = RollbackException.class)
     public void persistingEntityWithSimpleListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistSimpleListNoCascade", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         persist(entityC);
+    }
+
+    @Test
+    public void persistWithSimpleListSavesListReferenceWhenAllItemsArePersisted() {
+        this.em = getEntityManager("persistWithSimpleListSavesListReferenceWhenAllItemsArePersisted", false);
+        final OWLClassK entityK = new OWLClassK();
+        entityK.setSimpleList(IntStream.range(0, 5).mapToObj(i -> {
+            final OWLClassE item = new OWLClassE();
+            item.setStringAttribute("item" + i);
+            return item;
+        }).collect(Collectors.toList()));
+        em.getTransaction().begin();
+        em.persist(entityK);
+        entityK.getSimpleList().forEach(item -> assertNull(item.getUri()));
+        entityK.getSimpleList().forEach(em::persist);
+        entityK.getSimpleList().forEach(item -> assertNotNull(item.getUri()));
+        em.getTransaction().commit();
+
+        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        assertNotNull(result);
+        verifyLists(entityK.getSimpleList(), result.getSimpleList());
+    }
+
+    private void verifyLists(List<OWLClassE> expected, List<OWLClassE> actual) {
+        assertEquals(expected.size(), actual.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getUri(), actual.get(i).getUri());
+            assertEquals(expected.get(i).getStringAttribute(), actual.get(i).getStringAttribute());
+        }
     }
 
     @Test
@@ -178,12 +207,33 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         }
     }
 
-    @Ignore
+
     @Test(expected = RollbackException.class)
     public void persistingEntityWithReferencedListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistReferencedListNoCascade", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         persist(entityC);
+    }
+
+    @Test
+    public void persistWithReferencedListSavesListReferenceWhenAllItemsArePersisted() {
+        this.em = getEntityManager("persistWithReferencedListSavesListReferenceWhenAllItemsArePersisted", false);
+        final OWLClassK entityK = new OWLClassK();
+        entityK.setReferencedList(IntStream.range(0, 5).mapToObj(i -> {
+            final OWLClassE item = new OWLClassE();
+            item.setStringAttribute("item" + i);
+            return item;
+        }).collect(Collectors.toList()));
+        em.getTransaction().begin();
+        em.persist(entityK);
+        entityK.getReferencedList().forEach(item -> assertNull(item.getUri()));
+        entityK.getReferencedList().forEach(em::persist);
+        entityK.getReferencedList().forEach(item -> assertNotNull(item.getUri()));
+        em.getTransaction().commit();
+
+        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        assertNotNull(result);
+        verifyLists(entityK.getReferencedList(), result.getReferencedList());
     }
 
     @Test

@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.slf4j.Logger;
@@ -11,13 +12,19 @@ import java.util.*;
 /**
  * Used to track references to unpersisted instances during transaction.
  * <p>
- * The general rule is that on commit, this registry should be empty.
+ * The general rule is that on commit, this registry must be empty.
  */
-class PendingAssertionRegistry {
+class PendingReferenceRegistry {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PendingAssertionRegistry.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PendingReferenceRegistry.class);
 
     private final Map<Object, Set<PendingAssertion>> pendingAssertions = new HashMap<>();
+
+    private final Map<Object, Set<PendingListReference>> pendingLists = new HashMap<>();
+    /**
+     * Counts number of pending items per each list
+     */
+    private final Map<ListValueDescriptor, Integer> pendingListItems = new HashMap<>();
 
     /**
      * Registers a new pending assertion.
@@ -40,6 +47,19 @@ class PendingAssertionRegistry {
     }
 
     /**
+     * Registers a pending reference to a sequence (simple or referenced).
+     *
+     * @param item            The pending (unpersisted) item
+     * @param valueDescriptor Descriptor containing info about list owner, linking property etc.
+     * @param values          Values of the sequence
+     */
+    void addPendingListReference(Object item, ListValueDescriptor valueDescriptor, List<?> values) {
+        pendingLists.putIfAbsent(item, new HashSet<>());
+        pendingLists.get(item).add(new PendingListReference(valueDescriptor, values));
+        pendingListItems.compute(valueDescriptor, (k, v) -> v == null ? 1 : v + 1);
+    }
+
+    /**
      * Removes any pending persists with the specified object (value of the assertion).
      *
      * @param object Object which is no longer considered pending, so all assertions referencing it should be removed
@@ -51,8 +71,33 @@ class PendingAssertionRegistry {
         return pending != null ? pending : Collections.emptySet();
     }
 
+    Set<PendingListReference> removeAndGetPendingListReferencesWith(Object object) {
+        assert object != null;
+        final Set<PendingListReference> refs = pendingLists.remove(object);
+        if (refs == null) {
+            return Collections.emptySet();
+        }
+        final Iterator<PendingListReference> it = refs.iterator();
+        while (it.hasNext()) {
+            final PendingListReference ref = it.next();
+            pendingListItems.compute(ref.descriptor, (k, v) -> v - 1);
+            if (pendingListItems.get(ref.descriptor) == 0) {
+                pendingListItems.remove(ref.descriptor);
+            } else {
+                it.remove();
+            }
+        }
+        return refs;
+    }
+
     Set<Object> getPendingResources() {
-        return Collections.unmodifiableSet(pendingAssertions.keySet());
+        final Set<Object> pending = new HashSet<>(pendingAssertions.keySet());
+        pending.addAll(pendingLists.keySet());
+        return pending;
+    }
+
+    boolean hasPendingResources() {
+        return !pendingAssertions.isEmpty() || !pendingLists.isEmpty();
     }
 
     /**
@@ -65,7 +110,7 @@ class PendingAssertionRegistry {
             LOG.trace("Removing pending assertions for subject {}.", subject);
         }
         for (Set<PendingAssertion> pending : pendingAssertions.values()) {
-            pending.removeIf(item -> item.owner.equals(subject));
+            pending.removeIf(item -> item.getOwner().equals(subject));
         }
         pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
     }
@@ -81,60 +126,26 @@ class PendingAssertionRegistry {
             LOG.trace("Removing pending assertions {} for subject {}.", assertion, subject);
         }
         for (Set<PendingAssertion> pending : pendingAssertions.values()) {
-            pending.removeIf(item -> item.owner.equals(subject) && item.assertion.equals(assertion));
+            pending.removeIf(item -> item.getOwner().equals(subject) && item.getAssertion().equals(assertion));
         }
         pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
     }
 
-    public static class PendingAssertion {
-        private final NamedResource owner;
-        private final Assertion assertion;
-        private final URI context;
+    static class PendingListReference {
+        private final ListValueDescriptor descriptor;
+        private final List<?> values;
 
-
-        private PendingAssertion(NamedResource owner, Assertion assertion, URI context) {
-            this.owner = owner;
-            this.assertion = assertion;
-            this.context = context;
+        private PendingListReference(ListValueDescriptor descriptor, List<?> values) {
+            this.descriptor = descriptor;
+            this.values = values;
         }
 
-        public NamedResource getOwner() {
-            return owner;
+        public ListValueDescriptor getDescriptor() {
+            return descriptor;
         }
 
-        public Assertion getAssertion() {
-            return assertion;
-        }
-
-        public URI getContext() {
-            return context;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            PendingAssertion that = (PendingAssertion) o;
-
-            return owner.equals(that.owner) && assertion.equals(that.assertion) && (context != null ?
-                    context.equals(that.context) : that.context == null);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = owner.hashCode();
-            result = 31 * result + assertion.hashCode();
-            result = 31 * result + (context != null ? context.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "PendingAssertion{" +
-                    owner + " -> " + assertion +
-                    ", context=" + context +
-                    '}';
+        public List<?> getValues() {
+            return values;
         }
     }
 }

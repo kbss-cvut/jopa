@@ -131,7 +131,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
-        URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
+        URI id = EntityPropertiesUtils.getIdentifier(instance, valEt);
         if (id == null) {
             id = mapper.generateIdentifier(valEt);
             EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);

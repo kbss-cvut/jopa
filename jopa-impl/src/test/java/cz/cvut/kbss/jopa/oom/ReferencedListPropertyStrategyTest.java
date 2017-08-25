@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTestBase {
 
@@ -60,6 +60,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         this.refListMock = mocks.forOwlClassC().referencedListAtt();
         this.strategy = new ReferencedListPropertyStrategy<>(mocks.forOwlClassC().entityType(), refListMock, descriptor,
                 mapperMock);
+        strategy.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
     }
 
     @Test
@@ -248,5 +249,17 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         strategy.buildAxiomValuesFromInstance(p, builder);
         final ReferencedListValueDescriptor valueDescriptor = listValueDescriptor();
         verifyListItems(nonNulls, valueDescriptor);
+    }
+
+    @Test
+    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() throws Exception {
+        final OWLClassC c = new OWLClassC(PK);
+        c.setReferencedList(generateList());
+        c.getReferencedList()
+         .forEach(a -> when(mapperMock.containsEntity(OWLClassA.class, a.getUri(), descriptor)).thenReturn(false));
+        strategy.buildAxiomValuesFromInstance(c, builder);
+        c.getReferencedList()
+         .forEach(item -> verify(mapperMock).registerPendingListReference(eq(item), any(), eq(c.getReferencedList())));
+        verify(builder, never()).addReferencedListValues(any());
     }
 }

@@ -30,10 +30,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.slf4j.Logger;
@@ -42,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -58,7 +56,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final EntityConstructor entityBuilder;
     private final EntityDeconstructor entityBreaker;
     private final InstanceRegistry instanceRegistry;
-    private final PendingAssertionRegistry pendingAssertions;
+    private final PendingReferenceRegistry pendingReferences;
 
     private final EntityInstanceLoader defaultInstanceLoader;
     private final EntityInstanceLoader twoStepInstanceLoader;
@@ -70,7 +68,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.metamodel = uow.getMetamodel();
         this.descriptorFactory = new AxiomDescriptorFactory(uow.getConfiguration());
         this.instanceRegistry = new InstanceRegistry();
-        this.pendingAssertions = new PendingAssertionRegistry();
+        this.pendingReferences = new PendingReferenceRegistry();
         this.entityBuilder = new EntityConstructor(this);
         this.entityBreaker = new EntityDeconstructor(this);
 
@@ -135,7 +133,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         LOG.trace("Lazily loading value of field {} of entity {}.", field, entity);
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
-        final URI primaryKey = EntityPropertiesUtils.getPrimaryKey(entity, et);
+        final URI primaryKey = EntityPropertiesUtils.getIdentifier(entity, et);
 
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
                 field, descriptor, et);
@@ -167,7 +165,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
             final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey, entity, et, descriptor);
             axiomBuilder.persist(storageConnection);
-            persistPendingAssertions(entity, axiomBuilder.getSubjectIdentifier());
+            persistPendingReferences(entity, axiomBuilder.getSubjectIdentifier());
         } catch (IllegalArgumentException e) {
             throw new EntityDeconstructionException("Unable to deconstruct entity " + entity, e);
         }
@@ -182,15 +180,27 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
-    private <T> void persistPendingAssertions(T instance, NamedResource identifier) {
-        final Set<PendingAssertionRegistry.PendingAssertion> pas =
-                pendingAssertions.removeAndGetPendingAssertionsWith(instance);
+    private <T> void persistPendingReferences(T instance, NamedResource identifier) {
         try {
-            for (PendingAssertionRegistry.PendingAssertion pa : pas) {
+            final Set<PendingAssertion> pas = pendingReferences.removeAndGetPendingAssertionsWith(instance);
+            for (PendingAssertion pa : pas) {
                 final AxiomValueDescriptor desc = new AxiomValueDescriptor(pa.getOwner());
                 desc.addAssertionValue(pa.getAssertion(), new Value<>(identifier));
                 desc.setAssertionContext(pa.getAssertion(), pa.getContext());
                 storageConnection.persist(desc);
+            }
+            final Set<PendingReferenceRegistry.PendingListReference> pLists =
+                    pendingReferences.removeAndGetPendingListReferencesWith(instance);
+            final EntityType<?> et = getEntityType(instance.getClass());
+            for (PendingReferenceRegistry.PendingListReference list : pLists) {
+                final ListValueDescriptor desc = list.getDescriptor();
+                ListPropertyStrategy.addItemsToDescriptor(desc, list.getValues(), et);
+                if (desc instanceof SimpleListValueDescriptor) {
+                    // TODO This can be an update or a persist
+                    storageConnection.lists().updateSimpleList((SimpleListValueDescriptor) desc);
+                } else {
+                    storageConnection.lists().updateReferencedList((ReferencedListValueDescriptor) desc);
+                }
             }
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
@@ -229,16 +239,19 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     @Override
     public void checkForUnpersistedChanges() {
-        final Set<Object> pendingInstances = pendingAssertions.getPendingResources();
-        if (!pendingInstances.isEmpty()) {
+        if (pendingReferences.hasPendingResources()) {
             throw new UnpersistedChangeException(
                     "The following instances were neither persisted nor marked as cascade for persist: "
-                            + pendingInstances);
+                            + pendingReferences.getPendingResources());
         }
     }
 
     void registerPendingAssertion(NamedResource owner, Assertion assertion, Object object, URI context) {
-        pendingAssertions.addPendingAssertion(owner, assertion, object, context);
+        pendingReferences.addPendingAssertion(owner, assertion, object, context);
+    }
+
+    void registerPendingListReference(Object item, ListValueDescriptor listDescriptor, List<?> values) {
+        pendingReferences.addPendingListReference(item, listDescriptor, values);
     }
 
     @Override
@@ -248,7 +261,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 new LoadingParameters<>(cls, primaryKey, descriptor, true), et);
         try {
             storageConnection.remove(axiomDescriptor);
-            pendingAssertions.removePendingAssertions(axiomDescriptor.getSubject());
+            pendingReferences.removePendingAssertions(axiomDescriptor.getSubject());
         } catch (OntoDriverException e) {
             throw new StorageAccessException("Exception caught when removing entity.", e);
         }
@@ -257,7 +270,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     @Override
     public <T> void updateFieldValue(T entity, Field field, Descriptor descriptor) {
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
-        final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
+        final URI pkUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         // It is OK to do it like this, because if necessary, the mapping will re-register a pending assertion
@@ -273,7 +286,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             final Attribute<?, ?> att = (Attribute<?, ?>) fs;
             // We care only about object property assertions, others are never pending
             final Assertion assertion = Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
-            pendingAssertions.removePendingAssertions(NamedResource.create(identifier), assertion);
+            pendingReferences.removePendingAssertions(NamedResource.create(identifier), assertion);
         }
     }
 

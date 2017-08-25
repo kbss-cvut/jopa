@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -32,8 +32,8 @@ import java.util.List;
 class ReferencedListPropertyStrategy<X> extends
                                         ListPropertyStrategy<ReferencedListDescriptor, ReferencedListValueDescriptor, X> {
 
-    public ReferencedListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att,
-                                          Descriptor descriptor, EntityMappingHelper mapper) {
+    ReferencedListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att, Descriptor descriptor,
+                                   EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
 
@@ -66,13 +66,18 @@ class ReferencedListPropertyStrategy<X> extends
     @Override
     <K> void extractListValues(List<K> list, X instance, AxiomValueGatherer valueBuilder) {
         final ReferencedListValueDescriptor listDescriptor = createListValueDescriptor(instance);
+        final List<K> pendingItems = resolveUnpersistedItems(list, listDescriptor);
+        if (!pendingItems.isEmpty()) {
+            pendingItems.forEach(item -> referenceSavingResolver.registerPendingReference(item, listDescriptor, list));
+            return;
+        }
         addListElementsToListValueDescriptor(listDescriptor, list);
         valueBuilder.addReferencedListValues(listDescriptor);
     }
 
     @Override
     ReferencedListValueDescriptor createListValueDescriptor(X instance) {
-        final URI owner = EntityPropertiesUtils.getPrimaryKey(instance, et);
+        final URI owner = EntityPropertiesUtils.getIdentifier(instance, et);
         final Assertion hasList = Assertion
                 .createObjectPropertyAssertion(listAttribute.getIRI().toURI(), listAttribute.isInferred());
         final Assertion hasNext = Assertion.createObjectPropertyAssertion(listAttribute

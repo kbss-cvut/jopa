@@ -4,10 +4,12 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
+import java.util.List;
 
 class ReferenceSavingResolver {
 
@@ -51,7 +53,7 @@ class ReferenceSavingResolver {
         }
         final EntityType<?> et = mapper.getEntityType(valueType);
         assert et != null;
-        final URI identifier = EntityPropertiesUtils.getPrimaryKey(value, et);
+        final URI identifier = EntityPropertiesUtils.getIdentifier(value, et);
         return identifier != null && mapper.containsEntity(et.getJavaType(), identifier, new EntityDescriptor(context));
     }
 
@@ -67,5 +69,19 @@ class ReferenceSavingResolver {
      */
     void registerPendingReference(NamedResource subject, Assertion assertion, Object object, URI context) {
         mapper.registerPendingAssertion(subject, assertion, object, context);
+    }
+
+    /**
+     * Registers a pending reference to a list (simple or referenced).
+     * <p>
+     * This means that at least one item in the list has not yet been persisted. Since the list is linked, all items
+     * must be persisted before the list itself is inserted into the storage.
+     *
+     * @param item           Pending list item
+     * @param listDescriptor Descriptor of the list
+     * @param values         The whole list
+     */
+    void registerPendingReference(Object item, ListValueDescriptor listDescriptor, List<?> values) {
+        mapper.registerPendingListReference(item, listDescriptor, values);
     }
 }
