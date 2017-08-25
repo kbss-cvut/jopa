@@ -178,8 +178,7 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rOriginal = spy(new OWLClassR(Generators.createIndividualIdentifier()));
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
-                .thenReturn(rOriginal);
+        when(storageMock.find(any())).thenReturn(rOriginal);
         rInstance.setStringAtt("differentString");
         when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
@@ -194,8 +193,7 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rOriginal = spy(new OWLClassR(Generators.createIndividualIdentifier()));
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
-                .thenReturn(rOriginal);
+        when(storageMock.find(any())).thenReturn(rOriginal);
         when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         verify(concreteListenerMock, never()).preUpdate(any());
@@ -224,8 +222,7 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rOriginal = spy(new OWLClassR(Generators.createIndividualIdentifier()));
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
-                .thenReturn(rOriginal);
+        when(storageMock.find(any())).thenReturn(rOriginal);
         rInstance.setStringAtt("differentString");
         when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
@@ -240,8 +237,7 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rOriginal = spy(new OWLClassR(Generators.createIndividualIdentifier()));
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
-        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
-                .thenReturn(rOriginal);
+        when(storageMock.find(any())).thenReturn(rOriginal);
         when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         verify(concreteListenerMock, never()).postUpdate(any());

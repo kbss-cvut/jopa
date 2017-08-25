@@ -299,7 +299,7 @@ public class ObjectOntologyMapperTest {
         final ArgumentCaptor<LoadingParameters> captor = ArgumentCaptor.forClass(LoadingParameters.class);
         verify(descriptorFactoryMock).createForEntityLoading(captor.capture(), eq(etAMock));
         final LoadingParameters p = captor.getValue();
-        assertTrue(p.isForceLoad());
+        assertTrue(p.isForceEager());
     }
 
     @Test
