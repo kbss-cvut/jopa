@@ -55,6 +55,7 @@ public class PendingReferenceRegistryTest {
         assertEquals(context, pa.getContext());
     }
 
+    @SuppressWarnings("unchecked")
     private Map<Object, Set<PendingAssertion>> getPendingAssertions() throws Exception {
         final Field paField = PendingReferenceRegistry.class.getDeclaredField("pendingAssertions");
         paField.setAccessible(true);
@@ -81,7 +82,7 @@ public class PendingReferenceRegistryTest {
                 null);
         final Object anotherObject = new Object();
         registry.addPendingAssertion(owner, assertion, anotherObject, null);
-        registry.removePendingAssertions(owner);
+        registry.removePendingReferences(owner);
         final Map<Object, Set<PendingAssertion>> result = getPendingAssertions();
         assertEquals(1, result.get(object).size());
         assertFalse(result.containsKey(anotherObject));
@@ -94,7 +95,7 @@ public class PendingReferenceRegistryTest {
         registry.addPendingAssertion(owner, assertion, object, null);
         registry.addPendingAssertion(NamedResource.create(Generators.createIndividualIdentifier()), assertion, object,
                 null);
-        registry.removePendingAssertions(owner, assertion);
+        registry.removePendingReferences(owner, assertion);
         final Map<Object, Set<PendingAssertion>> result = getPendingAssertions();
         assertEquals(1, result.get(object).size());
         final PendingAssertion pa = result.get(object).iterator().next();
@@ -111,6 +112,7 @@ public class PendingReferenceRegistryTest {
         assertEquals(1, getPendingItemCount(desc));
     }
 
+    @SuppressWarnings("unchecked")
     private int getPendingItemCount(ListValueDescriptor descriptor) throws Exception {
         final Field mapField = PendingReferenceRegistry.class.getDeclaredField("pendingListItems");
         mapField.setAccessible(true);
@@ -186,5 +188,49 @@ public class PendingReferenceRegistryTest {
         final List<OWLClassA> list = Generators.generateInstances(10);
         registry.addPendingListReference(list.get(0), desc, list);
         assertTrue(registry.hasPendingResources());
+    }
+
+    @Test
+    public void removePendingReferenceRemovesListReferenceWhenOwnerIsRemoved() throws Exception {
+        final SimpleListValueDescriptor desc = new SimpleListValueDescriptor(owner, assertion, assertion);
+        final List<OWLClassA> list = Generators.generateInstances(10);
+        registry.addPendingListReference(list.get(0), desc, list);
+        registry.addPendingListReference(list.get(2), desc, list);
+        assertFalse(registry.getPendingResources().isEmpty());
+        registry.removePendingReferences(desc.getListOwner());
+        assertTrue(registry.getPendingResources().isEmpty());
+        assertEquals(0, getPendingItemCount(desc));
+    }
+
+    @Test
+    public void removePendingReferenceKeepsReferencesToListsWithDifferentOwner() throws Exception {
+        final SimpleListValueDescriptor desc = new SimpleListValueDescriptor(owner, assertion, assertion);
+        final List<OWLClassA> list = Generators.generateInstances(10);
+        final OWLClassA common = list.get(0);
+        registry.addPendingListReference(common, desc, list);
+        final NamedResource other = NamedResource.create(Generators.createIndividualIdentifier());
+        final ReferencedListValueDescriptor descTwo =
+                new ReferencedListValueDescriptor(other, assertion, assertion, assertion);
+        final List<OWLClassA> otherList = Generators.generateInstances(10);
+        otherList.add(common);
+        registry.addPendingListReference(otherList.get(0), descTwo, otherList);
+        registry.addPendingListReference(common, descTwo, otherList);  // This is the common one
+
+        registry.removePendingReferences(owner);
+        final Set<Object> pending = registry.getPendingResources();
+        assertTrue(pending.contains(list.get(0)));
+        assertEquals(0, getPendingItemCount(desc));
+        assertEquals(2, getPendingItemCount(descTwo));
+    }
+
+    @Test
+    public void removePendingAssertionsRemovesPendingListReference() throws Exception {
+        final SimpleListValueDescriptor desc = new SimpleListValueDescriptor(owner, assertion, assertion);
+        final List<OWLClassA> list = Generators.generateInstances(10);
+        list.forEach(a -> registry.addPendingListReference(a, desc, list));
+
+        registry.removePendingReferences(owner, assertion);
+        assertTrue(registry.getPendingResources().isEmpty());
+        assertEquals(0, getPendingItemCount(desc));
     }
 }

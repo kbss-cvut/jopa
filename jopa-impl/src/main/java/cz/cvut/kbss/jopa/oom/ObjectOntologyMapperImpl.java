@@ -261,7 +261,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 new LoadingParameters<>(cls, primaryKey, descriptor, true), et);
         try {
             storageConnection.remove(axiomDescriptor);
-            pendingReferences.removePendingAssertions(axiomDescriptor.getSubject());
+            pendingReferences.removePendingReferences(axiomDescriptor.getSubject());
         } catch (OntoDriverException e) {
             throw new StorageAccessException("Exception caught when removing entity.", e);
         }
@@ -286,7 +286,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             final Attribute<?, ?> att = (Attribute<?, ?>) fs;
             // We care only about object property assertions, others are never pending
             final Assertion assertion = Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
-            pendingReferences.removePendingAssertions(NamedResource.create(identifier), assertion);
+            pendingReferences.removePendingReferences(NamedResource.create(identifier), assertion);
         }
     }
 

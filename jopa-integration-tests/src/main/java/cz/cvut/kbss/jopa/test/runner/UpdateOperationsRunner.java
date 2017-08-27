@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
 
@@ -1145,5 +1144,51 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassL result = em.find(OWLClassL.class, entityL.getUri());
         assertEquals(1, result.getSet().size());
+    }
+
+    @Test
+    public void updateKeepsPendingListReferenceWhenItemIsAddedToIt() {
+        this.em = getEntityManager("updateKeepsPendingListReferenceWhenItemIsAddedToIt", true);
+        final OWLClassK entityK = new OWLClassK();
+        entityK.setSimpleList(generateEInstances(5));
+        entityK.setReferencedList(generateEInstances(6));
+        em.getTransaction().begin();
+        em.persist(entityK);
+        entityK.getSimpleList().forEach(e -> {
+            assertNull(e.getUri());
+            em.persist(e);
+        });
+        entityK.getReferencedList().forEach(e -> {
+            assertNull(e.getUri());
+            em.persist(e);
+        });
+        em.getTransaction().commit();
+
+        final OWLClassE addedSimple = new OWLClassE();
+        addedSimple.setStringAttribute("addedSimple");
+        final OWLClassE addedReferenced = new OWLClassE();
+        addedReferenced.setStringAttribute("addedReferenced");
+        em.getTransaction().begin();
+        final OWLClassK update = em.find(OWLClassK.class, entityK.getUri());
+        update.getSimpleList().add(addedSimple);
+        update.getReferencedList().add(addedReferenced);
+        assertNull(addedSimple.getUri());
+        assertNull(addedReferenced.getUri());
+        em.persist(addedSimple);
+        em.persist(addedReferenced);
+        em.getTransaction().commit();
+
+        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        assertEquals(addedSimple.getUri(), result.getSimpleList().get(result.getSimpleList().size() - 1).getUri());
+        assertEquals(addedReferenced.getUri(),
+                result.getReferencedList().get(result.getReferencedList().size() - 1).getUri());
+    }
+
+    private List<OWLClassE> generateEInstances(int count) {
+        return IntStream.range(0, count).mapToObj(i -> {
+            final OWLClassE e = new OWLClassE();
+            e.setStringAttribute("instance" + i);
+            return e;
+        }).collect(Collectors.toList());
     }
 }

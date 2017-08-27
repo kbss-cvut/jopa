@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Used to track references to unpersisted instances during transaction.
@@ -105,7 +106,7 @@ class PendingReferenceRegistry {
      *
      * @param subject The subject of assertions to remove
      */
-    void removePendingAssertions(NamedResource subject) {
+    void removePendingReferences(NamedResource subject) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Removing pending assertions for subject {}.", subject);
         }
@@ -113,15 +114,32 @@ class PendingReferenceRegistry {
             pending.removeIf(item -> item.getOwner().equals(subject));
         }
         pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
+        removePendingListReferences(desc -> desc.getListOwner().equals(subject));
+    }
+
+    private void removePendingListReferences(Predicate<ListValueDescriptor> condition) {
+        final Set<ListValueDescriptor> removed = new HashSet<>();
+        for (Set<PendingListReference> pending : pendingLists.values()) {
+            final Iterator<PendingListReference> it = pending.iterator();
+            while (it.hasNext()) {
+                final ListValueDescriptor desc = it.next().descriptor;
+                if (condition.test(desc)) {
+                    it.remove();
+                    removed.add(desc);
+                }
+            }
+        }
+        pendingLists.entrySet().removeIf(e -> e.getValue().isEmpty());
+        removed.forEach(pendingListItems::remove);
     }
 
     /**
-     * Removes pending assertions representing the specified assertion about the specified subject.
+     * Removes pending references representing the specified assertion about the specified subject.
      *
      * @param subject   Assertion subject
      * @param assertion The assertion
      */
-    void removePendingAssertions(NamedResource subject, Assertion assertion) {
+    void removePendingReferences(NamedResource subject, Assertion assertion) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Removing pending assertions {} for subject {}.", assertion, subject);
         }
@@ -129,6 +147,8 @@ class PendingReferenceRegistry {
             pending.removeIf(item -> item.getOwner().equals(subject) && item.getAssertion().equals(assertion));
         }
         pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
+        removePendingListReferences(
+                desc -> desc.getListOwner().equals(subject) && desc.getListProperty().equals(assertion));
     }
 
     static class PendingListReference {
