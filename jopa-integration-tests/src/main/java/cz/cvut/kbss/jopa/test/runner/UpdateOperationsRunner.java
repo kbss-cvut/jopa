@@ -1104,15 +1104,39 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         dUpdate.setOwlClassA(aUpdate);
         em.clear();
         em.getTransaction().begin();
+        final OWLClassD orig = em.find(OWLClassD.class, entityD.getUri());
+        em.detach(orig);
+        em.find(OWLClassA.class, entityA.getUri());
         em.merge(aUpdate);
         em.merge(dUpdate);
         em.getTransaction().commit();
-
         final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
         assertEquals(newString, result.getOwlClassA().getStringAttribute());
     }
 
-    @Ignore
+    @Test
+    public void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributeMergedLater() {
+        this.em = getEntityManager("mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributeMergedLater",
+                true);
+        persist(entityD, entityA);
+
+        final String newString = "updatedString";
+        final OWLClassD dUpdate = new OWLClassD(entityD.getUri());
+        final OWLClassA aUpdate = new OWLClassA(entityA.getUri());
+        aUpdate.setStringAttribute(newString);
+        aUpdate.setTypes(new HashSet<>(entityA.getTypes()));
+        dUpdate.setOwlClassA(aUpdate);
+        em.clear();
+        em.getTransaction().begin();
+        final OWLClassD orig = em.find(OWLClassD.class, entityD.getUri());
+        em.detach(orig);
+        em.merge(dUpdate);
+        em.merge(aUpdate);
+        em.getTransaction().commit();
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        assertEquals(newString, result.getOwlClassA().getStringAttribute());
+    }
+
     @Test
     public void mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache() {
         this.em = getEntityManager("mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache", true);
@@ -1131,13 +1155,13 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         toUpdate.setSingleA(entityA2);
         em.getTransaction().begin();
         final OWLClassL original = em.find(OWLClassL.class, entityL.getUri());
+        assertEquals(2, original.getSet().size());
         for (OWLClassA a : original.getSet()) {
             if (a.getUri().equals(entityA2.getUri())) {
                 original.getSet().remove(a);
                 break;
             }
         }
-        assertEquals(2, original.getSet().size());
         toUpdate.getSet().forEach(a -> em.merge(a));
         em.merge(toUpdate);
         em.getTransaction().commit();

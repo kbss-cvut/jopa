@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import org.junit.After;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -37,6 +38,12 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
 
     protected PolymorphicSelectQueryRunner(Logger logger) {
         super(logger);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        getEntityManager().clear();
+        getEntityManager().getEntityManagerFactory().getCache().evictAll();
     }
 
     @Test

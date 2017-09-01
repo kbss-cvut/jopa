@@ -579,44 +579,50 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
         assert entity != null;
-        final Object iri = getIdentifier(entity);
         final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
-        final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
-        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
-        params.bypassCache();
-        T original = storage.find(params);
-        assert original != null;
+        final URI idUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
-        final Object clone = registerExistingObject(original, descriptor);
+        final Object clone = getInstanceForMerge(idUri, et, descriptor);
         try {
             // Merge only the changed attributes
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
+            LOG.debug("Clone: " + clone + ", merged entity: " + entity);
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
-            }
-            final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
-            merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
-            for (ChangeRecord record : chSet.getChanges()) {
-                final Field field = record.getAttribute().getJavaField();
-                storage.merge(clone, field, descriptor);
-            }
-            if (chSet.hasChanges()) {
+                final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
+                merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
+                for (ChangeRecord record : chSet.getChanges()) {
+                    final Field field = record.getAttribute().getJavaField();
+                    storage.merge(clone, field, descriptor);
+                }
                 et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
+                getUowChangeSet().addObjectChangeSet(copyChangeSet(chSet, getOriginal(clone), clone, descriptor));
             }
-            getUowChangeSet().addObjectChangeSet(copyChangeSet(chSet, original, clone, descriptor));
         } catch (OWLEntityExistsException e) {
             unregisterObject(clone);
             throw e;
         } catch (IllegalAccessException e) {
             throw new OWLPersistenceException(e);
         }
-        if (cacheManager.contains(et.getJavaType(), iri, descriptor)) {
-            cacheManager.evict(et.getJavaType(), iri, descriptor.getContext());
+        if (cacheManager.contains(et.getJavaType(), idUri, descriptor)) {
+            cacheManager.evict(et.getJavaType(), idUri, descriptor.getContext());
         }
         setHasChanges();
         checkForCollections(clone);
         return et.getJavaType().cast(clone);
+    }
+
+    private <T> Object getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
+        if (keysToClones.containsKey(identifier)) {
+            return keysToClones.get(identifier);
+        }
+        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
+        params.bypassCache();
+        T original = storage.find(params);
+        assert original != null;
+
+        return registerExistingObject(original, descriptor);
     }
 
     private ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
