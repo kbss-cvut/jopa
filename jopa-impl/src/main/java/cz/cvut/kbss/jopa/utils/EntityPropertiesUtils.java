@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -52,12 +52,12 @@ public class EntityPropertiesUtils {
      * @throws NullPointerException    If {@code entity} or {@code metamodel} is null
      * @throws OWLPersistenceException If {@code entity} is not an entity or if the identifier is of an unknown type
      */
-    public static URI getPrimaryKey(Object entity, Metamodel metamodel) {
+    public static URI getIdentifier(Object entity, Metamodel metamodel) {
         Objects.requireNonNull(entity);
         Objects.requireNonNull(metamodel);
 
         final EntityType<?> type = metamodel.entity(entity.getClass());
-        return getPrimaryKey(entity, type);
+        return getIdentifier(entity, type);
     }
 
     /**
@@ -112,13 +112,13 @@ public class EntityPropertiesUtils {
     }
 
     /**
-     * Extracts entity's primary key according to the specified entity type.
+     * Extracts entity's identifier according to the specified entity type.
      *
      * @param entity Entity
      * @param et     Entity type
      * @return Primary key, possibly null
      */
-    public static <T> URI getPrimaryKey(T entity, EntityType<?> et) {
+    public static <T> URI getIdentifier(T entity, EntityType<?> et) {
         try {
             final Object id = getFieldValue(et.getIdentifier().getJavaField(), entity);
             if (id == null) {

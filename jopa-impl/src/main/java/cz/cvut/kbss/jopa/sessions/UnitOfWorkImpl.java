@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -229,10 +229,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
+        cloneBuilder.reset();
+        this.repoMap = new RepositoryMap();
+        repoMap.initDescriptors();
+        this.uowChangeSet = null;
     }
 
     private void detachAllManagedInstances() {
-        cloneMapping.keySet().forEach(this::unregisterObjectFromPersistenceContext);
+        cloneMapping.keySet().forEach(instance -> {
+            removeIndirectCollections(instance);
+            deregisterEntityFromPersistenceContext(instance, this);
+        });
     }
 
     @Override
@@ -276,23 +283,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * Clean up after the commit.
      */
     private void postCommit() {
-        // Remove indirect collections from clones
-        cloneMapping.keySet().forEach(this::removeIndirectCollections);
-        getNewObjectsCloneToOriginal().clear();
-        getNewObjectsOriginalToClone().clear();
-        newObjectsKeyToClone.clear();
-        getDeletedObjects().clear();
-        cloneToOriginals.clear();
-        cloneMapping.clear();
-        keysToClones.clear();
-        this.hasChanges = false;
-        this.hasDeleted = false;
-        this.hasNew = false;
+        clear();
         this.inCommit = false;
-        cloneBuilder.reset();
-        this.repoMap = new RepositoryMap();
-        repoMap.initDescriptors();
-        this.uowChangeSet = null;
         if (shouldClearCacheAfterCommit) {
             cacheManager.evictAll();
             this.shouldReleaseAfterCommit = true;
@@ -589,42 +581,49 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
         assert entity != null;
-        final Object iri = getIdentifier(entity);
         final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
-        final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
-        T original = storage.find(new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true));
-        assert original != null;
+        final URI idUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
-        final Object clone = registerExistingObject(original, descriptor);
+        final Object clone = getInstanceForMerge(idUri, et, descriptor);
         try {
             // Merge only the changed attributes
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
+            LOG.debug("Clone: " + clone + ", merged entity: " + entity);
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
-            }
-            final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
-            merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
-            for (ChangeRecord record : chSet.getChanges()) {
-                final Field field = record.getAttribute().getJavaField();
-                storage.merge(clone, field, descriptor);
-            }
-            if (chSet.hasChanges()) {
+                final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
+                merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
+                for (ChangeRecord record : chSet.getChanges()) {
+                    final Field field = record.getAttribute().getJavaField();
+                    storage.merge(clone, field, descriptor);
+                }
                 et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
+                getUowChangeSet().addObjectChangeSet(copyChangeSet(chSet, getOriginal(clone), clone, descriptor));
             }
-            getUowChangeSet().addObjectChangeSet(copyChangeSet(chSet, original, clone, descriptor));
         } catch (OWLEntityExistsException e) {
             unregisterObject(clone);
             throw e;
         } catch (IllegalAccessException e) {
             throw new OWLPersistenceException(e);
         }
-        if (cacheManager.contains(et.getJavaType(), iri, descriptor)) {
-            cacheManager.evict(et.getJavaType(), iri, descriptor.getContext());
+        if (cacheManager.contains(et.getJavaType(), idUri, descriptor)) {
+            cacheManager.evict(et.getJavaType(), idUri, descriptor.getContext());
         }
         setHasChanges();
         checkForCollections(clone);
         return et.getJavaType().cast(clone);
+    }
+
+    private <T> Object getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
+        if (keysToClones.containsKey(identifier)) {
+            return keysToClones.get(identifier);
+        }
+        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
+        T original = storage.find(params);
+        assert original != null;
+
+        return registerExistingObject(original, descriptor);
     }
 
     private ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
@@ -671,7 +670,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private void registerClone(Object clone, Object original, Descriptor descriptor) {
         cloneMapping.put(clone, clone);
         cloneToOriginals.put(clone, original);
-        final Object identifier = EntityPropertiesUtils.getPrimaryKey(clone, getMetamodel());
+        final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
         registerEntityWithPersistenceContext(clone, this);
         registerEntityWithOntologyContext(descriptor, clone);
@@ -814,7 +813,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         cloneMapping.remove(object);
         final Object original = cloneToOriginals.remove(object);
-        keysToClones.remove(EntityPropertiesUtils.getPrimaryKey(object, getMetamodel()));
+        keysToClones.remove(EntityPropertiesUtils.getIdentifier(object, getMetamodel()));
 
         getDeletedObjects().remove(object);
         if (hasNew) {
@@ -1075,7 +1074,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private Object getIdentifier(Object entity) {
         assert entity != null;
-        return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
+        return EntityPropertiesUtils.getIdentifier(entity, getMetamodel());
     }
 
     private void unregisterEntityFromOntologyContext(Object entity) {

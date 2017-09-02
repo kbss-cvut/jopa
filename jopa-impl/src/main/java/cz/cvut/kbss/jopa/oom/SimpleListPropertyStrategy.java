@@ -30,8 +30,8 @@ import java.util.List;
 class SimpleListPropertyStrategy<X> extends
                                     ListPropertyStrategy<SimpleListDescriptor, SimpleListValueDescriptor, X> {
 
-    public SimpleListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att,
-                                      Descriptor descriptor, EntityMappingHelper mapper) {
+    SimpleListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att, Descriptor descriptor,
+                               EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
 
@@ -58,6 +58,11 @@ class SimpleListPropertyStrategy<X> extends
     @Override
     <K> void extractListValues(List<K> list, X instance, AxiomValueGatherer valueBuilder) {
         final SimpleListValueDescriptor listDescriptor = createListValueDescriptor(instance);
+        final List<K> pendingItems = resolveUnpersistedItems(list, listDescriptor);
+        if (!pendingItems.isEmpty()) {
+            pendingItems.forEach(item -> referenceSavingResolver.registerPendingReference(item, listDescriptor, list));
+            return;
+        }
         addListElementsToListValueDescriptor(listDescriptor, list);
         valueBuilder.addSimpleListValues(listDescriptor);
     }

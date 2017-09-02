@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,8 +16,6 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.QueryImpl;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
-import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
@@ -46,7 +44,7 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(sparql);
 
         final QueryImpl q = new QueryImpl(queryParser.parseQuery(sparql), connection);
-        q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
+        q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return q;
     }
 
@@ -57,7 +55,7 @@ public class SparqlQueryFactory implements QueryFactory {
 
         final TypedQueryImpl<T> tq = new TypedQueryImpl<>(queryParser.parseQuery(sparql), resultClass, connection, uow);
         tq.setUnitOfWork(uow);
-        tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
+        tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return tq;
     }
 

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,7 +30,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     final T attribute;
     final Descriptor attributeDescriptor;
     final EntityMappingHelper mapper;
-    CascadeResolver cascadeResolver;
+    ReferenceSavingResolver referenceSavingResolver;
 
     FieldStrategy(EntityType<X> et, T att, Descriptor attributeDescriptor, EntityMappingHelper mapper) {
         this.et = et;
@@ -107,8 +107,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         }
     }
 
-    void setCascadeResolver(CascadeResolver resolver) {
-        this.cascadeResolver = resolver;
+    void setReferenceSavingResolver(ReferenceSavingResolver referenceSavingResolver) {
+        this.referenceSavingResolver = referenceSavingResolver;
     }
 
     /**
@@ -131,7 +131,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
-        URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
+        URI id = EntityPropertiesUtils.getIdentifier(instance, valEt);
         if (id == null) {
             id = mapper.generateIdentifier(valEt);
             EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
@@ -150,7 +150,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      */
     String getLanguage() {
         return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
-               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
+                mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**

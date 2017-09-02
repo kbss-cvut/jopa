@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,8 @@ package cz.cvut.kbss.jopa.test.query.runner;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -250,5 +252,17 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                       .getResultList();
         assertEquals(expected.size(), res.size());
         res.forEach(a -> assertTrue(uris.contains(a.getUri())));
+    }
+
+    @Test
+    public void usingDescriptorAllowsToCustomizeQueryResults() throws Exception {
+        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
+        expected.forEach(a -> assertNotNull(a.getStringAttribute()));
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("cs");
+        final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
+                                                         .setDescriptor(descriptor).getResultList();
+        assertEquals(expected.size(), result.size());
+        result.forEach(a -> assertNull(a.getStringAttribute()));    // Because the data has @en language tag
     }
 }

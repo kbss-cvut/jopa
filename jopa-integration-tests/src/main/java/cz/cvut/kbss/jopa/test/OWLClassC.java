@@ -27,11 +27,11 @@ public class OWLClassC {
     private URI uri;
 
     @Sequence
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence", fetch = FetchType.EAGER)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_REFERENCED_LIST, fetch = FetchType.EAGER)
     private List<OWLClassA> referencedList;
 
-    @Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleNext")
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
+    @Sequence(type = SequenceType.simple)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST)
     private List<OWLClassA> simpleList;
 
     public OWLClassC() {

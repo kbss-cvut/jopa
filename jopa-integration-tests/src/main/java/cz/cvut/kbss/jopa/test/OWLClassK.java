@@ -14,39 +14,62 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
+import java.util.List;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassK")
 public class OWLClassK {
 
-	@Id(generated = true)
-	private URI uri;
+    @Id(generated = true)
+    private URI uri;
 
-	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasE")
-	private OWLClassE owlClassE;
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasE")
+    private OWLClassE owlClassE;
 
-	public URI getUri() {
-		return uri;
-	}
+    @Sequence(type = SequenceType.simple)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST)
+    private List<OWLClassE> simpleList;
 
-	public void setUri(URI uri) {
-		this.uri = uri;
-	}
+    @Sequence
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_REFERENCED_LIST)
+    private List<OWLClassE> referencedList;
 
-	public OWLClassE getOwlClassE() {
-		return owlClassE;
-	}
+    public URI getUri() {
+        return uri;
+    }
 
-	public void setOwlClassE(OWLClassE owlClassE) {
-		this.owlClassE = owlClassE;
-	}
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
-	@Override
-	public String toString() {
-		return "[OWLClassK: " + uri + ", owlClassE = " + owlClassE + "]";
-	}
+    public OWLClassE getOwlClassE() {
+        return owlClassE;
+    }
+
+    public void setOwlClassE(OWLClassE owlClassE) {
+        this.owlClassE = owlClassE;
+    }
+
+    public List<OWLClassE> getSimpleList() {
+        return simpleList;
+    }
+
+    public void setSimpleList(List<OWLClassE> simpleList) {
+        this.simpleList = simpleList;
+    }
+
+    public List<OWLClassE> getReferencedList() {
+        return referencedList;
+    }
+
+    public void setReferencedList(List<OWLClassE> referencedList) {
+        this.referencedList = referencedList;
+    }
+
+    @Override
+    public String toString() {
+        return "[OWLClassK: " + uri + ", owlClassE = " + owlClassE + "]";
+    }
 }

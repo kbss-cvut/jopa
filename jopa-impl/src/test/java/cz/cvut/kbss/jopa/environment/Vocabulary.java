@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -36,6 +36,9 @@ public class Vocabulary {
 
     public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
     public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";
+
+    public static final String P_HAS_SIMPLE_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
+    public static final String P_HAS_REFERENCED_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
 
     private Vocabulary() {
         throw new AssertionError();

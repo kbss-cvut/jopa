@@ -150,7 +150,7 @@ class EntityConstructor {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }
-        final Object id = EntityPropertiesUtils.getPrimaryKey(entity, et);
+        final Object id = EntityPropertiesUtils.getIdentifier(entity, et);
         final Object value = EntityPropertiesUtils.getAttributeValue(fieldSpec, entity);
         IntegrityConstraintsValidator.getValidator().validate(id, fieldSpec, value);
     }

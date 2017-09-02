@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -153,6 +155,35 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
+    public void persistWithSimpleListSavesListReferenceWhenAllItemsArePersisted() {
+        this.em = getEntityManager("persistWithSimpleListSavesListReferenceWhenAllItemsArePersisted", false);
+        final OWLClassK entityK = new OWLClassK();
+        entityK.setSimpleList(IntStream.range(0, 5).mapToObj(i -> {
+            final OWLClassE item = new OWLClassE();
+            item.setStringAttribute("item" + i);
+            return item;
+        }).collect(Collectors.toList()));
+        em.getTransaction().begin();
+        em.persist(entityK);
+        entityK.getSimpleList().forEach(item -> assertNull(item.getUri()));
+        entityK.getSimpleList().forEach(em::persist);
+        entityK.getSimpleList().forEach(item -> assertNotNull(item.getUri()));
+        em.getTransaction().commit();
+
+        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        assertNotNull(result);
+        verifyLists(entityK.getSimpleList(), result.getSimpleList());
+    }
+
+    private void verifyLists(List<OWLClassE> expected, List<OWLClassE> actual) {
+        assertEquals(expected.size(), actual.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getUri(), actual.get(i).getUri());
+            assertEquals(expected.get(i).getStringAttribute(), actual.get(i).getStringAttribute());
+        }
+    }
+
+    @Test
     public void testPersistWithReferencedList() {
         this.em = getEntityManager("PersistReferencedList", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
@@ -176,11 +207,33 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         }
     }
 
+
     @Test(expected = RollbackException.class)
     public void persistingEntityWithReferencedListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistReferencedListNoCascade", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         persist(entityC);
+    }
+
+    @Test
+    public void persistWithReferencedListSavesListReferenceWhenAllItemsArePersisted() {
+        this.em = getEntityManager("persistWithReferencedListSavesListReferenceWhenAllItemsArePersisted", false);
+        final OWLClassK entityK = new OWLClassK();
+        entityK.setReferencedList(IntStream.range(0, 5).mapToObj(i -> {
+            final OWLClassE item = new OWLClassE();
+            item.setStringAttribute("item" + i);
+            return item;
+        }).collect(Collectors.toList()));
+        em.getTransaction().begin();
+        em.persist(entityK);
+        entityK.getReferencedList().forEach(item -> assertNull(item.getUri()));
+        entityK.getReferencedList().forEach(em::persist);
+        entityK.getReferencedList().forEach(item -> assertNotNull(item.getUri()));
+        em.getTransaction().commit();
+
+        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        assertNotNull(result);
+        verifyLists(entityK.getReferencedList(), result.getReferencedList());
     }
 
     @Test
@@ -567,5 +620,20 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
         assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
         assertEquals(entityN.getStringAttribute(), result.getStringAttribute());
+    }
+
+    @Test
+    public void persistSavesInstanceWithReferenceToExistingInstance() {
+        this.em = getEntityManager("persistSavesInstanceWithReferenceToExistingInstance", false);
+        persist(entityA);
+
+        em.clear();
+        em.getTransaction().begin();
+        em.persist(entityD);
+        em.getTransaction().commit();
+
+        final OWLClassD resultD = em.find(OWLClassD.class, entityD.getUri());
+        assertNotNull(resultD);
+        assertNotNull(resultD.getOwlClassA());
     }
 }

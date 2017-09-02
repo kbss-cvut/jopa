@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -533,5 +533,53 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         // Could be the cached variant, which contains empty collection, or loaded from ontology, which contains null
         assertTrue(result.getIntegerSet() == null || result.getIntegerSet().isEmpty());
         verifyDatatypePropertiesRemoved();
+    }
+
+    @Test
+    public void removingNewlyPersistedInstanceRemovesPendingPersistsAndAllowsTransactionToFinish() {
+        this.em = getEntityManager("removingNewlyPersistedInstanceRemovesPendingPersistsAndAllowsTransactionToFinish",
+                true);
+        em.getTransaction().begin();
+        em.persist(entityD);
+        em.remove(entityD);
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassD.class, entityD.getUri()));
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void removingNewlyPersistedInstanceRemovesPendingListReferencesAndAllowsTransactionToFinish() {
+        this.em = getEntityManager(
+                "removingNewlyPersistedInstanceRemovesPendingListReferencesAndAllowsTransactionToFinish", true);
+        em.getTransaction().begin();
+        entityC.setSimpleList(Generators.createSimpleList());
+        entityC.setReferencedList(Generators.createReferencedList());
+        em.persist(entityC);
+        em.remove(entityC);
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassC.class, entityC.getUri()));
+        entityC.getSimpleList().forEach(a -> assertNull(em.find(OWLClassA.class, a.getUri())));
+        entityC.getReferencedList().forEach(a -> assertNull(em.find(OWLClassA.class, a.getUri())));
+    }
+
+    @Test
+    public void removingListItemsFromNewlyPersistedOwnerRemovesThemFromPendingReferencesAndAllowsTransactionToFinish() {
+        this.em = getEntityManager(
+                "removingListItemsFromNewlyPersistedOwnerRemovesThemFromPendingReferencesAndAllowsTransactionToFinish",
+                false);
+        em.getTransaction().begin();
+        entityC.setSimpleList(Generators.createSimpleList());
+        entityC.setReferencedList(Generators.createReferencedList());
+        em.persist(entityC);
+        entityC.getSimpleList().clear();
+        entityC.getReferencedList().clear();
+        em.getTransaction().commit();
+
+        final OWLClassC result = em.find(OWLClassC.class, entityC.getUri());
+        assertNotNull(result);
+        assertNull(result.getSimpleList());
+        assertNull(result.getReferencedList());
     }
 }

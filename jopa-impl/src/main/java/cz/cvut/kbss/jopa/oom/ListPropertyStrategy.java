@@ -17,22 +17,25 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
-import java.net.URI;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValueDescriptor, X>
         extends PluralObjectPropertyStrategy<X> {
 
     final ListAttribute<? super X, ?> listAttribute;
 
-    public ListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att, Descriptor descriptor,
-                                EntityMappingHelper mapper) {
+    ListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att, Descriptor descriptor,
+                         EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
         this.listAttribute = att;
     }
@@ -45,24 +48,39 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
         extractListValues((List<?>) value, instance, valueBuilder);
     }
 
+    /**
+     * Adds elements of the list to the value descriptor.
+     */
     <K> void addListElementsToListValueDescriptor(ListValueDescriptor listDescriptor, List<K> list) {
         if (list == null) {
             return;
         }
-        if (IdentifierTransformer.isValidIdentifierType(pluralAtt.getBindableJavaType())) {
-            list.stream().filter(item -> item != null)
+        if (IdentifierTransformer.isValidIdentifierType(listAttribute.getBindableJavaType())) {
+            list.stream().filter(Objects::nonNull)
                 .forEach(item -> listDescriptor.addValue(NamedResource.create(IdentifierTransformer.valueAsUri(item))));
         } else {
-            final Class<K> elemType = (Class<K>) listAttribute.getBindableJavaType();
-            final EntityType<K> valueType = mapper.getEntityType(elemType);
-            for (K item : list) {
-                if (item == null) {
-                    continue;
-                }
-                final URI itemUri = resolveValueIdentifier(item, valueType);
-                cascadeResolver.resolveFieldCascading(pluralAtt, item, getAttributeContext());
-                listDescriptor.addValue(NamedResource.create(itemUri));
-            }
+            final Class<?> elemType = listAttribute.getBindableJavaType();
+            final EntityType<?> valueType = mapper.getEntityType(elemType);
+            addItemsToDescriptor(listDescriptor, list, valueType);
+        }
+    }
+
+    static void addItemsToDescriptor(ListValueDescriptor listDescriptor, List<?> list, EntityType<?> valueType) {
+        list.stream().filter(Objects::nonNull).forEach(item -> listDescriptor
+                .addValue(NamedResource.create(EntityPropertiesUtils.getIdentifier(item, valueType))));
+    }
+
+    <K> List<K> resolveUnpersistedItems(List<K> list, ListValueDescriptor listDescriptor) {
+        if (list == null) {
+            return Collections.emptyList();
+        }
+        if (IdentifierTransformer.isValidIdentifierType(listAttribute.getBindableJavaType())) {
+            return Collections.emptyList();
+        } else {
+            final Class<?> elemType = listAttribute.getBindableJavaType();
+            return list.stream().filter(item -> item != null && !referenceSavingResolver
+                    .shouldSaveReferenceToItem(elemType, item, listDescriptor.getContext()))
+                       .collect(Collectors.toList());
         }
     }
 

@@ -30,10 +30,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -54,7 +51,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         this.simpleList = mocks.forOwlClassC().simpleListAtt();
         this.strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList, descriptor, mapperMock);
-        strategy.setCascadeResolver(cascadeResolverMock);
+        strategy.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
     }
 
     @Test
@@ -157,9 +154,6 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
             assertEquals(c.getSimpleList().get(i).getUri(), res.getValues()
                                                                .get(i).getIdentifier());
         }
-        verify(cascadeResolverMock, times(c.getSimpleList().size()))
-                .resolveFieldCascading(eq(simpleList), any(Object.class),
-                        eq((URI) null));
     }
 
     private SimpleListValueDescriptor listValueDescriptor() throws Exception {
@@ -183,8 +177,6 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
                                     .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
                                                                     .toString());
         assertTrue(res.getValues().isEmpty());
-        verify(cascadeResolverMock, never()).resolveFieldCascading(
-                eq(simpleList), any(Object.class), eq((URI) null));
     }
 
     @Test
@@ -201,8 +193,6 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
                                     .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
                                                                     .toString());
         assertTrue(res.getValues().isEmpty());
-        verify(cascadeResolverMock, never()).resolveFieldCascading(
-                eq(simpleList), any(Object.class), eq((URI) null));
     }
 
     @Test
@@ -213,14 +203,14 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
 
         strategy.buildAxiomValuesFromInstance(c, builder);
         final SimpleListValueDescriptor res = listValueDescriptor();
-        final List<URI> expected = c.getSimpleList().stream().filter(item -> item != null).map(OWLClassA::getUri)
+        final List<URI> expected = c.getSimpleList().stream().filter(Objects::nonNull).map(OWLClassA::getUri)
                                     .collect(
                                             Collectors.toList());
         verifyListItems(expected, res);
     }
 
     @Test
-    public void extractsValuesFromListOfPlainIdentifiersForPersist() throws Exception {
+    public void extractValuesFromListOfPlainIdentifiersForPersist() throws Exception {
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
@@ -239,7 +229,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
         setRandomListItemsToNull(p.getSimpleList());
-        final List<URI> nonNulls = p.getSimpleList().stream().filter(i -> i != null).collect(Collectors.toList());
+        final List<URI> nonNulls = p.getSimpleList().stream().filter(Objects::nonNull).collect(Collectors.toList());
         final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
@@ -247,5 +237,17 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         strategy.buildAxiomValuesFromInstance(p, builder);
         final SimpleListValueDescriptor valueDescriptor = listValueDescriptor();
         verifyListItems(nonNulls, valueDescriptor);
+    }
+
+    @Test
+    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() throws Exception {
+        final OWLClassC c = new OWLClassC(PK);
+        c.setSimpleList(generateList());
+        c.getSimpleList()
+         .forEach(a -> when(mapperMock.containsEntity(OWLClassA.class, a.getUri(), descriptor)).thenReturn(false));
+        strategy.buildAxiomValuesFromInstance(c, builder);
+        c.getSimpleList()
+         .forEach(item -> verify(mapperMock).registerPendingListReference(eq(item), any(), eq(c.getSimpleList())));
+        verify(builder, never()).addSimpleListValues(any());
     }
 }

@@ -122,6 +122,13 @@ JOPA build status and code metrics can be found at:
 
 Javadoc of the latest stable version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
 
+## Related
+
+Some related libraries:
+
+* [JB4JSON-LD](https://github.com/kbss-cvut/jb4jsonld) - Serialization and deserialization of POJOs into JSON-LD,
+* [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA.
+
 ## References
   
 * [1] J. Tao and E. Sirin, J. Bao, D. L. McGuinness, Integrity Constraints in OWL, The Twenty-Fourth AAAI Conference on Artiﬁcial Intelligence, 2010, available online at [http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229](http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229)

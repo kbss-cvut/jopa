@@ -14,12 +14,8 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
@@ -27,33 +23,30 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
+import java.lang.reflect.Field;
+import java.net.URI;
+
 class EntityDeconstructor {
 
     private final EntityMappingHelper mapper;
-    private CascadeResolver cascadeResolver;
+    private ReferenceSavingResolver referenceSavingResolver;
 
     EntityDeconstructor(ObjectOntologyMapperImpl mapper) {
         this.mapper = mapper;
     }
 
-    void setCascadeResolver(CascadeResolver cascadeResolver) {
-        this.cascadeResolver = cascadeResolver;
+    void setReferenceSavingResolver(ReferenceSavingResolver referenceSavingResolver) {
+        this.referenceSavingResolver = referenceSavingResolver;
     }
 
-    <T> AxiomValueGatherer mapEntityToAxioms(URI primaryKey, T entity, EntityType<T> et,
+    <T> AxiomValueGatherer mapEntityToAxioms(URI identifier, T entity, EntityType<T> et,
                                              Descriptor descriptor) {
-        assert primaryKey != null;
+        assert identifier != null;
 
-        final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(primaryKey, descriptor);
+        final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(identifier, descriptor);
         try {
             addEntityClassAssertion(valueBuilder, entity, descriptor);
-            if (et.getTypes() != null) {
-                addAssertions(entity, et, et.getTypes(), descriptor, valueBuilder);
-            }
-            if (et.getProperties() != null) {
-                addAssertions(entity, et, et.getProperties(), descriptor, valueBuilder);
-            }
-            for (Attribute<? super T, ?> att : et.getAttributes()) {
+            for (FieldSpecification<? super T, ?> att : et.getFieldSpecifications()) {
                 addAssertions(entity, et, att, descriptor, valueBuilder);
             }
 
@@ -81,7 +74,7 @@ class EntityDeconstructor {
                                    final AxiomValueGatherer valueBuilder) throws IllegalAccessException {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
-        fs.setCascadeResolver(cascadeResolver);
+        fs.setReferenceSavingResolver(referenceSavingResolver);
         fs.buildAxiomValuesFromInstance(entity, valueBuilder);
     }
 

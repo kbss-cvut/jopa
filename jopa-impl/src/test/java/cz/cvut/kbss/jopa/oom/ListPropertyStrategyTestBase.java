@@ -20,7 +20,6 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.mockito.Mock;
 
@@ -30,6 +29,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class ListPropertyStrategyTestBase {
@@ -37,10 +38,7 @@ class ListPropertyStrategyTestBase {
     protected static final URI PK = Generators.createIndividualIdentifier();
 
     @Mock
-    protected EntityMappingHelper mapperMock;
-
-    @Mock
-    protected CascadeResolver cascadeResolverMock;
+    protected ObjectOntologyMapperImpl mapperMock;
 
     protected MetamodelMocks mocks;
     protected Descriptor descriptor;
@@ -51,7 +49,8 @@ class ListPropertyStrategyTestBase {
         this.mocks = new MetamodelMocks();
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
         this.descriptor = new EntityDescriptor();
-        this.builder = new AxiomValueGatherer(NamedResource.create(PK), descriptor.getContext());
+        this.builder = spy(new AxiomValueGatherer(NamedResource.create(PK), descriptor.getContext()));
+        when(mapperMock.containsEntity(any(), any(), any())).thenReturn(true);
     }
 
     static List<OWLClassA> generateList() {

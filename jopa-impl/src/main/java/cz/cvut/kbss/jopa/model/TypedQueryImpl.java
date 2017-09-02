@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -25,41 +26,30 @@ import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
 
-public class TypedQueryImpl<X> implements TypedQuery<X> {
+public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TypedQueryImpl.class);
-
-    private final QueryHolder query;
-    private final Set<URI> contexts;
     private final Class<X> resultType;
-    private final ConnectionWrapper connection;
     private final MetamodelProvider metamodelProvider;
 
     private UnitOfWork uow;
 
-    private boolean useBackupOntology;
     private int maxResults;
 
-    private Procedure rollbackOnlyMarker;
+    private Descriptor descriptor;
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
-        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        super(query, connection);
         this.resultType = Objects.requireNonNull(resultType, ErrorUtils.getNPXMessageSupplier("resultType"));
-        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
         this.metamodelProvider = Objects
                 .requireNonNull(metamodelProvider, ErrorUtils.getNPXMessageSupplier("metamodelProvider"));
-        this.contexts = new HashSet<>();
         this.maxResults = Integer.MAX_VALUE;
     }
 
@@ -69,31 +59,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
 
     @Override
     public void executeUpdate() {
-        final Statement stmt = connection.createStatement();
-        try {
-        URI[] uris = new URI[contexts.size()];
-        uris = contexts.toArray(uris);
-        setTargetOntology(stmt);
-            stmt.executeUpdate(query.assembleQuery(), uris);
-        } catch (OntoDriverException e) {
-            markTransactionForRollback();
-            throw queryEvaluationException(e);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after update execution.", e);
-            }
-        }
-    }
-
-    private void markTransactionForRollback() {
-        if (rollbackOnlyMarker != null) {
-            rollbackOnlyMarker.execute();
-        }
+        executeUpdateImpl();
     }
 
     @Override
@@ -113,11 +79,6 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         }
 
         return list;
-    }
-
-    private OWLPersistenceException queryEvaluationException(OntoDriverException e) {
-        final String executedQuery = query.assembleQuery();
-        return new OWLPersistenceException("Exception caught when evaluating query " + executedQuery, e);
     }
 
     @Override
@@ -187,10 +148,6 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     public Object getParameterValue(String name) {
         final Parameter<?> param = query.getParameter(name);
         return getParameterValue(param);
-    }
-
-    private static IllegalStateException unboundParam(Object param) {
-        return new IllegalStateException("Parameter " + param + " is not bound.");
     }
 
     @Override
@@ -267,23 +224,27 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         return this;
     }
 
+    @Override
+    public TypedQuery<X> setDescriptor(Descriptor descriptor) {
+        this.descriptor = descriptor;
+        return this;
+    }
+
     private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
         final Statement stmt = connection.createStatement();
         try {
             setTargetOntology(stmt);
-            URI[] arr = new URI[contexts.size()];
-            arr = contexts.toArray(arr);
-            final ResultSet rs = stmt.executeQuery(query.assembleQuery(), arr);
+            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
             final List<X> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             int cnt = 0;
-            final URI ctx = arr.length > 0 ? arr[0] : null;
             final boolean isTypeManaged = metamodelProvider.isTypeManaged(resultType);
+            final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
             while (rs.hasNext() && cnt < maxResults) {
                 rs.next();
                 if (isTypeManaged) {
-                    loadEntityInstance(rs, ctx).ifPresent(res::add);
+                    loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
                 } else {
                     res.add(loadResultValue(rs));
                 }
@@ -299,23 +260,13 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         }
     }
 
-    private void setTargetOntology(Statement stmt) {
-        if (useBackupOntology) {
-            stmt.useOntology(Statement.StatementOntology.CENTRAL);
-        } else {
-            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
-        }
-    }
-
-    private Optional<X> loadEntityInstance(ResultSet resultSet, URI context) throws OntoDriverException {
+    private Optional<X> loadEntityInstance(ResultSet resultSet, Descriptor instanceDescriptor)
+            throws OntoDriverException {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
         final URI uri = URI.create(resultSet.getString(0));
-        // TODO Setting the context like this won't work for queries over multiple contexts
-        final EntityDescriptor descriptor = new EntityDescriptor(context);
-
-        return Optional.ofNullable(uow.readObject(resultType, uri, descriptor));
+        return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
     }
 
     private X loadResultValue(ResultSet resultSet) throws OntoDriverException {
@@ -324,44 +275,5 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
         }
-    }
-
-    @Override
-    public TypedQuery<X> addContext(URI context) {
-        Objects.requireNonNull(context);
-        contexts.add(context);
-        return this;
-    }
-
-    @Override
-    public TypedQuery<X> addContexts(Collection<URI> contexts) {
-        Objects.requireNonNull(contexts);
-        this.contexts.addAll(contexts);
-        return this;
-    }
-
-    @Override
-    public TypedQuery<X> clearContexts() {
-        contexts.clear();
-        return this;
-    }
-
-    /**
-     * Sets ontology used for processing of this query.
-     *
-     * @param useBackupOntology If true, the backup (central) ontology is used, otherwise the transactional ontology is
-     *                          used (default)
-     */
-    public void setUseBackupOntology(boolean useBackupOntology) {
-        this.useBackupOntology = useBackupOntology;
-    }
-
-    /**
-     * Registers reference to a method which marks current transaction (if active) for rollback on exceptions.
-     *
-     * @param rollbackOnlyMarker The marker to invoke on exceptions
-     */
-    void setRollbackOnlyMarker(Procedure rollbackOnlyMarker) {
-        this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 }

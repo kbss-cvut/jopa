@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
@@ -33,6 +34,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
 
@@ -1049,5 +1051,182 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptorTwo);
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
         assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorTwo));
+    }
+
+    @Test
+    public void updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue() throws Exception {
+        this.em = getEntityManager("updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue", true);
+        entityD.setOwlClassA(null);
+        persist(entityD, entityA2);
+
+        em.getTransaction().begin();
+        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        d.setOwlClassA(entityA);
+        d.setOwlClassA(em.find(OWLClassA.class, entityA2.getUri()));
+        em.getTransaction().commit();
+
+        final OWLClassD dResult = em.find(OWLClassD.class, entityD.getUri());
+        assertNotNull(dResult.getOwlClassA());
+        assertEquals(entityA2.getUri(), dResult.getOwlClassA().getUri());
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void updatesKeepsPendingAssertionPluralAttribute() throws Exception {
+        this.em = getEntityManager("updatesKeepsPendingAssertionPluralAttribute", true);
+        final OWLClassL entityL = new OWLClassL(Generators.generateUri());
+        entityL.setSet(new HashSet<>());
+        entityL.getSet().add(entityA2);
+        entityL.setSimpleList(Collections.singletonList(entityA2));
+        entityL.setSingleA(entityA2);
+        entityL.setUri(Generators.generateUri());
+        persist(entityL, entityA2);
+
+        em.getTransaction().begin();
+        final OWLClassL inst = em.find(OWLClassL.class, entityL.getUri());
+        inst.getSet().add(entityA);
+        thrown.expect(RollbackException.class);
+        thrown.expectCause(isA(UnpersistedChangeException.class));
+        thrown.expectMessage(containsString(entityA.toString()));
+        em.getTransaction().commit();
+    }
+
+    @Test
+    public void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributePreviouslyMerged() {
+        this.em = getEntityManager("mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributePreviouslyMerged",
+                true);
+        persist(entityD, entityA);
+
+        final String newString = "updatedString";
+        final OWLClassD dUpdate = new OWLClassD(entityD.getUri());
+        final OWLClassA aUpdate = new OWLClassA(entityA.getUri());
+        aUpdate.setStringAttribute(newString);
+        aUpdate.setTypes(new HashSet<>(entityA.getTypes()));
+        dUpdate.setOwlClassA(aUpdate);
+        em.clear();
+        em.getTransaction().begin();
+        final OWLClassD orig = em.find(OWLClassD.class, entityD.getUri());
+        em.detach(orig);
+        em.find(OWLClassA.class, entityA.getUri());
+        em.merge(aUpdate);
+        em.merge(dUpdate);
+        em.getTransaction().commit();
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        assertEquals(newString, result.getOwlClassA().getStringAttribute());
+    }
+
+    @Test
+    public void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributeMergedLater() {
+        this.em = getEntityManager("mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributeMergedLater",
+                true);
+        persist(entityD, entityA);
+
+        final String newString = "updatedString";
+        final OWLClassD dUpdate = new OWLClassD(entityD.getUri());
+        final OWLClassA aUpdate = new OWLClassA(entityA.getUri());
+        aUpdate.setStringAttribute(newString);
+        aUpdate.setTypes(new HashSet<>(entityA.getTypes()));
+        dUpdate.setOwlClassA(aUpdate);
+        em.clear();
+        em.getTransaction().begin();
+        final OWLClassD orig = em.find(OWLClassD.class, entityD.getUri());
+        em.detach(orig);
+        em.merge(dUpdate);
+        em.merge(aUpdate);
+        em.getTransaction().commit();
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        assertEquals(newString, result.getOwlClassA().getStringAttribute());
+    }
+
+    @Test
+    public void mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache() {
+        this.em = getEntityManager("mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache", true);
+        final OWLClassL entityL = new OWLClassL(Generators.generateUri());
+        entityL.setSet(new HashSet<>());
+        entityL.getSet().add(entityA);
+        entityL.getSet().add(entityA2);
+        entityL.setSimpleList(Collections.singletonList(entityA2));
+        entityL.setSingleA(entityA2);
+        persist(entityL, entityA, entityA2);
+
+        final OWLClassL toUpdate = new OWLClassL(entityL.getUri());
+        toUpdate.setSet(new HashSet<>(entityL.getSet()));
+        toUpdate.getSet().remove(entityA2);
+        toUpdate.setSimpleList(Collections.singletonList(entityA2));
+        toUpdate.setSingleA(entityA2);
+        em.getTransaction().begin();
+        final OWLClassL original = em.find(OWLClassL.class, entityL.getUri());
+        assertEquals(2, original.getSet().size());
+        for (OWLClassA a : original.getSet()) {
+            if (a.getUri().equals(entityA2.getUri())) {
+                original.getSet().remove(a);
+                break;
+            }
+        }
+        toUpdate.getSet().forEach(a -> em.merge(a));
+        em.merge(toUpdate);
+        em.getTransaction().commit();
+
+        final OWLClassL result = em.find(OWLClassL.class, entityL.getUri());
+        assertEquals(1, result.getSet().size());
+    }
+
+    @Test
+    public void updateKeepsPendingListReferenceWhenItemIsAddedToIt() {
+        this.em = getEntityManager("updateKeepsPendingListReferenceWhenItemIsAddedToIt", true);
+        final OWLClassK entityK = new OWLClassK();
+        entityK.setSimpleList(generateEInstances(5));
+        entityK.setReferencedList(generateEInstances(6));
+        em.getTransaction().begin();
+        em.persist(entityK);
+        entityK.getSimpleList().forEach(e -> {
+            assertNull(e.getUri());
+            em.persist(e);
+        });
+        entityK.getReferencedList().forEach(e -> {
+            assertNull(e.getUri());
+            em.persist(e);
+        });
+        em.getTransaction().commit();
+
+        final OWLClassE addedSimple = new OWLClassE();
+        addedSimple.setStringAttribute("addedSimple");
+        final OWLClassE addedReferenced = new OWLClassE();
+        addedReferenced.setStringAttribute("addedReferenced");
+        em.getTransaction().begin();
+        final OWLClassK update = em.find(OWLClassK.class, entityK.getUri());
+        update.getSimpleList().add(addedSimple);
+        update.getReferencedList().add(addedReferenced);
+        assertNull(addedSimple.getUri());
+        assertNull(addedReferenced.getUri());
+        em.persist(addedSimple);
+        em.persist(addedReferenced);
+        em.getTransaction().commit();
+
+        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        assertEquals(addedSimple.getUri(), result.getSimpleList().get(result.getSimpleList().size() - 1).getUri());
+        assertEquals(addedReferenced.getUri(),
+                result.getReferencedList().get(result.getReferencedList().size() - 1).getUri());
+    }
+
+    private List<OWLClassE> generateEInstances(int count) {
+        return IntStream.range(0, count).mapToObj(i -> {
+            final OWLClassE e = new OWLClassE();
+            e.setStringAttribute("instance" + i);
+            return e;
+        }).collect(Collectors.toList());
+    }
+
+    @Test
+    public void mergeRemovedThrowsIllegalArgumentException() {
+        this.em = getEntityManager("mergeRemovedThrowsIllegalArgument", true);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(containsString("removed"));
+        persist(entityA);
+
+        em.getTransaction().begin();
+        final OWLClassA toRemove = em.find(OWLClassA.class, entityA.getUri());
+        em.remove(toRemove);
+        em.merge(toRemove);
     }
 }

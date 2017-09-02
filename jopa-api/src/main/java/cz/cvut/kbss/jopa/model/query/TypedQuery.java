@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,9 +18,8 @@ import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
-import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -51,38 +50,6 @@ public interface TypedQuery<X> extends Query {
      */
     @Override
     X getSingleResult();
-
-    /**
-     * Adds URI of context against which this query will be executed.
-     * <p>
-     * If no context was specified, the query is run against the default repository context.
-     *
-     * @param context Context URI
-     * @return This instance
-     */
-    @Override
-    TypedQuery<X> addContext(URI context);
-
-    /**
-     * Adds URIs of contexts against which this query will be executed.
-     * <p>
-     * If no context was specified, the query is run against the default repository context.
-     *
-     * @param contexts Context URIs
-     * @return This instance
-     */
-    @Override
-    TypedQuery<X> addContexts(Collection<URI> contexts);
-
-    /**
-     * Clears the previously set contexts.
-     *
-     * @return This instance
-     * @see #addContext(URI)
-     * @see #addContexts(Collection)
-     */
-    @Override
-    TypedQuery<X> clearContexts();
 
     /**
      * Set the maximum number of results to retrieve.
@@ -166,4 +133,20 @@ public interface TypedQuery<X> extends Query {
      */
     @Override
     TypedQuery<X> setParameter(Parameter<String> parameter, String value, String language);
+
+    /**
+     * Sets descriptor to use with this query.
+     * <p>
+     * The descriptor may specify contexts and languages for the retrieved query results. Note that the descriptor
+     * applies only to results of managed types, i.e. when the result type of the query is a managed type. Otherwise,
+     * the descriptor is ignored.
+     * <p>
+     * Use of descriptor may lead to additional result filtering, e.g. when the individual, which is a result of the
+     * query, does not match criteria in the descriptor (it is in a different context, for instance), it is not returned
+     * by {@link #getResultList()} and {@link #getSingleResult()}.
+     *
+     * @param descriptor The descriptor to use
+     * @return This query instance
+     */
+    TypedQuery<X> setDescriptor(Descriptor descriptor);
 }

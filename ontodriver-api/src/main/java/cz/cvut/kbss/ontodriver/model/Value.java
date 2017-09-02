@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,7 +26,7 @@ public class Value<T> {
     /**
      * Represents a null value - empty value
      */
-    public static final Value<Void> NULL_VALUE = new NullValue();
+    private static final Value NULL_VALUE = new NullValue();
 
     private final T value;
 
@@ -66,8 +66,9 @@ public class Value<T> {
      * @return Null value
      * @see <a href="http://en.wikipedia.org/wiki/Null_Object_pattern">http://en.wikipedia.org/wiki/Null_Object_pattern</a>
      */
-    public static Value<Void> nullValue() {
-        return NULL_VALUE;
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> nullValue() {
+        return (Value<T>) NULL_VALUE;
     }
 
     @Override

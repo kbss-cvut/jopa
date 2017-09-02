@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -37,7 +37,6 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -66,7 +65,7 @@ public abstract class QueryTestBase {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(connectionWrapperMock.createStatement()).thenReturn(statementMock);
-        when(statementMock.executeQuery(anyString(), anyVararg())).thenReturn(resultSetMock);
+        when(statementMock.executeQuery(anyString())).thenReturn(resultSetMock);
         doAnswer((invocationOnMock) -> {
             resultSetMock.close();
             return null;
@@ -148,23 +147,6 @@ public abstract class QueryTestBase {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
         final Query q = createQuery(query, Object.class);
         q.setMaxResults(-1);
-    }
-
-    @Test
-    public void addingContextsPassesThemToQueryEvaluation() throws Exception {
-        final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query q = createQuery(query, Object.class);
-        q.addContext(URI.create("http://contextOne"));
-        q.addContexts(Arrays.asList(URI.create("http://contextTwo"), URI.create("http://contextThree")));
-        q.getResultList();
-        final ArgumentCaptor<URI[]> captor = ArgumentCaptor.forClass(URI[].class);
-        verify(statementMock).executeQuery(eq(query), captor.capture());
-        final List<URI[]> contexts = captor.getAllValues();
-        assertEquals(3, contexts.size());
-        // Mockito interprets the varargs as separate arguments
-        assertTrue(contexts.contains(URI.create("http://contextOne")));
-        assertTrue(contexts.contains(URI.create("http://contextTwo")));
-        assertTrue(contexts.contains(URI.create("http://contextThree")));
     }
 
     @Test(expected = NoResultException.class)

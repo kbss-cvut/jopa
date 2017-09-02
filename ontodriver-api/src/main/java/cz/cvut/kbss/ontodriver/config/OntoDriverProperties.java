@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,10 +24,22 @@ public final class OntoDriverProperties {
      * Property for setting default auto-commit strategy for connections.
      */
     public static final String CONNECTION_AUTO_COMMIT = "cz.cvut.kbss.ontodriver.connection-auto-commit";
+
+    /**
+     * Username to be used when accessing data source.
+     */
+    public static final String DATA_SOURCE_USERNAME = "cz.cvut.jopa.dataSource.username";
+
+    /**
+     * Password to be used when accessing data source.
+     */
+    public static final String DATA_SOURCE_PASSWORD = "cz.cvut.jopa.dataSource.password";
+
     /**
      * Reasoner factory class property.
      */
     public static final String OWLAPI_REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
+
     /**
      * Ontology language property.
      */

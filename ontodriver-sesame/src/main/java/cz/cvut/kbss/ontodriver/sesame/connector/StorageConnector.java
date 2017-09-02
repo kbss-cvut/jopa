@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,6 +29,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
+import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -73,23 +74,36 @@ class StorageConnector extends AbstractConnector {
         try {
             final boolean isRemote = isRemoteRepository(serverUri);
             if (isRemote) {
-                this.repository = RepositoryProvider.getRepository(serverUri.toString());
+                this.repository = connectToRemoteRepository(serverUri.toString());
             } else {
                 this.repository = createLocalRepository(configuration);
             }
-            if (repository == null) {
-                if (isRemote) {
-                    throw new RepositoryNotFoundException("Unable to reach repository at "
-                            + serverUri);
-                } else {
-                    throw new RepositoryCreationException("Unable to create local repository at "
-                            + serverUri);
-                }
-            }
+            verifyRepositoryCreated(serverUri, isRemote);
             repository.initialize();
         } catch (RepositoryException | RepositoryConfigException e) {
             throw new SesameDriverException("Failed to acquire sesame repository connection.", e);
         }
+    }
+
+    private static boolean isRemoteRepository(URI uri) {
+        final String scheme = uri.getScheme();
+        for (String s : KNOWN_REMOTE_SCHEMES) {
+            if (s.equals(scheme)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Repository connectToRemoteRepository(String repoUri) {
+        this.manager = RepositoryProvider.getRepositoryManagerOfRepository(repoUri);
+        final RemoteRepositoryManager remoteManager = (RemoteRepositoryManager) manager;
+        final String username = configuration.getProperty(SesameConfigParam.USERNAME, "");
+        if (!username.isEmpty()) {
+            final String password = configuration.getProperty(SesameConfigParam.PASSWORD, "");
+            remoteManager.setUsernameAndPassword(username, password);
+        }
+        return manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
     }
 
     private Repository createLocalRepository(Configuration configuration) {
@@ -99,6 +113,10 @@ class StorageConnector extends AbstractConnector {
         } else {
             return createNativeRepository(configuration, localUri);
         }
+    }
+
+    private static boolean isFileUri(URI uri) {
+        return uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME);
     }
 
     /**
@@ -137,8 +155,7 @@ class StorageConnector extends AbstractConnector {
             manager.addRepositoryConfig(cfg);
             return manager.getRepository(repoId);
         } catch (RepositoryConfigException | RepositoryException e) {
-            throw new RepositoryCreationException("Unable to create local repository at "
-                    + localUri, e);
+            throw new RepositoryCreationException("Unable to create local repository at " + localUri, e);
         }
     }
 
@@ -149,6 +166,16 @@ class StorageConnector extends AbstractConnector {
         }
         final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
         return new RepositoryConfig(repoId, repoType);
+    }
+
+    private void verifyRepositoryCreated(URI serverUri, boolean isRemote) {
+        if (repository == null) {
+            if (isRemote) {
+                throw new RepositoryNotFoundException("Unable to reach repository at " + serverUri);
+            } else {
+                throw new RepositoryCreationException("Unable to create local repository at " + serverUri);
+            }
+        }
     }
 
     @Override
@@ -163,25 +190,10 @@ class StorageConnector extends AbstractConnector {
                 manager.shutDown();
             }
         } catch (RepositoryException e) {
-            throw new SesameDriverException(
-                    "Exception caught when closing Sesame repository connection.", e);
+            throw new SesameDriverException("Exception caught when closing Sesame repository connection.", e);
         } finally {
             this.open = false;
         }
-    }
-
-    private static boolean isFileUri(URI uri) {
-        return uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME);
-    }
-
-    private static boolean isRemoteRepository(URI uri) {
-        final String scheme = uri.getScheme();
-        for (String s : KNOWN_REMOTE_SCHEMES) {
-            if (s.equals(scheme)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override

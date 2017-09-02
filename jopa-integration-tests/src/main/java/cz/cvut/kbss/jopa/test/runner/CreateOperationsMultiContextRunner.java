@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -225,8 +225,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     public void testPersistEntityWithObjectPropertyWithGeneratedIdentifierAndPutTheReferenceIntoContext()
             throws Exception {
-        // persist entity with reference to an entity with generated identifier.
-        // The identifier should be generated automatically before the referenced entity itself is persisted.
         this.em = getEntityManager("PersistEntityWithObjectPropertyWithGeneratedIdentifierContexts", true);
         entityK.setOwlClassE(entityE);
         assertNull(entityE.getUri());
@@ -235,8 +233,8 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         kDescriptor.addAttributeDescriptor(OWLClassK.class.getDeclaredField("owlClassE"), eDescriptor);
         em.getTransaction().begin();
         em.persist(entityK, kDescriptor);
-        assertNotNull(entityE.getUri());
         em.persist(entityE, eDescriptor);
+        assertNotNull(entityE.getUri());
         em.getTransaction().commit();
 
         final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(), eDescriptor);

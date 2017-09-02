@@ -32,8 +32,8 @@ import java.util.List;
 class ReferencedListPropertyStrategy<X> extends
                                         ListPropertyStrategy<ReferencedListDescriptor, ReferencedListValueDescriptor, X> {
 
-    public ReferencedListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att,
-                                          Descriptor descriptor, EntityMappingHelper mapper) {
+    ReferencedListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att, Descriptor descriptor,
+                                   EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
 
@@ -66,13 +66,18 @@ class ReferencedListPropertyStrategy<X> extends
     @Override
     <K> void extractListValues(List<K> list, X instance, AxiomValueGatherer valueBuilder) {
         final ReferencedListValueDescriptor listDescriptor = createListValueDescriptor(instance);
+        final List<K> pendingItems = resolveUnpersistedItems(list, listDescriptor);
+        if (!pendingItems.isEmpty()) {
+            pendingItems.forEach(item -> referenceSavingResolver.registerPendingReference(item, listDescriptor, list));
+            return;
+        }
         addListElementsToListValueDescriptor(listDescriptor, list);
         valueBuilder.addReferencedListValues(listDescriptor);
     }
 
     @Override
     ReferencedListValueDescriptor createListValueDescriptor(X instance) {
-        final URI owner = EntityPropertiesUtils.getPrimaryKey(instance, et);
+        final URI owner = EntityPropertiesUtils.getIdentifier(instance, et);
         final Assertion hasList = Assertion
                 .createObjectPropertyAssertion(listAttribute.getIRI().toURI(), listAttribute.isInferred());
         final Assertion hasNext = Assertion.createObjectPropertyAssertion(listAttribute

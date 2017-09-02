@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -53,7 +53,7 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(instance, ErrorUtils.getNPXMessageSupplier("instance"));
         Objects.requireNonNull(et, ErrorUtils.getNPXMessageSupplier("et"));
 
-        final Object id = EntityPropertiesUtils.getPrimaryKey(instance, et);
+        final Object id = EntityPropertiesUtils.getIdentifier(instance, et);
         for (Attribute<? super T, ?> att : et.getAttributes()) {
             if (skipLazy && att.getFetchType() == FetchType.LAZY) {
                 continue;
@@ -74,7 +74,7 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(metamodel, ErrorUtils.getNPXMessageSupplier("metamodel"));
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
-        final Object id = EntityPropertiesUtils.getPrimaryKey(changeSet.getCloneObject(), et);
+        final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getCloneObject(), et);
         for (ChangeRecord change : changeSet.getChanges()) {
             validate(id, change.getAttribute(), change.getNewValue());
         }

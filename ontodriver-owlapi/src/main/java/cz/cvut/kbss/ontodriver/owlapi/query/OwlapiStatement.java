@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,7 +19,6 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
 
-import java.net.URI;
 import java.util.Objects;
 
 public class OwlapiStatement implements Statement {
@@ -45,7 +44,7 @@ public class OwlapiStatement implements Statement {
     }
 
     @Override
-    public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException {
+    public ResultSet executeQuery(String sparql) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(sparql);
         closeExistingResultSet();
@@ -58,7 +57,7 @@ public class OwlapiStatement implements Statement {
     }
 
     @Override
-    public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
+    public void executeUpdate(String sparql) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(sparql);
         closeExistingResultSet();

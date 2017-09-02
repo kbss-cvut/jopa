@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,7 +22,6 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-import java.net.URI;
 import java.util.Objects;
 
 public class SesameStatement implements Statement {
@@ -39,7 +38,7 @@ public class SesameStatement implements Statement {
     }
 
     @Override
-    public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException {
+    public ResultSet executeQuery(String sparql) throws OntoDriverException {
         ensureOpen();
         validateQueryParams(sparql);
         closeCurrentResultSet();
@@ -65,7 +64,7 @@ public class SesameStatement implements Statement {
     }
 
     @Override
-    public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
+    public void executeUpdate(String sparql) throws OntoDriverException {
         ensureOpen();
         validateQueryParams(sparql);
         closeCurrentResultSet();

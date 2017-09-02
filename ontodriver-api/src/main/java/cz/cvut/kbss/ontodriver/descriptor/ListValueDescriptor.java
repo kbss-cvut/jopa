@@ -20,24 +20,22 @@ import java.util.List;
 
 /**
  * Descriptor for list values.
- * 
- * @author ledvima1
- * 
+ *
  */
 public interface ListValueDescriptor extends ListDescriptor {
 
-	/**
-	 * Gets values from the list described by this descriptor.
-	 * 
-	 * @return List of value identifiers
-	 */
-	public List<NamedResource> getValues();
+    /**
+     * Gets values from the list described by this descriptor.
+     *
+     * @return List of value identifiers
+     */
+    List<NamedResource> getValues();
 
-	/**
-	 * Adds value to this list descriptor.
-	 * 
-	 * @param elem
-	 *            The value to add, i. e. identifier of the list element
-	 */
-	public void addValue(NamedResource elem);
+    /**
+     * Adds value to this list descriptor.
+     *
+     * @param elem
+     *            The value to add, i. e. identifier of the list element
+     */
+    void addValue(NamedResource elem);
 }

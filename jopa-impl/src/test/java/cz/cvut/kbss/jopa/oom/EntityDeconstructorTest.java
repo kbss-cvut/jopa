@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -40,7 +40,6 @@ import java.net.URI;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class EntityDeconstructorTest {
@@ -61,9 +60,6 @@ public class EntityDeconstructorTest {
 
     @Mock
     private ObjectOntologyMapperImpl oomMock;
-
-    @Mock
-    private CascadeResolver cascadeResolverMock;
 
     private EntityDeconstructor entityBreaker;
 
@@ -103,7 +99,7 @@ public class EntityDeconstructorTest {
         entityB.setProperties(null);
         entityE.setUri(null);
         this.entityBreaker = new EntityDeconstructor(oomMock);
-        entityBreaker.setCascadeResolver(cascadeResolverMock);
+        entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(oomMock));
     }
 
     @Test
@@ -194,8 +190,9 @@ public class EntityDeconstructorTest {
     @Test
     public void testMapEntityWithObjectProperty() throws Exception {
         final Descriptor dDescriptor = new EntityDescriptor();
-        final AxiomValueGatherer builder = entityBreaker.mapEntityToAxioms(entityD.getUri(),
-                entityD, mocks.forOwlClassD().entityType(), dDescriptor);
+        when(oomMock.isManaged(entityD.getOwlClassA())).thenReturn(true);
+        final AxiomValueGatherer builder = entityBreaker
+                .mapEntityToAxioms(entityD.getUri(), entityD, mocks.forOwlClassD().entityType(), dDescriptor);
         final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
         assertNotNull(res);
         assertEquals(entityD.getUri(), res.getSubject().getIdentifier());
@@ -311,23 +308,6 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithObjectPropertyWithGeneratedIdentifier() throws Exception {
-        final URI eUri = URI.create("http://eUri");
-        when(oomMock.generateIdentifier(mocks.forOwlClassE().entityType())).thenReturn(eUri);
-        when(oomMock.getEntityType(OWLClassE.class)).thenReturn(mocks.forOwlClassE().entityType());
-        final Descriptor eDescriptor = new EntityDescriptor(CONTEXT);
-        final Descriptor kDescriptor = new EntityDescriptor();
-        kDescriptor.addAttributeDescriptor(OWLClassK.getOwlClassEField(), eDescriptor);
-        assertNull(entityE.getUri());
-        final AxiomValueGatherer builder = entityBreaker.mapEntityToAxioms(entityK.getUri(),
-                entityK, mocks.forOwlClassK().entityType(), kDescriptor);
-        final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
-        assertNotNull(res);
-        verify(oomMock).generateIdentifier(mocks.forOwlClassE().entityType());
-        assertEquals(eUri, entityE.getUri());
-    }
-
-    @Test
     public void mapsEntityDataPropertyFieldToAxiomDescriptor() throws Exception {
         final Descriptor aDescriptor = new EntityDescriptor();
         final AxiomValueGatherer builder = entityBreaker.mapFieldToAxioms(entityA.getUri(), entityA,
@@ -358,6 +338,7 @@ public class EntityDeconstructorTest {
     public void mapsEntityObjectPropertyValueInContextToAxiomDescriptor() throws Exception {
         final Descriptor dDescriptor = new EntityDescriptor();
         dDescriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
+        when(oomMock.isManaged(entityD.getOwlClassA())).thenReturn(true);
         final AxiomValueGatherer builder = entityBreaker.mapFieldToAxioms(entityD.getUri(), entityD,
                 OWLClassD.getOwlClassAField(), mocks.forOwlClassD().entityType(), dDescriptor);
         final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
@@ -439,6 +420,7 @@ public class EntityDeconstructorTest {
         q.setParentString("parentStringAttribute");
         q.setLabel("label");
         q.setOwlClassA(entityA);
+        when(oomMock.isManaged(entityA)).thenReturn(true);
         return q;
     }
 

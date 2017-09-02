@@ -86,8 +86,7 @@ public abstract class BaseRunner {
      * </pre>
      */
     private void init() {
-        this.entityA = new OWLClassA();
-        entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
+        this.entityA = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
         entityA.setStringAttribute("entityAStringAttribute");
         final Set<String> types = new HashSet<>();
         types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
@@ -97,8 +96,7 @@ public abstract class BaseRunner {
         entityB.setStringAttribute("entityBStringAttribute");
         this.entityC = new OWLClassC();
         entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
-        this.entityD = new OWLClassD();
-        entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
+        this.entityD = new OWLClassD(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
         entityD.setOwlClassA(entityA);
         this.entityE = new OWLClassE();
         entityE.setStringAttribute("entityEStringAttribute");

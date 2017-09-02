@@ -71,11 +71,6 @@ public abstract class Generators {
                 randomInt(Integer.MAX_VALUE));
     }
 
-    public static List<OWLClassA> createReferencedList(int size) {
-        assert size > 0;
-        return generateInstances(size);
-    }
-
     public static Map<String, Set<String>> generateStringProperties() {
         return generateStringProperties(DEFAULT_SIZE, DEFAULT_SIZE);
     }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -224,8 +224,8 @@ public class CloneBuilderTest {
 
     @Test
     public void testCloneEmptyList() {
-        entityC.setSimpleList(Collections.<OWLClassA>emptyList());
-        entityC.setReferencedList(Generators.createReferencedList(10));
+        entityC.setSimpleList(Collections.emptyList());
+        entityC.setReferencedList(Generators.generateInstances(10));
         final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
         assertNotNull(res);
         assertTrue(res.getSimpleList().isEmpty());
@@ -241,7 +241,7 @@ public class CloneBuilderTest {
         final URI pk = URI.create("http://singletonTest");
         obj.setUri(pk);
         obj.setStringAttribute("TEST");
-        obj.setTypes(Collections.<String>emptySet());
+        obj.setTypes(Collections.emptySet());
         final OWLClassA res = (OWLClassA) builder.buildClone(obj, defaultDescriptor);
         assertNotNull(res);
         assertTrue(res.getTypes().isEmpty());
@@ -270,7 +270,7 @@ public class CloneBuilderTest {
 
     @Test
     public void testCloneEmptyMap() {
-        entityB.setProperties(Collections.<String, Set<String>>emptyMap());
+        entityB.setProperties(Collections.emptyMap());
         OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
         assertNotNull(res);
         assertTrue(res.getProperties().isEmpty());
@@ -349,7 +349,7 @@ public class CloneBuilderTest {
     @Test
     public void testCloneReferencedList() {
         // Let's see how long this takes
-        entityC.setReferencedList(Generators.createReferencedList(100));
+        entityC.setReferencedList(Generators.generateInstances(100));
         final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
         assertNotSame(entityC, res);
         int size = entityC.getReferencedList().size();
@@ -420,7 +420,7 @@ public class CloneBuilderTest {
         final OWLClassC c = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
         assertNotSame(entityC, c);
         assertNull(entityC.getReferencedList());
-        c.setReferencedList(Generators.createReferencedList(5));
+        c.setReferencedList(Generators.generateInstances(5));
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
                 defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassC().referencedListAtt(),

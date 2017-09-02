@@ -32,12 +32,13 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTestBase {
 
@@ -59,7 +60,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         this.refListMock = mocks.forOwlClassC().referencedListAtt();
         this.strategy = new ReferencedListPropertyStrategy<>(mocks.forOwlClassC().entityType(), refListMock, descriptor,
                 mapperMock);
-        strategy.setCascadeResolver(cascadeResolverMock);
+        strategy.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
     }
 
     @Test
@@ -192,7 +193,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
         strategy.buildAxiomValuesFromInstance(c, builder);
         final ReferencedListValueDescriptor res = listValueDescriptor();
-        final List<URI> expected = c.getReferencedList().stream().filter(item -> item != null).map(OWLClassA::getUri)
+        final List<URI> expected = c.getReferencedList().stream().filter(Objects::nonNull).map(OWLClassA::getUri)
                                     .collect(
                                             Collectors.toList());
         verifyListItems(expected, res);
@@ -239,7 +240,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         p.setUri(PK);
         p.setReferencedList(generateListOfIdentifiers());
         setRandomListItemsToNull(p.getReferencedList());
-        final List<URI> nonNulls = p.getReferencedList().stream().filter(i -> i != null).collect(Collectors.toList());
+        final List<URI> nonNulls = p.getReferencedList().stream().filter(Objects::nonNull).collect(Collectors.toList());
         final ListAttribute<OWLClassP, URI> refList = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), refList, descriptor,
@@ -248,5 +249,17 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         strategy.buildAxiomValuesFromInstance(p, builder);
         final ReferencedListValueDescriptor valueDescriptor = listValueDescriptor();
         verifyListItems(nonNulls, valueDescriptor);
+    }
+
+    @Test
+    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() throws Exception {
+        final OWLClassC c = new OWLClassC(PK);
+        c.setReferencedList(generateList());
+        c.getReferencedList()
+         .forEach(a -> when(mapperMock.containsEntity(OWLClassA.class, a.getUri(), descriptor)).thenReturn(false));
+        strategy.buildAxiomValuesFromInstance(c, builder);
+        c.getReferencedList()
+         .forEach(item -> verify(mapperMock).registerPendingListReference(eq(item), any(), eq(c.getReferencedList())));
+        verify(builder, never()).addReferencedListValues(any());
     }
 }
