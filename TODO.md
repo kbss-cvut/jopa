@@ -11,10 +11,7 @@
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] JOPA Specification doc, which would explain behaviour and principles
-    - Perhaps use the github wiki? Or something on KBSS Liferay?
-- [ ] When persisting a collection of instances without generated ids, how to handle references between them?
-    - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
-        results in assigning it a generated URI. E.g. `foreach(inst -> {inst.generateUri(); em.persist(inst); })`    
+    - Perhaps use the github wiki? Or something on KBSS Liferay?   
 - [ ] Add support for `EntityManager.getReference`
 - [ ] Add a `@Context` annotation, which would specify that a field/entity should always be loaded from the specified context.
     - This could be overwritten with a descriptor passed to EM

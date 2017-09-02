@@ -1,5 +1,13 @@
 # JOPA - Release Notes
 
+## 0.9.9 - September 2, 2017
+- Support for credentials specification for accessing remote RDF4J repositories.
+- Reworked instance persist to prevent saving pending references before the target instances are saved.
+This also fixes the problem of prematurely generated IDs.
+- Reworked merge to have semantics more corresponding to JPA.
+- Allow descriptor specification for TypedQuery results. This allows context to be specified for these results.
+It also replaces the original possibility of setting context for query, which did not work anyway.
+
 ## 0.9.8 - June 26, 2017
 - Added support for language tag specification of String attributes.
 
