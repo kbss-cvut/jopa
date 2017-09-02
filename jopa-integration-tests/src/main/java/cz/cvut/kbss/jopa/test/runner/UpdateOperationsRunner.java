@@ -21,7 +21,6 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -1214,5 +1213,18 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
             e.setStringAttribute("instance" + i);
             return e;
         }).collect(Collectors.toList());
+    }
+
+    @Test
+    public void mergeRemovedThrowsIllegalArgumentException() {
+        this.em = getEntityManager("mergeRemovedThrowsIllegalArgument", true);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(containsString("removed"));
+        persist(entityA);
+
+        em.getTransaction().begin();
+        final OWLClassA toRemove = em.find(OWLClassA.class, entityA.getUri());
+        em.remove(toRemove);
+        em.merge(toRemove);
     }
 }

@@ -2,7 +2,8 @@
 
 ## High Priority
 
-- [ ] Fix merge semantics
+- [ ] Add support for query result set mapping
+- [ ] Use username/password in Sesame driver when specified
 - [ ] Inheritance support
     - [x] Mapped superclass
     - [x] Single inheritance

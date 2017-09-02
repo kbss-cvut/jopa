@@ -30,8 +30,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
 
     @SuppressWarnings("unchecked")
     private void mergeDetachedTest() throws Exception {
-        when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor))
-                .thenReturn(Boolean.TRUE);
+        when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor)).thenReturn(Boolean.TRUE);
         final OWLClassA orig = new OWLClassA();
         orig.setUri(entityA.getUri());
         orig.setStringAttribute("oldStringAttribute");
@@ -59,7 +58,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testMergeDetachedNew() throws Exception {
+    public void mergeDetachedRegistersNewObjectWhenItDoesNotExist() throws Exception {
         when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor))
                 .thenReturn(Boolean.FALSE);
         final OWLClassA res = uow.mergeDetached(entityA, descriptor);
@@ -110,7 +109,6 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
         final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
                 descriptor, true);
-        dParams.bypassCache();
         when(storageMock.find(dParams)).thenReturn(dOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);
@@ -126,7 +124,6 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
         final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
                 descriptor, true);
-        dParams.bypassCache();
         when(storageMock.find(dParams)).thenReturn(dOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);

@@ -618,7 +618,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             return keysToClones.get(identifier);
         }
         final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
-        params.bypassCache();
         T original = storage.find(params);
         assert original != null;
 

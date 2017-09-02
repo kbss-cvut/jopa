@@ -202,7 +202,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
                 return merged;
             case REMOVED:
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Cannot merge instance which is not an entity or is removed.");
         }
     }
 
