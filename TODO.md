@@ -3,7 +3,6 @@
 ## High Priority
 
 - [ ] Add support for query result set mapping
-- [ ] Use username/password in Sesame driver when specified
 - [ ] Inheritance support
     - [x] Mapped superclass
     - [x] Single inheritance
@@ -41,11 +40,3 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
-
-- [x] Fix pending persist handling:
-    - [x] Add property assertion to pending persist when persist/merge should add new instance which is not cascaded
-    - [x] Remove property assertion from pending persist and persist it when the target is persisted
-    - [x] Remove property assertion from pending persist when the original persist is cancelled
-    - [x] Remove property assertion from pending persist when the attribute is set to another value
-    - [x] Handling of simple lists
-    - [x] Handling of reference lists

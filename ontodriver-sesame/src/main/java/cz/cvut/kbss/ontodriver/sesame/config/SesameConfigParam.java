@@ -15,12 +15,15 @@
 package cz.cvut.kbss.ontodriver.sesame.config;
 
 import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 
 public enum SesameConfigParam implements ConfigurationParameter {
 
     USE_VOLATILE_STORAGE(SesameOntoDriverProperties.SESAME_USE_VOLATILE_STORAGE),
     USE_INFERENCE(SesameOntoDriverProperties.SESAME_USE_INFERENCE),
-    LOAD_ALL_THRESHOLD(SesameOntoDriverProperties.SESAME_LOAD_ALL_THRESHOLD);
+    LOAD_ALL_THRESHOLD(SesameOntoDriverProperties.SESAME_LOAD_ALL_THRESHOLD),
+    USERNAME(OntoDriverProperties.DATA_SOURCE_USERNAME),
+    PASSWORD(OntoDriverProperties.DATA_SOURCE_PASSWORD);
 
     private final String name;
 

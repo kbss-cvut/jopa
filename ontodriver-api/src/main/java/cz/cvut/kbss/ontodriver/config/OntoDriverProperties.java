@@ -24,10 +24,22 @@ public final class OntoDriverProperties {
      * Property for setting default auto-commit strategy for connections.
      */
     public static final String CONNECTION_AUTO_COMMIT = "cz.cvut.kbss.ontodriver.connection-auto-commit";
+
+    /**
+     * Username to be used when accessing data source.
+     */
+    public static final String DATA_SOURCE_USERNAME = "cz.cvut.jopa.dataSource.username";
+
+    /**
+     * Password to be used when accessing data source.
+     */
+    public static final String DATA_SOURCE_PASSWORD = "cz.cvut.jopa.dataSource.password";
+
     /**
      * Reasoner factory class property.
      */
     public static final String OWLAPI_REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
+
     /**
      * Ontology language property.
      */

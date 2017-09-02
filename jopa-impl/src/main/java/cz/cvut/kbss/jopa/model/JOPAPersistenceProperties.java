@@ -32,16 +32,6 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     public static final String DATA_SOURCE_CLASS = "cz.cvut.jopa.dataSource.class";
 
     /**
-     * Username to be used when accessing data source.
-     */
-    public static final String DATA_SOURCE_USERNAME = "cz.cvut.jopa.dataSource.username";
-
-    /**
-     * Password to be used when accessing data source.
-     */
-    public static final String DATA_SOURCE_PASSWORD = "cz.cvut.jopa.dataSource.password";
-
-    /**
      * Factory class for OWLAPI-based reasoner.
      */
     public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
