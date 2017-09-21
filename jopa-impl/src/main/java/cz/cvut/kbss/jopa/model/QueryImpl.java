@@ -207,6 +207,7 @@ public class QueryImpl extends AbstractQuery implements Query {
         final Statement stmt = connection.createStatement();
         try {
             setTargetOntology(stmt);
+            logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
             final int columnCount = rs.getColumnCount();
             int cnt = 0;

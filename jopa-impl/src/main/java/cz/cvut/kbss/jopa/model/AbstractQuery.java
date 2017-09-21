@@ -61,6 +61,7 @@ abstract class AbstractQuery {
         final Statement stmt = connection.createStatement();
         try {
             setTargetOntology(stmt);
+            logQuery();
             stmt.executeUpdate(query.assembleQuery());
         } catch (OntoDriverException e) {
             markTransactionForRollback();
@@ -74,6 +75,12 @@ abstract class AbstractQuery {
             } catch (Exception e) {
                 LOG.error("Unable to close statement after update execution.", e);
             }
+        }
+    }
+
+    void logQuery() {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Executing query: {}", query.assembleQuery());
         }
     }
 

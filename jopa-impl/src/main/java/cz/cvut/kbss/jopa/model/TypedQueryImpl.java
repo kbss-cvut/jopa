@@ -235,6 +235,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         final Statement stmt = connection.createStatement();
         try {
             setTargetOntology(stmt);
+            logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
             final List<X> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
