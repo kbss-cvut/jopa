@@ -428,17 +428,22 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     }
 
     @Override
-    public Query createNativeQuery(String sparql) {
-        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparql);
+    public Query createNativeQuery(String sparqlString) {
+        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         return q;
     }
 
     @Override
-    public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparql, resultClass);
+    public <T> TypedQuery<T> createNativeQuery(String sparqlString, Class<T> resultClass) {
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         return q;
+    }
+
+    @Override
+    public Query createNativeQuery(String sparqlString, String resultSetMapping) {
+        return null;
     }
 
     @Override

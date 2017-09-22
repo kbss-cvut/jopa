@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
@@ -977,6 +978,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     @Override
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
         return queryFactory.createNativeQuery(sparql, resultClass);
+    }
+
+    @Override
+    public Query createNativeQuery(String sparql, String resultSetMapping) {
+        // TODO
+        return null;
     }
 
     @Override
