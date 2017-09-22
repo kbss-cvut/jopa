@@ -50,6 +50,9 @@ public @interface ConstructorResult {
 
     /**
      * (Required) The mapping of variables in the SELECT list to the arguments of the intended constructor, in order.
+     * <p>
+     * // TODO Can we do without variables being required? We could use variables in the SELECT clause as constructor
+     * parameters, in their order
      */
     VariableResult[] variables();
 }
