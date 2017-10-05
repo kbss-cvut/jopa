@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,8 +24,6 @@ import java.util.Objects;
 
 /**
  * Creates second level cache based on the specified properties.
- *
- * @author ledvima1
  */
 public abstract class CacheFactory {
 
@@ -55,8 +53,7 @@ public abstract class CacheFactory {
     }
 
     private static CacheManager createEnabledCache(Map<String, String> properties) {
-        final String cacheType = properties.getOrDefault(JOPAPersistenceProperties.CACHE_TYPE, LRU_CACHE)
-                                           .toLowerCase();
+        final String cacheType = properties.getOrDefault(JOPAPersistenceProperties.CACHE_TYPE, LRU_CACHE).toLowerCase();
         switch (cacheType) {
             case LRU_CACHE:
                 LOG.debug("Using LRU cache.");

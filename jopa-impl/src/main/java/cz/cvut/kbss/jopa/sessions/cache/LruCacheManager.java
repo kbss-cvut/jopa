@@ -54,11 +54,11 @@ public class LruCacheManager implements CacheManager {
 
     private Set<Class<?>> inferredClasses;
 
-    public LruCacheManager() {
+    LruCacheManager() {
         this(Collections.emptyMap());
     }
 
-    public LruCacheManager(Map<String, String> properties) {
+    LruCacheManager(Map<String, String> properties) {
         Objects.requireNonNull(properties);
         this.capacity = properties.containsKey(JOPAPersistenceProperties.LRU_CACHE_CAPACITY) ?
                         resolveCapacitySetting(properties) : DEFAULT_CAPACITY;

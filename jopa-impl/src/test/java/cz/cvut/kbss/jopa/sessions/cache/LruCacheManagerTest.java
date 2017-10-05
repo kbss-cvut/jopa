@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,6 +15,10 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import org.junit.Before;
@@ -22,8 +26,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -84,7 +87,7 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
     }
 
     @Test
-    public void testEvictByContextAndPrimaryKey() throws Exception {
+    public void testEvictByContextClassAndPrimaryKey() throws Exception {
         final LruCache lruCache = getLruCache();
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
@@ -118,7 +121,7 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
     }
 
     @Test
-    public void leastRecentlyUsedEntryGetsEvictedWhenCacheIsFull() throws Exception {
+    public void leastRecentlyUsedEntryGetsEvictedWhenCacheIsFull_withContext() throws Exception {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         this.manager = new LruCacheManager(
@@ -147,5 +150,55 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
         final Field descriptorsField = EntityCache.class.getDeclaredField("descriptors");
         descriptorsField.setAccessible(true);
         return (Map<?, ?>) descriptorsField.get(cache);
+    }
+
+    @Test
+    public void leastRecentlyUsedEntriesAreEvictedWhenCacheIsFull() {
+        final int capacity = 4;
+        this.manager = new LruCacheManager(
+                Collections.singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, Integer.toString(capacity)));
+        final LinkedHashMap<URI, Object> items = generateItems(capacity);
+        final List<Map.Entry<URI, Object>> evicted = new ArrayList<>(items.size() - capacity);
+        final List<Map.Entry<URI, Object>> retained = new ArrayList<>(capacity);
+        int i = 0;
+        for (Map.Entry<URI, Object> e : items.entrySet()) {
+            if (items.size() - i >= capacity) {
+                evicted.add(e);
+            } else {
+                retained.add(e);
+            }
+            manager.add(e.getKey(), e.getValue(), descriptor(null));
+            i++;
+        }
+        evicted.forEach(e -> assertFalse(manager.contains(e.getValue().getClass(), e.getKey(), descriptor(null))));
+        retained.forEach(e -> assertTrue(manager.contains(e.getValue().getClass(), e.getKey(), descriptor(null))));
+    }
+
+    private LinkedHashMap<URI, Object> generateItems(int capacity) {
+        final int count = capacity * 5;
+        final LinkedHashMap<URI, Object> map = new LinkedHashMap<>(count);
+        for (int i = 0; i < count; i++) {
+            int n = count % 4;
+            switch (n) {
+                case 0:
+                    final OWLClassA a = new OWLClassA(Generators.createIndividualIdentifier());
+                    map.put(a.getUri(), a);
+                    break;
+                case 1:
+                    final OWLClassB b = new OWLClassB(Generators.createIndividualIdentifier());
+                    map.put(b.getUri(), b);
+                    break;
+                case 2:
+                    final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
+                    map.put(d.getUri(), d);
+                    break;
+                case 3:
+                    final OWLClassE e = new OWLClassE();
+                    e.setUri(Generators.createIndividualIdentifier());
+                    map.put(e.getUri(), e);
+                    break;
+            }
+        }
+        return map;
     }
 }
