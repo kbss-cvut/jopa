@@ -177,6 +177,18 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
+    public void readingIndividualWithStringIdTwiceInPersistenceContextReturnsSameInstance() {
+        this.em = getEntityManager("readingIndividualWithStringIdTwiceInPersistenceContextReturnsSameInstance", true);
+        persist(entityN);
+
+        final OWLClassN resultOne = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN resultTwo = em.find(OWLClassN.class, entityN.getId());
+        assertNotNull(resultOne);
+        assertNotNull(resultTwo);
+        assertSame(resultOne, resultTwo);
+    }
+
+    @Test
     public void retrieveLoadsUnmappedPropertiesTogetherWithObjectPropertyValues() {
         this.em = getEntityManager("retrieveLoadsUnmappedPropertiesTogetherWithObjectPropertyValues", false);
         final OWLClassV v = new OWLClassV();
