@@ -52,14 +52,12 @@ public class EntityPropertiesUtils {
      * @throws NullPointerException    If {@code entity} or {@code metamodel} is null
      * @throws OWLPersistenceException If {@code entity} is not an entity or if the identifier is of an unknown type
      */
-    public static Object getIdentifier(Object entity, Metamodel metamodel) {
+    public static URI getIdentifier(Object entity, Metamodel metamodel) {
         Objects.requireNonNull(entity);
         Objects.requireNonNull(metamodel);
 
-        Object fieldValue;
         final EntityType<?> type = metamodel.entity(entity.getClass());
-        fieldValue = getFieldValue(type.getIdentifier().getJavaField(), entity);
-        return fieldValue;
+        return getIdentifier(entity, type);
     }
 
     /**
