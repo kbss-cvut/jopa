@@ -78,11 +78,11 @@ public class EntityLoader {
                 }
             }
             // Scan jar files on classpath
-            URL[] urlsSet = ((URLClassLoader) loader).getURLs();
-            for (URL url : urlsSet) {
-                if (isJar(url.toString())) {
-                    processJarFile(url, scanPath, all);
-                }
+            Enumeration<URL> resources = loader.getResources(".");
+            while (resources.hasMoreElements()) {
+                URL resourceURL = resources.nextElement();
+                if (isJar(resourceURL.toString()))
+                    processJarFile(resourceURL, scanPath, all);
             }
         } catch (IOException e) {
             throw new JopaInitializationException("Unable to scan packages for entity classes.", e);
