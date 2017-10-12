@@ -1,22 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
-import cz.cvut.kbss.jopa.loaders.EntityLoader;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -44,7 +42,7 @@ public class MetamodelImplInheritanceTest {
             .singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
 
     @Mock
-    private EntityLoader entityLoaderMock;
+    private PersistenceUnitClassFinder classFinderMock;
 
     private Configuration conf = new Configuration(PROPERTIES);
 
@@ -62,9 +60,9 @@ public class MetamodelImplInheritanceTest {
     }
 
     private MetamodelImpl metamodelFor(Class<?>... classes) {
-        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(new HashSet<>(Arrays.asList(classes)));
+        when(classFinderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(classes)));
         final MetamodelImpl metamodel = new MetamodelImpl(conf);
-        metamodel.build(entityLoaderMock);
+        metamodel.build(classFinderMock);
         return metamodel;
     }
 

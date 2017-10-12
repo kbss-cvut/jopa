@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Constants;
@@ -39,12 +40,12 @@ public class MetamodelBuilder {
     }
 
     /**
-     * Builds persistence unit metamodel from the specified set of entities.
+     * Builds persistence unit metamodel based on classes discovered by the specified class finder.
      *
-     * @param entities Entities declared for the persistence unit
+     * @param classFinder Holder of information about classes relevant for persistence unit building
      */
-    public void buildMetamodel(Set<Class<?>> entities) {
-        entities.forEach(this::processOWLClass);
+    public void buildMetamodel(PersistenceUnitClassFinder classFinder) {
+        classFinder.getEntities().forEach(this::processOWLClass);
     }
 
     private <X> void processOWLClass(final Class<X> cls) {

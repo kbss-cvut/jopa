@@ -77,7 +77,7 @@ public class SparqlQueryFactoryTest {
 
     @Test(expected = NullPointerException.class)
     public void testCreateNativeQueryTypedNullType() {
-        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, null);
+        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, (Class<OWLClassA>) null);
         assert q == null;
     }
 
