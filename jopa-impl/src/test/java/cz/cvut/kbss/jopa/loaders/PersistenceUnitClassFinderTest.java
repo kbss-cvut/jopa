@@ -14,12 +14,14 @@ package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Test;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class PersistenceUnitClassFinderTest {
@@ -101,5 +103,15 @@ public class PersistenceUnitClassFinderTest {
         final Optional<Class<?>> cls = result.stream().filter(c -> c.getName().contains("classInName"))
                                              .findAny();
         assertTrue(cls.isPresent());
+    }
+
+    @Test
+    public void scanLoadsResultSetMappings() {
+        final Map<String, String> properties = Collections.singletonMap(
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
+        finder.scanClasspath(new Configuration(properties));
+        assertFalse(finder.getResultSetMappings().isEmpty());
+        assertTrue(finder.getResultSetMappings()
+                         .contains(OWLClassA.class.getDeclaredAnnotation(SparqlResultSetMapping.class)));
     }
 }

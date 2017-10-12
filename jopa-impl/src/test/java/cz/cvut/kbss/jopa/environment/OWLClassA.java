@@ -21,6 +21,10 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
+@SparqlResultSetMapping(variables = {
+        @VariableResult(name = "x"),
+        @VariableResult(name = "y")
+})
 @OWLClass(iri = Vocabulary.c_OwlClassA)
 public class OWLClassA {
 

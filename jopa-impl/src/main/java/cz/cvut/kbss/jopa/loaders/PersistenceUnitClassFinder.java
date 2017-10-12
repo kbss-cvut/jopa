@@ -1,15 +1,23 @@
 package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Scans classpath to discover classes relevant to persistence unit building.
+ * <p>
+ * Only classes under the package configured via {@link JOPAPersistenceProperties#SCAN_PACKAGE} are processed.
+ */
 public class PersistenceUnitClassFinder {
 
     private final PersistenceUnitClassProcessor classProcessor = new PersistenceUnitClassProcessor();
+
     private final EntityLoader entityLoader = new EntityLoader();
+    private final ResultSetMappingLoader resultSetMappingLoader = new ResultSetMappingLoader();
 
     private boolean scanned = false;
 
@@ -37,6 +45,7 @@ public class PersistenceUnitClassFinder {
             throw new IllegalArgumentException(JOPAPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
         }
         classProcessor.addListener(entityLoader);
+        classProcessor.addListener(resultSetMappingLoader);
         classProcessor.processClasses(toScan);
         this.scanned = true;
     }
@@ -49,5 +58,15 @@ public class PersistenceUnitClassFinder {
     public Set<Class<?>> getEntities() {
         assert scanned;
         return entityLoader.getEntities();
+    }
+
+    /**
+     * Gets {@link SparqlResultSetMapping}s found during classpath scanning.
+     *
+     * @return Set of result set mapping annotations discovered on classpath
+     */
+    public Set<SparqlResultSetMapping> getResultSetMappings() {
+        assert scanned;
+        return resultSetMappingLoader.getMappings();
     }
 }
