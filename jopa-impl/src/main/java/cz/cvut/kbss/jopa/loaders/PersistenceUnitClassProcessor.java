@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.loaders;
 
+import cz.cvut.kbss.jopa.exception.JopaInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
