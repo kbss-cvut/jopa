@@ -33,10 +33,9 @@ public class MetamodelBuilder {
 
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
-    private final NamedQueryManager namedQueryManager = new NamedQueryManager();
 
     public MetamodelBuilder() {
-        this.queryProcessor = new NamedNativeQueryProcessor(namedQueryManager);
+        this.queryProcessor = new NamedNativeQueryProcessor();
     }
 
     /**
@@ -132,7 +131,7 @@ public class MetamodelBuilder {
     }
 
     public NamedQueryManager getNamedQueryManager() {
-        return namedQueryManager;
+        return queryProcessor.getQueryManager();
     }
 
     void addInferredClass(Class<?> cls) {

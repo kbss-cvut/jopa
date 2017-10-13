@@ -20,7 +20,7 @@ public class ResultSetMappingManagerTest {
 
     @Test
     public void addedMapperCanBeRetrieved() {
-        final SparqlResultMapper mapper = new ResultRowMapper();
+        final SparqlResultMapper mapper = new ResultRowMapper(NAME);
         manager.addMapper(NAME, mapper);
         final SparqlResultMapper result = manager.getMapper(NAME);
         assertNotNull(result);
@@ -29,11 +29,11 @@ public class ResultSetMappingManagerTest {
 
     @Test
     public void addMapperThrowsIllegalArgumentWhenMapperForSpecifiedNameAlreadyExists() {
-        final SparqlResultMapper mapper = new ResultRowMapper();
+        final SparqlResultMapper mapper = new ResultRowMapper(NAME);
         manager.addMapper(NAME, mapper);
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Mapping " + NAME + " already exists in this persistence unit.");
-        manager.addMapper(NAME, new ResultRowMapper());
+        manager.addMapper(NAME, new ResultRowMapper(NAME));
     }
 
     @Test
