@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
+import cz.cvut.kbss.jopa.utils.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
@@ -27,9 +28,12 @@ public class VariableResultMapper {
      */
     public Object map(ResultSet resultSet) {
         try {
-            return resultSet.getObject(name);
+            final Object value = resultSet.getObject(name);
+            if (!void.class.equals(targetType)) {
+                return DatatypeTransformer.transform(value, targetType);
+            }
+            return value;
         } catch (OntoDriverException e) {
-            // TODO
             throw new OWLPersistenceException(e);
         }
     }
