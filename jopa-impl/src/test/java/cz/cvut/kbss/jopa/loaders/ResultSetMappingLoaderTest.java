@@ -25,7 +25,7 @@ public class ResultSetMappingLoaderTest {
                 loader.getMappings().iterator().next());
     }
 
-    @SparqlResultSetMapping(variables = {
+    @SparqlResultSetMapping(name = "testMapping", variables = {
             @VariableResult(name = "x"),
             @VariableResult(name = "y")
     })
@@ -44,11 +44,11 @@ public class ResultSetMappingLoaderTest {
     }
 
     @SparqlResultSetMappings({
-            @SparqlResultSetMapping(variables = {
+            @SparqlResultSetMapping(name = "testMappingTwo", variables = {
                     @VariableResult(name = "x"),
                     @VariableResult(name = "y")
             }),
-            @SparqlResultSetMapping(variables = {
+            @SparqlResultSetMapping(name = "testMappingTwo", variables = {
                     @VariableResult(name = "z")
             })
     })
@@ -67,7 +67,7 @@ public class ResultSetMappingLoaderTest {
     }
 
     @SparqlResultSetMappings({
-            @SparqlResultSetMapping(variables = {
+            @SparqlResultSetMapping(name = "testMapping", variables = {
                     @VariableResult(name = "x"),
                     @VariableResult(name = "y")
             })

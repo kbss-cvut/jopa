@@ -9,7 +9,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 /**
  * Maps SPARQL query result to target value based on a {@link VariableResult} configuration.
  */
-public class VariableResultMapper {
+public class VariableResultMapper implements SparqlResultMapper {
 
     private final String name;
     private final Class<?> targetType;
@@ -26,6 +26,7 @@ public class VariableResultMapper {
      * @param resultSet Query result set to read
      * @return The mapped value
      */
+    @Override
     public Object map(ResultSet resultSet) {
         try {
             final Object value = resultSet.getObject(name);

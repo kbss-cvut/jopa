@@ -44,7 +44,7 @@ public class VariableResultMapperTest {
         verify(resultSet).getObject(NAME);
     }
 
-    @SparqlResultSetMapping(variables = {
+    @SparqlResultSetMapping(name = "testMapping", variables = {
             @VariableResult(name = NAME)
     })
     private static class NoType {
@@ -64,7 +64,7 @@ public class VariableResultMapperTest {
         assertEquals(value, result);
     }
 
-    @SparqlResultSetMapping(variables = {
+    @SparqlResultSetMapping(name = "testMapping", variables = {
             @VariableResult(name = NAME, type = Number.class)
     })
     private static class WithTypeCast {
@@ -84,7 +84,7 @@ public class VariableResultMapperTest {
         assertEquals(URI.create(value), result);
     }
 
-    @SparqlResultSetMapping(variables = {
+    @SparqlResultSetMapping(name = "testMapping", variables = {
             @VariableResult(name = NAME, type = URI.class)
     })
     private static class WithTypeTransform {

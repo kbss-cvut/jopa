@@ -38,6 +38,12 @@ import java.lang.annotation.Target;
 public @interface SparqlResultSetMapping {
 
     /**
+     * The name given to the result set mapping and used to refer to it in the methods of the {@link
+     * cz.cvut.kbss.jopa.model.query.Query} API.
+     */
+    String name();
+
+    /**
      * Specifies the result set mapping to scalar values.
      */
     VariableResult[] variables();

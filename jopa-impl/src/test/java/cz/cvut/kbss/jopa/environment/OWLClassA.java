@@ -21,7 +21,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-@SparqlResultSetMapping(variables = {
+@SparqlResultSetMapping(name = "testMapping", variables = {
         @VariableResult(name = "x"),
         @VariableResult(name = "y")
 })
