@@ -443,7 +443,9 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     public Query createNativeQuery(String sparqlString, String resultSetMapping) {
-        return null;
+        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultSetMapping);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
     }
 
     @Override

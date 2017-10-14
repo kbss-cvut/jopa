@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -209,17 +209,12 @@ public class QueryImpl extends AbstractQuery implements Query {
             setTargetOntology(stmt);
             logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            final int columnCount = rs.getColumnCount();
             int cnt = 0;
             final List<Object> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             while (rs.hasNext() && cnt < maxResults) {
                 rs.next();
-                if (columnCount == 1) {
-                    res.add(rs.getObject(0));
-                } else {
-                    res.add(extractResultRow(rs, columnCount));
-                }
+                res.add(extractRow(rs));
                 cnt++;
             }
             return res;
@@ -232,12 +227,17 @@ public class QueryImpl extends AbstractQuery implements Query {
         }
     }
 
-    private static Object[] extractResultRow(ResultSet rs, int columnCount) throws OntoDriverException {
-        final Object[] row = new Object[columnCount];
-        for (int i = 0; i < columnCount; i++) {
-            final Object ob = rs.getObject(i);
-            row[i] = ob;
+    Object extractRow(ResultSet resultSet) throws OntoDriverException {
+        final int columnCount = resultSet.getColumnCount();
+        if (columnCount == 1) {
+            return resultSet.getObject(0);
+        } else {
+            final Object[] row = new Object[columnCount];
+            for (int i = 0; i < columnCount; i++) {
+                final Object ob = resultSet.getObject(i);
+                row[i] = ob;
+            }
+            return row;
         }
-        return row;
     }
 }

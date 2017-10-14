@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,8 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import org.junit.Before;
@@ -25,8 +27,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class SparqlQueryFactoryTest {
 
@@ -111,5 +112,18 @@ public class SparqlQueryFactoryTest {
     public void testCreateQueryTypedNullType() {
         final TypedQuery<OWLClassA> q = factory.createQuery(QUERY, null);
         assert q == null;
+    }
+
+    @Test
+    public void createQueryWithMappingPassesCorrectMapperToQueryInstance() {
+        final String mapping = "testMapping";
+        final SparqlResultMapper mapperMock = mock(SparqlResultMapper.class);
+        final ResultSetMappingManager managerMock = mock(ResultSetMappingManager.class);
+        when(uowMock.getResultSetMappingManager()).thenReturn(managerMock);
+        when(managerMock.getMapper(mapping)).thenReturn(mapperMock);
+
+        final Query q = factory.createNativeQuery(QUERY, mapping);
+        assertNotNull(q);
+        verify(managerMock).getMapper(mapping);
     }
 }
