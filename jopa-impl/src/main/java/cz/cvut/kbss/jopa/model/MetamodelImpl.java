@@ -16,6 +16,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class MetamodelImpl implements Metamodel {
     private Set<Class<?>> inferredClasses;
 
     private NamedQueryManager namedQueryManager;
+    private ResultSetMappingManager resultSetMappingManager;
 
     private final Configuration configuration;
 
@@ -68,6 +70,7 @@ public class MetamodelImpl implements Metamodel {
         this.entities = metamodelBuilder.getEntities();
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
+        this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
     }
 
     /**
@@ -119,6 +122,10 @@ public class MetamodelImpl implements Metamodel {
 
     public NamedQueryManager getNamedQueryManager() {
         return namedQueryManager;
+    }
+
+    public ResultSetMappingManager getResultSetMappingManager() {
+        return resultSetMappingManager;
     }
 
     @Override

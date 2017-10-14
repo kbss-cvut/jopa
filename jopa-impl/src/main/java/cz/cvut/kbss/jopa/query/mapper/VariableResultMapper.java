@@ -19,6 +19,14 @@ public class VariableResultMapper implements SparqlResultMapper {
         this.targetType = mapping.type();
     }
 
+    String getName() {
+        return name;
+    }
+
+    Class<?> getTargetType() {
+        return targetType;
+    }
+
     /**
      * Maps value from the current line of the specified result set according to the {@link VariableResult}
      * configuration represented by this instance.

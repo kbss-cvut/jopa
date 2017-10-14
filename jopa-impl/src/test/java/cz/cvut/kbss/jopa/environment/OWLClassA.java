@@ -21,12 +21,14 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-@SparqlResultSetMapping(name = "testMapping", variables = {
+@SparqlResultSetMapping(name = OWLClassA.MAPPING_NAME, variables = {
         @VariableResult(name = "x"),
         @VariableResult(name = "y")
 })
 @OWLClass(iri = Vocabulary.c_OwlClassA)
 public class OWLClassA {
+
+    public static final String MAPPING_NAME = "OWLClassA.testMapping";
 
     private static final String TYPES_FIELD = "types";
     private static final String STR_ATT_FIELD = "stringAttribute";

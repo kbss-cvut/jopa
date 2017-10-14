@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,8 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
 import cz.cvut.kbss.jopa.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +31,11 @@ public class MetamodelBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetamodelBuilder.class);
 
-    private final NamedNativeQueryProcessor queryProcessor;
+    private final NamedNativeQueryProcessor queryProcessor = new NamedNativeQueryProcessor();
+    private final ResultSetMappingProcessor mappingProcessor = new ResultSetMappingProcessor();
 
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
-
-    public MetamodelBuilder() {
-        this.queryProcessor = new NamedNativeQueryProcessor();
-    }
 
     /**
      * Builds persistence unit metamodel based on classes discovered by the specified class finder.
@@ -45,6 +44,7 @@ public class MetamodelBuilder {
      */
     public void buildMetamodel(PersistenceUnitClassFinder classFinder) {
         classFinder.getEntities().forEach(this::processOWLClass);
+        classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
     }
 
     private <X> void processOWLClass(final Class<X> cls) {
@@ -132,6 +132,10 @@ public class MetamodelBuilder {
 
     public NamedQueryManager getNamedQueryManager() {
         return queryProcessor.getQueryManager();
+    }
+
+    public ResultSetMappingManager getResultSetMappingManager() {
+        return mappingProcessor.getManager();
     }
 
     void addInferredClass(Class<?> cls) {

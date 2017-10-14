@@ -13,9 +13,11 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -25,6 +27,8 @@ import java.net.URI;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unused")
@@ -86,7 +90,7 @@ public class MetamodelBuilderTest {
     }
 
     @Namespaces({@Namespace(prefix = "dc", namespace = "http://purl.org/dc/elements/1.1/"),
-            @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
+                 @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
     private static class EntityWithNamespaceAttributes {
         @Id
@@ -112,5 +116,16 @@ public class MetamodelBuilderTest {
     private static class EntityWithNamespaceFromPackage {
         @Id
         private URI uri;
+    }
+
+    @Test
+    public void buildMetamodelBuildsResultSetMappersFromMappingConfigurations() {
+        when(finderMock.getResultSetMappings())
+                .thenReturn(Collections.singleton(OWLClassA.class.getDeclaredAnnotation(SparqlResultSetMapping.class)));
+        builder.buildMetamodel(finderMock);
+        final ResultSetMappingManager manager = builder.getResultSetMappingManager();
+        assertNotNull(manager);
+        assertNotNull(manager.getMapper(OWLClassA.MAPPING_NAME));
+        verify(finderMock).getResultSetMappings();
     }
 }

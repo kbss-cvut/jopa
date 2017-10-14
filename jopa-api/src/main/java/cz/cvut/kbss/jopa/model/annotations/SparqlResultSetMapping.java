@@ -46,5 +46,5 @@ public @interface SparqlResultSetMapping {
     /**
      * Specifies the result set mapping to scalar values.
      */
-    VariableResult[] variables();
+    VariableResult[] variables() default {};
 }

@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.ontodriver.ResultSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,6 +29,10 @@ public class ResultRowMapper implements SparqlResultMapper {
      */
     public String getName() {
         return name;
+    }
+
+    List<SparqlResultMapper> getRowMappers() {
+        return Collections.unmodifiableList(rowMappers);
     }
 
     void addMapper(SparqlResultMapper mapper) {
