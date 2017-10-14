@@ -38,6 +38,6 @@
 ### Currently in Progress
 
 - [ ] Add support for query result set mapping
-    - [ ] VariableResult
+    - [x] VariableResult
     - [ ] ConstructorResult
     - [ ] EntityResult
