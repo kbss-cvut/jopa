@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -95,10 +95,10 @@ public class VariableResultMapperTest {
     }
 
     @Test
-    public void mapThrowsPersistenceExceptionWhenVariableIsNotFoundInResult() throws OntoDriverException {
+    public void mapThrowsMappingExceptionWhenVariableIsNotFoundInResult() throws OntoDriverException {
         final String message = "No result binding found for label" + NAME;
         when(resultSet.getObject(NAME)).thenThrow(new OntoDriverException(message));
-        thrown.expect(OWLPersistenceException.class);
+        thrown.expect(SparqlResultMappingException.class);
         thrown.expectMessage(message);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
         mapper.map(resultSet);

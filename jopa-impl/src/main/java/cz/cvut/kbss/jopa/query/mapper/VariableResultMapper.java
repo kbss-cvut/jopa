@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.jopa.utils.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -14,7 +14,7 @@ public class VariableResultMapper implements SparqlResultMapper {
     private final String name;
     private final Class<?> targetType;
 
-    public VariableResultMapper(VariableResult mapping) {
+    VariableResultMapper(VariableResult mapping) {
         this.name = mapping.name();
         this.targetType = mapping.type();
     }
@@ -43,7 +43,7 @@ public class VariableResultMapper implements SparqlResultMapper {
             }
             return value;
         } catch (OntoDriverException e) {
-            throw new OWLPersistenceException(e);
+            throw new SparqlResultMappingException(e);
         }
     }
 }

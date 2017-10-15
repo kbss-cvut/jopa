@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.model.annotations.ConstructorResult;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
@@ -18,7 +20,7 @@ public class ResultSetMappingProcessorTest {
 
     @Test
     public void buildMapperCreatesRowMapperWithVariableMappersConfiguredInMappingAnnotation() throws Exception {
-        processor.buildMapper(WithVariableMapping.getMapping());
+        processor.buildMapper(getMapping(WithVariableMapping.class));
         final ResultSetMappingManager manager = processor.getManager();
         final SparqlResultMapper mapper = manager.getMapper(MAPPING_NAME);
         assertNotNull(mapper);
@@ -39,15 +41,15 @@ public class ResultSetMappingProcessorTest {
             @VariableResult(name = "y", type = URI.class)
     })
     private static final class WithVariableMapping {
+    }
 
-        private static SparqlResultSetMapping getMapping() {
-            return WithVariableMapping.class.getDeclaredAnnotation(SparqlResultSetMapping.class);
-        }
+    private static SparqlResultSetMapping getMapping(Class<?> cls) {
+        return cls.getDeclaredAnnotation(SparqlResultSetMapping.class);
     }
 
     @Test
     public void buildMapperBuildsEmptyMapperFromEmptyMappingConfiguration() {
-        processor.buildMapper(EmptyMapping.getMapping());
+        processor.buildMapper(getMapping(EmptyMapping.class));
         final ResultSetMappingManager manager = processor.getManager();
         final SparqlResultMapper mapper = manager.getMapper(MAPPING_NAME);
         assertNotNull(mapper);
@@ -58,9 +60,34 @@ public class ResultSetMappingProcessorTest {
 
     @SparqlResultSetMapping(name = MAPPING_NAME)
     private static final class EmptyMapping {
+    }
 
-        private static SparqlResultSetMapping getMapping() {
-            return EmptyMapping.class.getDeclaredAnnotation(SparqlResultSetMapping.class);
-        }
+    @Test
+    public void buildMapperCreatesConstructorResultMapperWithCorrespondingVariableMappersForParameters() {
+        processor.buildMapper(getMapping(WithConstructorMapping.class));
+        final ResultSetMappingManager manager = processor.getManager();
+        final SparqlResultMapper mapper = manager.getMapper(MAPPING_NAME);
+        final ResultRowMapper rowMapper = (ResultRowMapper) mapper;
+        assertEquals(1, rowMapper.getRowMappers().size());
+        final ConstructorResultMapper ctorMapper = (ConstructorResultMapper) rowMapper.getRowMappers().get(0);
+        assertNotNull(ctorMapper);
+        assertEquals(OWLClassA.class, ctorMapper.getTargetType());
+        assertEquals(3, ctorMapper.getParamMappers().size());
+        assertEquals("uri", ctorMapper.getParamMappers().get(0).getName());
+        assertEquals(String.class, ctorMapper.getParamMappers().get(0).getTargetType());
+        assertEquals("label", ctorMapper.getParamMappers().get(1).getName());
+        assertEquals(void.class, ctorMapper.getParamMappers().get(1).getTargetType());
+        assertEquals("comment", ctorMapper.getParamMappers().get(2).getName());
+        assertEquals(void.class, ctorMapper.getParamMappers().get(2).getTargetType());
+    }
+
+    @SparqlResultSetMapping(name = MAPPING_NAME, classes = {
+            @ConstructorResult(targetClass = OWLClassA.class, variables = {
+                    @VariableResult(name = "uri", type = String.class),
+                    @VariableResult(name = "label"),
+                    @VariableResult(name = "comment")
+            })
+    })
+    private static final class WithConstructorMapping {
     }
 }
