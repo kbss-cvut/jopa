@@ -244,7 +244,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
                 "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
                 "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
-                "}", OWLClassA.MAPPING_NAME).getResultList();
+                "}", OWLClassA.VARIABLE_MAPPING).getResultList();
         final Map<String, String> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class)
                             .forEach(a -> expected.put(a.getUri().toString(), a.getStringAttribute()));
@@ -255,6 +255,24 @@ public abstract class QueryRunner extends BaseQueryRunner {
             assertEquals(2, elems.length);
             assertTrue(expected.containsKey(elems[0]));
             assertEquals(expected.get(elems[0]), elems[1]);
+        }
+    }
+
+    @Test
+    public void queryWithConstructorMappingReturnsCorrectInstances() {
+        final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
+                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
+                "}", OWLClassA.CONSTRUCTOR_MAPPING).getResultList();
+        final Map<URI, OWLClassA> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
+
+        for (Object item : res) {
+            assertTrue(item instanceof OWLClassA);
+            final OWLClassA a = (OWLClassA) item;
+            assertTrue(expected.containsKey(a.getUri()));
+            assertEquals(expected.get(a.getUri()).getStringAttribute(), a.getStringAttribute());
+            assertNull(a.getTypes());
         }
     }
 }

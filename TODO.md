@@ -39,5 +39,5 @@
 
 - [ ] Add support for query result set mapping
     - [x] VariableResult
-    - [ ] ConstructorResult
+    - [x] ConstructorResult
     - [ ] EntityResult

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,14 +21,14 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-@SparqlResultSetMapping(name = OWLClassA.MAPPING_NAME, variables = {
+@SparqlResultSetMapping(name = OWLClassA.VARIABLE_MAPPING, variables = {
         @VariableResult(name = "x"),
         @VariableResult(name = "y")
 })
 @OWLClass(iri = Vocabulary.c_OwlClassA)
 public class OWLClassA {
 
-    public static final String MAPPING_NAME = "OWLClassA.testMapping";
+    public static final String VARIABLE_MAPPING = "OWLClassA.testMapping";
 
     private static final String TYPES_FIELD = "types";
     private static final String STR_ATT_FIELD = "stringAttribute";
@@ -47,6 +47,11 @@ public class OWLClassA {
 
     public OWLClassA(URI uri) {
         this.uri = uri;
+    }
+
+    public OWLClassA(URI uri, String stringAttribute) {
+        this.uri = uri;
+        this.stringAttribute = stringAttribute;
     }
 
     /**
@@ -93,12 +98,12 @@ public class OWLClassA {
     }
 
     public static Field getStrAttField() throws NoSuchFieldException,
-            SecurityException {
+                                                SecurityException {
         return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
     }
 
     public static Field getTypesField() throws NoSuchFieldException,
-            SecurityException {
+                                               SecurityException {
         return OWLClassA.class.getDeclaredField(TYPES_FIELD);
     }
 

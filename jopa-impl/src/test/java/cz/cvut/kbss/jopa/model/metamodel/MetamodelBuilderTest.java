@@ -125,7 +125,7 @@ public class MetamodelBuilderTest {
         builder.buildMetamodel(finderMock);
         final ResultSetMappingManager manager = builder.getResultSetMappingManager();
         assertNotNull(manager);
-        assertNotNull(manager.getMapper(OWLClassA.MAPPING_NAME));
+        assertNotNull(manager.getMapper(OWLClassA.VARIABLE_MAPPING));
         verify(finderMock).getResultSetMappings();
     }
 }

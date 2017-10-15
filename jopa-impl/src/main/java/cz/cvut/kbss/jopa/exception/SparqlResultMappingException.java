@@ -10,4 +10,8 @@ public class SparqlResultMappingException extends OWLPersistenceException {
     public SparqlResultMappingException(Throwable cause) {
         super(cause);
     }
+
+    public SparqlResultMappingException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

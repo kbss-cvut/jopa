@@ -41,6 +41,9 @@ public class ResultRowMapper implements SparqlResultMapper {
 
     @Override
     public Object map(ResultSet resultSet) {
+        if (rowMappers.size() == 1) {
+            return rowMappers.get(0).map(resultSet);
+        }
         final Object[] result = new Object[rowMappers.size()];
         int i = 0;
         for (SparqlResultMapper m : rowMappers) {

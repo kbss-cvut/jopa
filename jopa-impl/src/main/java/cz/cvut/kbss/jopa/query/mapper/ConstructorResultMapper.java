@@ -1,8 +1,12 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
+import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.ontodriver.ResultSet;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,6 +37,25 @@ public class ConstructorResultMapper implements SparqlResultMapper {
 
     @Override
     public Object map(ResultSet resultSet) {
-        return null;
+        final Object[] values = new Object[paramMappers.size()];
+        final Class<?>[] types = new Class[paramMappers.size()];
+        for (int i = 0; i < paramMappers.size(); i++) {
+            values[i] = paramMappers.get(i).map(resultSet);
+            types[i] = values[i].getClass();
+        }
+        try {
+            final Constructor<?> ctor = targetType.getDeclaredConstructor(types);
+            if (!ctor.isAccessible()) {
+                ctor.setAccessible(true);
+            }
+            return ctor.newInstance(values);
+        } catch (NoSuchMethodException e) {
+            throw new SparqlResultMappingException(
+                    String.format("No matching constructor for values %s found in type %s.", Arrays.toString(values),
+                            targetType), e);
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new SparqlResultMappingException(
+                    String.format("Unable to map values %s to type %s.", Arrays.toString(values), targetType), e);
+        }
     }
 }
