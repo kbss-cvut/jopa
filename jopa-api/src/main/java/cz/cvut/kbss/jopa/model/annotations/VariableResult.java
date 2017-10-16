@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * <pre>
  *     <code>
  * Query q = em.createNativeQuery("SELECT ?uri ?label ?comment WHERE {" +
- *             "?uri a <http://onto.fel.cvut.cz/ontologies/jopa/Example> ;" +
+ *             "?uri a &lt;http://onto.fel.cvut.cz/ontologies/jopa/Example&gt; ;" +
  *                  "rdfs:label ?label ;" +
  *                  "rdfs:comment ?comment ." +
  *         "}", "ExampleResults");
