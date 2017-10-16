@@ -24,7 +24,7 @@ public class DisabledCacheManager implements CacheManager {
 
     @Override
     public void add(Object identifier, Object entity, Descriptor descriptor) {
-
+        // Do nothing
     }
 
     @Override

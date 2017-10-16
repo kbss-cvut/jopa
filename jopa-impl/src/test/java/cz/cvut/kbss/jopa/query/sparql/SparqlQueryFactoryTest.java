@@ -1,22 +1,21 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
@@ -38,6 +37,9 @@ public class SparqlQueryFactoryTest {
     private UnitOfWorkImpl uowMock;
 
     @Mock
+    private NamedQueryManager namedQueryManagerMock;
+
+    @Mock
     private ConnectionWrapper connectionMock;
 
     private SparqlQueryFactory factory;
@@ -47,6 +49,7 @@ public class SparqlQueryFactoryTest {
         MockitoAnnotations.initMocks(this);
         when(uowMock.useBackupOntologyForQueryProcessing()).thenReturn(Boolean.FALSE);
         when(uowMock.useTransactionalOntologyForQueryProcessing()).thenReturn(Boolean.TRUE);
+        when(uowMock.getNamedQueryManager()).thenReturn(namedQueryManagerMock);
         this.factory = new SparqlQueryFactory(uowMock, connectionMock);
     }
 
@@ -125,5 +128,23 @@ public class SparqlQueryFactoryTest {
         final Query q = factory.createNativeQuery(QUERY, mapping);
         assertNotNull(q);
         verify(managerMock).getMapper(mapping);
+    }
+
+    @Test
+    public void createNamedQueryRetrievesNamedQueryFromManagerAndReturnsCorrespondingNativeQuery() {
+        final String queryName = "testQuery";
+        when(namedQueryManagerMock.getQuery(queryName)).thenReturn(QUERY);
+        final Query q = factory.createNamedQuery(queryName);
+        assertNotNull(q);
+        verify(namedQueryManagerMock).getQuery(queryName);
+    }
+
+    @Test
+    public void createNamedTypedQueryRetrievesNamedQueryFromManagerAndReturnsCorrespondingNativeQuery() {
+        final String queryName = "testQuery";
+        when(namedQueryManagerMock.getQuery(queryName)).thenReturn(QUERY);
+        final TypedQuery<OWLClassA> q = factory.createNamedQuery(queryName, OWLClassA.class);
+        assertNotNull(q);
+        verify(namedQueryManagerMock).getQuery(queryName);
     }
 }

@@ -84,7 +84,7 @@ abstract class EntityInstanceLoader {
         }
     }
 
-    static abstract class EntityInstanceLoaderBuilder {
+    abstract static class EntityInstanceLoaderBuilder {
         private Connection storageConnection;
         private MetamodelImpl metamodel;
         private CacheManager cache;

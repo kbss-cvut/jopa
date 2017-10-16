@@ -178,6 +178,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @param entity The entity to register
      * @param uow    Persistence context of the specified entity
      */
+    @Override
     protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
         assert entity != null;
         assert uow != null;

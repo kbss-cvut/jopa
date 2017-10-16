@@ -40,7 +40,6 @@ public interface ChangeManager {
      * @throws IllegalArgumentException If unable to access fields to calculate changes
      * @throws NullPointerException     If {@code changeSet} is {@code null}
      */
-    boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
-            IllegalArgumentException;
+    boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException;
 
 }
