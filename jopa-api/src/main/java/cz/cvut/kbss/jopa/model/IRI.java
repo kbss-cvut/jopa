@@ -21,7 +21,7 @@ public class IRI implements AnnotationValue {
 
     private final String value;
 
-    IRI(String iri) {
+    private IRI(String iri) {
         this.value = Objects.requireNonNull(iri);
     }
 
@@ -51,9 +51,7 @@ public class IRI implements AnnotationValue {
         if (getClass() != obj.getClass())
             return false;
         IRI other = (IRI) obj;
-        if (!value.equals(other.value))
-            return false;
-        return true;
+        return value.equals(other.value);
     }
 
     public static IRI create(final String s) {

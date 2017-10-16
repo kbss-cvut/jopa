@@ -144,21 +144,25 @@ public class MetamodelImpl implements Metamodel {
     private synchronized Set<URI> getSignatureInternal() {
         // This can be lazily loaded since we don'attributeType know if we'll need it
         if (moduleExtractionSignature == null) {
-            final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, "");
-            if (sig.isEmpty()) {
-                this.moduleExtractionSignature = new HashSet<>();
-            } else {
-                final String[] signature = sig.split(Pattern.quote(OntoDriverProperties.SIGNATURE_DELIMITER));
-                this.moduleExtractionSignature = new HashSet<>((int) (signature.length / 0.75 + 1));
-                try {
-                    for (String uri : signature) {
-                        moduleExtractionSignature.add(URI.create(uri));
-                    }
-                } catch (IllegalArgumentException e) {
-                    throw new OWLPersistenceException("Invalid URI encountered in module extraction signature.", e);
-                }
-            }
+            initModuleExtractionSignature();
         }
         return moduleExtractionSignature;
+    }
+
+    private void initModuleExtractionSignature() {
+        final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, "");
+        if (sig.isEmpty()) {
+            this.moduleExtractionSignature = new HashSet<>();
+        } else {
+            final String[] signature = sig.split(Pattern.quote(OntoDriverProperties.SIGNATURE_DELIMITER));
+            this.moduleExtractionSignature = new HashSet<>(signature.length);
+            try {
+                for (String uri : signature) {
+                    moduleExtractionSignature.add(URI.create(uri));
+                }
+            } catch (IllegalArgumentException e) {
+                throw new OWLPersistenceException("Invalid URI encountered in module extraction signature.", e);
+            }
+        }
     }
 }

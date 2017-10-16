@@ -301,7 +301,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             ensureOpen();
             LOG.trace("Flushing changes...");
             if (!getTransaction().isActive()) {
-                throw new TransactionRequiredException();
+                throw new TransactionRequiredException("Cannot flush entity manager outside of a transaction.");
             }
             this.getCurrentPersistenceContext().writeUncommittedChanges();
         } catch (RuntimeException e) {

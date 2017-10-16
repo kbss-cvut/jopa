@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -40,8 +38,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private UnitOfWork uow;
 
-    private int maxResults;
-
     private Descriptor descriptor;
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
@@ -50,7 +46,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         this.resultType = Objects.requireNonNull(resultType, ErrorUtils.getNPXMessageSupplier("resultType"));
         this.metamodelProvider = Objects
                 .requireNonNull(metamodelProvider, ErrorUtils.getNPXMessageSupplier("metamodelProvider"));
-        this.maxResults = Integer.MAX_VALUE;
     }
 
     public void setUnitOfWork(UnitOfWork uow) {
@@ -111,51 +106,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         }
         this.maxResults = maxResults;
         return this;
-    }
-
-    @Override
-    public int getMaxResults() {
-        return maxResults;
-    }
-
-    @Override
-    public Parameter<?> getParameter(int position) {
-        return query.getParameter(position);
-    }
-
-    @Override
-    public Parameter<?> getParameter(String name) {
-        return query.getParameter(name);
-    }
-
-    @Override
-    public Set<Parameter<?>> getParameters() {
-        return query.getParameters();
-    }
-
-    @Override
-    public boolean isBound(Parameter<?> parameter) {
-        return query.getParameterValue(parameter) != null;
-    }
-
-    @Override
-    public Object getParameterValue(int position) {
-        final Parameter<?> param = query.getParameter(position);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public Object getParameterValue(String name) {
-        final Parameter<?> param = query.getParameter(name);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public <T> T getParameterValue(Parameter<T> parameter) {
-        if (!isBound(parameter)) {
-            throw unboundParam(parameter);
-        }
-        return (T) query.getParameterValue(parameter);
     }
 
     @Override

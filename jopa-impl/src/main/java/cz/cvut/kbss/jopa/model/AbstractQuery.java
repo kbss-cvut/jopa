@@ -1,20 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.query.Parameter;
+import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
@@ -25,17 +25,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Common state and behavior of both {@link cz.cvut.kbss.jopa.model.query.Query} and {@link
  * cz.cvut.kbss.jopa.model.query.TypedQuery} implementations.
  */
-abstract class AbstractQuery {
+abstract class AbstractQuery implements Query {
 
     static final Logger LOG = LoggerFactory.getLogger(AbstractQuery.class);
 
     final QueryHolder query;
     final ConnectionWrapper connection;
+    int maxResults;
 
     private boolean useBackupOntology;
 
@@ -45,6 +47,7 @@ abstract class AbstractQuery {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
         this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
         this.useBackupOntology = false;
+        this.maxResults = Integer.MAX_VALUE;
     }
 
     /**
@@ -112,7 +115,52 @@ abstract class AbstractQuery {
         this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 
-    static IllegalStateException unboundParam(Object param) {
+    private static IllegalStateException unboundParam(Object param) {
         return new IllegalStateException("Parameter " + param + " is not bound.");
+    }
+
+    @Override
+    public Parameter<?> getParameter(int position) {
+        return query.getParameter(position);
+    }
+
+    @Override
+    public Parameter<?> getParameter(String name) {
+        return query.getParameter(name);
+    }
+
+    @Override
+    public Set<Parameter<?>> getParameters() {
+        return query.getParameters();
+    }
+
+    @Override
+    public boolean isBound(Parameter<?> parameter) {
+        return query.getParameterValue(parameter) != null;
+    }
+
+    @Override
+    public Object getParameterValue(String name) {
+        final Parameter<?> param = query.getParameter(name);
+        return getParameterValue(param);
+    }
+
+    @Override
+    public Object getParameterValue(int position) {
+        final Parameter<?> param = query.getParameter(position);
+        return getParameterValue(param);
+    }
+
+    @Override
+    public <T> T getParameterValue(Parameter<T> parameter) {
+        if (!isBound(parameter)) {
+            throw unboundParam(parameter);
+        }
+        return (T) query.getParameterValue(parameter);
+    }
+
+    @Override
+    public int getMaxResults() {
+        return maxResults;
     }
 }

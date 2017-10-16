@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -27,15 +25,11 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class QueryImpl extends AbstractQuery implements Query {
 
-    private int maxResults;
-
     public QueryImpl(final QueryHolder query, final ConnectionWrapper connection) {
         super(query, connection);
-        this.maxResults = Integer.MAX_VALUE;
     }
 
     @Override
@@ -46,7 +40,7 @@ public class QueryImpl extends AbstractQuery implements Query {
     @Override
     public List getResultList() {
         try {
-            if (maxResults == 0) {
+            if (getMaxResults() == 0) {
                 return Collections.emptyList();
             }
             return getResultListImpl(maxResults);
@@ -78,51 +72,6 @@ public class QueryImpl extends AbstractQuery implements Query {
             markTransactionForRollback();
             throw e;
         }
-    }
-
-    @Override
-    public int getMaxResults() {
-        return maxResults;
-    }
-
-    @Override
-    public Parameter<?> getParameter(int position) {
-        return query.getParameter(position);
-    }
-
-    @Override
-    public Parameter<?> getParameter(String name) {
-        return query.getParameter(name);
-    }
-
-    @Override
-    public Set<Parameter<?>> getParameters() {
-        return query.getParameters();
-    }
-
-    @Override
-    public boolean isBound(Parameter<?> parameter) {
-        return query.getParameterValue(parameter) != null;
-    }
-
-    @Override
-    public Object getParameterValue(int position) {
-        final Parameter<?> param = query.getParameter(position);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public Object getParameterValue(String name) {
-        final Parameter<?> param = query.getParameter(name);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public <T> T getParameterValue(Parameter<T> parameter) {
-        if (!isBound(parameter)) {
-            throw unboundParam(parameter);
-        }
-        return (T) query.getParameterValue(parameter);
     }
 
     @Override
