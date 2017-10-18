@@ -52,6 +52,9 @@ import java.lang.annotation.Target;
  *      )
  *     </code>
  * </pre>
+ *
+ * @see SparqlResultSetMapping
+ * @see VariableResult
  */
 @Target(value = {})
 @Retention(RetentionPolicy.RUNTIME)
