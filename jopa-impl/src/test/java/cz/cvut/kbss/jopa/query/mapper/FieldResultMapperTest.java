@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Before;
@@ -30,6 +31,9 @@ public class FieldResultMapperTest {
 
     @Mock
     private ResultSet resultSetMock;
+
+    @Mock
+    private UnitOfWork uowMock;
 
     @Mock
     private EntityType<?> etMock;
@@ -76,7 +80,7 @@ public class FieldResultMapperTest {
 
         final FieldResultMapper mapper = new FieldResultMapper(fieldResult, etMock);
         final OWLClassM target = new OWLClassM();
-        mapper.map(resultSetMock, target);
+        mapper.map(resultSetMock, target, uowMock);
         assertNull(target.getBooleanAttribute());
     }
 
@@ -95,7 +99,7 @@ public class FieldResultMapperTest {
 
         final FieldResultMapper mapper = new FieldResultMapper(fieldResult, etMock);
         final OWLClassM target = new OWLClassM();
-        mapper.map(resultSetMock, target);
+        mapper.map(resultSetMock, target, uowMock);
         assertNull(target.getBooleanAttribute());
     }
 
@@ -111,7 +115,7 @@ public class FieldResultMapperTest {
 
         final OWLClassA target = new OWLClassA();
         final FieldResultMapper mapper = new FieldResultMapper(fieldResult, etMock);
-        mapper.map(resultSetMock, target);
+        mapper.map(resultSetMock, target, uowMock);
         verify(resultSetMock).getObject(fieldResult.variable());
         assertEquals(value, target.getStringAttribute());
     }

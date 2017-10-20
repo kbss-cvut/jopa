@@ -1,22 +1,21 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Before;
@@ -43,6 +42,9 @@ public class VariableResultMapperTest {
     @Mock
     private ResultSet resultSet;
 
+    @Mock
+    private UnitOfWork uowMock;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -53,7 +55,7 @@ public class VariableResultMapperTest {
         final Integer value = 117;
         when(resultSet.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(NoType.getVariableMapping());
-        final Object result = mapper.map(resultSet);
+        final Object result = mapper.map(resultSet, uowMock);
         assertEquals(value, result);
         verify(resultSet).getObject(NAME);
     }
@@ -73,7 +75,7 @@ public class VariableResultMapperTest {
         final Integer value = 117;
         when(resultSet.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeCast.getVariableMapping());
-        final Object result = mapper.map(resultSet);
+        final Object result = mapper.map(resultSet, uowMock);
         assertTrue(result instanceof Number);
         assertEquals(value, result);
     }
@@ -93,7 +95,7 @@ public class VariableResultMapperTest {
         final String value = "http://onto.fel.cvut.cz";
         when(resultSet.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
-        final Object result = mapper.map(resultSet);
+        final Object result = mapper.map(resultSet, uowMock);
         assertTrue(result instanceof URI);
         assertEquals(URI.create(value), result);
     }
@@ -115,6 +117,6 @@ public class VariableResultMapperTest {
         thrown.expect(SparqlResultMappingException.class);
         thrown.expectMessage(message);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
-        mapper.map(resultSet);
+        mapper.map(resultSet, uowMock);
     }
 }

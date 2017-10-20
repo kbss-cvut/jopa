@@ -67,7 +67,7 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(resultSetMapping, ErrorUtils.getNPXMessageSupplier("resultSetMapping"));
 
         final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
-        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper);
+        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
         q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return q;
     }
