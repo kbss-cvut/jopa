@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -42,6 +40,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
             EntityType<X> et, FieldSpecification<? super X, ?> att,
             Descriptor fieldDescriptor, EntityMappingHelper mapper) {
+        if (att.equals(et.getIdentifier())) {
+            return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, fieldDescriptor, mapper);
+        }
         if (att instanceof TypesSpecification) {
             return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, fieldDescriptor, mapper);
         } else if (att instanceof PropertiesSpecification) {
@@ -150,7 +151,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      */
     String getLanguage() {
         return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
-                mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
+               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**

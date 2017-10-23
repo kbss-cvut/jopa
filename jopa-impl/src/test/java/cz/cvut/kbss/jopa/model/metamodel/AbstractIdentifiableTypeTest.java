@@ -23,6 +23,7 @@ import org.junit.rules.ExpectedException;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -279,6 +280,15 @@ public class AbstractIdentifiableTypeTest {
         assertTrue(result.contains(listAtt));
         assertTrue(result.contains(types));
         assertTrue(result.contains(properties));
+    }
+
+    @Test
+    public void getFieldSpecificationsReturnsAlsoIdentifier() {
+        final Set<FieldSpecification<? super OWLClassA, ?>> result = et.getFieldSpecifications();
+        final Optional<FieldSpecification<? super OWLClassA, ?>> id = result.stream()
+                                                                            .filter(fs -> fs.equals(et.getIdentifier()))
+                                                                            .findAny();
+        assertTrue(id.isPresent());
     }
 
     @Test

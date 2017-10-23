@@ -370,6 +370,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (props != null) {
             specs.add(props);
         }
+        specs.add(getIdentifier());
         return specs;
     }
 

@@ -1,27 +1,22 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
-import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -45,7 +40,7 @@ class EntityDeconstructor {
 
         final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(identifier, descriptor);
         try {
-            addEntityClassAssertion(valueBuilder, entity, descriptor);
+//            addEntityClassAssertion(valueBuilder, entity, descriptor);
             for (FieldSpecification<? super T, ?> att : et.getFieldSpecifications()) {
                 addAssertions(entity, et, att, descriptor, valueBuilder);
             }
@@ -58,15 +53,6 @@ class EntityDeconstructor {
 
     private static AxiomValueGatherer createAxiomValueBuilder(URI primaryKey, Descriptor descriptor) {
         return new AxiomValueGatherer(NamedResource.create(primaryKey), descriptor.getContext());
-    }
-
-    private <T> void addEntityClassAssertion(AxiomValueGatherer valueBuilder, T entity, Descriptor descriptor)
-            throws IllegalAccessException {
-        final OWLClass clsType = entity.getClass().getAnnotation(OWLClass.class);
-        assert clsType != null;
-        final Assertion entityClassAssertion = Assertion.createClassAssertion(false);
-        valueBuilder.addValue(entityClassAssertion, new Value<>(URI.create(clsType.iri())),
-                descriptor.getContext());
     }
 
     private <T> void addAssertions(T entity, EntityType<T> et,
