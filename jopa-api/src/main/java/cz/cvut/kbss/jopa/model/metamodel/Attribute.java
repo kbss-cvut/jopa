@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.UnusedJPA;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 
 /**
@@ -27,6 +28,37 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
  * @param <Y> The type of the represented attribute
  */
 public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
+
+    /**
+     * Whether the association is lazily loaded or must be eagerly fetched.
+     *
+     * @return Fetch type of the field specification
+     */
+    @NonJPA
+    FetchType getFetchType();
+
+    /**
+     * Whether this field can contain inferred data.
+     *
+     * @return Whether field is inferred
+     * @see #includeExplicit()
+     */
+    boolean isInferred();
+
+    /**
+     * If this field is inferred, can it contain explicit data as well?
+     *
+     * @return Whether inferred field can contain explicit knowledge
+     * @see #isInferred()
+     */
+    boolean includeExplicit();
+
+    /**
+     * Whether values of this field cannot be modified.
+     *
+     * @return Read only status of this field
+     */
+    boolean isReadOnly();
 
     enum PersistentAttributeType {
         // @UnusedJPA

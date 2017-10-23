@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -22,7 +20,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private final Class<X> javaType;
 
-    private Identifier identifier;
+    private Identifier<X, ?> identifier;
 
     private AbstractIdentifiableType<? super X> supertype;
 
@@ -62,7 +60,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.properties = a;
     }
 
-    public void setIdentifier(final Identifier identifier) {
+    public void setIdentifier(final Identifier<X, ?> identifier) {
         this.identifier = identifier;
     }
 
@@ -384,6 +382,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
             return directTypes;
         } else if (properties != null && properties.getName().equals(fieldName)) {
             return properties;
+        } else if (identifier != null && identifier.getName().equals(fieldName)) {
+            return identifier;
         }
         if (supertype != null) {
             return supertype.getFieldSpecification(fieldName);
@@ -392,7 +392,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public Identifier getIdentifier() {
+    public Identifier<? super X, ?> getIdentifier() {
         if (identifier != null) {
             return identifier;
         }

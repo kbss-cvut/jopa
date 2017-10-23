@@ -119,6 +119,10 @@ public class MetamodelBuilder {
         return Collections.unmodifiableMap(typeMap);
     }
 
+    public <X> AbstractIdentifiableType<X> entity(Class<X> cls) {
+        return (AbstractIdentifiableType<X>) typeMap.get(cls);
+    }
+
     public Map<Class<?>, EntityType<?>> getEntities() {
         final Map<Class<?>, EntityType<?>> map = new HashMap<>();
         typeMap.entrySet().stream().filter(e -> e.getValue().getPersistenceType() == Type.PersistenceType.ENTITY)
