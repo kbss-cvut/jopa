@@ -13,12 +13,11 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +27,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -127,12 +126,9 @@ public class ResultSetMappingProcessorTest {
 
     @Test
     public void buildMapperCreatesEntityResultMapperWhenAllFieldMappingsAreSpecified() throws Exception {
-        final EntityTypeImpl<OWLClassA> etA = mock(EntityTypeImpl.class);
+        final MetamodelMocks metamodelMocks = new MetamodelMocks();
+        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
         when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
-        final FieldSpecification idField = mock(Identifier.class);
-        when(etA.getFieldSpecification("uri")).thenReturn(idField);
-        final FieldSpecification stringField = mock(FieldSpecification.class);
-        when(etA.getFieldSpecification(OWLClassA.getStrAttField().getName())).thenReturn(stringField);
         final SparqlResultSetMapping mapping = getMapping(WithEntityMapping.class);
         processor.buildMapper(mapping);
         final ResultSetMappingManager manager = processor.getManager();
@@ -141,13 +137,12 @@ public class ResultSetMappingProcessorTest {
         assertEquals(1, rowMapper.getRowMappers().size());
         assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
         final EntityResultMapper<OWLClassA> etMapper = (EntityResultMapper<OWLClassA>) rowMapper.getRowMappers().get(0);
-        assertEquals(2, etMapper.getFieldMappers().size());
         assertEquals(etA, etMapper.getEntityType());
         final FieldResultMapper uriMapper = etMapper.getFieldMappers().get(0);
         assertEquals("id", uriMapper.getVariableName());
-        assertEquals(idField, uriMapper.getFieldSpecification());
+        assertEquals(metamodelMocks.forOwlClassA().identifier(), uriMapper.getFieldSpecification());
         final FieldResultMapper stringMapper = etMapper.getFieldMappers().get(1);
-        assertEquals(stringField, stringMapper.getFieldSpecification());
+        assertEquals(metamodelMocks.forOwlClassA().stringAttribute(), stringMapper.getFieldSpecification());
         assertEquals("label", stringMapper.getVariableName());
     }
 
@@ -170,9 +165,8 @@ public class ResultSetMappingProcessorTest {
         when(etA.getFieldSpecification("stringAttribute")).thenThrow(new IllegalArgumentException(msg));
         thrown.expect(SparqlResultMappingException.class);
         thrown.expectMessage(msg);
-        final SparqlResultSetMapping mapping = getMapping(WithEntityMapping.class);
 
-        processor.buildMapper(mapping);
+        processor.buildMapper(getMapping(WithEntityMapping.class));
     }
 
     @Test
@@ -182,5 +176,75 @@ public class ResultSetMappingProcessorTest {
         thrown.expectMessage("Type " + OWLClassA.class +
                 " is not a known entity type and cannot be used as @EntityResult target class.");
         processor.buildMapper(getMapping(WithEntityMapping.class));
+    }
+
+    @Test
+    public void buildMapperGeneratesFieldMappersForFieldsNotConfiguredByFieldResult() throws Exception {
+        final MetamodelMocks metamodelMocks = new MetamodelMocks();
+        final EntityTypeImpl<OWLClassM> etM = metamodelMocks.forOwlClassM().entityType();
+        when(builderMock.entity(OWLClassM.class)).thenReturn(etM);
+
+        processor.buildMapper(getMapping(WithIncompleteEntityMapping.class));
+        final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
+        assertEquals(1, rowMapper.getRowMappers().size());
+        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        final EntityResultMapper<OWLClassM> etMapper = (EntityResultMapper<OWLClassM>) rowMapper.getRowMappers().get(0);
+        assertEquals(etM, etMapper.getEntityType());
+        final List<FieldResultMapper> fieldMappers = etMapper.getFieldMappers();
+        final Map<String, FieldSpecification> mapped = new HashMap<>();
+        fieldMappers.forEach(fm -> mapped.put(fm.getVariableName(), fm.getFieldSpecification()));
+
+        assertEquals(etM.getFieldSpecification("key"), mapped.get("id"));
+        assertEquals(etM.getFieldSpecification("booleanAttribute"), mapped.get("isOk"));
+        assertEquals(etM.getFieldSpecification("intAttribute"), mapped.get("intAttribute"));
+        assertEquals(etM.getFieldSpecification("longAttribute"), mapped.get("longAttribute"));
+        assertEquals(etM.getFieldSpecification("doubleAttribute"), mapped.get("doubleAttribute"));
+        assertEquals(etM.getFieldSpecification("dateAttribute"), mapped.get("dateAttribute"));
+        assertEquals(etM.getFieldSpecification("enumAttribute"), mapped.get("enumAttribute"));
+    }
+
+    @SparqlResultSetMapping(name = MAPPING_NAME, entities = {
+            @EntityResult(entityClass = OWLClassM.class, fields = {
+                    @FieldResult(name = "key", variable = "id"),
+                    @FieldResult(name = "booleanAttribute", variable = "isOk")
+            })
+    })
+    private static final class WithIncompleteEntityMapping {
+    }
+
+    @Test
+    public void buildMapperSkipsPluralAttributesOfTargetEntityWhenGeneratingFieldResultMappers() throws Exception {
+        final MetamodelMocks metamodelMocks = new MetamodelMocks();
+        final EntityTypeImpl<OWLClassM> etM = metamodelMocks.forOwlClassM().entityType();
+        final PluralAttribute<OWLClassM, Set, Integer> pluralAtt = metamodelMocks.forOwlClassM().integerSetAttribute();
+        when(builderMock.entity(OWLClassM.class)).thenReturn(etM);
+
+        processor.buildMapper(getMapping(WithIncompleteEntityMapping.class));
+        final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
+        assertEquals(1, rowMapper.getRowMappers().size());
+        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        final EntityResultMapper<OWLClassM> etMapper = (EntityResultMapper<OWLClassM>) rowMapper.getRowMappers().get(0);
+        final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
+                                                             .filter(fm -> fm.getFieldSpecification().equals(pluralAtt))
+                                                             .findAny();
+        assertFalse(frMapper.isPresent());
+    }
+
+    @Test
+    public void buildMapperSkipsPluralAttributeEvenIfItIsConfiguredViaFieldResult() throws Exception {
+        final MetamodelMocks metamodelMocks = new MetamodelMocks();
+        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
+        when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
+        final SparqlResultSetMapping mapping = getMapping(WithEntityMapping.class);
+        processor.buildMapper(mapping);
+        final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
+        assertEquals(1, rowMapper.getRowMappers().size());
+        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        final EntityResultMapper<OWLClassA> etMapper = (EntityResultMapper<OWLClassA>) rowMapper.getRowMappers().get(0);
+        final TypesSpecification<OWLClassA, ?> typesSpec = metamodelMocks.forOwlClassA().typesSpec();
+        final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
+                                                             .filter(fm -> fm.getFieldSpecification().equals(typesSpec))
+                                                             .findAny();
+        assertFalse(frMapper.isPresent());
     }
 }

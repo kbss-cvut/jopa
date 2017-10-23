@@ -70,6 +70,11 @@ public class IRIIdentifierImpl<T> implements IRIIdentifier {
     }
 
     @Override
+    public boolean isCollection() {
+        return false;
+    }
+
+    @Override
     public void accept(IdentifierVisitor i) {
         i.visit(this);
     }

@@ -77,4 +77,11 @@ public interface FieldSpecification<X, E> {
      * @return name
      */
     String getName();
+
+    /**
+     * Is the attribute collection-valued (represents a Collection, Set, List, or Map).
+     *
+     * @return boolean indicating whether the attribute is collection-valued
+     */
+    boolean isCollection();
 }

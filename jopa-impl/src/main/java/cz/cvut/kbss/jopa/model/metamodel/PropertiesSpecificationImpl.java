@@ -80,6 +80,11 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
     }
 
     @Override
+    public boolean isCollection() {
+        return true;
+    }
+
+    @Override
     public Class<K> getPropertyIdentifierType() {
         return propertyIdType;
     }

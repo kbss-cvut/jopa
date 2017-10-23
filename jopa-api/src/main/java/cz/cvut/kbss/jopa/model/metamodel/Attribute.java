@@ -151,13 +151,6 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
     boolean isAssociation();
 
     /**
-     * Is the attribute collection-valued (represents a Collection, Set, List, or Map).
-     *
-     * @return boolean indicating whether the attribute is collection-valued
-     */
-    boolean isCollection();
-
-    /**
      * Whether the attribute can be without value.
      * <p>
      * Note that if {@link #getConstraints()} contains {@link ParticipationConstraint}s, this property should be

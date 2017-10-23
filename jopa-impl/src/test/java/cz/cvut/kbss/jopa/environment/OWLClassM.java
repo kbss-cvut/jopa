@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-import java.lang.invoke.VolatileCallSite;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Set;

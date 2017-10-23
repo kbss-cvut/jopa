@@ -16,15 +16,24 @@ import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Builds mappers for {@link SparqlResultSetMapping} instances discovered on classpath.
  */
 public class ResultSetMappingProcessor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ResultSetMappingProcessor.class);
 
     private final ResultSetMappingManager manager = new ResultSetMappingManager();
 
@@ -68,13 +77,8 @@ public class ResultSetMappingProcessor {
         for (EntityResult er : mapping.entities()) {
             final EntityType<?> et = getTargetType(er);
             final EntityResultMapper<?> etMapper = new EntityResultMapper<>(et);
-            for (FieldResult fr : er.fields()) {
-                try {
-                    etMapper.addFieldMapper(new FieldResultMapper(fr, et.getFieldSpecification(fr.name())));
-                } catch (IllegalArgumentException e) {
-                    throw new SparqlResultMappingException(e);
-                }
-            }
+            generateFieldMappersForFieldResults(er, et, etMapper);
+            generateFieldMappersForUnconfiguredFields(et, er).forEach(etMapper::addFieldMapper);
             parent.addMapper(etMapper);
         }
     }
@@ -87,6 +91,35 @@ public class ResultSetMappingProcessor {
                             " is not a known entity type and cannot be used as @EntityResult target class.");
         }
         return (EntityType<?>) targetType;
+    }
+
+    private void generateFieldMappersForFieldResults(EntityResult er, EntityType<?> et,
+                                                     EntityResultMapper<?> etMapper) {
+        for (FieldResult fr : er.fields()) {
+            try {
+                final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(fr.name());
+                if (fieldSpec.isCollection()) {
+                    LOG.warn(
+                            "Mapping of plural attributes via @FieldResult is not supported. Check the definition of {}.",
+                            fr);
+                    continue;
+                }
+                etMapper.addFieldMapper(new FieldResultMapper(fr, fieldSpec));
+            } catch (IllegalArgumentException e) {
+                throw new SparqlResultMappingException(e);
+            }
+        }
+    }
+
+    private List<FieldResultMapper> generateFieldMappersForUnconfiguredFields(EntityType<?> et, EntityResult er) {
+        final Set<String> configuredFields = new HashSet<>(er.fields().length);
+        for (FieldResult fr : er.fields()) {
+            configuredFields.add(fr.name());
+        }
+        return et.getFieldSpecifications().stream()
+                 .filter(fs -> !configuredFields.contains(fs.getName()) && !fs.isCollection())
+                 .map(FieldResultMapper::new)
+                 .collect(Collectors.toList());
     }
 
     public ResultSetMappingManager getManager() {
