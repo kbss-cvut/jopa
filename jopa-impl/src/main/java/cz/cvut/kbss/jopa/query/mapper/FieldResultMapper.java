@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -15,14 +14,9 @@ class FieldResultMapper {
 
     private final FieldSpecification<?, ?> fieldSpec;
 
-    FieldResultMapper(FieldResult fieldResult, EntityType<?> et) {
+    FieldResultMapper(FieldResult fieldResult, FieldSpecification<?, ?> fieldSpec) {
         this.variableName = fieldResult.variable();
-        try {
-            this.fieldSpec = et.getFieldSpecification(fieldResult.name());
-        } catch (IllegalArgumentException e) {
-            throw new SparqlResultMappingException("Invalid FieldResult mapping for field " + fieldResult.name() + ".",
-                    e);
-        }
+        this.fieldSpec = fieldSpec;
     }
 
     /**
@@ -35,6 +29,14 @@ class FieldResultMapper {
         this.variableName = fieldSpec.getName();
     }
 
+    String getVariableName() {
+        return variableName;
+    }
+
+    FieldSpecification<?, ?> getFieldSpecification() {
+        return fieldSpec;
+    }
+
     /**
      * Maps value from the specified result set to the specified target object's field based on the mapping represented
      * by this instance.
@@ -45,6 +47,7 @@ class FieldResultMapper {
     void map(ResultSet resultSet, Object target, UnitOfWork uow) {
         try {
             final Object value = resultSet.getObject(variableName);
+            // TODO What about plural attributes?
             verifyValueRange(value);
             // This does currently only literal values, no references
             EntityPropertiesUtils.setFieldValue(fieldSpec.getJavaField(), target, value);

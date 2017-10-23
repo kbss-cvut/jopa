@@ -7,6 +7,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.ResultSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,6 +25,14 @@ class EntityResultMapper<T> implements SparqlResultMapper {
 
     void addFieldMapper(FieldResultMapper mapper) {
         fieldMappers.add(mapper);
+    }
+
+    List<FieldResultMapper> getFieldMappers() {
+        return Collections.unmodifiableList(fieldMappers);
+    }
+
+    EntityType<T> getEntityType() {
+        return et;
     }
 
     @Override

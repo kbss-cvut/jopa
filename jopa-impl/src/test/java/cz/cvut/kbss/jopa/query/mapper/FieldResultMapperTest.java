@@ -6,7 +6,6 @@ import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.EntityResult;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -35,22 +34,9 @@ public class FieldResultMapperTest {
     @Mock
     private UnitOfWork uowMock;
 
-    @Mock
-    private EntityType<?> etMock;
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    public void constructorThrowsSparqlResultMappingExceptionWhenNoFieldIsFound() {
-        final FieldResult fieldResult = WithMapping.getFieldResult();
-        when(etMock.getFieldSpecification(fieldResult.name()))
-                .thenThrow(new IllegalArgumentException("Unknown field " + fieldResult.name()));
-        thrown.expect(SparqlResultMappingException.class);
-        thrown.expectMessage(containsString("field " + fieldResult.name()));
-        new FieldResultMapper(fieldResult, etMock);
     }
 
     @SparqlResultSetMapping(name = "test", entities = {
@@ -69,7 +55,6 @@ public class FieldResultMapperTest {
     public void mapThrowsResultMappingExceptionWhenValueCannotBeAssignedToField() throws Exception {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
-        when(etMock.getFieldSpecification(fieldResult.name())).thenReturn(fsMock);
         when(fsMock.getJavaType()).thenReturn(Boolean.class);
         when(fsMock.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(resultSetMock.getObject(fieldResult.variable())).thenReturn("string");
@@ -78,7 +63,7 @@ public class FieldResultMapperTest {
                 "Value " + resultSetMock.getObject(fieldResult.variable()) + " cannot be assigned to field of type " +
                         fsMock.getJavaType()));
 
-        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, etMock);
+        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
         final OWLClassM target = new OWLClassM();
         mapper.map(resultSetMock, target, uowMock);
         assertNull(target.getBooleanAttribute());
@@ -88,7 +73,6 @@ public class FieldResultMapperTest {
     public void mapThrowsResultMappingExceptionWhenExceptionOccursWhenGettingValueFromResultSet() throws Exception {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
-        when(etMock.getFieldSpecification(fieldResult.name())).thenReturn(fsMock);
         when(fsMock.getJavaType()).thenReturn(Boolean.class);
         final OntoDriverException e = new OntoDriverException(
                 "Result set does not contain column " + fieldResult.variable() + ".");
@@ -97,7 +81,7 @@ public class FieldResultMapperTest {
         thrown.expectCause(is(e));
         thrown.expectMessage(e.getMessage());
 
-        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, etMock);
+        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
         final OWLClassM target = new OWLClassM();
         mapper.map(resultSetMock, target, uowMock);
         assertNull(target.getBooleanAttribute());
@@ -107,14 +91,13 @@ public class FieldResultMapperTest {
     public void mapExtractsValueFromResultSetAndSetsItOnTargetObjectField() throws Exception {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
-        when(etMock.getFieldSpecification(fieldResult.name())).thenReturn(fsMock);
         when(fsMock.getJavaType()).thenReturn(String.class);
         when(fsMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
         final String value = "stringValue";
         when(resultSetMock.getObject(fieldResult.variable())).thenReturn(value);
 
         final OWLClassA target = new OWLClassA();
-        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, etMock);
+        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
         mapper.map(resultSetMock, target, uowMock);
         verify(resultSetMock).getObject(fieldResult.variable());
         assertEquals(value, target.getStringAttribute());
