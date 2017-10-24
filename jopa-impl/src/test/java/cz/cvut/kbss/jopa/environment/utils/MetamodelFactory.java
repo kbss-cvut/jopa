@@ -43,8 +43,7 @@ public class MetamodelFactory {
      * Initializes the specified mock objects to return reasonable values.
      */
     public static void initOWLClassAMocks(EntityTypeImpl<OWLClassA> etMock, Attribute strAttMock,
-                                          TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException,
-            SecurityException {
+                                          TypesSpecification typesMock, Identifier idMock) throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -75,7 +74,19 @@ public class MetamodelFactory {
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
         when(etMock.getFieldSpecification("uri")).thenReturn(idMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
+        addLifecycleCallback(listenerManager, POST_LOAD, OWLClassA.getPostLoadCallback());
+        when(etMock.getLifecycleListenerManager()).thenReturn(listenerManager);
+    }
+
+    private static void addLifecycleCallback(EntityLifecycleListenerManager manager, LifecycleEvent evt,
+                                             Method callback) throws Exception {
+        final Method addCallback = EntityLifecycleListenerManager.class
+                .getDeclaredMethod("addLifecycleCallback", LifecycleEvent.class, Method.class);
+        if (!addCallback.isAccessible()) {
+            addCallback.setAccessible(true);
+        }
+        addCallback.invoke(manager, evt, callback);
     }
 
     /**
@@ -820,10 +831,7 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(sNameAtt.getName())).thenReturn(sNameAtt);
         when(et.getFieldSpecification(sTypes.getName())).thenReturn(sTypes);
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
-        final Method addCallback = EntityLifecycleListenerManager.class
-                .getDeclaredMethod("addLifecycleCallback", LifecycleEvent.class, Method.class);
-        addCallback.setAccessible(true);
-        addCallback.invoke(listenerManager, PRE_PERSIST, OWLClassS.getPrePersistHook());
+        addLifecycleCallback(listenerManager, PRE_PERSIST, OWLClassS.getPrePersistHook());
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
     }
 
@@ -882,16 +890,13 @@ public class MetamodelFactory {
                 .getDeclaredMethod("setParent", EntityLifecycleListenerManager.class);
         setParent.setAccessible(true);
         setParent.invoke(listenerManager, parentEt.getLifecycleListenerManager());
-        final Method addCallback = EntityLifecycleListenerManager.class
-                .getDeclaredMethod("addLifecycleCallback", LifecycleEvent.class, Method.class);
-        addCallback.setAccessible(true);
-        addCallback.invoke(listenerManager, PRE_PERSIST, OWLClassR.getPrePersistHook());
-        addCallback.invoke(listenerManager, POST_PERSIST, OWLClassR.getPostPersistHook());
-        addCallback.invoke(listenerManager, LifecycleEvent.PRE_UPDATE, OWLClassR.getPreUpdateHook());
-        addCallback.invoke(listenerManager, LifecycleEvent.POST_UPDATE, OWLClassR.getPostUpdateHook());
-        addCallback.invoke(listenerManager, LifecycleEvent.PRE_REMOVE, OWLClassR.getPreRemoveHook());
-        addCallback.invoke(listenerManager, LifecycleEvent.POST_REMOVE, OWLClassR.getPostRemoveHook());
-        addCallback.invoke(listenerManager, LifecycleEvent.POST_LOAD, OWLClassR.getPostLoadHook());
+        addLifecycleCallback(listenerManager, PRE_PERSIST, OWLClassR.getPrePersistHook());
+        addLifecycleCallback(listenerManager, POST_PERSIST, OWLClassR.getPostPersistHook());
+        addLifecycleCallback(listenerManager, PRE_UPDATE, OWLClassR.getPreUpdateHook());
+        addLifecycleCallback(listenerManager, POST_UPDATE, OWLClassR.getPostUpdateHook());
+        addLifecycleCallback(listenerManager, PRE_REMOVE, OWLClassR.getPreRemoveHook());
+        addLifecycleCallback(listenerManager, POST_REMOVE, OWLClassR.getPostRemoveHook());
+        addLifecycleCallback(listenerManager, POST_LOAD, OWLClassR.getPostLoadHook());
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
     }
 
@@ -901,11 +906,19 @@ public class MetamodelFactory {
                 .getDeclaredMethod("addEntityListener", Object.class);
         addListener.setAccessible(true);
         addListener.invoke(manager, listener);
+        addEntityListenerCallback(manager, listener, PRE_PERSIST, ParentListener.getPrePersistMethod());
+        addEntityListenerCallback(manager, listener, POST_PERSIST, ParentListener.getPostPersistMethod());
+    }
+
+    private static void addEntityListenerCallback(EntityLifecycleListenerManager manager, Object listener,
+                                                  LifecycleEvent evt, Method callback)
+            throws Exception {
         final Method addListenerCallback = EntityLifecycleListenerManager.class
                 .getDeclaredMethod("addEntityListenerCallback", Object.class, LifecycleEvent.class, Method.class);
-        addListenerCallback.setAccessible(true);
-        addListenerCallback.invoke(manager, listener, PRE_PERSIST, ParentListener.getPrePersistMethod());
-        addListenerCallback.invoke(manager, listener, POST_PERSIST, ParentListener.getPostPersistMethod());
+        if (!addListenerCallback.isAccessible()) {
+            addListenerCallback.setAccessible(true);
+        }
+        addListenerCallback.invoke(manager, listener, evt, callback);
     }
 
     static void initOwlClassRListeners(EntityTypeImpl<OWLClassR> etR, EntityTypeImpl<OWLClassS> etS,
@@ -921,16 +934,13 @@ public class MetamodelFactory {
         addListener.setAccessible(true);
         addListener.invoke(manager, concreteListener);
         addListener.invoke(manager, anotherListener);
-        final Method addListenerCallback = EntityLifecycleListenerManager.class
-                .getDeclaredMethod("addEntityListenerCallback", Object.class, LifecycleEvent.class, Method.class);
-        addListenerCallback.setAccessible(true);
-        addListenerCallback.invoke(manager, concreteListener, PRE_PERSIST, ConcreteListener.getPrePersist());
-        addListenerCallback.invoke(manager, anotherListener, PRE_PERSIST, AnotherListener.getPrePersist());
-        addListenerCallback.invoke(manager, concreteListener, POST_PERSIST, ConcreteListener.getPostPersist());
-        addListenerCallback.invoke(manager, concreteListener, POST_LOAD, ConcreteListener.getPostLoad());
-        addListenerCallback.invoke(manager, concreteListener, PRE_UPDATE, ConcreteListener.getPreUpdate());
-        addListenerCallback.invoke(manager, concreteListener, POST_UPDATE, ConcreteListener.getPostUpdate());
-        addListenerCallback.invoke(manager, concreteListener, PRE_REMOVE, ConcreteListener.getPreRemove());
-        addListenerCallback.invoke(manager, concreteListener, POST_REMOVE, ConcreteListener.getPostRemove());
+        addEntityListenerCallback(manager, concreteListener, PRE_PERSIST, ConcreteListener.getPrePersist());
+        addEntityListenerCallback(manager, anotherListener, PRE_PERSIST, AnotherListener.getPrePersist());
+        addEntityListenerCallback(manager, concreteListener, POST_PERSIST, ConcreteListener.getPostPersist());
+        addEntityListenerCallback(manager, concreteListener, POST_LOAD, ConcreteListener.getPostLoad());
+        addEntityListenerCallback(manager, concreteListener, PRE_UPDATE, ConcreteListener.getPreUpdate());
+        addEntityListenerCallback(manager, concreteListener, POST_UPDATE, ConcreteListener.getPostUpdate());
+        addEntityListenerCallback(manager, concreteListener, PRE_REMOVE, ConcreteListener.getPreRemove());
+        addEntityListenerCallback(manager, concreteListener, POST_REMOVE, ConcreteListener.getPostRemove());
     }
 }
