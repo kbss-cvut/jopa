@@ -14,18 +14,12 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -98,16 +92,25 @@ public class ResultSetMappingProcessor {
         for (FieldResult fr : er.fields()) {
             try {
                 final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(fr.name());
-                if (fieldSpec.isCollection()) {
-                    LOG.warn(
-                            "Mapping of plural attributes via @FieldResult is not supported. Check the definition of {}.",
-                            fr);
-                    continue;
-                }
-                etMapper.addFieldMapper(new FieldResultMapper(fr, fieldSpec));
+                createFieldMapper(fr, fieldSpec).ifPresent(etMapper::addFieldMapper);
             } catch (IllegalArgumentException e) {
                 throw new SparqlResultMappingException(e);
             }
+        }
+    }
+
+    private Optional<FieldResultMapper> createFieldMapper(FieldResult fr, FieldSpecification<?, ?> fieldSpec) {
+        if (fieldSpec.isCollection()) {
+            LOG.warn(
+                    "Mapping of plural attributes via @FieldResult is not supported. Check the definition of {}.",
+                    fr);
+            return Optional.empty();
+        }
+        if (fieldSpec instanceof Attribute &&
+                ((Attribute) fieldSpec).getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
+            return Optional.of(new ReferenceFieldResultMapper(fr, fieldSpec));
+        } else {
+            return Optional.of(new FieldResultMapper(fr, fieldSpec));
         }
     }
 
@@ -118,8 +121,17 @@ public class ResultSetMappingProcessor {
         }
         return et.getFieldSpecifications().stream()
                  .filter(fs -> !configuredFields.contains(fs.getName()) && !fs.isCollection())
-                 .map(FieldResultMapper::new)
+                 .map(this::createFieldMapper)
                  .collect(Collectors.toList());
+    }
+
+    private FieldResultMapper createFieldMapper(FieldSpecification<?, ?> fieldSpec) {
+        if (fieldSpec instanceof Attribute &&
+                ((Attribute) fieldSpec).getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
+            return new ReferenceFieldResultMapper(fieldSpec);
+        } else {
+            return new FieldResultMapper(fieldSpec);
+        }
     }
 
     public ResultSetMappingManager getManager() {

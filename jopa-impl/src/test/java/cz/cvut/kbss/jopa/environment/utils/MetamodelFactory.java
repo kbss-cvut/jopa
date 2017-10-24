@@ -235,7 +235,9 @@ public class MetamodelFactory {
         when(clsAMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
+        when(idMock.getJavaField()).thenReturn(OWLClassD.getUriField());
+        when(idMock.getName()).thenReturn(OWLClassD.getUriField().getName());
+        when(etMock.getFieldSpecification(OWLClassD.getUriField().getName())).thenReturn(idMock);
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 

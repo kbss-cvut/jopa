@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
@@ -246,5 +247,60 @@ public class ResultSetMappingProcessorTest {
                                                              .filter(fm -> fm.getFieldSpecification().equals(typesSpec))
                                                              .findAny();
         assertFalse(frMapper.isPresent());
+    }
+
+    @Test
+    public void buildMapperCreatesReferenceFieldMappersForObjectPropertyFieldResultMappings() throws Exception {
+        final MetamodelMocks metamodelMocks = new MetamodelMocks();
+        final EntityTypeImpl<OWLClassD> etD = metamodelMocks.forOwlClassD().entityType();
+        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
+        when(builderMock.entity(OWLClassD.class)).thenReturn(etD);
+        when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
+        processor.buildMapper(getMapping(WithEntityWithObjectPropertyMapping.class));
+
+        final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
+        assertEquals(1, rowMapper.getRowMappers().size());
+        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        final EntityResultMapper<OWLClassD> etMapper = (EntityResultMapper<OWLClassD>) rowMapper.getRowMappers().get(0);
+        final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
+                                                             .filter(fm -> fm.getVariableName().equals("y")).findAny();
+        assertTrue(frMapper.isPresent());
+        assertTrue(frMapper.get() instanceof ReferenceFieldResultMapper);
+    }
+
+    @SparqlResultSetMapping(name = MAPPING_NAME, entities = {
+            @EntityResult(entityClass = OWLClassD.class, fields = {
+                    @FieldResult(name = "uri", variable = "x"),
+                    @FieldResult(name = "owlClassA", variable = "y")
+            })
+    })
+    private static final class WithEntityWithObjectPropertyMapping {
+    }
+
+    @Test
+    public void buildMapperCreatesReferenceFieldMappersForUnconfiguredObjectPropertyField() throws Exception {
+        final MetamodelMocks metamodelMocks = new MetamodelMocks();
+        final EntityTypeImpl<OWLClassD> etD = metamodelMocks.forOwlClassD().entityType();
+        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
+        when(builderMock.entity(OWLClassD.class)).thenReturn(etD);
+        when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
+
+        processor.buildMapper(getMapping(WithEntityWithObjectPropertyField.class));
+
+        final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
+        assertEquals(1, rowMapper.getRowMappers().size());
+        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        final EntityResultMapper<OWLClassD> etMapper = (EntityResultMapper<OWLClassD>) rowMapper.getRowMappers().get(0);
+        final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
+                                                             .filter(fm -> fm.getVariableName().equals("owlClassA"))
+                                                             .findAny();
+        assertTrue(frMapper.isPresent());
+        assertTrue(frMapper.get() instanceof ReferenceFieldResultMapper);
+    }
+
+    @SparqlResultSetMapping(name = MAPPING_NAME, entities = {
+            @EntityResult(entityClass = OWLClassD.class)
+    })
+    private static final class WithEntityWithObjectPropertyField {
     }
 }

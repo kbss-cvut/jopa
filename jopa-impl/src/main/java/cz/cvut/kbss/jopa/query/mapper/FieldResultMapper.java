@@ -45,12 +45,15 @@ class FieldResultMapper {
      * @param target    Target object on which the field will be set
      */
     void map(ResultSet resultSet, Object target, UnitOfWork uow) {
+        final Object value = getVariableValue(resultSet);
+        verifyValueRange(value);
+        // This does currently only literal values, no references
+        EntityPropertiesUtils.setFieldValue(fieldSpec.getJavaField(), target, value);
+    }
+
+    Object getVariableValue(ResultSet resultSet) {
         try {
-            final Object value = resultSet.getObject(variableName);
-            // TODO What about plural attributes?
-            verifyValueRange(value);
-            // This does currently only literal values, no references
-            EntityPropertiesUtils.setFieldValue(fieldSpec.getJavaField(), target, value);
+            return resultSet.getObject(variableName);
         } catch (OntoDriverException e) {
             throw new SparqlResultMappingException(e);
         }

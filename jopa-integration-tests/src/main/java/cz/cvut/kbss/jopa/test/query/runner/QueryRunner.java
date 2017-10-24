@@ -291,4 +291,30 @@ public abstract class QueryRunner extends BaseQueryRunner {
             assertTrue(getEntityManager().contains(item));
         }
     }
+
+    @Test
+    public void queryWithEntityMappingLoadsReferencedEntitiesAsWell() {
+        final List res = getEntityManager().createNativeQuery("SELECT ?x ?y WHERE {" +
+                "?x a ?dType ;" +
+                "?hasA ?y . }", OWLClassD.MAPPING_NAME)
+                                           .setParameter("dType", URI.create(Vocabulary.C_OWL_CLASS_D))
+                                           .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                                           .getResultList();
+        final Map<URI, OWLClassD> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassD.class).forEach(d -> expected.put(d.getUri(), d));
+
+        assertEquals(expected.size(), res.size());
+        for (Object row : res) {
+            assertTrue(row instanceof OWLClassD);
+            final OWLClassD inst = (OWLClassD) row;
+            assertTrue(expected.containsKey(inst.getUri()));
+            assertNotNull(inst.getOwlClassA());
+            final OWLClassA expectedA = expected.get(inst.getUri()).getOwlClassA();
+            assertEquals(expectedA.getUri(), inst.getOwlClassA().getUri());
+            assertEquals(expectedA.getStringAttribute(), inst.getOwlClassA().getStringAttribute());
+            assertEquals(expectedA.getTypes(), inst.getOwlClassA().getTypes());
+            assertTrue(getEntityManager().contains(inst));
+            assertTrue(getEntityManager().contains(inst.getOwlClassA()));
+        }
+    }
 }
