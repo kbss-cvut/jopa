@@ -265,7 +265,7 @@ public class ResultSetMappingProcessorTest {
         final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
                                                              .filter(fm -> fm.getVariableName().equals("y")).findAny();
         assertTrue(frMapper.isPresent());
-        assertTrue(frMapper.get() instanceof ReferenceFieldResultMapper);
+        assertTrue(frMapper.get() instanceof ObjectPropertyFieldResultMapper);
     }
 
     @SparqlResultSetMapping(name = MAPPING_NAME, entities = {
@@ -295,7 +295,7 @@ public class ResultSetMappingProcessorTest {
                                                              .filter(fm -> fm.getVariableName().equals("owlClassA"))
                                                              .findAny();
         assertTrue(frMapper.isPresent());
-        assertTrue(frMapper.get() instanceof ReferenceFieldResultMapper);
+        assertTrue(frMapper.get() instanceof ObjectPropertyFieldResultMapper);
     }
 
     @SparqlResultSetMapping(name = MAPPING_NAME, entities = {

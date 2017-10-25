@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
@@ -70,24 +69,6 @@ public class FieldResultMapperTest {
     }
 
     @Test
-    public void mapThrowsResultMappingExceptionWhenExceptionOccursWhenGettingValueFromResultSet() throws Exception {
-        final FieldResult fieldResult = WithMapping.getFieldResult();
-        final FieldSpecification fsMock = mock(FieldSpecification.class);
-        when(fsMock.getJavaType()).thenReturn(Boolean.class);
-        final OntoDriverException e = new OntoDriverException(
-                "Result set does not contain column " + fieldResult.variable() + ".");
-        when(resultSetMock.getObject(fieldResult.variable())).thenThrow(e);
-        thrown.expect(SparqlResultMappingException.class);
-        thrown.expectCause(is(e));
-        thrown.expectMessage(e.getMessage());
-
-        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
-        final OWLClassM target = new OWLClassM();
-        mapper.map(resultSetMock, target, uowMock);
-        assertNull(target.getBooleanAttribute());
-    }
-
-    @Test
     public void mapExtractsValueFromResultSetAndSetsItOnTargetObjectField() throws Exception {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
@@ -101,5 +82,20 @@ public class FieldResultMapperTest {
         mapper.map(resultSetMock, target, uowMock);
         verify(resultSetMock).getObject(fieldResult.variable());
         assertEquals(value, target.getStringAttribute());
+    }
+
+    @Test
+    public void mapSkipsVariablesNotPresentInResultSet() throws Exception {
+        final FieldResult fieldResult = WithMapping.getFieldResult();
+        final FieldSpecification fsMock = mock(FieldSpecification.class);
+        when(fsMock.getJavaType()).thenReturn(Boolean.class);
+        final OntoDriverException e = new OntoDriverException(
+                "Result set does not contain column " + fieldResult.variable() + ".");
+        when(resultSetMock.getObject(fieldResult.variable())).thenThrow(e);
+
+        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
+        final OWLClassM target = new OWLClassM();
+        mapper.map(resultSetMock, target, uowMock);
+        assertNull(target.getBooleanAttribute());
     }
 }

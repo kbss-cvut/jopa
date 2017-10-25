@@ -108,7 +108,7 @@ public class ResultSetMappingProcessor {
         }
         if (fieldSpec instanceof Attribute &&
                 ((Attribute) fieldSpec).getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
-            return Optional.of(new ReferenceFieldResultMapper(fr, fieldSpec));
+            return Optional.of(new ObjectPropertyFieldResultMapper(fr, fieldSpec));
         } else {
             return Optional.of(new FieldResultMapper(fr, fieldSpec));
         }
@@ -128,7 +128,7 @@ public class ResultSetMappingProcessor {
     private FieldResultMapper createFieldMapper(FieldSpecification<?, ?> fieldSpec) {
         if (fieldSpec instanceof Attribute &&
                 ((Attribute) fieldSpec).getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
-            return new ReferenceFieldResultMapper(fieldSpec);
+            return new ObjectPropertyFieldResultMapper(fieldSpec);
         } else {
             return new FieldResultMapper(fieldSpec);
         }

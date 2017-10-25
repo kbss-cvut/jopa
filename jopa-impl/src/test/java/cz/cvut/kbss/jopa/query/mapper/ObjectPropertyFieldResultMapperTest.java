@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -17,10 +18,11 @@ import java.net.URI;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ReferenceFieldResultMapperTest {
+public class ObjectPropertyFieldResultMapperTest {
 
     @Mock
     private ResultSet resultSetMock;
@@ -28,29 +30,42 @@ public class ReferenceFieldResultMapperTest {
     @Mock
     private UnitOfWork uowMock;
 
-    private String fieldName;
-
-    private ReferenceFieldResultMapper mapper;
+    private MetamodelMocks metamodelMocks;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        this.fieldName = mocks.forOwlClassD().owlClassAAtt().getName();
-        this.mapper = new ReferenceFieldResultMapper(mocks.forOwlClassD().owlClassAAtt());
+        this.metamodelMocks = new MetamodelMocks();
     }
 
     @Test
     public void mapLoadsInstanceByIdentifierFromUnitOfWork() throws Exception {
+        final FieldResultMapper mapper = new ObjectPropertyFieldResultMapper(
+                metamodelMocks.forOwlClassD().owlClassAAtt());
+        final String fieldName = metamodelMocks.forOwlClassD().owlClassAAtt().getName();
         final URI identifier = Generators.createIndividualIdentifier();
         when(resultSetMock.getObject(fieldName)).thenReturn(identifier);
         final OWLClassA aInstance = Generators.generateOwlClassAInstance();
         aInstance.setUri(identifier);
         when(uowMock.readObject(eq(OWLClassA.class), eq(identifier), any())).thenReturn(aInstance);
 
-        final OWLClassD result = new OWLClassD();
-        mapper.map(resultSetMock, result, uowMock);
-        assertEquals(aInstance, result.getOwlClassA());
+        final OWLClassD target = new OWLClassD();
+        mapper.map(resultSetMock, target, uowMock);
+        assertEquals(aInstance, target.getOwlClassA());
         verify(uowMock).readObject(OWLClassA.class, identifier, new EntityDescriptor());
+    }
+
+    @Test
+    public void mapUsesValueDirectlyWhenFieldIsPlainIdentifier() throws Exception {
+        final FieldResultMapper mapper = new ObjectPropertyFieldResultMapper(
+                metamodelMocks.forOwlClassP().pUriAttribute());
+        final String fieldName = metamodelMocks.forOwlClassP().pUriAttribute().getName();
+        final URI value = Generators.createIndividualIdentifier();
+        when(resultSetMock.getObject(fieldName)).thenReturn(value);
+        final OWLClassP target = new OWLClassP();
+
+        mapper.map(resultSetMock, target, uowMock);
+        assertEquals(value, target.getIndividualUri());
+        verify(uowMock, never()).readObject(any(), eq(value), any());
     }
 }

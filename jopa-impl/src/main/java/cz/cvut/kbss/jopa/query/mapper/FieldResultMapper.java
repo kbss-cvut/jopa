@@ -7,8 +7,14 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 class FieldResultMapper {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FieldResultMapper.class);
 
     private final String variableName;
 
@@ -45,17 +51,19 @@ class FieldResultMapper {
      * @param target    Target object on which the field will be set
      */
     void map(ResultSet resultSet, Object target, UnitOfWork uow) {
-        final Object value = getVariableValue(resultSet);
-        verifyValueRange(value);
-        // This does currently only literal values, no references
-        EntityPropertiesUtils.setFieldValue(fieldSpec.getJavaField(), target, value);
+        final Optional<Object> value = getVariableValue(resultSet);
+        value.ifPresent(val -> {
+            verifyValueRange(val);
+            EntityPropertiesUtils.setFieldValue(fieldSpec.getJavaField(), target, val);
+        });
     }
 
-    Object getVariableValue(ResultSet resultSet) {
+    Optional<Object> getVariableValue(ResultSet resultSet) {
         try {
-            return resultSet.getObject(variableName);
+            return Optional.of(resultSet.getObject(variableName));
         } catch (OntoDriverException e) {
-            throw new SparqlResultMappingException(e);
+            LOG.warn(e.getMessage());
+            return Optional.empty();
         }
     }
 
