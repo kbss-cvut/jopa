@@ -60,7 +60,7 @@ class FieldResultMapper {
 
     Optional<Object> getVariableValue(ResultSet resultSet) {
         try {
-            return Optional.of(resultSet.getObject(variableName));
+            return Optional.ofNullable(resultSet.getObject(variableName));
         } catch (OntoDriverException e) {
             LOG.warn(e.getMessage());
             return Optional.empty();

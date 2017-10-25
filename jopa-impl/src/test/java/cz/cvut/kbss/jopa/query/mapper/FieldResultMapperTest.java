@@ -98,4 +98,17 @@ public class FieldResultMapperTest {
         mapper.map(resultSetMock, target, uowMock);
         assertNull(target.getBooleanAttribute());
     }
+
+    @Test
+    public void mapSkipsFieldForWhichVariableHasNoBindingInCurrentResultRow() throws Exception {
+        final FieldResult fieldResult = WithMapping.getFieldResult();
+        final FieldSpecification fsMock = mock(FieldSpecification.class);
+        when(fsMock.getJavaType()).thenReturn(Boolean.class);
+        when(resultSetMock.getObject(fieldResult.variable())).thenReturn(null);
+
+        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
+        final OWLClassM target = new OWLClassM();
+        mapper.map(resultSetMock, target, uowMock);
+        assertNull(target.getBooleanAttribute());
+    }
 }
