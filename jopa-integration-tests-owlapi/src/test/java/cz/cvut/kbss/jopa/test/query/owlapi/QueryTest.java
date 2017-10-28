@@ -61,4 +61,10 @@ public class QueryTest extends QueryRunner {
     public void testSelectWithOptionalReturnsNullInUnfilledColumns() throws Exception {
         // OWL2Query does not support OPTIONAL pattern
     }
+
+    @Ignore
+    @Override
+    public void queryWithEntityMappingLoadsReferencedEntityAndInheritedAttributes() {
+        // OWL2Query does not return any results for the test query
+    }
 }

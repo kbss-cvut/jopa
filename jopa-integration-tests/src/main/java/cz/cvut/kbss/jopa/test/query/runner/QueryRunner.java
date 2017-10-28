@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
+import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -310,11 +311,51 @@ public abstract class QueryRunner extends BaseQueryRunner {
             assertTrue(expected.containsKey(inst.getUri()));
             assertNotNull(inst.getOwlClassA());
             final OWLClassA expectedA = expected.get(inst.getUri()).getOwlClassA();
-            assertEquals(expectedA.getUri(), inst.getOwlClassA().getUri());
-            assertEquals(expectedA.getStringAttribute(), inst.getOwlClassA().getStringAttribute());
-            assertEquals(expectedA.getTypes(), inst.getOwlClassA().getTypes());
+            verifyOwlClassAInstance(expectedA, inst.getOwlClassA());
             assertTrue(getEntityManager().contains(inst));
             assertTrue(getEntityManager().contains(inst.getOwlClassA()));
+        }
+    }
+
+    private void verifyOwlClassAInstance(OWLClassA expected, OWLClassA actual) {
+        if (expected == null) {
+            assertNull(actual);
+            return;
+        }
+        assertNotNull(actual);
+        assertEquals(expected.getUri(), actual.getUri());
+        assertEquals(expected.getStringAttribute(), actual.getStringAttribute());
+        assertEquals(expected.getTypes(), actual.getTypes());
+    }
+
+    @Test
+    public void queryWithEntityMappingLoadsReferencedEntityAndInheritedAttributes() {
+        final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
+                "?x a ?type ;" +
+                "?hasA ?y ;" +
+                "?rdfsLabel ?label ;" +
+                "?hasDescription ?description ;" +
+                "?hasInt ?intAttribute ." +
+                "}", OWLClassT.MAPPING_NAME)
+                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_T))
+                                           .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                                           .setParameter("rdfsLabel", URI.create(CommonVocabulary.RDFS_LABEL))
+                                           .setParameter("hasDescription", URI.create(CommonVocabulary.DC_DESCRIPTION))
+                                           .setParameter("hasInt", URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE))
+                                           .getResultList();
+        final Map<URI, OWLClassT> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassT.class).forEach(t -> expected.put(t.getUri(), t));
+
+        assertEquals(expected.size(), res.size());
+        for (Object row : res) {
+            assertTrue(row instanceof OWLClassT);
+            final OWLClassT tActual = (OWLClassT) row;
+            assertTrue(expected.containsKey(tActual.getUri()));
+            final OWLClassT tExpected = expected.get(tActual.getUri());
+            assertEquals(tExpected.getName(), tActual.getName());
+            assertEquals(tExpected.getDescription(), tActual.getDescription());
+            assertEquals(tExpected.getIntAttribute(), tActual.getIntAttribute());
+            verifyOwlClassAInstance(tExpected.getOwlClassA(), tActual.getOwlClassA());
         }
     }
 }
