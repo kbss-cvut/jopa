@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -23,7 +21,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.net.URI;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -31,6 +31,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class AbstractIdentifiableTypeTest {
+
+    private static final String ID_NAME = "uri";
 
     private static Class<OWLClassA> cls;
     private static IRI classIri;
@@ -51,6 +53,9 @@ public class AbstractIdentifiableTypeTest {
     @Before
     public void setUp() throws Exception {
         this.et = new EntityTypeImpl<>(className, cls, classIri);
+        final Identifier<OWLClassA, URI> id = mock(Identifier.class);
+        when(id.getName()).thenReturn(ID_NAME);
+        et.setIdentifier(id);
     }
 
     @Test
@@ -278,6 +283,15 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
+    public void getFieldSpecificationsReturnsAlsoIdentifier() {
+        final Set<FieldSpecification<? super OWLClassA, ?>> result = et.getFieldSpecifications();
+        final Optional<FieldSpecification<? super OWLClassA, ?>> id = result.stream()
+                                                                            .filter(fs -> fs.equals(et.getIdentifier()))
+                                                                            .findAny();
+        assertTrue(id.isPresent());
+    }
+
+    @Test
     public void getTypesReturnsTypesAlsoFromSuperType() {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
@@ -341,6 +355,13 @@ public class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         doReturn(id).when(supertype).getIdentifier();
         et.setSupertype(supertype);
+        et.setIdentifier(null);
         assertEquals(id, et.getIdentifier());
+    }
+
+    @Test
+    public void getFieldSpecificationReturnsIdentifier() {
+        final FieldSpecification<? super OWLClassA, ?> idSpec = et.getFieldSpecification("uri");
+        assertTrue(idSpec instanceof Identifier);
     }
 }

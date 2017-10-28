@@ -64,7 +64,11 @@ public class OWLClassD {
         return OWLClassD.class.getAnnotation(OWLClass.class).iri();
     }
 
-    public static Field getOwlClassAField() throws NoSuchFieldException, SecurityException {
+    public static Field getUriField() throws NoSuchFieldException {
+        return OWLClassD.class.getDeclaredField("uri");
+    }
+
+    public static Field getOwlClassAField() throws NoSuchFieldException {
         return OWLClassD.class.getDeclaredField(CLS_A_FIELD);
     }
 

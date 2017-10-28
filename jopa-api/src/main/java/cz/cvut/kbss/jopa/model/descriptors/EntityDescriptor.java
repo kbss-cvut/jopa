@@ -1,24 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
@@ -100,15 +96,14 @@ public class EntityDescriptor extends Descriptor {
     }
 
     private static Descriptor createDescriptor(FieldSpecification<?, ?> att, URI context) {
-        if ((att instanceof TypesSpecification) || (att instanceof PropertiesSpecification)) {
-            return new FieldDescriptor(context, att.getJavaField());
-        }
-        final Attribute<?, ?> attSpec = (Attribute<?, ?>) att;
-        if (attSpec.getPersistentAttributeType() == PersistentAttributeType.OBJECT) {
-            if (attSpec.isCollection()) {
-                return new ObjectPropertyCollectionDescriptor(context, att.getJavaField());
-            } else {
-                return new EntityDescriptor(context);
+        if (att instanceof Attribute) {
+            final Attribute<?, ?> attSpec = (Attribute<?, ?>) att;
+            if (attSpec.getPersistentAttributeType() == PersistentAttributeType.OBJECT) {
+                if (attSpec.isCollection()) {
+                    return new ObjectPropertyCollectionDescriptor(context, att.getJavaField());
+                } else {
+                    return new EntityDescriptor(context);
+                }
             }
         }
         return new FieldDescriptor(context, att.getJavaField());

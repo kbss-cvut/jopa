@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -32,10 +30,14 @@ public class MetamodelBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(MetamodelBuilder.class);
 
     private final NamedNativeQueryProcessor queryProcessor = new NamedNativeQueryProcessor();
-    private final ResultSetMappingProcessor mappingProcessor = new ResultSetMappingProcessor();
+    private final ResultSetMappingProcessor mappingProcessor;
 
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
+
+    public MetamodelBuilder() {
+        this.mappingProcessor = new ResultSetMappingProcessor(this);
+    }
 
     /**
      * Builds persistence unit metamodel based on classes discovered by the specified class finder.
@@ -117,6 +119,10 @@ public class MetamodelBuilder {
 
     public Map<Class<?>, ManagedType<?>> getTypeMap() {
         return Collections.unmodifiableMap(typeMap);
+    }
+
+    public <X> AbstractIdentifiableType<X> entity(Class<X> cls) {
+        return (AbstractIdentifiableType<X>) typeMap.get(cls);
     }
 
     public Map<Class<?>, EntityType<?>> getEntities() {

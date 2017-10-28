@@ -1,19 +1,18 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.feature;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
@@ -28,6 +27,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.*;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -257,5 +257,25 @@ public class EntityLifecycleListenersTest {
         verify(concreteListenerMock, never()).postUpdate(any());
         verify(merged, never()).postUpdate();
         verify(storageMock, never()).merge(eq(merged), any(Field.class), eq(descriptor));
+    }
+
+    @Ignore
+    @Test
+    public void lifecycleListenerMethodsAreCalledOnReferencedEntitiesAsWell() {
+        final OWLClassR rOriginal = spy(new OWLClassR(Generators.createIndividualIdentifier()));
+        final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
+        final OWLClassA aOriginal = spy(Generators.generateOwlClassAInstance());
+        final OWLClassA aInstance = spy(new OWLClassA(aOriginal.getUri()));
+        rInstance.setOwlClassA(aInstance);
+
+        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rOriginal.getUri(), descriptor)))
+                .thenReturn(rOriginal);
+        final OWLClassR result = uow.readObject(OWLClassR.class, rOriginal.getUri(), descriptor);
+        assertSame(rInstance, result);
+        final InOrder inOrder = inOrder(rInstance, aInstance, concreteListenerMock);
+        inOrder.verify(aInstance).postLoad();
+        inOrder.verify(concreteListenerMock).postLoad(rInstance);
+        inOrder.verify(rInstance).postLoad();
     }
 }

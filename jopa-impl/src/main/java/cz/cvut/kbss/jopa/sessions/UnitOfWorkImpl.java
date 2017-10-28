@@ -26,7 +26,6 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;

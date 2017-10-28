@@ -1,19 +1,18 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
+import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -267,12 +266,96 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final Map<URI, OWLClassA> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
 
+        verifyOWLClassAInstances(res, expected);
+    }
+
+    private void verifyOWLClassAInstances(List res, Map<URI, OWLClassA> expected) {
         for (Object item : res) {
             assertTrue(item instanceof OWLClassA);
             final OWLClassA a = (OWLClassA) item;
             assertTrue(expected.containsKey(a.getUri()));
             assertEquals(expected.get(a.getUri()).getStringAttribute(), a.getStringAttribute());
-            assertNull(a.getTypes());
+        }
+    }
+
+    @Test
+    public void queryWithEntityMappingReturnsCorrectManagedInstances() {
+        final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
+                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?stringAttribute ." +
+                "}", OWLClassA.ENTITY_MAPPING).getResultList();
+        final Map<URI, OWLClassA> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
+
+        verifyOWLClassAInstances(res, expected);
+        for (Object item : res) {
+            assertTrue(getEntityManager().contains(item));
+        }
+    }
+
+    @Test
+    public void queryWithEntityMappingLoadsReferencedEntitiesAsWell() {
+        final List res = getEntityManager().createNativeQuery("SELECT ?x ?y WHERE {" +
+                "?x a ?dType ;" +
+                "?hasA ?y . }", OWLClassD.MAPPING_NAME)
+                                           .setParameter("dType", URI.create(Vocabulary.C_OWL_CLASS_D))
+                                           .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                                           .getResultList();
+        final Map<URI, OWLClassD> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassD.class).forEach(d -> expected.put(d.getUri(), d));
+
+        assertEquals(expected.size(), res.size());
+        for (Object row : res) {
+            assertTrue(row instanceof OWLClassD);
+            final OWLClassD inst = (OWLClassD) row;
+            assertTrue(expected.containsKey(inst.getUri()));
+            assertNotNull(inst.getOwlClassA());
+            final OWLClassA expectedA = expected.get(inst.getUri()).getOwlClassA();
+            verifyOwlClassAInstance(expectedA, inst.getOwlClassA());
+            assertTrue(getEntityManager().contains(inst));
+            assertTrue(getEntityManager().contains(inst.getOwlClassA()));
+        }
+    }
+
+    private void verifyOwlClassAInstance(OWLClassA expected, OWLClassA actual) {
+        if (expected == null) {
+            assertNull(actual);
+            return;
+        }
+        assertNotNull(actual);
+        assertEquals(expected.getUri(), actual.getUri());
+        assertEquals(expected.getStringAttribute(), actual.getStringAttribute());
+        assertEquals(expected.getTypes(), actual.getTypes());
+    }
+
+    @Test
+    public void queryWithEntityMappingLoadsReferencedEntityAndInheritedAttributes() {
+        final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
+                "?x a ?type ;" +
+                "?hasA ?y ;" +
+                "?rdfsLabel ?label ;" +
+                "?hasDescription ?description ;" +
+                "?hasInt ?intAttribute ." +
+                "}", OWLClassT.MAPPING_NAME)
+                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_T))
+                                           .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                                           .setParameter("rdfsLabel", URI.create(CommonVocabulary.RDFS_LABEL))
+                                           .setParameter("hasDescription", URI.create(CommonVocabulary.DC_DESCRIPTION))
+                                           .setParameter("hasInt", URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE))
+                                           .getResultList();
+        final Map<URI, OWLClassT> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassT.class).forEach(t -> expected.put(t.getUri(), t));
+
+        assertEquals(expected.size(), res.size());
+        for (Object row : res) {
+            assertTrue(row instanceof OWLClassT);
+            final OWLClassT tActual = (OWLClassT) row;
+            assertTrue(expected.containsKey(tActual.getUri()));
+            final OWLClassT tExpected = expected.get(tActual.getUri());
+            assertEquals(tExpected.getName(), tActual.getName());
+            assertEquals(tExpected.getDescription(), tActual.getDescription());
+            assertEquals(tExpected.getIntAttribute(), tActual.getIntAttribute());
+            verifyOwlClassAInstance(tExpected.getOwlClassA(), tActual.getOwlClassA());
         }
     }
 }
