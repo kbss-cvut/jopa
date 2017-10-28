@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
-import cz.cvut.kbss.jopa.loaders.EntityLoader;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
@@ -108,7 +108,9 @@ public final class TestEnvironmentUtils {
     }
 
     private static void initManagedTypes() {
-        managedTypes = new EntityLoader().discoverEntityClasses(new Configuration(
+        final PersistenceUnitClassFinder classFinder = new PersistenceUnitClassFinder();
+        classFinder.scanClasspath(new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa")));
+        managedTypes = classFinder.getEntities();
     }
 }

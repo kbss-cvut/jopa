@@ -40,8 +40,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private UnitOfWork uow;
 
-    private int maxResults;
-
     private Descriptor descriptor;
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
@@ -50,7 +48,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         this.resultType = Objects.requireNonNull(resultType, ErrorUtils.getNPXMessageSupplier("resultType"));
         this.metamodelProvider = Objects
                 .requireNonNull(metamodelProvider, ErrorUtils.getNPXMessageSupplier("metamodelProvider"));
-        this.maxResults = Integer.MAX_VALUE;
     }
 
     public void setUnitOfWork(UnitOfWork uow) {
@@ -111,51 +108,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         }
         this.maxResults = maxResults;
         return this;
-    }
-
-    @Override
-    public int getMaxResults() {
-        return maxResults;
-    }
-
-    @Override
-    public Parameter<?> getParameter(int position) {
-        return query.getParameter(position);
-    }
-
-    @Override
-    public Parameter<?> getParameter(String name) {
-        return query.getParameter(name);
-    }
-
-    @Override
-    public Set<Parameter<?>> getParameters() {
-        return query.getParameters();
-    }
-
-    @Override
-    public boolean isBound(Parameter<?> parameter) {
-        return query.getParameterValue(parameter) != null;
-    }
-
-    @Override
-    public Object getParameterValue(int position) {
-        final Parameter<?> param = query.getParameter(position);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public Object getParameterValue(String name) {
-        final Parameter<?> param = query.getParameter(name);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public <T> T getParameterValue(Parameter<T> parameter) {
-        if (!isBound(parameter)) {
-            throw unboundParam(parameter);
-        }
-        return (T) query.getParameterValue(parameter);
     }
 
     @Override

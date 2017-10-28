@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.loaders.EntityLoader;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -62,7 +62,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     private void initMetamodel() {
         this.metamodel = new MetamodelImpl(configuration);
-        metamodel.build(new EntityLoader());
+        metamodel.build(new PersistenceUnitClassFinder());
     }
 
     @Override

@@ -39,6 +39,15 @@ public interface QueryFactory {
     <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass);
 
     /**
+     * Creates a query object representing a native SPARQL query.
+     * @param sparql The query
+     * @param resultSetMapping Name of the result set mapping to apply
+     * @return Query object
+     * * @throws NullPointerException If {@code sparql} or {@code resultSetMapping} is {@code null}
+     */
+    Query createNativeQuery(String sparql, String resultSetMapping);
+
+    /**
      * Creates query object representing a native SPARQL query.
      *
      * @param query The query

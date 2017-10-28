@@ -26,7 +26,9 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
@@ -654,6 +656,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
+    public ResultSetMappingManager getResultSetMappingManager() {
+        return parent.getResultSetMappingManager();
+    }
+
+    @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
         if (entity == null) {
             return null;
@@ -894,8 +901,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final Descriptor entityDescriptor = getDescriptor(entity);
         if (entityDescriptor == null) {
             throw new OWLPersistenceException(
-                    "Unable to find repository identifier for entity " + entity
-                            + ". Is it managed by this UoW?");
+                    "Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
         storage.loadFieldValue(entity, field, entityDescriptor);
         final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
@@ -977,6 +983,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     @Override
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
         return queryFactory.createNativeQuery(sparql, resultClass);
+    }
+
+    @Override
+    public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
+        return queryFactory.createNativeQuery(sparql, resultSetMapping);
     }
 
     @Override

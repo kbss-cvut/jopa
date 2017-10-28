@@ -68,11 +68,10 @@ public class LruCacheManager implements CacheManager {
         this.entityCache = new LruEntityCache(capacity);
     }
 
-    private int resolveCapacitySetting(Map<String, String> properties) {
+    private static int resolveCapacitySetting(Map<String, String> properties) {
         int capacitySetting = DEFAULT_CAPACITY;
         try {
-            capacitySetting =
-                    Integer.parseInt(properties.get(JOPAPersistenceProperties.LRU_CACHE_CAPACITY));
+            capacitySetting = Integer.parseInt(properties.get(JOPAPersistenceProperties.LRU_CACHE_CAPACITY));
             if (capacitySetting <= 0) {
                 LOG.warn("Invalid LRU cache capacity value {}. Using default value.", capacitySetting);
                 capacitySetting = DEFAULT_CAPACITY;

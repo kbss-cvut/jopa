@@ -12,22 +12,20 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.loaders;
+package cz.cvut.kbss.jopa.exception;
+
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 
 /**
- * This exception is thrown when an error occurs during the initialization of JOPA.
+ * Represents a problem with a {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping} declaration or its runtime usage to map query result to target value(s).
  */
-public class JopaInitializationException extends RuntimeException {
+public class SparqlResultMappingException extends OWLPersistenceException {
 
-    public JopaInitializationException(String message) {
-        super(message);
-    }
-
-    public JopaInitializationException(Throwable cause) {
+    public SparqlResultMappingException(Throwable cause) {
         super(cause);
     }
 
-    public JopaInitializationException(String message, Throwable cause) {
+    public SparqlResultMappingException(String message, Throwable cause) {
         super(message, cause);
     }
 }

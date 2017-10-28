@@ -15,8 +15,11 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
 import cz.cvut.kbss.jopa.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,23 +31,20 @@ public class MetamodelBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetamodelBuilder.class);
 
-    private final NamedNativeQueryProcessor queryProcessor;
+    private final NamedNativeQueryProcessor queryProcessor = new NamedNativeQueryProcessor();
+    private final ResultSetMappingProcessor mappingProcessor = new ResultSetMappingProcessor();
 
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
-    private final NamedQueryManager namedQueryManager = new NamedQueryManager();
-
-    public MetamodelBuilder() {
-        this.queryProcessor = new NamedNativeQueryProcessor(namedQueryManager);
-    }
 
     /**
-     * Builds persistence unit metamodel from the specified set of entities.
+     * Builds persistence unit metamodel based on classes discovered by the specified class finder.
      *
-     * @param entities Entities declared for the persistence unit
+     * @param classFinder Holder of information about classes relevant for persistence unit building
      */
-    public void buildMetamodel(Set<Class<?>> entities) {
-        entities.forEach(this::processOWLClass);
+    public void buildMetamodel(PersistenceUnitClassFinder classFinder) {
+        classFinder.getEntities().forEach(this::processOWLClass);
+        classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
     }
 
     private <X> void processOWLClass(final Class<X> cls) {
@@ -131,7 +131,11 @@ public class MetamodelBuilder {
     }
 
     public NamedQueryManager getNamedQueryManager() {
-        return namedQueryManager;
+        return queryProcessor.getQueryManager();
+    }
+
+    public ResultSetMappingManager getResultSetMappingManager() {
+        return mappingProcessor.getManager();
     }
 
     void addInferredClass(Class<?> cls) {

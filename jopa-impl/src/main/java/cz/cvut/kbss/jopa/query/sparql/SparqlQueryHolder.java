@@ -59,7 +59,7 @@ public class SparqlQueryHolder implements QueryHolder {
         return identifiersToParameters.get(name);
     }
 
-    private IllegalArgumentException unknownParameter(Object p) {
+    private static IllegalArgumentException unknownParameter(Object p) {
         return new IllegalArgumentException("Parameter '" + p + "' does not exist in this query.");
     }
 

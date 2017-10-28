@@ -20,11 +20,7 @@ import cz.cvut.kbss.jopa.query.NamedQueryManager;
 
 class NamedNativeQueryProcessor {
 
-    private final NamedQueryManager queryManager;
-
-    NamedNativeQueryProcessor(NamedQueryManager queryManager) {
-        this.queryManager = queryManager;
-    }
+    private final NamedQueryManager queryManager = new NamedQueryManager();
 
     /**
      * Discovers named native queries declared on the specified class.
@@ -48,5 +44,9 @@ class NamedNativeQueryProcessor {
 
     private void processQuery(NamedNativeQuery query) {
         queryManager.addNamedQuery(query.name(), query.query());
+    }
+
+    NamedQueryManager getQueryManager() {
+        return queryManager;
     }
 }

@@ -21,7 +21,6 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.Test;
 import org.slf4j.Logger;
-import sun.security.krb5.internal.crypto.Des;
 
 import java.lang.reflect.Field;
 import java.net.URI;

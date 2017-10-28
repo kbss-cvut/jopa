@@ -272,6 +272,7 @@ public class TtlCacheManager implements CacheManager {
      */
     private final class CacheSweeper implements Runnable {
 
+        @Override
         public void run() {
             LOG.trace("Running cache sweep.");
             TtlCacheManager.this.acquireWriteLock();

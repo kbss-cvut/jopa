@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
-import cz.cvut.kbss.jopa.loaders.EntityLoader;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -44,7 +44,7 @@ public class MetamodelImplInheritanceTest {
             .singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
 
     @Mock
-    private EntityLoader entityLoaderMock;
+    private PersistenceUnitClassFinder classFinderMock;
 
     private Configuration conf = new Configuration(PROPERTIES);
 
@@ -62,9 +62,9 @@ public class MetamodelImplInheritanceTest {
     }
 
     private MetamodelImpl metamodelFor(Class<?>... classes) {
-        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(new HashSet<>(Arrays.asList(classes)));
+        when(classFinderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(classes)));
         final MetamodelImpl metamodel = new MetamodelImpl(conf);
-        metamodel.build(entityLoaderMock);
+        metamodel.build(classFinderMock);
         return metamodel;
     }
 

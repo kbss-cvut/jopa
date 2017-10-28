@@ -16,15 +16,17 @@ package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Test;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class EntityLoaderTest {
+public class PersistenceUnitClassFinderTest {
 
     private static final Set<Class<?>> ENTITY_CLASSES = initEntityClasses();
 
@@ -52,43 +54,43 @@ public class EntityLoaderTest {
         return set;
     }
 
-    private EntityLoader entityLoader = new EntityLoader();
+    private PersistenceUnitClassFinder finder = new PersistenceUnitClassFinder();
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWhenScanPackageIsNotSupplied() throws Exception {
         final Map<String, String> properties = Collections.emptyMap();
-        entityLoader.discoverEntityClasses(new Configuration(properties));
+        finder.scanClasspath(new Configuration(properties));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWhenScanPackageIsEmpty() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "");
-        entityLoader.discoverEntityClasses(new Configuration(properties));
+        finder.scanClasspath(new Configuration(properties));
     }
 
     @Test
     public void doesNotFailWhenUnknownPackageNameIsPassed() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "com.cvut");
-        final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
-        assertTrue(result.isEmpty());
+        finder.scanClasspath(new Configuration(properties));
+        assertTrue(finder.getEntities().isEmpty());
     }
 
     @Test
     public void loadsEntityClassesWhenCorrectPackageIsSet() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
-        final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
-        assertEquals(ENTITY_CLASSES, result);
+        finder.scanClasspath(new Configuration(properties));
+        assertEquals(ENTITY_CLASSES, finder.getEntities());
     }
 
     @Test
     public void loadsEntityClassesWhenAncestorPackageIsSet() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss");
-        final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
-        assertTrue(result.containsAll(ENTITY_CLASSES));
+        finder.scanClasspath(new Configuration(properties));
+        assertTrue(finder.getEntities().containsAll(ENTITY_CLASSES));
     }
 
     /**
@@ -98,9 +100,20 @@ public class EntityLoaderTest {
     public void entityLoadHandlesEntityNameContainingClassStringWhenProcessingJar() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test.jar");
-        final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
+        finder.scanClasspath(new Configuration(properties));
+        final Set<Class<?>> result = finder.getEntities();
         final Optional<Class<?>> cls = result.stream().filter(c -> c.getName().contains("classInName"))
                                              .findAny();
         assertTrue(cls.isPresent());
+    }
+
+    @Test
+    public void scanLoadsResultSetMappings() {
+        final Map<String, String> properties = Collections.singletonMap(
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
+        finder.scanClasspath(new Configuration(properties));
+        assertFalse(finder.getResultSetMappings().isEmpty());
+        assertTrue(finder.getResultSetMappings()
+                         .contains(OWLClassA.class.getDeclaredAnnotation(SparqlResultSetMapping.class)));
     }
 }

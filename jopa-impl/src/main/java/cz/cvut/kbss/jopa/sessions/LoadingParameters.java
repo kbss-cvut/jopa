@@ -34,16 +34,16 @@ public final class LoadingParameters<T> {
         assert paramsLoaded();
     }
 
-    private boolean paramsLoaded() {
-        return cls != null && identifier != null && descriptor != null;
-    }
-
     public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor, boolean forceEager) {
         this.cls = cls;
         this.identifier = identifier;
         this.descriptor = descriptor;
         this.forceEager = forceEager;
         assert paramsLoaded();
+    }
+
+    private boolean paramsLoaded() {
+        return cls != null && identifier != null && descriptor != null;
     }
 
     public Class<T> getEntityType() {

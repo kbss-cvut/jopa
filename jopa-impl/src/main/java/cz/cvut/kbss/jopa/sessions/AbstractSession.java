@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,4 +109,10 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
      * @return {@link NamedQueryManager}
      */
     public abstract NamedQueryManager getNamedQueryManager();
+
+    /**
+     * Gets the manager of SPARQL result set mapping instances.
+     * @return {@link ResultSetMappingManager}
+     */
+    public abstract ResultSetMappingManager getResultSetMappingManager();
 }

@@ -2,7 +2,6 @@
 
 ## High Priority
 
-- [ ] Add support for query result set mapping
 - [ ] Inheritance support
     - [x] Mapped superclass
     - [x] Single inheritance
@@ -37,3 +36,8 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
+
+- [ ] Add support for query result set mapping
+    - [x] VariableResult
+    - [x] ConstructorResult
+    - [ ] EntityResult

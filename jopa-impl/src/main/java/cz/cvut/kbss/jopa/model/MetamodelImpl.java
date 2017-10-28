@@ -15,9 +15,10 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.loaders.EntityLoader;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ public class MetamodelImpl implements Metamodel {
     private Set<Class<?>> inferredClasses;
 
     private NamedQueryManager namedQueryManager;
+    private ResultSetMappingManager resultSetMappingManager;
 
     private final Configuration configuration;
 
@@ -55,22 +57,22 @@ public class MetamodelImpl implements Metamodel {
     /**
      * Builds the metamodel for entities discovered by the specified entity loader.
      *
-     * @param entityLoader Loader of entity classes
+     * @param classFinder Finder of PU classes
      */
-    public void build(EntityLoader entityLoader) {
-        Objects.requireNonNull(entityLoader);
+    public void build(PersistenceUnitClassFinder classFinder) {
+        Objects.requireNonNull(classFinder);
         LOG.debug("Building metamodel...");
         checkForWeaver();
-
-        final Set<Class<?>> discoveredEntities = entityLoader.discoverEntityClasses(configuration);
+        classFinder.scanClasspath(configuration);
 
         final MetamodelBuilder metamodelBuilder = new MetamodelBuilder();
-        metamodelBuilder.buildMetamodel(discoveredEntities);
+        metamodelBuilder.buildMetamodel(classFinder);
 
         this.typeMap = metamodelBuilder.getTypeMap();
         this.entities = metamodelBuilder.getEntities();
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
+        this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
     }
 
     /**
@@ -124,6 +126,10 @@ public class MetamodelImpl implements Metamodel {
         return namedQueryManager;
     }
 
+    public ResultSetMappingManager getResultSetMappingManager() {
+        return resultSetMappingManager;
+    }
+
     @Override
     public Set<URI> getModuleExtractionExtraSignature() {
         return Collections.unmodifiableSet(getSignatureInternal());
@@ -140,21 +146,25 @@ public class MetamodelImpl implements Metamodel {
     private synchronized Set<URI> getSignatureInternal() {
         // This can be lazily loaded since we don'attributeType know if we'll need it
         if (moduleExtractionSignature == null) {
-            final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, "");
-            if (sig.isEmpty()) {
-                this.moduleExtractionSignature = new HashSet<>();
-            } else {
-                final String[] signature = sig.split(Pattern.quote(OntoDriverProperties.SIGNATURE_DELIMITER));
-                this.moduleExtractionSignature = new HashSet<>((int) (signature.length / 0.75 + 1));
-                try {
-                    for (String uri : signature) {
-                        moduleExtractionSignature.add(URI.create(uri));
-                    }
-                } catch (IllegalArgumentException e) {
-                    throw new OWLPersistenceException("Invalid URI encountered in module extraction signature.", e);
-                }
-            }
+            initModuleExtractionSignature();
         }
         return moduleExtractionSignature;
+    }
+
+    private void initModuleExtractionSignature() {
+        final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, "");
+        if (sig.isEmpty()) {
+            this.moduleExtractionSignature = new HashSet<>();
+        } else {
+            final String[] signature = sig.split(Pattern.quote(OntoDriverProperties.SIGNATURE_DELIMITER));
+            this.moduleExtractionSignature = new HashSet<>(signature.length);
+            try {
+                for (String uri : signature) {
+                    moduleExtractionSignature.add(URI.create(uri));
+                }
+            } catch (IllegalArgumentException e) {
+                throw new OWLPersistenceException("Invalid URI encountered in module extraction signature.", e);
+            }
+        }
     }
 }

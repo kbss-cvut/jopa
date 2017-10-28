@@ -15,8 +15,10 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.QueryImpl;
+import cz.cvut.kbss.jopa.model.ResultSetMappingQuery;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.query.QueryParser;
+import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -57,6 +59,17 @@ public class SparqlQueryFactory implements QueryFactory {
         tq.setUnitOfWork(uow);
         tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return tq;
+    }
+
+    @Override
+    public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
+        Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
+        Objects.requireNonNull(resultSetMapping, ErrorUtils.getNPXMessageSupplier("resultSetMapping"));
+
+        final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
+        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper);
+        q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
+        return q;
     }
 
     @Override

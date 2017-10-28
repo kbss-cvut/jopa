@@ -19,13 +19,26 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import java.net.URI;
 import java.util.Set;
 
-@NamedNativeQueries({
-        @NamedNativeQuery(name = "OWLClassA.findAll", query = "SELECT ?x WHERE {?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }"),
-        @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
-                Vocabulary.P_A_STRING_ATTRIBUTE + "> ?str . }")
-})
+@SparqlResultSetMappings({@SparqlResultSetMapping(name = OWLClassA.VARIABLE_MAPPING, variables = {
+        @VariableResult(name = "x", type = String.class),
+        @VariableResult(name = "y")
+}), @SparqlResultSetMapping(name = OWLClassA.CONSTRUCTOR_MAPPING, classes = {
+        @ConstructorResult(targetClass = OWLClassA.class, variables = {
+                @VariableResult(name = "x"),
+                @VariableResult(name = "y")
+
+        })
+})})
+@NamedNativeQueries({@NamedNativeQuery(name = "OWLClassA.findAll",
+                                       query = "SELECT ?x WHERE {?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }"),
+                     @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
+                             Vocabulary.P_A_STRING_ATTRIBUTE + "> ?str . }")
+                    })
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_A)
 public class OWLClassA {
+
+    public static final String VARIABLE_MAPPING = "OWLClassA.testMapping";
+    public static final String CONSTRUCTOR_MAPPING = "OWLClassA.constructorMapping";
 
     @Types(fetchType = FetchType.EAGER)
     private Set<String> types;
@@ -41,6 +54,11 @@ public class OWLClassA {
 
     public OWLClassA(URI uri) {
         this.uri = uri;
+    }
+
+    public OWLClassA(URI uri, String stringAttribute) {
+        this.uri = uri;
+        this.stringAttribute = stringAttribute;
     }
 
     /**

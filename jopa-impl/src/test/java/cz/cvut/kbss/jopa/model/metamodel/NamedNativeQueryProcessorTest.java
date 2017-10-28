@@ -34,20 +34,21 @@ public class NamedNativeQueryProcessorTest {
     private static final String ASK_QUERY = "ASK WHERE { ?x a ?type . }";
     private static final String ASK_NAME = "askQuery";
 
-    private NamedQueryManager queryManager;
-
     private NamedNativeQueryProcessor processor;
 
     @Before
     public void setUp() {
-        this.queryManager = new NamedQueryManager();
-        this.processor = new NamedNativeQueryProcessor(queryManager);
+        this.processor = new NamedNativeQueryProcessor();
+    }
+
+    private NamedQueryManager queryManager() {
+        return processor.getQueryManager();
     }
 
     @Test
     public void processesSingleQueryDeclaredOnClass() {
         processor.processClass(SingleQuery.class);
-        final String query = queryManager.getQuery(SingleQuery.class.getSimpleName() + "." + SELECT_NAME);
+        final String query = queryManager().getQuery(SingleQuery.class.getSimpleName() + "." + SELECT_NAME);
         assertNotNull(query);
         assertEquals(SELECT_QUERY, query);
     }
@@ -61,9 +62,9 @@ public class NamedNativeQueryProcessorTest {
     @Test
     public void processesNamedNativeQueriesDeclaredOnClass() {
         processor.processClass(MultipleQueries.class);
-        final String select = queryManager.getQuery(MultipleQueries.class.getSimpleName() + "." + SELECT_NAME);
+        final String select = queryManager().getQuery(MultipleQueries.class.getSimpleName() + "." + SELECT_NAME);
         assertEquals(SELECT_QUERY, select);
-        final String ask = queryManager.getQuery(MultipleQueries.class.getSimpleName() + "." + ASK_NAME);
+        final String ask = queryManager().getQuery(MultipleQueries.class.getSimpleName() + "." + ASK_NAME);
         assertEquals(ASK_QUERY, ask);
     }
 
@@ -79,16 +80,16 @@ public class NamedNativeQueryProcessorTest {
         processor.processClass(OWLClassA.class);
         final Field queriesField = NamedQueryManager.class.getDeclaredField("queryMap");
         queriesField.setAccessible(true);
-        final Map<?, ?> queryMap = (Map<?, ?>) queriesField.get(queryManager);
+        final Map<?, ?> queryMap = (Map<?, ?>) queriesField.get(queryManager());
         assertTrue(queryMap.isEmpty());
     }
 
     @Test
     public void processesClassWithCombinationOfNamedNativeQueriesAndNamedNativeQuery() {
         processor.processClass(QueryCombination.class);
-        final String select = queryManager.getQuery(QueryCombination.class.getSimpleName() + "." + SELECT_NAME);
+        final String select = queryManager().getQuery(QueryCombination.class.getSimpleName() + "." + SELECT_NAME);
         assertEquals(SELECT_QUERY, select);
-        final String ask = queryManager.getQuery(QueryCombination.class.getSimpleName() + "." + ASK_NAME);
+        final String ask = queryManager().getQuery(QueryCombination.class.getSimpleName() + "." + ASK_NAME);
         assertEquals(ASK_QUERY, ask);
     }
 

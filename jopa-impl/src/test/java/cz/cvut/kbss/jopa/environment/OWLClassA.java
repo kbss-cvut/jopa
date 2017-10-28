@@ -21,8 +21,14 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
+@SparqlResultSetMapping(name = OWLClassA.VARIABLE_MAPPING, variables = {
+        @VariableResult(name = "x"),
+        @VariableResult(name = "y")
+})
 @OWLClass(iri = Vocabulary.c_OwlClassA)
 public class OWLClassA {
+
+    public static final String VARIABLE_MAPPING = "OWLClassA.testMapping";
 
     private static final String TYPES_FIELD = "types";
     private static final String STR_ATT_FIELD = "stringAttribute";
@@ -41,6 +47,11 @@ public class OWLClassA {
 
     public OWLClassA(URI uri) {
         this.uri = uri;
+    }
+
+    public OWLClassA(URI uri, String stringAttribute) {
+        this.uri = uri;
+        this.stringAttribute = stringAttribute;
     }
 
     /**
@@ -87,12 +98,12 @@ public class OWLClassA {
     }
 
     public static Field getStrAttField() throws NoSuchFieldException,
-            SecurityException {
+                                                SecurityException {
         return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
     }
 
     public static Field getTypesField() throws NoSuchFieldException,
-            SecurityException {
+                                               SecurityException {
         return OWLClassA.class.getDeclaredField(TYPES_FIELD);
     }
 

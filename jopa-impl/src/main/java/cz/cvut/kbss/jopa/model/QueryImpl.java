@@ -27,15 +27,11 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class QueryImpl extends AbstractQuery implements Query {
 
-    private int maxResults;
-
     public QueryImpl(final QueryHolder query, final ConnectionWrapper connection) {
         super(query, connection);
-        this.maxResults = Integer.MAX_VALUE;
     }
 
     @Override
@@ -46,7 +42,7 @@ public class QueryImpl extends AbstractQuery implements Query {
     @Override
     public List getResultList() {
         try {
-            if (maxResults == 0) {
+            if (getMaxResults() == 0) {
                 return Collections.emptyList();
             }
             return getResultListImpl(maxResults);
@@ -78,51 +74,6 @@ public class QueryImpl extends AbstractQuery implements Query {
             markTransactionForRollback();
             throw e;
         }
-    }
-
-    @Override
-    public int getMaxResults() {
-        return maxResults;
-    }
-
-    @Override
-    public Parameter<?> getParameter(int position) {
-        return query.getParameter(position);
-    }
-
-    @Override
-    public Parameter<?> getParameter(String name) {
-        return query.getParameter(name);
-    }
-
-    @Override
-    public Set<Parameter<?>> getParameters() {
-        return query.getParameters();
-    }
-
-    @Override
-    public boolean isBound(Parameter<?> parameter) {
-        return query.getParameterValue(parameter) != null;
-    }
-
-    @Override
-    public Object getParameterValue(int position) {
-        final Parameter<?> param = query.getParameter(position);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public Object getParameterValue(String name) {
-        final Parameter<?> param = query.getParameter(name);
-        return getParameterValue(param);
-    }
-
-    @Override
-    public <T> T getParameterValue(Parameter<T> parameter) {
-        if (!isBound(parameter)) {
-            throw unboundParam(parameter);
-        }
-        return (T) query.getParameterValue(parameter);
     }
 
     @Override
@@ -209,17 +160,12 @@ public class QueryImpl extends AbstractQuery implements Query {
             setTargetOntology(stmt);
             logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            final int columnCount = rs.getColumnCount();
             int cnt = 0;
             final List<Object> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             while (rs.hasNext() && cnt < maxResults) {
                 rs.next();
-                if (columnCount == 1) {
-                    res.add(rs.getObject(0));
-                } else {
-                    res.add(extractResultRow(rs, columnCount));
-                }
+                res.add(extractRow(rs));
                 cnt++;
             }
             return res;
@@ -232,12 +178,17 @@ public class QueryImpl extends AbstractQuery implements Query {
         }
     }
 
-    private static Object[] extractResultRow(ResultSet rs, int columnCount) throws OntoDriverException {
-        final Object[] row = new Object[columnCount];
-        for (int i = 0; i < columnCount; i++) {
-            final Object ob = rs.getObject(i);
-            row[i] = ob;
+    Object extractRow(ResultSet resultSet) throws OntoDriverException {
+        final int columnCount = resultSet.getColumnCount();
+        if (columnCount == 1) {
+            return resultSet.getObject(0);
+        } else {
+            final Object[] row = new Object[columnCount];
+            for (int i = 0; i < columnCount; i++) {
+                final Object ob = resultSet.getObject(i);
+                row[i] = ob;
+            }
+            return row;
         }
-        return row;
     }
 }

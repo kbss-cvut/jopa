@@ -301,7 +301,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             ensureOpen();
             LOG.trace("Flushing changes...");
             if (!getTransaction().isActive()) {
-                throw new TransactionRequiredException();
+                throw new TransactionRequiredException("Cannot flush entity manager outside of a transaction.");
             }
             this.getCurrentPersistenceContext().writeUncommittedChanges();
         } catch (RuntimeException e) {
@@ -428,15 +428,22 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     }
 
     @Override
-    public Query createNativeQuery(String sparql) {
-        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparql);
+    public Query createNativeQuery(String sparqlString) {
+        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         return q;
     }
 
     @Override
-    public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparql, resultClass);
+    public <T> TypedQuery<T> createNativeQuery(String sparqlString, Class<T> resultClass) {
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultClass);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
+    }
+
+    @Override
+    public Query createNativeQuery(String sparqlString, String resultSetMapping) {
+        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultSetMapping);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         return q;
     }

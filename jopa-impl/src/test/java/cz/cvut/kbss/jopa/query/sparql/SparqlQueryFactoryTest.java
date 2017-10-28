@@ -17,6 +17,9 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import org.junit.Before;
@@ -25,8 +28,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class SparqlQueryFactoryTest {
 
@@ -35,6 +37,9 @@ public class SparqlQueryFactoryTest {
 
     @Mock
     private UnitOfWorkImpl uowMock;
+
+    @Mock
+    private NamedQueryManager namedQueryManagerMock;
 
     @Mock
     private ConnectionWrapper connectionMock;
@@ -46,6 +51,7 @@ public class SparqlQueryFactoryTest {
         MockitoAnnotations.initMocks(this);
         when(uowMock.useBackupOntologyForQueryProcessing()).thenReturn(Boolean.FALSE);
         when(uowMock.useTransactionalOntologyForQueryProcessing()).thenReturn(Boolean.TRUE);
+        when(uowMock.getNamedQueryManager()).thenReturn(namedQueryManagerMock);
         this.factory = new SparqlQueryFactory(uowMock, connectionMock);
     }
 
@@ -77,7 +83,7 @@ public class SparqlQueryFactoryTest {
 
     @Test(expected = NullPointerException.class)
     public void testCreateNativeQueryTypedNullType() {
-        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, null);
+        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, (Class<OWLClassA>) null);
         assert q == null;
     }
 
@@ -111,5 +117,36 @@ public class SparqlQueryFactoryTest {
     public void testCreateQueryTypedNullType() {
         final TypedQuery<OWLClassA> q = factory.createQuery(QUERY, null);
         assert q == null;
+    }
+
+    @Test
+    public void createQueryWithMappingPassesCorrectMapperToQueryInstance() {
+        final String mapping = "testMapping";
+        final SparqlResultMapper mapperMock = mock(SparqlResultMapper.class);
+        final ResultSetMappingManager managerMock = mock(ResultSetMappingManager.class);
+        when(uowMock.getResultSetMappingManager()).thenReturn(managerMock);
+        when(managerMock.getMapper(mapping)).thenReturn(mapperMock);
+
+        final Query q = factory.createNativeQuery(QUERY, mapping);
+        assertNotNull(q);
+        verify(managerMock).getMapper(mapping);
+    }
+
+    @Test
+    public void createNamedQueryRetrievesNamedQueryFromManagerAndReturnsCorrespondingNativeQuery() {
+        final String queryName = "testQuery";
+        when(namedQueryManagerMock.getQuery(queryName)).thenReturn(QUERY);
+        final Query q = factory.createNamedQuery(queryName);
+        assertNotNull(q);
+        verify(namedQueryManagerMock).getQuery(queryName);
+    }
+
+    @Test
+    public void createNamedTypedQueryRetrievesNamedQueryFromManagerAndReturnsCorrespondingNativeQuery() {
+        final String queryName = "testQuery";
+        when(namedQueryManagerMock.getQuery(queryName)).thenReturn(QUERY);
+        final TypedQuery<OWLClassA> q = factory.createNamedQuery(queryName, OWLClassA.class);
+        assertNotNull(q);
+        verify(namedQueryManagerMock).getQuery(queryName);
     }
 }

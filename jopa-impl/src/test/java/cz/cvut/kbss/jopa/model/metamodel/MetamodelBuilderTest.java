@@ -15,23 +15,41 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unused")
 public class MetamodelBuilderTest {
 
+    @Mock
+    private PersistenceUnitClassFinder finderMock;
+
     private final MetamodelBuilder builder = new MetamodelBuilder();
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
     public void buildsMetamodelOfEntityWithSingleNamespaceDeclaredOnClass() {
-        builder.buildMetamodel(Collections.singleton(EntityWithNamespace.class));
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespace.class));
+        builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespace> result =
                 (EntityType<EntityWithNamespace>) builder.getEntityClass(EntityWithNamespace.class);
         assertEquals(Vocabulary.CLASS_BASE + "EntityWithNamespace", result.getIRI().toString());
@@ -46,7 +64,8 @@ public class MetamodelBuilderTest {
 
     @Test
     public void buildsMetamodelOfEntityWithNamespacesDeclaredOnClass() {
-        builder.buildMetamodel(Collections.singleton(EntityWithNamespaces.class));
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespace.class));
+        builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespaces> result =
                 (EntityType<EntityWithNamespaces>) builder.getEntityClass(EntityWithNamespaces.class);
         assertEquals(Vocabulary.CLASS_BASE + "EntityWithNamespaces", result.getIRI().toString());
@@ -61,7 +80,8 @@ public class MetamodelBuilderTest {
 
     @Test
     public void buildsMetamodelOfEntityWithNamespaceUsedOnAttribute() {
-        builder.buildMetamodel(Collections.singleton(EntityWithNamespaceAttributes.class));
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespace.class));
+        builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespaceAttributes> result =
                 (EntityType<EntityWithNamespaceAttributes>) builder.getEntityClass(EntityWithNamespaceAttributes.class);
         assertEquals("http://www.example2.org/EntityWithNamespaceAttributes", result.getIRI().toString());
@@ -87,7 +107,8 @@ public class MetamodelBuilderTest {
 
     @Test
     public void buildsMetamodelOfEntityWhichUsesPackageLevelNamespace() {
-        builder.buildMetamodel(Collections.singleton(EntityWithNamespaceFromPackage.class));
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespaceFromPackage.class));
+        builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespaceFromPackage> result = (EntityType<EntityWithNamespaceFromPackage>) builder
                 .getEntityClass(EntityWithNamespaceFromPackage.class);
         assertEquals("http://www.example.org/EntityWithNamespaceFromPackage", result.getIRI().toString());
@@ -97,5 +118,16 @@ public class MetamodelBuilderTest {
     private static class EntityWithNamespaceFromPackage {
         @Id
         private URI uri;
+    }
+
+    @Test
+    public void buildMetamodelBuildsResultSetMappersFromMappingConfigurations() {
+        when(finderMock.getResultSetMappings())
+                .thenReturn(Collections.singleton(OWLClassA.class.getDeclaredAnnotation(SparqlResultSetMapping.class)));
+        builder.buildMetamodel(finderMock);
+        final ResultSetMappingManager manager = builder.getResultSetMappingManager();
+        assertNotNull(manager);
+        assertNotNull(manager.getMapper(OWLClassA.VARIABLE_MAPPING));
+        verify(finderMock).getResultSetMappings();
     }
 }

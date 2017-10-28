@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.9.10 - October 16, 2017
+- Partial support for SPARQL result set mapping - VariableResult and ConstructorResult (Feature #7).
+- Fixed issue with class discovery in JDK 9 (Bug #8, thanks to Yan Doroshenko).
+- Log executed query to provide more auditing info.
+
 ## 0.9.9 - September 2, 2017
 - Support for credentials specification for accessing remote RDF4J repositories.
 - Reworked instance persist to prevent saving pending references before the target instances are saved.

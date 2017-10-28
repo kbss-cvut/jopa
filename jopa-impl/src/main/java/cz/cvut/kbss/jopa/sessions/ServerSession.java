@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -177,6 +178,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @param entity The entity to register
      * @param uow    Persistence context of the specified entity
      */
+    @Override
     protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
         assert entity != null;
         assert uow != null;
@@ -201,6 +203,11 @@ public class ServerSession extends AbstractSession implements Wrapper {
     @Override
     public NamedQueryManager getNamedQueryManager() {
         return metamodel.getNamedQueryManager();
+    }
+
+    @Override
+    public ResultSetMappingManager getResultSetMappingManager() {
+        return metamodel.getResultSetMappingManager();
     }
 
     /**

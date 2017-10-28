@@ -19,9 +19,6 @@ package cz.cvut.kbss.jopa.exceptions;
  */
 public class TransactionRequiredException extends RuntimeException {
 
-    public TransactionRequiredException() {
-    }
-
     public TransactionRequiredException(String message) {
         super(message);
     }

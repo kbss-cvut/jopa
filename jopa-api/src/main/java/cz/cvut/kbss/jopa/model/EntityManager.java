@@ -303,33 +303,30 @@ public interface EntityManager {
     <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass);
 
     /**
-     * Create an instance of Query for executing a native SPARQL-DL query in SPARQL syntax.
+     * Create an instance of Query for executing a native SPARQL(-DL) query in SPARQL syntax.
      *
-     * @param sqlString a native SPARQL query string
+     * @param sparqlString a native SPARQL query string
      * @return the new query instance
      */
-    Query createNativeQuery(String sqlString);
+    Query createNativeQuery(String sparqlString);
 
     /**
-     * Create an instance of Query for executing a native SPARQL-DL query returning only specific object type.
+     * Create an instance of Query for executing a native SPARQL(-DL) query returning only specific object type.
      *
-     * @param sqlString   a native SQL query string
+     * @param sparqlString   a native SQL query string
      * @param resultClass the class of the resulting instance(s)
      * @return the new query instance
      */
-    <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
+    <T> TypedQuery<T> createNativeQuery(String sparqlString, Class<T> resultClass);
 
-    // /**
-    // * Create an instance of Query for executing a native SQL query.
-    // *
-    // * @param sqlString
-    // * a native SQL query string
-    // * @param resultSetMapping
-    // * the name of the result set mapping
-    // * @return the new query instance
-    // */
-    // public Query createNativeQuery(String sqlString, String
-    // resultSetMapping);
+    /**
+     * Create an instance of Query for executing a native SPARQL query.
+     *
+     * @param sparqlString a native SQL query string
+     * @param resultSetMapping the name of the result set mapping
+     * @return the new query instance
+     */
+    Query createNativeQuery(String sparqlString, String resultSetMapping);
 
     // /**
     // * Indicate to the EntityManager that a JTA transaction is active. This
@@ -423,6 +420,7 @@ public interface EntityManager {
      */
     Metamodel getMetamodel();
 
+    // TODO Remove the following methods
     /**
      * Sets the transactional ontology as the one which will be used when processing SPARQL queries.
      * <p>

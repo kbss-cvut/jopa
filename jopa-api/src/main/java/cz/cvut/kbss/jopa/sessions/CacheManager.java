@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
-import java.net.URI;
 import java.util.Set;
 
 /**

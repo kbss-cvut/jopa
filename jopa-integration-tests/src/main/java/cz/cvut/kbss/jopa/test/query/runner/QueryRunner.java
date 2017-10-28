@@ -25,7 +25,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -235,5 +237,42 @@ public abstract class QueryRunner extends BaseQueryRunner {
                                            .setParameter("str", a.getStringAttribute(), "en").getResultList();
         assertFalse(res.isEmpty());
         assertTrue(res.contains(a.getUri()));
+    }
+
+    @Test
+    public void queryWithMappingReturnsResultWithVariablesMappedAccordingly() {
+        final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
+                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
+                "}", OWLClassA.VARIABLE_MAPPING).getResultList();
+        final Map<String, String> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassA.class)
+                            .forEach(a -> expected.put(a.getUri().toString(), a.getStringAttribute()));
+        assertEquals(expected.size(), res.size());
+        for (Object row : res) {
+            assertTrue(row instanceof Object[]);
+            final Object[] elems = (Object[]) row;
+            assertEquals(2, elems.length);
+            assertTrue(expected.containsKey(elems[0]));
+            assertEquals(expected.get(elems[0]), elems[1]);
+        }
+    }
+
+    @Test
+    public void queryWithConstructorMappingReturnsCorrectInstances() {
+        final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
+                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
+                "}", OWLClassA.CONSTRUCTOR_MAPPING).getResultList();
+        final Map<URI, OWLClassA> expected = new HashMap<>();
+        QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
+
+        for (Object item : res) {
+            assertTrue(item instanceof OWLClassA);
+            final OWLClassA a = (OWLClassA) item;
+            assertTrue(expected.containsKey(a.getUri()));
+            assertEquals(expected.get(a.getUri()).getStringAttribute(), a.getStringAttribute());
+            assertNull(a.getTypes());
+        }
     }
 }
