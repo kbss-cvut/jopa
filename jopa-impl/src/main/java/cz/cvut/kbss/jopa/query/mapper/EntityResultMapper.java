@@ -2,8 +2,10 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 
 import java.util.ArrayList;
@@ -36,11 +38,12 @@ class EntityResultMapper<T> implements SparqlResultMapper {
     }
 
     @Override
-    public T map(ResultSet resultSet, UnitOfWork uow) {
+    public T map(ResultSet resultSet, UnitOfWorkImpl uow) {
         try {
             final T instance = et.getJavaType().newInstance();
             fieldMappers.forEach(m -> m.map(resultSet, instance, uow));
-            return (T) uow.registerExistingObject(instance, new EntityDescriptor());
+            return (T) uow.registerExistingObject(instance, new EntityDescriptor(),
+                    Collections.singletonList(new PostLoadInvoker(uow.getMetamodel())));
         } catch (InstantiationException | IllegalAccessException e) {
             // This is not expected, since an entity class must have a public no-arg constructor
             throw new SparqlResultMappingException(e);

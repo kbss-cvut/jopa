@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Represents a persistence context.
@@ -136,9 +137,9 @@ public interface UnitOfWork extends Session {
     <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor);
 
     /**
-     * Register an existing object in this Unit of Work. The passed object comes
-     * usually from the parent session cache. This method creates a working
-     * clone of this object and puts the given object into this Unit of Work
+     * Register an existing object in this Unit of Work.
+     * <p>
+     * This method creates a working clone of this object and puts the given object into this Unit of Work
      * cache.
      *
      * @param object     Object
@@ -146,6 +147,19 @@ public interface UnitOfWork extends Session {
      * @return Object Returns clone of the registered object
      */
     Object registerExistingObject(Object object, Descriptor descriptor);
+
+    /**
+     * Registers an existing object in this Unit of Work.
+     * <p>
+     * Invokes the specified postClone procedures after the cloning takes place, passing the newly created clone as argument.
+     *
+     * @param object     The object to register
+     * @param descriptor Descriptor identifying repository contexts
+     * @param postClone  Handlers to be called after the original object is cloned on the clone
+     * @return Clone of the registered object
+     * @see #registerExistingObject(Object, Descriptor)
+     */
+    Object registerExistingObject(Object object, Descriptor descriptor, List<Consumer<Object>> postClone);
 
     /**
      * Registers the specified new object in this Unit of Work.

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,20 +27,19 @@ public interface CloneBuilder {
     /**
      * Builds clone of the given object.
      *
-     * @param original   Object
-     * @param descriptor Entity descriptor
+     * @param original           Object
+     * @param cloneConfiguration Configuration for the cloning process
      * @return Object The clone
      * @throws NullPointerException If {@code original} or {@code repository} is {@code null}
      */
-    Object buildClone(Object original, Descriptor descriptor);
+    Object buildClone(Object original, CloneConfiguration cloneConfiguration);
 
     /**
      * Builds clone of the given object.
      * <p>
-     * This method differs from {@link #buildClone(Object, cz.cvut.kbss.jopa.model.descriptors.Descriptor)} in that it
+     * This method differs from {@link #buildClone(Object, CloneConfiguration)} in that it
      * accepts another argument which represents the owner of the built clone.
-     * This is useful in situations when we are cloning attributes directly, e.
-     * g. when lazily loading a field value.
+     * This is useful in situations when we are cloning attributes directly, e. g. when lazily loading a field value.
      *
      * @param cloneOwner  The owner of the created clone
      * @param clonedField The field whose value is being cloned
@@ -49,8 +48,7 @@ public interface CloneBuilder {
      * @return The clone
      * @throws NullPointerException If {@code cloneOwner}, {@code original} or {@code contextUri} is {@code null}
      */
-    Object buildClone(Object cloneOwner, Field clonedField, Object original,
-                      Descriptor descriptor);
+    Object buildClone(Object cloneOwner, Field clonedField, Object original, Descriptor descriptor);
 
     /**
      * Resets the clone builder.

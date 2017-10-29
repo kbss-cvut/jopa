@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -49,7 +50,7 @@ class VariableResultMapper implements SparqlResultMapper {
      * @return The mapped value
      */
     @Override
-    public Object map(ResultSet resultSet, UnitOfWork uow) {
+    public Object map(ResultSet resultSet, UnitOfWorkImpl uow) {
         try {
             final Object value = resultSet.getObject(name);
             if (!void.class.equals(targetType)) {

@@ -48,12 +48,11 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     @Override
-    public Object buildClone(Object original, Descriptor descriptor) {
-        if (original == null || descriptor == null) {
-            throw new NullPointerException();
-        }
+    public Object buildClone(Object original, CloneConfiguration cloneConfiguration) {
+        Objects.requireNonNull(original);
+        Objects.requireNonNull(cloneConfiguration);
         LOG.trace("Cloning object {}.", original);
-        return buildCloneImpl(null, null, original, descriptor);
+        return buildCloneImpl(null, null, original, cloneConfiguration);
     }
 
     @Override
@@ -62,15 +61,17 @@ public class CloneBuilderImpl implements CloneBuilder {
             throw new NullPointerException();
         }
         LOG.trace("Cloning object {} with owner {}", original, cloneOwner);
-        return buildCloneImpl(cloneOwner, clonedField, original, descriptor);
+        return buildCloneImpl(cloneOwner, clonedField, original, new CloneConfiguration(descriptor));
     }
 
-    private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original, Descriptor descriptor) {
+    private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
+                                  CloneConfiguration cloneConfiguration) {
         if (isOriginalInUoW(original)) {
             return uow.getCloneForOriginal(original);
         }
         final Class<?> cls = original.getClass();
         final boolean managed = isTypeManaged(cls);
+        final Descriptor descriptor = cloneConfiguration.getDescriptor();
         if (managed) {
             final Object visitedClone = getVisitedEntity(descriptor, original);
             if (visitedClone != null) {
@@ -78,13 +79,13 @@ public class CloneBuilderImpl implements CloneBuilder {
             }
         }
         final AbstractInstanceBuilder builder = getInstanceBuilder(original);
-        Object clone = builder.buildClone(cloneOwner, clonedField, original, descriptor);
+        Object clone = builder.buildClone(cloneOwner, clonedField, original, cloneConfiguration);
         if (managed) {
             // Register visited object before populating attributes to prevent endless cloning cycles
             putVisitedEntity(descriptor, original, clone);
         }
         if (!builder.populatesAttributes() && !isImmutable(original.getClass())) {
-            populateAttributes(original, clone, descriptor);
+            populateAttributes(original, clone, cloneConfiguration);
         }
         return clone;
     }
@@ -92,11 +93,8 @@ public class CloneBuilderImpl implements CloneBuilder {
     /**
      * Clone all the attributes of the original and set the clone values. This also means cloning any relationships and
      * their targets.
-     *
-     * @param original Original
-     * @param clone    Object
      */
-    private void populateAttributes(final Object original, Object clone, final Descriptor descriptor) {
+    private void populateAttributes(Object original, Object clone, CloneConfiguration configuration) {
         final Class<?> originalClass = original.getClass();
         final EntityType<?> et = getMetamodel().entity(originalClass);
         for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
@@ -111,9 +109,10 @@ public class CloneBuilderImpl implements CloneBuilder {
                 // The field is an immutable type
                 clonedValue = origVal;
             } else if (origVal instanceof Collection || origVal instanceof Map) {
-                final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, descriptor);
+                final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                 // Collection or Map
-                clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal, fieldDescriptor);
+                clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
+                        new CloneConfiguration(fieldDescriptor, configuration.getPostRegister()));
             } else {
                 // Otherwise we have a relationship and we need to clone its target as well
                 if (isOriginalInUoW(origVal)) {
@@ -121,13 +120,15 @@ public class CloneBuilderImpl implements CloneBuilder {
                     clonedValue = uow.getCloneForOriginal(origVal);
                 } else {
                     if (isTypeManaged(origValueClass)) {
-                        final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, descriptor);
-                        clonedValue = getVisitedEntity(descriptor, origVal);
+                        final Descriptor fieldDescriptor =
+                                getFieldDescriptor(f, originalClass, configuration.getDescriptor());
+                        clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
                         if (clonedValue == null) {
-                            clonedValue = uow.registerExistingObject(origVal, fieldDescriptor);
+                            clonedValue = uow.registerExistingObject(origVal, fieldDescriptor,
+                                    configuration.getPostRegister());
                         }
                     } else {
-                        clonedValue = buildClone(origVal, descriptor);
+                        clonedValue = buildClone(origVal, configuration);
                     }
                 }
             }
@@ -143,7 +144,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
     /**
      * Check if the given class is an immutable type. This is used by the {@link
-     * #populateAttributes(Object, Object, Descriptor)} method. If this returns true, the populateAttributes can simply
+     * #populateAttributes(Object, Object, CloneConfiguration)} method. If this returns true, the populateAttributes can simply
      * assign the value.
      *
      * @param cls the class to check

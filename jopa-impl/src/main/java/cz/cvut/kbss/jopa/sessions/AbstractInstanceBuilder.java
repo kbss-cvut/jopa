@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +50,13 @@ abstract class AbstractInstanceBuilder {
      * For some implementations this may mean creating an empty object, others might choose to initialize it using the
      * original data.
      *
-     * @param cloneOwner Instance owning the clone which will be created
-     * @param field      Field which will contain the clone
-     * @param original   The original object
-     * @param descriptor Entity origin
+     * @param cloneOwner         Instance owning the clone which will be created
+     * @param field              Field which will contain the clone
+     * @param original           The original object
+     * @param cloneConfiguration Configuration for the cloning process
      * @return The clone
      */
-    abstract Object buildClone(Object cloneOwner, Field field, Object original, Descriptor descriptor);
+    abstract Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration cloneConfiguration);
 
     /**
      * Merges changes from clone to the original.

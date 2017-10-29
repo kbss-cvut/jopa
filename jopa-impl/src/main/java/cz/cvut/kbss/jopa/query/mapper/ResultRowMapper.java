@@ -12,7 +12,7 @@
  */
 package cz.cvut.kbss.jopa.query.mapper;
 
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class ResultRowMapper implements SparqlResultMapper {
     }
 
     @Override
-    public Object map(ResultSet resultSet, UnitOfWork uow) {
+    public Object map(ResultSet resultSet, UnitOfWorkImpl uow) {
         if (rowMappers.size() == 1) {
             return rowMappers.get(0).map(resultSet, uow);
         }

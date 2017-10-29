@@ -89,11 +89,11 @@ public class CloneBuilderTest {
             return managedTypes.contains(cls);
         });
         when(uow.getMetamodel()).thenReturn(metamodel);
-        when(uow.registerExistingObject(any(), any(Descriptor.class))).thenAnswer(
+        when(uow.registerExistingObject(any(), any(), any())).thenAnswer(
                 invocation -> {
                     Object obj = invocation.getArguments()[0];
                     Descriptor desc = (Descriptor) invocation.getArguments()[1];
-                    return builder.buildClone(obj, desc);
+                    return builder.buildClone(obj, new CloneConfiguration(desc));
                 });
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
@@ -140,7 +140,7 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildClone() {
-        OWLClassA res = (OWLClassA) this.builder.buildClone(entityA, defaultDescriptor);
+        OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertEquals(res.getStringAttribute(), entityA.getStringAttribute());
         assertTrue(res.getUri().equals(entityA.getUri()));
         assertEquals(entityA.getTypes(), res.getTypes());
@@ -148,25 +148,23 @@ public class CloneBuilderTest {
 
     @Test(expected = NullPointerException.class)
     public void testBuildCloneNullOriginal() throws Exception {
-        builder.buildClone(null, defaultDescriptor);
+        builder.buildClone(null, new CloneConfiguration(defaultDescriptor));
         fail("This line should not have been reached.");
     }
 
     @Test(expected = NullPointerException.class)
     public void testBuildCloneNullContextUri() throws Exception {
         builder.buildClone(entityA, null);
-        fail("This line should not have been reached.");
     }
 
     @Test(expected = NullPointerException.class)
     public void testBuildCloneNullCloneOwner() throws Exception {
         builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor);
-        fail("This line should not have been reached.");
     }
 
     @Test
     public void testCloneCollection() {
-        final OWLClassA clone = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+        final OWLClassA clone = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertEquals(entityA.getTypes().size(), clone.getTypes().size());
         for (String t : entityA.getTypes()) {
             assertTrue(clone.getTypes().contains(t));
@@ -175,12 +173,12 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildCloneTwice() {
-        OWLClassA res = (OWLClassA) this.builder.buildClone(entityA, defaultDescriptor);
+        OWLClassA res = (OWLClassA) this.builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertEquals(res.getStringAttribute(), entityA.getStringAttribute());
         assertTrue(res.getUri().equals(entityA.getUri()));
         assertEquals(entityA.getTypes(), res.getTypes());
         assertNotSame(entityA, res);
-        final OWLClassA resTwo = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+        final OWLClassA resTwo = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertSame(res, resTwo);
     }
 
@@ -188,7 +186,7 @@ public class CloneBuilderTest {
     public void testBuildCloneOriginalInUoW() {
         when(uow.containsOriginal(entityA)).thenReturn(Boolean.TRUE);
         when(uow.getCloneForOriginal(entityA)).thenReturn(entityA);
-        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertNotNull(res);
         assertSame(entityA, res);
     }
@@ -200,7 +198,7 @@ public class CloneBuilderTest {
         testList.add("Two");
         testList.add("Three");
         @SuppressWarnings("unchecked")
-        List<String> clone = (List<String>) builder.buildClone(testList, defaultDescriptor);
+        List<String> clone = (List<String>) builder.buildClone(testList, new CloneConfiguration(defaultDescriptor));
         assertEquals(testList.size(), clone.size());
         Iterator<String> it1 = testList.iterator();
         Iterator<String> it2 = clone.iterator();
@@ -217,7 +215,7 @@ public class CloneBuilderTest {
         obj.setStringAttribute("TEST");
         String type = "A_type";
         obj.setTypes(Collections.singleton(type));
-        final OWLClassA result = (OWLClassA) builder.buildClone(obj, defaultDescriptor);
+        final OWLClassA result = (OWLClassA) builder.buildClone(obj, new CloneConfiguration(defaultDescriptor));
         assertEquals(1, result.getTypes().size());
         assertEquals(type, result.getTypes().iterator().next());
     }
@@ -226,12 +224,11 @@ public class CloneBuilderTest {
     public void testCloneEmptyList() {
         entityC.setSimpleList(Collections.emptyList());
         entityC.setReferencedList(Generators.generateInstances(10));
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         assertNotNull(res);
         assertTrue(res.getSimpleList().isEmpty());
         for (int i = 0; i < res.getReferencedList().size(); i++) {
-            assertEquals(entityC.getReferencedList().get(i).getUri(), res.getReferencedList()
-                                                                         .get(i).getUri());
+            assertEquals(entityC.getReferencedList().get(i).getUri(), res.getReferencedList().get(i).getUri());
         }
     }
 
@@ -242,7 +239,7 @@ public class CloneBuilderTest {
         obj.setUri(pk);
         obj.setStringAttribute("TEST");
         obj.setTypes(Collections.emptySet());
-        final OWLClassA res = (OWLClassA) builder.buildClone(obj, defaultDescriptor);
+        final OWLClassA res = (OWLClassA) builder.buildClone(obj, new CloneConfiguration(defaultDescriptor));
         assertNotNull(res);
         assertTrue(res.getTypes().isEmpty());
     }
@@ -250,7 +247,7 @@ public class CloneBuilderTest {
     @Test
     public void testCloneProperties() {
         entityB.setProperties(Generators.generateStringProperties());
-        OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
+        OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
         assertNotNull(res);
         assertEquals(entityB.getUri(), res.getUri());
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
@@ -271,7 +268,7 @@ public class CloneBuilderTest {
     @Test
     public void testCloneEmptyMap() {
         entityB.setProperties(Collections.emptyMap());
-        OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
+        OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
         assertNotNull(res);
         assertTrue(res.getProperties().isEmpty());
     }
@@ -281,10 +278,10 @@ public class CloneBuilderTest {
         final OWLClassD another = new OWLClassD();
         another.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityDD"));
         another.setOwlClassA(entityA);
-        final OWLClassD clOne = (OWLClassD) builder.buildClone(entityD, defaultDescriptor);
+        final OWLClassD clOne = (OWLClassD) builder.buildClone(entityD, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityD, clOne);
         assertNotSame(entityA, clOne.getOwlClassA());
-        final OWLClassD clTwo = (OWLClassD) builder.buildClone(another, defaultDescriptor);
+        final OWLClassD clTwo = (OWLClassD) builder.buildClone(another, new CloneConfiguration(defaultDescriptor));
         assertSame(clOne.getOwlClassA(), clTwo.getOwlClassA());
         assertEquals(entityA.getStringAttribute(), clOne.getOwlClassA().getStringAttribute());
         assertTrue(clOne.getOwlClassA().getTypes() instanceof IndirectCollection);
@@ -298,7 +295,7 @@ public class CloneBuilderTest {
     @Test
     public void testCloneWithNullCollection() {
         assertNull(entityB.getProperties());
-        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
+        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityB, res);
         assertNull(res.getProperties());
     }
@@ -308,7 +305,7 @@ public class CloneBuilderTest {
         final Set<String> singleton = Collections
                 .singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityY");
         entityA.setTypes(singleton);
-        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityA, res);
         assertTrue(res.getTypes() instanceof IndirectCollection);
         assertEquals(1, res.getTypes().size());
@@ -322,7 +319,7 @@ public class CloneBuilderTest {
         final Map<String, Set<String>> m = Collections.singletonMap(key,
                 Collections.singleton(value));
         entityB.setProperties(m);
-        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
+        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
         assertNotNull(res);
         assertNotSame(entityB, res);
         assertEquals(1, res.getProperties().size());
@@ -336,7 +333,7 @@ public class CloneBuilderTest {
     @Test
     public void testCloneSingletonListWithReference() {
         entityC.setReferencedList(Collections.singletonList(entityA));
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         assertNotSame(res, entityC);
         assertEquals(1, res.getReferencedList().size());
         assertTrue(res.getReferencedList() instanceof IndirectCollection);
@@ -350,7 +347,7 @@ public class CloneBuilderTest {
     public void testCloneReferencedList() {
         // Let's see how long this takes
         entityC.setReferencedList(Generators.generateInstances(100));
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityC, res);
         int size = entityC.getReferencedList().size();
         assertEquals(size, res.getReferencedList().size());
@@ -373,7 +370,7 @@ public class CloneBuilderTest {
             nulls.add(null);
         }
         entityC.setReferencedList(nulls);
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityC, res);
         int size = entityC.getReferencedList().size();
         assertEquals(size, res.getReferencedList().size());
@@ -388,7 +385,7 @@ public class CloneBuilderTest {
         final OWLClassA a = new OWLClassA();
         a.setUri(entityA.getUri());
         a.setStringAttribute("oldString");
-        final OWLClassA cloneA = (OWLClassA) builder.buildClone(a, defaultDescriptor);
+        final OWLClassA cloneA = (OWLClassA) builder.buildClone(a, new CloneConfiguration(defaultDescriptor));
         final String newStrAtt = "newString";
         cloneA.setStringAttribute(newStrAtt);
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA,
@@ -402,7 +399,7 @@ public class CloneBuilderTest {
 
     @Test
     public void testMergeChangesPropertiesFromNull() throws Exception {
-        final OWLClassB b = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
+        final OWLClassB b = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
         assertNull(b.getProperties());
         b.setProperties(Generators.generateStringProperties());
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityB, b,
@@ -417,7 +414,7 @@ public class CloneBuilderTest {
 
     @Test
     public void testMergeChangesRefListFromNull() throws Exception {
-        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityC, c);
         assertNull(entityC.getReferencedList());
         c.setReferencedList(Generators.generateInstances(5));
@@ -437,7 +434,7 @@ public class CloneBuilderTest {
     @Test
     public void mergeChangesHandlesSingletonCollection() throws Exception {
         entityC.setReferencedList(Collections.singletonList(entityA));
-        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         final OWLClassA newA = new OWLClassA();
         c.setReferencedList(Collections.singletonList(newA));
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
@@ -453,7 +450,7 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildCloneWithMultipleWrapperTypesAndStringKey() throws Exception {
-        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, defaultDescriptor);
+        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityM, m);
         assertEquals(entityM.getKey(), m.getKey());
         assertEquals(entityM.getBooleanAttribute(), m.getBooleanAttribute());
@@ -465,7 +462,7 @@ public class CloneBuilderTest {
 
     @Test
     public void testMergeChangesWithMultipleWrapperTypesAndStringKey() throws Exception {
-        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, defaultDescriptor);
+        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityM, m);
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(entityM, m, defaultDescriptor);
         m.setBooleanAttribute(!m.getBooleanAttribute());
@@ -501,7 +498,7 @@ public class CloneBuilderTest {
         entityO.setTransientField("Transient");
         entityO.setTransientFieldWithAnnotation("TransientAnnotated");
 
-        final OWLClassO clone = (OWLClassO) builder.buildClone(entityO, defaultDescriptor);
+        final OWLClassO clone = (OWLClassO) builder.buildClone(entityO, new CloneConfiguration(defaultDescriptor));
         assertNotNull(clone);
         assertEquals(entityO.getUri(), clone.getUri());
         assertEquals(entityO.getStringAttribute(), clone.getStringAttribute());
@@ -511,11 +508,11 @@ public class CloneBuilderTest {
 
     @Test
     public void reusesAlreadyClonedInstancesWhenCloningCollections() throws Exception {
-        final OWLClassA cloneA = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+        final OWLClassA cloneA = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         entityC.setReferencedList(new ArrayList<>());
         entityC.getReferencedList().add(entityA);
 
-        final OWLClassC cloneC = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassC cloneC = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         assertNotNull(cloneC.getReferencedList());
         assertEquals(1, cloneC.getReferencedList().size());
         assertSame(cloneA, cloneC.getReferencedList().get(0));
@@ -525,7 +522,7 @@ public class CloneBuilderTest {
     public void cloneBuildingHandlesCyclesInObjectGraphByRegisteringAlreadyVisitedObjects() throws Exception {
         final OWLClassG entityG = initGWithBackwardReference();
 
-        final OWLClassG cloneG = (OWLClassG) builder.buildClone(entityG, defaultDescriptor);
+        final OWLClassG cloneG = (OWLClassG) builder.buildClone(entityG, new CloneConfiguration(defaultDescriptor));
         assertNotNull(cloneG);
         assertNotNull(cloneG.getOwlClassH());
         assertSame(cloneG, cloneG.getOwlClassH().getOwlClassG());
@@ -545,7 +542,7 @@ public class CloneBuilderTest {
         final OWLClassA another = new OWLClassA(URI.create("http://anotherA"));
         instance.setSimpleList(Arrays.asList(entityA, another));
 
-        final OWLClassC result = (OWLClassC) builder.buildClone(instance, defaultDescriptor);
+        final OWLClassC result = (OWLClassC) builder.buildClone(instance, new CloneConfiguration(defaultDescriptor));
         assertNotNull(result);
         for (int i = 0; i < instance.getSimpleList().size(); i++) {
             assertEquals(instance.getSimpleList().get(i).getUri(), result.getSimpleList().get(i).getUri());
@@ -578,7 +575,7 @@ public class CloneBuilderTest {
     @Test
     public void buildCloneClonesMappedSuperclassFieldsAsWell() throws Exception {
 
-        final OWLClassQ clone = (OWLClassQ) builder.buildClone(entityQ, defaultDescriptor);
+        final OWLClassQ clone = (OWLClassQ) builder.buildClone(entityQ, new CloneConfiguration(defaultDescriptor));
         assertNotNull(clone);
         assertEquals(entityQ.getUri(), clone.getUri());
         assertEquals(entityQ.getStringAttribute(), clone.getStringAttribute());

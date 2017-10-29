@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,8 +30,6 @@ import java.util.List;
 /**
  * This class has responsibility for creating new instances of various kinds of objects. It handles security
  * restrictions as well.
- *
- * @author kidney
  */
 class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 
@@ -45,7 +43,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
      * @return New object of the given class.
      */
     @Override
-    Object buildClone(Object cloneOwner, Field field, Object original, Descriptor repository) {
+    Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration config) {
         if (original == null) {
             return null;
         }
@@ -76,8 +74,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                         } catch (SecurityException e) {
                             logConstructorAccessException(c, e);
                             try {
-                                newInstance = AccessController
-                                        .doPrivileged(new PrivilegedInstanceCreator(c));
+                                newInstance = AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
                             } catch (PrivilegedActionException ex) {
                                 throw new OWLPersistenceException(ex);
                             }
@@ -102,8 +99,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                     } catch (SecurityException e) {
                         logConstructorAccessException(c, e);
                         try {
-                            newInstance = AccessController
-                                    .doPrivileged(new PrivilegedInstanceCreator(c));
+                            newInstance = AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
                         } catch (PrivilegedActionException ex) {
                             throw new OWLPersistenceException(ex);
                         }

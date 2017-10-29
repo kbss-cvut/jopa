@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -73,7 +73,8 @@ public class CollectionInstanceBuilderTest {
         final CollectionOwner owner = new CollectionOwner();
         owner.list = new TestList<>(owner);
         IntStream.range(0, 10).forEach(i -> owner.list.add("String" + i));
-        final Object result = builder.buildClone(owner, CollectionOwner.listField(), owner.list, descriptor);
+        final Object result =
+                builder.buildClone(owner, CollectionOwner.listField(), owner.list, new CloneConfiguration(descriptor));
         assertNotNull(result);
         assertTrue(result instanceof List);
         final List<?> lstResult = (List<?>) result;
@@ -85,7 +86,8 @@ public class CollectionInstanceBuilderTest {
         final CollectionOwner owner = new CollectionOwner();
         owner.set = new TestSet<>(owner);
         IntStream.range(0, 10).forEach(i -> owner.set.add("String" + i));
-        final Object result = builder.buildClone(owner, CollectionOwner.setField(), owner.set, descriptor);
+        final Object result =
+                builder.buildClone(owner, CollectionOwner.setField(), owner.set, new CloneConfiguration(descriptor));
         assertNotNull(result);
         assertTrue(result instanceof Set);
         final Set<?> setResult = (Set<?>) result;
@@ -98,7 +100,7 @@ public class CollectionInstanceBuilderTest {
         owner.queue = new TestQueue<>(owner);
         thrown.expect(OWLPersistenceException.class);
         thrown.expectMessage("Cannot clone unsupported collection instance of type " + owner.queue.getClass() + ".");
-        builder.buildClone(owner, CollectionOwner.queueField(), owner.queue, descriptor);
+        builder.buildClone(owner, CollectionOwner.queueField(), owner.queue, new CloneConfiguration(descriptor));
     }
 
     private static class CollectionOwner {
@@ -158,12 +160,12 @@ public class CollectionInstanceBuilderTest {
         final OWLClassA aOrig = Generators.generateOwlClassAInstance();
         final OWLClassA aClone = new OWLClassA(aOrig);
         owner.setOwlClassA(Collections.singleton(aOrig));
-        when(uowMock.registerExistingObject(aOrig, descriptor)).thenReturn(aClone);
+        when(uowMock.registerExistingObject(aOrig, descriptor, Collections.emptyList())).thenReturn(aClone);
         when(uowMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
-        final Set<OWLClassA> clone = (Set<OWLClassA>) builder
-                .buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(), descriptor);
+        final Set<?> clone = (Set) builder.buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(),
+                new CloneConfiguration(descriptor));
         assertEquals(owner.getOwlClassA().size(), clone.size());
         assertSame(aClone, clone.iterator().next());
-        verify(uowMock).registerExistingObject(aOrig, descriptor);
+        verify(uowMock).registerExistingObject(aOrig, descriptor, Collections.emptyList());
     }
 }

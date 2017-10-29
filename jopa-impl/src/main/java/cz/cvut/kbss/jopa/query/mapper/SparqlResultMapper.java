@@ -12,7 +12,7 @@
  */
 package cz.cvut.kbss.jopa.query.mapper;
 
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 
 /**
@@ -28,5 +28,5 @@ public interface SparqlResultMapper {
      * @param uow       Current persistence context
      * @return Result of the mapping
      */
-    Object map(ResultSet resultSet, UnitOfWork uow);
+    Object map(ResultSet resultSet, UnitOfWorkImpl uow);
 }

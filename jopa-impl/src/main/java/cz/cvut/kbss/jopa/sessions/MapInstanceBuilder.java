@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
@@ -41,17 +40,17 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     @Override
-    Object buildClone(Object cloneOwner, Field field, Object original, Descriptor repository) {
+    Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration configuration) {
         Map<?, ?> orig = (Map<?, ?>) original;
         if (original instanceof IndirectCollection) {
             orig = ((IndirectCollection<Map<?, ?>>) original).getReferencedCollection();
         }
         final Class<?> origCls = orig.getClass();
         Map<?, ?> clone;
-        clone = cloneUsingDefaultConstructor(cloneOwner, field, origCls, orig, repository);
+        clone = cloneUsingDefaultConstructor(cloneOwner, field, origCls, orig, configuration);
         if (clone == null) {
             if (singletonMapClass.isInstance(orig)) {
-                clone = buildSingletonClone(cloneOwner, field, orig, repository);
+                clone = buildSingletonClone(cloneOwner, field, orig, configuration);
             } else {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
@@ -61,11 +60,11 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 
     }
 
-    private Map<?, ?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
-                                                   Class<?> origCls, Map<?, ?> original, Descriptor repository) {
+    private Map<?, ?> cloneUsingDefaultConstructor(Object cloneOwner, Field field, Class<?> origCls, Map<?, ?> original,
+                                                   CloneConfiguration configuration) {
         Map<?, ?> result = createNewInstance(origCls, original.size());
         if (result != null) {
-            cloneMapContent(cloneOwner, field, original, result, repository);
+            cloneMapContent(cloneOwner, field, original, result, configuration);
         }
         return result;
     }
@@ -103,16 +102,16 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,
-                                          Descriptor repository) {
+                                          CloneConfiguration configuration) {
         final Constructor<?> c = getFirstDeclaredConstructorFor(singletonMapClass);
         if (!c.isAccessible()) {
             c.setAccessible(true);
         }
         Entry<?, ?> e = orig.entrySet().iterator().next();
         Object key = CloneBuilderImpl.isImmutable(e.getKey().getClass()) ? e.getKey()
-                : cloneObject(cloneOwner, field, e.getKey(), repository);
+                : cloneObject(cloneOwner, field, e.getKey(), configuration);
         Object value = CloneBuilderImpl.isImmutable(e.getValue().getClass()) ? e.getValue()
-                : cloneObject(cloneOwner, field, e.getValue(), repository);
+                : cloneObject(cloneOwner, field, e.getValue(), configuration);
         if (value instanceof Collection || value instanceof Map) {
             value = builder.createIndirectCollection(value, cloneOwner, field);
         }
@@ -132,7 +131,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     private void cloneMapContent(Object cloneOwner, Field field, Map<?, ?> source,
-                                 Map<?, ?> target, Descriptor repository) {
+                                 Map<?, ?> target, CloneConfiguration configuration) {
         if (source.isEmpty()) {
             return;
         }
@@ -149,24 +148,24 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                     break;
                 }
                 key = e.getKey();
-                value = cloneObject(cloneOwner, field, e.getValue(), repository);
+                value = cloneObject(cloneOwner, field, e.getValue(), configuration);
             } else {
-                key = cloneObject(cloneOwner, field, e.getKey(), repository);
+                key = cloneObject(cloneOwner, field, e.getKey(), configuration);
                 value = valuePrimitive ? e.getValue() : cloneObject(cloneOwner, field,
-                        e.getValue(), repository);
+                        e.getValue(), configuration);
             }
             m.put(key, value);
         }
     }
 
-    private Object cloneObject(Object owner, Field field, Object obj, Descriptor repository) {
+    private Object cloneObject(Object owner, Field field, Object obj, CloneConfiguration configuration) {
         Object clone;
         if (obj == null) {
             clone = null;
         } else if (builder.isTypeManaged(obj.getClass())) {
-            clone = uow.registerExistingObject(obj, repository);
+            clone = uow.registerExistingObject(obj, configuration.getDescriptor(), configuration.getPostRegister());
         } else {
-            clone = builder.buildClone(owner, field, obj, repository);
+            clone = builder.buildClone(owner, field, obj, configuration.getDescriptor());
         }
         return clone;
     }

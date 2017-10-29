@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.feature;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
@@ -27,13 +28,13 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.*;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
@@ -105,10 +106,10 @@ public class EntityLifecycleListenersTest {
 
     @Test
     public void preRemoveEntityLifecycleListenerIsCalledBeforeInstanceIsRemovedFromPersistenceContext() throws
-            Exception {
+                                                                                                        Exception {
         final OWLClassR rOriginal = new OWLClassR(Generators.createIndividualIdentifier());
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
         uow.registerExistingObject(rOriginal, descriptor);
         uow.removeObject(rInstance);
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
@@ -136,7 +137,7 @@ public class EntityLifecycleListenersTest {
     public void postRemoveEntityLifecycleListenerIsCalledAfterStorageRemoveOccurs() throws Exception {
         final OWLClassR rOriginal = new OWLClassR(Generators.createIndividualIdentifier());
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
         uow.registerExistingObject(rOriginal, descriptor);
         uow.removeObject(rInstance);
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
@@ -149,7 +150,7 @@ public class EntityLifecycleListenersTest {
     public void postLoadEntityLifecycleListenerIsCalledAfterInstanceIsLoadedIntoPersistenceContext() throws Exception {
         final OWLClassR rOriginal = new OWLClassR(Generators.createIndividualIdentifier());
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rOriginal.getUri(), descriptor)))
                 .thenReturn(rOriginal);
         final OWLClassR result = uow.readObject(OWLClassR.class, rOriginal.getUri(), descriptor);
@@ -163,7 +164,7 @@ public class EntityLifecycleListenersTest {
     public void postLoadEntityLifecycleListenerIsCalledAfterInstanceRefresh() throws Exception {
         final OWLClassR rOriginal = new OWLClassR(Generators.createIndividualIdentifier());
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
         uow.registerExistingObject(rOriginal, descriptor);
         uow.revertObject(rInstance);
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock);
@@ -175,7 +176,7 @@ public class EntityLifecycleListenersTest {
     public void preUpdateIsCalledBeforeFieldUpdateIsMergedIntoStorage() throws Exception {
         final OWLClassR rOriginal = new OWLClassR(Generators.createIndividualIdentifier());
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");
@@ -194,7 +195,7 @@ public class EntityLifecycleListenersTest {
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
         when(storageMock.find(any())).thenReturn(rOriginal);
         rInstance.setStringAtt("differentString");
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         final InOrder inOrder = inOrder(merged, concreteListenerMock, storageMock);
         inOrder.verify(concreteListenerMock).preUpdate(merged);
@@ -208,7 +209,7 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
         when(storageMock.find(any())).thenReturn(rOriginal);
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         verify(concreteListenerMock, never()).preUpdate(any());
         verify(merged, never()).preUpdate();
@@ -219,7 +220,7 @@ public class EntityLifecycleListenersTest {
     public void postUpdateIsCalledAfterFieldUpdateWasMergedIntoStorage() throws Exception {
         final OWLClassR rOriginal = new OWLClassR(Generators.createIndividualIdentifier());
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");
@@ -238,7 +239,7 @@ public class EntityLifecycleListenersTest {
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
         when(storageMock.find(any())).thenReturn(rOriginal);
         rInstance.setStringAtt("differentString");
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         final InOrder inOrder = inOrder(merged, concreteListenerMock, storageMock);
         inOrder.verify(storageMock, atLeastOnce()).merge(eq(merged), any(Field.class), eq(descriptor));
@@ -252,23 +253,27 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
         when(storageMock.find(any())).thenReturn(rOriginal);
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         verify(concreteListenerMock, never()).postUpdate(any());
         verify(merged, never()).postUpdate();
         verify(storageMock, never()).merge(eq(merged), any(Field.class), eq(descriptor));
     }
 
-    @Ignore
     @Test
-    public void lifecycleListenerMethodsAreCalledOnReferencedEntitiesAsWell() {
+    public void postLoadListenerMethodsAreCalledOnReferencedEntitiesAsWell() {
         final OWLClassR rOriginal = spy(new OWLClassR(Generators.createIndividualIdentifier()));
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
         final OWLClassA aOriginal = spy(Generators.generateOwlClassAInstance());
         final OWLClassA aInstance = spy(new OWLClassA(aOriginal.getUri()));
         rInstance.setOwlClassA(aInstance);
 
-        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rInstance);
+        when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenAnswer(inv -> {
+            final CloneConfiguration config = (CloneConfiguration) inv.getArguments()[1];
+            uow.registerExistingObject(aOriginal, config.getDescriptor(), config.getPostRegister());
+            return rInstance;
+        });
+        when(cloneBuilderMock.buildClone(eq(aOriginal), any())).thenReturn(aInstance);
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rOriginal.getUri(), descriptor)))
                 .thenReturn(rOriginal);
         final OWLClassR result = uow.readObject(OWLClassR.class, rOriginal.getUri(), descriptor);
@@ -277,5 +282,27 @@ public class EntityLifecycleListenersTest {
         inOrder.verify(aInstance).postLoad();
         inOrder.verify(concreteListenerMock).postLoad(rInstance);
         inOrder.verify(rInstance).postLoad();
+    }
+
+    @Test
+    public void postLoadListenersAreCalledOnPluralReferencesAsWell() {
+        final OWLClassC cOriginal = new OWLClassC(Generators.createIndividualIdentifier());
+        final OWLClassC cInstance = new OWLClassC(cOriginal.getUri());
+        final OWLClassA aOriginal = spy(Generators.generateOwlClassAInstance());
+        final OWLClassA aInstance = spy(new OWLClassA(aOriginal.getUri()));
+        cOriginal.setSimpleList(Collections.singletonList(aOriginal));
+        cInstance.setSimpleList(Collections.singletonList(aInstance));
+        when(cloneBuilderMock.buildClone(eq(cOriginal), any())).thenAnswer(inv -> {
+            final CloneConfiguration config = (CloneConfiguration) inv.getArguments()[1];
+            uow.registerExistingObject(aOriginal, config.getDescriptor(), config.getPostRegister());
+            return cInstance;
+        });
+        when(cloneBuilderMock.buildClone(eq(aOriginal), any())).thenReturn(aInstance);
+        when(storageMock.find(new LoadingParameters<>(OWLClassC.class, cOriginal.getUri(), descriptor)))
+                .thenReturn(cOriginal);
+        final OWLClassC result = uow.readObject(OWLClassC.class, cOriginal.getUri(), descriptor);
+        assertSame(cInstance, result);
+        final InOrder inOrder = inOrder(aInstance, concreteListenerMock);
+        inOrder.verify(aInstance).postLoad();
     }
 }

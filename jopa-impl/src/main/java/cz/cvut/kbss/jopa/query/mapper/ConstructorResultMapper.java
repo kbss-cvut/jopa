@@ -13,7 +13,7 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 
 import java.lang.reflect.Constructor;
@@ -50,7 +50,7 @@ class ConstructorResultMapper implements SparqlResultMapper {
     }
 
     @Override
-    public Object map(ResultSet resultSet, UnitOfWork uow) {
+    public Object map(ResultSet resultSet, UnitOfWorkImpl uow) {
         final Object[] values = new Object[paramMappers.size()];
         final Class<?>[] types = new Class[paramMappers.size()];
         for (int i = 0; i < paramMappers.size(); i++) {

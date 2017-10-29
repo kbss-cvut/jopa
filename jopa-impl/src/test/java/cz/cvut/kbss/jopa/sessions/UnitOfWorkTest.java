@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,6 +30,7 @@ import org.mockito.ArgumentCaptor;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -776,5 +777,21 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.registerExistingObject(entityA, descriptor);
         uow.clear();
         verify(cloneBuilder).reset();
+    }
+
+    @Test
+    public void registerExistingObjectInvokesPostCloneListeners() {
+        final Consumer<Object> plVerifier = mock(Consumer.class);
+        final Object result = uow.registerExistingObject(entityA, descriptor, Collections.singletonList(plVerifier));
+        verify(plVerifier).accept(result);
+    }
+
+    @Test
+    public void registerExistingObjectPassesPostCloneListenersToCloneBuilder() {
+        final Consumer<Object> plVerifier = mock(Consumer.class);
+        uow.registerExistingObject(entityA, descriptor, Collections.singletonList(plVerifier));
+        final ArgumentCaptor<CloneConfiguration> captor = ArgumentCaptor.forClass(CloneConfiguration.class);
+        verify(cloneBuilder).buildClone(eq(entityA), captor.capture());
+        assertTrue(captor.getValue().getPostRegister().contains(plVerifier));
     }
 }

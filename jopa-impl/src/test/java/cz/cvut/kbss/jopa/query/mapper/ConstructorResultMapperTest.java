@@ -15,7 +15,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +41,7 @@ public class ConstructorResultMapperTest {
     private ResultSet resultSetMock;
 
     @Mock
-    private UnitOfWork uowMock;
+    private UnitOfWorkImpl uowMock;
 
     @Before
     public void setUp() {

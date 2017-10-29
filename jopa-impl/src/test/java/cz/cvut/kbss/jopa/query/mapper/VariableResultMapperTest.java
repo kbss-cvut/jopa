@@ -15,7 +15,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Before;
@@ -43,7 +43,7 @@ public class VariableResultMapperTest {
     private ResultSet resultSet;
 
     @Mock
-    private UnitOfWork uowMock;
+    private UnitOfWorkImpl uowMock;
 
     @Before
     public void setUp() {

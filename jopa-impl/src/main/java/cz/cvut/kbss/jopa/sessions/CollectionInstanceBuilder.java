@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -59,7 +58,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
      * @return A deep clone of the specified collection
      */
     @Override
-    Object buildClone(Object cloneOwner, Field field, Object collection, Descriptor repository)
+    Object buildClone(Object cloneOwner, Field field, Object collection, CloneConfiguration configuration)
             throws OWLPersistenceException {
         assert collection instanceof Collection;
         Collection<?> container = (Collection<?>) collection;
@@ -72,12 +71,12 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         if (Collections.emptySet() == container) {
             return Collections.emptySet();
         }
-        Collection<?> clone = cloneUsingDefaultConstructor(cloneOwner, field, container, repository);
+        Collection<?> clone = cloneUsingDefaultConstructor(cloneOwner, field, container, configuration);
         if (clone == null) {
-            clone = buildInstanceOfSpecialCollection(cloneOwner, field, repository, container);
+            clone = buildInstanceOfSpecialCollection(cloneOwner, field, container, configuration);
         }
         if (clone == null) {
-            clone = buildDefaultCollectionInstance(cloneOwner, field, repository, container);
+            clone = buildDefaultCollectionInstance(cloneOwner, field, container, configuration);
         }
         clone = (Collection<?>) builder.createIndirectCollection(clone, cloneOwner, field);
         return clone;
@@ -91,12 +90,12 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
      * @return cloned collection
      */
     private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
-                                                       Collection<?> container, Descriptor repository) {
+                                                       Collection<?> container, CloneConfiguration configuration) {
         Class<?> javaClass = container.getClass();
         Collection<?> result = createNewInstance(javaClass, container.size());
         if (result != null) {
             // Makes shallow copy
-            cloneCollectionContent(cloneOwner, field, container, result, repository);
+            cloneCollectionContent(cloneOwner, field, container, result, configuration);
         }
         return result;
     }
@@ -139,43 +138,44 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
      * @param source The collection to clone.
      */
     private void cloneCollectionContent(Object cloneOwner, Field field, Collection<?> source,
-                                        Collection<?> target, Descriptor descriptor) {
+                                        Collection<?> target, CloneConfiguration configuration) {
         if (source.isEmpty()) {
             return;
         }
         Collection<Object> tg = (Collection<Object>) target;
-        for (Object obj : source) {
-            if (obj == null) {
+        for (Object elem : source) {
+            if (elem == null) {
                 tg.add(null);
                 continue;
             }
-            if (CloneBuilderImpl.isImmutable(obj.getClass())) {
+            if (CloneBuilderImpl.isImmutable(elem.getClass())) {
                 tg.addAll(source);
                 break;
             }
-            tg.add(cloneCollectionElement(cloneOwner, field, descriptor, obj));
+            tg.add(cloneCollectionElement(cloneOwner, field, elem, configuration));
         }
     }
 
-    private Object cloneCollectionElement(Object cloneOwner, Field field, Descriptor descriptor, Object obj) {
+    private Object cloneCollectionElement(Object cloneOwner, Field field, Object element,
+                                          CloneConfiguration configuration) {
         Object clone;
-        if (builder.isTypeManaged(obj.getClass())) {
-            clone = uow.registerExistingObject(obj, descriptor);
+        if (builder.isTypeManaged(element.getClass())) {
+            clone = uow.registerExistingObject(element, configuration.getDescriptor(), configuration.getPostRegister());
         } else {
-            clone = builder.buildClone(cloneOwner, field, obj, descriptor);
+            clone = builder.buildClone(cloneOwner, field, element, configuration.getDescriptor());
         }
         return clone;
     }
 
 
-    private Collection<?> buildInstanceOfSpecialCollection(Object cloneOwner, Field field, Descriptor repository,
-                                                           Collection<?> container) {
+    private Collection<?> buildInstanceOfSpecialCollection(Object cloneOwner, Field field, Collection<?> container,
+                                                           CloneConfiguration configuration) {
         Collection<?> clone;
         Constructor<?> c;
         Object[] params = new Object[1];
         if (arrayAsListClass.isInstance(container)) {
             final List<?> arrayList = new ArrayList<>(container.size());
-            cloneCollectionContent(cloneOwner, field, container, arrayList, repository);
+            cloneCollectionContent(cloneOwner, field, container, arrayList, configuration);
             c = getFirstDeclaredConstructorFor(ArrayList.class);
             params[0] = arrayList;
         } else {
@@ -188,7 +188,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             }
             final Object element = container.iterator().next();
             params[0] = CloneBuilderImpl.isImmutable(element.getClass()) ? element :
-                        cloneCollectionElement(cloneOwner, field, repository, element);
+                    cloneCollectionElement(cloneOwner, field, element, configuration);
         }
         try {
             if (!c.isAccessible()) {
@@ -208,8 +208,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         return clone;
     }
 
-    private Collection<?> buildDefaultCollectionInstance(Object cloneOwner, Field field, Descriptor repository,
-                                                         Collection<?> container) {
+    private Collection<?> buildDefaultCollectionInstance(Object cloneOwner, Field field, Collection<?> container,
+                                                         CloneConfiguration configuration) {
         LOG.trace("Unable to find matching collection constructor. Creating default collection.");
         final Collection<?> clone;
         try {
@@ -221,7 +221,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 throw new OWLPersistenceException(
                         "Cannot clone unsupported collection instance of type " + container.getClass() + ".");
             }
-            cloneCollectionContent(cloneOwner, field, container, clone, repository);
+            cloneCollectionContent(cloneOwner, field, container, clone, configuration);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new OWLPersistenceException(e);
         }

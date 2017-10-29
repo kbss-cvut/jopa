@@ -15,7 +15,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
@@ -25,10 +25,10 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 public class ResultSetMappingQuery extends QueryImpl {
 
     private final SparqlResultMapper mapper;
-    private final UnitOfWork uow;
+    private final UnitOfWorkImpl uow;
 
     public ResultSetMappingQuery(QueryHolder query, ConnectionWrapper connection, SparqlResultMapper mapper,
-                                 UnitOfWork uow) {
+                                 UnitOfWorkImpl uow) {
         super(query, connection);
         this.mapper = mapper;
         this.uow = uow;

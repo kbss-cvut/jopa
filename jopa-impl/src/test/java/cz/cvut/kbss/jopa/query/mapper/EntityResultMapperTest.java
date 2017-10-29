@@ -36,10 +36,10 @@ public class EntityResultMapperTest {
     @Test
     public void mapCreatesNewInstanceOfTargetTypeAndRegistersItInUOW() {
         final OWLClassA clone = new OWLClassA();
-        when(uowMock.registerExistingObject(any(), any())).thenReturn(clone);
+        when(uowMock.registerExistingObject(any(), any(), any())).thenReturn(clone);
         final OWLClassA result = mapper.map(resultSetMock, uowMock);
         assertNotNull(result);
-        verify(uowMock).registerExistingObject(any(), any());
+        verify(uowMock).registerExistingObject(any(), any(), any());
     }
 
     @Test

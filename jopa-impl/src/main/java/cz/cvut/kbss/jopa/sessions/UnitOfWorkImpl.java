@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.QueryImpl;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -42,6 +43,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory, ConfigurationHolder, Wrapper {
 
@@ -124,12 +126,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
         Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
-        final T result = readObjectInternal(cls, primaryKey, descriptor);
-        if (result != null) {
-            final EntityTypeImpl<?> et = entityType(cls);
-            et.getLifecycleListenerManager().invokePostLoadCallbacks(result);
-        }
-        return result;
+        return readObjectInternal(cls, primaryKey, descriptor);
     }
 
     private <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
@@ -158,7 +155,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (result == null) {
             return null;
         }
-        final Object clone = registerExistingObject(result, descriptor);
+        final Object clone = registerExistingObject(result, descriptor,
+                Collections.singletonList(new PostLoadInvoker(getMetamodel())));
         checkForCollections(clone);
         return cls.cast(clone);
     }
@@ -190,10 +188,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
         for (Object clone : getNewObjectsCloneToOriginal().keySet()) {
             final Descriptor c = getDescriptor(clone);
-            Object original = getNewObjectsCloneToOriginal().get(clone);
-            if (original == null) {
-                original = this.cloneBuilder.buildClone(clone, c);
-            }
+            Object original = getNewObjectsCloneToOriginal()
+                    .computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, new CloneConfiguration(c)));
             if (original == null) {
                 throw new OWLPersistenceException(
                         "Error while calculating changes for new objects. Original not found.");
@@ -661,15 +657,23 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
+        return registerExistingObject(entity, descriptor, Collections.emptyList());
+    }
+
+    @Override
+    public Object registerExistingObject(Object entity, Descriptor descriptor, List<Consumer<Object>> postClone) {
         if (entity == null) {
             return null;
         }
         if (cloneToOriginals.containsValue(entity)) {
             return getCloneForOriginal(entity);
         }
-        Object clone = cloneBuilder.buildClone(entity, descriptor);
+        final CloneConfiguration cloneConfig = new CloneConfiguration(descriptor);
+        postClone.forEach(cloneConfig::addPostRegisterHandler);
+        Object clone = cloneBuilder.buildClone(entity, cloneConfig);
         assert clone != null;
         registerClone(clone, entity, descriptor);
+        postClone.forEach(c -> c.accept(clone));
         return clone;
     }
 
