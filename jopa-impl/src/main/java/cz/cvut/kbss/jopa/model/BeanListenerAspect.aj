@@ -35,34 +35,18 @@ public aspect BeanListenerAspect {
 
     pointcut setter(): set( @(OWLObjectProperty || OWLDataProperty || OWLAnnotationProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
-    before(): setter() {
-        // Check for inferred field modification
-        final Object object = thisJoinPoint.getTarget();
-        final String fieldName = thisJoinPoint.getSignature().getName();
-        final Field field;
-        try {
-            field = JOPAPersistenceProvider.getEntityField(object, fieldName);
-            if (field == null) {
-                return;
-            }
-        } catch (SecurityException e) {
-            LOG.error(e.getMessage(), e);
-            throw new OWLPersistenceException(e.getMessage());
-        }
-        JOPAPersistenceProvider.verifyInferredAttributeNotModified(object, field);
-    }
-
     after() returning : setter() {
-        // Persist changes done during transaction
+        // Persist changes done during transaction and check for inferred attribute modification
         final Object entity = thisJoinPoint.getTarget();
 
-        final Field f;
+        final Field field;
         try {
-            f = JOPAPersistenceProvider.getEntityField(entity, thisJoinPoint.getSignature().getName());
-            if (f == null || EntityPropertiesUtils.isFieldTransient(f)) {
+            field = JOPAPersistenceProvider.getEntityField(entity, thisJoinPoint.getSignature().getName());
+            if (field == null || EntityPropertiesUtils.isFieldTransient(field)) {
                 return;
             }
-            JOPAPersistenceProvider.persistEntityChanges(entity, f);
+            JOPAPersistenceProvider.verifyInferredAttributeNotModified(entity, field);
+            JOPAPersistenceProvider.persistEntityChanges(entity, field);
         } catch (SecurityException e) {
             LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException(e.getMessage());
@@ -77,10 +61,6 @@ public aspect BeanListenerAspect {
             if (field == null || EntityPropertiesUtils.isFieldTransient(field)) {
                 return;
             }
-
-            field.setAccessible(true);
-
-//            LOG.trace("*** Fetching {} of {}: {}", field.getName(), object.getClass(), System.identityHashCode(object));
 
             JOPAPersistenceProvider.loadReference(object, field);
         } catch (IllegalArgumentException | IllegalAccessException e) {

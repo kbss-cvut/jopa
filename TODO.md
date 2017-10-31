@@ -36,8 +36,3 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
-
-- [ ] Add support for query result set mapping
-    - [x] VariableResult
-    - [x] ConstructorResult
-    - [ ] EntityResult
