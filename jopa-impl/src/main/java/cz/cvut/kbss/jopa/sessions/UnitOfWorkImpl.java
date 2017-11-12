@@ -17,11 +17,8 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.*;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.QueryImpl;
-import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -34,10 +31,9 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
-import cz.cvut.kbss.jopa.utils.CollectionFactory;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.jopa.utils.Wrapper;
+import cz.cvut.kbss.jopa.utils.*;
+import org.aspectj.lang.Aspects;
+import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -633,11 +629,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     @Override
     void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
         parent.registerEntityWithPersistenceContext(entity, uow);
+        Aspects.aspectOf(BeanListenerAspect.class).register(entity, uow);
     }
 
     @Override
     void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
         parent.deregisterEntityFromPersistenceContext(entity, uow);
+        Aspects.aspectOf(BeanListenerAspect.class).deregister(entity);
     }
 
     @Override

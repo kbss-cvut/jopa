@@ -20,11 +20,6 @@
             <name>KBSS Maven 2 Repository</name>
             <url>http://kbss.felk.cvut.cz/m2repo</url>
         </repository>
-        <repository>
-            <id>repository.jboss.org-public</id>
-            <name>JBoss.org Maven repository</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -61,7 +56,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.7</version>
+                <version>1.10</version>
                 <configuration>
                     <complianceLevel>1.8</complianceLevel>
                     <source>1.8</source>
