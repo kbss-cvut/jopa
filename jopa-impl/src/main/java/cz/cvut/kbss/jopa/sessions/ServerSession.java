@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -48,8 +48,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
     private StorageAccessor storageAccessor;
 
     private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
-    private Map<Object, UnitOfWorkImpl> activePersistenceContexts;
-    private Map<UnitOfWork, Set<Object>> uowsToEntities;
 
     ServerSession() {
         super(new Configuration(Collections.emptyMap()));
@@ -90,8 +88,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
         assert configuration != null;
         assert metamodel != null;
         this.runningTransactions = new HashMap<>();
-        this.activePersistenceContexts = new IdentityHashMap<>();
-        this.uowsToEntities = new HashMap<>();
         this.liveObjectCache = CacheFactory.createCache(configuration.getProperties());
         liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
         this.storageAccessor = new DefaultStorageAccessor(storageProperties, configuration.getProperties());
@@ -132,7 +128,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
         if (uow != null && uow.hasChanges()) {
             getLiveObjectCache().clearInferredObjects();
         }
-        releasePersistenceContext(uow);
     }
 
     /**
@@ -169,37 +164,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
         return cls != null && managedClasses.contains(cls);
     }
 
-    /**
-     * Register the specified entity as managed in the specified {@code UnitOfWork}.
-     * <p>
-     * Registering loaded entities with their owning {@code UnitOfWork} is highly recommended, since it speeds up
-     * persistence context lookup when entity attributes are modified.
-     *
-     * @param entity The entity to register
-     * @param uow    Persistence context of the specified entity
-     */
-    @Override
-    protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
-        assert entity != null;
-        assert uow != null;
-
-        activePersistenceContexts.put(entity, uow);
-        if (!uowsToEntities.containsKey(uow)) {
-            uowsToEntities.put(uow, new HashSet<>());
-        }
-        uowsToEntities.get(uow).add(entity);
-    }
-
-    @Override
-    synchronized void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
-        assert entity != null;
-        assert uow != null;
-        activePersistenceContexts.remove(entity);
-        if (uowsToEntities.containsKey(uow)) {
-            uowsToEntities.get(uow).remove(entity);
-        }
-    }
-
     @Override
     public NamedQueryManager getNamedQueryManager() {
         return metamodel.getNamedQueryManager();
@@ -208,36 +172,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
     @Override
     public ResultSetMappingManager getResultSetMappingManager() {
         return metamodel.getResultSetMappingManager();
-    }
-
-    /**
-     * Get persistence context for the specified entity.
-     *
-     * @param entity The entity
-     * @return Persistence context of the specified entity or null, if it cannot be found
-     */
-    public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
-        if (entity == null) {
-            return null;
-        }
-        return activePersistenceContexts.get(entity);
-    }
-
-    /**
-     * Remove the specified {@code UnitOfWork} from the list of currently active persistence contexts.
-     * <p>
-     * Also remove all the objects associated with this persistence context.
-     *
-     * @param uow The persistence context to remove
-     */
-    @Override
-    synchronized void releasePersistenceContext(UnitOfWork uow) {
-        if (uowsToEntities.containsKey(uow)) {
-            for (Object entity : uowsToEntities.get(uow)) {
-                activePersistenceContexts.remove(entity);
-            }
-        }
-        uowsToEntities.remove(uow);
     }
 
     @Override

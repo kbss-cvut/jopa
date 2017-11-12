@@ -31,9 +31,11 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
-import cz.cvut.kbss.jopa.utils.*;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.aspectj.lang.Aspects;
-import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -231,7 +233,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private void detachAllManagedInstances() {
         cloneMapping.keySet().forEach(instance -> {
             removeIndirectCollections(instance);
-            deregisterEntityFromPersistenceContext(instance, this);
+            deregisterEntityFromPersistenceContext(instance);
         });
     }
 
@@ -626,21 +628,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return newChangeSet;
     }
 
-    @Override
-    void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
-        parent.registerEntityWithPersistenceContext(entity, uow);
-        Aspects.aspectOf(BeanListenerAspect.class).register(entity, uow);
+    private void registerEntityWithPersistenceContext(Object entity) {
+        Aspects.aspectOf(BeanListenerAspect.class).register(entity, this);
     }
 
-    @Override
-    void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
-        parent.deregisterEntityFromPersistenceContext(entity, uow);
+    private void deregisterEntityFromPersistenceContext(Object entity) {
         Aspects.aspectOf(BeanListenerAspect.class).deregister(entity);
-    }
-
-    @Override
-    void releasePersistenceContext(UnitOfWork uow) {
-        parent.releasePersistenceContext(uow);
     }
 
     @Override
@@ -680,7 +673,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
-        registerEntityWithPersistenceContext(clone, this);
+        registerEntityWithPersistenceContext(clone);
         registerEntityWithOntologyContext(descriptor, clone);
     }
 
@@ -692,7 +685,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public void release() {
         clear();
         storage.close();
-        releasePersistenceContext(this);
         this.isActive = false;
         LOG.debug("UnitOfWork released.");
     }
@@ -758,7 +750,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         // Original is null until commit
         cloneMapping.put(entity, entity);
         getNewObjectsCloneToOriginal().put(entity, null);
-        registerEntityWithPersistenceContext(entity, this);
+        registerEntityWithPersistenceContext(entity);
         registerEntityWithOntologyContext(descriptor, entity);
         newObjectsKeyToClone.put(id, entity);
         checkForCollections(entity);
@@ -838,7 +830,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private void unregisterObjectFromPersistenceContext(Object object) {
         removeIndirectCollections(object);
-        deregisterEntityFromPersistenceContext(object, this);
+        deregisterEntityFromPersistenceContext(object);
         unregisterEntityFromOntologyContext(object);
     }
 

@@ -488,7 +488,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         b.setUri(URI.create("http://bUri"));
         final String stringAtt = "string";
         final OWLClassB clone = (OWLClassB) uow.registerExistingObject(b, descriptor);
-        assertNull(clone.getStringAttribute());
         final Field strField = OWLClassB.getStrAttField();
         strField.setAccessible(true);
         doAnswer(invocation -> {
@@ -507,7 +506,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassD d = new OWLClassD();
         d.setUri(URI.create("http://dUri"));
         final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
-        assertNull(clone.getOwlClassA());
         final Field toLoad = OWLClassD.getOwlClassAField();
         doAnswer(invocation -> {
             final Field f = (Field) invocation.getArguments()[1];
@@ -516,11 +514,11 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         }).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
 
         uow.loadEntityField(clone, toLoad);
+        verify(storageMock).loadFieldValue(clone, toLoad, descriptor);
         assertNotNull(clone.getOwlClassA());
         // Verify that the loaded value was cloned
         assertNotSame(entityA, clone.getOwlClassA());
         assertTrue(uow.contains(clone.getOwlClassA()));
-        verify(storageMock).loadFieldValue(clone, toLoad, descriptor);
     }
 
     @Test
@@ -711,17 +709,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void releaseRemovesUoWFromServerSessionsActivePersistenceContexts() {
-        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
-                .thenReturn(entityA);
-        final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
-        assertNotNull(result);
-        verify(serverSessionStub).registerEntityWithPersistenceContext(any(OWLClassA.class), eq(uow));
-        uow.release();
-        verify(serverSessionStub).releasePersistenceContext(uow);
-    }
-
-    @Test
     public void releaseRemovesIndirectCollectionsFromManagedEntities() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
                 .thenReturn(entityA);
@@ -744,8 +731,8 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.rollback();
         assertFalse(result.getTypes() instanceof IndirectSet);
         assertFalse(entityB.getProperties() instanceof IndirectMap);
-        verify(serverSessionStub).deregisterEntityFromPersistenceContext(result, uow);
-        verify(serverSessionStub).deregisterEntityFromPersistenceContext(entityB, uow);
+        assertFalse(uow.contains(result));
+        assertFalse(uow.contains(entityB));
     }
 
     @Test

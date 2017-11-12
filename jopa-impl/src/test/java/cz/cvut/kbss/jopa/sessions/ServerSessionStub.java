@@ -38,28 +38,8 @@ public class ServerSessionStub extends ServerSession {
     }
 
     @Override
-    protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
-        // do nothing
-    }
-
-    @Override
-    protected void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
-        // do nothing
-    }
-
-    @Override
-    public void releasePersistenceContext(UnitOfWork uow) {
-        // Do nothing
-    }
-
-    @Override
     public boolean isTypeManaged(Class<?> cls) {
         return TestEnvironmentUtils.getManagedTypes().contains(cls);
-    }
-
-    @Override
-    public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
-        return null;
     }
 
     @Override

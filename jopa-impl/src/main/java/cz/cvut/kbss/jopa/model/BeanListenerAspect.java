@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.aspectj.lang.JoinPoint;
@@ -54,22 +55,39 @@ public class BeanListenerAspect {
         return new ManageableImpl();
     }
 
-    @Pointcut(
-            "get( @(cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty || cz.cvut.kbss.jopa.model.annotations.OWLDataProperty || cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty || cz.cvut.kbss.jopa.model.annotations.Types || cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) && within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
+    @Pointcut("get( @(cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty " +
+                      "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
+                      "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
+                      "|| cz.cvut.kbss.jopa.model.annotations.Types " +
+                      "|| cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
+                      "&& within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
     void getter() {
     }
 
-    @Pointcut(
-            "set( @(cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty || cz.cvut.kbss.jopa.model.annotations.OWLDataProperty || cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty || cz.cvut.kbss.jopa.model.annotations.Types || cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) && within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
+    @Pointcut("set( @(cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty " +
+                      "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
+                      "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
+                      "|| cz.cvut.kbss.jopa.model.annotations.Types || cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
+                      "&& within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
     void setter() {
     }
 
-
+    /**
+     * Ties the specified instance to its persistence context, so that the advices can identify it easily.
+     *
+     * @param instance           The managed instance
+     * @param persistenceContext Persistence context which is managing it
+     */
     public void register(Object instance, UnitOfWorkImpl persistenceContext) {
-        LOG.info("Registering instance in PC.");
         ((Manageable) instance).setPersistenceContext(persistenceContext);
     }
 
+    /**
+     * Disconnects the specified instance from its persistence context.
+     *
+     * @param instance The instance to remove
+     * @see #register(Object, UnitOfWorkImpl)
+     */
     public void deregister(Object instance) {
         ((Manageable) instance).setPersistenceContext(null);
     }
@@ -78,41 +96,55 @@ public class BeanListenerAspect {
     public void afterSetter(JoinPoint thisJoinPoint) {
         // Persist changes done during transaction and check for inferred attribute modification
         final Object entity = thisJoinPoint.getTarget();
-        if (((Manageable) entity).getPersistenceContext() == null) {
+        final UnitOfWorkImpl persistenceContext = ((Manageable) entity).getPersistenceContext();
+        if (persistenceContext == null || !persistenceContext.isInTransaction()) {
             return;
         }
 
         final Field field;
         try {
-            field = JOPAPersistenceProvider.getEntityField(entity, thisJoinPoint.getSignature().getName());
-            if (field == null || EntityPropertiesUtils.isFieldTransient(field)) {
+            field = getField(entity, thisJoinPoint.getSignature().getName(), persistenceContext);
+            if (EntityPropertiesUtils.isFieldTransient(field)) {
                 return;
             }
             JOPAPersistenceProvider.verifyInferredAttributeNotModified(entity, field);
-            JOPAPersistenceProvider.persistEntityChanges(entity, field);
+            persistenceContext.attributeChanged(entity, field);
         } catch (SecurityException e) {
             LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException(e.getMessage());
         }
     }
 
+    private Field getField(Object entity, String fieldName, UnitOfWorkImpl persistenceContext) {
+        final EntityType<?> et = persistenceContext.getMetamodel().entity(entity.getClass());
+        assert et != null;
+        return et.getFieldSpecification(fieldName).getJavaField();
+    }
+
     @Before("getter()")
     public void beforeGetter(JoinPoint thisJoinPoint) {
         // Load lazy loaded entity field
-        try {
-            final Object object = thisJoinPoint.getTarget();
-            if (((Manageable) object).getPersistenceContext() == null) {
-                return;
-            }
-            final Field field = JOPAPersistenceProvider.getEntityField(object, thisJoinPoint.getSignature().getName());
-            if (field == null || EntityPropertiesUtils.isFieldTransient(field)) {
-                return;
-            }
-
-            JOPAPersistenceProvider.loadReference(object, field);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            LOG.error(e.getMessage(), e);
-            throw new OWLPersistenceException(e);
+        final Object object = thisJoinPoint.getTarget();
+        final UnitOfWorkImpl persistenceContext = ((Manageable) object).getPersistenceContext();
+        if (persistenceContext == null) {
+            return;
         }
+        final Field field = getField(object, thisJoinPoint.getSignature().getName(), persistenceContext);
+        if (EntityPropertiesUtils.isFieldTransient(field)) {
+            return;
+        }
+        loadReference(object, field, persistenceContext);
+    }
+
+    private void loadReference(Object entity, Field field, UnitOfWorkImpl persistenceContext) {
+        Object managedOrig = persistenceContext.getOriginal(entity);
+        if (managedOrig == null) {
+            return;
+        }
+        Object val = EntityPropertiesUtils.getFieldValue(field, managedOrig);
+        if (val != null) {
+            return;
+        }
+        persistenceContext.loadEntityField(entity, field);
     }
 }

@@ -77,33 +77,6 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
     protected abstract ConnectionWrapper acquireConnection();
 
     /**
-     * Register the specified entity as managed in the specified {@code UnitOfWork}.
-     * <p>
-     * Registering loaded entities with their owning {@code UnitOfWork} is
-     * highly recommended, since it speeds up persistence context lookup when
-     * entity attributes are modified.
-     *
-     * @param entity The entity to register
-     * @param uow    Persistence context of the specified entity
-     */
-    abstract void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow);
-
-    /**
-     * Detaches the specified entity from its persistence context.
-     *
-     * @param entity The entity to deregister
-     * @param uow    Persistence context to which the entity belonged
-     */
-    abstract void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow);
-
-    /**
-     * Releases the specified persistence context, detaching any entities associated with it.
-     *
-     * @param uow The persistence context to release
-     */
-    abstract void releasePersistenceContext(UnitOfWork uow);
-
-    /**
      * Gets an object managing named queries in this persistence unit.
      *
      * @return {@link NamedQueryManager}
