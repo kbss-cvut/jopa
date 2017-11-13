@@ -15,7 +15,9 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.aspectj.lang.JoinPoint;
@@ -103,7 +105,7 @@ public class BeanListenerAspect {
 
         final Field field;
         try {
-            field = getField(entity, thisJoinPoint.getSignature().getName(), persistenceContext);
+            field = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(), persistenceContext).getJavaField();
             if (EntityPropertiesUtils.isFieldTransient(field)) {
                 return;
             }
@@ -115,10 +117,10 @@ public class BeanListenerAspect {
         }
     }
 
-    private Field getField(Object entity, String fieldName, UnitOfWorkImpl persistenceContext) {
+    private FieldSpecification<?, ?> getFieldSpecification(Object entity, String fieldName, UnitOfWorkImpl persistenceContext) {
         final EntityType<?> et = persistenceContext.getMetamodel().entity(entity.getClass());
         assert et != null;
-        return et.getFieldSpecification(fieldName).getJavaField();
+        return et.getFieldSpecification(fieldName);
     }
 
     @Before("getter()")
@@ -129,8 +131,9 @@ public class BeanListenerAspect {
         if (persistenceContext == null) {
             return;
         }
-        final Field field = getField(object, thisJoinPoint.getSignature().getName(), persistenceContext);
-        if (EntityPropertiesUtils.isFieldTransient(field)) {
+        final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(object, thisJoinPoint.getSignature().getName(), persistenceContext);
+        final Field field = fieldSpec.getJavaField();
+        if (EntityPropertiesUtils.isFieldTransient(field) || fieldSpec.getFetchType() == FetchType.EAGER) {
             return;
         }
         loadReference(object, field, persistenceContext);
