@@ -47,7 +47,7 @@ public final class JAnnotationUse extends JAnnotationValue {
         // Use ordered map to keep the code generation the same on any JVM.
         // Lazily created.
         if (memberValues == null)
-            memberValues = new LinkedHashMap<String, JAnnotationValue>();
+            memberValues = new LinkedHashMap<>();
         memberValues.put(name, annotationValue);
     }
 
@@ -238,8 +238,8 @@ public final class JAnnotationUse extends JAnnotationValue {
      * @return The JAnnotationUse. More member value pairs can be added to it using the same or the overloaded methods.
      */
     public JAnnotationUse param(String name, JType type) {
-        JClass clazz = type.boxify();
-        addValue(name, new JAnnotationStringValue(clazz.dotclass()));
+        JClass cls = type.boxify();
+        addValue(name, new JAnnotationStringValue(cls.dotclass()));
         return this;
     }
 
@@ -281,10 +281,10 @@ public final class JAnnotationUse extends JAnnotationValue {
      * @deprecated use {@link JAnnotationArrayMember#annotate}
      */
     public JAnnotationUse annotate(Class<? extends Annotation> clazz) {
-        JAnnotationUse annotationUse = new JAnnotationUse(owner().ref(clazz));
-        return annotationUse;
+        return new JAnnotationUse(owner().ref(clazz));
     }
 
+    @Override
     public void generate(JFormatter f) {
         f.p('@').g(clazz);
         if (memberValues != null) {
@@ -296,7 +296,9 @@ public final class JAnnotationUse extends JAnnotationValue {
                 f.g(memberValues.get("value"));
             } else {
                 for (Map.Entry<String, JAnnotationValue> mapEntry : memberValues.entrySet()) {
-                    if (!first) f.p(',');
+                    if (!first) {
+                        f.p(',');
+                    }
                     f.p(mapEntry.getKey()).p('=').g(mapEntry.getValue());
                     first = false;
                 }
