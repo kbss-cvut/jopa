@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * "SELECT ?x, ?quantity, ?item, ?label, ?description "+
  * "WHERE {
  *     ?x a &lt;http://onto.fel.cvut.cz/ontologies/jopa/Order&gt; ;
- *        &lt;http://onto.fel.cvut.cz/ontologies/ufo/has_part&gt ?item .
+ *        &lt;http://onto.fel.cvut.cz/ontologies/ufo/has_part&gt; ?item .
  *     ?item a &lt;http://onto.fel.cvut.cz/ontologies/jopa/Order&gt; ;
  *           rdfs:label ?label;
  *           rdfs:comment ?description .
