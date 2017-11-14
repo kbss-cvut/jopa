@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -25,10 +23,7 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
@@ -160,16 +155,18 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public Object getIdentifier(Object entity) {
+        Objects.requireNonNull(entity);
         final EntityType<?> et = getMetamodel().entity(entity.getClass());
         return EntityPropertiesUtils.getFieldValue(et.getIdentifier().getJavaField(), entity);
     }
 
     @Override
     public boolean isLoaded(Object entity, String attributeName) {
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(attributeName);
         for (final AbstractEntityManager emi : em) {
-            if (emi.contains(entity)) {
-                return attributeName == null || emi.isLoaded(entity, attributeName);
-
+            if (emi.contains(entity) && emi.isLoaded(entity, attributeName)) {
+                return true;
             }
         }
 
@@ -178,9 +175,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public boolean isLoaded(Object entity) {
-        // TODO
+        Objects.requireNonNull(entity);
+        // Since we do not support getReference yet, all EAGER attributes are always loaded for managed instances
+        for (AbstractEntityManager emi : em) {
+            if (emi.contains(entity)) {
+                return true;
+            }
+        }
         return false;
-        // return isLoaded(entity);
     }
 
     @Override

@@ -62,6 +62,7 @@ public class MetamodelFactory {
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(strAttMock.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
@@ -387,6 +388,9 @@ public class MetamodelFactory {
         when(clsEMock.getIRI()).thenReturn(IRI.create(clsEIri));
         when(clsEMock.getJavaType()).thenReturn(OWLClassE.class);
         when(clsEMock.getDeclaringType()).thenReturn(etMock);
+        when(clsEMock.getFetchType()).thenReturn(FetchType.LAZY);
+        when(clsEMock.getName()).thenReturn(OWLClassK.getOwlClassEField().getName());
+        when(etMock.getFieldSpecification(clsEMock.getName())).thenReturn(clsEMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassK.class.getDeclaredField("uri"));
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());

@@ -481,4 +481,31 @@ public class EntityManagerImplTest {
         verify(uow).removeObject(cloneOne);
         verify(uow).removeObject(cloneTwo);
     }
+
+    @Test
+    public void isLoadedReturnsTrueForEagerlyLoadedAttributeOfManagedInstance() throws Exception {
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        doAnswer((invocationOnMock) -> a).when(uow).readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
+        when(uow.contains(a)).thenReturn(true);
+        final OWLClassA found = em.find(OWLClassA.class, a.getUri());
+        assertTrue(em.isLoaded(found, OWLClassA.getStrAttField().getName()));
+    }
+
+    @Test
+    public void isLoadedReturnsFalseForNonManagedInstance() throws Exception {
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        when(uow.contains(a)).thenReturn(false);
+        assertFalse(em.isLoaded(a, OWLClassA.getStrAttField().getName()));
+    }
+
+    @Test
+    public void isLoadedReturnsTrueForNonNullLazilyLoadedAttribute() throws Exception {
+        final OWLClassK inst = new OWLClassK();
+        inst.setUri(Generators.createIndividualIdentifier());
+        inst.setOwlClassE(new OWLClassE());
+        when(uow.contains(inst)).thenReturn(true);
+        doAnswer((invocationOnMock) -> inst).when(uow).readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
+        final OWLClassK found = em.find(OWLClassK.class, inst.getUri());
+        assertTrue(em.isLoaded(found, OWLClassK.getOwlClassEField().getName()));
+    }
 }
