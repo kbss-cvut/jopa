@@ -102,6 +102,8 @@ A more mature project using JOPA as its persistence provider can be found at [ht
 It is a safety occurrence reporting tool developed for the aviation industry as part of the INBAS project ([https://www.inbas.cz](https://www.inbas.cz)).
 A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
 
+JOPA is also used in the [BINBAS project](https://www.inbas.cz/web/binbas) [6].
+
 Note that JOPA requires Java 8.
 
 ## Getting JOPA
@@ -136,3 +138,4 @@ Some related libraries:
 * [3] The Java Language Specification, Java SE 8 Edition [https://docs.oracle.com/javase/specs/jls/se8/html/index.html](https://docs.oracle.com/javase/specs/jls/se8/html/index.html)
 * [4] P. Křemen and Z. Kouba: Ontology-Driven Information System Design. IEEE Transactions on Systems, Man, and Cybernetics: Part C, 42(3):334–344, May 2012 [http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1)
 * [5] M. Ledvinka and P. Křemen: JOPA: Accessing Ontologies in an Object-oriented Way. In Proceedings of the 17th International Conference on Enterprise Information Systems. Porto: SciTePress - Science and Technology Publications, 2015, p. 212-222. ISBN 978-989-758-096-0. [http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1](http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1)
+* [6] Ledvinka, M.; Křemen, P.; Kostov, B.; Blaško, M. SISel: Aviation Safety Powered by Semantic Technologies In: Data a znalosti 2017. Plzeň: Západočeská univerzita v Plzni, 2017. pp. 77-82. ISBN 978-80-261-0720-0. [https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf](https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf)

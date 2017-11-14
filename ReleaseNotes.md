@@ -1,5 +1,12 @@
 # JOPA - Release Notes
 
+## 0.9.11 - November 14, 2017
+- Finished implementation of support for result set mapping - EntityResult (Feature #7).
+- Fixed issue with PostLoad lifecycle callbacks and listeners not being called for referenced entities (Bug #10).
+- Improved performance of the getter/setter Aspect. This also caused smaller memory requirements for tracking persistence context of entities.
+- Rewrote persistence provider discovery to work the same as in JPA.
+- Better support of the `isLoaded` methods.
+
 ## 0.9.10 - October 16, 2017
 - Partial support for SPARQL result set mapping - VariableResult and ConstructorResult (Feature #7).
 - Fixed issue with class discovery in JDK 9 (Bug #8, thanks to Yan Doroshenko).
