@@ -1,20 +1,18 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.loaders;
 
-import cz.cvut.kbss.jopa.exception.JopaInitializationException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,14 +29,17 @@ import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-class PersistenceUnitClassProcessor {
+/**
+ * Processes classes available to the current classloader.
+ */
+class ClasspathScanner {
 
-    private final List<Consumer<Class<?>>> listeners = new ArrayList<>();
-
-    private static final Logger LOG = LoggerFactory.getLogger(EntityLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClasspathScanner.class);
 
     private static final String JAR_FILE_SUFFIX = ".jar";
     private static final String CLASS_FILE_SUFFIX = ".class";
+
+    private final List<Consumer<Class<?>>> listeners = new ArrayList<>();
 
     void addListener(Consumer<Class<?>> listener) {
         listeners.add(listener);
@@ -67,7 +68,7 @@ class PersistenceUnitClassProcessor {
                     processJarFile(resourceURL, scanPath);
             }
         } catch (IOException e) {
-            throw new JopaInitializationException("Unable to scan packages for entity classes.", e);
+            throw new OWLPersistenceException("Unable to scan packages for entity classes.", e);
         }
     }
 
@@ -80,7 +81,7 @@ class PersistenceUnitClassProcessor {
             // Transformation to URI handles encoding, e.g. of whitespaces in the path
             return url.toURI();
         } catch (URISyntaxException ex) {
-            throw new JopaInitializationException(
+            throw new OWLPersistenceException(
                     "Unable to scan resource " + url + ". It is not a valid URI.", ex);
         }
     }
@@ -106,7 +107,7 @@ class PersistenceUnitClassProcessor {
                 }
             }
         } catch (IOException e) {
-            throw new JopaInitializationException("Unexpected IOException reading JAR File " + jarPath, e);
+            throw new OWLPersistenceException("Unexpected IOException reading JAR File " + jarPath, e);
         }
     }
 
@@ -115,7 +116,7 @@ class PersistenceUnitClassProcessor {
             final Class<?> cls = Class.forName(className);
             listeners.forEach(listener -> listener.accept(cls));
         } catch (ClassNotFoundException e) {
-            throw new JopaInitializationException("Unexpected ClassNotFoundException when scanning for entities.", e);
+            throw new OWLPersistenceException("Unexpected ClassNotFoundException when scanning for entities.", e);
         }
     }
 

@@ -433,6 +433,7 @@ public interface EntityManager {
      * @see #setUseBackupOntologyForQueryProcessing
      */
     @NonJPA
+    @Deprecated
     void setUseTransactionalOntologyForQueryProcessing();
 
     /**
@@ -442,6 +443,7 @@ public interface EntityManager {
      * @see #setUseTransactionalOntologyForQueryProcessing()
      */
     @NonJPA
+    @Deprecated
     boolean useTransactionalOntologyForQueryProcessing();
 
     /**
@@ -454,6 +456,7 @@ public interface EntityManager {
      * @see #setUseTransactionalOntologyForQueryProcessing()
      */
     @NonJPA
+    @Deprecated
     void setUseBackupOntologyForQueryProcessing();
 
     /**
@@ -463,5 +466,6 @@ public interface EntityManager {
      * @see #setUseBackupOntologyForQueryProcessing()
      */
     @NonJPA
+    @Deprecated
     boolean useBackupOntologyForQueryProcessing();
 }

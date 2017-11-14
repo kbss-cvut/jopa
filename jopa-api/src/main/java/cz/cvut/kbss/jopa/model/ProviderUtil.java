@@ -1,23 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 /**
- * Utility interface implemented by the persistence provider. This interface is
- * invoked by the PersistenceUtil implementation to determine the load status of
- * an entity or entity attribute.
+ * Utility interface implemented by the persistence provider. This interface is invoked by the PersistenceUtil
+ * implementation to determine the load status of an entity or entity attribute.
  */
 public interface ProviderUtil {
 
@@ -38,8 +35,7 @@ public interface ProviderUtil {
      * @param attributeName name of attribute whose load status is to be determined
      * @return load status of the attribute
      */
-    public LoadState isLoadedWithoutReference(Object entity,
-                                              String attributeName);
+    LoadState isLoadedWithoutReference(Object entity, String attributeName);
 
     /**
      * If the provider determines that the entity has been provided by itself and that the state of the specified
@@ -59,8 +55,22 @@ public interface ProviderUtil {
      * @param attributeName name of attribute whose load status is to be determined
      * @return load status of the attribute
      */
-    public LoadState isLoadedWithReference(Object entity, String attributeName);
+    LoadState isLoadedWithReference(Object entity, String attributeName);
 
-    public LoadState isLoaded(Object entity);
-
+    /**
+     * If the provider determines that the entity has been provided by itself and that the state of all attributes for
+     * which {@code FetchType.EAGER} has been specified have been loaded, this method returns {@code LoadState.LOADED}.
+     * If the provider determines that the entity has been provided by itself and that not all attributes with {@code
+     * FetchType.EAGER} have been loaded, this method returns {@code LoadState.NOT_LOADED}.
+     * <p>
+     * If the provider cannot determine if the entity has been provided by itself, this method returns {@code
+     * LoadState.UNKNOWN}.
+     * <p>
+     * The provider's implementation of this method must not obtain a reference to any attribute value, as this could
+     * trigger the loading of entity state if the entity has been provided by a different provider.
+     *
+     * @param entity whose loaded status is to be determined
+     * @return load status of the entity
+     */
+    LoadState isLoaded(Object entity);
 }
