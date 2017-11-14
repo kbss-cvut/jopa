@@ -18,16 +18,12 @@ import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUtil {
 
     private static Set<EntityManagerFactoryImpl> emfs = new HashSet<>();
-
-    static {
-        // Register this class as a persistence provider
-        DefaultPersistenceProviderResolver.registerPersistenceProviderClass(JOPAPersistenceProvider.class);
-    }
 
     @Override
     public EntityManagerFactoryImpl createEntityManagerFactory(String emName, Map<String, String> properties) {
@@ -43,17 +39,21 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
 
     @Override
     public LoadState isLoaded(Object entity) {
-        return LoadState.UNKNOWN;
+        final Optional<EntityManagerFactoryImpl> found = emfs.stream().filter(emf -> emf.isLoaded(entity)).findAny();
+        return found.isPresent() ? LoadState.LOADED : LoadState.UNKNOWN;
     }
 
     @Override
     public LoadState isLoadedWithReference(Object entity, String attributeName) {
-        return LoadState.UNKNOWN;
+        return isLoadedWithoutReference(entity, attributeName);
     }
 
     @Override
     public LoadState isLoadedWithoutReference(Object entity, String attributeName) {
-        return LoadState.UNKNOWN;
+        final Optional<EntityManagerFactoryImpl> found = emfs.stream()
+                                                             .filter(emf -> emf.isLoaded(entity, attributeName))
+                                                             .findAny();
+        return found.isPresent() ? LoadState.LOADED : LoadState.UNKNOWN;
     }
 
     static void verifyInferredAttributeNotModified(Object entity, Field field) {

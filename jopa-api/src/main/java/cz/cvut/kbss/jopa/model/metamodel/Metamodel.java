@@ -34,17 +34,6 @@ public interface Metamodel {
     <X> EntityType<X> entity(Class<X> cls);
 
     /**
-     * Return the metamodel embeddable type representing the embeddable class.
-     *
-     * @param cls the type of the represented embeddable class
-     * @return the metamodel embeddable type
-     * @throws IllegalArgumentException if not an embeddable class
-     */
-    @UnusedJPA
-    @Deprecated
-    <X> EmbeddableType<X> embeddable(Class<X> cls);
-
-    /**
      * Return the metamodel managed types.
      *
      * @return the metamodel managed types
@@ -57,16 +46,6 @@ public interface Metamodel {
      * @return the metamodel entity types
      */
     Set<EntityType<?>> getEntities();
-
-    /**
-     * Return the metamodel embeddable types. Returns empty set if there are no
-     * embeddable types.
-     *
-     * @return the metamodel embeddable types
-     */
-    @UnusedJPA
-    @Deprecated
-    Set<EmbeddableType<?>> getEmbeddables();
 
     /**
      * Get the set of classes that contain inferred attributes. These classes

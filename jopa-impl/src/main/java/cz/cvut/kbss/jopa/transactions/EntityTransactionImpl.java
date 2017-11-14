@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.transactions;
 
@@ -34,11 +32,6 @@ public class EntityTransactionImpl implements EntityTransaction {
         this.wrapper = Objects.requireNonNull(wrapper);
     }
 
-    /**
-     * Starts the current transaction.
-     *
-     * @throws IllegalStateException if the transaction is already active
-     */
     @Override
     public void begin() {
         if (isActive()) {
@@ -50,16 +43,9 @@ public class EntityTransactionImpl implements EntityTransaction {
         LOG.trace("EntityTransaction begin.");
     }
 
-    /**
-     * Commit the current transaction.
-     *
-     * @throws IllegalStateException when the transaction is not active
-     */
     @Override
     public void commit() {
-        if (!isActive()) {
-            throw new IllegalStateException("Cannot commit inactive transaction!");
-        }
+        verifyTransactionActive("commit");
         try {
             LOG.trace("EntityTransaction commit started.");
             if (rollbackOnly) {
@@ -81,6 +67,12 @@ public class EntityTransactionImpl implements EntityTransaction {
         }
     }
 
+    private void verifyTransactionActive(String method) {
+        if (!isActive()) {
+            throw new IllegalStateException("Cannot invoke " + method + " on an inactive transaction!");
+        }
+    }
+
     private void cleanup() {
         this.active = false;
         this.rollbackOnly = false;
@@ -88,45 +80,24 @@ public class EntityTransactionImpl implements EntityTransaction {
         wrapper.getEntityManager().transactionFinished(this);
     }
 
-    /**
-     * Roll back the current transaction. Dismiss any changes made.
-     *
-     * @throws IllegalStateException when the transaction is not active
-     */
     @Override
     public void rollback() {
-        if (!isActive()) {
-            throw new IllegalStateException("Cannot rollback inactive transaction!");
-        }
+        verifyTransactionActive("rollback");
         wrapper.getTransactionUOW().rollback();
         wrapper.getEntityManager().removeCurrentPersistenceContext();
         cleanup();
         LOG.trace("EntityTransaction rolled back.");
     }
 
-    /**
-     * Mark this transaction as rollback only. I. e. the only possible outcome of this transaction is rollback.
-     *
-     * @throws IllegalStateException when the transaction is not active
-     */
     @Override
     public void setRollbackOnly() {
-        if (!isActive()) {
-            throw new IllegalStateException("Cannot set rollbackOnly on inactive transaction!");
-        }
+        verifyTransactionActive("setRollbackOnly");
         this.rollbackOnly = true;
     }
 
-    /**
-     * Is is this transaction marked as rollbackOnly?
-     *
-     * @throws IllegalStateException when the transaction is not active
-     */
     @Override
     public boolean isRollbackOnly() {
-        if (!isActive()) {
-            throw new IllegalStateException("Accessing rollbackOnly on inactive transaction!");
-        }
+        verifyTransactionActive("isRollbackOnly");
         return this.rollbackOnly;
     }
 
@@ -145,5 +116,4 @@ public class EntityTransactionImpl implements EntityTransaction {
         }
         super.finalize();
     }
-
 }

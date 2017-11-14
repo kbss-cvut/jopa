@@ -19,10 +19,6 @@ import java.net.URI;
 /* GENERATED CODE - DO NOT MODIFY */
 public class SequencesVocabulary {
 
-    private SequencesVocabulary() {
-        throw new AssertionError();
-    }
-
     // http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl//
     // ========================= Classes =========================
     public static final String s_c_Nothing = "http://www.w3.org/2002/07/owl#Nothing";
@@ -61,5 +57,7 @@ public class SequencesVocabulary {
     public static final String p_element = "http://swan.mindinformatics.org/ontologies/1.2/collections/element";
     public static final String c_Collection = "http://swan.mindinformatics.org/ontologies/1.2/collections/Collection";
 
-
+    private SequencesVocabulary() {
+        throw new AssertionError();
+    }
 }

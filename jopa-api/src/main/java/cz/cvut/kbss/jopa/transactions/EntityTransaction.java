@@ -1,36 +1,70 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.transactions;
 
+import cz.cvut.kbss.jopa.model.EntityManager;
+
 /**
- * Taken from javax.persistence.EntityTransacion
- * 
- * @author kidney
- * 
+ * Interface used to control transactions on resource-local entity managers.
+ * <p>
+ * The {@link EntityManager#getTransaction()} method returns the {@code EntityTransaction} interface.
  */
 public interface EntityTransaction {
 
-	public void begin();
+    /**
+     * Start a resource transaction.
+     *
+     * @throws IllegalStateException if {@code isActive()} is true
+     */
+    void begin();
 
-	public void commit();
+    /**
+     * Commit the current resource transaction, writing any unflushed changes to the database.
+     *
+     * @throws IllegalStateException                          if {@code isActive()} is false
+     * @throws cz.cvut.kbss.jopa.exceptions.RollbackException if the commit fails
+     */
+    void commit();
 
-	public void rollback();
+    /**
+     * Roll back the current resource transaction.
+     *
+     * @throws IllegalStateException                                if {@code isActive()} is false
+     * @throws cz.cvut.kbss.jopa.exceptions.OWLPersistenceException if an unexpected error condition is encountered
+     */
+    void rollback();
 
-	public void setRollbackOnly();
+    /**
+     * Mark the current resource transaction so that the only possible outcome of the transaction is for the transaction
+     * to be rolled back.
+     *
+     * @throws IllegalStateException if {@code isActive()} is false
+     */
+    void setRollbackOnly();
 
-	public boolean isRollbackOnly();
+    /**
+     * Determine whether the current resource transaction has been marked for rollback.
+     *
+     * @return boolean indicating whether the transaction has been marked for rollback
+     * @throws IllegalStateException if {@code isActive()} is false
+     */
+    boolean isRollbackOnly();
 
-	public boolean isActive();
+    /**
+     * Indicate whether a resource transaction is in progress.
+     *
+     * @return boolean indicating whether transaction is in progress
+     * @throws cz.cvut.kbss.jopa.exceptions.OWLPersistenceException if an unexpected error condition is encountered
+     */
+    boolean isActive();
 }
