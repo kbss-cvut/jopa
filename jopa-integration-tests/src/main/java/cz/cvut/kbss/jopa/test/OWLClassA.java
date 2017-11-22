@@ -34,7 +34,7 @@ import java.util.Set;
         })
 })})
 @NamedNativeQueries({@NamedNativeQuery(name = "OWLClassA.findAll",
-        query = "SELECT ?x WHERE {?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }"),
+        query = "SELECT ?x WHERE {?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . } ORDER BY ?x"),
         @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
                 Vocabulary.P_A_STRING_ATTRIBUTE + "> ?str . }")
 })

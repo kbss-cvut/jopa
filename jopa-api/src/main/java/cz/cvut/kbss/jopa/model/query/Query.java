@@ -72,6 +72,24 @@ public interface Query {
     int getMaxResults();
 
     /**
+     * Set the position of the first result to retrieve.
+     *
+     * @param startPosition position of the first result, numbered from 0
+     * @return the same query instance
+     * @throws IllegalArgumentException If the argument is negative
+     */
+    Query setFirstResult(int startPosition);
+
+    /**
+     * The position of the first result the query object was set to retrieve.
+     * <p>
+     * Returns 0 if {@code setFirstResult} was not applied to the query object.
+     *
+     * @return position of the first result
+     */
+    int getFirstResult();
+
+    /**
      * Gets the parameter object corresponding to the declared positional parameter with the given position. This method
      * is not required to be supported for native queries.
      *

@@ -12,10 +12,6 @@
  */
 package cz.cvut.kbss.jopa.model.query;
 
-import cz.cvut.kbss.jopa.exceptions.NoResultException;
-import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.util.List;
@@ -44,6 +40,12 @@ public interface TypedQuery<X> extends Query {
      */
     @Override
     TypedQuery<X> setMaxResults(int maxResult);
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    TypedQuery<X> setFirstResult(int startPosition);
 
     /**
      * {@inheritDoc}

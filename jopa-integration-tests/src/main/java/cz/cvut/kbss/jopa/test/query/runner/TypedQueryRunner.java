@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -273,5 +274,18 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                          .setParameter("classA", URI.create(Vocabulary.C_OWL_CLASS_A))
                                                          .setUntypedParameter("limit", size).getResultList();
         assertEquals(size, result.size());
+    }
+
+    @Test
+    public void setFirstResultCanBeUsedToOffsetFirstQueryResult() throws Exception {
+        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
+        expected.sort(Comparator.comparing(OWLClassA::getUri));
+        final int offset = expected.size() / 2;
+        final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
+                                                         .setFirstResult(offset).getResultList();
+        assertEquals(expected.size() - offset, result.size());
+        for (int i = 0; i < result.size(); i++) {
+            assertEquals(expected.get(i + offset).getUri(), result.get(i).getUri());
+        }
     }
 }

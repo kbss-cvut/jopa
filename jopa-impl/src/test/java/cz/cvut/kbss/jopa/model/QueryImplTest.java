@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -30,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 public class QueryImplTest extends QueryTestBase {
 
-    private static final String SELECT_QUERY = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
+//    private static final String SELECT_QUERY = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
 
     @Override
     Query createQuery(String query, Class<?> resultType) {
@@ -262,5 +260,20 @@ public class QueryImplTest extends QueryTestBase {
             // Swallow the exception
         }
         verify(handler).execute();
+    }
+
+    @Test
+    public void setFirstResultOffsetsQueryResultStartToSpecifiedPosition() throws Exception {
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        when(resultSetMock.getColumnCount()).thenReturn(1);
+        // Three results
+        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
+        q.setFirstResult(2);
+        assertEquals(2, q.getFirstResult());
+        final List result = q.getResultList();
+        assertEquals(1, result.size());
+        assertEquals("str", result.get(0));
+        verify(resultSetMock).getObject(anyInt());
     }
 }

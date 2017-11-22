@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -21,6 +19,8 @@ import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.jopa.utils.Procedure;
+import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.slf4j.Logger;
@@ -35,21 +35,20 @@ import java.util.Set;
  */
 abstract class AbstractQuery implements Query {
 
-    static final Logger LOG = LoggerFactory.getLogger(AbstractQuery.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractQuery.class);
 
     final QueryHolder query;
-    final ConnectionWrapper connection;
-    int maxResults;
+    private final ConnectionWrapper connection;
+    int firstResult = 0;
+    int maxResults = Integer.MAX_VALUE;
 
-    private boolean useBackupOntology;
+    private boolean useBackupOntology = false;
 
     private Procedure rollbackOnlyMarker;
 
     AbstractQuery(QueryHolder query, ConnectionWrapper connection) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
         this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
-        this.useBackupOntology = false;
-        this.maxResults = Integer.MAX_VALUE;
     }
 
     /**
@@ -83,13 +82,13 @@ abstract class AbstractQuery implements Query {
         }
     }
 
-    void logQuery() {
+    private void logQuery() {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Executing query: {}", query.assembleQuery());
         }
     }
 
-    void setTargetOntology(Statement stmt) {
+    private void setTargetOntology(Statement stmt) {
         if (useBackupOntology) {
             stmt.useOntology(Statement.StatementOntology.CENTRAL);
         } else {
@@ -164,5 +163,51 @@ abstract class AbstractQuery implements Query {
     @Override
     public int getMaxResults() {
         return maxResults;
+    }
+
+    @Override
+    public int getFirstResult() {
+        return firstResult;
+    }
+
+    void checkNumericParameter(int param, String name) {
+        if (param < 0) {
+            markTransactionForRollback();
+            throw new IllegalArgumentException("Cannot set " + name + " to less than 0.");
+        }
+    }
+
+    /**
+     * Executes the query and lets the specified consumer deal with each row in the result set.
+     *
+     * @param consumer Called for every row in the result set
+     * @throws OntoDriverException When something goes wrong during query evaluation or result set processing
+     */
+    void executeQuery(ThrowingConsumer<ResultSet, OntoDriverException> consumer) throws OntoDriverException {
+        assert maxResults > 0;
+
+        final Statement stmt = connection.createStatement();
+        try {
+            setTargetOntology(stmt);
+            logQuery();
+            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
+            int cnt = 0;
+            int index = 0;
+            // TODO register this as observer on the result set so that additional results can be loaded asynchronously
+            while (rs.hasNext() && cnt < maxResults) {
+                rs.next();
+                if (index >= firstResult) {
+                    consumer.accept(rs);
+                    cnt++;
+                }
+                index++;
+            }
+        } finally {
+            try {
+                stmt.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close statement after query evaluation.", e);
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -29,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
@@ -36,6 +38,8 @@ import static org.mockito.Mockito.*;
 
 public abstract class QueryTestBase {
 
+    static final String SELECT_QUERY =
+            "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
     static final String UPDATE_QUERY = "INSERT DATA { ?inst a ?type . }";
 
     @Rule
@@ -219,5 +223,26 @@ public abstract class QueryTestBase {
         q.setUntypedParameter(param, value);
         q.getResultList();
         verify(statementMock).executeQuery(query.replace("?offset", value.toString()));
+    }
+
+    @Test
+    public void settingFirstResultToLargerThanResultCountReturnsEmptyList() throws Exception {
+        final Query q = createQuery(SELECT_QUERY, OWLClassA.class);
+        when(resultSetMock.getColumnCount()).thenReturn(1);
+        // Three results
+        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
+        q.setFirstResult(3);
+        final List result = q.getResultList();
+        assertTrue(result.isEmpty());
+        verify(resultSetMock, never()).getObject(any());
+    }
+
+    @Test
+    public void settingFirstResultToNegativeThrowsIllegalArgumentException() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Cannot set first result offset to less than 0.");
+        final Query q = createQuery(SELECT_QUERY, OWLClassA.class);
+        q.setFirstResult(-1);
+        verify(resultSetMock, never()).hasNext();
     }
 }

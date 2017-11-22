@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -27,7 +25,6 @@ import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.net.URI;
@@ -78,6 +75,39 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         return list;
     }
 
+    private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
+        assert maxResults > 0;
+
+        final boolean isTypeManaged = metamodelProvider.isTypeManaged(resultType);
+        final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
+        final List<X> res = new ArrayList<>();
+        executeQuery(rs -> {
+            if (isTypeManaged) {
+                loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
+            } else {
+                res.add(loadResultValue(rs));
+            }
+        });
+        return res;
+    }
+
+    private Optional<X> loadEntityInstance(ResultSet resultSet, Descriptor instanceDescriptor)
+            throws OntoDriverException {
+        if (uow == null) {
+            throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
+        }
+        final URI uri = URI.create(resultSet.getString(0));
+        return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
+    }
+
+    private X loadResultValue(ResultSet resultSet) throws OntoDriverException {
+        try {
+            return resultSet.getObject(0, resultType);
+        } catch (OntoDriverException e) {
+            throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
+        }
+    }
+
     @Override
     public X getSingleResult() {
         try {
@@ -107,6 +137,13 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
         }
         this.maxResults = maxResults;
+        return this;
+    }
+
+    @Override
+    public TypedQuery<X> setFirstResult(int startPosition) {
+        checkNumericParameter(startPosition, "first result offset");
+        this.firstResult = startPosition;
         return this;
     }
 
@@ -213,53 +250,5 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     public TypedQuery<X> setDescriptor(Descriptor descriptor) {
         this.descriptor = descriptor;
         return this;
-    }
-
-    private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
-        assert maxResults > 0;
-        final Statement stmt = connection.createStatement();
-        try {
-            setTargetOntology(stmt);
-            logQuery();
-            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            final List<X> res = new ArrayList<>();
-            // TODO register this as observer on the result set so that additional results can be loaded asynchronously
-            int cnt = 0;
-            final boolean isTypeManaged = metamodelProvider.isTypeManaged(resultType);
-            final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
-            while (rs.hasNext() && cnt < maxResults) {
-                rs.next();
-                if (isTypeManaged) {
-                    loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
-                } else {
-                    res.add(loadResultValue(rs));
-                }
-                cnt++;
-            }
-            return res;
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after query evaluation.", e);
-            }
-        }
-    }
-
-    private Optional<X> loadEntityInstance(ResultSet resultSet, Descriptor instanceDescriptor)
-            throws OntoDriverException {
-        if (uow == null) {
-            throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
-        }
-        final URI uri = URI.create(resultSet.getString(0));
-        return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
-    }
-
-    private X loadResultValue(ResultSet resultSet) throws OntoDriverException {
-        try {
-            return resultSet.getObject(0, resultType);
-        } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
-        }
     }
 }

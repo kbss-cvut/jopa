@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.util.ArrayList;
@@ -51,6 +50,13 @@ public class QueryImpl extends AbstractQuery implements Query {
             markTransactionForRollback();
             throw e;
         }
+    }
+
+    private List<?> getResultListImpl(int maxResults) throws OntoDriverException {
+        assert maxResults > 0;
+        final List<Object> res = new ArrayList<>();
+        executeQuery(rs -> res.add(extractRow(rs)));
+        return res;
     }
 
     @Override
@@ -175,38 +181,16 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setMaxResults(int maxResults) {
-        if (maxResults < 0) {
-            markTransactionForRollback();
-            throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
-        }
+        checkNumericParameter(maxResults, "max results");
         this.maxResults = maxResults;
         return this;
     }
 
-    private List<?> getResultListImpl(int maxResults) throws OntoDriverException {
-        assert maxResults > 0;
-
-        final Statement stmt = connection.createStatement();
-        try {
-            setTargetOntology(stmt);
-            logQuery();
-            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            int cnt = 0;
-            final List<Object> res = new ArrayList<>();
-            // TODO register this as observer on the result set so that additional results can be loaded asynchronously
-            while (rs.hasNext() && cnt < maxResults) {
-                rs.next();
-                res.add(extractRow(rs));
-                cnt++;
-            }
-            return res;
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after query evaluation.", e);
-            }
-        }
+    @Override
+    public Query setFirstResult(int startPosition) {
+        checkNumericParameter(startPosition, "first result offset");
+        this.firstResult = startPosition;
+        return this;
     }
 
     Object extractRow(ResultSet resultSet) throws OntoDriverException {

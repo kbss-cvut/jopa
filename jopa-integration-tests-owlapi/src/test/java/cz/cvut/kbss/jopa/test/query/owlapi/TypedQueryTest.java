@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.test.query.owlapi;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
@@ -24,6 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class TypedQueryTest extends TypedQueryRunner {
 
@@ -64,5 +68,15 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Override
     public void usingUntypedQueryAllowsToSpecifyLimitInQuery() throws Exception {
         // OWL2Query does not support LIMIT in queries
+    }
+
+    @Override
+    public void setFirstResultCanBeUsedToOffsetFirstQueryResult() throws Exception {
+        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
+        final int offset = expected.size() / 2;
+        final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
+                                                         .setFirstResult(offset).getResultList();
+        assertEquals(expected.size() - offset, result.size());
+        // OWL2Query does not support ORDER BY, so we can't use it to verify the offset
     }
 }
