@@ -24,7 +24,7 @@ class DateParameterValue implements ParameterValue {
     private final Date value;
 
     DateParameterValue(Date value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     @Override

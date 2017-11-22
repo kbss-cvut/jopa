@@ -23,7 +23,7 @@ class IntegerParameterValue implements ParameterValue {
     private final int value;
 
     IntegerParameterValue(Integer value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     @Override

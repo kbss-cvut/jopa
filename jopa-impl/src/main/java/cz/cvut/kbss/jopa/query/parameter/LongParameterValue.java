@@ -23,7 +23,7 @@ class LongParameterValue implements ParameterValue {
     private final long value;
 
     LongParameterValue(Long value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     @Override

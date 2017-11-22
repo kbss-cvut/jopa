@@ -23,7 +23,7 @@ class FloatParameterValue implements ParameterValue {
     private final float value;
 
     FloatParameterValue(Float value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     @Override

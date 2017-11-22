@@ -108,4 +108,12 @@ public class ParameterValueTest {
         assertEquals(url.toURI(), value.getValue());    // URLs are internally transformed to URIs
         assertEquals("<" + url.toString() + ">", value.getQueryString());
     }
+
+    @Test
+    public void createUntypedValue() {
+        final Integer integer = 117;
+        final ParameterValue value = ParameterValue.createUntyped(integer);
+        assertEquals(integer, value.getValue());
+        assertEquals(integer.toString(), value.getQueryString());
+    }
 }

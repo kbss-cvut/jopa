@@ -23,7 +23,7 @@ class BooleanParameterValue implements ParameterValue {
     private final boolean value;
 
     BooleanParameterValue(Boolean value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     @Override

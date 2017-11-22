@@ -177,6 +177,39 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     @Override
+    public TypedQuery<X> setUntypedParameter(int position, Object value) {
+        try {
+            query.setUntypedParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public TypedQuery<X> setUntypedParameter(String name, Object value) {
+        try {
+            query.setUntypedParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public <T> TypedQuery<X> setUntypedParameter(Parameter<T> parameter, T value) {
+        try {
+            query.setUntypedParameter(parameter, value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
     public TypedQuery<X> setDescriptor(Descriptor descriptor) {
         this.descriptor = descriptor;
         return this;

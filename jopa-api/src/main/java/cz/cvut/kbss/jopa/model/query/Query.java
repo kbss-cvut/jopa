@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.query;
 
@@ -66,7 +64,7 @@ public interface Query {
 
     /**
      * The maximum number of results the query object was set to retrieve.
-     *
+     * <p>
      * Returns Integer.MAX_VALUE if {@link #setMaxResults(int)} was not applied to the query object.
      *
      * @return maximum number of results
@@ -141,12 +139,16 @@ public interface Query {
 
     /**
      * Binds an argument value to a positional parameter.
+     * <p>
+     * This version exploits the type of the parameter value and maps it to the corresponding XSD datatype (if it
+     * exists).
      *
      * @param position position
      * @param value    parameter value
      * @return this query instance
      * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query or if the
      *                                  argument is of incorrect type
+     * @see #setUntypedParameter(int, Object)
      */
     Query setParameter(int position, Object value);
 
@@ -164,12 +166,16 @@ public interface Query {
 
     /**
      * Binds an argument value to a named parameter.
+     * <p>
+     * This version exploits the type of the parameter value and maps it to the corresponding XSD datatype (if it
+     * exists).
      *
      * @param name  parameter name
      * @param value parameter value
      * @return this query instance
      * @throws IllegalArgumentException If the parameter name does not correspond to a parameter of the query or if the
      *                                  argument is of incorrect type
+     * @see #setUntypedParameter(String, Object)
      */
     Query setParameter(String name, Object value);
 
@@ -187,11 +193,15 @@ public interface Query {
 
     /**
      * Binds the value of a Parameter object.
+     * <p>
+     * This version exploits the type of the parameter value and maps it to the corresponding XSD datatype (if it
+     * exists).
      *
      * @param parameter parameter object
      * @param value     parameter value
      * @return this query instance
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
+     * @see #setUntypedParameter(Parameter, Object)
      */
     <T> Query setParameter(Parameter<T> parameter, T value);
 
@@ -205,4 +215,45 @@ public interface Query {
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
     Query setParameter(Parameter<String> parameter, String value, String language);
+
+    /**
+     * Binds an argument value to a positional parameter.
+     * <p>
+     * This version does not express the type of the value in the query. Instead, it inserts the value directly into the
+     * query string. Can be useful e.g. for specifying OFFSET or LIMIT values.
+     *
+     * @param position position
+     * @param value    parameter value
+     * @return this query instance
+     * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query or if the
+     *                                  argument is of incorrect type
+     */
+    Query setUntypedParameter(int position, Object value);
+
+    /**
+     * Binds an argument value to a named parameter.
+     * <p>
+     * This version does not express the type of the value in the query. Instead, it inserts the value directly into the
+     * query string. Can be useful e.g. for specifying OFFSET or LIMIT values.
+     *
+     * @param name  parameter name
+     * @param value parameter value
+     * @return this query instance
+     * @throws IllegalArgumentException If parameter name does not correspond to a parameter of the query or if the
+     *                                  argument is of incorrect type
+     */
+    Query setUntypedParameter(String name, Object value);
+
+    /**
+     * Binds the value of a Parameter object.
+     * <p>
+     * This version does not express the type of the value in the query. Instead, it inserts the value directly into the
+     * query string. Can be useful e.g. for specifying OFFSET or LIMIT values.
+     *
+     * @param parameter parameter object
+     * @param value     parameter value
+     * @return this query instance
+     * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
+     */
+    <T> Query setUntypedParameter(Parameter<T> parameter, T value);
 }

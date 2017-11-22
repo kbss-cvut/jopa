@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query;
 
@@ -20,8 +18,6 @@ import java.util.Set;
 
 /**
  * Represents a caretaker of a query, enabling parameter setting and final assembly of the query.
- *
- * @author kidney
  */
 public interface QueryHolder {
 
@@ -69,11 +65,13 @@ public interface QueryHolder {
     /**
      * Sets value of the specified parameter in the query.
      * <p>
-     * If a value was already specified for the parameter, it is overwritten by the new one.
+     * If a value was already specified for the parameter, it is overwritten by the new one. This version expresses the
+     * value type information using XSD datatype in the query string.
      *
      * @param parameter Parameter object
      * @param value     Value to use
      * @throws IllegalArgumentException If there is no such parameter in the query
+     * @see #setUntypedParameter(Parameter, Object)
      */
     <T> void setParameter(Parameter<T> parameter, Object value);
 
@@ -88,6 +86,19 @@ public interface QueryHolder {
      * @throws IllegalArgumentException If there is no such parameter in the query
      */
     <T> void setParameter(Parameter<T> parameter, String value, String language);
+
+    /**
+     * Sets value of the specified parameter in the query.
+     * <p>
+     * If a value was already specified for the parameter, it is overwritten by the new one. This version inserts the
+     * string representation of the value directly into the query, without any type information.
+     *
+     * @param parameter Parameter object
+     * @param value     Value to use
+     * @throws IllegalArgumentException If there is no such parameter in the query
+     * @see #setParameter(Parameter, Object)
+     */
+    <T> void setUntypedParameter(Parameter<T> parameter, Object value);
 
     /**
      * Clears any previously set value of the specified parameter.

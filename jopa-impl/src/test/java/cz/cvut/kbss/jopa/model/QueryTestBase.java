@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -27,17 +25,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public abstract class QueryTestBase {
@@ -194,5 +188,36 @@ public abstract class QueryTestBase {
         final Query q = createQuery(query, Void.class);
         q.executeUpdate();
         verify(statementMock).close();
+    }
+
+    @Test
+    public void setUntypedParameterByPositionAddsValueDirectlyIntoQueryString() throws Exception {
+        final String query = "SELECT * WHERE { ?x ?y ?z . } LIMIT $1";
+        final Integer value = 15;
+        final Query q = createQuery(query, Object.class);
+        q.setUntypedParameter(1, value);
+        q.getResultList();
+        verify(statementMock).executeQuery(query.replace("$1", value.toString()));
+    }
+
+    @Test
+    public void setUntypedParameterByNameAddsValueDirectlyIntoQueryString() throws Exception {
+        final String query = "SELECT * WHERE { ?x ?y ?z . } OFFSET ?offset";
+        final Integer value = 15;
+        final Query q = createQuery(query, Object.class);
+        q.setUntypedParameter("offset", value);
+        q.getResultList();
+        verify(statementMock).executeQuery(query.replace("?offset", value.toString()));
+    }
+
+    @Test
+    public void setUntypedParameterAddsValueDirectlyIntoQueryString() throws Exception {
+        final String query = "SELECT * WHERE { ?x ?y ?z . } OFFSET ?offset";
+        final Integer value = 15;
+        final Query q = createQuery(query, Object.class);
+        final Parameter<Integer> param = (Parameter<Integer>) q.getParameter("offset");
+        q.setUntypedParameter(param, value);
+        q.getResultList();
+        verify(statementMock).executeQuery(query.replace("?offset", value.toString()));
     }
 }

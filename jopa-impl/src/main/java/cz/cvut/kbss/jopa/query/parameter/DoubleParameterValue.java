@@ -23,7 +23,7 @@ class DoubleParameterValue implements ParameterValue {
     private final double value;
 
     DoubleParameterValue(Double value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     @Override

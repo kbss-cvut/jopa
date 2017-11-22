@@ -23,7 +23,7 @@ class ShortParameterValue implements ParameterValue {
     private final short value;
 
     ShortParameterValue(Short value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
     }
 
     @Override

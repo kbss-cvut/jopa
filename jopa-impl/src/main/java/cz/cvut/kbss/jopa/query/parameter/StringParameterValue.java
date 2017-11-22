@@ -22,7 +22,7 @@ class StringParameterValue implements ParameterValue {
     private final String language;
 
     StringParameterValue(String value) {
-        this.value = Objects.requireNonNull(value);
+        this.value = value;
         this.language = null;
     }
 

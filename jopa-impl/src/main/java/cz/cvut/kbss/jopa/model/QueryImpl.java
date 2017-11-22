@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -135,6 +133,39 @@ public class QueryImpl extends AbstractQuery implements Query {
     public Query setParameter(Parameter<String> parameter, String value, String language) {
         try {
             query.setParameter(parameter, value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setUntypedParameter(int position, Object value) {
+        try {
+            query.setUntypedParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setUntypedParameter(String name, Object value) {
+        try {
+            query.setUntypedParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public <T> Query setUntypedParameter(Parameter<T> parameter, T value) {
+        try {
+            query.setUntypedParameter(parameter, value);
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
