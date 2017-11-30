@@ -12,13 +12,20 @@ jobs:
       - run: mvn package
       
       - store_test_results:
-          path:
-            - jopa-integration-tests-owlapi/target/surefire-reports
-            - jopa-impl/target/surefire-reports
-            - ontodriver-api/target/surefire-reports
-            - ontodriver-sesame/target/surefire-reports
-            - jopa-integration-tests/target/surefire-reports
-            - jopa-owl2java/target/surefire-reports
-            - jopa-api/target/surefire-reports
-            - ontodriver-owlapi/target/surefire-reports
+        path: jopa-integration-tests-owlapi/target/surefire-reports
+      - store_test_results:
+        path: jopa-impl/target/surefire-reports
+      - store_test_results:
+        path: ontodriver-api/target/surefire-reports
+      - store_test_results:
+        path: ontodriver-sesame/target/surefire-reports
+      - store_test_results:
+        path: jopa-integration-tests/target/surefire-reports
+      - store_test_results:
+        path: jopa-owl2java/target/surefire-reports
+      - store_test_results:
+        path: jopa-api/target/surefire-reports
+      - store_test_results:
+        path: ontodriver-owlapi/target/surefire-reports
+
      
