@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    steps:
+
+      - checkout
+      
+      - run: mvn package
+      
+      
+      - store_test_results:
+          path: jopa-integration-tests-owlapi/target/surefire-reports
+      - store_test_results:
+          path: jopa-impl/target/surefire-reports
+      - store_test_results:
+          path: ontodriver-api/target/surefire-reports
+      - store_test_results:
+          path: ontodriver-sesame/target/surefire-reports
+      - store_test_results:
+          path: jopa-integration-tests/target/surefire-reports
+      - store_test_results:
+          path: jopa-owl2java/target/surefire-reports
+      - store_test_results:
+          path: jopa-api/target/surefire-reports
+      - store_test_results:
+          path: ontodriver-owlapi/target/surefire-reports
+
+     
