@@ -8,16 +8,6 @@ jobs:
     steps:
 
       - checkout
-
-      - restore_cache:
-          key: thealchemist-jopa-{{ checksum "pom.xml" }}
-      
-      - run: mvn dependency:go-offline
-      
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: thealchemist-jopa-{{ checksum "pom.xml" }}
       
       - run: mvn package
       
