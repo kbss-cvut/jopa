@@ -76,7 +76,7 @@ As for referential integrity, this for example means that removing an instance t
 not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.
 Design possibilities and their implications are currently being studied.
 
-Other missing/planned stuff can be found in `TODO.md`.
+Other missing/planned stuff can be found in [TODO.md](TODO.md).
 
 ## Modules
 
