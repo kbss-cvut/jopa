@@ -1,5 +1,7 @@
 # JOPA - Java OWL Persistence API
 
+[![Build Status](https://kbss.felk.cvut.cz/jenkins/buildStatus/icon?job=jopa-stable)](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable)
+
 JOPA is a Java OWL persistence framework aimed at efficient programmatic access to OWL2 ontologies in Java. The system is based
 on integrity constraints [1] in OWL that JOPA uses to establish the contract between a JOPA-enabled Java application and
 an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
