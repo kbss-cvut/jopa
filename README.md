@@ -36,7 +36,7 @@ All this means that individuals belonging to an OWL class can be retrieved as in
 #### Explicit access to inferred knowledge
 
 A member annotated with the `@Inferred` annotation represents a field whose values are retrieved using a reasoner. As such,
-they can for example contain values of a inverse object property (like in our Jedi example).
+they can for example contain values of a inverse object property (like in [our Jedi example](https://github.com/kbss-cvut/jopa-examples/blob/master/example02-jopa-owlapi/src/main/java/cz/cvut/kbss/jopa/example02/Example.java)).
 
 There are limitations to this: JOPA requires explicit class assertion to be able to load individual as instance of a class.
 And, values of inferred members are read-only. These restrictions have pragmatic reasons - if the knowledge is inferred, it
