@@ -417,7 +417,7 @@ public class JavaTransformer {
                 }
             }
         }
-        return validJavaIDForIRI(owlClass.getIRI());
+        return toJavaNotation(validJavaIDForIRI(owlClass.getIRI()));
     }
 
     private JDefinedClass ensureCreated(final ContextDefinition ctx,
@@ -499,4 +499,16 @@ public class JavaTransformer {
 //        }
     }
 
+    /**
+     * Converts a class name to the Java lower camel case notation
+     * @param className Generated class name
+     * @return Converted class name
+     */
+    private String toJavaNotation(String className) {
+        StringBuilder result = new StringBuilder();
+        for (String w : className.split("_"))
+            if (!w.isEmpty())
+                result.append(w.substring(0, 1).toUpperCase()).append(w.substring(1));
+        return result.toString();
+    }
 }
