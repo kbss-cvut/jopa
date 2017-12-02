@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -91,9 +91,7 @@ public class ChangeManagerImpl implements ChangeManager {
     }
 
     @Override
-    public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
-                                                                      IllegalArgumentException,
-                                                                      OWLInferredAttributeModifiedException {
+    public boolean calculateChanges(ObjectChangeSet changeSet) throws OWLInferredAttributeModifiedException {
         return calculateChangesInternal(Objects.requireNonNull(changeSet));
     }
 
@@ -104,8 +102,7 @@ public class ChangeManagerImpl implements ChangeManager {
      * @param changeSet The change set where change records will be put in. It also contains reference to the clone and
      *                  original object.
      */
-    private boolean calculateChangesInternal(ObjectChangeSet changeSet)
-            throws IllegalArgumentException, IllegalAccessException {
+    private boolean calculateChangesInternal(ObjectChangeSet changeSet) {
         LOG.trace("Calculating changes for change set {}.", changeSet);
         Object original = changeSet.getChangedObject();
         Object clone = changeSet.getCloneObject();

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,12 +19,15 @@ import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Field;
@@ -37,6 +40,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class UnitOfWorkTest extends UnitOfWorkTestBase {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -51,7 +57,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         } finally {
             verify(cacheManagerMock, never()).get(any(), any(), any());
         }
-        fail("This line should not have been reached.");
     }
 
     @SuppressWarnings("unchecked")
@@ -62,7 +67,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         } finally {
             verify(cacheManagerMock, never()).get(any(), any(), any());
         }
-        fail("This line should not have been reached.");
     }
 
     @SuppressWarnings("unchecked")
@@ -73,7 +77,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         } finally {
             verify(cacheManagerMock, never()).get(any(), any(), any());
         }
-        fail("This line should not have been reached.");
     }
 
     @Test
@@ -389,30 +392,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         uow.unregisterObject(managed);
         verify(cloneBuilder).removeVisited(entityA, descriptor);
-    }
-
-    @Test
-    public void testRevertObject() {
-        final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertNotNull(managed);
-        final String changedAtt = "changedAtt";
-        managed.setStringAttribute(changedAtt);
-        this.uow.revertObject(managed);
-        assertEquals(entityA.getStringAttribute(), managed.getStringAttribute());
-    }
-
-    @Test
-    public void revertObjectReference() throws Exception {
-        OWLClassD clone = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
-        OWLClassA changedRef = new OWLClassA();
-        final URI pk = URI.create("http://changedOne");
-        changedRef.setStringAttribute("changedAtt");
-        changedRef.setUri(pk);
-        clone.setOwlClassA(changedRef);
-        this.uow.revertObject(clone);
-        assertEquals(entityA.getUri(), clone.getOwlClassA().getUri());
-        assertEquals(entityA.getStringAttribute(), clone.getOwlClassA().getStringAttribute());
-        assertNotNull(clone.getOwlClassA().getTypes());
     }
 
     @Test
@@ -780,5 +759,86 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         final ArgumentCaptor<CloneConfiguration> captor = ArgumentCaptor.forClass(CloneConfiguration.class);
         verify(cloneBuilder).buildClone(eq(entityA), captor.capture());
         assertTrue(captor.getValue().getPostRegister().contains(plVerifier));
+    }
+
+    @Test
+    public void refreshThrowsIllegalArgumentForNonManagedInstance() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Cannot call refresh on an instance not managed by this persistence context.");
+        uow.refreshObject(Generators.generateOwlClassAInstance());
+    }
+
+    @Test
+    public void refreshThrowsIllegalArgumentForRemovedInstance() {
+        final Object a = uow.registerExistingObject(entityA, descriptor);
+        uow.removeObject(a);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Cannot call refresh on an instance not managed by this persistence context.");
+        uow.refreshObject(a);
+    }
+
+    @Test
+    public void refreshLoadsInstanceFromRepositoryAndOverwritesFieldChanges() {
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        a.setStringAttribute("updatedString");
+        final OWLClassA original = new OWLClassA(entityA.getUri());
+        original.setStringAttribute(entityA.getStringAttribute());
+        original.setTypes(new HashSet<>(entityA.getTypes()));
+        final LoadingParameters<OWLClassA> loadingParams =
+                new LoadingParameters<>(OWLClassA.class, a.getUri(), descriptor, true);
+        loadingParams.bypassCache();
+        when(storageMock.find(loadingParams)).thenReturn(original);
+        uow.refreshObject(a);
+        assertEquals(entityA.getStringAttribute(), a.getStringAttribute());
+        verify(storageMock).find(loadingParams);
+    }
+
+    @Test
+    public void refreshOverwritesObjectPropertyChanges() {
+        final OWLClassD d = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
+        final OWLClassA origAClone = d.getOwlClassA();
+        final OWLClassA differentA = Generators.generateOwlClassAInstance();
+        final OWLClassA diffAClone = (OWLClassA) uow.registerExistingObject(differentA, descriptor);
+        d.setOwlClassA(diffAClone);
+        final OWLClassD original = new OWLClassD(d.getUri());
+        original.setOwlClassA(entityA);
+        final LoadingParameters<OWLClassD> loadingParams =
+                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
+        loadingParams.bypassCache();
+        when(storageMock.find(loadingParams)).thenReturn(original);
+
+        uow.refreshObject(d);
+        assertNotEquals(diffAClone, d.getOwlClassA());
+        assertNotSame(entityA, d.getOwlClassA());
+        assertEquals(origAClone.getUri(), d.getOwlClassA().getUri());
+    }
+
+    @Test
+    public void refreshSetsUpdatesCloneMapppingForRefreshedInstance() {
+        final OWLClassD d = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
+        final OWLClassA differentA = Generators.generateOwlClassAInstance();
+        d.setOwlClassA(differentA);
+        final OWLClassD original = new OWLClassD(d.getUri());
+        original.setOwlClassA(entityA);
+        final LoadingParameters<OWLClassD> loadingParams =
+                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
+        loadingParams.bypassCache();
+        when(storageMock.find(loadingParams)).thenReturn(original);
+        uow.refreshObject(d);
+
+        assertEquals(original, uow.getOriginal(d));
+    }
+
+    @Test
+    public void refreshThrowsEntityNotFoundForNonExistentEntity() {
+        final OWLClassD d = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
+        final LoadingParameters<OWLClassD> loadingParams =
+                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
+        loadingParams.bypassCache();
+        when(storageMock.find(loadingParams)).thenReturn(null);
+        thrown.expect(EntityNotFoundException.class);
+        thrown.expectMessage("Entity " + d + " no longer exists in the repository.");
+
+        uow.refreshObject(d);
     }
 }

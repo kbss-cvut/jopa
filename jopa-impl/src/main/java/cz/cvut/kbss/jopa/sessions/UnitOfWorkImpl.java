@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.*;
@@ -599,8 +600,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         } catch (OWLEntityExistsException e) {
             unregisterObject(clone);
             throw e;
-        } catch (IllegalAccessException e) {
-            throw new OWLPersistenceException(e);
         }
         if (cacheManager.contains(et.getJavaType(), idUri, descriptor)) {
             cacheManager.evict(et.getJavaType(), idUri, descriptor.getContext());
@@ -712,10 +711,36 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             if (anyChanges) {
                 mergeManager.mergeChangesOnObject(chSet);
             }
-        } catch (IllegalAccessException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new OWLPersistenceException(e);
         }
         entityType(object.getClass()).getLifecycleListenerManager().invokePostLoadCallbacks(object);
+    }
+
+    @Override
+    public <T> void refreshObject(T object) {
+        Objects.requireNonNull(object);
+        if (!isObjectManaged(object)) {
+            throw new IllegalArgumentException(
+                    "Cannot call refresh on an instance not managed by this persistence context.");
+        }
+        final EntityTypeImpl<T> et = entityType((Class<T>) object.getClass());
+        final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
+        final Descriptor descriptor = getDescriptor(object);
+        assert descriptor != null;
+
+        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
+        params.bypassCache();
+        T original = storage.find(params);
+        if (original == null) {
+            throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
+        }
+        T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor));
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
+        changeManager.calculateChanges(chSet);
+        new RefreshInstanceMerger(collectionFactory).mergeChanges(chSet);
+        registerClone(object, original, descriptor);
+        et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
     }
 
     @Override

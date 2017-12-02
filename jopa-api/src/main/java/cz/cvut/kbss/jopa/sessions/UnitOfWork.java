@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -200,6 +200,15 @@ public interface UnitOfWork extends Session {
      * @param object The object to revert
      */
     <T> void revertObject(T object);
+
+    /**
+     * Refreshes state of the object from the storage, overwriting any changes made to it.
+     *
+     * @param object The object to revert
+     * @param <T>    Object type
+     * @throws IllegalArgumentException If the object is not managed
+     */
+    <T> void refreshObject(T object);
 
     /**
      * This method returns true, if the UnitOfWork should be released after the

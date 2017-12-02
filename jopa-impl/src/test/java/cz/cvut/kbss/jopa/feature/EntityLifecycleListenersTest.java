@@ -166,9 +166,10 @@ public class EntityLifecycleListenersTest {
     public void postLoadEntityLifecycleListenerIsCalledAfterInstanceRefresh() throws Exception {
         final OWLClassR rOriginal = new OWLClassR(Generators.createIndividualIdentifier());
         final OWLClassR rInstance = spy(new OWLClassR(rOriginal.getUri()));
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(rOriginal);
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
         uow.registerExistingObject(rOriginal, descriptor);
-        uow.revertObject(rInstance);
+        uow.refreshObject(rInstance);
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock);
         inOrder.verify(concreteListenerMock).postLoad(rInstance);
         inOrder.verify(rInstance).postLoad();

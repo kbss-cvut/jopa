@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -86,7 +86,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void testCascadeMergeOnNullCollection() throws Exception {
+    public void testCascadeMergeOnNullCollection() {
         final OWLClassJ j = new OWLClassJ();
         j.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityJ"));
         mocks.forOwlClassJ().setAttribute().getJavaField().setAccessible(true);
@@ -101,7 +101,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void mergeDetachedWithSingletonSet() throws Exception {
+    public void mergeDetachedWithSingletonSet() {
         final OWLClassJ j = new OWLClassJ();
         j.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityF"));
         final OWLClassA a = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
@@ -114,7 +114,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void mergeDetachedWithSingletonList() throws Exception {
+    public void mergeDetachedWithSingletonList() {
         final OWLClassC c = new OWLClassC(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityF"));
         final OWLClassA a = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
         c.setSimpleList(Collections.singletonList(a));
@@ -128,7 +128,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void unwrapReturnsItselfWhenClassMatches() throws Exception {
+    public void unwrapReturnsItselfWhenClassMatches() {
         assertSame(em, em.unwrap(EntityManagerImpl.class));
     }
 
@@ -302,7 +302,7 @@ public class EntityManagerImplTest {
 
     @Test
     public void exceptionInRefreshMarksTransactionForRollbackOnly() {
-        doThrow(OWLPersistenceException.class).when(uow).revertObject(any());
+        doThrow(OWLPersistenceException.class).when(uow).refreshObject(any());
         final EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
@@ -416,7 +416,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasTwo", cascade = {CascadeType.MERGE,
-                CascadeType.PERSIST, CascadeType.REMOVE})
+                                                                                  CascadeType.PERSIST,
+                                                                                  CascadeType.REMOVE})
         private CascadeCycleTwo two;
 
         private CascadeCycleOne(URI uri) {
@@ -429,7 +430,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasOne", cascade = {CascadeType.PERSIST,
-                CascadeType.MERGE, CascadeType.REMOVE})
+                                                                                  CascadeType.MERGE,
+                                                                                  CascadeType.REMOVE})
         private CascadeCycleOne one;
 
         private CascadeCycleTwo(URI uri) {
@@ -485,7 +487,8 @@ public class EntityManagerImplTest {
     @Test
     public void isLoadedReturnsTrueForEagerlyLoadedAttributeOfManagedInstance() throws Exception {
         final OWLClassA a = Generators.generateOwlClassAInstance();
-        doAnswer((invocationOnMock) -> a).when(uow).readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
+        doAnswer((invocationOnMock) -> a).when(uow)
+                                         .readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
         when(uow.contains(a)).thenReturn(true);
         final OWLClassA found = em.find(OWLClassA.class, a.getUri());
         assertTrue(em.isLoaded(found, OWLClassA.getStrAttField().getName()));
@@ -504,7 +507,8 @@ public class EntityManagerImplTest {
         inst.setUri(Generators.createIndividualIdentifier());
         inst.setOwlClassE(new OWLClassE());
         when(uow.contains(inst)).thenReturn(true);
-        doAnswer((invocationOnMock) -> inst).when(uow).readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
+        doAnswer((invocationOnMock) -> inst).when(uow)
+                                            .readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
         final OWLClassK found = em.find(OWLClassK.class, inst.getUri());
         assertTrue(em.isLoaded(found, OWLClassK.getOwlClassEField().getName()));
     }

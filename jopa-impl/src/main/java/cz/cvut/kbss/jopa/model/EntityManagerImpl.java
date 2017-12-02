@@ -319,7 +319,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             Objects.requireNonNull(entity);
             checkClassIsValidEntity(entity.getClass());
 
-            this.getCurrentPersistenceContext().revertObject(entity);
+            this.getCurrentPersistenceContext().refreshObject(entity);
             new SimpleOneLevelCascadeExplorer() {
                 @Override
                 protected void runCascadedForEach(Object ox2) {
