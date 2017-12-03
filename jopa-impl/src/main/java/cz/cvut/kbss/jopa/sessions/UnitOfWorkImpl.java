@@ -689,35 +689,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public <T> void revertObject(T object) {
-        Objects.requireNonNull(object);
-
-        if (!isObjectManaged(object) && !getDeletedObjects().containsKey(object)) {
-            throw new IllegalArgumentException(
-                    "The specified entity " + object + " is not managed by this persistence context.");
-        }
-        final Descriptor descriptor = getDescriptor(object);
-        if (descriptor == null) {
-            throw new IllegalArgumentException("Unable to find entity " + object + " in this persistence context.");
-        }
-        // To revert the object's state, just swap original and clone for change
-        // calculation and merging so that the state of the original is merged
-        // into the state of the clone
-        final Object original = getOriginal(object);
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(object, original,
-                descriptor);
-        try {
-            final boolean anyChanges = changeManager.calculateChanges(chSet);
-            if (anyChanges) {
-                mergeManager.mergeChangesOnObject(chSet);
-            }
-        } catch (IllegalArgumentException e) {
-            throw new OWLPersistenceException(e);
-        }
-        entityType(object.getClass()).getLifecycleListenerManager().invokePostLoadCallbacks(object);
-    }
-
-    @Override
     public <T> void refreshObject(T object) {
         Objects.requireNonNull(object);
         if (!isObjectManaged(object)) {
@@ -825,6 +796,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         storage.remove(primaryKey, et.getJavaType(), descriptor);
         et.getLifecycleListenerManager().invokePostRemoveCallbacks(entity);
+    }
+
+    @Override
+    public void restoreRemovedObject(Object entity) {
+        assert deletedObjects.containsKey(entity);
+
+        deletedObjects.remove(entity);
+        final Object id = getIdentifier(entity);
+        storage.persist(id, entity, getDescriptor(entity));
+
     }
 
     /**

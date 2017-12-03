@@ -185,21 +185,20 @@ public interface UnitOfWork extends Session {
     void removeObject(Object object);
 
     /**
+     * Restores the specified removed object.
+     * <p>
+     * This means it is reinstated as a managed entity and reinserted into the repository.
+     *
+     * @param entity The object to restore
+     */
+    void restoreRemovedObject(Object entity);
+
+    /**
      * Release the current unit of work. Calling this method disregards any
      * changes made to clones.
      */
     @Override
     void release();
-
-    /**
-     * Reverts any changes to the given object.
-     * <p>
-     * This method modifies the specified object. The object has to be managed
-     * by this persistence context.
-     *
-     * @param object The object to revert
-     */
-    <T> void revertObject(T object);
 
     /**
      * Refreshes state of the object from the storage, overwriting any changes made to it.

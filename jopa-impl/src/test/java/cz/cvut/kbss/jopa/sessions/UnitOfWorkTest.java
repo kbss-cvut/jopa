@@ -89,7 +89,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testReadObjectJustPersisted() throws Exception {
+    public void testReadObjectJustPersisted() {
         uow.registerNewObject(entityA, descriptor);
         assertTrue(uow.contains(entityA));
         final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -98,7 +98,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void readAlreadyManagedObjectReturnsTheManagedOne() throws Exception {
+    public void readAlreadyManagedObjectReturnsTheManagedOne() {
         final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertNotNull(clone);
         final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -108,7 +108,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testCalculateNewObjects() throws Exception {
+    public void testCalculateNewObjects() {
         uow.registerNewObject(entityA, descriptor);
         uow.registerNewObject(entityB, descriptor);
         uow.registerNewObject(entityD, descriptor);
@@ -124,7 +124,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testCalculateDeletedObjects() throws Exception {
+    public void testCalculateDeletedObjects() {
         final Object toRemove = uow.registerExistingObject(entityA, descriptor);
         uow.registerExistingObject(entityB, descriptor);
         uow.removeObject(toRemove);
@@ -174,14 +174,14 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testContains() throws Exception {
+    public void testContains() {
         OWLClassA res = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertNotNull(res);
         assertTrue(uow.contains(res));
     }
 
     @Test
-    public void testGetState() throws Exception {
+    public void testGetState() {
         assertEquals(State.NOT_MANAGED, uow.getState(entityA));
         OWLClassA toRemove = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertEquals(State.MANAGED, uow.getState(toRemove));
@@ -195,7 +195,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testGetStateWithDescriptor() throws Exception {
+    public void testGetStateWithDescriptor() {
         assertEquals(State.NOT_MANAGED, uow.getState(entityA, descriptor));
         OWLClassA toRemove = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertEquals(State.MANAGED, uow.getState(toRemove, descriptor));
@@ -209,7 +209,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testGetOriginal() throws Exception {
+    public void testGetOriginal() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
                 entityA);
         OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -226,7 +226,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void getManagedOriginalReturnsManagedOriginalInstance() throws Exception {
+    public void getManagedOriginalReturnsManagedOriginalInstance() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
                 entityA);
         uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -237,7 +237,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void getManagedOriginalForDifferentContextReturnsNull() throws Exception {
+    public void getManagedOriginalForDifferentContextReturnsNull() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
                 entityA);
         uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -247,12 +247,12 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void getManagedOriginalForUnknownIdentifierReturnsNull() throws Exception {
+    public void getManagedOriginalForUnknownIdentifierReturnsNull() {
         assertNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor));
     }
 
     @Test
-    public void testIsObjectNew() throws Exception {
+    public void testIsObjectNew() {
         final OWLClassA testNew = new OWLClassA();
         final URI pk = URI.create("http://testNewOne");
         testNew.setUri(pk);
@@ -310,7 +310,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testRegisterNewObject() throws Exception {
+    public void testRegisterNewObject() {
         final OWLClassA newOne = new OWLClassA();
         final URI pk = URI.create("http://newEntity");
         newOne.setUri(pk);
@@ -333,7 +333,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test(expected = PrimaryKeyNotSetException.class)
-    public void testRegisterNewObjectNullPkNotGenerated() throws Exception {
+    public void testRegisterNewObjectNullPkNotGenerated() {
         final OWLClassB b = new OWLClassB();
         try {
             uow.registerNewObject(b, descriptor);
@@ -345,7 +345,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testReleaseUnitOfWork() throws Exception {
+    public void testReleaseUnitOfWork() {
         assertTrue(uow.isActive());
         uow.release();
         assertFalse(uow.isActive());
@@ -353,7 +353,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testRemoveObject() throws Exception {
+    public void testRemoveObject() {
         final OWLClassB toRemove = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         uow.removeObject(toRemove);
         assertTrue(uow.getDeletedObjects().containsKey(toRemove));
@@ -411,14 +411,14 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testCommitInactive() throws Exception {
+    public void testCommitInactive() {
         uow.release();
         uow.commit();
         fail("This line should not have been reached.");
     }
 
     @Test
-    public void testRollback() throws Exception {
+    public void testRollback() {
         uow.registerNewObject(entityA, descriptor);
         final Object clone = uow.registerExistingObject(entityB, descriptor);
         verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
@@ -432,14 +432,14 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testRollbackInactive() throws Exception {
+    public void testRollbackInactive() {
         uow.release();
         uow.rollback();
         fail("This line should not have been reached.");
     }
 
     @Test(expected = OWLPersistenceException.class)
-    public void testCommitFailed() throws Exception {
+    public void testCommitFailed() {
         doThrow(OWLPersistenceException.class).when(storageMock).commit();
         try {
             uow.commit();
@@ -449,7 +449,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testClearCacheAfterCommit() throws Exception {
+    public void testClearCacheAfterCommit() {
         uow.registerNewObject(entityA, descriptor);
         final Object clone = uow.registerExistingObject(entityB, descriptor);
         verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
@@ -564,7 +564,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testIsConsistent() throws Exception {
+    public void testIsConsistent() {
         when(storageMock.isConsistent(CONTEXT_URI)).thenReturn(Boolean.TRUE);
         final boolean res = uow.isConsistent(CONTEXT_URI);
         assertTrue(res);
@@ -572,7 +572,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    public void testGetContexts() throws Exception {
+    public void testGetContexts() {
         final List<URI> contexts = new ArrayList<>(1);
         contexts.add(CONTEXT_URI);
         when(storageMock.getContexts()).thenReturn(contexts);
@@ -583,7 +583,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test(expected = CardinalityConstraintViolatedException.class)
-    public void throwsCardinalityViolationWhenMaximumCardinalityIsViolatedOnCommit() throws Exception {
+    public void throwsCardinalityViolationWhenMaximumCardinalityIsViolatedOnCommit() {
         final List<OWLClassA> lst = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             final OWLClassA a = new OWLClassA();
@@ -840,5 +840,23 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         thrown.expectMessage("Entity " + d + " no longer exists in the repository.");
 
         uow.refreshObject(d);
+    }
+
+    @Test
+    public void restoreDeletedRegistersObjectAgain() {
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        uow.removeObject(a);
+
+        uow.restoreRemovedObject(a);
+        assertTrue(uow.contains(a));
+        assertSame(entityA, uow.getOriginal(a));
+    }
+
+    @Test
+    public void restoreDeletedReinsertsObjectIntoRepository() {
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        uow.removeObject(a);
+        uow.restoreRemovedObject(a);
+        verify(storageMock).persist(a.getUri(), a, descriptor);
     }
 }

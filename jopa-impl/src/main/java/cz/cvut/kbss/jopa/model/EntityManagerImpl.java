@@ -91,7 +91,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
                     cascadePersist(entity, descriptor);
                     break;
                 case REMOVED:
-                    getCurrentPersistenceContext().revertObject(entity);
+                    getCurrentPersistenceContext().restoreRemovedObject(entity);
                     break;
                 default:
                     break;
