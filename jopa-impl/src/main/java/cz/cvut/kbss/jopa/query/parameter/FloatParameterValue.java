@@ -16,8 +16,6 @@ package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
 
-import java.util.Objects;
-
 class FloatParameterValue implements ParameterValue {
 
     private final float value;

@@ -19,9 +19,9 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 
 public interface ObjectRangeConstraint extends IntegrityConstraint {
 
-    public OWLClass getRange();
+    OWLClass getRange();
 
-    public OWLObjectProperty getProperty();
+    OWLObjectProperty getProperty();
 
-    public OWLClass getOWLClass();
+    OWLClass getOWLClass();
 }

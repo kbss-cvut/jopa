@@ -19,7 +19,7 @@ import org.semanticweb.owlapi.model.OWLDataProperty;
 
 public interface DataDomainConstraint extends IntegrityConstraint {
 
-    public OWLClass getDomain();
+    OWLClass getDomain();
 
-    public OWLDataProperty getProperty();
+    OWLDataProperty getProperty();
 }

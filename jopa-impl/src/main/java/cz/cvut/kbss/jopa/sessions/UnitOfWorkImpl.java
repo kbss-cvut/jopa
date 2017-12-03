@@ -63,7 +63,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private boolean useTransactionalOntology;
 
     private boolean isActive;
-    private boolean inCommit;
+    private boolean inCommit = false;
 
     private UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
@@ -95,7 +95,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.queryFactory = new SparqlQueryFactory(this, storage);
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
-        this.inCommit = false;
         this.useTransactionalOntology = true;
         this.isActive = true;
     }
@@ -290,8 +289,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * If there are any changes, commit them to the ontology.
      */
     private void commitToOntology() {
-        boolean changes = this.hasNew || this.hasChanges || this.hasDeleted;
-        if (changes) {
+        if (this.hasNew || this.hasChanges || this.hasDeleted) {
             calculateChanges();
         }
         validateIntegrityConstraints();
@@ -1039,7 +1037,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         assert field != null;
 
         final Object value = EntityPropertiesUtils.getFieldValue(field, entity);
-        if (value == null || value instanceof IndirectCollection) {
+        if (value instanceof IndirectCollection) {
             return;
         }
         if (value instanceof Collection || value instanceof Map) {
@@ -1069,9 +1067,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Field[] fields = entity.getClass().getDeclaredFields();
         for (Field f : fields) {
             final Object ob = EntityPropertiesUtils.getFieldValue(f, entity);
-            if (ob == null) {
-                continue;
-            }
             if (ob instanceof IndirectCollection) {
                 IndirectCollection<?> indCol = (IndirectCollection<?>) ob;
                 EntityPropertiesUtils.setFieldValue(f, entity, indCol.getReferencedCollection());

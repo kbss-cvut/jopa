@@ -208,8 +208,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     @Override
     public Set<PluralAttribute<? super X, ?, ?>> getPluralAttributes() {
-        final Set<PluralAttribute<? super X, ?, ?>> plurals = new HashSet<>();
-        plurals.addAll(getDeclaredPluralAttributes());
+        final Set<PluralAttribute<? super X, ?, ?>> plurals = new HashSet<>(getDeclaredPluralAttributes());
         if (supertype != null) {
             plurals.addAll(supertype.getPluralAttributes());
         }
@@ -218,8 +217,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     @Override
     public Set<SingularAttribute<? super X, ?>> getSingularAttributes() {
-        final Set<SingularAttribute<? super X, ?>> singulars = new HashSet<>();
-        singulars.addAll(getDeclaredSingularAttributes());
+        final Set<SingularAttribute<? super X, ?>> singulars = new HashSet<>(getDeclaredSingularAttributes());
         if (supertype != null) {
             singulars.addAll(supertype.getSingularAttributes());
         }

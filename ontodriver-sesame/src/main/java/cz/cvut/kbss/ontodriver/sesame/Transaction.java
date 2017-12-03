@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,11 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import static cz.cvut.kbss.ontodriver.sesame.TransactionState.ABORTED;
-import static cz.cvut.kbss.ontodriver.sesame.TransactionState.ACTIVE;
-import static cz.cvut.kbss.ontodriver.sesame.TransactionState.COMMITTED;
-import static cz.cvut.kbss.ontodriver.sesame.TransactionState.FAILED;
-import static cz.cvut.kbss.ontodriver.sesame.TransactionState.PARTIALLY_COMMITTED;
+import static cz.cvut.kbss.ontodriver.sesame.TransactionState.*;
 
 public final class Transaction {
 
@@ -85,9 +81,7 @@ public final class Transaction {
         if (getClass() != obj.getClass())
             return false;
         Transaction other = (Transaction) obj;
-        if (state != other.state)
-            return false;
-        return true;
+        return state == other.state;
     }
 
     @Override

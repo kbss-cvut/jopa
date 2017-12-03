@@ -139,12 +139,7 @@ public class OWL2JavaTransformer {
     }
 
     private ContextDefinition getContextDefinition(String icContextName) {
-        ContextDefinition ctx = contexts.get(icContextName);
-        if (ctx == null) {
-            ctx = new ContextDefinition(icContextName);
-            contexts.put(icContextName, ctx);
-        }
-        return ctx;
+        return contexts.computeIfAbsent(icContextName, ContextDefinition::new);
     }
 
     private List<String> getContexts(final OWLAxiom a) {

@@ -83,10 +83,7 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
             return false;
         ObjectPropertyCollectionDescriptor other = (ObjectPropertyCollectionDescriptor) obj;
         if (elementDescriptor == null) {
-            if (other.elementDescriptor != null)
-                return false;
-        } else if (!elementDescriptor.equals(other.elementDescriptor))
-            return false;
-        return true;
+            return other.elementDescriptor == null;
+        } else return elementDescriptor.equals(other.elementDescriptor);
     }
 }

@@ -52,7 +52,7 @@ public class OWLClassF {
 
 	public Set<OWLClassA> getSimpleSet() {
 		if (simpleSet == null) {
-			this.simpleSet = new HashSet<OWLClassA>();
+			this.simpleSet = new HashSet<>();
 		}
 		return simpleSet;
 	}

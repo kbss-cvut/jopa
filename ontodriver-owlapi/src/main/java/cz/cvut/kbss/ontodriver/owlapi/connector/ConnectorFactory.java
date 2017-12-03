@@ -26,7 +26,7 @@ public interface ConnectorFactory {
 
     boolean isOpen();
 
-    public static ConnectorFactory createFactory() {
+    static ConnectorFactory createFactory() {
         return new BasicConnectorFactory();
     }
 }

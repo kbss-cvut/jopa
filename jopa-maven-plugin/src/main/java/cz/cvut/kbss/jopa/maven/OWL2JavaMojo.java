@@ -49,7 +49,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     private Boolean pVocabularyOnly;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() {
         OWL2JavaTransformer owl2java = new OWL2JavaTransformer();
 
         System.out.println(pWholeOntologyAsICS + ","

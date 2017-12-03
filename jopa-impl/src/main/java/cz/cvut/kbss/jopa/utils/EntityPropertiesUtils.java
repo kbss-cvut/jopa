@@ -167,8 +167,7 @@ public class EntityPropertiesUtils {
      * @return List of declared fields
      */
     public static List<Field> getAllFields(Class<?> cls) {
-        final List<Field> fields = new ArrayList<>();
-        fields.addAll(Arrays.asList(cls.getDeclaredFields()));
+        final List<Field> fields = new ArrayList<>(Arrays.asList(cls.getDeclaredFields()));
         Class<?> tmp = cls.getSuperclass();
         while (tmp != null) {
             fields.addAll(Arrays.asList(tmp.getDeclaredFields()));

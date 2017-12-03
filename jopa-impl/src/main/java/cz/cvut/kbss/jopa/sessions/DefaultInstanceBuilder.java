@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;

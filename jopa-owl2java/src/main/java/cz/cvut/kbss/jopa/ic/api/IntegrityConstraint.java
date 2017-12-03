@@ -16,6 +16,6 @@ package cz.cvut.kbss.jopa.ic.api;
 
 public interface IntegrityConstraint {
 
-    public void accept(IntegrityConstraintVisitor visitor);
+    void accept(IntegrityConstraintVisitor visitor);
 
 }

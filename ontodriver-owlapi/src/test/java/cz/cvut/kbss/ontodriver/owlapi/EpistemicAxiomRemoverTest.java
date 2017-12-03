@@ -69,7 +69,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeDoesNothingWhenNoMatchingValuesAreFound() throws Exception {
+    public void removeDoesNothingWhenNoMatchingValuesAreFound() {
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
         descriptor.addAssertion(clsAssertion);
         axiomRemover.remove(descriptor);
@@ -77,7 +77,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithClassAssertions() throws Exception {
+    public void removeAxiomsByDescriptorWithClassAssertions() {
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
         descriptor.addAssertion(clsAssertion);
         initClassAssertions();
@@ -101,7 +101,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithDataPropertyAssertions() throws Exception {
+    public void removeAxiomsByDescriptorWithDataPropertyAssertions() {
         final Assertion dpAssertion = Assertion
                 .createDataPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#dataProperty"), false);
         final OWLDataProperty odp = dataFactory.getOWLDataProperty(IRI.create(dpAssertion.getIdentifier()));
@@ -114,7 +114,6 @@ public class EpistemicAxiomRemoverTest {
         final List<?> changes = captor.getValue();
         assertEquals(count, changes.size());
         verifyRemoveAxioms(odp, OWLDataPropertyAssertionAxiom.class, changes);
-        ;
     }
 
     private void initDataPropertyAssertions(OWLDataProperty... dataProperties) {
@@ -136,7 +135,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithObjectPropertyAssertions() throws Exception {
+    public void removeAxiomsByDescriptorWithObjectPropertyAssertions() {
         final Assertion opAssertion = Assertion
                 .createObjectPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#objectProperty"), false);
         final OWLObjectProperty oop = dataFactory.getOWLObjectProperty(IRI.create(opAssertion.getIdentifier()));
@@ -160,7 +159,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeRetainsValuesOfAssertionsNotPresentInDescriptor() throws Exception {
+    public void removeRetainsValuesOfAssertionsNotPresentInDescriptor() {
         final Assertion opAssertion = Assertion
                 .createObjectPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#objectProperty"), false);
         final Assertion opAssertionTwo = Assertion
@@ -178,7 +177,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithAnnotationPropertyAssertions() throws Exception {
+    public void removeAxiomsByDescriptorWithAnnotationPropertyAssertions() {
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/jopa#annotationProperty"), false);
         final OWLAnnotationProperty oap = dataFactory.getOWLAnnotationProperty(IRI.create(apAssertion.getIdentifier()));
@@ -212,7 +211,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeCombinationOfDataObjectAndAnnotationPropertiesAndClassAssertion() throws Exception {
+    public void removeCombinationOfDataObjectAndAnnotationPropertiesAndClassAssertion() {
         final Set<OWLPropertyExpression> removed = initForCombinedTest();
         axiomRemover.remove(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
@@ -258,7 +257,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsRemovesCorrespondingAssertions() throws Exception {
+    public void removeAxiomsRemovesCorrespondingAssertions() {
         final Map<Assertion, Set<Value<?>>> toRemove = initForRemoveAxiomsTest();
         axiomRemover.removeAxioms(SUBJECT, toRemove);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
@@ -337,7 +336,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsWithUnknownPropertyDoesNothing() throws Exception {
+    public void removeAxiomsWithUnknownPropertyDoesNothing() {
         final Map<Assertion, Set<Value<?>>> toRemove = new HashMap<>();
         final Assertion unknownProperty = Assertion
                 .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#unknownProperty"), false);

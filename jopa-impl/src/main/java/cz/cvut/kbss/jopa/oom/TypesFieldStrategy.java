@@ -47,7 +47,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
     }
 
     @Override
-    void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
+    void buildInstanceFieldValue(Object instance) {
         assert attribute.getJavaField().getType().isAssignableFrom(Set.class);
 
         if (values.isEmpty()) {
@@ -57,7 +57,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         final Object val = extractFieldValueFromInstance(instance);
         final X original = mapper.getOriginalInstance(instance);
         if (val == null) {

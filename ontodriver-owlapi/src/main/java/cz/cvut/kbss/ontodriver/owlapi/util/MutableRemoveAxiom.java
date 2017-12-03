@@ -18,6 +18,8 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 
+import javax.annotation.Nonnull;
+
 /**
  * Remove axiom wrapper which allows us to set ontology to which it is applied.
  */
@@ -39,6 +41,7 @@ public class MutableRemoveAxiom extends RemoveAxiom implements MutableAxiomChang
         this.ontology = ontology;
     }
 
+    @Nonnull
     @Override
     public OWLOntology getOntology() {
         return ontology;

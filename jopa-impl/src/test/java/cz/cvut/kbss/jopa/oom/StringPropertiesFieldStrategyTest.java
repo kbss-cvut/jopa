@@ -157,7 +157,7 @@ public class StringPropertiesFieldStrategyTest {
     @Test(expected = InvalidAssertionIdentifierException.class)
     public void throwsExceptionWhenPropertyIsNotAValidURI() throws Exception {
         entity.setProperties(Generators.generateStringProperties(1, 1));
-        entity.getProperties().put("blabla^", Collections.<String>emptySet());
+        entity.getProperties().put("blabla^", Collections.emptySet());
         when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
         strategy.buildAxiomValuesFromInstance(entity, gatherer);
@@ -181,7 +181,7 @@ public class StringPropertiesFieldStrategyTest {
         final Map<String, Set<String>> properties = Generators.generateStringProperties();
         entity.setProperties(properties);
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
-        entity.setProperties(Collections.<String, Set<String>>emptyMap());
+        entity.setProperties(Collections.emptyMap());
 
         strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToRemove(gatherer);
@@ -298,7 +298,7 @@ public class StringPropertiesFieldStrategyTest {
         added.put(property, newValues);
         entity.getProperties().get(property).addAll(newValues);
         final Map<String, Set<String>> newProperty = Collections
-                .<String, Set<String>>singletonMap("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty",
+                .singletonMap("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty",
                         new HashSet<>(Arrays.asList("blablaOne", "blablaTwo", "http://blabla.org")));
         added.putAll(newProperty);
         entity.getProperties().putAll(newProperty);

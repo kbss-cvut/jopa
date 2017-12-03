@@ -46,8 +46,7 @@ class OneLevelMergeCascadeExplorer {
         }
     }
 
-    void exploreCascaded(final Attribute<?, ?> at, final Object merged, final Object toMerge)
-            throws IllegalAccessException {
+    void exploreCascaded(final Attribute<?, ?> at, final Object merged, final Object toMerge) {
         // empty body
     }
 }

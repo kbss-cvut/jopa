@@ -184,7 +184,6 @@ public class AxiomValueGathererTest {
 
     private Map<Assertion, Set<Value<?>>> propertiesToRemove() {
         final Map<Assertion, Set<Value<?>>> props = new HashMap<>();
-        props.put(DATA_ASSERTION, Collections.singleton(new Value<>("valueThree")));
         props.put(DATA_ASSERTION, Collections.singleton(new Value<>("valueFour")));
         return props;
     }

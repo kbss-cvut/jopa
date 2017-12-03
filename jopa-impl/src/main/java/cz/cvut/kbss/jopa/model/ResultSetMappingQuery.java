@@ -37,7 +37,7 @@ public class ResultSetMappingQuery extends QueryImpl {
     }
 
     @Override
-    Object extractRow(ResultSet resultSet) throws OntoDriverException {
+    Object extractRow(ResultSet resultSet) {
         return mapper.map(resultSet, uow);
     }
 }

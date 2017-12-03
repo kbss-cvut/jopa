@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,11 +14,11 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.Test;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -58,7 +58,7 @@ abstract class OwlapiListIteratorBase {
     }
 
     @Test
-    public void testBasicIteration() throws Exception {
+    public void testBasicIteration() {
         testHelper.persistList(LIST_ITEMS);
         verifyIterationContent(iterator, LIST_ITEMS);
     }
@@ -87,7 +87,7 @@ abstract class OwlapiListIteratorBase {
     }
 
     @Test
-    public void removeWithoutReconnectClearsRestOfList() throws Exception {
+    public void removeWithoutReconnectClearsRestOfList() {
         testHelper.persistList(LIST_ITEMS);
         final List<OWLOntologyChange> changes = new ArrayList<>();
         int i = 0;
@@ -109,13 +109,12 @@ abstract class OwlapiListIteratorBase {
     }
 
     @Test
-    public void testReplaceHead() throws Exception {
+    public void testReplaceHead() {
         final List<URI> lst = new ArrayList<>(LIST_ITEMS.subList(0, 5));
         testHelper.persistList(lst);
         lst.set(0, LIST_ITEMS.get(8));
-        final List<OWLOntologyChange> changes = new ArrayList<>();
         iterator.next();
-        changes.addAll(iterator.replaceNode(NamedResource.create(lst.get(0))));
+        final List<OWLOntologyChange> changes = new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(0))));
         snapshot.getOntologyManager().applyChanges(changes);
 
         final OwlapiListIterator it = iterator();
@@ -123,19 +122,19 @@ abstract class OwlapiListIteratorBase {
     }
 
     @Test
-    public void testReplaceNodeInsideList() throws Exception {
+    public void testReplaceNodeInsideList() {
         final List<URI> lst = new ArrayList<>(LIST_ITEMS.subList(0, 5));
         testHelper.persistList(lst);
         int replaceIndex = 2;
         lst.set(replaceIndex, LIST_ITEMS.get(8));
-        final List<OWLOntologyChange> changes = new ArrayList<>();
         int i = 0;
         while (iterator.hasNext() && i < replaceIndex) {
             iterator.next();
             i++;
         }
         iterator.next();
-        changes.addAll(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
+        final List<OWLOntologyChange> changes =
+                new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
         snapshot.getOntologyManager().applyChanges(changes);
 
         final OwlapiListIterator it = iterator();
@@ -143,19 +142,19 @@ abstract class OwlapiListIteratorBase {
     }
 
     @Test
-    public void testReplaceLastNode() throws Exception {
+    public void testReplaceLastNode() {
         final List<URI> lst = new ArrayList<>(LIST_ITEMS.subList(0, 5));
         testHelper.persistList(lst);
         int replaceIndex = lst.size() - 1;
         lst.set(replaceIndex, LIST_ITEMS.get(8));
-        final List<OWLOntologyChange> changes = new ArrayList<>();
         int i = 0;
         while (iterator.hasNext() && i < replaceIndex) {
             iterator.next();
             i++;
         }
         iterator.next();
-        changes.addAll(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
+        final List<OWLOntologyChange> changes =
+                new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
         snapshot.getOntologyManager().applyChanges(changes);
 
         final OwlapiListIterator it = iterator();

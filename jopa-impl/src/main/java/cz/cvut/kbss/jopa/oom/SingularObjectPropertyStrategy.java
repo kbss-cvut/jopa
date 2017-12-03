@@ -62,12 +62,12 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     }
 
     @Override
-    void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
+    void buildInstanceFieldValue(Object instance) {
         setValueOnInstance(instance, value);
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         final Object extractedValue = extractFieldValueFromInstance(instance);
         if (referenceSavingResolver
                 .shouldSaveReference(attribute.getJavaType(), extractedValue, getAttributeContext())) {

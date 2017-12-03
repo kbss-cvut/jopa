@@ -110,7 +110,7 @@ public class TypesHandlerTest {
     @Test
     public void getsEmptyTypes() throws Exception {
         when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false))
-                .thenReturn(Collections.<Statement>emptySet());
+                .thenReturn(Collections.emptySet());
         final Set<Axiom<java.net.URI>> res = handler.getTypes(NamedResource.create(STR_PK), null, true);
         assertTrue(res.isEmpty());
     }

@@ -88,7 +88,7 @@ public class TypesHandlerTest {
 
     private void addClassAssertionsToOntology(URI subject, Collection<URI> classes, OntologySnapshot snapshot) {
         final OWLNamedIndividual individual = snapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
-        classes.stream().forEach(uri -> {
+        classes.forEach(uri -> {
             final OWLClass cls = snapshot.getDataFactory().getOWLClass(IRI.create(uri));
             final OWLClassAssertionAxiom a = snapshot.getDataFactory().getOWLClassAssertionAxiom(cls, individual);
             snapshot.getOntologyManager().applyChange(new AddAxiom(snapshot.getOntology(), a));
@@ -104,7 +104,7 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void getTypesLoadsTypesIncludingInferred() throws Exception {
+    public void getTypesLoadsTypesIncludingInferred() {
         final Set<URI> typeUris = initTypes();
         final NodeSet<OWLClass> types = new OWLClassNodeSet(typeUris.stream().map(
                 uri -> new OWLClassNode(dataFactory.getOWLClass(IRI.create(uri)))).collect(
@@ -120,7 +120,7 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void addTypesAddsClassAssertionAxiomsForTheTypes() throws Exception {
+    public void addTypesAddsClassAssertionAxiomsForTheTypes() {
         final Set<URI> typeUris = initTypes();
 
         typesHandler.addTypes(INDIVIDUAL, null, typeUris);
@@ -138,7 +138,7 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void removeTypesRemovesClassAssertionsAboutTheTypes() throws Exception {
+    public void removeTypesRemovesClassAssertionsAboutTheTypes() {
         final Set<URI> typeUris = initTypes();
 
         typesHandler.removeTypes(INDIVIDUAL, null, typeUris);

@@ -24,5 +24,5 @@ interface ConnectionListener {
 	 * @param connection
 	 *            The closing connection
 	 */
-	public void connectionClosed(Connection connection);
+	void connectionClosed(Connection connection);
 }

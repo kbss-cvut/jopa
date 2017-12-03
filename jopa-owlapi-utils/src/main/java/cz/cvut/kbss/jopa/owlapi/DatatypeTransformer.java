@@ -28,7 +28,7 @@ import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 public class DatatypeTransformer {
 
-	private static Map<OWL2Datatype, Class<?>> map = new HashMap<OWL2Datatype, Class<?>>();
+	private static Map<OWL2Datatype, Class<?>> map = new HashMap<>();
 
 	static {
 		map.put(OWL2Datatype.RDF_PLAIN_LITERAL, String.class);

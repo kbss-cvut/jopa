@@ -14,59 +14,15 @@
  */
 package cz.cvut.kbss.jopa.owlapi.identityreasoner;
 
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.reasoner.*;
+import org.semanticweb.owlapi.reasoner.impl.*;
+import org.semanticweb.owlapi.util.Version;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.semanticweb.owlapi.model.AxiomType;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLDataPropertyDomainAxiom;
-import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
-import org.semanticweb.owlapi.model.OWLDifferentIndividualsAxiom;
-import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
-import org.semanticweb.owlapi.model.OWLEquivalentObjectPropertiesAxiom;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLInverseObjectPropertiesAxiom;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObjectPropertyDomainAxiom;
-import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
-import org.semanticweb.owlapi.model.OWLObjectPropertyRangeAxiom;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLSameIndividualAxiom;
-import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
-import org.semanticweb.owlapi.model.OWLSubDataPropertyOfAxiom;
-import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
-import org.semanticweb.owlapi.reasoner.AxiomNotInProfileException;
-import org.semanticweb.owlapi.reasoner.BufferingMode;
-import org.semanticweb.owlapi.reasoner.ClassExpressionNotInProfileException;
-import org.semanticweb.owlapi.reasoner.FreshEntitiesException;
-import org.semanticweb.owlapi.reasoner.FreshEntityPolicy;
-import org.semanticweb.owlapi.reasoner.InconsistentOntologyException;
-import org.semanticweb.owlapi.reasoner.IndividualNodeSetPolicy;
-import org.semanticweb.owlapi.reasoner.InferenceType;
-import org.semanticweb.owlapi.reasoner.Node;
-import org.semanticweb.owlapi.reasoner.NodeSet;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
-import org.semanticweb.owlapi.reasoner.TimeOutException;
-import org.semanticweb.owlapi.reasoner.UnsupportedEntailmentTypeException;
-import org.semanticweb.owlapi.reasoner.impl.OWLClassNode;
-import org.semanticweb.owlapi.reasoner.impl.OWLClassNodeSet;
-import org.semanticweb.owlapi.reasoner.impl.OWLDataPropertyNode;
-import org.semanticweb.owlapi.reasoner.impl.OWLDataPropertyNodeSet;
-import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNode;
-import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
-import org.semanticweb.owlapi.reasoner.impl.OWLObjectPropertyNode;
-import org.semanticweb.owlapi.reasoner.impl.OWLObjectPropertyNodeSet;
-import org.semanticweb.owlapi.util.Version;
 
 @Deprecated
 class OWLAPIIdentityReasoner implements OWLReasoner {
@@ -130,7 +86,7 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
 	public Set<OWLLiteral> getDataPropertyValues(OWLNamedIndividual ind,
 			OWLDataProperty pe) throws InconsistentOntologyException,
 			ReasonerInterruptedException, TimeOutException {
-		final Set<OWLLiteral> literals = new HashSet<OWLLiteral>();
+		final Set<OWLLiteral> literals = new HashSet<>();
 
 		for (final OWLDataPropertyAssertionAxiom a : o
 				.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION)) {

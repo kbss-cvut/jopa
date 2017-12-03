@@ -50,7 +50,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
     }
 
     @Override
-    void buildInstanceFieldValue(Object entity) throws IllegalAccessException {
+    void buildInstanceFieldValue(Object entity) {
         final Object toAssign = isFieldEnum() ? resolveEnumValue(value) : value;
         setValueOnInstance(entity, toAssign);
     }

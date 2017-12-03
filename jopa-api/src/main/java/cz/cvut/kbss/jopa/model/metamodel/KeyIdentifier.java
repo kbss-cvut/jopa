@@ -20,6 +20,6 @@ import cz.cvut.kbss.jopa.model.IRI;
 
 public interface KeyIdentifier extends Identifier {
 
-	public Set<IRI> getOWLPropertyIRIs();
+	Set<IRI> getOWLPropertyIRIs();
 
 }

@@ -61,7 +61,7 @@ public class TestEnvironment {
 
     private static EntityManager getOwlapiPersistenceConnector(String name, boolean cache) {
         return getPersistenceConnector(name,
-                Collections.<StorageConfig>singletonList(new OwlapiStorageConfig()), cache).get(0);
+                Collections.singletonList(new OwlapiStorageConfig()), cache).get(0);
     }
 
     public static EntityManager getPersistenceConnector(String name, StorageConfig storage,
@@ -81,7 +81,7 @@ public class TestEnvironment {
     public static List<EntityManager> getPersistenceConnector(String baseName,
                                                               List<StorageConfig> storages, boolean cache) {
         return getPersistenceConnector(baseName, storages, cache,
-                Collections.<String, String>emptyMap());
+                Collections.emptyMap());
     }
 
     /**

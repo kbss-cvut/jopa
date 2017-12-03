@@ -34,12 +34,12 @@ class IdentifierFieldStrategy<X> extends FieldStrategy<Identifier<? super X, ?>,
     }
 
     @Override
-    void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
+    void buildInstanceFieldValue(Object instance) {
         // Do nothing
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         valueBuilder.addValue(createAssertion(), new Value<>(et.getIRI().toURI()), attributeDescriptor.getContext());
     }
 

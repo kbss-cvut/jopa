@@ -363,10 +363,10 @@ public class JavaTransformer {
                 prefix = "i_";
             }
 
-            String id = prefix + validJavaIDForIRI(c.getIRI());
+            StringBuilder id = new StringBuilder(prefix + validJavaIDForIRI(c.getIRI()));
 
             while (voc.fields().keySet().contains("s_" + id)) {
-                id += "_A";
+                id.append("_A");
             }
 
             final String sFieldName = "s_" + id;
@@ -375,7 +375,7 @@ public class JavaTransformer {
                     | JMod.FINAL, String.class, sFieldName,
                 JExpr.lit(c.getIRI().toString()));
             if (withOWLAPI) {
-                voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id, cm
+                voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id.toString(), cm
                     .ref(IRI.class).staticInvoke("create").arg(fv1));
             }
 

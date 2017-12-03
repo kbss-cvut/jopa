@@ -22,8 +22,7 @@ import java.util.HashSet;
 
 public abstract class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplorer {
 
-    protected void runForEach(final Attribute<?, ?> at, final Object o, boolean cascaded)
-            throws IllegalAccessException {
+    protected void runForEach(final Attribute<?, ?> at, final Object o, boolean cascaded) {
         Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
         if (attVal == null) {
             return;
@@ -46,8 +45,7 @@ public abstract class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplo
     }
 
     @Override
-    protected void exploreCascaded(final Attribute<?, ?> at, final Object o)
-            throws IllegalAccessException {
+    protected void exploreCascaded(final Attribute<?, ?> at, final Object o) {
         runForEach(at, o, true);
     }
 

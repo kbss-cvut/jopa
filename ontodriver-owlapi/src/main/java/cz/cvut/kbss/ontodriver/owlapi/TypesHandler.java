@@ -64,7 +64,7 @@ class TypesHandler {
     private Set<Axiom<URI>> owlClassesToAxioms(NamedResource subject, boolean inferred,
                                                Collection<? extends OWLClassExpression> owlClasses) {
         return owlClasses.stream().map(expr -> new AxiomImpl<>(subject,
-                Assertion.createClassAssertion(inferred), new Value<URI>(expr.asOWLClass().getIRI().toURI())))
+                Assertion.createClassAssertion(inferred), new Value<>(expr.asOWLClass().getIRI().toURI())))
                          .collect(Collectors.toSet());
     }
 

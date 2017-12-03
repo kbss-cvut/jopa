@@ -107,7 +107,7 @@ public class OWL2JavaTransformerTest {
 
     private void verifyGeneratedModel(File currentDir) {
         currentDir = new File(currentDir + File.separator + Constants.MODEL_PACKAGE);
-        final List<String> classNames = Arrays.asList(currentDir.list()).stream()
+        final List<String> classNames = Arrays.stream(currentDir.list())
                                               .map(fn -> fn.substring(0, fn.indexOf('.'))).collect(
                         Collectors.toList());
         assertTrue(classNames.containsAll(KNOWN_CLASSES));

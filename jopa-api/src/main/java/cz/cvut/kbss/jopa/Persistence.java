@@ -51,9 +51,7 @@ public class Persistence {
      */
     public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
                                                                   final Map<String, String> properties) {
-        final Map<String, String> realParams = new HashMap<>();
-
-        realParams.putAll(properties);
+        final Map<String, String> realParams = new HashMap<>(properties);
 
         final String className = realParams.get(PersistenceProperties.JPA_PERSISTENCE_PROVIDER);
 

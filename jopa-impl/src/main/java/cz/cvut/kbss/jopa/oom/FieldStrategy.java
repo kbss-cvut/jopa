@@ -129,7 +129,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      *
      * @return Attribute value, possibly {@code null}
      */
-    Object extractFieldValueFromInstance(Object instance) throws IllegalAccessException {
+    Object extractFieldValueFromInstance(Object instance) {
         return EntityPropertiesUtils.getAttributeValue(attribute, instance);
     }
 

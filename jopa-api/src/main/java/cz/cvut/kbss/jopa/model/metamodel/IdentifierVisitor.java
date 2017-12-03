@@ -16,9 +16,9 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 public interface IdentifierVisitor {
 
-	public void visit(IRIIdentifier i);
+	void visit(IRIIdentifier i);
 
-	public void visit(KeyIdentifier i);
+	void visit(KeyIdentifier i);
 
-	public void visit(SameAsIdentifier i);
+	void visit(SameAsIdentifier i);
 }

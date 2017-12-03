@@ -49,7 +49,7 @@ public class SesameTypesTest {
     @Test
     public void testGetTypes() throws Exception {
         when(handlerMock.getTypes(INDIVIDUAL, null, false)).
-                                                                   thenReturn(Collections.<Axiom<URI>>singleton(
+                                                                   thenReturn(Collections.singleton(
                                                                            new AxiomImpl<>(INDIVIDUAL, Assertion
                                                                                    .createClassAssertion(false),
                                                                                    new Value<>(INDIVIDUAL

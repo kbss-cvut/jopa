@@ -29,7 +29,7 @@ import java.util.*;
 
 class SesameDriver implements Closeable, ConnectionListener {
 
-    private final List<ConfigurationParameter> CONFIGS = Arrays
+    private static final List<ConfigurationParameter> CONFIGS = Arrays
             .asList(ConfigParam.AUTO_COMMIT, ConfigParam.ONTOLOGY_LANGUAGE,
                     SesameConfigParam.USE_INFERENCE, SesameConfigParam.USE_VOLATILE_STORAGE);
 

@@ -69,7 +69,7 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
     }
 
     @Override
-    void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
+    void buildInstanceFieldValue(Object instance) {
         if (value.getValue().isEmpty()) {
             return;
         }
@@ -77,7 +77,7 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         final Object val = extractFieldValueFromInstance(instance);
         final X original = mapper.getOriginalInstance(instance);
         if (val == null) {
@@ -126,7 +126,7 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
 
     private Set<Value<?>> objectsToValues(Collection<?> strValues) {
         final Set<Value<?>> ontoValues = new HashSet<>(strValues.size());
-        ontoValues.addAll(strValues.stream().filter(v -> v != null).map(Value::new).collect(Collectors.toList()));
+        ontoValues.addAll(strValues.stream().filter(Objects::nonNull).map(Value::new).collect(Collectors.toList()));
         return ontoValues;
     }
 

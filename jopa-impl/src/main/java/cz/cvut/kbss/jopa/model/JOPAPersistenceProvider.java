@@ -42,7 +42,7 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
     @Override
     public LoadState isLoaded(Object entity) {
         final Optional<EntityManagerFactoryImpl> found = emfs.stream().filter(emf -> emf.isLoaded(entity)).findAny();
-        return found.isPresent() ? LoadState.LOADED : LoadState.UNKNOWN;
+        return found.map(entityManagerFactory -> LoadState.LOADED).orElse(LoadState.UNKNOWN);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
         final Optional<EntityManagerFactoryImpl> found = emfs.stream()
                                                              .filter(emf -> emf.isLoaded(entity, attributeName))
                                                              .findAny();
-        return found.isPresent() ? LoadState.LOADED : LoadState.UNKNOWN;
+        return found.map(entityManagerFactory -> LoadState.LOADED).orElse(LoadState.UNKNOWN);
     }
 
     static void verifyInferredAttributeNotModified(Object entity, Field field) {

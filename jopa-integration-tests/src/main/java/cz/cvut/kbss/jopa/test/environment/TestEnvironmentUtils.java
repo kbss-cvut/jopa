@@ -43,9 +43,6 @@ public class TestEnvironmentUtils {
         if (expected == null && actual != null || expected != null && actual == null) {
             return false;
         }
-        if (expected == null) {
-            return true;
-        }
-        return expected.size() == actual.size() && expected.containsAll(actual);
+        return expected == null || expected.size() == actual.size() && expected.containsAll(actual);
     }
 }

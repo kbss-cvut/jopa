@@ -52,7 +52,7 @@ public class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> 
     }
 
     @Override
-    void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
+    void buildInstanceFieldValue(Object instance) {
         if (!values.isEmpty()) {
             setValueOnInstance(instance, values);
         }

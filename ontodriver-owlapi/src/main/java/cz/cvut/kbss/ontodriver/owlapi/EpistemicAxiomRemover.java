@@ -136,13 +136,12 @@ class EpistemicAxiomRemover {
                                                                                Set<Value<?>> values) {
         final OWLAnnotationProperty annProperty = dataFactory.getOWLAnnotationProperty(assertionId);
         return values.stream().map(value -> {
-            OWLAnnotationValue av = null;
+            OWLAnnotationValue av;
             try {
                 av = IRI.create(value.stringValue());
             } catch (IllegalArgumentException e) {
                 av = OwlapiUtils.createOWLLiteralFromValue(value.getValue(), dataFactory, owlapiAdapter.getLanguage());
             }
-            assert av != null;
             return new MutableRemoveAxiom(ontology,
                     dataFactory.getOWLAnnotationAssertionAxiom(annProperty, individual.getIRI(), av));
         }).collect(Collectors.toList());

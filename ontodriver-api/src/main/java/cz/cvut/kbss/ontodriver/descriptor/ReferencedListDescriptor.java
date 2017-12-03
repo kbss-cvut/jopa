@@ -23,5 +23,5 @@ public interface ReferencedListDescriptor extends ListDescriptor {
 	 * 
 	 * @return Property assertion
 	 */
-	public abstract Assertion getNodeContent();
+	Assertion getNodeContent();
 }

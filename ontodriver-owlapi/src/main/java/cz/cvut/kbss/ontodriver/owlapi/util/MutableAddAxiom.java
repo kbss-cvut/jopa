@@ -18,6 +18,8 @@ import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 
+import javax.annotation.Nonnull;
+
 /**
  * Add axiom wrapper which allows us to set ontology to which it is applied.
  */
@@ -39,6 +41,7 @@ public class MutableAddAxiom extends AddAxiom implements MutableAxiomChange {
         this.ontology = ontology;
     }
 
+    @Nonnull
     @Override
     public OWLOntology getOntology() {
         return ontology;

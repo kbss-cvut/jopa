@@ -43,11 +43,10 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     public void testFindAll() {
         logger.debug("Test: select all entities of a certain type.");
         final String query = "SELECT ?x WHERE { ?x a ?type .}";
-        final List<OWLClassD> ds = new ArrayList<>();
         final TypedQuery<OWLClassD> q =
                 getEntityManager().createNativeQuery(query, OWLClassD.class).setParameter("type", URI.create(
                         Vocabulary.C_OWL_CLASS_D));
-        ds.addAll(QueryTestEnvironment.getDataByContext(null, OWLClassD.class));
+        final List<OWLClassD> ds = new ArrayList<>(QueryTestEnvironment.getDataByContext(null, OWLClassD.class));
         final List<OWLClassD> res = q.getResultList();
         assertNotNull(res);
         assertFalse(res.isEmpty());
@@ -88,8 +87,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void testSelectByObjectProperty() {
         final String query = "SELECT ?x WHERE { ?x a ?type ; ?hasA ?y . }";
-        final List<OWLClassD> ds = new ArrayList<>();
-        ds.addAll(QueryTestEnvironment.getData(OWLClassD.class));
+        final List<OWLClassD> ds = new ArrayList<>(QueryTestEnvironment.getData(OWLClassD.class));
         final OWLClassA a = ds.get(Generators.randomPositiveInt(2, ds.size())).getOwlClassA();
         final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class)
                                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_D))
