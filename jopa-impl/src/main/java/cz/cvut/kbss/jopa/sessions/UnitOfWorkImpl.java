@@ -65,7 +65,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private boolean isActive;
     private boolean inCommit;
 
-    private UnitOfWorkChangeSet uowChangeSet;
+    private UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
     private AbstractSession parent;
     private AbstractEntityManager entityManager;
@@ -170,12 +170,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * change set for future commit to the ontology.
      */
     private void calculateChanges() {
-        final UnitOfWorkChangeSet changeSet = getUowChangeSet();
         if (hasNew) {
-            calculateNewObjects(changeSet);
+            calculateNewObjects(uowChangeSet);
         }
         if (hasDeleted) {
-            calculateDeletedObjects(changeSet);
+            calculateDeletedObjects(uowChangeSet);
         }
     }
 
@@ -228,7 +227,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         cloneBuilder.reset();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
-        this.uowChangeSet = null;
+        this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
     }
 
     private void detachAllManagedInstances() {
@@ -300,9 +299,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private void validateIntegrityConstraints() {
-        if (uowChangeSet == null) {
-            return;
-        }
         final IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
             validator.validate(changeSet.getCloneObject(),
@@ -464,10 +460,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return parent.getLiveObjectCache();
     }
 
-    public UnitOfWorkChangeSet getUowChangeSet() {
-        if (uowChangeSet == null) {
-            this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
-        }
+    UnitOfWorkChangeSet getUowChangeSet() {
         return uowChangeSet;
     }
 
@@ -535,10 +528,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private void registerChangeRecord(Object clone, Object orig, Descriptor descriptor, ChangeRecord record) {
-        ObjectChangeSet chSet = getUowChangeSet().getExistingObjectChanges(orig);
+        ObjectChangeSet chSet = uowChangeSet.getExistingObjectChanges(orig);
         if (chSet == null) {
             chSet = ChangeSetFactory.createObjectChangeSet(orig, clone, descriptor);
-            getUowChangeSet().addObjectChangeSet(chSet);
+            uowChangeSet.addObjectChangeSet(chSet);
         }
         chSet.addChangeRecord(record);
     }
@@ -548,7 +541,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      */
     private void mergeChangesIntoParent() {
         if (hasChanges()) {
-            mergeManager.mergeChangesFromChangeSet(getUowChangeSet());
+            mergeManager.mergeChangesFromChangeSet(uowChangeSet);
         }
     }
 
@@ -595,7 +588,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                     storage.merge(clone, field, descriptor);
                 }
                 et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
-                getUowChangeSet().addObjectChangeSet(copyChangeSet(chSet, getOriginal(clone), clone, descriptor));
+                uowChangeSet.addObjectChangeSet(copyChangeSet(chSet, getOriginal(clone), clone, descriptor));
             }
         } catch (OWLEntityExistsException e) {
             unregisterObject(clone);
@@ -729,7 +722,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param descriptor Entity descriptor, specifying optionally contexts into which the entity will be persisted
      */
     private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
-        assert entity != null;
         final EntityTypeImpl<?> eType = entityType(entity.getClass());
         eType.getLifecycleListenerManager().invokePrePersistCallbacks(entity);
         Object id = getIdentifier(entity);
@@ -770,11 +762,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.containsKey(entity);
     }
 
-    /**
-     * Remove the specified entity from the ontology.
-     *
-     * @param entity Managed entity to delete
-     */
     @Override
     public void removeObject(Object entity) {
         assert entity != null;

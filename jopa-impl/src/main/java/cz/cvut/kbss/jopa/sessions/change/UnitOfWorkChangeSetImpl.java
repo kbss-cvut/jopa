@@ -21,12 +21,11 @@ import java.util.*;
 
 public class UnitOfWorkChangeSetImpl implements UnitOfWorkChangeSet {
 
-    private Set<ObjectChangeSet> deletedObjects;
-    private Map<Object, ObjectChangeSet> objectChanges;
-    private Set<ObjectChangeSet> newObjectChanges;
+    private final Set<ObjectChangeSet> deletedObjects;
+    private final Map<Object, ObjectChangeSet> objectChanges;
+    private final Set<ObjectChangeSet> newObjectChanges;
 
     public UnitOfWorkChangeSetImpl() {
-        super();
         this.objectChanges = new HashMap<>();
         this.deletedObjects = new HashSet<>();
         this.newObjectChanges = new HashSet<>();
