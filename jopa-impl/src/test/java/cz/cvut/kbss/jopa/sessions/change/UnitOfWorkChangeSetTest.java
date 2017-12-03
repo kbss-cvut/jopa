@@ -27,23 +27,23 @@ public class UnitOfWorkChangeSetTest {
     private ObjectChangeSet changeSet;
     private String testObject;
 
-    private UnitOfWorkChangeSet chs;
+    private UnitOfWorkChangeSet uowChangeSet;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         this.testObject = "TEST";
         final String testClone = "TEST";
         this.changeSet = ChangeSetFactory.createObjectChangeSet(testObject, testClone, new EntityDescriptor());
-        chs = new UnitOfWorkChangeSetImpl();
+        uowChangeSet = new UnitOfWorkChangeSetImpl();
     }
 
     @Test
     public void testAddObjectChangeSet() {
-        chs.addObjectChangeSet(changeSet);
-        assertEquals(1, chs.getExistingObjectsChanges().size());
-        ObjectChangeSet res = chs.getExistingObjectsChanges().iterator().next();
+        uowChangeSet.addObjectChangeSet(changeSet);
+        assertEquals(1, uowChangeSet.getExistingObjectsChanges().size());
+        ObjectChangeSet res = uowChangeSet.getExistingObjectsChanges().iterator().next();
         assertSame(changeSet, res);
-        assertTrue(chs.hasChanges());
+        assertTrue(uowChangeSet.hasChanges());
     }
 
     /**
@@ -53,40 +53,48 @@ public class UnitOfWorkChangeSetTest {
     @Test
     public void testAddObjectChangeSetWithNew() {
         changeSet.setNew(true);
-        chs.addObjectChangeSet(changeSet);
-        assertEquals(1, chs.getNewObjects().size());
-        ObjectChangeSet res = chs.getNewObjects().iterator().next();
+        uowChangeSet.addObjectChangeSet(changeSet);
+        assertEquals(1, uowChangeSet.getNewObjects().size());
+        ObjectChangeSet res = uowChangeSet.getNewObjects().iterator().next();
         assertSame(changeSet, res);
-        assertTrue(chs.hasNew());
+        assertTrue(uowChangeSet.hasNew());
     }
 
     @Test
     public void testAddDeletedObject() {
-        chs.addDeletedObjectChangeSet(changeSet);
-        assertEquals(1, chs.getDeletedObjects().size());
-        ObjectChangeSet res = chs.getDeletedObjects().iterator().next();
+        uowChangeSet.addDeletedObjectChangeSet(changeSet);
+        assertEquals(1, uowChangeSet.getDeletedObjects().size());
+        ObjectChangeSet res = uowChangeSet.getDeletedObjects().iterator().next();
         Object result = res.getChangedObject();
         assertEquals(testObject, result);
-        assertTrue(chs.hasDeleted());
-        assertTrue(chs.hasChanges());
+        assertTrue(uowChangeSet.hasDeleted());
+        assertTrue(uowChangeSet.hasChanges());
     }
 
     @Test
     public void testAddNewObjectChangeSet() {
         changeSet.setNew(true);
-        chs.addNewObjectChangeSet(changeSet);
-        assertTrue(chs.hasChanges());
-        assertEquals(1, chs.getNewObjects().size());
-        ObjectChangeSet res = chs.getNewObjects().iterator().next();
+        uowChangeSet.addNewObjectChangeSet(changeSet);
+        assertTrue(uowChangeSet.hasChanges());
+        assertEquals(1, uowChangeSet.getNewObjects().size());
+        ObjectChangeSet res = uowChangeSet.getNewObjects().iterator().next();
         assertSame(changeSet, res);
-        assertTrue(chs.hasNew());
+        assertTrue(uowChangeSet.hasNew());
     }
 
     @Test
     public void getExistingObjectChangesReturnsChangeSetForTheSpecifiedOriginal() {
-        chs.addObjectChangeSet(changeSet);
-        final ObjectChangeSet result = chs.getExistingObjectChanges(testObject);
+        uowChangeSet.addObjectChangeSet(changeSet);
+        final ObjectChangeSet result = uowChangeSet.getExistingObjectChanges(testObject);
         assertNotNull(result);
         assertSame(changeSet, result);
+    }
+
+    @Test
+    public void cancelObjectChangesRemovesObjectChangeSet() {
+        uowChangeSet.addObjectChangeSet(changeSet);
+        assertNotNull(uowChangeSet.getExistingObjectChanges(testObject));
+        uowChangeSet.cancelObjectChanges(testObject);
+        assertNull(uowChangeSet.getExistingObjectChanges(testObject));
     }
 }

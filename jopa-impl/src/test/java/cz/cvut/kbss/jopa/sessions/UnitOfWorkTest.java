@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Before;
@@ -29,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -49,7 +51,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         super.setUp();
     }
 
-    @SuppressWarnings("unchecked")
     @Test(expected = NullPointerException.class)
     public void testReadObjectNullPrimaryKey() {
         try {
@@ -59,7 +60,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test(expected = NullPointerException.class)
     public void testReadObjectNullClass() {
         try {
@@ -69,7 +69,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test(expected = NullPointerException.class)
     public void testReadObjectNullContext() {
         try {
@@ -778,6 +777,19 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
+    public void refreshAcquiresNewConnectionToGetAccessToNonTransactionalEntityState() {
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        a.setStringAttribute("updatedString");
+        final OWLClassA original = new OWLClassA(entityA.getUri());
+        original.setStringAttribute(entityA.getStringAttribute());
+        original.setTypes(new HashSet<>(entityA.getTypes()));
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        uow.refreshObject(a);
+        // First invocation is when UoW is instantiated
+        verify(serverSessionStub, times(2)).acquireConnection();
+    }
+
+    @Test
     public void refreshLoadsInstanceFromRepositoryAndOverwritesFieldChanges() {
         final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         a.setStringAttribute("updatedString");
@@ -840,6 +852,37 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         thrown.expectMessage("Entity " + d + " no longer exists in the repository.");
 
         uow.refreshObject(d);
+    }
+
+    @Test
+    public void refreshCancelsObjectChangesInUnitOfWorkChangeSet() throws Exception {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        a.setStringAttribute("updatedString");
+        uow.attributeChanged(a, OWLClassA.getStrAttField());
+        final OWLClassA original = new OWLClassA(entityA.getUri());
+        original.setStringAttribute(entityA.getStringAttribute());
+        original.setTypes(new HashSet<>(entityA.getTypes()));
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        final UnitOfWorkChangeSet uowChangeSet = uow.getUowChangeSet();
+        assertNotNull(uowChangeSet.getExistingObjectChanges(entityA));
+        uow.refreshObject(a);
+        assertNull(uowChangeSet.getExistingObjectChanges(entityA));
+        assertNull(uowChangeSet.getExistingObjectChanges(original));
+    }
+
+    @Test
+    public void refreshOverwritesChangesSentToRepository() throws Exception {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        a.setStringAttribute("updatedString");
+        final OWLClassA original = new OWLClassA(entityA.getUri());
+        original.setStringAttribute(entityA.getStringAttribute());
+        original.setTypes(new HashSet<>(entityA.getTypes()));
+        Mockito.reset(storageMock);
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        uow.refreshObject(a);
+        verify(storageMock).merge(eq(a), eq(OWLClassA.getStrAttField()), any(Descriptor.class));
     }
 
     @Test

@@ -57,6 +57,11 @@ public class UnitOfWorkChangeSetImpl implements UnitOfWorkChangeSet {
     }
 
     @Override
+    public void cancelObjectChanges(Object original) {
+        objectChanges.remove(original);
+    }
+
+    @Override
     public ObjectChangeSet getExistingObjectChanges(Object original) {
         return objectChanges.get(original);
     }

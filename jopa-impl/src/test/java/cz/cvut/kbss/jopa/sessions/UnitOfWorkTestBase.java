@@ -72,14 +72,12 @@ abstract class UnitOfWorkTestBase {
         this.serverSessionStub = spy(new ServerSessionStub(storageMock));
         when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
+        when(serverSessionStub.acquireConnection()).thenReturn(storageMock);
         when(emMock.getTransaction()).thenReturn(transactionMock);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         uow = new UnitOfWorkImpl(serverSessionStub);
         uow.setEntityManager(emMock);
-        final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storage");
-        connectionField.setAccessible(true);
-        connectionField.set(uow, storageMock);
         final Field cbField = UnitOfWorkImpl.class.getDeclaredField("cloneBuilder");
         cbField.setAccessible(true);
         this.cloneBuilder = spy((CloneBuilder) cbField.get(uow));

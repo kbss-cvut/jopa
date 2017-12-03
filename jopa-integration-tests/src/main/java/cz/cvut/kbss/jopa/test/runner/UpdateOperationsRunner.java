@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -149,8 +149,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void mergedInstanceWithChangesInCascadedPluralReferenceAttributeContainsUpdatedValues()
-            throws Exception {
+    public void mergedInstanceWithChangesInCascadedPluralReferenceAttributeContainsUpdatedValues() {
         this.em = getEntityManager("MergeSet", false);
         persist(entityJ);
         em.clear();
@@ -1013,7 +1012,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void mergeDetachedRemovesObsoleteDescriptorInSecondLevelCache() throws Exception {
+    public void mergeDetachedRemovesObsoleteDescriptorInSecondLevelCache() {
         this.em = getEntityManager("mergeDetachedReplacesObsoleteDescriptorInSecondLevelCache", true);
         final Descriptor descriptorOne = new EntityDescriptor();
         descriptorOne.setLanguage("en");
@@ -1054,7 +1053,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue() throws Exception {
+    public void updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue() {
         this.em = getEntityManager("updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue", true);
         entityD.setOwlClassA(null);
         persist(entityD, entityA2);
@@ -1072,7 +1071,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void updatesKeepsPendingAssertionPluralAttribute() throws Exception {
+    public void updatesKeepsPendingAssertionPluralAttribute() {
         this.em = getEntityManager("updatesKeepsPendingAssertionPluralAttribute", true);
         final OWLClassL entityL = new OWLClassL(Generators.generateUri());
         entityL.setSet(new HashSet<>());
@@ -1228,5 +1227,49 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA toRemove = em.find(OWLClassA.class, entityA.getUri());
         em.remove(toRemove);
         em.merge(toRemove);
+    }
+
+    @Test
+    public void changesDoneAfterInstanceRefreshAreCommittedToRepository() {
+        this.em = getEntityManager("changesDoneAfterInstanceRefreshAreCommittedToRepository", true);
+        persist(entityD, entityA, entityA2);
+
+        em.getTransaction().begin();
+        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassA origA = d.getOwlClassA();
+        final OWLClassA newA = new OWLClassA(Generators.generateUri());
+        newA.setStringAttribute("newAWithStringAttribute");
+        d.setOwlClassA(em.find(OWLClassA.class, entityA2.getUri()));
+        em.refresh(d);
+        assertEquals(origA, d.getOwlClassA());
+        d.setOwlClassA(newA);
+        em.persist(newA);
+        em.getTransaction().commit();
+
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        assertEquals(newA.getUri(), result.getOwlClassA().getUri());
+        assertEquals(newA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
+    }
+
+    @Test
+    public void refreshOfPluralObjectPropertyReplacesCollectionWithOriginalAndAllowsFurtherChanges() {
+        this.em = getEntityManager("refreshOfPluralObjectPropertyReplacesCollectionWithOriginalAndAllowsFurtherChanges",
+                true);
+        persist(entityJ);
+
+        em.getTransaction().begin();
+        final OWLClassJ j = em.find(OWLClassJ.class, entityJ.getUri());
+        j.getOwlClassA().clear();
+        em.refresh(j);
+        final OWLClassA newA = new OWLClassA(Generators.generateUri());
+        newA.setStringAttribute("newAWithStringAttribute");
+        j.getOwlClassA().add(newA);
+        em.persist(newA);
+        em.getTransaction().commit();
+
+        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        assertEquals(entityJ.getOwlClassA().size() + 1, result.getOwlClassA().size());
+        final Set<URI> aUris = new HashSet<>(Arrays.asList(entityA.getUri(), entityA2.getUri(), newA.getUri()));
+        result.getOwlClassA().forEach(a -> assertTrue(aUris.contains(a.getUri())));
     }
 }

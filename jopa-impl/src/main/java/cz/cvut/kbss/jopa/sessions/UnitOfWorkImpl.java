@@ -695,16 +695,30 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
         final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
         params.bypassCache();
-        T original = storage.find(params);
-        if (original == null) {
-            throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
+        final ConnectionWrapper connection = acquireConnection();
+        try {
+            uowChangeSet.cancelObjectChanges(getOriginal(object));
+            T original = connection.find(params);
+            if (original == null) {
+                throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
+            }
+            T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor));
+            final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
+            changeManager.calculateChanges(chSet);
+            new RefreshInstanceMerger(collectionFactory).mergeChanges(chSet);
+            revertTransactionalChanges(object, descriptor, chSet);
+            registerClone(object, original, descriptor);
+            et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
+        } finally {
+            connection.close();
         }
-        T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor));
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
-        changeManager.calculateChanges(chSet);
-        new RefreshInstanceMerger(collectionFactory).mergeChanges(chSet);
-        registerClone(object, original, descriptor);
-        et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
+    }
+
+    private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
+        for (ChangeRecord change : chSet.getChanges()) {
+            storage.merge(object, change.getAttribute().getJavaField(),
+                    descriptor.getAttributeDescriptor(change.getAttribute()));
+        }
     }
 
     @Override
