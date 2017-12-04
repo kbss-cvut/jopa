@@ -2,7 +2,7 @@
 
 [![Build Status](https://kbss.felk.cvut.cz/jenkins/buildStatus/icon?job=jopa-stable)](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable)
 
-JOPA is a Java OWL persistence framework aimed at efficient programmatic access to OWL2 ontologies in Java. The system is based
+JOPA is a Java OWL persistence framework aimed at efficient programmatic access to OWL2 ontologies and RDF graphs in Java. The system is based
 on integrity constraints [1] in OWL that JOPA uses to establish the contract between a JOPA-enabled Java application and
 an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
@@ -12,7 +12,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 * Explicit access to inferred knowledge,
 * Access to unmapped properties and individual's types,
 * Transactions,
-* Separate storage access layer (currently Sesame and OWLAPI drivers available).
+* Separate storage access layer (currently RDF4J (Sesame) and OWLAPI drivers available).
 
 #### Object-ontological mapping based on integrity constraints
 
@@ -87,7 +87,7 @@ The whole framework consists of several modules:
 * _JOPA API_ - definition of the JOPA API, similar to JPA,
 * _OntoDriver API_ - API of the storage access layer,
 * _JOPA Implementation_ - persistence provider implementation,
-* _OntoDriver Sesame_ - OntoDriver implementation for Sesame-accessed storages,
+* _OntoDriver Sesame_ - OntoDriver implementation for RDF4J (Sesame)-accessed storages,
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files,
 * _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see Example01),
 * _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
