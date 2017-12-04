@@ -1,5 +1,12 @@
 # JOPA - Release Notes
 
+## 0.9.12 - December 4, 2017
+- Rewrote em.refresh to correspond to JPA behavior (Issue #17).
+- Upgraded to the latest RDF4J (2.2.4).
+- Generate class names compliant with Java naming conventions (OWL2Java).
+- Added support for untyped query parameters to Query API (necessary for `LIMIT` and `OFFSET` support).
+- Also added support for `Query.setFirstResult`.
+
 ## 0.9.11 - November 14, 2017
 - Finished implementation of support for result set mapping - EntityResult (Feature #7).
 - Fixed issue with PostLoad lifecycle callbacks and listeners not being called for referenced entities (Bug #10).
