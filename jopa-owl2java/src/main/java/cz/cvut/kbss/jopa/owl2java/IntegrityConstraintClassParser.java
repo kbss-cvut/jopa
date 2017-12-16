@@ -19,6 +19,8 @@ import cz.cvut.kbss.jopa.ic.api.IntegrityConstraintFactory;
 import cz.cvut.kbss.jopa.ic.impl.IntegrityConstraintFactoryImpl;
 import java.util.HashSet;
 import java.util.Set;
+
+import cz.cvut.kbss.jopa.owl2java.exception.UnsupportedICException;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLClassExpressionVisitor;

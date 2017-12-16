@@ -29,6 +29,7 @@ public class TestUtils {
 
     static final String MAPPING_FILE_NAME = "mapping";
     static final String IC_ONTOLOGY_IRI = "http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl";
+    static final String BAD_IMPORT_ONTOLOGY_IRI = "http://krizik.felk.cvut.cz/ontologies/onto-with-missing-import.owl";
     static final String CONTEXT = "owl2java-ic";
 
     static final String VOCABULARY_FILE = Constants.VOCABULARY_CLASS + ".java";

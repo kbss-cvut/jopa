@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.exception.UnsupportedICException;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
@@ -26,7 +27,7 @@ import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 public class Utils {
 
     static OWLDatatype ensureDatatype(final OWLDataRange r)
-        throws UnsupportedICException {
+            throws UnsupportedICException {
         if (!r.isDatatype()) {
             throw new UnsupportedICException("Data ranges not supported: " + r);
         }

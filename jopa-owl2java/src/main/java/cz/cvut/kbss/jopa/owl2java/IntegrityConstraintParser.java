@@ -16,6 +16,8 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import cz.cvut.kbss.jopa.owl2java.exception.UnsupportedICException;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationPropertyDomainAxiom;

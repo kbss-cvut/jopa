@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
 public class OWL2JavaTransformerTest {
@@ -100,8 +102,7 @@ public class OWL2JavaTransformerTest {
             assertTrue(files.contains(p));
             currentDir = new File(currentDir.getAbsolutePath() + File.separator + p);
         }
-        List<String> files = Arrays.asList(currentDir.list());
-        assertTrue(files.contains(VOCABULARY_FILE));
+        verifyVocabularyFileExistence(currentDir);
         verifyGeneratedModel(currentDir);
     }
 
@@ -118,6 +119,10 @@ public class OWL2JavaTransformerTest {
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
         transformer.transform(CONTEXT, "", targetDir.getAbsolutePath(), true);
+        verifyVocabularyFileExistence(targetDir);
+    }
+
+    private void verifyVocabularyFileExistence(File targetDir) {
         final List<String> fileNames = Arrays.asList(targetDir.list());
         assertTrue(fileNames.contains(VOCABULARY_FILE));
     }
@@ -127,8 +132,7 @@ public class OWL2JavaTransformerTest {
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
         transformer.transform(null, "", targetDir.getAbsolutePath(), true);
-        final List<String> fileNames = Arrays.asList(targetDir.list());
-        assertTrue(fileNames.contains(VOCABULARY_FILE));
+        verifyVocabularyFileExistence(targetDir);
     }
 
     @Test
@@ -142,15 +146,15 @@ public class OWL2JavaTransformerTest {
     }
 
     @Test
-    public void setUnknownOntologyIriThrowsIllegalArgumentException() throws Exception {
+    public void setUnknownOntologyIriThrowsOWL2JavaException() {
         final String unknownOntoIri = "http://krizik.felk.cvut.cz/ontologies/an-unknown-ontology.owl";
-        thrown.expect(IllegalArgumentException.class);
+        thrown.expect(OWL2JavaException.class);
         thrown.expectMessage("Unable to load ontology " + unknownOntoIri);
         transformer.setOntology(unknownOntoIri, mappingFilePath, true);
     }
 
     @Test
-    public void setOntologyWithUnknownMappingFileThrowsIllegalArgument() throws Exception {
+    public void setOntologyWithUnknownMappingFileThrowsIllegalArgument() {
         final String unknownMappingFile = "/tmp/unknown-mapping-file";
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Mapping file " + unknownMappingFile + " not found.");
@@ -229,14 +233,32 @@ public class OWL2JavaTransformerTest {
         assertTrue(classDeclaration.contains("extends Agent"));
     }
 
-    private String getExtendsClassDeclaration(List<String> classFileLines) throws Exception {
+    private String getExtendsClassDeclaration(List<String> classFileLines) {
         int i;
         for (i = 0; i < classFileLines.size(); i++) {
             if (classFileLines.get(i).startsWith("public class")) {
                 break;
             }
         }
-        return classFileLines.get(i+1);
+        return classFileLines.get(i + 1);
+    }
+
+    @Test
+    public void transformationFailsWhenImportCannotBeResolved() throws Exception {
+        thrown.expect(OWL2JavaException.class);
+        thrown.expectMessage(containsString("Unable to load ontology"));
+        final File targetDir = getTempDirectory();
+        transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath, true);
+        transformer.generateVocabulary(null, "", targetDir.getAbsolutePath(), true);
+    }
+
+    @Test
+    public void transformationIgnoresMissingImportWhenConfiguredTo() throws Exception {
+        final File targetDir = getTempDirectory();
+        transformer.ignoreMissingImports(true);
+        transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath, true);
+        transformer.generateVocabulary(null, "", targetDir.getAbsolutePath(), true);
+        verifyVocabularyFileExistence(targetDir);
     }
 
     private List<String> getGeneratedClass(File directory, String className) throws Exception {
