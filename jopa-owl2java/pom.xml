@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.semanticweb</groupId>
             <artifactId>owlapi</artifactId>
-            <version>3.2.4</version>
+            <version>3.2.2</version>
             <type>jar</type>
         </dependency>
         <dependency>
