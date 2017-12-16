@@ -157,11 +157,14 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
     }
 
     public void visit(OWLDataPropertyRangeAxiom axiom) {
-        OWLDataProperty op = Utils.ensureDataProperty(axiom.getProperty());
-        OWLDatatype clz = Utils.ensureDatatype(axiom.getRange());
+        try {
+            OWLDataProperty op = Utils.ensureDataProperty(axiom.getProperty());
+            OWLDatatype clz = Utils.ensureDatatype(axiom.getRange());
 
-        dpRanges.put(op, clz);
-        notSupported(axiom);
+            dpRanges.put(op, clz);
+        } catch (UnsupportedICException e) {
+            notSupported(axiom);
+        }
     }
 
     public void visit(OWLSymmetricObjectPropertyAxiom axiom) {
