@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -77,16 +78,16 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void returnsEmptyCollectionWhenIndividualIsNotInOntology() throws Exception {
+    public void returnsEmptyCollectionWhenIndividualIsNotInOntology() {
         when(ontologyMock.containsIndividualInSignature(individual.getIRI())).thenReturn(false);
         assertTrue(axiomLoader.findAxioms(descriptor()).isEmpty());
-        verify(ontologyMock, never()).getDataPropertyAssertionAxioms(any(OWLIndividual.class));
-        verify(ontologyMock, never()).getObjectPropertyAssertionAxioms(any(OWLIndividual.class));
-        verify(ontologyMock, never()).getAnnotationAssertionAxioms(any(IRI.class));
+        verify(ontologyMock, never()).dataPropertyAssertionAxioms(any(OWLIndividual.class));
+        verify(ontologyMock, never()).objectPropertyAssertionAxioms(any(OWLIndividual.class));
+        verify(ontologyMock, never()).annotationAssertionAxioms(any(IRI.class));
     }
 
     @Test
-    public void loadsExplicitDataPropertyValuesForAssertions() throws Exception {
+    public void loadsExplicitDataPropertyValuesForAssertions() {
         final URI assertionProperty = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion dp = Assertion.createDataPropertyAssertion(assertionProperty, false);
         final Set<OWLDataPropertyAssertionAxiom> axioms = new HashSet<>();
@@ -95,10 +96,12 @@ public class MainAxiomLoaderTest {
                         individual, 158));
         axioms.add(dataFactory.getOWLDataPropertyAssertionAxiom(
                 dataFactory.getOWLDataProperty(IRI.create("http://krizik.felk.cvut.cz/PropertyTwo")), individual, 200));
-        when(ontologyMock.getDataPropertyAssertionAxioms(individual)).thenReturn(axioms);
+        when(ontologyMock.dataPropertyAssertionAxioms(individual)).thenReturn(axioms.stream());
+        when(ontologyMock.annotationAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.objectPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
 
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(dp));
-        verify(ontologyMock).getDataPropertyAssertionAxioms(individual);
+        verify(ontologyMock).dataPropertyAssertionAxioms(individual);
         for (Axiom<?> ax : result) {
             assertEquals(dp, ax.getAssertion());
         }
@@ -113,7 +116,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsExplicitObjectPropertyValuesForAssertions() throws Exception {
+    public void loadsExplicitObjectPropertyValuesForAssertions() {
         final URI assertionPropertyOne = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion opOne = Assertion.createObjectPropertyAssertion(assertionPropertyOne, false);
         final URI assertionPropertyTwo = URI.create("http://krizik.felk.cvut.cz/PropertyTwo");
@@ -129,17 +132,19 @@ public class MainAxiomLoaderTest {
         axioms.add(dataFactory.getOWLObjectPropertyAssertionAxiom(
                 dataFactory.getOWLObjectProperty(IRI.create("http://krizik.felk.cvut.cz/otherProperty")), individual,
                 otherIndividual));
-        when(ontologyMock.getObjectPropertyAssertionAxioms(individual)).thenReturn(axioms);
+        when(ontologyMock.objectPropertyAssertionAxioms(individual)).thenReturn(axioms.stream());
+        when(ontologyMock.dataPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.annotationAssertionAxioms(any())).thenReturn(Stream.empty());
 
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(opOne, opTwo));
-        verify(ontologyMock).getObjectPropertyAssertionAxioms(individual);
+        verify(ontologyMock).objectPropertyAssertionAxioms(individual);
         for (Axiom<?> ax : result) {
             assertTrue(ax.getAssertion().equals(opOne) || ax.getAssertion().equals(opTwo));
         }
     }
 
     @Test
-    public void loadsExplicitAnnotationPropertyValuesForAssertions() throws Exception {
+    public void loadsExplicitAnnotationPropertyValuesForAssertions() {
         final URI assertionProperty = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion dp = Assertion.createAnnotationPropertyAssertion(assertionProperty, false);
         final Set<OWLAnnotationAssertionAxiom> axioms = new HashSet<>();
@@ -149,22 +154,27 @@ public class MainAxiomLoaderTest {
         axioms.add(dataFactory.getOWLAnnotationAssertionAxiom(
                 dataFactory.getOWLAnnotationProperty(IRI.create("http://krizik.felk.cvut.cz/PropertyTwo")),
                 individual.getIRI(), dataFactory.getOWLLiteral(200)));
-        when(ontologyMock.getAnnotationAssertionAxioms(individual.getIRI())).thenReturn(axioms);
+        when(ontologyMock.annotationAssertionAxioms(individual.getIRI())).thenReturn(axioms.stream());
+        when(ontologyMock.dataPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.objectPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
 
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(dp));
-        verify(ontologyMock).getAnnotationAssertionAxioms(individual.getIRI());
+        verify(ontologyMock).annotationAssertionAxioms(individual.getIRI());
         for (Axiom<?> ax : result) {
             assertEquals(dp, ax.getAssertion());
         }
     }
 
     @Test
-    public void loadsExplicitTypesWhenClassAssertionIsInTheDescriptor() throws Exception {
+    public void loadsExplicitTypesWhenClassAssertionIsInTheDescriptor() {
         final Assertion classAssertion = Assertion.createClassAssertion(false);
         final TypesHandler typesMock = mock(TypesHandler.class);
         when(adapterMock.getTypesHandler()).thenReturn(typesMock);
         when(typesMock.getTypes(SUBJECT, null, false)).thenReturn(Collections
                 .singleton(new AxiomImpl<>(SUBJECT, classAssertion, new Value<>(URI.create("http://typeA")))));
+        when(ontologyMock.annotationAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.dataPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.objectPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
 
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(classAssertion));
         verify(typesMock).getTypes(SUBJECT, null, false);
@@ -173,26 +183,29 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsExplicitValuesForUntypedAssertion() throws Exception {
+    public void loadsExplicitValuesForUntypedAssertion() {
         final URI assertionUri = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion assertion = Assertion.createPropertyAssertion(assertionUri, false);
-        when(ontologyMock.getDataPropertyAssertionAxioms(individual))
-                .thenReturn(Collections.singleton(dataFactory.getOWLDataPropertyAssertionAxiom(
+        when(ontologyMock.dataPropertyAssertionAxioms(individual))
+                .thenReturn(Stream.of(dataFactory.getOWLDataPropertyAssertionAxiom(
                         dataFactory.getOWLDataProperty(IRI.create("http://krizik.felk.cvut.cz/PropertyOne")),
                         individual, 200)));
-        when(ontologyMock.getAnnotationAssertionAxioms(individual.getIRI()))
-                .thenReturn(Collections.singleton(dataFactory.getOWLAnnotationAssertionAxiom(
+        when(ontologyMock.annotationAssertionAxioms(individual.getIRI()))
+                .thenReturn(Stream.of(dataFactory.getOWLAnnotationAssertionAxiom(
                         dataFactory.getOWLAnnotationProperty(IRI.create("http://krizik.felk.cvut.cz/PropertyOne")),
                         individual.getIRI(), dataFactory.getOWLLiteral(200))));
+        when(ontologyMock.dataPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.objectPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
+
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(assertion));
         assertFalse(result.isEmpty());
-        verify(ontologyMock).getDataPropertyAssertionAxioms(individual);
-        verify(ontologyMock).getObjectPropertyAssertionAxioms(individual);
-        verify(ontologyMock).getAnnotationAssertionAxioms(individual.getIRI());
+        verify(ontologyMock).dataPropertyAssertionAxioms(individual);
+        verify(ontologyMock).objectPropertyAssertionAxioms(individual);
+        verify(ontologyMock).annotationAssertionAxioms(individual.getIRI());
     }
 
     @Test
-    public void loadsInferredDataPropertyValues() throws Exception {
+    public void loadsInferredDataPropertyValues() {
         final URI dpOneUri = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion dpOne = Assertion.createDataPropertyAssertion(dpOneUri, true);
         final OWLDataProperty owlDpOne = dataFactory.getOWLDataProperty(IRI.create(dpOneUri));
@@ -215,7 +228,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsInferredObjectPropertyValues() throws Exception {
+    public void loadsInferredObjectPropertyValues() {
         final URI opUri = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion op = Assertion.createObjectPropertyAssertion(opUri, true);
         final OWLObjectProperty owlOp = dataFactory.getOWLObjectProperty(IRI.create(opUri));
@@ -230,7 +243,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsInferredTypes() throws Exception {
+    public void loadsInferredTypes() {
         final Assertion classAssertion = Assertion.createClassAssertion(true);
         final Set<Axiom<URI>> types = new HashSet<>();
         types.add(new AxiomImpl<>(SUBJECT, classAssertion,
@@ -249,7 +262,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test(expected = ReasonerNotAvailableException.class)
-    public void throwsExceptionWhenReasonerIsNotAvailableForInferredAssertions() throws Exception {
+    public void throwsExceptionWhenReasonerIsNotAvailableForInferredAssertions() {
         final URI opUri = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion op = Assertion.createObjectPropertyAssertion(opUri, true);
         final OntologySnapshot snapshot = new OntologySnapshot(ontologyMock, managerMock, dataFactory, null);
@@ -259,7 +272,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void skipsExplicitAssertionValueIfThereIsTheSameAssertionAlsoWithInference() throws Exception {
+    public void skipsExplicitAssertionValueIfThereIsTheSameAssertionAlsoWithInference() {
         final URI opUri = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion opAsserted = Assertion.createObjectPropertyAssertion(opUri, false);
         final Assertion opInferred = Assertion.createObjectPropertyAssertion(opUri, true);
@@ -272,10 +285,11 @@ public class MainAxiomLoaderTest {
                 dataFactory.getOWLNamedIndividual(IRI.create("http://krizik.felk.cvut.cz/IndividialTwo"))));
         final NodeSet<OWLNamedIndividual> individuals = new OWLNamedIndividualNodeSet(indSet);
         when(reasonerMock.getObjectPropertyValues(individual, owlOp)).thenReturn(individuals);
-        final Set<OWLObjectPropertyAssertionAxiom> axioms = Collections
-                .singleton(dataFactory.getOWLObjectPropertyAssertionAxiom(
+        final Stream<OWLObjectPropertyAssertionAxiom> axioms = Stream.of(dataFactory.getOWLObjectPropertyAssertionAxiom(
                         dataFactory.getOWLObjectProperty(IRI.create(opUri)), individual, commonInd));
-        when(ontologyMock.getObjectPropertyAssertionAxioms(individual)).thenReturn(axioms);
+        when(ontologyMock.objectPropertyAssertionAxioms(individual)).thenReturn(axioms);
+        when(ontologyMock.dataPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.annotationAssertionAxioms(any())).thenReturn(Stream.empty());
 
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(opAsserted, opInferred));
         assertEquals(indSet.size(), result.size());
@@ -285,7 +299,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralValueForExplicitAnnotationPropertyWithCorrectLanguageTag() throws Exception {
+    public void loadsStringLiteralValueForExplicitAnnotationPropertyWithCorrectLanguageTag() {
         initExplicitAnnotationPropertyStringsWithLanguageTag();
 
         final Collection<Axiom<?>> result = axiomLoader
@@ -301,7 +315,9 @@ public class MainAxiomLoaderTest {
                 dataFactory.getOWLLiteral("a", LANG)));
         axioms.add(dataFactory.getOWLAnnotationAssertionAxiom(property, individual.getIRI(),
                 dataFactory.getOWLLiteral("b", "cs")));
-        when(ontologyMock.getAnnotationAssertionAxioms(individual.getIRI())).thenReturn(axioms);
+        when(ontologyMock.annotationAssertionAxioms(individual.getIRI())).thenReturn(axioms.stream());
+        when(ontologyMock.dataPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.objectPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
     }
 
     private void checkLoadedAxiomsForStringValue(Collection<Axiom<?>> result, String expected) {
@@ -311,7 +327,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralValueForExplicitDataPropertyWithCorrectLanguageTag() throws Exception {
+    public void loadsStringLiteralValueForExplicitDataPropertyWithCorrectLanguageTag() {
         final String propertyUri = "http://krizik.felk.cvut.cz/dataPropertyOne";
         initExplicitDataPropertyStringsWithLanguageTag(propertyUri);
 
@@ -328,11 +344,13 @@ public class MainAxiomLoaderTest {
                 .getOWLDataPropertyAssertionAxiom(property, individual, dataFactory.getOWLLiteral("a", LANG)));
         axioms.add(dataFactory
                 .getOWLDataPropertyAssertionAxiom(property, individual, dataFactory.getOWLLiteral("b", "cs")));
-        when(ontologyMock.getDataPropertyAssertionAxioms(individual)).thenReturn(axioms);
+        when(ontologyMock.dataPropertyAssertionAxioms(individual)).thenReturn(axioms.stream());
+        when(ontologyMock.annotationAssertionAxioms(any())).thenReturn(Stream.empty());
+        when(ontologyMock.objectPropertyAssertionAxioms(any())).thenReturn(Stream.empty());
     }
 
     @Test
-    public void loadsStringLiteralValueForInferredDataPropertyWithCorrectLanguageTag() throws Exception {
+    public void loadsStringLiteralValueForInferredDataPropertyWithCorrectLanguageTag() {
         final OWLDataProperty dp = dataFactory.getOWLDataProperty(IRI.create(RDFS_LABEL));
         final Set<OWLLiteral> values = new HashSet<>();
         values.add(dataFactory.getOWLLiteral("a", LANG));
@@ -345,8 +363,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInExplicitDataPropertyAssertion()
-            throws Exception {
+    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInExplicitDataPropertyAssertion() {
         final String propertyUri = "http://krizik.felk.cvut.cz/dataPropertyOne";
         initExplicitDataPropertyStringsWithLanguageTag(propertyUri);
         final Assertion dpa = Assertion.createDataPropertyAssertion(URI.create(propertyUri), "cs", false);
@@ -355,8 +372,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInExplicitAnnotationPropertyAssertion()
-            throws Exception {
+    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInExplicitAnnotationPropertyAssertion() {
         initExplicitAnnotationPropertyStringsWithLanguageTag();
         final Assertion apa = Assertion.createAnnotationPropertyAssertion(URI.create(RDFS_LABEL), "cs", false);
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(apa));
@@ -364,7 +380,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithAllLanguagesWhenLanguageTagIsExplicitlySetToNull() throws Exception {
+    public void loadsStringLiteralWithAllLanguagesWhenLanguageTagIsExplicitlySetToNull() {
         initExplicitAnnotationPropertyStringsWithLanguageTag();
         final Assertion apa = Assertion.createAnnotationPropertyAssertion(URI.create(RDFS_LABEL), null, false);
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(apa));
@@ -375,7 +391,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithCorrectLanguageTagWhenSpecifiedOnUnspecifiedDataProperty() throws Exception {
+    public void loadsStringLiteralWithCorrectLanguageTagWhenSpecifiedOnUnspecifiedDataProperty() {
         final String propertyUri = "http://krizik.felk.cvut.cz/dataPropertyOne";
         initExplicitDataPropertyStringsWithLanguageTag(propertyUri);
         final Assertion assertion = Assertion.createUnspecifiedPropertyAssertion("cs", false);
@@ -384,8 +400,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithCorrectLanguageTagWhenSpecifiedOnUnspecifiedAnnotationProperty()
-            throws Exception {
+    public void loadsStringLiteralWithCorrectLanguageTagWhenSpecifiedOnUnspecifiedAnnotationProperty() {
         initExplicitAnnotationPropertyStringsWithLanguageTag();
         final Assertion assertion = Assertion.createUnspecifiedPropertyAssertion("cs", false);
         final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(assertion));
@@ -393,7 +408,7 @@ public class MainAxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithCorrectLanguageTagSpecifiedOnInferredDataProperty() throws Exception {
+    public void loadsStringLiteralWithCorrectLanguageTagSpecifiedOnInferredDataProperty() {
         final String propertyUri = "http://krizik.felk.cvut.cz/dataPropertyOne";
         final OWLDataProperty dp = dataFactory.getOWLDataProperty(IRI.create(propertyUri));
         final Set<OWLLiteral> values = new HashSet<>();

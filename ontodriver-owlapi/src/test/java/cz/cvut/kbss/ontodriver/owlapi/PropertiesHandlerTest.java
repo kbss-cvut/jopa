@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -34,6 +34,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -81,20 +82,21 @@ public class PropertiesHandlerTest {
         final Collection<Axiom<?>> axioms = propertiesHandler.getProperties(INDIVIDUAL, false);
         assertFalse(axioms.isEmpty());
         final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(PK));
-        verify(ontologyMock).getDataPropertyAssertionAxioms(individual);
-        verify(ontologyMock).getObjectPropertyAssertionAxioms(individual);
-        verify(ontologyMock).getAnnotationAssertionAxioms(individual.getIRI());
+        verify(ontologyMock).dataPropertyAssertionAxioms(individual);
+        verify(ontologyMock).objectPropertyAssertionAxioms(individual);
+        verify(ontologyMock).annotationAssertionAxioms(individual.getIRI());
         verifyAxioms(axioms, Assertion.AssertionType.DATA_PROPERTY, dataValues);
         verifyAxioms(axioms, Assertion.AssertionType.OBJECT_PROPERTY, objectValues);
     }
 
     private void initSampleProperties() {
         final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(PK));
-        when(ontologyMock.getDataPropertyAssertionAxioms(individual)).thenReturn(initSampleDataProperties());
-        when(ontologyMock.getObjectPropertyAssertionAxioms(individual)).thenReturn(initSampleObjectProperties());
+        when(ontologyMock.dataPropertyAssertionAxioms(individual)).thenReturn(initSampleDataProperties());
+        when(ontologyMock.objectPropertyAssertionAxioms(individual)).thenReturn(initSampleObjectProperties());
+        when(ontologyMock.annotationAssertionAxioms(any())).thenReturn(Stream.empty());
     }
 
-    private Set<OWLDataPropertyAssertionAxiom> initSampleDataProperties() {
+    private Stream<OWLDataPropertyAssertionAxiom> initSampleDataProperties() {
         final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(PK));
         final OWLDataProperty dpOne = dataFactory.getOWLDataProperty(IRI.create(DP_ONE));
         final Set<OWLDataPropertyAssertionAxiom> dpValues = new HashSet<>();
@@ -107,16 +109,16 @@ public class PropertiesHandlerTest {
         dataValues.add("Test");
         dpValues.add(dataFactory.getOWLDataPropertyAssertionAxiom(dpTwo, individual, "TestTwo"));
         dataValues.add("TestTwo");
-        return dpValues;
+        return dpValues.stream();
     }
 
-    private Set<OWLObjectPropertyAssertionAxiom> initSampleObjectProperties() {
+    private Stream<OWLObjectPropertyAssertionAxiom> initSampleObjectProperties() {
         final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(PK));
         final OWLObjectProperty op = dataFactory.getOWLObjectProperty(IRI.create(OP_ONE));
         objectValues.add(INDIVIDUAL);
         final Set<OWLObjectPropertyAssertionAxiom> opValues = new HashSet<>();
         opValues.add(dataFactory.getOWLObjectPropertyAssertionAxiom(op, individual, individual));
-        return opValues;
+        return opValues.stream();
     }
 
     private void verifyAxioms(Collection<Axiom<?>> axioms, Assertion.AssertionType assertionType,
@@ -146,20 +148,20 @@ public class PropertiesHandlerTest {
     }
 
     private void initEmptyOntology(OWLNamedIndividual individual) {
-        when(ontologyMock.getDataPropertyAssertionAxioms(individual)).thenReturn(Collections.emptySet());
-        when(ontologyMock.getObjectPropertyAssertionAxioms(individual)).thenReturn(Collections.emptySet());
-        when(ontologyMock.getAnnotationAssertionAxioms(individual.getIRI())).thenReturn(Collections.emptySet());
+        when(ontologyMock.dataPropertyAssertionAxioms(individual)).thenReturn(Stream.empty());
+        when(ontologyMock.objectPropertyAssertionAxioms(individual)).thenReturn(Stream.empty());
+        when(ontologyMock.annotationAssertionAxioms(individual.getIRI())).thenReturn(Stream.empty());
     }
 
     @Test
     public void getPropertiesWithInferenceGetsInferredProperties() throws Exception {
         final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(PK));
         initEmptyOntology(individual);
-        when(ontologyMock.getDataPropertiesInSignature()).thenReturn(new HashSet<>(
-                Arrays.asList(dataFactory.getOWLDataProperty(IRI.create(DP_ONE)),
-                        dataFactory.getOWLDataProperty(IRI.create(DP_TWO)))));
-        when(ontologyMock.getObjectPropertiesInSignature())
-                .thenReturn(Collections.singleton(dataFactory.getOWLObjectProperty(IRI.create(OP_ONE))));
+        when(ontologyMock.dataPropertiesInSignature())
+                .thenReturn(Stream.of(dataFactory.getOWLDataProperty(IRI.create(DP_ONE)),
+                        dataFactory.getOWLDataProperty(IRI.create(DP_TWO))));
+        when(ontologyMock.objectPropertiesInSignature())
+                .thenReturn(Stream.of(dataFactory.getOWLObjectProperty(IRI.create(OP_ONE))));
         when(reasonerMock.getDataPropertyValues(eq(individual), any(OWLDataProperty.class)))
                 .thenReturn(Collections.emptySet());
         when(reasonerMock.getObjectPropertyValues(eq(individual),

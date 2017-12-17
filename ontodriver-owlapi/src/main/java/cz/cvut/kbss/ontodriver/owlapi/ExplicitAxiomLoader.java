@@ -24,6 +24,7 @@ import org.semanticweb.owlapi.model.*;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class ExplicitAxiomLoader implements AxiomLoader {
 
@@ -56,21 +57,18 @@ class ExplicitAxiomLoader implements AxiomLoader {
             axioms.addAll(adapter.getTypesHandler().getTypes(subject, null, false));
         }
         // This involves a lot of filtering, perhaps we should use EntitySearcher and look for values of concrete properties
-        final Collection<OWLDataPropertyAssertionAxiom> dpAssertions = ontology.getDataPropertyAssertionAxioms(
-                individual);
+        final Stream<OWLDataPropertyAssertionAxiom> dpAssertions = ontology.dataPropertyAssertionAxioms(individual);
         axioms.addAll(dataPropertyValuesToAxioms(subject, dpAssertions));
-        final Collection<OWLObjectPropertyAssertionAxiom> opAssertions = ontology.getObjectPropertyAssertionAxioms(
-                individual);
+        final Stream<OWLObjectPropertyAssertionAxiom> opAssertions = ontology.objectPropertyAssertionAxioms(individual);
         axioms.addAll(objectPropertyValuesToAxioms(subject, opAssertions));
-        final Collection<OWLAnnotationAssertionAxiom> apAssertions = ontology.getAnnotationAssertionAxioms(
-                individual.getIRI());
+        final Stream<OWLAnnotationAssertionAxiom> apAssertions = ontology.annotationAssertionAxioms(individual.getIRI());
         axioms.addAll(annotationPropertyValuesToAxioms(subject, apAssertions));
         return axioms;
     }
 
     private Collection<Axiom<?>> dataPropertyValuesToAxioms(NamedResource subject,
-                                                            Collection<OWLDataPropertyAssertionAxiom> axioms) {
-        return axioms.stream().filter(this::shouldLoadDataPropertyValue)
+                                                            Stream<OWLDataPropertyAssertionAxiom> axioms) {
+        return axioms.filter(this::shouldLoadDataPropertyValue)
                      .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
     }
@@ -95,16 +93,16 @@ class ExplicitAxiomLoader implements AxiomLoader {
     }
 
     private Collection<Axiom<?>> objectPropertyValuesToAxioms(NamedResource subject,
-                                                              Collection<OWLObjectPropertyAssertionAxiom> axioms) {
-        return axioms.stream().filter(axiom ->
+                                                              Stream<OWLObjectPropertyAssertionAxiom> axiomStream) {
+        return axiomStream.filter(axiom ->
                 doesPropertyExist(axiom.getProperty().asOWLObjectProperty().getIRI()))
                      .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
     }
 
     private Collection<Axiom<?>> annotationPropertyValuesToAxioms(NamedResource subject,
-                                                                  Collection<OWLAnnotationAssertionAxiom> axioms) {
-        return axioms.stream().filter(this::shouldLoadAnnotationPropertyValue)
+                                                                  Stream<OWLAnnotationAssertionAxiom> axioms) {
+        return axioms.filter(this::shouldLoadAnnotationPropertyValue)
                      .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
     }
@@ -127,11 +125,11 @@ class ExplicitAxiomLoader implements AxiomLoader {
     public Collection<Axiom<?>> loadPropertyAxioms(NamedResource subject) {
         final OWLNamedIndividual individual = OwlapiUtils.getIndividual(subject, dataFactory);
         final Collection<Axiom<?>> axioms = new ArrayList<>();
-        ontology.getDataPropertyAssertionAxioms(individual)
+        ontology.dataPropertyAssertionAxioms(individual)
                 .forEach(assertion -> axioms.add(axiomAdapter.toAxiom(subject, assertion, false)));
-        ontology.getObjectPropertyAssertionAxioms(individual)
+        ontology.objectPropertyAssertionAxioms(individual)
                 .forEach(assertion -> axioms.add(axiomAdapter.toAxiom(subject, assertion, false)));
-        ontology.getAnnotationAssertionAxioms(individual.getIRI())
+        ontology.annotationAssertionAxioms(individual.getIRI())
                 .forEach(assertion -> axioms.add(axiomAdapter.toAxiom(subject, assertion, false)));
         return axioms;
     }

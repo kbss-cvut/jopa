@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,12 +14,12 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 class InferredReferencedListIterator extends ReferencedListIterator {
 
@@ -55,8 +56,9 @@ class InferredReferencedListIterator extends ReferencedListIterator {
 
     @Override
     void doStep() {
-        final Collection<OWLNamedIndividual> nextNodes = reasoner
-                .getObjectPropertyValues(currentNode, currentNextNodeProperty).getFlattened();
+        final Collection<OWLNamedIndividual> nextNodes =
+                reasoner.getObjectPropertyValues(currentNode, currentNextNodeProperty).entities()
+                        .collect(Collectors.toSet());
         if (nextNodes.isEmpty()) {
             this.next = Collections.emptyList();
             return;
@@ -64,7 +66,8 @@ class InferredReferencedListIterator extends ReferencedListIterator {
         checkMaxSuccessors(currentNextNodeProperty, nextNodes);
         this.currentNextNodeProperty = hasNextProperty;
         this.currentNode = nextNodes.iterator().next();
-        this.next = reasoner.getObjectPropertyValues(currentNode, hasContentProperty).getFlattened();
+        this.next = reasoner.getObjectPropertyValues(currentNode, hasContentProperty).entities()
+                            .collect(Collectors.toSet());
     }
 
     @Override

@@ -54,7 +54,7 @@ class TypesHandler {
     }
 
     private Collection<OWLClassExpression> loadExplicitClasses(NamedResource subject) {
-        return EntitySearcher.getTypes(getIndividual(subject), ontology);
+        return EntitySearcher.getTypes(getIndividual(subject), ontology).collect(Collectors.toSet());
     }
 
     private OWLNamedIndividual getIndividual(NamedResource subject) {
@@ -70,7 +70,7 @@ class TypesHandler {
 
     private Collection<? extends OWLClassExpression> inferClasses(NamedResource subject) {
         final OWLNamedIndividual individual = getIndividual(subject);
-        return reasoner.getTypes(individual, false).getFlattened();
+        return reasoner.getTypes(individual, false).entities().collect(Collectors.toSet());
     }
 
     void addTypes(NamedResource subject, URI context, Set<URI> types) {

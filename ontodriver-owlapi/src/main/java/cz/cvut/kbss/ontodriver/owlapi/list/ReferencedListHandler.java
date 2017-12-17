@@ -104,7 +104,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         private int index;
         private Assertion property;
 
-        public ReferencedListNodeGenerator(NamedResource baseUri, Assertion nodeContent) {
+        ReferencedListNodeGenerator(NamedResource baseUri, Assertion nodeContent) {
             this.baseUri = baseUri.toString() + "-SEQ_";
             this.changes = new ArrayList<>();
             this.nodeContentProperty = nodeContent;

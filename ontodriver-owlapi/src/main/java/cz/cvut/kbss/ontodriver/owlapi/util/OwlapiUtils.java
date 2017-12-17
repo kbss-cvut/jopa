@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,10 @@
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
@@ -95,6 +98,7 @@ public class OwlapiUtils {
                     return Float.parseFloat(literal.getLiteral());
                 case XSD_STRING:
                 case RDF_XML_LITERAL:
+                case RDF_LANG_STRING:
                     return literal.getLiteral();
                 case XSD_BOOLEAN:
                     return Boolean.parseBoolean(literal.getLiteral());
@@ -126,11 +130,7 @@ public class OwlapiUtils {
     public static boolean doesLanguageMatch(OWLLiteral literal, String language) {
         assert literal != null;
 
-        final OWLDatatype datatype = literal.getDatatype();
-        if (datatype.isBuiltIn() && datatype.isString() || datatype.isRDFPlainLiteral()) {
-            return language == null || literal.getLang().isEmpty() || literal.getLang().equals(language);
-        }
-        return true;
+        return language == null || literal.getLang().isEmpty() || literal.getLang().equals(language);
     }
 
     /**

@@ -50,4 +50,10 @@ public class OwlapiUtilsTest {
         final OWLLiteral literal = dataFactory.getOWLLiteral("test");
         assertTrue(OwlapiUtils.doesLanguageMatch(literal, LANG));
     }
+
+    @Test
+    public void doesLanguageMatchReturnsTrueForNonString() {
+        final OWLLiteral literal = dataFactory.getOWLLiteral(117);
+        assertTrue(OwlapiUtils.doesLanguageMatch(literal, LANG));
+    }
 }

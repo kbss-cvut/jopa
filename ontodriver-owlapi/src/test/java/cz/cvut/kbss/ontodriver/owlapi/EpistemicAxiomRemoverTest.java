@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,6 +31,7 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -82,7 +83,7 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertion(clsAssertion);
         initClassAssertions();
         axiomRemover.remove(descriptor);
-        assertTrue(ontology.getClassAssertionAxioms(individual).isEmpty());
+        assertTrue(ontology.classAssertionAxioms(individual).collect(Collectors.toSet()).isEmpty());
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();
@@ -107,7 +108,8 @@ public class EpistemicAxiomRemoverTest {
         final OWLDataProperty odp = dataFactory.getOWLDataProperty(IRI.create(dpAssertion.getIdentifier()));
         descriptor.addAssertion(dpAssertion);
         initDataPropertyAssertions(odp);
-        final int count = EntitySearcher.getDataPropertyValues(individual, odp, ontology).size();
+        final int count =
+                EntitySearcher.getDataPropertyValues(individual, odp, ontology).collect(Collectors.toSet()).size();
         axiomRemover.remove(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
@@ -141,7 +143,8 @@ public class EpistemicAxiomRemoverTest {
         final OWLObjectProperty oop = dataFactory.getOWLObjectProperty(IRI.create(opAssertion.getIdentifier()));
         descriptor.addAssertion(opAssertion);
         initObjectPropertyAssertions(oop);
-        final int count = EntitySearcher.getObjectPropertyValues(individual, oop, ontology).size();
+        final int count =
+                EntitySearcher.getObjectPropertyValues(individual, oop, ontology).collect(Collectors.toSet()).size();
         axiomRemover.remove(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
@@ -168,10 +171,13 @@ public class EpistemicAxiomRemoverTest {
         final OWLObjectProperty opOne = dataFactory.getOWLObjectProperty(IRI.create(opAssertion.getIdentifier()));
         final OWLObjectProperty opTwo = dataFactory.getOWLObjectProperty(IRI.create(opAssertionTwo.getIdentifier()));
         initObjectPropertyAssertions(opOne, opTwo);
-        final int countTwo = EntitySearcher.getObjectPropertyValues(individual, opTwo, ontology).size();
+        final int countTwo =
+                EntitySearcher.getObjectPropertyValues(individual, opTwo, ontology).collect(Collectors.toSet()).size();
         axiomRemover.remove(descriptor);
-        final int resultCountOne = EntitySearcher.getObjectPropertyValues(individual, opOne, ontology).size();
-        final int resultCountTwo = EntitySearcher.getObjectPropertyValues(individual, opTwo, ontology).size();
+        final int resultCountOne =
+                EntitySearcher.getObjectPropertyValues(individual, opOne, ontology).collect(Collectors.toSet()).size();
+        final int resultCountTwo =
+                EntitySearcher.getObjectPropertyValues(individual, opTwo, ontology).collect(Collectors.toSet()).size();
         assertEquals(0, resultCountOne);
         assertEquals(countTwo, resultCountTwo);
     }
@@ -184,7 +190,9 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertion(apAssertion);
         initAnnotationAssertions(oap);
         axiomRemover.remove(descriptor);
-        assertEquals(0, EntitySearcher.getAnnotationAssertionAxioms(individual.getIRI(), ontology).size());
+        assertEquals(0,
+                EntitySearcher.getAnnotationAssertionAxioms(individual.getIRI(), ontology).collect(Collectors.toSet())
+                              .size());
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();
@@ -268,15 +276,15 @@ public class EpistemicAxiomRemoverTest {
         for (Object change : changes) {
             final RemoveAxiom ax = (RemoveAxiom) change;
             final Assertion a;
-            if (!ax.getAxiom().getAnnotationPropertiesInSignature().isEmpty()) {
+            if (ax.getAxiom().annotationPropertiesInSignature().anyMatch(x -> true)) {
                 a = Assertion.createPropertyAssertion(
-                        ax.getAxiom().getAnnotationPropertiesInSignature().iterator().next().getIRI().toURI(), false);
-            } else if (!ax.getAxiom().getDataPropertiesInSignature().isEmpty()) {
+                        ax.getAxiom().annotationPropertiesInSignature().iterator().next().getIRI().toURI(), false);
+            } else if (ax.getAxiom().dataPropertiesInSignature().anyMatch(x -> true)) {
                 a = Assertion.createPropertyAssertion(
-                        ax.getAxiom().getDataPropertiesInSignature().iterator().next().getIRI().toURI(), false);
-            } else if (!ax.getAxiom().getObjectPropertiesInSignature().isEmpty()) {
+                        ax.getAxiom().dataPropertiesInSignature().iterator().next().getIRI().toURI(), false);
+            } else if (ax.getAxiom().objectPropertiesInSignature().anyMatch(x -> true)) {
                 a = Assertion.createPropertyAssertion(
-                        ax.getAxiom().getObjectPropertiesInSignature().iterator().next().getIRI().toURI(), false);
+                        ax.getAxiom().objectPropertiesInSignature().iterator().next().getIRI().toURI(), false);
             } else {
                 a = Assertion.createPropertyAssertion(URI.create(Vocabulary.RDF_TYPE), false);
             }

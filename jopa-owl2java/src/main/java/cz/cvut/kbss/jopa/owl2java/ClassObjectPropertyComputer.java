@@ -23,6 +23,8 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ClassObjectPropertyComputer {
 
@@ -53,15 +55,15 @@ public class ClassObjectPropertyComputer {
             final OWLDataFactory f = merged.getOWLOntologyManager().getOWLDataFactory();
 
             final OWLClass object = filler;
+            final Set<OWLClassExpression> superClasses = EntitySearcher.getSuperClasses(object, merged).collect(
+                    Collectors.toSet());
 
-            if (EntitySearcher.getSuperClasses(object, merged)
-                              .anyMatch(sc -> sc.equals(f.getOWLClass(IRI.create(SequencesVocabulary.c_List))))) {
+            if (superClasses.contains(f.getOWLClass(IRI.create(SequencesVocabulary.c_List)))) {
                 this.filler = new ClassObjectPropertyComputer(object,
                         f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_element)),
                         set, merged).getFiller();
                 card = Card.LIST;
-            } else if (EntitySearcher.getSuperClasses(object, merged).anyMatch(
-                    sc -> sc.equals(f.getOWLClass(IRI.create(SequencesVocabulary.c_OWLSimpleList))))) {
+            } else if (superClasses.contains(f.getOWLClass(IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
                 this.filler = new ClassObjectPropertyComputer(object,
                         f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_hasNext)),
                         set, merged).getFiller();

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,15 +14,16 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import cz.cvut.kbss.ontodriver.model.*;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class InferredAxiomLoader implements AxiomLoader {
 
@@ -92,9 +93,9 @@ public class InferredAxiomLoader implements AxiomLoader {
     }
 
     private Collection<Axiom<?>> inferObjectPropertyValues(OWLNamedIndividual individual, Assertion opAssertion) {
-        final Set<OWLNamedIndividual> individuals = reasoner.getObjectPropertyValues(individual,
-                objectProperty(opAssertion)).getFlattened();
-        return individuals.stream().map(
+        final Stream<OWLNamedIndividual> individuals =
+                reasoner.getObjectPropertyValues(individual, objectProperty(opAssertion)).entities();
+        return individuals.map(
                 target -> axiomAdapter.createAxiom(subject, opAssertion, NamedResource.create(target.getIRI().toURI())))
                           .collect(
                                   Collectors.toList());
@@ -108,21 +109,19 @@ public class InferredAxiomLoader implements AxiomLoader {
     public Collection<Axiom<?>> loadPropertyAxioms(NamedResource subject) {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         final OWLNamedIndividual individual = OwlapiUtils.getIndividual(subject, dataFactory);
-        for (OWLDataProperty dp : ontology.getDataPropertiesInSignature()) {
+        ontology.dataPropertiesInSignature().forEach(dp -> {
             final Set<OWLLiteral> values = reasoner.getDataPropertyValues(individual, dp);
             for (OWLLiteral literal : values) {
                 axioms.add(axiomAdapter.createAxiom(subject,
                         Assertion.createDataPropertyAssertion(dp.getIRI().toURI(), true), literal));
             }
-        }
-        for (OWLObjectProperty op : ontology.getObjectPropertiesInSignature()) {
-            final Set<OWLNamedIndividual> values = reasoner.getObjectPropertyValues(individual, op).getFlattened();
-            for (OWLNamedIndividual ind : values) {
-                axioms.add(axiomAdapter.createAxiom(subject,
-                        Assertion.createObjectPropertyAssertion(op.getIRI().toURI(), true), NamedResource.create(
-                                ind.getIRI().toURI())));
-            }
-        }
+        });
+        ontology.objectPropertiesInSignature().forEach(op -> {
+            final Assertion opAss = Assertion.createObjectPropertyAssertion(op.getIRI().toURI(), true);
+            reasoner.getObjectPropertyValues(individual, op).entities()
+                    .forEach(ind -> axioms
+                            .add(axiomAdapter.createAxiom(subject, opAss, NamedResource.create(ind.getIRI().toURI()))));
+        });
         return axioms;
     }
 }

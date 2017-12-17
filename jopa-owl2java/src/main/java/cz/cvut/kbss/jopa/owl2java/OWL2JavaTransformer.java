@@ -192,8 +192,7 @@ public class OWL2JavaTransformer {
             verifyContextExistence(context);
         }
         ContextDefinition def = (context == null) ? DEFAULT_CONTEXT : contexts.get(context);
-        new JavaTransformer().
-                                     generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
+        new JavaTransformer().generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {

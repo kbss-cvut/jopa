@@ -30,6 +30,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * This class differs from the way basic SimpleListIterator iterates over the list. Here, we do step before even calling
@@ -63,7 +64,7 @@ class InferredSimpleListIterator extends SimpleListIterator {
     @Override
     void doStep() {
         final NodeSet<OWLNamedIndividual> nodeSet = reasoner.getObjectPropertyValues(currentNode, currentProperty);
-        this.next = nodeSet.isEmpty() ? Collections.emptySet() : nodeSet.getFlattened();
+        this.next = nodeSet.isEmpty() ? Collections.emptySet() : nodeSet.entities().collect(Collectors.toSet());
         this.previousProperty = currentProperty;
         this.currentProperty = hasNextProperty;
         this.previousNode = this.currentNode;

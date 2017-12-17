@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,6 +26,7 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class EpistemicAxiomRemover {
 
@@ -65,8 +66,7 @@ class EpistemicAxiomRemover {
     }
 
     private Collection<OWLOntologyChange> removeClassAssertionAxioms(OWLNamedIndividual individual) {
-        final Collection<OWLClassExpression> types = EntitySearcher.getTypes(individual, ontology);
-        return types.stream().map(cls -> new MutableRemoveAxiom(ontology,
+        return EntitySearcher.getTypes(individual, ontology).map(cls -> new MutableRemoveAxiom(ontology,
                 dataFactory.getOWLClassAssertionAxiom(cls, individual))).collect(Collectors.toList());
     }
 
@@ -81,8 +81,8 @@ class EpistemicAxiomRemover {
     private Collection<? extends OWLOntologyChange> removeDataPropertyAssertions(OWLNamedIndividual individual,
                                                                                  Assertion assertion) {
         final OWLDataProperty dataProperty = dataFactory.getOWLDataProperty(IRI.create(assertion.getIdentifier()));
-        final Collection<OWLLiteral> values = EntitySearcher.getDataPropertyValues(individual, dataProperty, ontology);
-        return values.stream().map(value -> new MutableRemoveAxiom(ontology,
+        final Stream<OWLLiteral> values = EntitySearcher.getDataPropertyValues(individual, dataProperty, ontology);
+        return values.map(value -> new MutableRemoveAxiom(ontology,
                 dataFactory.getOWLDataPropertyAssertionAxiom(dataProperty, individual, value)))
                      .collect(Collectors.toList());
     }
@@ -102,9 +102,8 @@ class EpistemicAxiomRemover {
     private Collection<? extends OWLOntologyChange> removeObjectPropertyAssertions(OWLNamedIndividual individual,
                                                                                    Assertion assertion) {
         final OWLObjectProperty objProperty = dataFactory.getOWLObjectProperty(IRI.create(assertion.getIdentifier()));
-        final Collection<OWLIndividual> values = EntitySearcher
-                .getObjectPropertyValues(individual, objProperty, ontology);
-        return values.stream().filter(OWLIndividual::isNamed).map(value -> new MutableRemoveAxiom(ontology,
+        final Stream<OWLIndividual> values = EntitySearcher.getObjectPropertyValues(individual, objProperty, ontology);
+        return values.filter(OWLIndividual::isNamed).map(value -> new MutableRemoveAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(objProperty, individual, value)))
                      .collect(Collectors.toList());
     }
@@ -125,9 +124,9 @@ class EpistemicAxiomRemover {
                                                                                Assertion assertion) {
         final OWLAnnotationProperty annProperty = dataFactory
                 .getOWLAnnotationProperty(IRI.create(assertion.getIdentifier()));
-        final Collection<OWLAnnotationAssertionAxiom> values = EntitySearcher
-                .getAnnotationAssertionAxioms(individual.getIRI(), ontology);
-        return values.stream().filter(axiom -> axiom.getProperty().equals(annProperty))
+        final Stream<OWLAnnotationAssertionAxiom> values =
+                EntitySearcher.getAnnotationAssertionAxioms(individual.getIRI(), ontology);
+        return values.filter(axiom -> axiom.getProperty().equals(annProperty))
                      .map(value -> new MutableRemoveAxiom(ontology, value)).collect(Collectors.toList());
     }
 
