@@ -89,7 +89,7 @@ The whole framework consists of several modules:
 * _JOPA Implementation_ - persistence provider implementation,
 * _OntoDriver Sesame_ - OntoDriver implementation for RDF4J (Sesame)-accessed storages,
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files,
-* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see Example01),
+* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-sesame-owl2java)),
 * _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
 
 Other modules represent integration tests and various utilities. Jena OntoDriver is planned as future work.
