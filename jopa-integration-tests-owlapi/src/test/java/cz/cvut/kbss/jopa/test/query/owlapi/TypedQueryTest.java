@@ -47,7 +47,7 @@ public class TypedQueryTest extends TypedQueryRunner {
     }
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         final OwlapiPersistenceFactory persistenceFactory = new OwlapiPersistenceFactory();
         em = persistenceFactory.getEntityManager("SPARQLTypedQueryTests", false, Collections.emptyMap());
         QueryTestEnvironment.generateTestData(em);
@@ -61,19 +61,19 @@ public class TypedQueryTest extends TypedQueryRunner {
     }
 
     @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    public static void tearDownAfterClass() {
         em.close();
         em.getEntityManagerFactory().close();
     }
 
     @Ignore
     @Override
-    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() throws Exception {
+    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() {
         // OWL2Query does not support LIMIT in queries
     }
 
     @Override
-    public void setFirstResultCanBeUsedToOffsetFirstQueryResult() throws Exception {
+    public void setFirstResultCanBeUsedToOffsetFirstQueryResult() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         final int offset = expected.size() / 2;
         final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)

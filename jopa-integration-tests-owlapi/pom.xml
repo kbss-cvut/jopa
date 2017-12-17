@@ -50,22 +50,29 @@
         </dependency>
 
         <!-- Pellet -->
+        <!--<dependency>-->
+            <!--<groupId>com.clarkparsia.pellet</groupId>-->
+            <!--<artifactId>pellet-core</artifactId>-->
+            <!--<version>${pellet.version}</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.clarkparsia.pellet</groupId>-->
+            <!--<artifactId>pellet-owlapi</artifactId>-->
+            <!--<version>${pellet.version}</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.clarkparsia.pellet</groupId>-->
+            <!--<artifactId>pellet-explanation</artifactId>-->
+            <!--<version>${pellet.version}</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
+
         <dependency>
-            <groupId>com.clarkparsia.pellet</groupId>
-            <artifactId>pellet-core</artifactId>
-            <version>${pellet.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.clarkparsia.pellet</groupId>
-            <artifactId>pellet-owlapi</artifactId>
-            <version>${pellet.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.clarkparsia.pellet</groupId>
-            <artifactId>pellet-explanation</artifactId>
-            <version>${pellet.version}</version>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>org.semanticweb.hermit</artifactId>
+            <version>1.4.1.513</version>
             <scope>test</scope>
         </dependency>
 
