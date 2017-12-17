@@ -14,10 +14,6 @@
     <artifactId>jopa-owlapi-utils</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <net.sourceforge.owlapi.version>4.2.4</net.sourceforge.owlapi.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>

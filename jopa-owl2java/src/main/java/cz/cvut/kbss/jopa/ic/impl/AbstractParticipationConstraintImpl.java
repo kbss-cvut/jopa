@@ -19,7 +19,7 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLProperty;
 
-abstract class AbstractParticipationConstraintImpl<P extends OWLProperty<?, ?>, O extends OWLObject>
+abstract class AbstractParticipationConstraintImpl<P extends OWLProperty, O extends OWLObject>
     implements ParticipationConstraint<P, O> {
 
     private OWLClass subject;

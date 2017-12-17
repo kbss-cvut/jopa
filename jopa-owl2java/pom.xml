@@ -14,14 +14,6 @@
     <artifactId>jopa-owl2java</artifactId>
     <packaging>jar</packaging>
 
-    <repositories>
-        <repository>
-            <id>kbss</id>
-            <name>KBSS Maven 2 Repository</name>
-            <url>http://kbss.felk.cvut.cz/m2repo</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>net.sf.jopt-simple</groupId>
@@ -34,10 +26,19 @@
             <version>2.6</version>
         </dependency>
         <dependency>
-            <groupId>org.semanticweb</groupId>
-            <artifactId>owlapi</artifactId>
-            <version>3.2.2</version>
-            <type>jar</type>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-api</artifactId>
+            <version>${net.sourceforge.owlapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-apibinding</artifactId>
+            <version>${net.sourceforge.owlapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-impl</artifactId>
+            <version>${net.sourceforge.owlapi.version}</version>
         </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
@@ -57,7 +58,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.6</version>
+            <version>${ch.qos.logback.version}</version>
         </dependency>
     </dependencies>
 

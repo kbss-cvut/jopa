@@ -222,11 +222,8 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
                    TimeOutException {
         final OWLDataPropertyNode pn = new OWLDataPropertyNode(pe);
 
-        for (final OWLDataPropertyExpression p : EntitySearcher.getEquivalentProperties(pe, o)) {
-            if (!p.isAnonymous()) {
-                pn.add(p.asOWLDataProperty());
-            }
-        }
+        EntitySearcher.getEquivalentProperties(pe, o).filter(p -> !p.isAnonymous())
+                      .forEach(p -> pn.add(p.asOWLDataProperty()));
 
         pn.add(pe);
 
@@ -349,11 +346,8 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
                    TimeOutException {
         final OWLNamedIndividualNodeSet pn = new OWLNamedIndividualNodeSet();
 
-        for (final OWLIndividual i : EntitySearcher.getObjectPropertyValues(ind, pe, o)) {
-            if (i.isNamed()) {
-                pn.addEntity(i.asOWLNamedIndividual());
-            }
-        }
+        EntitySearcher.getObjectPropertyValues(ind, pe, o).filter(OWLIndividual::isNamed)
+                      .forEach(i -> pn.addEntity(i.asOWLNamedIndividual()));
         //
         // o.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(iri)
         //
@@ -584,12 +578,7 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
         // }
         // }
 
-
-        for (final OWLClassExpression ce : EntitySearcher.getTypes(ind, o)) {
-            if (!ce.isAnonymous()) {
-                s.addEntity(ce.asOWLClass());
-            }
-        }
+        EntitySearcher.getTypes(ind, o).filter(ce -> !ce.isAnonymous()).forEach(ce -> s.addEntity(ce.asOWLClass()));
 
         return s;
     }

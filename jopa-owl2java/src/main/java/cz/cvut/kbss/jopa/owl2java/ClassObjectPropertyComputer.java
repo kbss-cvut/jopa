@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,14 +17,12 @@ package cz.cvut.kbss.jopa.owl2java;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectRangeConstraint;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.search.EntitySearcher;
+
 import java.util.Collection;
 import java.util.HashSet;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLOntology;
 
 public class ClassObjectPropertyComputer {
 
@@ -56,31 +54,23 @@ public class ClassObjectPropertyComputer {
 
             final OWLClass object = filler;
 
-            if (object.getSuperClasses(merged).contains(
-                f.getOWLClass(IRI.create(SequencesVocabulary.c_List)))) {
+            if (EntitySearcher.getSuperClasses(object, merged)
+                              .anyMatch(sc -> sc.equals(f.getOWLClass(IRI.create(SequencesVocabulary.c_List))))) {
                 this.filler = new ClassObjectPropertyComputer(object,
-                    f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_element)),
-                    set,
-                    merged
-                )
-                    .getFiller();
+                        f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_element)),
+                        set, merged).getFiller();
                 card = Card.LIST;
-            } else if (filler.getSuperClasses(merged).contains(
-                f.getOWLClass(IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
+            } else if (EntitySearcher.getSuperClasses(object, merged).anyMatch(
+                    sc -> sc.equals(f.getOWLClass(IRI.create(SequencesVocabulary.c_OWLSimpleList))))) {
                 this.filler = new ClassObjectPropertyComputer(object,
-                    f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_hasNext)),
-                    set,
-                    merged
-                )
-                    .getFiller();
+                        f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_hasNext)),
+                        set, merged).getFiller();
                 card = Card.SIMPLELIST; // TODO referenced
             } else {
                 card = Card.MULTIPLE;
                 for (ObjectParticipationConstraint opc : constraints) {
                     OWLClass dt2 = opc.getObject();
-                    if (filler.equals(dt2)
-                        || dt2.equals(OWLManager.getOWLDataFactory()
-                        .getOWLThing())) {
+                    if (filler.equals(dt2) || dt2.equals(OWLManager.getOWLDataFactory().getOWLThing())) {
                         if (opc.getMax() == 1) {
                             card = Card.ONE;
                             break;

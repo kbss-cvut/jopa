@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,55 +42,55 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-        "assert",
-        "boolean",
-        "break",
-        "byte",
-        "case",
-        "catch",
-        "char",
-        "class",
-        "const",
-        "continue",
-        "default",
-        "do",
-        "double",
-        "else",
-        "enum",
-        "extends",
-        "final",
-        "finally",
-        "float",
-        "for",
-        "goto",
-        "if",
-        "implements",
-        "import",
-        "instanceof",
-        "int",
-        "interface",
-        "long",
-        "native",
-        "new",
-        "package",
-        "private",
-        "protected",
-        "public",
-        "return",
-        "short",
-        "static",
-        "strictfp",
-        "super",
-        "switch",
-        "synchronized",
-        "this",
-        "throw",
-        "throws",
-        "transient",
-        "try",
-        "void",
-        "volatile",
-        "while"};
+                                              "assert",
+                                              "boolean",
+                                              "break",
+                                              "byte",
+                                              "case",
+                                              "catch",
+                                              "char",
+                                              "class",
+                                              "const",
+                                              "continue",
+                                              "default",
+                                              "do",
+                                              "double",
+                                              "else",
+                                              "enum",
+                                              "extends",
+                                              "final",
+                                              "finally",
+                                              "float",
+                                              "for",
+                                              "goto",
+                                              "if",
+                                              "implements",
+                                              "import",
+                                              "instanceof",
+                                              "int",
+                                              "interface",
+                                              "long",
+                                              "native",
+                                              "new",
+                                              "package",
+                                              "private",
+                                              "protected",
+                                              "public",
+                                              "return",
+                                              "short",
+                                              "static",
+                                              "strictfp",
+                                              "super",
+                                              "switch",
+                                              "synchronized",
+                                              "this",
+                                              "throw",
+                                              "throws",
+                                              "transient",
+                                              "try",
+                                              "void",
+                                              "volatile",
+                                              "while"};
 
     private JDefinedClass voc;
     private Map<OWLEntity, JFieldRef> entities = new HashMap<>();
@@ -186,15 +187,15 @@ public class JavaTransformer {
                                          final JDefinedClass subj,
                                          final org.semanticweb.owlapi.model.OWLObjectProperty prop) {
         final ClassObjectPropertyComputer comp = new ClassObjectPropertyComputer(
-            clazz,
-            prop,
-            context.set,
-            ontology
-           );
+                clazz,
+                prop,
+                context.set,
+                ontology
+        );
 
         if (!Card.NO.equals(comp.getCard())) {
             JClass filler = ensureCreated(context, pkg, cm,
-                comp.getFiller(), ontology);
+                    comp.getFiller(), ontology);
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             switch (comp.getCard()) {
@@ -213,27 +214,27 @@ public class JavaTransformer {
 
             if (comp.getCard().equals(Card.SIMPLELIST)) {
                 fv.annotate(Sequence.class)
-                    .param("type", SequenceType.simple);
+                  .param("type", SequenceType.simple);
             }
 
 
             fv.annotate(OWLObjectProperty.class).param("iri",
-                entities.get(prop));
+                    entities.get(prop));
 
             JAnnotationArrayMember use = null;
             for (ObjectParticipationConstraint ic : comp
-                .getParticipationConstraints()) {
+                    .getParticipationConstraints()) {
                 if (use == null) {
                     use = fv.annotate(ParticipationConstraints.class)
-                        .paramArray("value");
+                            .paramArray("value");
                 }
                 JAnnotationUse u = use.annotate(
-                    ParticipationConstraint.class).param(
-                    // "owlClassIRI",
-                    // ic.getSubject().getIRI().toString()).param(
-                    // "owlPropertyIRI",
-                    // ic.getPredicate().getIRI().toString()).param(
-                    "owlObjectIRI", entities.get(ic.getObject()));
+                        ParticipationConstraint.class).param(
+                        // "owlClassIRI",
+                        // ic.getSubject().getIRI().toString()).param(
+                        // "owlPropertyIRI",
+                        // ic.getPredicate().getIRI().toString()).param(
+                        "owlObjectIRI", entities.get(ic.getObject()));
                 if (ic.getMin() != 0) {
                     u.param("min", ic.getMin());
                 }
@@ -253,25 +254,25 @@ public class JavaTransformer {
                                        final JDefinedClass subj,
                                        final org.semanticweb.owlapi.model.OWLDataProperty prop) {
         final ClassDataPropertyComputer comp = new ClassDataPropertyComputer(
-            clazz,
-            prop,
-            context.set,
-            ontology
-            );
+                clazz,
+                prop,
+                context.set,
+                ontology
+        );
 
         if (!Card.NO.equals(comp.getCard())) {
 
             final JType obj = cm._ref(DatatypeTransformer
-                .transformOWLType(comp.getFiller()));
+                    .transformOWLType(comp.getFiller()));
 
             final String fieldName = validJavaIDForIRI(
-                prop.getIRI());
+                    prop.getIRI());
 
             JFieldVar fv;
 
             if (Card.MULTIPLE.equals(comp.getCard())) {
                 fv = addField(fieldName, subj, cm.ref(java.util.Set.class)
-                    .narrow(obj));
+                                                 .narrow(obj));
             } else if (Card.ONE.equals(comp.getCard())) {
                 fv = addField(fieldName, subj, obj);
             } else {
@@ -280,19 +281,19 @@ public class JavaTransformer {
             }
 
             fv.annotate(OWLDataProperty.class).param("iri",
-                entities.get(prop));
+                    entities.get(prop));
 
             JAnnotationArrayMember use = null;
             for (DataParticipationConstraint ic : comp
-                .getParticipationConstraints()) {
+                    .getParticipationConstraints()) {
                 if (use == null) {
                     use = fv.annotate(ParticipationConstraints.class)
-                        .paramArray("value");
+                            .paramArray("value");
                 }
 
                 JAnnotationUse u = use.annotate(
-                    ParticipationConstraint.class).param(
-                    "owlObjectIRI", comp.getFiller().getIRI().toString());
+                        ParticipationConstraint.class).param(
+                        "owlObjectIRI", comp.getFiller().getIRI().toString());
 
                 if (ic.getMin() != 0) {
                     u = u.param("min", ic.getMin());
@@ -342,12 +343,11 @@ public class JavaTransformer {
         col.addAll(context.annotationProperties);
         col.addAll(context.individuals);
 
-        for (final OWLOntology s : o.getOWLOntologyManager().getOntologies()) {
-            IRI iri = s.getOntologyID().getOntologyIRI();
-            voc.field(JMod.PUBLIC | JMod.STATIC
-                    | JMod.FINAL, String.class, "ONTOLOGY_IRI_" + validJavaIDForIRI(iri),
-                JExpr.lit(iri.toString()));
-        }
+        o.getOWLOntologyManager().ontologies().filter(s -> s.getOntologyID().getOntologyIRI().isPresent()).forEach(s -> {
+            IRI iri = s.getOntologyID().getOntologyIRI().get();
+            voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, "ONTOLOGY_IRI_" + validJavaIDForIRI(iri),
+                    JExpr.lit(iri.toString()));
+        });
 
         for (final OWLEntity c : col) {
             String prefix = "";
@@ -357,7 +357,7 @@ public class JavaTransformer {
             } else if (c.isOWLDatatype()) {
                 prefix = "d_";
             } else if (c.isOWLDataProperty() || c.isOWLObjectProperty()
-                || c.isOWLAnnotationProperty()) {
+                    || c.isOWLAnnotationProperty()) {
                 prefix = "p_";
             } else if (c.isOWLNamedIndividual()) {
                 prefix = "i_";
@@ -372,11 +372,11 @@ public class JavaTransformer {
             final String sFieldName = "s_" + id;
 
             final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
-                    | JMod.FINAL, String.class, sFieldName,
-                JExpr.lit(c.getIRI().toString()));
+                            | JMod.FINAL, String.class, sFieldName,
+                    JExpr.lit(c.getIRI().toString()));
             if (withOWLAPI) {
                 voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id.toString(), cm
-                    .ref(IRI.class).staticInvoke("create").arg(fv1));
+                        .ref(IRI.class).staticInvoke("create").arg(fv1));
             }
 
             entities.put(c, voc.staticRef(fv1));
@@ -384,15 +384,14 @@ public class JavaTransformer {
     }
 
     private String javaClassId(OWLOntology ontology, OWLClass owlClass, ContextDefinition ctx) {
-        final Set<OWLAnnotation> annotations = owlClass.getAnnotations(ontology);
-        for (OWLAnnotation a : annotations) {
-            if (isValidJavaClassName(a, ctx)) {
-                if (a.getValue() instanceof OWLLiteral) {
-                    return ((OWLLiteral) a.getValue()).getLiteral();
-                }
-            }
+        final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
+                                                          .filter(a -> isValidJavaClassName(a, ctx) && a
+                                                                  .getValue() instanceof OWLLiteral).findFirst();
+        if (res.isPresent()) {
+            return ((OWLLiteral) res.get().getValue()).getLiteral();
+        } else {
+            return toJavaNotation(validJavaIDForIRI(owlClass.getIRI()));
         }
-        return toJavaNotation(validJavaIDForIRI(owlClass.getIRI()));
     }
 
     private JDefinedClass ensureCreated(final ContextDefinition ctx,
@@ -410,8 +409,8 @@ public class JavaTransformer {
             cls = cm._class(name);
 
             cls.annotate(
-                cz.cvut.kbss.jopa.model.annotations.OWLClass.class)
-                .param("iri", entities.get(clazz));
+                    cz.cvut.kbss.jopa.model.annotations.OWLClass.class)
+               .param("iri", entities.get(clazz));
 
             final JDocComment dc = cls.javadoc();
             dc.add("This class was generated by the OWL2Java tool version " + VERSION);
@@ -421,13 +420,13 @@ public class JavaTransformer {
             final JClass ftLabel = cm.ref(String.class);
             final JFieldVar fvLabel = addField("name", cls, ftLabel);
             fvLabel.annotate(OWLAnnotationProperty.class).param("iri",
-                cm.ref(CommonVocabulary.class).staticRef("RDFS_LABEL"));
+                    cm.ref(CommonVocabulary.class).staticRef("RDFS_LABEL"));
 
             // DC description
             final JClass ftDescription = cm.ref(String.class);
             final JFieldVar fvDescription = addField("description", cls, ftDescription);
             fvDescription.annotate(OWLAnnotationProperty.class).param("iri",
-                cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
+                    cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
 
             // @Types Set<String> types;
             final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
@@ -443,10 +442,10 @@ public class JavaTransformer {
 
             // @Properties public final Map<String,Set<String>> properties;
             final JClass ftProperties = cm.ref(Map.class).narrow(
-                cm.ref(String.class),
-                cm.ref(Set.class).narrow(String.class));
+                    cm.ref(String.class),
+                    cm.ref(Set.class).narrow(String.class));
             final JFieldVar fvProperties = addField("properties", cls,
-                ftProperties);
+                    ftProperties);
             fvProperties.annotate(Properties.class);
             // }
 
@@ -462,7 +461,7 @@ public class JavaTransformer {
     private boolean isValidJavaClassName(OWLAnnotation a, ContextDefinition ctx) {
         // TODO Replace this hardcoded stuff with a configurable solution
         return a.getProperty().getIRI()
-            .equals(IRI.create("http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#javaClassName"));
+                .equals(IRI.create("http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#javaClassName"));
         // Annotation of annotation is currently not supported
 //        for (OWLAnnotation ctxAnn : a.getAnnotations()) {
 //            ctxAnn.getValue().accept(v);
@@ -476,6 +475,7 @@ public class JavaTransformer {
 
     /**
      * Converts a class name to the Java camel case notation
+     *
      * @param className Generated class name
      * @return Converted class name
      */

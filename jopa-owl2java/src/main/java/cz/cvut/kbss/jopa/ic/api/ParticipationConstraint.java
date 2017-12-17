@@ -18,7 +18,7 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLProperty;
 
-public interface ParticipationConstraint<P extends OWLProperty<?, ?>, O extends OWLObject> extends IntegrityConstraint {
+public interface ParticipationConstraint<P extends OWLProperty, O extends OWLObject> extends IntegrityConstraint {
 
     OWLClass getSubject();
 

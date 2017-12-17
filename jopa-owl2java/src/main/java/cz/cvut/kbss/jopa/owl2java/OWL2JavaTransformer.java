@@ -23,6 +23,7 @@ import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.net.URI;
 import java.util.*;
@@ -59,7 +60,7 @@ public class OWL2JavaTransformer {
             LOG.info("Using mapping file '{}'.", mappingFile);
 
             final Map<URI, URI> map = MappingFileParser.getMappings(new File(mappingFile));
-            m.addIRIMapper(ontologyIRI -> {
+            m.getIRIMappers().add(ontologyIRI -> {
                 final URI value = map.get(ontologyIRI.toURI());
 
                 if (value == null) {
@@ -71,23 +72,24 @@ public class OWL2JavaTransformer {
             LOG.info("Mapping file successfully parsed.");
         }
 
-        LOG.info("Loading ontology {} ... ", owlOntologyName);
+        LOG.info("Loading ontology {}... ", owlOntologyName);
         if (ignoreMissingImports) {
-            m.setSilentMissingImportsHandling(true);
+            m.getOntologyConfigurator().setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
+            m.addMissingImportListener(e -> LOG.warn("Unable to import ontology {}.", e.getImportedOntologyURI()));
         }
 
         try {
             m.loadOntology(org.semanticweb.owlapi.model.IRI.create(owlOntologyName));
             return new OWLOntologyMerger(m)
                     .createMergedOntology(m, org.semanticweb.owlapi.model.IRI.create(owlOntologyName + "-generated"));
-        } catch (OWLOntologyCreationException e) {
+        } catch (OWLException | OWLRuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new OWL2JavaException("Unable to load ontology " + owlOntologyName, e);
         }
     }
 
     private void addAxiomToContext(final ContextDefinition ctx, final OWLAxiom axiom) {
-        for (final OWLEntity e : axiom.getSignature()) {
+        axiom.signature().forEach(e -> {
             if (e.isOWLClass() && !skipped.contains(e.getIRI())) {
                 ctx.classes.add(e.asOWLClass());
             }
@@ -103,7 +105,7 @@ public class OWL2JavaTransformer {
             if (e.isOWLNamedIndividual() && !skipped.contains(e.getIRI())) {
                 ctx.individuals.add(e.asOWLNamedIndividual());
             }
-        }
+        });
         ctx.axioms.add(axiom);
     }
 
@@ -115,13 +117,13 @@ public class OWL2JavaTransformer {
 
         LOG.info("Parsing integrity constraints");
 
-        for (final OWLAxiom a : ontology.getAxioms()) {
+        ontology.axioms().forEach(a -> {
             addAxiomToContext(DEFAULT_CONTEXT, a);
             for (final String icContextName : getContexts(a)) {
                 ContextDefinition ctx = getContextDefinition(icContextName);
                 addAxiomToContext(ctx, a);
             }
-        }
+        });
 
         DEFAULT_CONTEXT.parse();
         for (final ContextDefinition ctx : contexts.values()) {
@@ -137,20 +139,18 @@ public class OWL2JavaTransformer {
 
     private List<String> getContexts(final OWLAxiom a) {
         final List<String> contexts = new ArrayList<>();
-        for (final OWLAnnotation p : a.getAnnotations()) {
-            LOG.info("Processing annotation : " + p);
-            if (!p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR)) {
-                continue;
-            }
-            p.getValue().accept(v);
-            final String icContextName = v.getName();
-            LOG.info("CONTEXT:" + icContextName);
-            if (icContextName == null) {
-                continue;
-            }
-            LOG.debug("Found IC {} for context {}", a, icContextName);
-            contexts.add(icContextName);
-        }
+        a.annotations().filter(p -> p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR))
+         .forEach(p -> {
+             LOG.info("Processing annotation : " + p);
+             p.getValue().accept(v);
+             final String icContextName = v.getName();
+             LOG.info("CONTEXT:" + icContextName);
+             if (icContextName == null) {
+                 return;
+             }
+             LOG.debug("Found IC {} for context {}", a, icContextName);
+             contexts.add(icContextName);
+         });
         return contexts;
     }
 
@@ -203,13 +203,13 @@ public class OWL2JavaTransformer {
             return name;
         }
 
-        public void visit(IRI iri) {
+        public void visit(@Nonnull IRI iri) {
         }
 
-        public void visit(OWLAnonymousIndividual individual) {
+        public void visit(@Nonnull OWLAnonymousIndividual individual) {
         }
 
-        public void visit(OWLLiteral literal) {
+        public void visit(@Nonnull OWLLiteral literal) {
             name = literal.getLiteral();
         }
     }
