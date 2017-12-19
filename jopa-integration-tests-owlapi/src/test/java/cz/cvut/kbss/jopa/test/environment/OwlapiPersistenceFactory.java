@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.test.environment;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
-import org.semanticweb.HermiT.ReasonerFactory;
+import openllet.owlapi.OpenlletReasonerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class OwlapiPersistenceFactory {
         final Map<String, String> map = new HashMap<>();
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         map.put(JOPAPersistenceProperties.LANG, "en");
-        map.put(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS, ReasonerFactory.class.getName());
+        map.put(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS, OpenlletReasonerFactory.class.getName());
         return map;
     }
 }
