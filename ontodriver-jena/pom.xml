@@ -17,13 +17,13 @@
     <description>Jena implementation of the OntoDriver API</description>
 
     <properties>
-        <org.apache.jena.version>2.12.1</org.apache.jena.version>
+        <org.apache.jena.version>3.6.0</org.apache.jena.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.jena</groupId>
-            <artifactId>jena-core</artifactId>
+            <artifactId>apache-jena</artifactId>
             <version>${org.apache.jena.version}</version>
         </dependency>
         <dependency>
