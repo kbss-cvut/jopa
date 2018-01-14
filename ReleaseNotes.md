@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.9.13 - January 14, 2018
+- Fixed issue with OWL2Java silently ignoring missing imports (Bug #22).
+- Upgraded to OWLAPI 5.1.3. Upgraded to OWL2Query 0.5.0.
+- Unified OWLAPI version in all project submodules.
+- Switched to Openllet in tests (it supports OWLAPI 5).
+
 ## 0.9.12 - December 4, 2017
 - Rewrote em.refresh to correspond to JPA behavior (Issue #17).
 - Upgraded to the latest RDF4J (2.2.4).
