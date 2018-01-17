@@ -22,14 +22,20 @@
 
     <dependencies>
         <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena</artifactId>
             <version>${org.apache.jena.version}</version>
         </dependency>
         <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>ontodriver-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
         </dependency>
     </dependencies>
 

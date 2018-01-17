@@ -1,0 +1,79 @@
+package cz.cvut.kbss.ontodriver.jena.config;
+
+public class JenaOntoDriverProperties {
+
+    /**
+     * Represents parameter specify isolation strategy to be used.
+     * <p>
+     * Possible values:
+     * <ul>
+     * <li>{@link #READ_COMMITTED}</li>
+     * <li>{@link #SNAPSHOT}</li>
+     * </ul>
+     */
+    public static final String JENA_ISOLATION_STRATEGY = "cz.cvut.kbss.ontodriver.jena.isolation";
+
+    /**
+     * Default storage access isolation strategy.
+     * <p>
+     * Represents situation where transactions keep a list of their changes, but the read from a shared connector,
+     * meaning when a transaction commits changes, other transactions immediately see them.
+     *
+     * @see #JENA_ISOLATION_STRATEGY
+     */
+    public static final String READ_COMMITTED = "read_committed";
+
+    /**
+     * Storage access isolation strategy.
+     * <p>
+     * Represents situations where each transactional acquires a complete snapshot of the repository and works with it.
+     *
+     * @see #JENA_ISOLATION_STRATEGY
+     */
+    public static final String SNAPSHOT = "snapshot";
+
+    /**
+     * Represents parameter specifying type of storage to be used by this driver.
+     * <p>
+     * Possible values are:
+     * <ul>
+     * <li>{@link #FILE}</li>
+     * <li>{@link #IN_MEMORY}</li>
+     * <li>{@link #TDB}</li>
+     * <li>{@link #SDB}</li>
+     * </ul>
+     */
+    public static final String JENA_STORAGE_TYPE = "cz.cvut.kbss.ontodriver.jena.storage";
+
+    /**
+     * Plain file storage.
+     *
+     * @see #JENA_STORAGE_TYPE
+     */
+    public static final String FILE = "file";
+
+    /**
+     * In-memory storage.
+     *
+     * @see #JENA_STORAGE_TYPE
+     */
+    public static final String IN_MEMORY = "in-memory";
+
+    /**
+     * Jena TDB storage.
+     *
+     * @see #JENA_STORAGE_TYPE
+     */
+    public static final String TDB = "tdb";
+
+    /**
+     * Jena SDB storage.
+     *
+     * @see #JENA_STORAGE_TYPE
+     */
+    public static final String SDB = "sdb";
+
+    private JenaOntoDriverProperties() {
+        throw new AssertionError();
+    }
+}
