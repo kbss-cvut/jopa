@@ -4,7 +4,8 @@ import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 
 public enum JenaConfigParam implements ConfigurationParameter {
 
-    ISOLATION_STRATEGY(JenaOntoDriverProperties.JENA_ISOLATION_STRATEGY);
+    ISOLATION_STRATEGY(JenaOntoDriverProperties.JENA_ISOLATION_STRATEGY),
+    STORAGE_TYPE(JenaOntoDriverProperties.JENA_STORAGE_TYPE);
 
     private final String name;
 
