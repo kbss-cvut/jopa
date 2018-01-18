@@ -3,7 +3,6 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
@@ -58,11 +57,6 @@ class FileStorage extends Storage {
             throw new OntoDriverInitializationException("Unable to initialize file storage at " + location, e);
         }
         initDataset();
-    }
-
-    @Override
-    public Dataset getDataset() {
-        return dataset;
     }
 
     @Override

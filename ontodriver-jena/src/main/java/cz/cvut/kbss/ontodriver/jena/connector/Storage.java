@@ -24,7 +24,9 @@ abstract class Storage {
 
     abstract void initialize();
 
-    abstract Dataset getDataset();
+    Dataset getDataset() {
+        return dataset;
+    }
 
     void close() {
         // Do nothing by default

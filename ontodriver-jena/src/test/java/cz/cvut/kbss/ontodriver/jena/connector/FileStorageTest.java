@@ -1,8 +1,5 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
-import cz.cvut.kbss.ontodriver.jena.JenaDataSource;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
@@ -14,14 +11,13 @@ import org.junit.Test;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.net.URI;
 import java.nio.file.Files;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
-public class FileStorageTest {
+public class FileStorageTest extends StorageTestBase {
 
     @Test
     public void initializesStorageByReadingFileWithSingleGraph() throws Exception {
@@ -32,9 +28,7 @@ public class FileStorageTest {
             model.write(writer, "TURTLE");
         }
 
-        final Storage result = new FileStorage(
-                new Configuration(OntologyStorageProperties.driver(JenaDataSource.class.toString()).physicalUri(
-                        URI.create(file.getAbsolutePath())).build()));
+        final Storage result = new FileStorage(createConfiguration(file.getAbsolutePath()));
         result.initialize();
         final Dataset dataset = result.getDataset();
         assertNotNull(dataset);
@@ -51,9 +45,7 @@ public class FileStorageTest {
     @Test
     public void initializesStorageFromNonexistentFileByCreatingIt() {
         final String filePath = System.getProperty("java.io.tmpdir") + File.separator + "jena-test.ttl";
-        final Storage result = new FileStorage(
-                new Configuration(OntologyStorageProperties.driver(JenaDataSource.class.toString()).physicalUri(
-                        URI.create(filePath)).build()));
+        final Storage result = new FileStorage(createConfiguration(filePath));
         result.initialize();
         final Dataset dataset = result.getDataset();
         assertNotNull(dataset);
@@ -67,9 +59,7 @@ public class FileStorageTest {
     public void writeChangesOutputsChangesIntoTargetFile() throws Exception {
         final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
         file.deleteOnExit();
-        final Storage storage = new FileStorage(
-                new Configuration(OntologyStorageProperties.driver(JenaDataSource.class.toString()).physicalUri(
-                        URI.create(file.getAbsolutePath())).build()));
+        final Storage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
         storage.initialize();
         final Dataset dataset = storage.getDataset();
         final Model m = dataset.getDefaultModel();
