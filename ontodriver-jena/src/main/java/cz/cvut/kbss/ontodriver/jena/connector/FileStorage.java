@@ -6,19 +6,23 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.shared.NotFoundException;
-import org.apache.jena.util.FileManager;
+import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.riot.RiotNotFoundException;
+import org.apache.jena.util.FileUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+ * File storage accessor.
+ * <p>
+ * Note that currently this accessor does not support working with datasets. Only single graph can be present in the file.
+ */
 class FileStorage extends Storage {
 
-    // TODO Write changes to the file (on close, on commit?)
     private final String location;
 
     FileStorage(Configuration configuration) {
@@ -31,7 +35,7 @@ class FileStorage extends Storage {
         try {
             try {
                 initDataset();
-            } catch (NotFoundException e) {
+            } catch (RiotNotFoundException e) {
                 tryCreatingFile();
             }
         } catch (RuntimeException e) {
@@ -40,7 +44,7 @@ class FileStorage extends Storage {
     }
 
     private void initDataset() {
-        final Model model = FileManager.get().loadModel(location);
+        final Model model = RDFDataMgr.loadModel(location);
         this.dataset = DatasetFactory.create(model);
     }
 
@@ -51,7 +55,7 @@ class FileStorage extends Storage {
             assert result;
         } catch (IOException e) {
             LOG.error("Unable to create storage file {}.", location);
-            throw new OntoDriverInitializationException(e);
+            throw new OntoDriverInitializationException("Unable to initialize file storage at " + location, e);
         }
         initDataset();
     }
@@ -64,15 +68,10 @@ class FileStorage extends Storage {
     @Override
     void writeChanges() throws OntoDriverException {
         try (final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(location))) {
-            // TODO What language to use, i.e. how to determine it from input
-            RDFDataMgr.write(out, dataset, Lang.TRIG);
+            final String language = FileUtils.guessLang(location);
+            RDFDataMgr.write(out, dataset.getDefaultModel(), RDFLanguages.nameToLang(language));
         } catch (IOException e) {
             throw new OntoDriverException("Unable to write out dataset changes.", e);
         }
-    }
-
-    @Override
-    public void close() {
-
     }
 }
