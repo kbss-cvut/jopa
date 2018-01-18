@@ -8,7 +8,7 @@ import java.net.URI;
 
 class StorageTestBase {
 
-    Configuration createConfiguration(String physicalUri) {
+    static Configuration createConfiguration(String physicalUri) {
         return new Configuration(OntologyStorageProperties.driver(JenaDataSource.class.toString()).physicalUri(
                 URI.create(physicalUri)).build());
     }

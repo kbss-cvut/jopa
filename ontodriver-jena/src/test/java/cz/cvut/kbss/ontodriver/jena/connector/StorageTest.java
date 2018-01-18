@@ -27,6 +27,7 @@ public class StorageTest extends StorageTestBase {
         final Storage result = Storage.create(config);
         assertNotNull(result);
         assertTrue(result instanceof MemoryStorage);
+        assertNotNull(result.getDataset());
     }
 
     @Test

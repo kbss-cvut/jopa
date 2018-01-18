@@ -13,13 +13,7 @@ abstract class Storage {
 
     static final Logger LOG = LoggerFactory.getLogger(Storage.class);
 
-    final Configuration configuration;
-
     Dataset dataset;
-
-    Storage(Configuration configuration) {
-        this.configuration = configuration;
-    }
 
     void writeChanges() throws OntoDriverException {
         // Do nothing by default
@@ -32,7 +26,7 @@ abstract class Storage {
     }
 
     void close() {
-        // Do nothing by default
+        dataset.close();
     }
 
     /**
@@ -44,16 +38,21 @@ abstract class Storage {
      */
     static Storage create(Configuration configuration) {
         final String type = configuration.getProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
+        final Storage storage;
         switch (type) {
             case JenaOntoDriverProperties.IN_MEMORY:
-                return new MemoryStorage(configuration);
+                storage = new MemoryStorage();
+                break;
             case JenaOntoDriverProperties.FILE:
-                return new FileStorage(configuration);
+                storage = new FileStorage(configuration);
+                break;
             case JenaOntoDriverProperties.SDB:
             case JenaOntoDriverProperties.TDB:
                 throw new UnsupportedOperationException("Not implemented yet.");
             default:
                 throw new OntoDriverInitializationException("Unsupported storage type \'" + type + "\'.");
         }
+        storage.initialize();
+        return storage;
     }
 }
