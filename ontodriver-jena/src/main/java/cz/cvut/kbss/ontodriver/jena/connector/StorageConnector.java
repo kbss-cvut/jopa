@@ -1,14 +1,14 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Closeable;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface StorageConnector extends Closeable {
 
@@ -20,7 +20,7 @@ public interface StorageConnector extends Closeable {
     /**
      * Commits the current transaction.
      */
-    void commit();
+    void commit() throws JenaDriverException;
 
     /**
      * Rolls back the current transaction.
@@ -84,7 +84,17 @@ public interface StorageConnector extends Closeable {
      *
      * @param statements Statements to add
      */
-    void add(Collection<Statement> statements);
+    void add(List<Statement> statements);
+
+    /**
+     * Adds the specified statements to the specified context in the storage.
+     * <p>
+     * Requires an active transaction.
+     *
+     * @param statements Statements to add
+     * @param context    Target context
+     */
+    void add(List<Statement> statements, String context);
 
     /**
      * Removes the specified statements from the storage.
@@ -93,5 +103,15 @@ public interface StorageConnector extends Closeable {
      *
      * @param statements Statements to remove
      */
-    void remove(Collection<Statement> statements);
+    void remove(List<Statement> statements);
+
+    /**
+     * Removes the specified statements from the specified context in the storage.
+     * <p>
+     * Requires an active transaction.
+     *
+     * @param statements Statements to remove
+     * @param context    Target context
+     */
+    void remove(List<Statement> statements, String context);
 }

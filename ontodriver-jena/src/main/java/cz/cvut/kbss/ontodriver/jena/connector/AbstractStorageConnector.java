@@ -1,10 +1,13 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.util.Transaction;
 
 abstract class AbstractStorageConnector implements StorageConnector {
 
     final Configuration configuration;
+
+    final Transaction transaction = new Transaction();
 
     private volatile boolean open;
 

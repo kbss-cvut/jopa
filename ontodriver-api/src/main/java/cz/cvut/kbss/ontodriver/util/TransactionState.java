@@ -12,12 +12,10 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.sesame;
+package cz.cvut.kbss.ontodriver.util;
 
 /**
  * Basic transactional states.
- * 
- * @author ledvima1
  * 
  */
 public enum TransactionState {

@@ -5,6 +5,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ abstract class Storage {
 
     Dataset dataset;
 
-    void writeChanges() throws OntoDriverException {
+    void writeChanges() throws JenaDriverException {
         // Do nothing by default
     }
 

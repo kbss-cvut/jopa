@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.Configuration;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
@@ -59,12 +59,12 @@ class FileStorage extends Storage {
     }
 
     @Override
-    void writeChanges() throws OntoDriverException {
+    void writeChanges() throws JenaDriverException {
         try (final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(location))) {
             final String language = FileUtils.guessLang(location);
             RDFDataMgr.write(out, dataset.getDefaultModel(), RDFLanguages.nameToLang(language));
         } catch (IOException e) {
-            throw new OntoDriverException("Unable to write out dataset changes.", e);
+            throw new JenaDriverException("Unable to write out dataset changes.", e);
         }
     }
 }
