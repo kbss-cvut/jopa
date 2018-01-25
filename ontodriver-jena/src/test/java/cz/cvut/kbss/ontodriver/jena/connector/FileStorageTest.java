@@ -17,7 +17,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
-public class FileStorageTest extends StorageTestBase {
+public class FileStorageTest extends StorageTestUtil {
 
     @Test
     public void initializesStorageByReadingFileWithSingleGraph() throws Exception {

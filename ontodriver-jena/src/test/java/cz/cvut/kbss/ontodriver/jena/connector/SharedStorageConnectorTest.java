@@ -14,16 +14,12 @@ import org.junit.rules.ExpectedException;
 import java.util.Collection;
 import java.util.Collections;
 
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class SharedStorageConnectorTest {
-
-    private static final String RESOURCE = "http://onto.fel.cvut.cz/ontologies/jena-driver/Resource";
-    private static final String TYPE_ONE = "http://onto.fel.cvut.cz/ontologies/jena-driver/TypeOne";
-    private static final String TYPE_TWO = "http://onto.fel.cvut.cz/ontologies/jena-driver/TypeTwo";
-    private static final String NAMED_GRAPH = "http://onto.fel.cvut.cz/ontologies/jena-driver/GraphOne";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -36,7 +32,7 @@ public class SharedStorageConnectorTest {
     }
 
     private SharedStorageConnector initConnector() {
-        final Configuration configuration = StorageTestBase.createConfiguration("test:uri");
+        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
         final SharedStorageConnector connector = new SharedStorageConnector(configuration);
         connector.storage = spy(connector.storage);
         return connector;

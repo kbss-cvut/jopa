@@ -38,6 +38,12 @@ abstract class AbstractStorageConnector implements StorageConnector {
         return open;
     }
 
+    void verifyOpen() {
+        if (!open) {
+            throw new IllegalStateException("This connector is closed.");
+        }
+    }
+
     /**
      * Initializes this connector.
      * <p>

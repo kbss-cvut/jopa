@@ -16,7 +16,7 @@ public class ReadCommittedConnectorFactoryTest {
 
     @Test
     public void createConnectorCreatesNewChangeTrackingConnectorWrappingCentralConnector() throws Exception {
-        final Configuration configuration = StorageTestBase.createConfiguration("test:uri");
+        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = new ReadCommittedConnectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
         assertTrue(connector instanceof ChangeTrackingStorageConnector);
@@ -32,7 +32,7 @@ public class ReadCommittedConnectorFactoryTest {
 
     @Test
     public void closeClosesCentralConnector() throws Exception {
-        final Configuration configuration = StorageTestBase.createConfiguration("test:uri");
+        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = new ReadCommittedConnectorFactory(configuration);
         assertTrue(getCentralConnector(factory).isOpen());
         factory.close();
@@ -43,7 +43,7 @@ public class ReadCommittedConnectorFactoryTest {
     @Test
     public void createConnectorOnClosedFactoryThrowsIllegalStateException() throws Exception {
         thrown.expect(IllegalStateException.class);
-        final Configuration configuration = StorageTestBase.createConfiguration("test:uri");
+        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = new ReadCommittedConnectorFactory(configuration);
         factory.close();
         assertFalse(factory.isOpen());

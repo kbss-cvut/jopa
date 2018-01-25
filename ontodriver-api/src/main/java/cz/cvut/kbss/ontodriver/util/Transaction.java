@@ -93,7 +93,7 @@ public final class Transaction {
      */
     public void verifyActive() {
         if (!isActive()) {
-            throw new IllegalStateException("Transaction is not action. Current state is " + state);
+            throw new IllegalStateException("Transaction is not active. Current state is " + state);
         }
     }
 
