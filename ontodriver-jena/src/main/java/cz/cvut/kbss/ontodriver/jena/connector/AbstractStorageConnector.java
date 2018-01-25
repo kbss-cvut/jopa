@@ -13,6 +13,15 @@ abstract class AbstractStorageConnector implements StorageConnector {
 
     Storage storage;
 
+    /**
+     * Constructs this connector without using any configuration.
+     */
+    AbstractStorageConnector() {
+        this.configuration = null;
+        initialize();
+        this.open = true;
+    }
+
     AbstractStorageConnector(Configuration configuration) {
         this.configuration = configuration;
         initialize();
@@ -29,7 +38,14 @@ abstract class AbstractStorageConnector implements StorageConnector {
         return open;
     }
 
-    abstract void initialize();
+    /**
+     * Initializes this connector.
+     * <p>
+     * Does nothing by default.
+     */
+    void initialize() {
+        // Do nothing
+    }
 
     <T> T unwrap(Class<T> cls) {
         if (cls.isAssignableFrom(Storage.class)) {
