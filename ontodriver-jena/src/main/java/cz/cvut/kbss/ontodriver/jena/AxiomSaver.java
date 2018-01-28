@@ -7,9 +7,8 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.net.URI;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class AxiomSaver {
@@ -22,31 +21,44 @@ class AxiomSaver {
 
     void saveAxioms(AxiomValueDescriptor descriptor) {
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
-        // TODO This does not deal with contexts
-        final List<Statement> statements = new ArrayList<>();
+        final Map<String, List<Statement>> statements = new HashMap<>();
         for (Assertion a : descriptor.getAssertions()) {
-            final Property property = ResourceFactory.createProperty(a.getIdentifier().toString());
-            if (a.getType() == Assertion.AssertionType.OBJECT_PROPERTY || a.isClassAssertion()) {
-                statements.addAll(descriptor.getAssertionValues(a).stream().map(v -> {
-                    final Resource value = ResourceFactory.createResource(v.stringValue());
-                    return ResourceFactory.createStatement(subject, property, value);
-                }).collect(Collectors.toList()));
-            } else if (a.getType() == Assertion.AssertionType.DATA_PROPERTY) {
-                statements
-                        .addAll(dataPropertyValuesToStatements(descriptor.getAssertionValues(a), subject, a, property));
-            } else {
-                statements.addAll(descriptor.getAssertionValues(a).stream().map(v -> {
-                    final RDFNode value = resolveValue(a, v);
-                    return ResourceFactory.createStatement(subject, property, value);
-                }).collect(Collectors.toList()));
-            }
+            final URI context = descriptor.getAssertionContext(a);
+            final String strContext = context != null ? context.toString() : null;
+            statements.putIfAbsent(strContext, new ArrayList<>());
+            statements.get(strContext).addAll(transformToStatements(a, descriptor.getAssertionValues(a), subject));
         }
-        connector.add(statements);
+        statements.forEach((ctx, toAdd) -> {
+            if (ctx != null) {
+                connector.add(toAdd, ctx);
+            } else {
+                connector.add(toAdd);
+            }
+        });
+    }
+
+    private List<Statement> transformToStatements(Assertion assertion, Collection<Value<?>> values, Resource subject) {
+        final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
+        switch (assertion.getType()) {
+            // Intentional fall-through
+            case CLASS:
+            case OBJECT_PROPERTY:
+                return values.stream().filter(v -> v != Value.nullValue()).map(v -> ResourceFactory
+                        .createStatement(subject, property, ResourceFactory.createResource(v.stringValue())))
+                             .collect(Collectors.toList());
+            case DATA_PROPERTY:
+                return dataPropertyValuesToStatements(values, subject, assertion, property);
+            default:
+                return values.stream().filter(v -> v != Value.nullValue())
+                             .map(v -> ResourceFactory.createStatement(subject, property, resolveValue(assertion, v)))
+                             .collect(Collectors.toList());
+
+        }
     }
 
     private List<Statement> dataPropertyValuesToStatements(Collection<Value<?>> values, Resource subject, Assertion a,
                                                            Property property) {
-        return values.stream().map(v -> {
+        return values.stream().filter(v -> v != Value.nullValue()).map(v -> {
             final Literal value;
             if (a.hasLanguage()) {
                 value = ResourceFactory.createLangLiteral(v.stringValue(), a.getLanguage());

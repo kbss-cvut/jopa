@@ -18,6 +18,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 public class JenaAdapterTest {
@@ -56,5 +58,42 @@ public class JenaAdapterTest {
         verify(connectorMock).add(captor.capture());
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
+    }
+
+    @Test
+    public void commitDataToStorage() throws Exception {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        final Assertion a = Assertion.createClassAssertion(false);
+        final NamedResource type = NamedResource.create(Generator.generateUri());
+        descriptor.addAssertionValue(a, new Value<>(type));
+        adapter.persist(descriptor);
+        adapter.commit();
+        verify(connectorMock).add(anyListOf(Statement.class));
+        verify(connectorMock).commit();
+    }
+
+    @Test
+    public void commitDoesNothingWhenTransactionIsNotActive() throws Exception {
+        adapter.commit();
+        verify(connectorMock, never()).commit();
+    }
+
+    @Test
+    public void rollbackRollsBackChanges() throws Exception {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        final Assertion a = Assertion.createClassAssertion(false);
+        final NamedResource type = NamedResource.create(Generator.generateUri());
+        descriptor.addAssertionValue(a, new Value<>(type));
+        adapter.persist(descriptor);
+        adapter.rollback();
+        verify(connectorMock).add(anyListOf(Statement.class));
+        verify(connectorMock).rollback();
+        verify(connectorMock, never()).commit();
+    }
+
+    @Test
+    public void rollbackDoesNothingWhenTransactionIsNotActive() {
+        adapter.rollback();
+        verify(connectorMock, never()).rollback();
     }
 }

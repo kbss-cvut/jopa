@@ -2,13 +2,8 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.util.Transaction;
-import org.apache.jena.rdf.model.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Transformations between OntoDriver API-based values and Jena-based ones.
@@ -28,10 +23,20 @@ class JenaAdapter {
         this.connector = connector;
     }
 
-    void commit() {
+    void commit() throws JenaDriverException {
+        if (transaction.isActive()) {
+            transaction.commit();
+            connector.commit();
+            transaction.afterCommit();
+        }
     }
 
     void rollback() {
+        if (transaction.isActive()) {
+            transaction.rollback();
+            connector.rollback();
+            transaction.afterRollback();
+        }
     }
 
     void persist(AxiomValueDescriptor descriptor) {

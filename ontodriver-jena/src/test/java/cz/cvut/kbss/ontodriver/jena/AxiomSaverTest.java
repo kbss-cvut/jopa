@@ -15,9 +15,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.net.URI;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 
 public class AxiomSaverTest {
@@ -121,5 +125,28 @@ public class AxiomSaverTest {
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createTypedLiteral(value), arg.get(0).getObject());
+    }
+
+    @Test
+    public void saveAxiomsAddsStatementsIntoCorrectContextWhenAssertionHasContext() {
+        final URI context = Generator.generateUri();
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        final Integer value = 117;
+        descriptor.addAssertionValue(assertion, new Value<>(value));
+        descriptor.setAssertionContext(assertion, context);
+        saver.saveAxioms(descriptor);
+        verify(connectorMock).add(anyListOf(Statement.class), eq(context.toString()));
+    }
+
+    @Test
+    public void saveAxiomsSkipsNullValues() {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertionValue(assertion, Value.nullValue());
+        saver.saveAxioms(descriptor);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture());
+        assertTrue(captor.getValue().isEmpty());
     }
 }
