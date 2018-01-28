@@ -18,6 +18,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class ChangeTrackingStorageConnectorTest {
 
@@ -243,5 +244,16 @@ public class ChangeTrackingStorageConnectorTest {
             assertFalse(centralConnector.contains(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
                     createResource(TYPE_TWO), NAMED_GRAPH));
         }
+    }
+
+    @Test
+    public void closeDiscardsRunningTransaction() throws Exception {
+        connector.begin();
+        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                createResource(TYPE_TWO));
+        connector.add(Collections.singletonList(added));
+        connector.close();
+        assertNull(getLocalModel());
+
     }
 }

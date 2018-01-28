@@ -50,4 +50,8 @@ class JenaAdapter {
             transaction.begin();
         }
     }
+
+    void close() throws JenaDriverException {
+        connector.close();
+    }
 }

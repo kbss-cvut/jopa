@@ -124,4 +124,12 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
         transaction.verifyActive();
         localModel.removeStatements(statements, context);
     }
+
+    @Override
+    public synchronized void close() {
+        if (transaction.isActive()) {
+            rollback();
+        }
+        super.close();
+    }
 }

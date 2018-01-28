@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Closeable;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -114,4 +115,7 @@ public interface StorageConnector extends Closeable {
      * @param context    Target context
      */
     void remove(List<Statement> statements, String context);
+
+    @Override
+    void close() throws JenaDriverException;
 }

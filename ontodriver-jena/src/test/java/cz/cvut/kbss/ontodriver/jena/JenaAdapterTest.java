@@ -96,4 +96,10 @@ public class JenaAdapterTest {
         adapter.rollback();
         verify(connectorMock, never()).rollback();
     }
+
+    @Test
+    public void closeClosesConnector() throws Exception {
+        adapter.close();
+        verify(connectorMock).close();
+    }
 }

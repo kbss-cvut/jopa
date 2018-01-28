@@ -4,18 +4,23 @@ import cz.cvut.kbss.ontodriver.*;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 class JenaConnection implements Connection {
 
     private boolean open;
     private boolean autoCommit;
 
-    public JenaConnection() {
+    private final JenaAdapter adapter;
+
+    JenaConnection(JenaAdapter adapter) {
+        this.adapter = adapter;
         this.open = true;
     }
 
@@ -25,13 +30,19 @@ class JenaConnection implements Connection {
     }
 
     @Override
-    public void commit() throws OntoDriverException {
-
+    public void commit() throws JenaDriverException {
+        ensureOpen();
+        if (!autoCommit) {
+            adapter.commit();
+        }
     }
 
     @Override
-    public void rollback() throws OntoDriverException {
-
+    public void rollback() {
+        ensureOpen();
+        if (!autoCommit) {
+            adapter.rollback();
+        }
     }
 
     @Override
@@ -44,6 +55,12 @@ class JenaConnection implements Connection {
     public boolean isAutoCommit() {
         ensureOpen();
         return autoCommit;
+    }
+
+    private void commitIfAuto() throws JenaDriverException {
+        if (autoCommit) {
+            adapter.commit();
+        }
     }
 
     @Override
@@ -77,8 +94,15 @@ class JenaConnection implements Connection {
     }
 
     @Override
-    public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException {
-
+    public void persist(AxiomValueDescriptor descriptor) throws JenaDriverException {
+        ensureOpen();
+        Objects.requireNonNull(descriptor);
+        try {
+            adapter.persist(descriptor);
+            commitIfAuto();
+        } catch (RuntimeException e) {
+            throw new JenaDriverException(e);
+        }
     }
 
     @Override
@@ -117,10 +141,11 @@ class JenaConnection implements Connection {
     }
 
     @Override
-    public void close() {
+    public void close() throws JenaDriverException {
         if (!open) {
             return;
         }
+        adapter.close();
         this.open = false;
     }
 
