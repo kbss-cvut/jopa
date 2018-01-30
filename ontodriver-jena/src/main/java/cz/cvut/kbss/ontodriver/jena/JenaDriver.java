@@ -28,6 +28,8 @@ public class JenaDriver implements Closeable, ConnectionListener {
 
     private final Set<JenaConnection> openConnections;
 
+    private boolean autoCommit;
+
     JenaDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {
         assert properties != null;
         this.configuration = new Configuration(storageProperties);
@@ -35,6 +37,8 @@ public class JenaDriver implements Closeable, ConnectionListener {
                .forEach(c -> configuration.setProperty(c, properties.get(c.toString())));
         this.connectorFactory = buildConnectorFactory();
         this.openConnections = Collections.synchronizedSet(new HashSet<>());
+        this.autoCommit = configuration.isSet(ConfigParam.AUTO_COMMIT) ? configuration.is(ConfigParam.AUTO_COMMIT) :
+                          Constants.DEFAULT_AUTO_COMMIT;
         this.open = true;
     }
 
@@ -53,6 +57,7 @@ public class JenaDriver implements Closeable, ConnectionListener {
         final JenaAdapter adapter = new JenaAdapter(connectorFactory.createConnector());
         final JenaConnection connection = new JenaConnection(adapter);
         connection.registerListener(this);
+        connection.setAutoCommit(autoCommit);
         openConnections.add(connection);
         return connection;
     }

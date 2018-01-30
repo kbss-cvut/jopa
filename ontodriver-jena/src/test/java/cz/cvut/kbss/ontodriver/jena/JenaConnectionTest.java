@@ -1,9 +1,10 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,11 +14,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.net.URI;
+
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.*;
 
 public class JenaConnectionTest {
 
@@ -134,5 +136,43 @@ public class JenaConnectionTest {
         connection.registerListener(listener);
         connection.close();
         verify(listener).connectionClosed(connection);
+    }
+
+    @Test
+    public void unwrapReturnsConnectionInstanceIfClassMatches() throws Exception {
+        final JenaConnection result = connection.unwrap(JenaConnection.class);
+        assertSame(connection, result);
+    }
+
+    @Test
+    public void unwrapPassesCallToAdapterWhenClassDoesNotMatch() throws Exception {
+        connection.unwrap(StorageConnector.class);
+        verify(adapterMock).unwrap(StorageConnector.class);
+    }
+
+    @Test
+    public void unwrapThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        connection.unwrap(StorageConnector.class);
+    }
+
+    @Test
+    public void containsCallsAdapterWithArguments() {
+        final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(Generator.generateUri())));
+        final URI context = Generator.generateUri();
+        connection.contains(axiom, context);
+        verify(adapterMock).contains(axiom, context);
+    }
+
+    @Test
+    public void containsThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(Generator.generateUri())));
+        final URI context = Generator.generateUri();
+        connection.close();
+        expectClosedException();
+        connection.contains(axiom, context);
     }
 }

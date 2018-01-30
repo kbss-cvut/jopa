@@ -3,9 +3,7 @@ package cz.cvut.kbss.ontodriver.jena;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,9 +16,12 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class JenaAdapterTest {
 
@@ -101,5 +102,23 @@ public class JenaAdapterTest {
     public void closeClosesConnector() throws Exception {
         adapter.close();
         verify(connectorMock).close();
+    }
+
+    @Test
+    public void containsStartsTransactionWhenItIsNotActive() {
+        final String typeUri = Generator.generateUri().toString();
+        final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(typeUri)));
+        adapter.contains(ax, Generator.generateUri());
+        verify(connectorMock).begin();
+    }
+
+    @Test
+    public void containsChecksForStatementExistence() {
+        final String typeUri = Generator.generateUri().toString();
+        final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(typeUri)));
+        when(connectorMock.contains(any(), any(), any())).thenReturn(true);
+        assertTrue(adapter.contains(ax, null));
     }
 }

@@ -1,9 +1,14 @@
 package cz.cvut.kbss.ontodriver.jena;
 
+import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.util.Transaction;
+
+import java.net.URI;
 
 /**
  * Transformations between OntoDriver API-based values and Jena-based ones.
@@ -13,7 +18,7 @@ import cz.cvut.kbss.ontodriver.util.Transaction;
  * <li>Datatype literal types are based on Jena's mapping, as described in a table at <a href="https://jena.apache.org/documentation/notes/typed-literals.html">https://jena.apache.org/documentation/notes/typed-literals.html</a></li>
  * </ul>
  */
-class JenaAdapter {
+class JenaAdapter implements Wrapper {
 
     private final Transaction transaction = new Transaction();
 
@@ -51,7 +56,17 @@ class JenaAdapter {
         }
     }
 
+    boolean contains(Axiom<?> axiom, URI context) {
+        beginTransactionIfNotActive();
+        return new AxiomLoader(connector).contains(axiom, context);
+    }
+
     void close() throws JenaDriverException {
         connector.close();
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> cls) throws OntoDriverException {
+        return null;
     }
 }

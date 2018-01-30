@@ -1,6 +1,10 @@
 package cz.cvut.kbss.ontodriver.jena.util;
 
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResourceFactory;
 
 import java.net.URL;
 
@@ -33,6 +37,21 @@ public class JenaUtils {
             return uri.isAbsolute();
         } catch (IllegalArgumentException e) {
             return false;
+        }
+    }
+
+    /**
+     * Transforms the specified value to an {@link RDFNode}, be it a resource or a literal.
+     * @param assertion Assertion representing the asserted property
+     * @param value Value to transform
+     * @return Jena RDFNode
+     */
+    public static RDFNode valueToRdfNode(Assertion assertion, Value<?> value) {
+        if (JenaUtils.isResourceIdentifier(value.getValue())) {
+            return ResourceFactory.createResource(value.stringValue());
+        } else {
+            return assertion.hasLanguage() ? ResourceFactory.createLangLiteral(value.stringValue(), assertion.getLanguage()) :
+                   ResourceFactory.createTypedLiteral(value.getValue());
         }
     }
 }

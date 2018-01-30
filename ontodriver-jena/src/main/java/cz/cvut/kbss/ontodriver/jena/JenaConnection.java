@@ -91,8 +91,10 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
-        return false;
+    public boolean contains(Axiom<?> axiom, URI context) {
+        ensureOpen();
+        Objects.requireNonNull(axiom);
+        return adapter.contains(axiom, context);
     }
 
     @Override
@@ -144,7 +146,12 @@ public class JenaConnection implements Connection {
 
     @Override
     public <T> T unwrap(Class<T> cls) throws OntoDriverException {
-        return null;
+        ensureOpen();
+        Objects.requireNonNull(cls);
+        if (cls.isAssignableFrom(getClass())) {
+            return cls.cast(this);
+        }
+        return adapter.unwrap(cls);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.jena.connector.ReadCommittedConnectorFactory;
@@ -101,5 +102,13 @@ public class JenaDriverTest {
         listenersField.setAccessible(true);
         final Set listeners = (Set) listenersField.get(connection);
         assertTrue(listeners.contains(driver));
+    }
+
+    @Test
+    public void driverCreatesAutoCommitConnectionsWhenConfiguredTo() {
+        properties.put(OntoDriverProperties.CONNECTION_AUTO_COMMIT, Boolean.TRUE.toString());
+        this.driver = new JenaDriver(storageProps, properties);
+        final JenaConnection connection = driver.acquireConnection();
+        assertTrue(connection.isAutoCommit());
     }
 }

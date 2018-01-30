@@ -50,7 +50,8 @@ class AxiomSaver {
                 return dataPropertyValuesToStatements(values, subject, assertion, property);
             default:
                 return values.stream().filter(v -> v != Value.nullValue())
-                             .map(v -> ResourceFactory.createStatement(subject, property, resolveValue(assertion, v)))
+                             .map(v -> ResourceFactory
+                                     .createStatement(subject, property, JenaUtils.valueToRdfNode(assertion, v)))
                              .collect(Collectors.toList());
 
         }
@@ -67,14 +68,5 @@ class AxiomSaver {
             }
             return ResourceFactory.createStatement(subject, property, value);
         }).collect(Collectors.toList());
-    }
-
-    private RDFNode resolveValue(Assertion a, Value<?> value) {
-        if (JenaUtils.isResourceIdentifier(value.getValue())) {
-            return ResourceFactory.createResource(value.stringValue());
-        } else {
-            return a.hasLanguage() ? ResourceFactory.createLangLiteral(value.stringValue(), a.getLanguage()) :
-                    ResourceFactory.createTypedLiteral(value.getValue());
-        }
     }
 }
