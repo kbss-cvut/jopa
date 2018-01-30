@@ -86,8 +86,9 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public List<URI> getContexts() throws OntoDriverException {
-        return null;
+    public List<URI> getContexts() {
+        ensureOpen();
+        return adapter.getContext();
     }
 
     @Override

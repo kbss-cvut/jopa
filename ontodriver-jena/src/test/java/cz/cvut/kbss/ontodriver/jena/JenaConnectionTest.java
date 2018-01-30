@@ -15,10 +15,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class JenaConnectionTest {
@@ -174,5 +175,25 @@ public class JenaConnectionTest {
         connection.close();
         expectClosedException();
         connection.contains(axiom, context);
+    }
+
+    @Test
+    public void getContextsCallsAdapter() {
+        final List<URI> contexts = Collections.singletonList(Generator.generateUri());
+        when(adapterMock.getContext()).thenReturn(contexts);
+        final List<URI> result = connection.getContexts();
+        verify(adapterMock).getContext();
+        assertEquals(contexts, result);
+    }
+
+    @Test
+    public void getContextsThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        try {
+            connection.getContexts();
+        } finally {
+            verify(adapterMock, never()).getContext();
+        }
     }
 }
