@@ -1,21 +1,23 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.*;
+import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
-class JenaConnection implements Connection {
+public class JenaConnection implements Connection {
 
     private boolean open;
     private boolean autoCommit;
+
+    private final Set<ConnectionListener> listeners = new HashSet<>(4);
 
     private final JenaAdapter adapter;
 
@@ -24,9 +26,14 @@ class JenaConnection implements Connection {
         this.open = true;
     }
 
+    void registerListener(ConnectionListener listener) {
+        ensureOpen();
+        listeners.add(listener);
+    }
+
     @Override
     public boolean isOpen() {
-        return false;
+        return open;
     }
 
     @Override
@@ -146,6 +153,7 @@ class JenaConnection implements Connection {
             return;
         }
         adapter.close();
+        listeners.forEach(listener -> listener.connectionClosed(this));
         this.open = false;
     }
 

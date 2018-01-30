@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -124,5 +126,13 @@ public class JenaConnectionTest {
         connection.close();
         expectClosedException();
         connection.persist(descriptor);
+    }
+
+    @Test
+    public void closeNotifiesRegisteredListeners() throws Exception {
+        final ConnectionListener listener = mock(ConnectionListener.class);
+        connection.registerListener(listener);
+        connection.close();
+        verify(listener).connectionClosed(connection);
     }
 }

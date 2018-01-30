@@ -3,7 +3,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
-abstract class ConnectorFactory implements Closeable {
+public abstract class ConnectorFactory implements Closeable {
 
     private boolean open = true;
 
