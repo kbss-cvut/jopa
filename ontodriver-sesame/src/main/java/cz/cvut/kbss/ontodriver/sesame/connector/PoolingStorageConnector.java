@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -154,7 +154,7 @@ class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public void removeStatements(Collection<Statement> statements) throws SesameDriverException {
+    public void removeStatements(Collection<Statement> statements) {
         verifyTransactionActive();
         assert statements != null;
         localModel.removeStatements(statements);
@@ -198,13 +198,19 @@ class PoolingStorageConnector extends AbstractConnector {
             throws SesameDriverException {
         verifyTransactionActive();
         try {
-            final boolean connectionHas;
-            if (context != null) {
-                connectionHas = connection.hasStatement(subject, property, value, includeInferred, context);
-            } else {
-                connectionHas = connection.hasStatement(subject, property, value, includeInferred);
+            final LocalModel.Contains containsLocally = localModel.contains(subject, property, value, context);
+            switch (containsLocally) {
+                case TRUE:
+                    return true;
+                case FALSE:
+                    return false;
+                default:
+                    if (context != null) {
+                        return connection.hasStatement(subject, property, value, includeInferred, context);
+                    } else {
+                        return connection.hasStatement(subject, property, value, includeInferred);
+                    }
             }
-            return connectionHas || localModel.contains(subject, property, value, context);
         } catch (RepositoryException e) {
             rollback();
             throw new SesameDriverException(e);

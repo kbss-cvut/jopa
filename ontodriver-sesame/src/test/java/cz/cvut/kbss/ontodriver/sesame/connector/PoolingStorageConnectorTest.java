@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.sesame.Transaction;
 import cz.cvut.kbss.ontodriver.sesame.TransactionState;
+import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
@@ -34,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -52,6 +52,8 @@ public class PoolingStorageConnectorTest {
     @Mock
     private Lock writeLock;
 
+    private ValueFactory vf;
+
     private Transaction transaction;
 
     private PoolingStorageConnector connector;
@@ -59,6 +61,7 @@ public class PoolingStorageConnectorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        this.vf = SimpleValueFactory.getInstance();
         this.connector = new PoolingStorageConnector(centralMock);
         final Field transactionField = AbstractConnector.class.getDeclaredField("transaction");
         transactionField.setAccessible(true);
@@ -186,8 +189,8 @@ public class PoolingStorageConnectorTest {
         connector.commit();
         verify(writeLock).lock();
         verify(centralMock).begin();
-        verify(centralMock).addStatements(any(Collection.class));
-        verify(centralMock).removeStatements(any(Collection.class));
+        verify(centralMock).addStatements(anyListOf(Statement.class));
+        verify(centralMock).removeStatements(anyListOf(Statement.class));
         verify(centralMock).commit();
         verify(writeLock).unlock();
         assertFalse(transaction.isActive());
@@ -201,8 +204,8 @@ public class PoolingStorageConnectorTest {
             connector.commit();
         } finally {
             verify(centralMock).begin();
-            verify(centralMock).addStatements(any(Collection.class));
-            verify(centralMock).removeStatements(any(Collection.class));
+            verify(centralMock).addStatements(anyListOf(Statement.class));
+            verify(centralMock).removeStatements(anyListOf(Statement.class));
             verify(centralMock).commit();
             verify(writeLock).unlock();
             assertEquals(TransactionState.ABORTED, transaction.getState());
@@ -228,7 +231,7 @@ public class PoolingStorageConnectorTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testRemoveStatementsInactiveTransaction() throws Exception {
+    public void testRemoveStatementsInactiveTransaction() {
         final List<Statement> statements = getStatements();
         connector.removeStatements(statements);
     }
@@ -275,7 +278,6 @@ public class PoolingStorageConnectorTest {
 
     @Test
     public void findStatementsReusesRepositoryConnectionDuringTransaction() throws Exception {
-        final ValueFactory vf = SimpleValueFactory.getInstance();
         final RepositoryConnection conn = mock(RepositoryConnection.class);
         when(conn.getStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
                 .thenReturn(new RepositoryResult<>(mock(CloseableIteration.class)));
@@ -290,7 +292,6 @@ public class PoolingStorageConnectorTest {
 
     @Test(expected = SesameDriverException.class)
     public void exceptionInFindStatementsCausesTransactionRollback() throws Exception {
-        final ValueFactory vf = SimpleValueFactory.getInstance();
         final RepositoryConnection conn = mock(RepositoryConnection.class);
         when(conn.getStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
                 .thenThrow(new RepositoryException());
@@ -326,5 +327,44 @@ public class PoolingStorageConnectorTest {
         connector.close();
         connector.close();
         verify(centralMock).releaseConnection(conn);
+    }
+
+    @Test
+    public void containsReturnsTrueWhenLocalModelContainsStatement() throws Exception {
+        final Resource subject = vf.createIRI(Generator.generateUri().toString());
+        final IRI property = vf.createIRI(Generator.generateUri().toString());
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
+        when(centralMock.acquireConnection()).thenReturn(conn);
+        connector.begin();
+        connector.addStatements(Collections.singletonList(vf.createStatement(subject, property, vf.createLiteral(117))));
+        assertTrue(connector.containsStatement(subject, property, null, false));
+        verify(conn, never()).hasStatement(subject, property, null, false);
+    }
+
+    @Test
+    public void containsReturnsTrueWhenCentralConnectorsContainsStatementAndLocalDoesNot() throws Exception {
+        final Resource subject = vf.createIRI(Generator.generateUri().toString());
+        final IRI property = vf.createIRI(Generator.generateUri().toString());
+        when(centralMock.containsStatement(subject, property, null, false)).thenReturn(true);
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
+        when(centralMock.acquireConnection()).thenReturn(conn);
+        connector.begin();
+        assertTrue(connector.containsStatement(subject, property, null, false));
+    }
+
+    @Test
+    public void containsReturnsFalseWhenStatementsWasRemovedLocally() throws Exception {
+        final Resource subject = vf.createIRI(Generator.generateUri().toString());
+        final IRI property = vf.createIRI(Generator.generateUri().toString());
+        when(centralMock.containsStatement(subject, property, null, false)).thenReturn(true);
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
+        when(centralMock.acquireConnection()).thenReturn(conn);
+        connector.begin();
+        connector.removeStatements(
+                Collections.singletonList(vf.createStatement(subject, property, vf.createLiteral(117))));
+        assertFalse(connector.containsStatement(subject, property, null, false));
     }
 }

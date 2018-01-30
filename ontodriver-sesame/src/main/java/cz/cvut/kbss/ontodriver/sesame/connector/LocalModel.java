@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,6 +27,10 @@ class LocalModel {
     private final Model addedStatements;
     private final Model removedStatements;
 
+    enum Contains {
+        TRUE, FALSE, UNKNOWN
+    }
+
     LocalModel() {
         this.addedStatements = new LinkedHashModel();
         this.removedStatements = new LinkedHashModel();
@@ -46,11 +50,17 @@ class LocalModel {
         statements.removeAll(removed);
     }
 
-    boolean contains(Resource subject, IRI property, Value object, IRI context) {
+    Contains contains(Resource subject, IRI property, Value object, IRI context) {
         if (context != null) {
-            return addedStatements.contains(subject, property, object, context);
+            if (addedStatements.contains(subject, property, object, context)) {
+                return Contains.TRUE;
+            }
+            return removedStatements.contains(subject, property, object, context) ? Contains.FALSE : Contains.UNKNOWN;
         } else {
-            return addedStatements.contains(subject, property, object);
+            if (addedStatements.contains(subject, property, object)) {
+                return Contains.TRUE;
+            }
+            return removedStatements.contains(subject, property, object) ? Contains.FALSE : Contains.UNKNOWN;
         }
     }
 
