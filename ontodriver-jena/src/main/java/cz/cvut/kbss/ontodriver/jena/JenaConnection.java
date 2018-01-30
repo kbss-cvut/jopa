@@ -116,8 +116,10 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public URI generateIdentifier(URI classUri) throws OntoDriverException {
-        return null;
+    public URI generateIdentifier(URI classUri) {
+        ensureOpen();
+        Objects.requireNonNull(classUri);
+        return adapter.generateIdentifier(classUri);
     }
 
     @Override

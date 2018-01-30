@@ -196,4 +196,20 @@ public class JenaConnectionTest {
             verify(adapterMock, never()).getContext();
         }
     }
+
+    @Test
+    public void generateIdentifierCallsAdapter() {
+        final URI uri = Generator.generateUri();
+        when(adapterMock.generateIdentifier(uri)).thenReturn(uri);
+        final URI result = connection.generateIdentifier(uri);
+        assertNotNull(result);
+        verify(adapterMock).generateIdentifier(uri);
+    }
+
+    @Test
+    public void generateIdentifierThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        connection.generateIdentifier(Generator.generateUri());
+    }
 }

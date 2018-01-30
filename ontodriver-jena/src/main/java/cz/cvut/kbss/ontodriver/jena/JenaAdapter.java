@@ -5,6 +5,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 
@@ -66,6 +67,11 @@ class JenaAdapter implements Wrapper {
     List<URI> getContext() {
         beginTransactionIfNotActive();
         return connector.getContexts().stream().map(URI::create).collect(Collectors.toList());
+    }
+
+    URI generateIdentifier(URI classUri) {
+        beginTransactionIfNotActive();
+        return new IdentifierGenerator(connector).generateIdentifier(classUri);
     }
 
     void close() throws JenaDriverException {
