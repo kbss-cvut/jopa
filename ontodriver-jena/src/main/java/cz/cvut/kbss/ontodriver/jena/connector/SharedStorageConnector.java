@@ -6,7 +6,9 @@ import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.system.Txn;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -86,6 +88,15 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         verifyOpen();
         return Txn.calculateRead(storage.getDataset(),
                 () -> storage.getDataset().getNamedModel(context).contains(subject, property, value));
+    }
+
+    @Override
+    public List<String> getContexts() {
+        verifyOpen();
+        final Iterator<String> it = Txn.calculateRead(storage.getDataset(), () -> storage.getDataset().listNames());
+        final List<String> contexts = new ArrayList<>();
+        it.forEachRemaining(contexts::add);
+        return contexts;
     }
 
     @Override

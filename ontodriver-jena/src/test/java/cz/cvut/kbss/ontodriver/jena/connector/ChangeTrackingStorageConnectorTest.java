@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -12,13 +13,13 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 public class ChangeTrackingStorageConnectorTest {
 
@@ -254,6 +255,22 @@ public class ChangeTrackingStorageConnectorTest {
         connector.add(Collections.singletonList(added));
         connector.close();
         assertNull(getLocalModel());
+    }
 
+    @Test
+    public void getContextsGetsContextFromBothLocalModelAndSharedConnector() throws Exception {
+        connector.begin();
+        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                createResource(TYPE_TWO));
+        centralConnector.begin();
+        centralConnector.add(Collections.singletonList(added), NAMED_GRAPH);
+        centralConnector.commit();
+        final String contextTwo = Generator.generateUri().toString();
+        final Statement addedTwo = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                createResource(TYPE_TWO));
+        connector.add(Collections.singletonList(addedTwo), contextTwo);
+        final List<String> contexts = connector.getContexts();
+        assertTrue(contexts.contains(NAMED_GRAPH));
+        assertTrue(contexts.contains(contextTwo));
     }
 }

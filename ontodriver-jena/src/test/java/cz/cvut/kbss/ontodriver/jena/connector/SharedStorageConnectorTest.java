@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
@@ -13,6 +14,7 @@ import org.junit.rules.ExpectedException;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.junit.Assert.*;
@@ -193,5 +195,30 @@ public class SharedStorageConnectorTest {
         assertTrue(connector.storage.getDataset().getDefaultModel().contains(statement));
         connector.rollback();
         assertFalse(connector.storage.getDataset().getDefaultModel().contains(statement));
+    }
+
+    @Test
+    public void getContextsListsContextInRepository() throws Exception {
+        final SharedStorageConnector connector = initConnector();
+        connector.begin();
+        final String ctxOne = Generator.generateUri().toString();
+        final Statement statementOne = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
+                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_ONE));
+        final Statement statementTwo = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
+                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        connector.add(Collections.singletonList(statementOne), ctxOne);
+        connector.add(Collections.singletonList(statementTwo), NAMED_GRAPH);
+        connector.commit();
+        final List<String> contexts = connector.getContexts();
+        assertTrue(contexts.contains(ctxOne));
+        assertTrue(contexts.contains(NAMED_GRAPH));
+    }
+
+    @Test
+    public void getContextReturnsEmptyListWhenNoNamedGraphsArePresent() {
+        final SharedStorageConnector connector = initConnector();
+        final List<String> contexts = connector.getContexts();
+        assertNotNull(contexts);
+        assertTrue(contexts.isEmpty());
     }
 }

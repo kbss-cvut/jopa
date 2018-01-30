@@ -79,6 +79,13 @@ public interface StorageConnector extends Closeable {
     boolean contains(Resource subject, Property property, RDFNode value, String context);
 
     /**
+     * Lists all contexts (named graph) in the repository (including the transactional ones).
+     *
+     * @return List of named graph URIs
+     */
+    List<String> getContexts();
+
+    /**
      * Adds the specified statements to the storage.
      * <p>
      * Requires an active transaction.

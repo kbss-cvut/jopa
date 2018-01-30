@@ -9,6 +9,8 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Transformations between OntoDriver API-based values and Jena-based ones.
@@ -59,6 +61,11 @@ class JenaAdapter implements Wrapper {
     boolean contains(Axiom<?> axiom, URI context) {
         beginTransactionIfNotActive();
         return new AxiomLoader(connector).contains(axiom, context);
+    }
+
+    List<URI> getContext() {
+        beginTransactionIfNotActive();
+        return connector.getContexts().stream().map(URI::create).collect(Collectors.toList());
     }
 
     void close() throws JenaDriverException {

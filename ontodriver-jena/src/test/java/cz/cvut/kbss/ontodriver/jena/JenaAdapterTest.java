@@ -13,7 +13,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -120,5 +123,15 @@ public class JenaAdapterTest {
                 new Value<>(NamedResource.create(typeUri)));
         when(connectorMock.contains(any(), any(), any())).thenReturn(true);
         assertTrue(adapter.contains(ax, null));
+    }
+
+    @Test
+    public void getContextsListsContextsFromConnectorAndTransformsThemToUris() {
+        final List<String> contexts = IntStream.range(0, 5).mapToObj(i -> Generator.generateUri().toString()).collect(
+                Collectors.toList());
+        when(connectorMock.getContexts()).thenReturn(contexts);
+        final List<URI> result = adapter.getContext();
+        assertEquals(contexts.size(), result.size());
+        result.forEach(u -> assertTrue(contexts.contains(u.toString())));
     }
 }

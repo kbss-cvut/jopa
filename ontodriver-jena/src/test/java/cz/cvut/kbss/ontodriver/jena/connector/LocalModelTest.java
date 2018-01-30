@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
@@ -160,5 +161,20 @@ public class LocalModelTest {
                         NAMED_GRAPH);
         assertEquals(1, result.size());
         assertTrue(result.contains(added));
+    }
+
+    @Test
+    public void getContextsGetsNamedGraphsInLocalModel() {
+        final Statement added = statement(RESOURCE, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(added), NAMED_GRAPH);
+        final List<String> result = localModel.getContexts();
+        assertTrue(result.contains(NAMED_GRAPH));
+    }
+
+    @Test
+    public void getContextReturnsEmptyListWhenNoNamedGraphsArePresent() {
+        final List<String> contexts = localModel.getContexts();
+        assertNotNull(contexts);
+        assertTrue(contexts.isEmpty());
     }
 }

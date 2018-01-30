@@ -4,8 +4,7 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.*;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * This connector tracks transactional changes and writes them on commit to the {@link SharedStorageConnector}.
@@ -99,6 +98,15 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
         return localStatus == LocalModel.Containment.ADDED ||
                 localStatus == LocalModel.Containment.UNKNOWN &&
                         centralConnector.contains(subject, property, value, context);
+    }
+
+    @Override
+    public List<String> getContexts() {
+        transaction.verifyActive();
+        final List<String> centralContexts = centralConnector.getContexts();
+        final Set<String> set = new LinkedHashSet<>(centralContexts);
+        set.addAll(localModel.getContexts());
+        return new ArrayList<>(set);
     }
 
     @Override

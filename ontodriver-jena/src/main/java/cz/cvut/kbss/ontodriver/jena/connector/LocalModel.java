@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -89,5 +90,12 @@ class LocalModel {
 
     Dataset getRemoved() {
         return removed;
+    }
+
+    List<String> getContexts() {
+        final Iterator<String> it = added.listNames();
+        final List<String> contexts = new ArrayList<>();
+        it.forEachRemaining(contexts::add);
+        return contexts;
     }
 }
