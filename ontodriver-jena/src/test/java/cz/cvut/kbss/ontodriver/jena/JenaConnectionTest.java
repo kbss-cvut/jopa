@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena;
 
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
@@ -159,7 +160,7 @@ public class JenaConnectionTest {
     }
 
     @Test
-    public void containsCallsAdapterWithArguments() {
+    public void containsCallsAdapterWithArguments() throws Exception {
         final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Generator.generateUri())));
         final URI context = Generator.generateUri();
@@ -211,5 +212,20 @@ public class JenaConnectionTest {
         connection.close();
         expectClosedException();
         connection.generateIdentifier(Generator.generateUri());
+    }
+
+    @Test
+    public void findCallsAdapterWithDescriptor() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        connection.find(descriptor);
+        verify(adapterMock).find(descriptor);
+    }
+
+    @Test
+    public void findThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        connection.find(descriptor);
     }
 }

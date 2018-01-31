@@ -12,4 +12,8 @@ public class Generator {
     public static URI generateUri() {
         return URI.create(URI_BASE + "instance" + Integer.toString(RANDOM.nextInt()));
     }
+
+    public static int randomInt() {
+        return RANDOM.nextInt();
+    }
 }

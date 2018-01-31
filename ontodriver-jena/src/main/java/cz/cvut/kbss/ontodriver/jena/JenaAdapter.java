@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Wrapper;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
@@ -10,6 +11,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +61,10 @@ class JenaAdapter implements Wrapper {
         }
     }
 
+    Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
+        return null;
+    }
+
     boolean contains(Axiom<?> axiom, URI context) {
         beginTransactionIfNotActive();
         return new AxiomLoader(connector).contains(axiom, context);
@@ -80,6 +86,9 @@ class JenaAdapter implements Wrapper {
 
     @Override
     public <T> T unwrap(Class<T> cls) throws OntoDriverException {
+        if (cls.isAssignableFrom(getClass())) {
+            return cls.cast(this);
+        }
         return null;
     }
 }

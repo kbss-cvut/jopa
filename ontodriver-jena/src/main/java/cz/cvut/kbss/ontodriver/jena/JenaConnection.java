@@ -92,15 +92,25 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public boolean contains(Axiom<?> axiom, URI context) {
+    public boolean contains(Axiom<?> axiom, URI context) throws JenaDriverException {
         ensureOpen();
         Objects.requireNonNull(axiom);
-        return adapter.contains(axiom, context);
+        try {
+            return adapter.contains(axiom, context);
+        } catch (RuntimeException e) {
+            throw new JenaDriverException(e);
+        }
     }
 
     @Override
-    public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
-        return null;
+    public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws JenaDriverException {
+        ensureOpen();
+        Objects.requireNonNull(descriptor);
+        try {
+            return adapter.find(descriptor);
+        } catch (RuntimeException e) {
+            throw new JenaDriverException(e);
+        }
     }
 
     @Override

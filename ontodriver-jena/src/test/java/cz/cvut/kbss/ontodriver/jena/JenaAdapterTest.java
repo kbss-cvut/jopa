@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -133,5 +134,11 @@ public class JenaAdapterTest {
         final List<URI> result = adapter.getContext();
         assertEquals(contexts.size(), result.size());
         result.forEach(u -> assertTrue(contexts.contains(u.toString())));
+    }
+
+    @Test
+    public void unwrapReturnsAdapterInstanceWhenTargetClassMatches() throws Exception {
+        final JenaAdapter result = adapter.unwrap(JenaAdapter.class);
+        assertSame(adapter, result);
     }
 }
