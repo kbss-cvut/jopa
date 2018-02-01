@@ -1,9 +1,11 @@
 package cz.cvut.kbss.ontodriver.jena;
 
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.*;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -140,5 +144,25 @@ public class JenaAdapterTest {
     public void unwrapReturnsAdapterInstanceWhenTargetClassMatches() throws Exception {
         final JenaAdapter result = adapter.unwrap(JenaAdapter.class);
         assertSame(adapter, result);
+    }
+
+    @Test
+    public void findLoadsAxiomsFromStorage() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(assertion);
+        final Statement s = ResourceFactory
+                .createStatement(ResourceFactory.createResource(SUBJECT.getIdentifier().toString()), ResourceFactory
+                                .createProperty(assertion.getIdentifier().toString()),
+                        ResourceFactory.createResource(Generator.generateUri().toString()));
+        when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singletonList(s));
+
+        final Collection<Axiom<?>> result = adapter.find(descriptor);
+        assertEquals(1, result.size());
+        final Axiom<?> axiom = result.iterator().next();
+        assertEquals(SUBJECT, axiom.getSubject());
+        assertEquals(assertion, axiom.getAssertion());
+        assertEquals(s.getObject().asResource().getURI(), axiom.getValue().stringValue());
+        verify(connectorMock).find(ResourceFactory.createResource(SUBJECT.getIdentifier().toString()), null, null);
     }
 }

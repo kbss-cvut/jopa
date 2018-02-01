@@ -21,8 +21,7 @@ import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +29,7 @@ public class AxiomLoaderTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
     private static final Resource SUBJECT_RES = createResource(SUBJECT.getIdentifier().toString());
+    private static final URI CONTEXT = Generator.generateUri();
 
     @Mock
     private StorageConnector connectorMock;
@@ -96,26 +96,17 @@ public class AxiomLoaderTest {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(Generator.generateUri(), false));
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(Generator.generateUri(), false));
-        final List<Statement> statements = generateObjectPropertyAssertions(descriptor);
+        final List<Statement> statements = generateObjectPropertyAssertions(descriptor.getAssertions());
         when(connectorMock.find(any(), any(), any())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
-        assertEquals(statements.size(), result.size());
-        int i = 0;
-        for (Axiom<?> axiom : result) {
-            assertEquals(SUBJECT, axiom.getSubject());
-            assertEquals(statements.get(i).getPredicate().getURI(), axiom.getAssertion().getIdentifier().toString());
-            assertEquals(Assertion.AssertionType.OBJECT_PROPERTY, axiom.getAssertion().getType());
-            assertFalse(axiom.getAssertion().isInferred());
-            assertEquals(statements.get(i).getObject().asResource().getURI(), axiom.getValue().stringValue());
-            i++;
-        }
+        verifyObjectPropertyAxioms(statements, result);
         verify(connectorMock).find(SUBJECT_RES, null, null);
     }
 
-    private List<Statement> generateObjectPropertyAssertions(AxiomDescriptor descriptor) {
+    private List<Statement> generateObjectPropertyAssertions(Collection<Assertion> assertions) {
         final List<Statement> result = new ArrayList<>();
-        descriptor.getAssertions().forEach(a -> {
+        assertions.forEach(a -> {
             final Property p = createProperty(a.getIdentifier().toString());
             IntStream.range(0, 2).mapToObj(i -> createResource(Generator.generateUri().toString()))
                      .forEach(r -> result.add(createStatement(SUBJECT_RES, p, r)));
@@ -123,12 +114,25 @@ public class AxiomLoaderTest {
         return result;
     }
 
+    private void verifyObjectPropertyAxioms(List<Statement> expected, Collection<Axiom<?>> actual) {
+        assertEquals(expected.size(), actual.size());
+        int i = 0;
+        for (Axiom<?> axiom : actual) {
+            assertEquals(SUBJECT, axiom.getSubject());
+            assertEquals(expected.get(i).getPredicate().getURI(), axiom.getAssertion().getIdentifier().toString());
+            assertEquals(Assertion.AssertionType.OBJECT_PROPERTY, axiom.getAssertion().getType());
+            assertFalse(axiom.getAssertion().isInferred());
+            assertEquals(expected.get(i).getObject().asResource().getURI(), axiom.getValue().stringValue());
+            i++;
+        }
+    }
+
     @Test
     public void findLoadsDataPropertyAxioms() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
-        final List<Statement> statements = generateDataPropertyAssertions(descriptor);
+        final List<Statement> statements = generateDataPropertyAssertions(descriptor.getAssertions());
         when(connectorMock.find(any(), any(), any())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
@@ -142,9 +146,9 @@ public class AxiomLoaderTest {
         }
     }
 
-    private List<Statement> generateDataPropertyAssertions(AxiomDescriptor descriptor) {
+    private List<Statement> generateDataPropertyAssertions(Collection<Assertion> assertions) {
         final List<Statement> result = new ArrayList<>();
-        descriptor.getAssertions().forEach(a -> {
+        assertions.forEach(a -> {
             final Property p = createProperty(a.getIdentifier().toString());
             result.add(createStatement(SUBJECT_RES, p, createTypedLiteral(Generator.randomInt())));
             result.add(createStatement(SUBJECT_RES, p, createTypedLiteral(Generator.randomInt() % 2 == 0)));
@@ -187,26 +191,29 @@ public class AxiomLoaderTest {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
-        final List<Statement> statements = generateAnnotations(descriptor);
+        final List<Statement> statements = generateAnnotations(descriptor.getAssertions());
         when(connectorMock.find(any(), any(), any())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
-        assertEquals(statements.size(), result.size());
+        verifyAnnotationPropertyAxioms(statements, result);
+    }
+
+    private void verifyAnnotationPropertyAxioms(List<Statement> expected, Collection<Axiom<?>> actual) {
+        assertEquals(expected.size(), actual.size());
         int i = 0;
-        for (Axiom<?> axiom : result) {
-            assertEquals(assertion, axiom.getAssertion());
-            if (statements.get(i).getObject().isResource()) {
-                assertEquals(statements.get(i).getObject().asResource().getURI(), axiom.getValue().stringValue());
+        for (Axiom<?> axiom : actual) {
+            if (expected.get(i).getObject().isResource()) {
+                assertEquals(expected.get(i).getObject().asResource().getURI(), axiom.getValue().stringValue());
             } else {
-                assertEquals(statements.get(i).getObject().asLiteral().getValue(), axiom.getValue().getValue());
+                assertEquals(expected.get(i).getObject().asLiteral().getValue(), axiom.getValue().getValue());
             }
             i++;
         }
     }
 
-    private List<Statement> generateAnnotations(AxiomDescriptor descriptor) {
+    private List<Statement> generateAnnotations(Collection<Assertion> assertions) {
         final List<Statement> list = new ArrayList<>();
-        descriptor.getAssertions().forEach(a -> {
+        assertions.forEach(a -> {
             final Property p = createProperty(a.getIdentifier().toString());
             list.add(createStatement(SUBJECT_RES, p, createTypedLiteral(Generator.randomInt())));
             list.add(createStatement(SUBJECT_RES, p, createResource(Generator.generateUri().toString())));
@@ -216,10 +223,8 @@ public class AxiomLoaderTest {
 
     @Test
     public void findLoadsAllStatementsWhenDescriptorContainsUnspecifiedProperty() {
-        final AxiomDescriptor temp = new AxiomDescriptor(SUBJECT);
         final Assertion dp = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
-        temp.addAssertion(dp);
-        final List<Statement> statements = generateDataPropertyAssertions(temp);
+        final List<Statement> statements = generateDataPropertyAssertions(Collections.singletonList(dp));
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
         when(connectorMock.find(any(), any(), any())).thenReturn(statements);
@@ -238,7 +243,7 @@ public class AxiomLoaderTest {
     public void findSkipsStatementsForWhichAssertionIsNotPresentInDescriptor() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
-        final List<Statement> statements = generateDataPropertyAssertions(descriptor);
+        final List<Statement> statements = generateDataPropertyAssertions(descriptor.getAssertions());
         final Assertion unwanted = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
         statements.add(createStatement(SUBJECT_RES, createProperty(unwanted.getIdentifier().toString()),
                 createResource(Generator.generateUri().toString())));
@@ -254,7 +259,7 @@ public class AxiomLoaderTest {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI property = Generator.generateUri();
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(property, false));
-        final List<Statement> dpStatements = generateDataPropertyAssertions(descriptor);
+        final List<Statement> dpStatements = generateDataPropertyAssertions(descriptor.getAssertions());
         when(connectorMock.find(any(), any(), any())).thenReturn(dpStatements);
 
         final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
@@ -266,10 +271,116 @@ public class AxiomLoaderTest {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI property = Generator.generateUri();
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(property, false));
-        final List<Statement> opStatements = generateObjectPropertyAssertions(descriptor);
+        final List<Statement> opStatements = generateObjectPropertyAssertions(descriptor.getAssertions());
         when(connectorMock.find(any(), any(), any())).thenReturn(opStatements);
 
         final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void findSkipsClassAssertionsWhenLoadingUnspecifiedPropertyValues() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        descriptor.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
+        final List<Statement> statements = generateClassAssertions();
+        when(connectorMock.find(any(), any(), any())).thenReturn(statements);
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void findLoadsClassAssertionStatementsFromContext() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        descriptor.addAssertion(Assertion.createClassAssertion(false));
+        descriptor.setSubjectContext(CONTEXT);
+        final Collection<Statement> statements = generateClassAssertions();
+        when(connectorMock.find(any(), any(), any(), eq(CONTEXT.toString()))).thenReturn(statements);
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(statements.size(), result.size());
+        verify(connectorMock).find(SUBJECT_RES, null, null, CONTEXT.toString());
+    }
+
+    @Test
+    public void findLoadsAssertionValuesFromContext() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(assertion);
+        descriptor.setAssertionContext(assertion, CONTEXT);
+        final List<Statement> statements = generateObjectPropertyAssertions(descriptor.getAssertions());
+        when(connectorMock.find(any(), any(), any(), eq(CONTEXT.toString()))).thenReturn(statements);
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        verifyObjectPropertyAxioms(statements, result);
+        verify(connectorMock)
+                .find(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()), null, CONTEXT.toString());
+    }
+
+    @Test
+    public void findSkipsStatementsWhichAreInDifferentContextThanAssertionExpects() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(assertion);
+        descriptor.setAssertionContext(assertion, CONTEXT);
+
+        final List<Statement> matching = generateDataPropertyAssertions(descriptor.getAssertions());
+        final List<Statement> notMatching = generateDataPropertyAssertions(descriptor.getAssertions());
+        when(connectorMock
+                .find(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()), null, CONTEXT.toString()))
+                .thenReturn(matching);
+        when(connectorMock.find(any(), any(), any())).thenReturn(notMatching);
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(matching.size(), result.size());
+        int i = 0;
+        for (Axiom<?> axiom : result) {
+            assertEquals(matching.get(i).getObject().asLiteral().getValue(), axiom.getValue().getValue());
+            i++;
+        }
+        verify(connectorMock)
+                .find(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()), null, CONTEXT.toString());
+    }
+
+    @Test
+    public void findSkipsPropertyValuesWhenUnspecifiedPropertyHasDifferentContext() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion ap = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
+        final List<Statement> notMatching = generateAnnotations(Collections.singletonList(ap));
+        final URI anotherContext = Generator.generateUri();
+        when(connectorMock.find(SUBJECT_RES, createProperty(ap.getIdentifier().toString()), null, anotherContext.toString())).thenReturn(notMatching);
+        final Assertion unspecified = Assertion.createUnspecifiedPropertyAssertion(false);
+        final List<Statement> matching = generateAnnotations(Collections.singletonList(unspecified));
+        when(connectorMock.find(SUBJECT_RES, null, null, CONTEXT.toString())).thenReturn(matching);
+        descriptor.addAssertion(unspecified);
+        descriptor.setAssertionContext(unspecified, CONTEXT);
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        verifyAnnotationPropertyAxioms(matching, result);
+    }
+
+    @Test
+    public void findLoadsMultipleKindsOfProperties() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion clsAssertion = Assertion.createClassAssertion(false);
+        descriptor.addAssertion(clsAssertion);
+        final List<Statement> clsStatements = generateClassAssertions();
+        final Assertion dpAssertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(dpAssertion);
+        final List<Statement> dpStatements = generateDataPropertyAssertions(Collections.singletonList(dpAssertion));
+        final Assertion opAssertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(opAssertion);
+        final List<Statement> opStatements = generateObjectPropertyAssertions(Collections.singletonList(opAssertion));
+        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(apAssertion);
+        final List<Statement> apStatements = generateAnnotations(Collections.singletonList(apAssertion));
+        final List<Statement> allStatements = new ArrayList<>(clsStatements);
+        allStatements.addAll(dpStatements);
+        allStatements.addAll(opStatements);
+        allStatements.addAll(apStatements);
+        when(connectorMock.find(SUBJECT_RES, null, null)).thenReturn(allStatements);
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(allStatements.size(), result.size());
     }
 }
