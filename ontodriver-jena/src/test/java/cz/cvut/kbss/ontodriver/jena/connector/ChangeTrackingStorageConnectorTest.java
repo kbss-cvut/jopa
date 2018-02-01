@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.After;
@@ -272,5 +273,11 @@ public class ChangeTrackingStorageConnectorTest {
         final List<String> contexts = connector.getContexts();
         assertTrue(contexts.contains(NAMED_GRAPH));
         assertTrue(contexts.contains(contextTwo));
+    }
+
+    @Test
+    public void unwrapPassesCallToUnderlyingSharedConnector() {
+        final Dataset dataset = connector.unwrap(Dataset.class);
+        assertSame(centralConnector.storage.dataset, dataset);
     }
 }

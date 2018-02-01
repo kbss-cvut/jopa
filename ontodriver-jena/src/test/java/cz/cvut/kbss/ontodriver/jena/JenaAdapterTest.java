@@ -147,6 +147,12 @@ public class JenaAdapterTest {
     }
 
     @Test
+    public void unwrapPassesCallToStorageConnectorWhenTargetClassDoesNotMatch() throws Exception {
+        adapter.unwrap(StorageConnector.class);
+        verify(connectorMock).unwrap(StorageConnector.class);
+    }
+
+    @Test
     public void findLoadsAxiomsFromStorage() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);

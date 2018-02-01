@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -83,7 +84,7 @@ public class SharedStorageConnectorTest {
     @Test
     public void containsChecksForStatementExistenceInDefaultGraph() {
         final SharedStorageConnector connector = initConnector();
-        final Dataset ds = connector.unwrap(Storage.class).getDataset();
+        final Dataset ds = connector.unwrap(Dataset.class);
         generateTestData(ds);
         assertTrue(connector.contains(null, ResourceFactory.createProperty(Vocabulary.RDF_TYPE),
                 ResourceFactory.createResource(TYPE_ONE)));
@@ -220,5 +221,26 @@ public class SharedStorageConnectorTest {
         final List<String> contexts = connector.getContexts();
         assertNotNull(contexts);
         assertTrue(contexts.isEmpty());
+    }
+
+    @Test
+    public void unwrapReturnsConnectorInstanceWhenClassMatches() {
+        final SharedStorageConnector connector = initConnector();
+        final StorageConnector result = connector.unwrap(StorageConnector.class);
+        assertSame(connector, result);
+    }
+
+    @Test
+    public void unwrapReturnsDatasetInstanceWhenClassMatches() {
+        final SharedStorageConnector connector = initConnector();
+        final Dataset result = connector.unwrap(Dataset.class);
+        assertSame(connector.storage.dataset, result);
+    }
+
+    @Test
+    public void unwrapThrowsUnsupportedOperationExceptionWhenTargetClassIsNotSupported() {
+        thrown.expect(UnsupportedOperationException.class);
+        final SharedStorageConnector connector = initConnector();
+        connector.unwrap(Graph.class);
     }
 }

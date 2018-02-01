@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Closeable;
+import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.rdf.model.Property;
@@ -11,7 +12,7 @@ import org.apache.jena.rdf.model.Statement;
 import java.util.Collection;
 import java.util.List;
 
-public interface StorageConnector extends Closeable {
+public interface StorageConnector extends Closeable, Wrapper {
 
     /**
      * Begins a transaction.

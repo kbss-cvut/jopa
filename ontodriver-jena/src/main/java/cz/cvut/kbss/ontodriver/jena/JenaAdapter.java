@@ -90,6 +90,6 @@ class JenaAdapter implements Wrapper {
         if (cls.isAssignableFrom(getClass())) {
             return cls.cast(this);
         }
-        return null;
+        return connector.unwrap(cls);
     }
 }

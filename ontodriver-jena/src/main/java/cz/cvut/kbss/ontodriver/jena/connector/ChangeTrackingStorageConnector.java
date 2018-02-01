@@ -140,4 +140,9 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
         }
         super.close();
     }
+
+    @Override
+    public <T> T unwrap(Class<T> cls) {
+        return centralConnector.unwrap(cls);
+    }
 }

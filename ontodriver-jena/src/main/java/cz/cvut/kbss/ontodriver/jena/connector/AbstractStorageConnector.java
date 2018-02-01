@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.util.Transaction;
+import org.apache.jena.query.Dataset;
 
 abstract class AbstractStorageConnector implements StorageConnector {
 
@@ -53,9 +54,12 @@ abstract class AbstractStorageConnector implements StorageConnector {
         // Do nothing
     }
 
-    <T> T unwrap(Class<T> cls) {
-        if (cls.isAssignableFrom(Storage.class)) {
-            return cls.cast(storage);
+    @Override
+    public <T> T unwrap(Class<T> cls) {
+        if (cls.isAssignableFrom(getClass())) {
+            return cls.cast(this);
+        } else if (cls.isAssignableFrom(Dataset.class)) {
+            return cls.cast(storage.dataset);
         }
         throw new UnsupportedOperationException("Unwrapping type " + cls + "not supported.");
     }
