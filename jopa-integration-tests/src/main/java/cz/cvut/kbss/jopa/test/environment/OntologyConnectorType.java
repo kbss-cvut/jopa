@@ -22,7 +22,7 @@ public enum OntologyConnectorType {
     /**
      * Jena ontology connector. Name: jena
      */
-    JENA("jena", ""),
+    JENA("jena", "cz.cvut.kbss.ontodriver.jena.JenaDataSource"),
     /**
      * Sesame ontology connector. Name: sesame
      */
