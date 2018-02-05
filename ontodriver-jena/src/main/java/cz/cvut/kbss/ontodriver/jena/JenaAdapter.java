@@ -81,6 +81,11 @@ class JenaAdapter implements Wrapper {
         return new IdentifierGenerator(connector).generateIdentifier(classUri);
     }
 
+    TypesHandler typesHandler() {
+        beginTransactionIfNotActive();
+        return new TypesHandler(connector);
+    }
+
     void close() throws JenaDriverException {
         connector.close();
     }

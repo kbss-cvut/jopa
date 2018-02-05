@@ -228,4 +228,10 @@ public class JenaConnectionTest {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         connection.find(descriptor);
     }
+
+    @Test
+    public void typesReturnsTypesHandler() {
+        final JenaTypes types = connection.types();
+        assertNotNull(types);
+    }
 }

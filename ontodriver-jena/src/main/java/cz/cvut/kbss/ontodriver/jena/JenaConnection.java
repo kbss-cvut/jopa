@@ -148,8 +148,9 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public Types types() {
-        return null;
+    public JenaTypes types() {
+        ensureOpen();
+        return new JenaTypes(adapter, this::ensureOpen, this::commitIfAuto);
     }
 
     @Override
