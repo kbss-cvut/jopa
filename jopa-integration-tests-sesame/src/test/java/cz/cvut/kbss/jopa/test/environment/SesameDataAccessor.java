@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 public class SesameDataAccessor {
 
-    public void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
+    public void persistTestData(Collection<Triple> data, EntityManager em) {
         final Repository repository = em.unwrap(Repository.class);
         try (final RepositoryConnection connection = repository.getConnection()) {
             final ValueFactory vf = connection.getValueFactory();
@@ -46,7 +46,7 @@ public class SesameDataAccessor {
         }
     }
 
-    public void verifyDataPresence(Collection<Triple> data, EntityManager em) throws Exception {
+    public void verifyDataPresence(Collection<Triple> data, EntityManager em) {
         final Repository repository = em.unwrap(Repository.class);
         try (final RepositoryConnection connection = repository.getConnection()) {
             final ValueFactory vf = connection.getValueFactory();

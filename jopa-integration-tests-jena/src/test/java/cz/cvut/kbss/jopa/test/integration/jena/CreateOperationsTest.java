@@ -19,7 +19,7 @@ public class CreateOperationsTest extends CreateOperationsRunner {
     private final JenaPersistenceFactory persistenceFactory;
     private final JenaDataAccessor dataAccessor;
 
-    protected CreateOperationsTest() {
+    public CreateOperationsTest() {
         super(LOG);
         this.persistenceFactory = new JenaPersistenceFactory();
         this.dataAccessor = new JenaDataAccessor();
