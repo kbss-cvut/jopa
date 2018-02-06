@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,10 +23,7 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertFalse;
 
@@ -122,7 +119,7 @@ public abstract class BaseRunner {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (em != null && em.isOpen()) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -158,7 +155,9 @@ public abstract class BaseRunner {
         assertFalse(remains);
     }
 
-    protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled);
+    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled) {
+        return getEntityManager(repositoryName, cacheEnabled, Collections.emptyMap());
+    }
 
     protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
                                                       Map<String, String> properties);

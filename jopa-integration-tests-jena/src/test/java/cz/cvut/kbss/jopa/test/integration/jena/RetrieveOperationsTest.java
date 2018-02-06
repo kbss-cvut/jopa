@@ -4,21 +4,21 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.JenaDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.JenaPersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import cz.cvut.kbss.jopa.test.runner.CreateOperationsRunner;
+import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
 
-public class CreateOperationsTest extends CreateOperationsRunner {
+public class RetrieveOperationsTest extends RetrieveOperationsRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CreateOperationsRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RetrieveOperationsTest.class);
 
     private final JenaPersistenceFactory persistenceFactory;
     private final JenaDataAccessor dataAccessor;
 
-    public CreateOperationsTest() {
+    public RetrieveOperationsTest() {
         super(LOG);
         this.persistenceFactory = new JenaPersistenceFactory();
         this.dataAccessor = new JenaDataAccessor();
