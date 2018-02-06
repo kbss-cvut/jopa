@@ -130,6 +130,16 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
+    public void remove(Resource subject, Property property, RDFNode object) {
+        // TODO
+    }
+
+    @Override
+    public void remove(Resource subject, Property property, RDFNode object, String context) {
+        // TODO
+    }
+
+    @Override
     public synchronized void close() {
         storage.close();
         super.close();

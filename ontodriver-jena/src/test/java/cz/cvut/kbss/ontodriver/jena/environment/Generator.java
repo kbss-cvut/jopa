@@ -16,4 +16,8 @@ public class Generator {
     public static int randomInt() {
         return RANDOM.nextInt();
     }
+
+    public static boolean randomBoolean() {
+        return RANDOM.nextBoolean();
+    }
 }

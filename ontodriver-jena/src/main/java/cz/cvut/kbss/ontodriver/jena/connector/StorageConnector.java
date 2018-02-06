@@ -2,7 +2,6 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -123,6 +122,27 @@ public interface StorageConnector extends Closeable, Wrapper {
      * @param context    Target context
      */
     void remove(List<Statement> statements, String context);
+
+    /**
+     * Removes statements matching the specified pattern from the storage.
+     * <p>
+     * This operation works with the default context.
+     *
+     * @param subject  Statement subject, optional
+     * @param property Statement property, optional
+     * @param object   Statement object, optional
+     */
+    void remove(Resource subject, Property property, RDFNode object);
+
+    /**
+     * Removes statements matching the specified pattern from the specified storage context.
+     *
+     * @param subject  Statement subject, optional
+     * @param property Statement property, optional
+     * @param object   Statement object, optional
+     * @param context  Repository context IRI
+     */
+    void remove(Resource subject, Property property, RDFNode object, String context);
 
     @Override
     void close() throws JenaDriverException;

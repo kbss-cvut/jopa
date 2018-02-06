@@ -26,8 +26,8 @@
         <module>jopa-integration-tests</module>
         <module>jopa-integration-tests-sesame</module>
         <module>jopa-integration-tests-owlapi</module>
-        <module>jopa-distribution</module>
         <module>jopa-integration-tests-jena</module>
+        <module>jopa-distribution</module>
     </modules>
 
     <properties>
