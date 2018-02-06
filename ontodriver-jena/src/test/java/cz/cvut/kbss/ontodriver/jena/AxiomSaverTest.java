@@ -73,7 +73,7 @@ public class AxiomSaverTest {
     @Test
     public void saveAxiomsAddsLiteralStatementsForDatatypePropertyAssertionAxioms() {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
-        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), "en",false);
         final Integer value = 117;
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);

@@ -187,6 +187,49 @@ public class AxiomLoaderTest {
     }
 
     @Test
+    public void findLoadsStringWhenAssertionHasLanguageTagButValuesDoesNot() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final URI propUri = Generator.generateUri();
+        final String lang = "en";
+        descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, lang, false));
+        final Statement statement =
+                createStatement(SUBJECT_RES, createProperty(propUri.toString()), createTypedLiteral("a"));
+        when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singletonList(statement));
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(1, result.size());
+        assertEquals("a", result.iterator().next().getValue().getValue());
+    }
+
+    @Test
+    public void findLoadsStringWhenAssertionDoesNotHaveLanguageTagAndValueDoes() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final URI propUri = Generator.generateUri();
+        descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, false));
+        final Statement statement =
+                createStatement(SUBJECT_RES, createProperty(propUri.toString()), createLangLiteral("a", "en"));
+        when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singletonList(statement));
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(1, result.size());
+        assertEquals("a", result.iterator().next().getValue().getValue());
+    }
+
+    @Test
+    public void findLoadsStringWhenNeitherAssertionNorValueHaveLanguageTag() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final URI propUri = Generator.generateUri();
+        descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, false));
+        final Statement statement =
+                createStatement(SUBJECT_RES, createProperty(propUri.toString()), createTypedLiteral("a"));
+        when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singletonList(statement));
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(1, result.size());
+        assertEquals("a", result.iterator().next().getValue().getValue());
+    }
+
+    @Test
     public void findLoadsAnnotationPropertyValues() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
@@ -348,7 +391,9 @@ public class AxiomLoaderTest {
         final Assertion ap = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
         final List<Statement> notMatching = generateAnnotations(Collections.singletonList(ap));
         final URI anotherContext = Generator.generateUri();
-        when(connectorMock.find(SUBJECT_RES, createProperty(ap.getIdentifier().toString()), null, anotherContext.toString())).thenReturn(notMatching);
+        when(connectorMock
+                .find(SUBJECT_RES, createProperty(ap.getIdentifier().toString()), null, anotherContext.toString()))
+                .thenReturn(notMatching);
         final Assertion unspecified = Assertion.createUnspecifiedPropertyAssertion(false);
         final List<Statement> matching = generateAnnotations(Collections.singletonList(unspecified));
         when(connectorMock.find(SUBJECT_RES, null, null, CONTEXT.toString())).thenReturn(matching);
@@ -382,5 +427,33 @@ public class AxiomLoaderTest {
 
         final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
         assertEquals(allStatements.size(), result.size());
+    }
+
+    @Test
+    public void findLoadsDataPropertyValueWhenItIsNotStringAndAssertionHasLanguage() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), "en", false);
+        descriptor.addAssertion(assertion);
+        final List<Statement> statements = generateDataPropertyAssertions(Collections.singleton(assertion));
+        when(connectorMock.find(SUBJECT_RES, null, null)).thenReturn(statements);
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(statements.size(), result.size());
+    }
+
+    @Test
+    public void findLoadsDataPropertyWithLongValueAsLong() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), "en", false);
+        descriptor.addAssertion(assertion);
+        final Long value = 117L;
+        final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
+                createTypedLiteral(value));
+        when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singleton(statement));
+
+        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        assertEquals(1, result.size());
+        final Axiom<?> axiom = result.iterator().next();
+        assertEquals(value, axiom.getValue().getValue());
     }
 }

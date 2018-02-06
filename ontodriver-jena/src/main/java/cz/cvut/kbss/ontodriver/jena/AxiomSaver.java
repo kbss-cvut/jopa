@@ -61,7 +61,7 @@ class AxiomSaver {
                                                            Property property) {
         return values.stream().filter(v -> v != Value.nullValue()).map(v -> {
             final Literal value;
-            if (a.hasLanguage()) {
+            if (a.hasLanguage() && v.getValue() instanceof String) {
                 value = ResourceFactory.createLangLiteral(v.stringValue(), a.getLanguage());
             } else {
                 value = ResourceFactory.createTypedLiteral(v.getValue());

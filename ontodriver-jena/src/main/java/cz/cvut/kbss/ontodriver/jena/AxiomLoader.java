@@ -78,7 +78,7 @@ class AxiomLoader {
             }
             final Assertion a =
                     assertedProperties.containsKey(property.getURI()) ? assertedProperties.get(property.getURI()) :
-                            createAssertionForStatement(property, statement.getObject());
+                    createAssertionForStatement(property, statement.getObject());
             final Optional<Value<?>> value = resolveValue(a, statement.getObject());
             value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
         }
@@ -107,13 +107,22 @@ class AxiomLoader {
             if (shouldSkipLiteral(assertion, object)) {
                 return Optional.empty();
             }
-            return Optional.of(new Value<>(object.asLiteral().getValue()));
+            return Optional.of(new Value<>(JenaUtils.literalToValue(object.asLiteral())));
         }
     }
 
     private boolean shouldSkipLiteral(Assertion assertion, RDFNode object) {
-        return assertion.getType() == Assertion.AssertionType.OBJECT_PROPERTY || assertion.hasLanguage() && !assertion
-                .getLanguage().equals(object.asLiteral().getLanguage());
+        assert object.isLiteral();
+        return assertion.getType() == Assertion.AssertionType.OBJECT_PROPERTY ||
+                !doesLanguageMatch(assertion, object.asLiteral());
+    }
+
+    private boolean doesLanguageMatch(Assertion assertion, Literal literal) {
+        if (!(literal.getValue() instanceof String)) {
+            return true;
+        }
+        return !assertion.hasLanguage() || literal.getLanguage().isEmpty() ||
+                assertion.getLanguage().equals(literal.getLanguage());
     }
 
     private Assertion createAssertionForStatement(Property property, RDFNode value) {
