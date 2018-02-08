@@ -47,21 +47,21 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void commitCommitsAdapterChanges() throws Exception {
+    public void commitCommitsAdapterChanges() {
         connection.commit();
         verify(adapterMock).commit();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void commitOnCloseThrowsIllegalState() throws Exception {
+    public void commitOnCloseThrowsIllegalState() {
         connection.close();
         connection.commit();
     }
 
     @Test
-    public void closeConnectionNotifiesListeners() throws Exception {
+    public void closeConnectionNotifiesListeners() {
         final ConnectionListener listener = mock(ConnectionListener.class);
-        connection.addListener(listener);
+        connection.setListener(listener);
         assertTrue(connection.isOpen());
         connection.close();
         assertFalse(connection.isOpen());
@@ -69,13 +69,13 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void rollbackRollsBackAdapter() throws Exception {
+    public void rollbackRollsBackAdapter() {
         connection.rollback();
         verify(adapterMock).rollback();
     }
 
     @Test
-    public void testIsConsistentWithCorrectContextUri() throws Exception {
+    public void testIsConsistentWithCorrectContextUri() {
         final URI ctx = URI.create("http://context.owl");
         when(adapterMock.isConsistent(ctx)).thenReturn(Boolean.TRUE);
         assertTrue(connection.isConsistent(ctx));
@@ -83,7 +83,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void testGetContexts() throws Exception {
+    public void testGetContexts() {
         final List<URI> contexts = Collections.singletonList(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa"));
         when(adapterMock.getContexts()).thenReturn(contexts);
         final List<URI> res = connection.getContexts();
@@ -91,7 +91,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void testContainsWithContext() throws Exception {
+    public void testContainsWithContext() {
         final Axiom<URI> axiom = new AxiomImpl<>(NamedResource.create("http://individual"),
                 Assertion.createClassAssertion(false), new Value<>(URI.create("http://class")));
         final URI context = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
@@ -100,7 +100,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void testContainsWithoutContext() throws Exception {
+    public void testContainsWithoutContext() {
         final Axiom<URI> axiom = new AxiomImpl<>(NamedResource.create("http://individual"),
                 Assertion.createClassAssertion(false), new Value<>(URI.create("http://class")));
         connection.contains(axiom, null);
@@ -128,7 +128,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void typesReturnsTypesHandlerForOwlapiDriver() throws Exception {
+    public void typesReturnsTypesHandlerForOwlapiDriver() {
         final OwlapiTypes types = mock(OwlapiTypes.class);
         connection.setTypes(types);
         final Types result = connection.types();
@@ -137,7 +137,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void generateIdentifierGetsNewIdentifier() throws Exception {
+    public void generateIdentifierGetsNewIdentifier() {
         final URI identifier = URI.create("http://newIdentifier");
         when(adapterMock.generateIdentifier(any(URI.class))).thenReturn(identifier);
 
@@ -146,7 +146,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void generateIdentifierOnClosedThrowsException() throws Exception {
+    public void generateIdentifierOnClosedThrowsException() {
         connection.close();
         try {
             connection.generateIdentifier(URI.create("http://baseUri"));
@@ -156,7 +156,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void propertiesReturnPropertiesHandlerForOwlapiDriver() throws Exception {
+    public void propertiesReturnPropertiesHandlerForOwlapiDriver() {
         final OwlapiProperties properties = mock(OwlapiProperties.class);
         connection.setProperties(properties);
         final Properties result = connection.properties();
@@ -165,7 +165,7 @@ public class OwlapiConnectionTest {
     }
 
     @Test
-    public void listsReturnListsHandlerForOwlapiDriver() throws Exception {
+    public void listsReturnListsHandlerForOwlapiDriver() {
         final OwlapiLists lists = mock(OwlapiLists.class);
         connection.setLists(lists);
         final Lists result = connection.lists();
