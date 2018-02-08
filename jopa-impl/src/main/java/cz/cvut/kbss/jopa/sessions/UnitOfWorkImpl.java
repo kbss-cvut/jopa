@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory, ConfigurationHolder, Wrapper {
 
-    private final Map<Object, Object> cloneMapping;
+    private final Set<Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
     private final Map<Object, Object> keysToClones = new HashMap<>();
     private Map<Object, Object> deletedObjects;
@@ -84,8 +84,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public UnitOfWorkImpl(AbstractSession parent) {
         super(parent.getConfiguration());
         this.parent = Objects.requireNonNull(parent);
-        this.cloneMapping = createMap();
         this.cloneToOriginals = createMap();
+        this.cloneMapping = cloneToOriginals.keySet();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.cloneBuilder = new CloneBuilderImpl(this);
@@ -213,7 +213,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     @Override
     public void clear() {
         detachAllManagedInstances();
-        cloneMapping.clear();
         cloneToOriginals.clear();
         keysToClones.clear();
         this.deletedObjects = null;
@@ -230,7 +229,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private void detachAllManagedInstances() {
-        cloneMapping.keySet().forEach(instance -> {
+        cloneMapping.forEach(instance -> {
+            removeIndirectCollections(instance);
+            deregisterEntityFromPersistenceContext(instance);
+        });
+        getNewObjectsCloneToOriginal().keySet().forEach(instance -> {
             removeIndirectCollections(instance);
             deregisterEntityFromPersistenceContext(instance);
         });
@@ -325,7 +328,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             return State.REMOVED;
         } else if (getNewObjectsCloneToOriginal().containsKey(entity)) {
             return State.MANAGED_NEW;
-        } else if (cloneMapping.containsKey(entity)) {
+        } else if (cloneMapping.contains(entity)) {
             return State.MANAGED;
         } else {
             return State.NOT_MANAGED;
@@ -345,10 +348,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
         if (getDeletedObjects().containsKey(entity)) {
             return State.REMOVED;
-        } else if (cloneMapping.containsKey(entity) && isInRepository(descriptor, entity)) {
-            if (getNewObjectsCloneToOriginal().containsKey(entity)) {
-                return State.MANAGED_NEW;
-            }
+        } else if (getNewObjectsCloneToOriginal().containsKey(entity) && isInRepository(descriptor, entity)) {
+            return State.MANAGED_NEW;
+        }
+        else if (cloneMapping.contains(entity) && isInRepository(descriptor, entity)) {
             return State.MANAGED;
         } else {
             return State.NOT_MANAGED;
@@ -487,7 +490,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
 
-        return cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity);
+        return cloneMapping.contains(entity) && !getDeletedObjects().containsKey(entity) || getNewObjectsCloneToOriginal().containsKey(entity);
     }
 
     /**
@@ -659,7 +662,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private void registerClone(Object clone, Object original, Descriptor descriptor) {
-        cloneMapping.put(clone, clone);
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
@@ -748,7 +750,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         assert id != null;
         // Original is null until commit
-        cloneMapping.put(entity, entity);
+//        cloneMapping.put(entity, entity);
         getNewObjectsCloneToOriginal().put(entity, null);
         registerEntityWithPersistenceContext(entity);
         registerEntityWithOntologyContext(descriptor, entity);
@@ -771,7 +773,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private boolean isIndividualManaged(Object identifier, Object entity) {
         // Allows persisting the same individual into different contexts
         return keysToClones.containsKey(identifier) ||
-                newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.containsKey(entity);
+                newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.contains(entity);
     }
 
     @Override
@@ -816,7 +818,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (object == null) {
             return;
         }
-        cloneMapping.remove(object);
         final Object original = cloneToOriginals.remove(object);
         keysToClones.remove(EntityPropertiesUtils.getIdentifier(object, getMetamodel()));
 

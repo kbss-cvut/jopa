@@ -137,6 +137,8 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         final Descriptor aDescriptorTwo = new EntityDescriptor(CONTEXT_TWO);
         em.getTransaction().begin();
         em.persist(entityA, aDescriptorOne);
+        em.getTransaction().commit();
+        em.getTransaction().begin();
         em.persist(entityA, aDescriptorTwo);
         em.getTransaction().commit();
 

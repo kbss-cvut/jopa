@@ -653,7 +653,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.removeObject(toRemove);
 
         uow.clear();
-        assertTrue(getMap("cloneMapping") == null || getMap("cloneMapping").isEmpty());
         assertTrue(getMap("cloneToOriginals") == null || getMap("cloneToOriginals").isEmpty());
         assertTrue(getMap("keysToClones") == null || getMap("keysToClones").isEmpty());
         assertTrue(getMap("deletedObjects") == null || getMap("deletedObjects").isEmpty());
@@ -672,6 +671,7 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         }
         return (Map<?, ?>) field.get(uow);
     }
+
 
     private boolean getBoolean(String fieldName) throws Exception {
         final Field field = uow.getClass().getDeclaredField(fieldName);

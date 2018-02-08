@@ -32,7 +32,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveFromContext() throws Exception {
+    public void testRemoveFromContext() {
         logger.debug("Test: remove entity from a context.");
         this.em = getEntityManager("MultiRemoveFromContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -52,13 +52,15 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveFromOneKeepInTheOther() throws Exception {
+    public void testRemoveFromOneKeepInTheOther() {
         logger.debug("Test: persist an entity into two contexts and then remove it from one of them.");
         this.em = getEntityManager("MultiRemoveFromOneContextAndKeepInTheOther", false);
         final Descriptor aDescriptorOne = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptorTwo = new EntityDescriptor(CONTEXT_TWO);
         em.getTransaction().begin();
         em.persist(entityA, aDescriptorOne);
+        em.getTransaction().commit();
+        em.getTransaction().begin();
         em.persist(entityA, aDescriptorTwo);
         em.getTransaction().commit();
 
