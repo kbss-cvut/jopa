@@ -10,8 +10,9 @@ import java.util.Collection;
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.assertTrue;
 
-public class JenaDataAccessor {
+public class JenaDataAccessor implements DataAccessor {
 
+    @Override
     public void persistTestData(Collection<Triple> data, EntityManager em) {
         em.getTransaction().begin();
         final Dataset ds = em.unwrap(Dataset.class);
@@ -32,6 +33,7 @@ public class JenaDataAccessor {
         em.getTransaction().commit();
     }
 
+    @Override
     public void verifyDataPresence(Collection<Triple> expected, EntityManager em) {
         final Dataset ds = em.unwrap(Dataset.class);
         final Model model = ds.getDefaultModel();

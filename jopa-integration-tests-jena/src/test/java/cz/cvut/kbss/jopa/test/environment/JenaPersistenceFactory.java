@@ -8,11 +8,12 @@ import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JenaPersistenceFactory {
+public class JenaPersistenceFactory implements PersistenceFactory {
 
     private static final StorageConfig storage = initStorage();
     private static final Map<String, String> defaultProperties = initProperties();
 
+    @Override
     public EntityManager getEntityManager(String repositoryName, boolean cacheEnabled, Map<String, String> properties) {
         assert properties != null;
         final Map<String, String> actualProperties = new HashMap<>(defaultProperties);
