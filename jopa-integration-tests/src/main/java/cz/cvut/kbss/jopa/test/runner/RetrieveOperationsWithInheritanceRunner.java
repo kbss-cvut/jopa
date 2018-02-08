@@ -18,7 +18,9 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -32,8 +34,8 @@ import static org.junit.Assert.*;
 
 public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
-    public RetrieveOperationsWithInheritanceRunner(Logger logger) {
-        super(logger);
+    public RetrieveOperationsWithInheritanceRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+        super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test

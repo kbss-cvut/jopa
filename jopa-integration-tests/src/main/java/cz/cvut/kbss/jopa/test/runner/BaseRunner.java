@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,6 +16,8 @@ package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.After;
 import org.junit.Rule;
@@ -23,10 +25,7 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertFalse;
 
@@ -60,9 +59,14 @@ public abstract class BaseRunner {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    public BaseRunner(Logger logger) {
+    protected final DataAccessor dataAccessor;
+    protected final PersistenceFactory persistenceFactory;
+
+    public BaseRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         assert logger != null;
         this.logger = logger;
+        this.persistenceFactory = persistenceFactory;
+        this.dataAccessor = dataAccessor;
         init();
     }
 
@@ -122,7 +126,7 @@ public abstract class BaseRunner {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (em != null && em.isOpen()) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -158,12 +162,20 @@ public abstract class BaseRunner {
         assertFalse(remains);
     }
 
-    protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled);
+    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled) {
+        return getEntityManager(repositoryName, cacheEnabled, Collections.emptyMap());
+    }
 
-    protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
-                                                      Map<String, String> properties);
+    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
+                                             Map<String, String> properties) {
+        return persistenceFactory.getEntityManager(repositoryName, cacheEnabled, properties);
+    }
 
-    protected abstract void persistTestData(Collection<Triple> data, EntityManager em) throws Exception;
+    protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
+        dataAccessor.persistTestData(data, em);
+    }
 
-    protected abstract void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception;
+    protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
+        dataAccessor.verifyDataPresence(expected, em);
+    }
 }

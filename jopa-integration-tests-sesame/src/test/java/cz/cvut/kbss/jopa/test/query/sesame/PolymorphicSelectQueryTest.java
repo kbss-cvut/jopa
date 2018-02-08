@@ -37,7 +37,7 @@ public class PolymorphicSelectQueryTest extends PolymorphicSelectQueryRunner {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
         em = persistenceFactory.getEntityManager("PolymorphicSelectQueryTests", false,
                 Collections.singletonMap(SesameOntoDriverProperties.SESAME_USE_INFERENCE, "true"));
@@ -47,7 +47,7 @@ public class PolymorphicSelectQueryTest extends PolymorphicSelectQueryRunner {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         em.close();
         em.getEntityManagerFactory().close();
     }

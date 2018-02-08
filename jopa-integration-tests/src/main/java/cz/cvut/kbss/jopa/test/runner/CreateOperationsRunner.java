@@ -20,7 +20,9 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Test;
@@ -36,8 +38,8 @@ import static org.junit.Assert.*;
 
 public abstract class CreateOperationsRunner extends BaseRunner {
 
-    protected CreateOperationsRunner(Logger logger) {
-        super(logger);
+    protected CreateOperationsRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+        super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test

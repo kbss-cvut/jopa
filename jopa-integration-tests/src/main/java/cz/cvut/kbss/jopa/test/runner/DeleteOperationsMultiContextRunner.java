@@ -20,6 +20,8 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -27,8 +29,8 @@ import static org.junit.Assert.*;
 
 public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
 
-    public DeleteOperationsMultiContextRunner(Logger logger) {
-        super(logger);
+    public DeleteOperationsMultiContextRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+        super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test

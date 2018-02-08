@@ -45,7 +45,7 @@ public class QueryTest extends QueryRunner {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
         em = persistenceFactory.getEntityManager("SPARQLQueryTests", false,
                 Collections.singletonMap(SesameOntoDriverProperties.SESAME_USE_INFERENCE, "true"));
@@ -55,7 +55,7 @@ public class QueryTest extends QueryRunner {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         em.close();
         em.getEntityManagerFactory().close();
     }
