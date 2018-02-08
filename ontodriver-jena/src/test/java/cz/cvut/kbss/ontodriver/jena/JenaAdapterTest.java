@@ -5,6 +5,8 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.*;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.Before;
@@ -34,6 +36,7 @@ import static org.mockito.Mockito.when;
 public class JenaAdapterTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
+    private static final Resource SUBJECT_RESOURCE = ResourceFactory.createResource(SUBJECT.getIdentifier().toString());
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -158,8 +161,7 @@ public class JenaAdapterTest {
         final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
         final Statement s = ResourceFactory
-                .createStatement(ResourceFactory.createResource(SUBJECT.getIdentifier().toString()), ResourceFactory
-                                .createProperty(assertion.getIdentifier().toString()),
+                .createStatement(SUBJECT_RESOURCE, assertionToProperty(assertion),
                         ResourceFactory.createResource(Generator.generateUri().toString()));
         when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singletonList(s));
 
@@ -169,6 +171,20 @@ public class JenaAdapterTest {
         assertEquals(SUBJECT, axiom.getSubject());
         assertEquals(assertion, axiom.getAssertion());
         assertEquals(s.getObject().asResource().getURI(), axiom.getValue().stringValue());
-        verify(connectorMock).find(ResourceFactory.createResource(SUBJECT.getIdentifier().toString()), null, null);
+        verify(connectorMock).find(SUBJECT_RESOURCE, null, null);
+    }
+
+    private Property assertionToProperty(Assertion assertion) {
+        return ResourceFactory.createProperty(assertion.getIdentifier().toString());
+    }
+
+    @Test
+    public void removeRemovesStatementsFromStorage() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(assertion);
+
+        adapter.remove(descriptor);
+        verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null);
     }
 }

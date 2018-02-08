@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.*;
-import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -10,14 +9,16 @@ import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 public class JenaConnection implements Connection {
 
     private boolean open;
     private boolean autoCommit;
 
-    private final Set<ConnectionListener> listeners = new HashSet<>(4);
+    private ConnectionListener listener;
 
     private final JenaAdapter adapter;
 
@@ -28,7 +29,7 @@ public class JenaConnection implements Connection {
 
     void registerListener(ConnectionListener listener) {
         ensureOpen();
-        listeners.add(listener);
+        this.listener = listener;
     }
 
     @Override
@@ -139,7 +140,14 @@ public class JenaConnection implements Connection {
 
     @Override
     public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
-
+        ensureOpen();
+        Objects.requireNonNull(descriptor);
+        try {
+            adapter.remove(descriptor);
+            commitIfAuto();
+        } catch (RuntimeException e) {
+            throw new JenaDriverException(e);
+        }
     }
 
     @Override
@@ -174,7 +182,9 @@ public class JenaConnection implements Connection {
             return;
         }
         adapter.close();
-        listeners.forEach(listener -> listener.connectionClosed(this));
+        if (listener != null) {
+            listener.connectionClosed(this);
+        }
         this.open = false;
     }
 

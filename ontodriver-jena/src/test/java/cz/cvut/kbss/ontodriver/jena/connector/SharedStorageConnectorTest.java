@@ -5,10 +5,7 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -47,15 +46,15 @@ public class SharedStorageConnectorTest {
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
 
-        final Collection<Statement> result = connector.find(ResourceFactory.createResource(RESOURCE), null, null);
+        final Collection<Statement> result = connector.find(RESOURCE, null, null);
         assertFalse(result.isEmpty());
     }
 
     private void generateTestData(Dataset dataset) {
         final Model m = dataset.getDefaultModel();
-        m.add(m.createResource(RESOURCE), m.getProperty(Vocabulary.RDF_TYPE), m.createResource(TYPE_ONE));
+        m.add(RESOURCE, m.getProperty(Vocabulary.RDF_TYPE), m.createResource(TYPE_ONE));
         final Model namedGraph = ModelFactory.createDefaultModel();
-        namedGraph.add(m.createResource(RESOURCE), m.getProperty(Vocabulary.RDF_TYPE), m.createResource(TYPE_TWO));
+        namedGraph.add(RESOURCE, m.getProperty(Vocabulary.RDF_TYPE), m.createResource(TYPE_TWO));
         dataset.addNamedModel(NAMED_GRAPH, namedGraph);
     }
 
@@ -66,7 +65,7 @@ public class SharedStorageConnectorTest {
         generateTestData(ds);
 
         final Collection<Statement> result = connector
-                .find(ResourceFactory.createResource(RESOURCE), null, null, NAMED_GRAPH);
+                .find(RESOURCE, null, null, NAMED_GRAPH);
         assertFalse(result.isEmpty());
     }
 
@@ -76,7 +75,7 @@ public class SharedStorageConnectorTest {
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
         final Collection<Statement> result = connector
-                .find(ResourceFactory.createResource(RESOURCE), null, null, "http://unknownGraph");
+                .find(RESOURCE, null, null, "http://unknownGraph");
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
@@ -86,8 +85,8 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.unwrap(Dataset.class);
         generateTestData(ds);
-        assertTrue(connector.contains(null, ResourceFactory.createProperty(Vocabulary.RDF_TYPE),
-                ResourceFactory.createResource(TYPE_ONE)));
+        assertTrue(connector.contains(null, createProperty(Vocabulary.RDF_TYPE),
+                createResource(TYPE_ONE)));
     }
 
     @Test
@@ -95,7 +94,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
-        assertTrue(connector.contains(null, null, ResourceFactory.createResource(TYPE_TWO), NAMED_GRAPH));
+        assertTrue(connector.contains(null, null, createResource(TYPE_TWO), NAMED_GRAPH));
     }
 
     @Test
@@ -110,8 +109,8 @@ public class SharedStorageConnectorTest {
     @Test
     public void addAddsStatementsToDataset() {
         final SharedStorageConnector connector = initConnector();
-        final Statement statement = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        final Statement statement = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO));
         assertFalse(connector.storage.getDataset().getDefaultModel().contains(statement));
         connector.begin();
         connector.add(Collections.singletonList(statement));
@@ -121,8 +120,8 @@ public class SharedStorageConnectorTest {
     @Test
     public void addAddsStatementsToTargetModelInDataset() {
         final SharedStorageConnector connector = initConnector();
-        final Statement statement = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        final Statement statement = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO));
         assertFalse(connector.storage.getDataset().getNamedModel(NAMED_GRAPH).contains(statement));
         connector.begin();
         connector.add(Collections.singletonList(statement), NAMED_GRAPH);
@@ -134,8 +133,8 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
-        final Statement statement = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_ONE));
+        final Statement statement = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
         assertTrue(connector.storage.getDataset().getDefaultModel().contains(statement));
         connector.begin();
         connector.remove(Collections.singletonList(statement));
@@ -147,12 +146,36 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
-        final Statement statement = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        final Statement statement = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO));
         assertTrue(connector.storage.getDataset().getNamedModel(NAMED_GRAPH).contains(statement));
         connector.begin();
         connector.remove(Collections.singletonList(statement), NAMED_GRAPH);
         assertFalse(connector.storage.getDataset().getNamedModel(NAMED_GRAPH).contains(statement));
+    }
+
+    @Test
+    public void removeRemovesStatementsMatchingSpecifiedArgumentsFromDataset() {
+        final SharedStorageConnector connector = initConnector();
+        final Dataset ds = connector.storage.getDataset();
+        generateTestData(ds);
+        assertTrue(
+                ds.getDefaultModel().contains(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE)));
+        connector.begin();
+        connector.remove(RESOURCE, createProperty(Vocabulary.RDF_TYPE), null);
+        assertFalse(
+                ds.getDefaultModel().contains(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE)));
+    }
+
+    @Test
+    public void removeRemovesStatementsMatchingSpecifiedArgumentsFromTargetGraph() {
+        final SharedStorageConnector connector = initConnector();
+        final Dataset ds = connector.storage.getDataset();
+        generateTestData(ds);
+        assertTrue(ds.getNamedModel(NAMED_GRAPH).contains(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO)));
+        connector.begin();
+        connector.remove(RESOURCE, createProperty(Vocabulary.RDF_TYPE), null, NAMED_GRAPH);
+        assertFalse(ds.getNamedModel(NAMED_GRAPH).contains(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO)));
     }
 
     @Test
@@ -167,8 +190,8 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         connector.begin();
         assertTrue(connector.storage.getDataset().isInTransaction());
-        final Statement statement = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        final Statement statement = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO));
         connector.add(Collections.singletonList(statement));
         connector.commit();
         assertFalse(connector.storage.getDataset().isInTransaction());
@@ -179,8 +202,8 @@ public class SharedStorageConnectorTest {
     public void commitWritesChangesToUnderlyingRepository() throws Exception {
         final SharedStorageConnector connector = initConnector();
         connector.begin();
-        final Statement statement = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        final Statement statement = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO));
         connector.add(Collections.singletonList(statement));
         connector.commit();
         verify(connector.storage).writeChanges();
@@ -190,8 +213,8 @@ public class SharedStorageConnectorTest {
     public void rollbackRollsBackChangesInDataset() {
         final SharedStorageConnector connector = initConnector();
         connector.begin();
-        final Statement statement = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        final Statement statement = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO));
         connector.add(Collections.singletonList(statement));
         assertTrue(connector.storage.getDataset().getDefaultModel().contains(statement));
         connector.rollback();
@@ -203,10 +226,10 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         connector.begin();
         final String ctxOne = Generator.generateUri().toString();
-        final Statement statementOne = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_ONE));
-        final Statement statementTwo = ResourceFactory.createStatement(ResourceFactory.createResource(RESOURCE),
-                ResourceFactory.createProperty(Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_TWO));
+        final Statement statementOne = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
+        final Statement statementTwo = ResourceFactory.createStatement(RESOURCE,
+                createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO));
         connector.add(Collections.singletonList(statementOne), ctxOne);
         connector.add(Collections.singletonList(statementTwo), NAMED_GRAPH);
         connector.commit();

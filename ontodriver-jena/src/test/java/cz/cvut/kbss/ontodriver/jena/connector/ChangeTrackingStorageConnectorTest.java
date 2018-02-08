@@ -57,15 +57,15 @@ public class ChangeTrackingStorageConnectorTest {
     public void findEnhancesResultFromCentralConnectorWithTransactionalChangesFromLocalModel() throws Exception {
         centralConnector.begin();
         final Statement existing = ResourceFactory
-                .createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                         createResource(TYPE_ONE));
         centralConnector.add(Collections.singletonList(existing));
         centralConnector.commit();
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added));
-        final Collection<Statement> result = connector.find(createResource(RESOURCE), null, null);
+        final Collection<Statement> result = connector.find(createResource(SUBJECT), null, null);
         assertEquals(2, result.size());
         assertTrue(result.contains(existing));
         assertTrue(result.contains(added));
@@ -76,15 +76,15 @@ public class ChangeTrackingStorageConnectorTest {
             throws Exception {
         centralConnector.begin();
         final Statement existing = ResourceFactory
-                .createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                         createResource(TYPE_ONE));
         centralConnector.add(Collections.singletonList(existing));
         centralConnector.commit();
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
-        final Collection<Statement> result = connector.find(createResource(RESOURCE), null, null, NAMED_GRAPH);
+        final Collection<Statement> result = connector.find(createResource(SUBJECT), null, null, NAMED_GRAPH);
         assertEquals(1, result.size());
         assertTrue(result.contains(added));
     }
@@ -92,7 +92,7 @@ public class ChangeTrackingStorageConnectorTest {
     @Test
     public void containsReturnsTrueForStatementsPresentInLocalChanges() throws Exception {
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added));
         assertTrue(connector.contains(null, null, added.getObject()));
@@ -102,7 +102,7 @@ public class ChangeTrackingStorageConnectorTest {
     public void containsChecksCentralConnectorWhenLocalChangesDoNotContainValue() throws Exception {
         centralConnector.begin();
         final Statement existing = ResourceFactory
-                .createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                         createResource(TYPE_ONE));
         centralConnector.add(Collections.singletonList(existing));
         centralConnector.commit();
@@ -114,27 +114,27 @@ public class ChangeTrackingStorageConnectorTest {
     public void containsReturnsFalseForStatementLocallyRemoved() throws Exception {
         centralConnector.begin();
         final Statement existing = ResourceFactory
-                .createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                         createResource(TYPE_ONE));
         centralConnector.add(Collections.singletonList(existing));
         centralConnector.commit();
         connector.begin();
-        final Statement removed = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement removed = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_ONE));
         getLocalModel().removeStatements(Collections.singletonList(removed));
-        assertFalse(connector.contains(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE), null));
+        assertFalse(connector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null));
     }
 
     @Test
     public void containsWorksInContextAsWell() throws Exception {
         centralConnector.begin();
         final Statement existing = ResourceFactory
-                .createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                         createResource(TYPE_ONE));
         centralConnector.add(Collections.singletonList(existing), NAMED_GRAPH);
         centralConnector.commit();
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added));
         assertFalse(connector.contains(null, null, added.getObject(), NAMED_GRAPH));
@@ -142,7 +142,7 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void addAddsStatementsToLocalModel() throws Exception {
-        final Statement statement = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement statement = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         connector.begin();
         assertTrue(getLocalModel().getAdded().isEmpty());
@@ -152,7 +152,7 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void addAddsStatementsToCorrectContextInLocalModel() throws Exception {
-        final Statement statement = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement statement = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         connector.begin();
         assertTrue(getLocalModel().getAdded().isEmpty());
@@ -162,7 +162,7 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void removeAddsStatementsToLocalModelForRemoval() throws Exception {
-        final Statement statement = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement statement = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_ONE));
         connector.begin();
         assertTrue(getLocalModel().getRemoved().isEmpty());
@@ -172,7 +172,7 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void removeAddsStatementsForRemovalToCorrectContextInLocalModel() throws Exception {
-        final Statement statement = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement statement = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_ONE));
         connector.begin();
         assertTrue(getLocalModel().getRemoved().isEmpty());
@@ -181,8 +181,46 @@ public class ChangeTrackingStorageConnectorTest {
     }
 
     @Test
+    public void removeAddsStatementsMatchingRemovalCriteriaToLocalModelForRemoval() throws Exception {
+        final Statement existing = createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
+        centralConnector.begin();
+        centralConnector.add(Collections.singletonList(existing));
+        centralConnector.commit();
+
+        connector.begin();
+        assertTrue(getLocalModel().getRemoved().isEmpty());
+        connector.remove(RESOURCE, createProperty(Vocabulary.RDF_TYPE), null);
+        assertTrue(getLocalModel().getRemoved().getDefaultModel().contains(existing));
+    }
+
+    @Test
+    public void removeRemovesLocallyAddedStatements() throws Exception {
+        final Statement added = createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
+
+        connector.begin();
+        assertTrue(getLocalModel().getRemoved().isEmpty());
+        getLocalModel().addStatements(Collections.singletonList(added));
+        connector.remove(RESOURCE, createProperty(Vocabulary.RDF_TYPE), null);
+        assertTrue(getLocalModel().getRemoved().getDefaultModel().contains(added));
+        assertTrue(getLocalModel().getAdded().isEmpty());
+    }
+
+    @Test
+    public void removeAddsStatementsMatchingRemovalCriteriaToLocalModelContext() throws Exception {
+        final Statement existing = createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
+        centralConnector.begin();
+        centralConnector.add(Collections.singletonList(existing), NAMED_GRAPH);
+        centralConnector.commit();
+
+        connector.begin();
+        assertTrue(getLocalModel().getRemoved().isEmpty());
+        connector.remove(RESOURCE, createProperty(Vocabulary.RDF_TYPE), null, NAMED_GRAPH);
+        assertTrue(getLocalModel().getRemoved().getNamedModel(NAMED_GRAPH).contains(existing));
+    }
+
+    @Test
     public void rollbackDiscardsLocalModel() throws Exception {
-        final Statement statement = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement statement = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         connector.begin();
         connector.add(Collections.singletonList(statement));
@@ -193,38 +231,38 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void commitAppliesChangesFromLocalModelToCentralConnector() throws Exception {
-        final Statement removed = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement removed = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_ONE));
         centralConnector.begin();
         centralConnector.add(Collections.singletonList(removed));
         centralConnector.commit();
         connector.begin();
         getLocalModel().removeStatements(Collections.singletonList(removed));
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added));
         connector.commit();
-        assertTrue(centralConnector.contains(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        assertTrue(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO)));
-        assertFalse(centralConnector.contains(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        assertFalse(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_ONE)));
     }
 
     @Test
     public void commitAppliesChangesInContexts() throws Exception {
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
         connector.commit();
-        assertTrue(centralConnector.contains(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        assertTrue(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO), NAMED_GRAPH));
     }
 
     @Test
     public void commitDiscardsLocalModelOnSuccessfulFinish() throws Exception {
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
         connector.commit();
@@ -235,7 +273,7 @@ public class ChangeTrackingStorageConnectorTest {
     @Test(expected = JenaDriverException.class)
     public void commitRollsBackChangesOnException() throws Exception {
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
         centralConnector.storage = spy(centralConnector.storage);
@@ -243,7 +281,7 @@ public class ChangeTrackingStorageConnectorTest {
         try {
             connector.commit();
         } finally {
-            assertFalse(centralConnector.contains(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+            assertFalse(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                     createResource(TYPE_TWO), NAMED_GRAPH));
         }
     }
@@ -251,7 +289,7 @@ public class ChangeTrackingStorageConnectorTest {
     @Test
     public void closeDiscardsRunningTransaction() throws Exception {
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         connector.add(Collections.singletonList(added));
         connector.close();
@@ -261,13 +299,13 @@ public class ChangeTrackingStorageConnectorTest {
     @Test
     public void getContextsGetsContextFromBothLocalModelAndSharedConnector() throws Exception {
         connector.begin();
-        final Statement added = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         centralConnector.begin();
         centralConnector.add(Collections.singletonList(added), NAMED_GRAPH);
         centralConnector.commit();
         final String contextTwo = Generator.generateUri().toString();
-        final Statement addedTwo = createStatement(createResource(RESOURCE), createProperty(Vocabulary.RDF_TYPE),
+        final Statement addedTwo = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         connector.add(Collections.singletonList(addedTwo), contextTwo);
         final List<String> contexts = connector.getContexts();

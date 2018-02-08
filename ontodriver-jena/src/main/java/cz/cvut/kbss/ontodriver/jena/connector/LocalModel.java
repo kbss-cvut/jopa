@@ -26,22 +26,22 @@ class LocalModel {
         this.removed = DatasetFactory.create();
     }
 
-    Collection<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
+    List<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
                                             RDFNode value) {
         return enhanceStatements(statements, subject, property, value, added.getDefaultModel(),
                 removed.getDefaultModel());
     }
 
-    Collection<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
+    List<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
                                             RDFNode value, String context) {
         return enhanceStatements(statements, subject, property, value, added.getNamedModel(context),
                 removed.getNamedModel(context));
     }
 
-    private Collection<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
+    private List<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
                                                     Property property, RDFNode value, Model addedModel,
                                                     Model removedModel) {
-        final Collection<Statement> statements = new ArrayList<>(toEnhance);
+        final List<Statement> statements = new ArrayList<>(toEnhance);
         statements.addAll(addedModel.listStatements(subject, property, value).toList());
         statements.removeAll(removedModel.listStatements(subject, property, value).toList());
         return statements;

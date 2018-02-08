@@ -81,6 +81,11 @@ class JenaAdapter implements Wrapper {
         return new IdentifierGenerator(connector).generateIdentifier(classUri);
     }
 
+    void remove(AxiomDescriptor descriptor) {
+        beginTransactionIfNotActive();
+        new EpistemicAxiomRemover(connector).remove(descriptor);
+    }
+
     TypesHandler typesHandler() {
         beginTransactionIfNotActive();
         return new TypesHandler(connector);

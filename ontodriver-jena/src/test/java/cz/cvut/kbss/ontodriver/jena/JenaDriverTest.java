@@ -98,10 +98,9 @@ public class JenaDriverTest {
     public void driverRegistersItselfAsListenerOnCreatedConnection() throws Exception {
         this.driver = new JenaDriver(storageProps, properties);
         final JenaConnection connection = driver.acquireConnection();
-        final Field listenersField = JenaConnection.class.getDeclaredField("listeners");
-        listenersField.setAccessible(true);
-        final Set listeners = (Set) listenersField.get(connection);
-        assertTrue(listeners.contains(driver));
+        final Field listenerField = JenaConnection.class.getDeclaredField("listener");
+        listenerField.setAccessible(true);
+        assertEquals(driver, listenerField.get(connection));
     }
 
     @Test

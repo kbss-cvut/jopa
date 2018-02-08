@@ -131,12 +131,18 @@ public class SharedStorageConnector extends AbstractStorageConnector {
 
     @Override
     public void remove(Resource subject, Property property, RDFNode object) {
-        // TODO
+        verifyOpen();
+        transaction.verifyActive();
+        final Model defaultGraph = storage.getDataset().getDefaultModel();
+        defaultGraph.remove(defaultGraph.listStatements(subject, property, object));
     }
 
     @Override
     public void remove(Resource subject, Property property, RDFNode object, String context) {
-        // TODO
+        verifyOpen();
+        transaction.verifyActive();
+        final Model targetGraph = storage.getDataset().getNamedModel(context);
+        targetGraph.remove(targetGraph.listStatements(subject, property, object));
     }
 
     @Override

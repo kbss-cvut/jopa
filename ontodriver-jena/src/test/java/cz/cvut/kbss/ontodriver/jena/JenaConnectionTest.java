@@ -234,4 +234,21 @@ public class JenaConnectionTest {
         final JenaTypes types = connection.types();
         assertNotNull(types);
     }
+
+    @Test
+    public void removeCallsAdapterWithDescriptor() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        connection.remove(descriptor);
+        verify(adapterMock).remove(descriptor);
+    }
+
+    @Test
+    public void removeCommitsTransactionWhenConnectionIsAutoCommit() throws Exception {
+        connection.setAutoCommit(true);
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        connection.remove(descriptor);
+        final InOrder inOrder = inOrder(adapterMock);
+        inOrder.verify(adapterMock).remove(descriptor);
+        inOrder.verify(adapterMock).commit();
+    }
 }
