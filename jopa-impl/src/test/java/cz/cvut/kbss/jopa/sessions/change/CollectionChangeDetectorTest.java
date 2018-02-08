@@ -54,7 +54,7 @@ public class CollectionChangeDetectorTest {
     public void hasChangesReturnsFalseForTwoSetsOfManagedClassInstances() {
         final Set<OWLClassA> original = initSet();
         final Set<OWLClassA> clone = initSet();
-        when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        when(providerMock.isEntityType(OWLClassA.class)).thenReturn(true);
         assertFalse(changeDetector.hasChanges(clone, original));
     }
 
@@ -80,7 +80,7 @@ public class CollectionChangeDetectorTest {
     public void hasChangesReturnsFalseWhenCollectionOfManagedTypesHasAttributeValueUpdate() {
         final Set<OWLClassA> original = initSet();
         final Set<OWLClassA> clone = initSet();
-        when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        when(providerMock.isEntityType(OWLClassA.class)).thenReturn(true);
         clone.iterator().next().setStringAttribute("updated");
         assertFalse(changeDetector.hasChanges(clone, original));
     }
@@ -89,7 +89,7 @@ public class CollectionChangeDetectorTest {
     public void hasChangesReturnsTrueWhenItemIsReplacedInCollectionOfManagedTypes() {
         final Set<OWLClassA> original = initSet();
         final Set<OWLClassA> clone = initSet();
-        when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        when(providerMock.isEntityType(OWLClassA.class)).thenReturn(true);
         final OWLClassA newItem = new OWLClassA(Generators.createIndividualIdentifier());
         removeItemFromCollection(clone);
         clone.add(newItem);
@@ -106,7 +106,7 @@ public class CollectionChangeDetectorTest {
     public void hasChangesReturnsTrueWhenItemIsReplacedByNewObjectInCollectionOfManagedTypes() {
         final Set<OWLClassA> original = initSet();
         final Set<OWLClassA> clone = initSet();
-        when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        when(providerMock.isEntityType(OWLClassA.class)).thenReturn(true);
         final OWLClassA newItem = new OWLClassA();
         removeItemFromCollection(clone);
         clone.add(newItem);

@@ -56,7 +56,7 @@ public class ManagedTypeValueMergerTest {
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         when(uow.getMetamodel()).thenReturn(metamodel);
-        when(uow.isTypeManaged(any())).thenAnswer(invocation -> {
+        when(uow.isEntityType(any())).thenAnswer(invocation -> {
             final Class<?> arg = (Class<?>) invocation.getArguments()[0];
             return metamodel.entity(arg) != null;
         });

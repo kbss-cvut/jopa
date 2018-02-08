@@ -31,5 +31,5 @@ public interface MetamodelProvider {
      * @param cls The class to check
      * @return Whether type is managed
      */
-    boolean isTypeManaged(Class<?> cls);
+    boolean isEntityType(Class<?> cls);
 }

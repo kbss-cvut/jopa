@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -335,13 +335,13 @@ public class MetamodelImplTest {
     }
 
     @Test(expected = MetamodelInitializationException.class)
-    public void throwsExceptionWhenTryingToBuildClassWithoutOWLClassAnnotation() throws Exception {
+    public void throwsExceptionWhenTryingToBuildClassWithoutOWLClassAnnotation() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(String.class));
         getMetamodel();
     }
 
     @Test(expected = MetamodelInitializationException.class)
-    public void throwsExceptionWhenTypesFieldIsNotASet() throws Exception {
+    public void throwsExceptionWhenTypesFieldIsNotASet() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithInvalidTypes.class));
         getMetamodel();
     }
@@ -355,7 +355,7 @@ public class MetamodelImplTest {
     }
 
     @Test(expected = MetamodelInitializationException.class)
-    public void throwsExceptionWhenPropertiesIsNotAMap() throws Exception {
+    public void throwsExceptionWhenPropertiesIsNotAMap() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithInvalidProperties.class));
         getMetamodel();
     }
@@ -369,7 +369,7 @@ public class MetamodelImplTest {
     }
 
     @Test(expected = InvalidFieldMappingException.class)
-    public void throwExceptionWhenForClassWithInvalidIdentifier() throws Exception {
+    public void throwExceptionWhenForClassWithInvalidIdentifier() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithInvalidIdentifier.class));
         getMetamodel();
     }
@@ -381,7 +381,7 @@ public class MetamodelImplTest {
     }
 
     @Test(expected = MetamodelInitializationException.class)
-    public void throwsExceptionForClassWithoutIdentifier() throws Exception {
+    public void throwsExceptionForClassWithoutIdentifier() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithoutIdentifier.class));
         getMetamodel();
     }
@@ -405,7 +405,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void skipsStaticFieldsWhenProcessingClass() throws Exception {
+    public void skipsStaticFieldsWhenProcessingClass() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassO.class));
         final Metamodel metamodel = getMetamodel();
 
@@ -424,7 +424,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void skipsFieldsAnnotatedWithTransientWhenProcessingClass() throws Exception {
+    public void skipsFieldsAnnotatedWithTransientWhenProcessingClass() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassO.class));
         final Metamodel metamodel = getMetamodel();
 
@@ -438,7 +438,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void skipsTransientFieldsWhenProcessingClass() throws Exception {
+    public void skipsTransientFieldsWhenProcessingClass() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassO.class));
         final Metamodel metamodel = getMetamodel();
 
@@ -452,7 +452,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void skipsFinalFieldsWhenProcessingClass() throws Exception {
+    public void skipsFinalFieldsWhenProcessingClass() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassO.class));
         final Metamodel metamodel = getMetamodel();
 
@@ -466,7 +466,7 @@ public class MetamodelImplTest {
     }
 
     @Test(expected = MetamodelInitializationException.class)
-    public void throwsExceptionForEntityWithoutNoArgConstructor() throws Exception {
+    public void throwsExceptionForEntityWithoutNoArgConstructor() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithoutNoArgConstructor.class));
 
         getMetamodel();
@@ -484,7 +484,7 @@ public class MetamodelImplTest {
     }
 
     @Test(expected = MetamodelInitializationException.class)
-    public void throwsExceptionForEntityWithPersistentArray() throws Exception {
+    public void throwsExceptionForEntityWithPersistentArray() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithArrayAttribute.class));
 
         getMetamodel();
@@ -501,7 +501,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void buildsEntityWithObjectPropertyAttributeAsUri() throws Exception {
+    public void buildsEntityWithObjectPropertyAttributeAsUri() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithOPUri.class));
 
         final Metamodel m = getMetamodel();
@@ -525,7 +525,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void buildsEntityWithPluralObjectPropertyAttributeAsUrls() throws Exception {
+    public void buildsEntityWithPluralObjectPropertyAttributeAsUrls() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithPluralOPUrls.class));
 
         final Metamodel m = getMetamodel();
@@ -552,7 +552,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void buildsEntityWithUriTypesField() throws Exception {
+    public void buildsEntityWithUriTypesField() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithUriTypes.class));
 
         final Metamodel m = getMetamodel();
@@ -571,7 +571,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void entityThrowsIllegalArgumentForNonEntityClass() throws Exception {
+    public void entityThrowsIllegalArgumentForNonEntityClass() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage(
                 "Class " + ClassWithUriTypes.class.getName() + " is not a known entity in this persistence unit.");
@@ -581,7 +581,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void buildsEntityWithNamedQueries() throws Exception {
+    public void buildsEntityWithNamedQueries() {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(ClassWithNamedQueries.class));
         final MetamodelImpl metamodel = getMetamodel();
         final NamedQueryManager queryManager = metamodel.getNamedQueryManager();
@@ -655,5 +655,19 @@ public class MetamodelImplTest {
         result = metamodel.getModuleExtractionExtraSignature();
         assertEquals(signature.size() + 1, result.size());
         assertTrue(result.contains(toAdd));
+    }
+
+    @Test
+    public void isEntityTypeReturnsTrueForEntityClass() {
+        when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassE.class));
+        final MetamodelImpl metamodel = getMetamodel();
+        assertTrue(metamodel.isEntityType(OWLClassE.class));
+    }
+
+    @Test
+    public void isEntityTypeReturnsFalseForMappedSuperclass() {
+        when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassQ.class));
+        final MetamodelImpl metamodel = getMetamodel();
+        assertFalse(metamodel.isEntityType(QMappedSuperclass.class));
     }
 }

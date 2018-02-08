@@ -48,7 +48,7 @@ class CollectionValueMerger implements ValueMerger {
                 .createDefaultCollection(PluralAttribute.CollectionType.fromClass(att.getJavaType()));
         boolean elemTypeManaged = false;
         if (att instanceof PluralAttribute) {
-            elemTypeManaged = uow.isTypeManaged(((PluralAttribute) att).getBindableJavaType());
+            elemTypeManaged = uow.isEntityType(((PluralAttribute) att).getBindableJavaType());
         }
         for (Object item : mergedCol) {
             newValue.add(elemTypeManaged ? managedTypeMerger.getValueToSet(item, attributeDescriptor) : item);

@@ -80,11 +80,11 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
 
-        final boolean isTypeManaged = metamodelProvider.isTypeManaged(resultType);
+        final boolean isEntityType = metamodelProvider.isEntityType(resultType);
         final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
         final List<X> res = new ArrayList<>();
         executeQuery(rs -> {
-            if (isTypeManaged) {
+            if (isEntityType) {
                 loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
             } else {
                 res.add(loadResultValue(rs));

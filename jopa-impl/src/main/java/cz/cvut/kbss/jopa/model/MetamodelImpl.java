@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class MetamodelImpl implements Metamodel {
+public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(Metamodel.class);
 
@@ -156,5 +157,16 @@ public class MetamodelImpl implements Metamodel {
                 throw new OWLPersistenceException("Invalid URI encountered in module extraction signature.", e);
             }
         }
+    }
+
+    @Override
+    public Metamodel getMetamodel() {
+        return this;
+    }
+
+    @Override
+    public boolean isEntityType(Class<?> cls) {
+        Objects.requireNonNull(cls);
+        return entities.containsKey(cls);
     }
 }

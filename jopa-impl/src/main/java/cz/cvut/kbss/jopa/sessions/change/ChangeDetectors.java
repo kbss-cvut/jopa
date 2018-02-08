@@ -43,7 +43,7 @@ class ChangeDetectors implements ChangeDetector {
             return false;
         }
 
-        if (metamodelProvider.isTypeManaged(clone.getClass())) {
+        if (metamodelProvider.isEntityType(clone.getClass())) {
             return managedTypeDector.hasChanges(clone, original);
         } else if (clone instanceof Collection) {
             return collectionChangeDetector.hasChanges(clone, original);

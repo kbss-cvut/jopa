@@ -95,7 +95,7 @@ class CollectionChangeDetector implements ChangeDetector {
      * For managed types, the comparator uses identifier's hashCode, for all other types hashCode is used directly.
      */
     private Comparator<Object> getSetComparator(Class<?> elemType) {
-        if (metamodelProvider.isTypeManaged(elemType)) {
+        if (metamodelProvider.isEntityType(elemType)) {
             return (o1, o2) -> {
                 final Object keyOne = EntityPropertiesUtils.getIdentifier(o1, metamodelProvider.getMetamodel());
                 final Object keyTwo = EntityPropertiesUtils.getIdentifier(o2, metamodelProvider.getMetamodel());

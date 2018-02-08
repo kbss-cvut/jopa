@@ -871,8 +871,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public boolean isTypeManaged(Class<?> cls) {
-        return parent.isTypeManaged(cls);
+    public boolean isEntityType(Class<?> cls) {
+        return parent.isEntityType(cls);
     }
 
     @Override
@@ -926,7 +926,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (fieldValueOrig == null) {
             clone = null;
         } else {
-            if (isTypeManaged(field.getType())) {
+            if (isEntityType(field.getType())) {
                 clone = registerExistingObject(fieldValueOrig, fieldDescriptor);
                 putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldDescriptor);
             } else {

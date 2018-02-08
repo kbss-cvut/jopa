@@ -54,7 +54,7 @@ public class TypedQueryImplTest extends QueryTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        when(uowMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
     }
 
     @Test

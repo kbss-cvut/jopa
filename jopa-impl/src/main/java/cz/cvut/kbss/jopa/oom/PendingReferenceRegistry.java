@@ -35,11 +35,11 @@ class PendingReferenceRegistry {
 
     private final Map<Object, Set<PendingAssertion>> pendingAssertions = new HashMap<>();
 
-    private final Map<Object, Set<PendingListReference>> pendingLists = new HashMap<>();
+    private Map<Object, Set<PendingListReference>> pendingLists;
     /**
      * Counts number of pending items per each list
      */
-    private final Map<ListValueDescriptor, Integer> pendingListItems = new HashMap<>();
+    private Map<ListValueDescriptor, Integer> pendingListItems;
 
     /**
      * Registers a new pending assertion.
@@ -69,6 +69,10 @@ class PendingReferenceRegistry {
      * @param values          Values of the sequence
      */
     void addPendingListReference(Object item, ListValueDescriptor valueDescriptor, List<?> values) {
+        if (pendingLists == null) {
+            this.pendingLists = new HashMap<>();
+            this.pendingListItems = new HashMap<>();
+        }
         pendingLists.putIfAbsent(item, new HashSet<>());
         pendingLists.get(item).add(new PendingListReference(valueDescriptor, values));
         pendingListItems.compute(valueDescriptor, (k, v) -> v == null ? 1 : v + 1);
@@ -88,7 +92,7 @@ class PendingReferenceRegistry {
 
     Set<PendingListReference> removeAndGetPendingListReferencesWith(Object object) {
         assert object != null;
-        final Set<PendingListReference> refs = pendingLists.remove(object);
+        final Set<PendingListReference> refs = pendingLists == null ? null : pendingLists.remove(object);
         if (refs == null) {
             return Collections.emptySet();
         }
@@ -107,12 +111,14 @@ class PendingReferenceRegistry {
 
     Set<Object> getPendingResources() {
         final Set<Object> pending = new HashSet<>(pendingAssertions.keySet());
-        pending.addAll(pendingLists.keySet());
+        if (pendingLists != null) {
+            pending.addAll(pendingLists.keySet());
+        }
         return pending;
     }
 
     boolean hasPendingResources() {
-        return !pendingAssertions.isEmpty() || !pendingLists.isEmpty();
+        return !pendingAssertions.isEmpty() || pendingLists != null && !pendingLists.isEmpty();
     }
 
     /**
@@ -132,6 +138,9 @@ class PendingReferenceRegistry {
     }
 
     private void removePendingListReferences(Predicate<ListValueDescriptor> condition) {
+        if (pendingLists == null) {
+            return;
+        }
         final Set<ListValueDescriptor> removed = new HashSet<>();
         for (Set<PendingListReference> pending : pendingLists.values()) {
             final Iterator<PendingListReference> it = pending.iterator();

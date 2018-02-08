@@ -161,7 +161,7 @@ public class CollectionInstanceBuilderTest {
         final OWLClassA aClone = new OWLClassA(aOrig);
         owner.setOwlClassA(Collections.singleton(aOrig));
         when(uowMock.registerExistingObject(aOrig, descriptor, Collections.emptyList())).thenReturn(aClone);
-        when(uowMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
         final Set<?> clone = (Set) builder.buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(),
                 new CloneConfiguration(descriptor));
         assertEquals(owner.getOwlClassA().size(), clone.size());

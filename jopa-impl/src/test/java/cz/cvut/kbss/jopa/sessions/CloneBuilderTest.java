@@ -84,7 +84,7 @@ public class CloneBuilderTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(uow.isTypeManaged(any())).thenAnswer(invocation -> {
+        when(uow.isEntityType(any())).thenAnswer(invocation -> {
             Class<?> cls = (Class<?>) invocation.getArguments()[0];
             return managedTypes.contains(cls);
         });
