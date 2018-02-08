@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -38,7 +38,7 @@ public class TypedQueryTest extends TypedQueryRunner {
     }
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
         em = persistenceFactory.getEntityManager("SPARQLTypedQueryTests", false,
                 Collections.singletonMap(SesameOntoDriverProperties.SESAME_USE_INFERENCE, "true"));
@@ -53,7 +53,7 @@ public class TypedQueryTest extends TypedQueryRunner {
     }
 
     @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    public static void tearDownAfterClass() {
         em.close();
         em.getEntityManagerFactory().close();
     }

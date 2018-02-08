@@ -16,6 +16,8 @@ package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.After;
 import org.junit.Rule;
@@ -57,9 +59,14 @@ public abstract class BaseRunner {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    public BaseRunner(Logger logger) {
+    protected final DataAccessor dataAccessor;
+    protected final PersistenceFactory persistenceFactory;
+
+    public BaseRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         assert logger != null;
         this.logger = logger;
+        this.persistenceFactory = persistenceFactory;
+        this.dataAccessor = dataAccessor;
         init();
     }
 
@@ -159,10 +166,16 @@ public abstract class BaseRunner {
         return getEntityManager(repositoryName, cacheEnabled, Collections.emptyMap());
     }
 
-    protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
-                                                      Map<String, String> properties);
+    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
+                                             Map<String, String> properties) {
+        return persistenceFactory.getEntityManager(repositoryName, cacheEnabled, properties);
+    }
 
-    protected abstract void persistTestData(Collection<Triple> data, EntityManager em) throws Exception;
+    protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
+        dataAccessor.persistTestData(data, em);
+    }
 
-    protected abstract void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception;
+    protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
+        dataAccessor.verifyDataPresence(expected, em);
+    }
 }

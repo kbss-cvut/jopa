@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,19 +17,20 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public abstract class UpdateOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
-    public UpdateOperationsWithInheritanceRunner(Logger logger) {
-        super(logger);
+    public UpdateOperationsWithInheritanceRunner(Logger logger, PersistenceFactory persistenceFactory,
+                                                 DataAccessor dataAccessor) {
+        super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test

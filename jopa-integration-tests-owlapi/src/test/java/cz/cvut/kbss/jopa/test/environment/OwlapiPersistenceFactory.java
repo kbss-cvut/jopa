@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,7 +22,7 @@ import openllet.owlapi.OpenlletReasonerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OwlapiPersistenceFactory {
+public class OwlapiPersistenceFactory implements PersistenceFactory {
 
     private static final StorageConfig storage = initStorage();
     private static final Map<String, String> defaultProperties = initProperties();

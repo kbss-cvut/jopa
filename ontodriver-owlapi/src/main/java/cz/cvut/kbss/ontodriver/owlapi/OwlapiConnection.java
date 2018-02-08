@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.*;
-import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -24,7 +23,9 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
@@ -42,22 +43,22 @@ public class OwlapiConnection implements Connection {
     private OwlapiProperties properties;
     private OwlapiLists lists;
 
-    private final Set<ConnectionListener> listeners = new HashSet<>(4);
+    private ConnectionListener listener;
 
-    public OwlapiConnection(OwlapiAdapter adapter) {
+    OwlapiConnection(OwlapiAdapter adapter) {
         this.adapter = adapter;
         this.open = true;
         this.autoCommit = false;
     }
 
-    void addListener(ConnectionListener listener) {
+    void setListener(ConnectionListener listener) {
+        ensureOpen();
         assert listener != null;
-        listeners.add(listener);
+        this.listener = listener;
     }
 
-    void removeListener(ConnectionListener listener) {
-        assert listener != null;
-        listeners.remove(listener);
+    void removeListener() {
+        this.listener = null;
     }
 
     void setTypes(OwlapiTypes types) {
@@ -78,7 +79,7 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
-    public void commit() throws OntoDriverException {
+    public void commit() {
         ensureOpen();
         adapter.commit();
     }
@@ -90,7 +91,7 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
-    public void rollback() throws OntoDriverException {
+    public void rollback() {
         ensureOpen();
         adapter.rollback();
     }
@@ -106,31 +107,31 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
-    public Statement createStatement() throws OntoDriverException {
+    public Statement createStatement() {
         ensureOpen();
         return adapter.createStatement(this);
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
+    public PreparedStatement prepareStatement(String sparql) {
         ensureOpen();
         return adapter.prepareStatement(sparql, this);
     }
 
     @Override
-    public boolean isConsistent(URI context) throws OntoDriverException {
+    public boolean isConsistent(URI context) {
         ensureOpen();
         return adapter.isConsistent(context);
     }
 
     @Override
-    public List<URI> getContexts() throws OntoDriverException {
+    public List<URI> getContexts() {
         ensureOpen();
         return adapter.getContexts();
     }
 
     @Override
-    public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
+    public boolean contains(Axiom<?> axiom, URI context) {
         ensureOpen();
         Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
         return adapter.containsAxiom(axiom, context);
@@ -160,7 +161,7 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
-    public URI generateIdentifier(URI classUri) throws OntoDriverException {
+    public URI generateIdentifier(URI classUri) {
         ensureOpen();
         Objects.requireNonNull(classUri);
         return adapter.generateIdentifier(classUri);
@@ -212,15 +213,17 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (!open) {
             return;
         }
-        listeners.forEach(listener -> listener.connectionClosed(this));
+        if (listener != null) {
+            listener.connectionClosed(this);
+        }
         this.open = false;
     }
 
-    public void commitIfAuto() throws OwlapiDriverException {
+    public void commitIfAuto() {
         if (autoCommit) {
             adapter.commit();
         }

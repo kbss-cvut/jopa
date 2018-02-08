@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.SesameDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.jopa.test.runner.PersistenceUnitTestRunner;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
@@ -33,7 +32,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -41,34 +43,8 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersistenceUnitTest.class);
 
-    private final SesamePersistenceFactory persistenceFactory;
-    private final SesameDataAccessor dataAccessor;
-
     public PersistenceUnitTest() {
-        super(LOG);
-        this.persistenceFactory = new SesamePersistenceFactory();
-        this.dataAccessor = new SesameDataAccessor();
-    }
-
-    @Override
-    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled) {
-        return getEntityManager(repositoryName, cacheEnabled, Collections.emptyMap());
-    }
-
-    @Override
-    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
-                                             Map<String, String> properties) {
-        return persistenceFactory.getEntityManager(repositoryName, cacheEnabled, properties);
-    }
-
-    @Override
-    protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
-        dataAccessor.persistTestData(data, em);
-    }
-
-    @Override
-    protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
-        dataAccessor.verifyDataPresence(expected, em);
+        super(LOG, new SesamePersistenceFactory(), new SesameDataAccessor());
     }
 
     @Test

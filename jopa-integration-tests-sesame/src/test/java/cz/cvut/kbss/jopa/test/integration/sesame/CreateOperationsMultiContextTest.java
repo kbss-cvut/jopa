@@ -14,49 +14,17 @@
  */
 package cz.cvut.kbss.jopa.test.integration.sesame;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.SesameDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.jopa.test.runner.CreateOperationsMultiContextRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 public class CreateOperationsMultiContextTest extends CreateOperationsMultiContextRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(CreateOperationsMultiContextTest.class);
 
-    private final SesamePersistenceFactory persistenceFactory;
-    private final SesameDataAccessor dataAccessor;
-
     public CreateOperationsMultiContextTest() {
-        super(LOG);
-        this.persistenceFactory = new SesamePersistenceFactory();
-        this.dataAccessor = new SesameDataAccessor();
-    }
-
-    @Override
-    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled) {
-        return getEntityManager(repositoryName, cacheEnabled, Collections.emptyMap());
-    }
-
-    @Override
-    protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
-                                             Map<String, String> properties) {
-        return persistenceFactory.getEntityManager(repositoryName, cacheEnabled, properties);
-    }
-
-    @Override
-    protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
-        dataAccessor.persistTestData(data, em);
-    }
-
-    @Override
-    protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
-        dataAccessor.verifyDataPresence(expected, em);
+        super(LOG, new SesamePersistenceFactory(), new SesameDataAccessor());
     }
 }

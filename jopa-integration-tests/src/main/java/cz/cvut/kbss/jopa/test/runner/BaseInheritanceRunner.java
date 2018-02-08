@@ -17,7 +17,9 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.test.OWLClassQ;
 import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.OWLClassU;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import org.slf4j.Logger;
 
 abstract class BaseInheritanceRunner extends BaseRunner {
@@ -28,8 +30,8 @@ abstract class BaseInheritanceRunner extends BaseRunner {
     OWLClassT entityT;
     OWLClassU entityU;
 
-    BaseInheritanceRunner(Logger logger) {
-        super(logger);
+    BaseInheritanceRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+        super(logger, persistenceFactory, dataAccessor);
         init();
     }
 

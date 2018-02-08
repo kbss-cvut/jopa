@@ -37,7 +37,7 @@ public class QueryTest extends QueryRunner {
     }
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         final OwlapiPersistenceFactory persistenceFactory = new OwlapiPersistenceFactory();
         em = persistenceFactory.getEntityManager("SPARQLQueryTests", false, Collections.emptyMap());
         QueryTestEnvironment.generateTestData(em);
@@ -46,7 +46,7 @@ public class QueryTest extends QueryRunner {
     }
 
     @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    public static void tearDownAfterClass() {
         em.close();
         em.getEntityManagerFactory().close();
     }
@@ -58,7 +58,7 @@ public class QueryTest extends QueryRunner {
 
     @Ignore
     @Override
-    public void testSelectWithOptionalReturnsNullInUnfilledColumns() throws Exception {
+    public void testSelectWithOptionalReturnsNullInUnfilledColumns() {
         // OWL2Query does not support OPTIONAL pattern
     }
 

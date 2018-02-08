@@ -17,7 +17,9 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -32,8 +34,8 @@ import static org.junit.Assert.*;
 
 public abstract class RetrieveOperationsRunner extends BaseRunner {
 
-    public RetrieveOperationsRunner(Logger logger) {
-        super(logger);
+    public RetrieveOperationsRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+        super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test

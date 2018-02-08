@@ -17,6 +17,8 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.test.OWLClassQ;
 import cz.cvut.kbss.jopa.test.OWLClassS;
 import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -24,8 +26,8 @@ import static org.junit.Assert.*;
 
 public abstract class CreateOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
-    protected CreateOperationsWithInheritanceRunner(Logger logger) {
-        super(logger);
+    protected CreateOperationsWithInheritanceRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+        super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test

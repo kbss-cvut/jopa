@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,9 +24,10 @@ import java.util.Collection;
 
 import static org.junit.Assert.assertTrue;
 
-public class OwlapiDataAccessor {
+public class OwlapiDataAccessor implements DataAccessor {
 
-    public void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
+    @Override
+    public void persistTestData(Collection<Triple> data, EntityManager em) {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
         final OWLOntologyManager manager = ontology.getOWLOntologyManager();
         final OWLDataFactory df = manager.getOWLDataFactory();
@@ -53,7 +54,8 @@ public class OwlapiDataAccessor {
         }
     }
 
-    public void verifyDataPresence(Collection<Triple> data, EntityManager em) throws Exception {
+    @Override
+    public void verifyDataPresence(Collection<Triple> data, EntityManager em) {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
         for (Triple t : data) {
