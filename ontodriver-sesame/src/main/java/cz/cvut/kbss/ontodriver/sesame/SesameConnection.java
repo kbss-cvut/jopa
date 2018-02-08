@@ -41,12 +41,11 @@ class SesameConnection implements Connection {
     private Types types;
     private Properties properties;
 
-    private final Set<ConnectionListener> listeners;
+    private ConnectionListener listener;
 
-    public SesameConnection(SesameAdapter adapter) {
+    SesameConnection(SesameAdapter adapter) {
         assert adapter != null;
         this.adapter = adapter;
-        this.listeners = new HashSet<>(4);
         this.open = true;
     }
 
@@ -62,14 +61,14 @@ class SesameConnection implements Connection {
         this.properties = properties;
     }
 
-    void addListener(ConnectionListener listener) {
+    void setListener(ConnectionListener listener) {
+        ensureOpen();
         assert listener != null;
-        listeners.add(listener);
+        this.listener = listener;
     }
 
-    void removeListener(ConnectionListener listener) {
-        assert listener != null;
-        listeners.remove(listener);
+    void removeListener() {
+        this.listener = null;
     }
 
     @Override
@@ -79,7 +78,7 @@ class SesameConnection implements Connection {
         }
         try {
             adapter.close();
-            for (ConnectionListener listener : listeners) {
+            if (listener != null) {
                 listener.connectionClosed(this);
             }
         } finally {
@@ -123,7 +122,7 @@ class SesameConnection implements Connection {
     }
 
     @Override
-    public Statement createStatement() throws OntoDriverException {
+    public Statement createStatement() {
         ensureOpen();
         return new SesameStatement(adapter.getQueryExecutor());
     }
@@ -139,7 +138,7 @@ class SesameConnection implements Connection {
     }
 
     @Override
-    public boolean isConsistent(URI context) throws OntoDriverException {
+    public boolean isConsistent(URI context) {
         ensureOpen();
         return adapter.isConsistent(context);
     }
