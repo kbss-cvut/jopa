@@ -26,7 +26,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private AbstractIdentifiableType<? super X> supertype;
 
-    private final Set<AbstractIdentifiableType<? extends X>> subtypes = new HashSet<>(2);
+    private Set<AbstractIdentifiableType<? extends X>> subtypes;
 
     private TypesSpecification<X, ?> directTypes;
 
@@ -51,6 +51,9 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     private void addSubtype(AbstractIdentifiableType<? extends X> subtype) {
+        if (subtypes == null) {
+            this.subtypes = new HashSet<>(2);
+        }
         subtypes.add(subtype);
     }
 
@@ -88,7 +91,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
      * @return {@code true} when managed subtypes exist, {@code false} otherwise
      */
     public boolean hasSubtypes() {
-        return !subtypes.isEmpty();
+        return subtypes != null;
     }
 
     /**
@@ -101,7 +104,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     public Set<AbstractIdentifiableType<? extends X>> getSubtypes() {
-        return Collections.unmodifiableSet(subtypes);
+        return subtypes != null ? Collections.unmodifiableSet(subtypes) : Collections.emptySet();
     }
 
     @Override
