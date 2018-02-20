@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.9.14 - February 20, 2018
+- Fixed incorrect implementation of `contains` in Sesame driver.
+- Minor memory consumption optimizations.
+- Fixed volatile order of generated vocabulary elements (Issue #28).
+
 ## 0.9.13 - January 14, 2018
 - Fixed issue with OWL2Java silently ignoring missing imports (Bug #22).
 - Upgraded to OWLAPI 5.1.3. Upgraded to OWL2Query 0.5.0.
