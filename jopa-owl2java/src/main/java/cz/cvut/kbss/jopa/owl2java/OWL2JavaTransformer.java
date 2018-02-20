@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -33,11 +32,6 @@ public class OWL2JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final ContextDefinition DEFAULT_CONTEXT = new ContextDefinition("<DEFAULT>");
-
-    private static final List<IRI> skipped = Arrays
-            .asList(IRI.create(SequencesVocabulary.c_Collection), IRI.create(SequencesVocabulary.c_List),
-                    IRI.create(SequencesVocabulary.c_OWLSimpleList),
-                    IRI.create(SequencesVocabulary.c_OWLReferencedList));
 
     private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
     private OWLOntology ontology;
@@ -88,27 +82,6 @@ public class OWL2JavaTransformer {
         }
     }
 
-    private void addAxiomToContext(final ContextDefinition ctx, final OWLAxiom axiom) {
-        axiom.signature().forEach(e -> {
-            if (e.isOWLClass() && !skipped.contains(e.getIRI())) {
-                ctx.classes.add(e.asOWLClass());
-            }
-            if (e.isOWLObjectProperty() && !skipped.contains(e.getIRI())) {
-                ctx.objectProperties.add(e.asOWLObjectProperty());
-            }
-            if (e.isOWLDataProperty() && !skipped.contains(e.getIRI())) {
-                ctx.dataProperties.add(e.asOWLDataProperty());
-            }
-            if (e.isOWLAnnotationProperty() && !skipped.contains(e.getIRI())) {
-                ctx.annotationProperties.add(e.asOWLAnnotationProperty());
-            }
-            if (e.isOWLNamedIndividual() && !skipped.contains(e.getIRI())) {
-                ctx.individuals.add(e.asOWLNamedIndividual());
-            }
-        });
-        ctx.axioms.add(axiom);
-    }
-
     public void setOntology(final String owlOntologyName,
                             final String mappingFile, boolean includeImports) {
         ontology = getWholeOntology(owlOntologyName, mappingFile);
@@ -118,10 +91,10 @@ public class OWL2JavaTransformer {
         LOG.info("Parsing integrity constraints");
 
         ontology.axioms().forEach(a -> {
-            addAxiomToContext(DEFAULT_CONTEXT, a);
+            DEFAULT_CONTEXT.addAxiom(a);
             for (final String icContextName : getContexts(a)) {
                 ContextDefinition ctx = getContextDefinition(icContextName);
-                addAxiomToContext(ctx, a);
+                ctx.addAxiom(a);
             }
         });
 

@@ -335,7 +335,7 @@ public class JavaTransformer {
 
     private void generateVocabulary(final OWLOntology o, final JCodeModel cm, ContextDefinition context,
                                     boolean withOWLAPI) {
-        final Collection<OWLEntity> col = new HashSet<>();
+        final Collection<OWLEntity> col = new LinkedHashSet<>();
         col.add(o.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
         col.addAll(context.classes);
         col.addAll(context.objectProperties);

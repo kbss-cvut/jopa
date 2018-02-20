@@ -27,38 +27,38 @@ public class UtilsTest {
     private final OWLDataFactory f = OWLManager.getOWLDataFactory();
 
     @Test
-    public void testSucceedOnClass() throws Exception {
+    public void testSucceedOnClass() {
         Utils.ensureClass(f.getOWLClass(IRI.create("http://examp.le/cls")));
     }
 
     @Test(expected = UnsupportedICException.class)
-    public void testFailOnClassExpression() throws Exception {
+    public void testFailOnClassExpression() {
         Utils.ensureClass(f.getOWLObjectComplementOf(f.getOWLClass(IRI.create("http://examp.le/cls"))));
     }
 
     @Test
-    public void testSucceedOnObjectProperty() throws Exception {
+    public void testSucceedOnObjectProperty() {
         Utils.ensureObjectProperty(f.getOWLObjectProperty(IRI.create("http://examp.le/prop")));
     }
 
     @Test(expected = UnsupportedICException.class)
-    public void testFailOnObjectPropertyExpression() throws Exception {
+    public void testFailOnObjectPropertyExpression() {
         Utils.ensureObjectProperty(
             f.getOWLObjectInverseOf(f.getOWLObjectProperty(IRI.create("http://examp.le/prop"))));
     }
 
     @Test
-    public void testSucceedOnDataProperty() throws Exception {
+    public void testSucceedOnDataProperty() {
         Utils.ensureDataProperty(f.getOWLDataProperty(IRI.create("http://examp.le/prop")));
     }
 
     @Test
-    public void testSucceedOnDatatype() throws Exception {
+    public void testSucceedOnDatatype() {
         Utils.ensureDatatype(f.getOWLDatatype(XSDVocabulary.STRING.getIRI()));
     }
 
     @Test(expected = UnsupportedICException.class)
-    public void testFailOnDataRange() throws Exception {
+    public void testFailOnDataRange() {
         Utils.ensureDatatype(
             f.getOWLDatatypeRestriction(f.getIntegerOWLDatatype(),
                 f.getOWLFacetRestriction(OWLFacet.MAX_LENGTH, 10)));
