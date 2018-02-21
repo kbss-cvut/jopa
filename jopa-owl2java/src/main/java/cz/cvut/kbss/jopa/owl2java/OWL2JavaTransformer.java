@@ -31,7 +31,7 @@ public class OWL2JavaTransformer {
 
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
-    private static final ContextDefinition DEFAULT_CONTEXT = new ContextDefinition("<DEFAULT>");
+    private static final ContextDefinition DEFAULT_CONTEXT = new ContextDefinition();
 
     private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
     private OWLOntology ontology;
@@ -107,11 +107,11 @@ public class OWL2JavaTransformer {
     }
 
     private ContextDefinition getContextDefinition(String icContextName) {
-        return contexts.computeIfAbsent(icContextName, ContextDefinition::new);
+        return contexts.computeIfAbsent(icContextName, name -> new ContextDefinition());
     }
 
     private List<String> getContexts(final OWLAxiom a) {
-        final List<String> contexts = new ArrayList<>();
+        final List<String> icContexts = new ArrayList<>();
         a.annotations().filter(p -> p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR))
          .forEach(p -> {
              LOG.info("Processing annotation : " + p);
@@ -122,9 +122,9 @@ public class OWL2JavaTransformer {
                  return;
              }
              LOG.debug("Found IC {} for context {}", a, icContextName);
-             contexts.add(icContextName);
+             icContexts.add(icContextName);
          });
-        return contexts;
+        return icContexts;
     }
 
     private void verifyContextExistence(String context) {
@@ -175,12 +175,15 @@ public class OWL2JavaTransformer {
             return name;
         }
 
+        @Override
         public void visit(@Nonnull IRI iri) {
         }
 
+        @Override
         public void visit(@Nonnull OWLAnonymousIndividual individual) {
         }
 
+        @Override
         public void visit(@Nonnull OWLLiteral literal) {
             name = literal.getLiteral();
         }

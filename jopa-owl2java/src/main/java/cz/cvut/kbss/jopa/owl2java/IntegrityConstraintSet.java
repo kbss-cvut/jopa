@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,36 +14,17 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
-import cz.cvut.kbss.jopa.ic.api.DataDomainConstraint;
-import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
-import cz.cvut.kbss.jopa.ic.api.DataRangeConstraint;
-import cz.cvut.kbss.jopa.ic.api.IntegrityConstraint;
-import cz.cvut.kbss.jopa.ic.api.IntegrityConstraintFactory;
-import cz.cvut.kbss.jopa.ic.api.IntegrityConstraintVisitor;
-import cz.cvut.kbss.jopa.ic.api.ObjectDomainConstraint;
-import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
-import cz.cvut.kbss.jopa.ic.api.ObjectRangeConstraint;
-import cz.cvut.kbss.jopa.ic.impl.IntegrityConstraintFactoryImpl;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
+import cz.cvut.kbss.jopa.ic.api.*;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+
+import java.util.*;
 
 public class IntegrityConstraintSet {
     private Map<OWLClass, List<IntegrityConstraint>> cConstraints = new HashMap<>();
     private Map<OWLClass, Map<OWLObjectProperty, Collection<IntegrityConstraint>>> opConstraints = new HashMap<>();
     private Map<OWLClass, Map<OWLDataProperty, Collection<IntegrityConstraint>>> dpConstraints = new HashMap<>();
-
-    private IntegrityConstraintFactory integrityConstraintFactory = new IntegrityConstraintFactoryImpl();
 
     private <K, V> void addToMap(final K key, final V value, final Map<K, Collection<V>> map) {
         if (!map.containsKey(key)) {

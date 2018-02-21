@@ -14,10 +14,13 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import java.util.*;
-
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import org.semanticweb.owlapi.model.*;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 class ContextDefinition {
 
@@ -37,12 +40,6 @@ class ContextDefinition {
     final Set<OWLNamedIndividual> individuals = new TreeSet<>();
 
     IntegrityConstraintSet set;
-
-    private final String name;
-
-    ContextDefinition(String name) {
-        this.name = name;
-    }
 
     public void parse() {
         final IntegrityConstraintParser parser = new IntegrityConstraintParser();

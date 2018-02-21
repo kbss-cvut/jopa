@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 
 public class ContextDefinitionTest {
 
-    private final ContextDefinition ctx = new ContextDefinition("default");
+    private final ContextDefinition ctx = new ContextDefinition();
 
     private final OWLDataFactory df = new OWLDataFactoryImpl();
 
