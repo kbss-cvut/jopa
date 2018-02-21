@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.9.15 - Feburary 21, 2018
+- Fixed dependency conflict in JOPA Maven plugin (Bug #29).
+
 ## 0.9.14 - February 20, 2018
 - Fixed incorrect implementation of `contains` in Sesame driver.
 - Minor memory consumption optimizations.
