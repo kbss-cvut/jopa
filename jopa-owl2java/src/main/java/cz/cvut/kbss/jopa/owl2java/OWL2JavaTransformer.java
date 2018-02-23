@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
@@ -133,7 +134,8 @@ public class OWL2JavaTransformer {
         }
     }
 
-    public void transform(String context, String pkg, String targetDir, boolean withOWLAPI) {
+    public void transform(Configuration configuration) {
+        final String context = configuration.get(Param.CONTEXT.arg);
         LOG.info("Transforming context ...");
         if (context == null) {
             LOG.info(" - for all axioms");
@@ -143,7 +145,7 @@ public class OWL2JavaTransformer {
         }
 
         ContextDefinition def = context == null ? DEFAULT_CONTEXT : contexts.get(context);
-        new JavaTransformer().generateModel(ontology, def, pkg, targetDir, withOWLAPI);
+        new JavaTransformer(configuration).generateModel(ontology, def);
         LOG.info("Transformation SUCCESSFUL.");
     }
 
@@ -164,7 +166,7 @@ public class OWL2JavaTransformer {
             verifyContextExistence(context);
         }
         ContextDefinition def = (context == null) ? DEFAULT_CONTEXT : contexts.get(context);
-        new JavaTransformer().generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
+        new JavaTransformer(new Configuration()).generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {

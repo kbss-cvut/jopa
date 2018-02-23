@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.search.EntitySearcher;
@@ -103,6 +104,12 @@ public class JavaTransformer {
 
     private Map<OWLClass, JDefinedClass> classes = new HashMap<>();
 
+    private final Configuration configuration;
+
+    JavaTransformer(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
     private static String validJavaIDForIRI(final IRI iri) {
         if (iri.getFragment() != null) {
             return validJavaID(iri.getFragment());
@@ -139,15 +146,15 @@ public class JavaTransformer {
         return fvId;
     }
 
-    public void generateModel(final OWLOntology ontology,
-                              final ContextDefinition context, final String pkg, String targetDir, boolean withOWLAPI) {
-
+    public void generateModel(final OWLOntology ontology, final ContextDefinition context) {
+        final String packageName = configuration.get(Param.PACKAGE.arg);
+        final boolean addOwlapiIris = configuration.is(Param.WITH_IRIS.arg);
         try {
             final JCodeModel cm = new JCodeModel();
-            voc = cm._class(pkg + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
-            generateVocabulary(ontology, cm, context, withOWLAPI);
-            _generateModel(ontology, cm, context, pkg + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR);
-            writeOutModel(cm, targetDir);
+            voc = cm._class(packageName + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
+            generateVocabulary(ontology, cm, context, addOwlapiIris);
+            _generateModel(ontology, cm, context, packageName + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR);
+            writeOutModel(cm, configuration.get(Param.TARGET_DIR.arg));
         } catch (JClassAlreadyExistsException e1) {
             LOG.error("Transformation FAILED.", e1);
         } catch (IOException e) {
@@ -228,11 +235,9 @@ public class JavaTransformer {
                     entities.get(prop));
 
             JAnnotationArrayMember use = null;
-            for (ObjectParticipationConstraint ic : comp
-                    .getParticipationConstraints()) {
+            for (ObjectParticipationConstraint ic : comp.getParticipationConstraints()) {
                 if (use == null) {
-                    use = fv.annotate(ParticipationConstraints.class)
-                            .paramArray("value");
+                    use = fv.annotate(ParticipationConstraints.class).paramArray("value");
                 }
                 JAnnotationUse u = use.annotate(
                         ParticipationConstraint.class).param(
@@ -241,14 +246,18 @@ public class JavaTransformer {
                         // "owlPropertyIRI",
                         // ic.getPredicate().getIRI().toString()).param(
                         "owlObjectIRI", entities.get(ic.getObject()));
-                if (ic.getMin() != 0) {
-                    u.param("min", ic.getMin());
-                }
-
-                if (ic.getMax() != -1) {
-                    u.param("max", ic.getMax());
-                }
+                setParticipationConstraintCardinality(u, ic);
             }
+        }
+    }
+
+    private void setParticipationConstraintCardinality(JAnnotationUse u,
+                                                       cz.cvut.kbss.jopa.ic.api.ParticipationConstraint ic) {
+        if (ic.getMin() != 0) {
+            u.param("min", ic.getMin());
+        }
+        if (ic.getMin() != -1) {
+            u.param("max", ic.getMax());
         }
     }
 
@@ -290,24 +299,15 @@ public class JavaTransformer {
                     entities.get(prop));
 
             JAnnotationArrayMember use = null;
-            for (DataParticipationConstraint ic : comp
-                    .getParticipationConstraints()) {
+            for (DataParticipationConstraint ic : comp.getParticipationConstraints()) {
                 if (use == null) {
-                    use = fv.annotate(ParticipationConstraints.class)
-                            .paramArray("value");
+                    use = fv.annotate(ParticipationConstraints.class).paramArray("value");
                 }
 
-                JAnnotationUse u = use.annotate(
-                        ParticipationConstraint.class).param(
-                        "owlObjectIRI", comp.getFiller().getIRI().toString());
+                JAnnotationUse u = use.annotate(ParticipationConstraint.class)
+                                      .param("owlObjectIRI", comp.getFiller().getIRI().toString());
 
-                if (ic.getMin() != 0) {
-                    u = u.param("min", ic.getMin());
-                }
-
-                if (ic.getMax() != -1) {
-                    u = u.param("max", ic.getMax());
-                }
+                setParticipationConstraintCardinality(u, ic);
             }
         }
     }
@@ -367,7 +367,8 @@ public class JavaTransformer {
             final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
                     | JMod.FINAL, String.class, sFieldName, JExpr.lit(c.getIRI().toString()));
             if (withOWLAPI) {
-                voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, sFieldName.substring(PREFIX_STRING.length()),
+                voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class,
+                        sFieldName.substring(PREFIX_STRING.length()),
                         cm.ref(IRI.class).staticInvoke("create").arg(fv1));
             }
 
@@ -401,12 +402,12 @@ public class JavaTransformer {
         return sb.toString();
     }
 
-    private String javaClassId(OWLOntology ontology, OWLClass owlClass, ContextDefinition ctx) {
+    private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
         final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
-                                                          .filter(a -> isValidJavaClassName(a, ctx) && a
-                                                                  .getValue() instanceof OWLLiteral).findFirst();
+                                                          .filter(a -> isJavaClassNameAnnotation(a) &&
+                                                                  a.getValue().isLiteral()).findFirst();
         if (res.isPresent()) {
-            return ((OWLLiteral) res.get().getValue()).getLiteral();
+            return res.get().getValue().asLiteral().get().getLiteral();
         } else {
             return toJavaNotation(validJavaIDForIRI(owlClass.getIRI()));
         }
@@ -421,7 +422,7 @@ public class JavaTransformer {
 
         JDefinedClass cls;
 
-        String name = pkg + javaClassId(ontology, clazz, ctx);
+        String name = pkg + javaClassId(ontology, clazz);
 
         try {
             cls = cm._class(name);
@@ -476,19 +477,9 @@ public class JavaTransformer {
         return cls;
     }
 
-    private boolean isValidJavaClassName(OWLAnnotation a, ContextDefinition ctx) {
-        // TODO Replace this hardcoded stuff with a configurable solution
-        return a.getProperty().getIRI()
-                .equals(IRI.create("http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#javaClassName"));
-        // Annotation of annotation is currently not supported
-//        for (OWLAnnotation ctxAnn : a.getAnnotations()) {
-//            ctxAnn.getValue().accept(v);
-//            final String icContextName = v.getName();
-//            System.out.println("Context: " + icContextName);
-//            if (icContextName != null && icContextName.equals(ctx.name)) {
-//                return true;
-//            }
-//        }
+    private boolean isJavaClassNameAnnotation(OWLAnnotation a) {
+        final String classNameProperty = configuration.get(Param.JAVA_CLASSNAME_ANNOTATION.arg, Constants.P_CLASS_NAME);
+        return a.getProperty().getIRI().equals(IRI.create(classNameProperty));
     }
 
     /**

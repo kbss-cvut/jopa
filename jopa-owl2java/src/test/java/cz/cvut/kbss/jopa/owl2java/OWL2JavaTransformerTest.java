@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,8 +82,19 @@ public class OWL2JavaTransformerTest {
         final File targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.transform(CONTEXT, "", targetDir.getAbsolutePath(), true);
+        transformer.transform(configure(CONTEXT, "", targetDir.getAbsolutePath(), true));
         verifyGeneratedModel(targetDir);
+    }
+
+    private Configuration configure(String context, String packageName, String targetDir, boolean withOwlapiIris) {
+        final Configuration configuration = new Configuration();
+        if (context != null) {
+            configuration.set(Param.CONTEXT.arg, context);
+        }
+        configuration.set(Param.PACKAGE.arg, packageName);
+        configuration.set(Param.TARGET_DIR.arg, targetDir);
+        configuration.set(Param.WITH_IRIS.arg, Boolean.toString(withOwlapiIris));
+        return configuration;
     }
 
     @Test
@@ -91,7 +103,7 @@ public class OWL2JavaTransformerTest {
         final File targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.transform(CONTEXT, packageName, targetDir.getAbsolutePath(), true);
+        transformer.transform(configure(CONTEXT, packageName, targetDir.getAbsolutePath(), true));
         verifyGeneratedTree(packageName, targetDir);
     }
 
@@ -118,7 +130,7 @@ public class OWL2JavaTransformerTest {
     public void transformGeneratesVocabularyFile() throws Exception {
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.transform(CONTEXT, "", targetDir.getAbsolutePath(), true);
+        transformer.transform(configure(CONTEXT, "", targetDir.getAbsolutePath(), true));
         verifyVocabularyFileExistence(targetDir);
     }
 
@@ -131,7 +143,7 @@ public class OWL2JavaTransformerTest {
     public void transformGeneratesVocabularyFileForTheWholeFile() throws Exception {
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.transform(null, "", targetDir.getAbsolutePath(), true);
+        transformer.transform(configure(null, "", targetDir.getAbsolutePath(), true));
         verifyVocabularyFileExistence(targetDir);
     }
 
@@ -142,7 +154,7 @@ public class OWL2JavaTransformerTest {
         thrown.expectMessage("Context " + unknownContext + " not found.");
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.transform(unknownContext, "", targetDir.getAbsolutePath(), true);
+        transformer.transform(configure(unknownContext, "", targetDir.getAbsolutePath(), true));
     }
 
     @Test
@@ -213,7 +225,7 @@ public class OWL2JavaTransformerTest {
         final File targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.transform(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true);
+        transformer.transform(configure(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true));
         final List<String> generatedClass = getGeneratedClass(targetDir, "Answer");
 
         String fieldDeclaration = getFieldDeclaration(generatedClass, "hasValue");
@@ -226,7 +238,7 @@ public class OWL2JavaTransformerTest {
         final File targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.transform(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true);
+        transformer.transform(configure(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true));
         final List<String> generatedClass = getGeneratedClass(targetDir, "Organization");
 
         final String classDeclaration = getExtendsClassDeclaration(generatedClass);

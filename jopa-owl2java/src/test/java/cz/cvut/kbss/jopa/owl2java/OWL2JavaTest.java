@@ -24,7 +24,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -136,5 +138,28 @@ public class OWL2JavaTest {
         OWL2Java.main(args);
         assertEquals(0, targetDir.list().length);
         verifyErrorContent("Exactly one ontology IRI has to be specified, got 0");
+    }
+
+    @Test
+    public void transformUsesCustomJavaClassNameSpecifiedByCustomAnnotation() throws Exception {
+        final File targetDir = TestUtils.getTempDirectory();
+        final String packageName = "";
+        final String classNameAnnotation = "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#JavaClassName";
+        final String className = "Company.java";
+        final String[] args = new String[]{"transform", TestUtils.IC_ONTOLOGY_IRI,
+                "-m",
+                mappingFilePath,
+                "-p",
+                packageName,
+                "-c",
+                TestUtils.CONTEXT,
+                "-jca",
+                classNameAnnotation,
+                "-d",
+                targetDir.getAbsolutePath()};
+        OWL2Java.main(args);
+        final File modelDir = new File(targetDir.getAbsolutePath() + File.separator + "model");
+        final Set<String> fileNames = new HashSet<>(Arrays.asList(modelDir.list()));
+        assertTrue(fileNames.contains(className));
     }
 }

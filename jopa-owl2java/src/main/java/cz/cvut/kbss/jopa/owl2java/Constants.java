@@ -23,6 +23,11 @@ public class Constants {
             "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#isIntegrityConstraintFor";
 
     /**
+     * Annotation property specifying the name of Java class mapped by the annotated ontological class.
+     */
+    public static final String P_CLASS_NAME = "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#javaClassName";
+
+    /**
      * Name of the class containing generated vocabulary.
      */
     public static final String VOCABULARY_CLASS = "Vocabulary";

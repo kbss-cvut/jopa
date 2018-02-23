@@ -28,6 +28,10 @@ public final class Configuration {
 
     private final Map<String, String> properties;
 
+    public Configuration() {
+        this.properties = new HashMap<>();
+    }
+
     public Configuration(Map<String, String> properties) {
         Objects.requireNonNull(properties);
         this.properties = new HashMap<>(properties);

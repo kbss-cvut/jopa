@@ -27,7 +27,11 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#isIntegrityConstraintFor -->
 
     <owl:AnnotationProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#isIntegrityConstraintFor"/>
-    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#JavaClassName -->
+
+        <owl:AnnotationProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#JavaClassName"/>
 
 
     <!-- 
@@ -238,6 +242,7 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <ic:JavaClassName>Company</ic:JavaClassName>
     </owl:Class>
     <owl:Axiom>
         <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization"/>
