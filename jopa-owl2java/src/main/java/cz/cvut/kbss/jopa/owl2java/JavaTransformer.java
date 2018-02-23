@@ -349,6 +349,8 @@ public class JavaTransformer {
                     JExpr.lit(iri.toString()));
         });
 
+        final Set<IRI> visitedProperties = new HashSet<>(col.size());
+
         for (final OWLEntity c : col) {
             String prefix = "";
 
@@ -356,8 +358,12 @@ public class JavaTransformer {
                 prefix = "c_";
             } else if (c.isOWLDatatype()) {
                 prefix = "d_";
-            } else if (c.isOWLDataProperty() || c.isOWLObjectProperty()
-                    || c.isOWLAnnotationProperty()) {
+            } else if (c.isOWLDataProperty() || c.isOWLObjectProperty() || c.isOWLAnnotationProperty()) {
+                if (visitedProperties.contains(c.getIRI())) {
+                    LOG.debug("Property with IRI {} already processed. Skipping.", c.getIRI());
+                    continue;
+                }
+                visitedProperties.add(c.getIRI());
                 prefix = "p_";
             } else if (c.isOWLNamedIndividual()) {
                 prefix = "i_";

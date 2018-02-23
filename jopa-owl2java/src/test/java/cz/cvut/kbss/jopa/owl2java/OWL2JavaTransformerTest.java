@@ -282,4 +282,42 @@ public class OWL2JavaTransformerTest {
         final List<String> declaration = classFileLines.subList(start + 1, i + 1);
         return declaration.stream().reduce((a, b) -> a + b).get();
     }
+
+    @Test
+    public void generateVocabularyEliminatesDuplicateConstructs() throws Exception {
+        final File targetDir = getTempDirectory();
+        transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/onto-with-same-property-in-import.owl",
+                mappingFilePath, true);
+        transformer.generateVocabulary(null, "", targetDir.getAbsolutePath(), false);
+        final File vocabularyFile = targetDir.listFiles()[0];
+        final String fileContents = readFile(vocabularyFile);
+        final String property = "http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy";
+        verifyIriOccursOnce(fileContents, property);
+    }
+
+    private void verifyIriOccursOnce(String fileContents, String iri) {
+        int count = 0;
+        int startInd = 0;
+        while ((startInd = fileContents.indexOf(iri, startInd)) != -1) {
+            startInd++;
+            count++;
+        }
+        assertEquals(1, count);
+    }
+
+    @Test
+    public void generateVocabularyDoesNotDuplicateRdfProperties() throws Exception {
+        final File targetDir = getTempDirectory();
+        transformer.setOntology("http://spinrdf.org/sp", mappingFilePath, true);
+        transformer.generateVocabulary(null, "", targetDir.getAbsolutePath(), false);
+        final File vocabularyFile = targetDir.listFiles()[0];
+        final String fileContents = readFile(vocabularyFile);
+        final String property = "http://spinrdf.org/sp#predicate";
+        verifyIriOccursOnce(fileContents, property);
+    }
+
+    @Test
+    public void generateVocabularyHandlesDuplicateLocalNameWhenAddingOntologyIri() {
+
+    }
 }
