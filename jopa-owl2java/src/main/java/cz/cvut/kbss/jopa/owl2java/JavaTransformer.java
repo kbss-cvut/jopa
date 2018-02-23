@@ -42,55 +42,61 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-                                              "assert",
-                                              "boolean",
-                                              "break",
-                                              "byte",
-                                              "case",
-                                              "catch",
-                                              "char",
-                                              "class",
-                                              "const",
-                                              "continue",
-                                              "default",
-                                              "do",
-                                              "double",
-                                              "else",
-                                              "enum",
-                                              "extends",
-                                              "final",
-                                              "finally",
-                                              "float",
-                                              "for",
-                                              "goto",
-                                              "if",
-                                              "implements",
-                                              "import",
-                                              "instanceof",
-                                              "int",
-                                              "interface",
-                                              "long",
-                                              "native",
-                                              "new",
-                                              "package",
-                                              "private",
-                                              "protected",
-                                              "public",
-                                              "return",
-                                              "short",
-                                              "static",
-                                              "strictfp",
-                                              "super",
-                                              "switch",
-                                              "synchronized",
-                                              "this",
-                                              "throw",
-                                              "throws",
-                                              "transient",
-                                              "try",
-                                              "void",
-                                              "volatile",
-                                              "while"};
+            "assert",
+            "boolean",
+            "break",
+            "byte",
+            "case",
+            "catch",
+            "char",
+            "class",
+            "const",
+            "continue",
+            "default",
+            "do",
+            "double",
+            "else",
+            "enum",
+            "extends",
+            "final",
+            "finally",
+            "float",
+            "for",
+            "goto",
+            "if",
+            "implements",
+            "import",
+            "instanceof",
+            "int",
+            "interface",
+            "long",
+            "native",
+            "new",
+            "package",
+            "private",
+            "protected",
+            "public",
+            "return",
+            "short",
+            "static",
+            "strictfp",
+            "super",
+            "switch",
+            "synchronized",
+            "this",
+            "throw",
+            "throws",
+            "transient",
+            "try",
+            "void",
+            "volatile",
+            "while"};
+
+    private static final String PREFIX_STRING = "s_";
+    private static final String PREFIX_CLASS = "c_";
+    private static final String PREFIX_PROPERTY = "p_";
+    private static final String PREFIX_INDIVIDUAL = "i_";
+    private static final String PREFIX_DATATYPE = "d_";
 
     private JDefinedClass voc;
     private Map<OWLEntity, JFieldRef> entities = new HashMap<>();
@@ -343,50 +349,56 @@ public class JavaTransformer {
         col.addAll(context.annotationProperties);
         col.addAll(context.individuals);
 
-        o.getOWLOntologyManager().ontologies().filter(s -> s.getOntologyID().getOntologyIRI().isPresent()).forEach(s -> {
-            IRI iri = s.getOntologyID().getOntologyIRI().get();
-            voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, "ONTOLOGY_IRI_" + validJavaIDForIRI(iri),
-                    JExpr.lit(iri.toString()));
-        });
+        o.getOWLOntologyManager().ontologies().forEach(onto -> onto.getOntologyID().getOntologyIRI().ifPresent(iri -> {
+            final String fieldName = ensureUniqueIdentifier("ONTOLOGY_IRI_" + validJavaIDForIRI(iri));
+            voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
+        }));
 
         final Set<IRI> visitedProperties = new HashSet<>(col.size());
 
         for (final OWLEntity c : col) {
-            String prefix = "";
-
-            if (c.isOWLClass()) {
-                prefix = "c_";
-            } else if (c.isOWLDatatype()) {
-                prefix = "d_";
-            } else if (c.isOWLDataProperty() || c.isOWLObjectProperty() || c.isOWLAnnotationProperty()) {
-                if (visitedProperties.contains(c.getIRI())) {
-                    LOG.debug("Property with IRI {} already processed. Skipping.", c.getIRI());
-                    continue;
-                }
-                visitedProperties.add(c.getIRI());
-                prefix = "p_";
-            } else if (c.isOWLNamedIndividual()) {
-                prefix = "i_";
+            final Optional<String> prefix = resolveFieldPrefix(c, visitedProperties);
+            if (!prefix.isPresent()) {
+                continue;
             }
-
-            StringBuilder id = new StringBuilder(prefix + validJavaIDForIRI(c.getIRI()));
-
-            while (voc.fields().keySet().contains("s_" + id)) {
-                id.append("_A");
-            }
-
-            final String sFieldName = "s_" + id;
+            final String sFieldName = ensureUniqueIdentifier(
+                    PREFIX_STRING + prefix.get() + validJavaIDForIRI(c.getIRI()));
 
             final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
-                            | JMod.FINAL, String.class, sFieldName,
-                    JExpr.lit(c.getIRI().toString()));
+                    | JMod.FINAL, String.class, sFieldName, JExpr.lit(c.getIRI().toString()));
             if (withOWLAPI) {
-                voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id.toString(), cm
-                        .ref(IRI.class).staticInvoke("create").arg(fv1));
+                voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, sFieldName.substring(PREFIX_STRING.length()),
+                        cm.ref(IRI.class).staticInvoke("create").arg(fv1));
             }
 
             entities.put(c, voc.staticRef(fv1));
         }
+    }
+
+    private Optional<String> resolveFieldPrefix(OWLEntity c, Set<IRI> visitedProperties) {
+        if (c.isOWLClass()) {
+            return Optional.of(PREFIX_CLASS);
+        } else if (c.isOWLDatatype()) {
+            return Optional.of(PREFIX_DATATYPE);
+        } else if (c.isOWLDataProperty() || c.isOWLObjectProperty() || c.isOWLAnnotationProperty()) {
+            if (visitedProperties.contains(c.getIRI())) {
+                LOG.debug("Property with IRI {} already processed. Skipping.", c.getIRI());
+                return Optional.empty();
+            }
+            visitedProperties.add(c.getIRI());
+            return Optional.of(PREFIX_PROPERTY);
+        } else if (c.isOWLNamedIndividual()) {
+            return Optional.of(PREFIX_INDIVIDUAL);
+        }
+        return Optional.of("");
+    }
+
+    private String ensureUniqueIdentifier(String id) {
+        final StringBuilder sb = new StringBuilder(id);
+        while (voc.fields().keySet().contains(sb.toString())) {
+            sb.append("_A");
+        }
+        return sb.toString();
     }
 
     private String javaClassId(OWLOntology ontology, OWLClass owlClass, ContextDefinition ctx) {

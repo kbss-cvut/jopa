@@ -317,7 +317,14 @@ public class OWL2JavaTransformerTest {
     }
 
     @Test
-    public void generateVocabularyHandlesDuplicateLocalNameWhenAddingOntologyIri() {
-
+    public void generateVocabularyHandlesDuplicateLocalNameWhenAddingOntologyIri() throws Exception {
+        final File targetDir = getTempDirectory();
+        transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/model",
+                mappingFilePath, true);
+        transformer.generateVocabulary(null, "", targetDir.getAbsolutePath(), true);
+        final File vocabularyFile = targetDir.listFiles()[0];
+        final String fileContents = readFile(vocabularyFile);
+        assertTrue(fileContents.contains("ONTOLOGY_IRI_model"));
+        assertTrue(fileContents.contains("ONTOLOGY_IRI_model_A"));
     }
 }

@@ -73,9 +73,8 @@ public class OWL2JavaTransformer {
         }
 
         try {
-            m.loadOntology(org.semanticweb.owlapi.model.IRI.create(owlOntologyName));
-            return new OWLOntologyMerger(m)
-                    .createMergedOntology(m, org.semanticweb.owlapi.model.IRI.create(owlOntologyName + "-generated"));
+            m.loadOntology(IRI.create(owlOntologyName));
+            return new OWLOntologyMerger(m).createMergedOntology(m, IRI.create(owlOntologyName + "-generated"));
         } catch (OWLException | OWLRuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new OWL2JavaException("Unable to load ontology " + owlOntologyName, e);
