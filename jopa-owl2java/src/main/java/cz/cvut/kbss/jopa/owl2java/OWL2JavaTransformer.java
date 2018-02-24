@@ -16,7 +16,8 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
-import cz.cvut.kbss.jopa.utils.Configuration;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
@@ -38,6 +39,15 @@ public class OWL2JavaTransformer {
     private OWLOntology ontology;
     private Map<String, ContextDefinition> contexts = new HashMap<>();
     private boolean ignoreMissingImports;
+    private final OptionSet configuration;
+
+    public OWL2JavaTransformer() {
+        this.configuration = new OptionParser().parse("");
+    }
+
+    OWL2JavaTransformer(OptionSet configuration) {
+        this.configuration = configuration;
+    }
 
     public Collection<String> listContexts() {
         return contexts.keySet();
@@ -134,39 +144,34 @@ public class OWL2JavaTransformer {
         }
     }
 
-    public void transform(Configuration configuration) {
-        final String context = configuration.get(Param.CONTEXT.arg);
+    public void transform(TransformationConfiguration transformConfig) {
+        final ContextDefinition def = getValidContext(transformConfig);
         LOG.info("Transforming context ...");
-        if (context == null) {
-            LOG.info(" - for all axioms");
-        } else {
-            LOG.info(" - for context '{}'.", context);
-            verifyContextExistence(context);
-        }
-
-        ContextDefinition def = context == null ? DEFAULT_CONTEXT : contexts.get(context);
-        new JavaTransformer(configuration).generateModel(ontology, def);
+        new JavaTransformer(configuration).generateModel(ontology, def, transformConfig);
         LOG.info("Transformation SUCCESSFUL.");
+    }
+
+    private ContextDefinition getValidContext(TransformationConfiguration configuration) {
+        if (configuration.areAllAxiomsIntegrityConstraints()) {
+            LOG.info(" - for all axioms");
+            return DEFAULT_CONTEXT;
+        }
+        final String context = configuration.getContext();
+        verifyContextExistence(context);
+        LOG.info(" - for context '{}'.", context);
+        return contexts.get(context);
     }
 
     /**
      * Generates only vocabulary of the loaded ontology.
      *
-     * @param context    Integrity constraints context, if null is supplied, the whole ontology is interpreted as integrity constraints.
-     * @param targetDir  Directory into which the vocabulary file will be generated
-     * @param pkg        Package
-     * @param withOWLAPI Whether OWLAPI-based IRIs of the generated vocabulary items should be created as well
+     * @param transformConfig Configuration of the generation process
      */
-    public void generateVocabulary(String context, String pkg, String targetDir, boolean withOWLAPI) {
+    public void generateVocabulary(TransformationConfiguration transformConfig) {
         LOG.info("Generating vocabulary ...");
-        if (context == null) {
-            LOG.info(" - for all axioms");
-        } else {
-            LOG.info(" - for context '{}'.", context);
-            verifyContextExistence(context);
-        }
-        ContextDefinition def = (context == null) ? DEFAULT_CONTEXT : contexts.get(context);
-        new JavaTransformer(new Configuration()).generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
+
+        ContextDefinition def = getValidContext(transformConfig);
+        new JavaTransformer(configuration).generateVocabulary(ontology, def, transformConfig);
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {

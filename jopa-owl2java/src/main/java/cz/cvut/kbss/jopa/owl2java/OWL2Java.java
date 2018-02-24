@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import cz.cvut.kbss.jopa.utils.Configuration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.slf4j.Logger;
@@ -41,7 +40,7 @@ public class OWL2Java {
             {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
                 accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
-                                                                     .defaultsTo("generated");
+                                                                     .defaultsTo(Constants.DEFAULT_TARGET_PACKAGE);
                 accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withOptionalArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
                                                                          .defaultsTo(false);
@@ -61,7 +60,7 @@ public class OWL2Java {
             {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
                 accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
-                                                                     .defaultsTo("generated");
+                                                                     .defaultsTo(Constants.DEFAULT_TARGET_PACKAGE);
                 accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withRequiredArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
                                                                          .defaultsTo(false);
@@ -199,7 +198,7 @@ public class OWL2Java {
 
     private static OWL2JavaTransformer getTransformer(OptionSet os) {
         OWL2JavaTransformer oj;
-        oj = new OWL2JavaTransformer();
+        oj = new OWL2JavaTransformer(os);
         if (os.has(Param.MAPPING_FILE.arg)) {
             oj.setOntology(os.nonOptionArguments().get(1), os.valueOf(Param.MAPPING_FILE.arg).toString(), true);
         } else {
@@ -227,19 +226,18 @@ public class OWL2Java {
             return;
         }
 
-        final Configuration configuration = new Configuration();
-        configuration.set(Param.WHOLE_ONTOLOGY_AS_IC.arg, Boolean.toString(whole));
+        final TransformationConfiguration.TransformationConfigurationBuilder configBuilder =
+                TransformationConfiguration.builder();
         if (!whole) {
-            configuration.set(Param.CONTEXT.arg, os.valueOf(Param.CONTEXT.arg).toString());
+            configBuilder.context(os.valueOf(Param.CONTEXT.arg).toString());
         }
-        configuration.set(Param.PACKAGE.arg, os.valueOf(Param.PACKAGE.arg).toString());
-        configuration.set(Param.TARGET_DIR.arg, os.valueOf(Param.TARGET_DIR.arg).toString());
-        configuration.set(Param.WITH_IRIS.arg, os.valueOf(Param.WITH_IRIS.arg).toString());
-        configuration.set(Param.JAVA_CLASSNAME_ANNOTATION.arg, os.valueOf(Param.JAVA_CLASSNAME_ANNOTATION.arg).toString());
+        configBuilder.packageName(os.valueOf(Param.PACKAGE.arg).toString())
+                     .targetDir(os.valueOf(Param.TARGET_DIR.arg).toString())
+                     .addOwlapiIris((Boolean) os.valueOf(Param.WITH_IRIS.arg));
 
         final OWL2JavaTransformer transformer = getTransformer(os);
 
-        transformer.transform(configuration);
+        transformer.transform(configBuilder.build());
     }
 
     private static boolean invalidTransformationOptions(OptionSet os) {
@@ -262,10 +260,18 @@ public class OWL2Java {
         }
         final OWL2JavaTransformer transformer = getTransformer(os);
 
+        final TransformationConfiguration.TransformationConfigurationBuilder builder =
+                TransformationConfiguration.builder();
+        if (!whole) {
+            builder.context(os.valueOf(Param.CONTEXT.arg).toString());
+        }
+        final TransformationConfiguration config = builder.packageName(os.valueOf(Param.PACKAGE.arg).toString())
+                                                          .targetDir(os.valueOf(Param.TARGET_DIR.arg).toString())
+                                                          .addOwlapiIris((Boolean) os.valueOf(Param.WITH_IRIS.arg))
+                                                          .build();
 
-        transformer.generateVocabulary(whole ? null : os.valueOf(Param.CONTEXT.arg).toString(),
-                os.valueOf(Param.PACKAGE.arg).toString(),
-                os.valueOf(Param.TARGET_DIR.arg).toString(), (Boolean) os.valueOf(Param.WITH_IRIS.arg));
+
+        transformer.generateVocabulary(config);
     }
 
     private enum Command {

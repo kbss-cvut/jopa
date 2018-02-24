@@ -33,6 +33,13 @@ public class Constants {
     public static final String VOCABULARY_CLASS = "Vocabulary";
 
     /**
+     * Default package into which the generated model and/or vocabulary file will be put.
+     *
+     * Note that the model will be generated into a subpackage called {@link #MODEL_PACKAGE}.
+     */
+    public static final String DEFAULT_TARGET_PACKAGE = "generated";
+
+    /**
      * Package into which the model is generated.
      */
     public static final String MODEL_PACKAGE = "model";

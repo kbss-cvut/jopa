@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
-import cz.cvut.kbss.jopa.utils.Configuration;
+import joptsimple.OptionSet;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.search.EntitySearcher;
@@ -43,55 +43,55 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-            "assert",
-            "boolean",
-            "break",
-            "byte",
-            "case",
-            "catch",
-            "char",
-            "class",
-            "const",
-            "continue",
-            "default",
-            "do",
-            "double",
-            "else",
-            "enum",
-            "extends",
-            "final",
-            "finally",
-            "float",
-            "for",
-            "goto",
-            "if",
-            "implements",
-            "import",
-            "instanceof",
-            "int",
-            "interface",
-            "long",
-            "native",
-            "new",
-            "package",
-            "private",
-            "protected",
-            "public",
-            "return",
-            "short",
-            "static",
-            "strictfp",
-            "super",
-            "switch",
-            "synchronized",
-            "this",
-            "throw",
-            "throws",
-            "transient",
-            "try",
-            "void",
-            "volatile",
-            "while"};
+                                              "assert",
+                                              "boolean",
+                                              "break",
+                                              "byte",
+                                              "case",
+                                              "catch",
+                                              "char",
+                                              "class",
+                                              "const",
+                                              "continue",
+                                              "default",
+                                              "do",
+                                              "double",
+                                              "else",
+                                              "enum",
+                                              "extends",
+                                              "final",
+                                              "finally",
+                                              "float",
+                                              "for",
+                                              "goto",
+                                              "if",
+                                              "implements",
+                                              "import",
+                                              "instanceof",
+                                              "int",
+                                              "interface",
+                                              "long",
+                                              "native",
+                                              "new",
+                                              "package",
+                                              "private",
+                                              "protected",
+                                              "public",
+                                              "return",
+                                              "short",
+                                              "static",
+                                              "strictfp",
+                                              "super",
+                                              "switch",
+                                              "synchronized",
+                                              "this",
+                                              "throw",
+                                              "throws",
+                                              "transient",
+                                              "try",
+                                              "void",
+                                              "volatile",
+                                              "while"};
 
     private static final String PREFIX_STRING = "s_";
     private static final String PREFIX_CLASS = "c_";
@@ -104,9 +104,9 @@ public class JavaTransformer {
 
     private Map<OWLClass, JDefinedClass> classes = new HashMap<>();
 
-    private final Configuration configuration;
+    private final OptionSet configuration;
 
-    JavaTransformer(Configuration configuration) {
+    JavaTransformer(OptionSet configuration) {
         this.configuration = configuration;
     }
 
@@ -146,15 +146,15 @@ public class JavaTransformer {
         return fvId;
     }
 
-    public void generateModel(final OWLOntology ontology, final ContextDefinition context) {
-        final String packageName = configuration.get(Param.PACKAGE.arg);
-        final boolean addOwlapiIris = configuration.is(Param.WITH_IRIS.arg);
+    public void generateModel(final OWLOntology ontology, final ContextDefinition context,
+                              TransformationConfiguration transformConfig) {
+        final String packageName = transformConfig.getPackageName();
         try {
             final JCodeModel cm = new JCodeModel();
             voc = cm._class(packageName + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
-            generateVocabulary(ontology, cm, context, addOwlapiIris);
+            generateVocabulary(ontology, cm, context, transformConfig.shouldGenerateOwlapiIris());
             _generateModel(ontology, cm, context, packageName + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR);
-            writeOutModel(cm, configuration.get(Param.TARGET_DIR.arg));
+            writeOutModel(cm, transformConfig.getTargetDir());
         } catch (JClassAlreadyExistsException e1) {
             LOG.error("Transformation FAILED.", e1);
         } catch (IOException e) {
@@ -165,20 +165,18 @@ public class JavaTransformer {
     /**
      * Generates only vocabulary of the loaded ontology.
      *
-     * @param ontology   Ontology from which the vocabulary should be generated
-     * @param context    Integrity constraints context, if null is supplied, the whole ontology is interpreted as
-     *                   integrity constraints.
-     * @param targetDir  Directory into which the vocabulary file will be generated
-     * @param pkg        Package
-     * @param withOWLAPI Whether OWLAPI-based IRIs of the generated vocabulary items should be created as well
+     * @param ontology        Ontology from which the vocabulary should be generated
+     * @param context         Integrity constraints context, if null is supplied, the whole ontology is interpreted as
+     *                        integrity constraints.
+     * @param transformConfig Configuration of the generation process
      */
-    public void generateVocabulary(final OWLOntology ontology, ContextDefinition context, String pkg, String targetDir,
-                                   boolean withOWLAPI) {
+    public void generateVocabulary(final OWLOntology ontology, ContextDefinition context,
+                                   TransformationConfiguration transformConfig) {
         try {
             final JCodeModel cm = new JCodeModel();
-            this.voc = cm._class(pkg + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
-            generateVocabulary(ontology, cm, context, withOWLAPI);
-            writeOutModel(cm, targetDir);
+            this.voc = cm._class(transformConfig.getPackageName() + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
+            generateVocabulary(ontology, cm, context, transformConfig.shouldGenerateOwlapiIris());
+            writeOutModel(cm, transformConfig.getTargetDir());
         } catch (JClassAlreadyExistsException e) {
             LOG.error("Vocabulary generation FAILED, because the Vocabulary class already exists.", e);
         } catch (IOException e) {
@@ -264,7 +262,6 @@ public class JavaTransformer {
     private void _generateDataProperty(final OWLOntology ontology,
                                        final JCodeModel cm,
                                        final ContextDefinition context,
-                                       final String pkg,
                                        final OWLClass clazz,
                                        final JDefinedClass subj,
                                        final org.semanticweb.owlapi.model.OWLDataProperty prop) {
@@ -277,11 +274,9 @@ public class JavaTransformer {
 
         if (!Card.NO.equals(comp.getCard())) {
 
-            final JType obj = cm._ref(DatatypeTransformer
-                    .transformOWLType(comp.getFiller()));
+            final JType obj = cm._ref(DatatypeTransformer.transformOWLType(comp.getFiller()));
 
-            final String fieldName = validJavaIDForIRI(
-                    prop.getIRI());
+            final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             JFieldVar fv;
 
@@ -295,8 +290,7 @@ public class JavaTransformer {
                 return;
             }
 
-            fv.annotate(OWLDataProperty.class).param("iri",
-                    entities.get(prop));
+            fv.annotate(OWLDataProperty.class).param("iri", entities.get(prop));
 
             JAnnotationArrayMember use = null;
             for (DataParticipationConstraint ic : comp.getParticipationConstraints()) {
@@ -334,7 +328,7 @@ public class JavaTransformer {
             }
 
             for (org.semanticweb.owlapi.model.OWLDataProperty prop : context.dataProperties) {
-                _generateDataProperty(ontology, cm, context, pkg, clazz, subj, prop);
+                _generateDataProperty(ontology, cm, context, clazz, subj, prop);
             }
         }
     }
@@ -371,7 +365,6 @@ public class JavaTransformer {
                         sFieldName.substring(PREFIX_STRING.length()),
                         cm.ref(IRI.class).staticInvoke("create").arg(fv1));
             }
-
             entities.put(c, voc.staticRef(fv1));
         }
     }
@@ -478,8 +471,9 @@ public class JavaTransformer {
     }
 
     private boolean isJavaClassNameAnnotation(OWLAnnotation a) {
-        final String classNameProperty = configuration.get(Param.JAVA_CLASSNAME_ANNOTATION.arg, Constants.P_CLASS_NAME);
-        return a.getProperty().getIRI().equals(IRI.create(classNameProperty));
+        final String classNameProperty = (String) configuration.valueOf(Param.JAVA_CLASSNAME_ANNOTATION.arg);
+        return a.getProperty().getIRI()
+                .equals(IRI.create(classNameProperty != null ? classNameProperty : Constants.P_CLASS_NAME));
     }
 
     /**
