@@ -52,7 +52,7 @@ public class BeanListenerAspect {
         }
     }
 
-    @DeclareMixin(value = "(@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
+    @DeclareMixin(value = "!is(InterfaceType) && (@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
     public static Manageable createImpl() {
         return new ManageableImpl();
     }
