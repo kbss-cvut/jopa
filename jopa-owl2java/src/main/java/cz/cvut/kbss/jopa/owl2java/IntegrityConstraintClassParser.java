@@ -70,6 +70,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         return integrityConstraints;
     }
 
+    @Override
     public void visit(OWLDataMaxCardinality arg0) {
         try {
             final OWLDatatype dt = Utils.ensureDatatype(arg0.getFiller());
@@ -84,6 +85,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLDataExactCardinality arg0) {
         try {
             final OWLDatatype dt = Utils.ensureDatatype(arg0.getFiller());
@@ -98,6 +100,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLDataMinCardinality arg0) {
         try {
             final OWLDatatype dt = Utils.ensureDatatype(arg0.getFiller());
@@ -112,6 +115,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLDataHasValue arg0) {
         notSupported(arg0);
         //IntegrityConstraintParser.ensureDataProperty(arg0.getProperty());
@@ -122,6 +126,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         // .getOWLDataOneOf(arg0.getValue()), 1, 1));
     }
 
+    @Override
     public void visit(OWLDataAllValuesFrom arg0) {
         try {
             OWLDataProperty op = Utils.ensureDataProperty(arg0.getProperty());
@@ -134,6 +139,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLDataSomeValuesFrom arg0) {
         try {
             final OWLDatatype dt = Utils.ensureDatatype(arg0.getFiller());
@@ -147,14 +153,17 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLObjectOneOf arg0) {
         notSupported(arg0);
     }
 
+    @Override
     public void visit(OWLObjectHasSelf arg0) {
         notSupported(arg0);
     }
 
+    @Override
     public void visit(OWLObjectMaxCardinality arg0) {
         try {
             OWLClass c = Utils.ensureClass(arg0.getFiller());
@@ -168,6 +177,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLObjectExactCardinality arg0) {
         try {
             OWLClass c = Utils.ensureClass(arg0.getFiller());
@@ -181,6 +191,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLObjectMinCardinality arg0) {
         try {
             OWLClass c = Utils.ensureClass(arg0.getFiller());
@@ -194,10 +205,12 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLObjectHasValue arg0) {
         notSupported(arg0);
     }
 
+    @Override
     public void visit(OWLObjectAllValuesFrom arg0) {
         try {
             OWLObjectProperty op = Utils.ensureObjectProperty(arg0.getProperty());
@@ -210,6 +223,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLObjectSomeValuesFrom arg0) {
         try {
             OWLClass c = Utils.ensureClass(arg0.getFiller());
@@ -222,20 +236,24 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
         }
     }
 
+    @Override
     public void visit(OWLObjectComplementOf arg0) {
         notSupported(arg0);
     }
 
+    @Override
     public void visit(OWLObjectUnionOf arg0) {
         notSupported(arg0);
     }
 
+    @Override
     public void visit(OWLObjectIntersectionOf arg0) {
         for (final OWLClassExpression e : arg0.getOperands()) {
             e.accept(this);
         }
     }
 
+    @Override
     public void visit(OWLClass arg0) {
         integrityConstraints.add(integrityConstraintFactory.SubClassConstraint(subjClass, arg0));
     }

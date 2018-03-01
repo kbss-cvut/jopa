@@ -98,7 +98,7 @@ public class DetachedInstanceMergerTest {
         final ObjectChangeSet chSet = createChangeSet(orig, clone);
         chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), newRef));
         when(uow.readObject(OWLClassA.class, newRef.getUri(), descriptor)).thenReturn(newRefOrig);
-        when(uow.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final OWLClassD result = (OWLClassD) merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
         verify(uow).readObject(OWLClassA.class, newRef.getUri(), descriptor);

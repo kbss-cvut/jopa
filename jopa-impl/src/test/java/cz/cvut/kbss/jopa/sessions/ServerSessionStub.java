@@ -38,13 +38,12 @@ public class ServerSessionStub extends ServerSession {
     }
 
     @Override
-    public boolean isTypeManaged(Class<?> cls) {
+    public boolean isEntityType(Class<?> cls) {
         return TestEnvironmentUtils.getManagedTypes().contains(cls);
     }
 
     @Override
-    public boolean transactionStarted(EntityTransaction t, AbstractEntityManager em) {
+    public void transactionStarted(EntityTransaction t, AbstractEntityManager em) {
         // Do nothing
-        return true;
     }
 }

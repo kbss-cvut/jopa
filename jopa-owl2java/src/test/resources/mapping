@@ -2,3 +2,7 @@ http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl > ./owl2java-ics.owl
 http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl > ./owl2java-onto.owl
 http://krizik.felk.cvut.cz/ontologies/onto-with-missing-import.owl > ./onto-with-missing-import.owl
 http://krizik.felk.cvut.cz/ontologies/bad-import.owl > ./bad-import.owl
+http://krizik.felk.cvut.cz/ontologies/import-with-same-property.owl > ./import-with-same-property.owl
+http://krizik.felk.cvut.cz/ontologies/onto-with-same-property-in-import.owl  > ./onto-with-same-property-in-import.owl
+http://krizik.felk.cvut.cz/ontologies/model > modelOne.owl
+http://onto.fel.cvut.cz/ontologies/model > modelTwo.owl

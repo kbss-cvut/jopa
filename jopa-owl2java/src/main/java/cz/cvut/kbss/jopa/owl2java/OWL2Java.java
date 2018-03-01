@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 public class OWL2Java {
@@ -28,7 +28,7 @@ public class OWL2Java {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2Java.class);
 
     // CLI map
-    private static final Map<Command, OptionParser> map = new HashMap<>();
+    private static final Map<Command, OptionParser> map = new EnumMap<>(Command.class);
 
     static {
         map.put(Command.help, new OptionParser() {
@@ -40,7 +40,7 @@ public class OWL2Java {
             {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
                 accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
-                                                                     .defaultsTo("generated");
+                                                                     .defaultsTo(Constants.DEFAULT_TARGET_PACKAGE);
                 accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withOptionalArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
                                                                          .defaultsTo(false);
@@ -52,13 +52,15 @@ public class OWL2Java {
                 accepts(Param.IGNORE_FAILED_IMPORTS.arg, Param.IGNORE_FAILED_IMPORTS.description).withOptionalArg()
                                                                                                  .ofType(Boolean.class)
                                                                                                  .defaultsTo(false);
+                accepts(Param.JAVA_CLASSNAME_ANNOTATION.arg, Param.JAVA_CLASSNAME_ANNOTATION.description)
+                        .withOptionalArg().ofType(String.class).defaultsTo(Constants.P_CLASS_NAME);
             }
         });
         map.put(Command.vocabulary, new OptionParser() {
             {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
                 accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
-                                                                     .defaultsTo("generated");
+                                                                     .defaultsTo(Constants.DEFAULT_TARGET_PACKAGE);
                 accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withRequiredArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
                                                                          .defaultsTo(false);
@@ -173,7 +175,7 @@ public class OWL2Java {
                 }
                 break;
             case list:
-                if (!verifyArgumentCount(os)) {
+                if (invalidArgumentCount(os)) {
                     break;
                 }
                 oj = getTransformer(os);
@@ -196,7 +198,7 @@ public class OWL2Java {
 
     private static OWL2JavaTransformer getTransformer(OptionSet os) {
         OWL2JavaTransformer oj;
-        oj = new OWL2JavaTransformer();
+        oj = new OWL2JavaTransformer(os);
         if (os.has(Param.MAPPING_FILE.arg)) {
             oj.setOntology(os.nonOptionArguments().get(1), os.valueOf(Param.MAPPING_FILE.arg).toString(), true);
         } else {
@@ -206,73 +208,73 @@ public class OWL2Java {
         return oj;
     }
 
-    private static boolean verifyArgumentCount(OptionSet os) {
+    private static boolean invalidArgumentCount(OptionSet os) {
         if (os.nonOptionArguments().size() != 2) {
             System.err
                     .println("Exactly one ontology IRI has to be specified, got "
                             + (os.nonOptionArguments().size() - 1)
                             + ", try 'OWL2Java help' for the list of available commands");
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private static void transformOwlToJava(OptionSet os) {
         boolean whole = (Boolean) os.valueOf(Param.WHOLE_ONTOLOGY_AS_IC.arg);
 
-        if (!whole && !verifyTransformOptions(os)) {
+        if (!whole && invalidTransformationOptions(os)) {
             return;
         }
 
-        final OWL2JavaTransformer oj = getTransformer(os);
+        final TransformationConfiguration.TransformationConfigurationBuilder configBuilder =
+                TransformationConfiguration.builder();
+        if (!whole) {
+            configBuilder.context(os.valueOf(Param.CONTEXT.arg).toString());
+        }
+        configBuilder.packageName(os.valueOf(Param.PACKAGE.arg).toString())
+                     .targetDir(os.valueOf(Param.TARGET_DIR.arg).toString())
+                     .addOwlapiIris((Boolean) os.valueOf(Param.WITH_IRIS.arg));
 
-        oj.transform(whole ? null : os.valueOf(Param.CONTEXT.arg).toString(),
-                os.valueOf(Param.PACKAGE.arg).toString(), os.valueOf(Param.TARGET_DIR.arg).toString(),
-                (Boolean) os.valueOf(Param.WITH_IRIS.arg));
+        final OWL2JavaTransformer transformer = getTransformer(os);
+
+        transformer.transform(configBuilder.build());
     }
 
-    private static boolean verifyTransformOptions(OptionSet os) {
-        if (!verifyArgumentCount(os)) {
-            return false;
+    private static boolean invalidTransformationOptions(OptionSet os) {
+        if (invalidArgumentCount(os)) {
+            return true;
         }
 
         if (!os.has(Param.CONTEXT.arg)) {
             System.err.println("The parameter '-" + Param.CONTEXT.arg +
                     "' is obligatory. Try the 'help' command for more details.");
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private static void generateVocabulary(OptionSet os) {
         boolean whole = (Boolean) os.valueOf(Param.WHOLE_ONTOLOGY_AS_IC.arg);
-        if (!whole && !verifyTransformOptions(os)) {
+        if (!whole && invalidTransformationOptions(os)) {
             return;
         }
         final OWL2JavaTransformer transformer = getTransformer(os);
 
+        final TransformationConfiguration.TransformationConfigurationBuilder builder =
+                TransformationConfiguration.builder();
+        if (!whole) {
+            builder.context(os.valueOf(Param.CONTEXT.arg).toString());
+        }
+        final TransformationConfiguration config = builder.packageName(os.valueOf(Param.PACKAGE.arg).toString())
+                                                          .targetDir(os.valueOf(Param.TARGET_DIR.arg).toString())
+                                                          .addOwlapiIris((Boolean) os.valueOf(Param.WITH_IRIS.arg))
+                                                          .build();
 
-        transformer.generateVocabulary(whole ? null : os.valueOf(Param.CONTEXT.arg).toString(),
-                os.valueOf(Param.PACKAGE.arg).toString(),
-                os.valueOf(Param.TARGET_DIR.arg).toString(), (Boolean) os.valueOf(Param.WITH_IRIS.arg));
+
+        transformer.generateVocabulary(config);
     }
 
     private enum Command {
         help, list, transform, vocabulary, version
-    }
-
-    private enum Param {
-        MAPPING_FILE("m", "mapping file"), CONTEXT("c", "context name"), WITH_IRIS("w", "with OWLAPI IRIs"), TARGET_DIR(
-                "d", "output directory"), PACKAGE("p", "package"), WHOLE_ONTOLOGY_AS_IC("i",
-                "interpret whole ontology as integrity constraints; this option supersedes the '-c' option."),
-        IGNORE_FAILED_IMPORTS("f", "ignore failed ontology imports");
-
-        private final String arg;
-        private final String description;
-
-        Param(String arg, String description) {
-            this.arg = arg;
-            this.description = description;
-        }
     }
 }

@@ -560,7 +560,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     public void transactionStarted(EntityTransaction t) {
-        this.serverSession.transactionStarted(t, this);
+        serverSession.transactionStarted(t, this);
     }
 
     @Override

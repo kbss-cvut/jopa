@@ -14,9 +14,10 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
@@ -32,17 +33,21 @@ public class OWL2JavaTransformer {
 
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
-    private static final ContextDefinition DEFAULT_CONTEXT = new ContextDefinition("<DEFAULT>");
-
-    private static final List<IRI> skipped = Arrays
-            .asList(IRI.create(SequencesVocabulary.c_Collection), IRI.create(SequencesVocabulary.c_List),
-                    IRI.create(SequencesVocabulary.c_OWLSimpleList),
-                    IRI.create(SequencesVocabulary.c_OWLReferencedList));
+    private static final ContextDefinition DEFAULT_CONTEXT = new ContextDefinition();
 
     private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
     private OWLOntology ontology;
     private Map<String, ContextDefinition> contexts = new HashMap<>();
     private boolean ignoreMissingImports;
+    private final OptionSet configuration;
+
+    public OWL2JavaTransformer() {
+        this.configuration = new OptionParser().parse("");
+    }
+
+    OWL2JavaTransformer(OptionSet configuration) {
+        this.configuration = configuration;
+    }
 
     public Collection<String> listContexts() {
         return contexts.keySet();
@@ -79,34 +84,12 @@ public class OWL2JavaTransformer {
         }
 
         try {
-            m.loadOntology(org.semanticweb.owlapi.model.IRI.create(owlOntologyName));
-            return new OWLOntologyMerger(m)
-                    .createMergedOntology(m, org.semanticweb.owlapi.model.IRI.create(owlOntologyName + "-generated"));
+            m.loadOntology(IRI.create(owlOntologyName));
+            return new OWLOntologyMerger(m).createMergedOntology(m, IRI.create(owlOntologyName + "-generated"));
         } catch (OWLException | OWLRuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new OWL2JavaException("Unable to load ontology " + owlOntologyName, e);
         }
-    }
-
-    private void addAxiomToContext(final ContextDefinition ctx, final OWLAxiom axiom) {
-        axiom.signature().forEach(e -> {
-            if (e.isOWLClass() && !skipped.contains(e.getIRI())) {
-                ctx.classes.add(e.asOWLClass());
-            }
-            if (e.isOWLObjectProperty() && !skipped.contains(e.getIRI())) {
-                ctx.objectProperties.add(e.asOWLObjectProperty());
-            }
-            if (e.isOWLDataProperty() && !skipped.contains(e.getIRI())) {
-                ctx.dataProperties.add(e.asOWLDataProperty());
-            }
-            if (e.isOWLAnnotationProperty() && !skipped.contains(e.getIRI())) {
-                ctx.annotationProperties.add(e.asOWLAnnotationProperty());
-            }
-            if (e.isOWLNamedIndividual() && !skipped.contains(e.getIRI())) {
-                ctx.individuals.add(e.asOWLNamedIndividual());
-            }
-        });
-        ctx.axioms.add(axiom);
     }
 
     public void setOntology(final String owlOntologyName,
@@ -118,10 +101,10 @@ public class OWL2JavaTransformer {
         LOG.info("Parsing integrity constraints");
 
         ontology.axioms().forEach(a -> {
-            addAxiomToContext(DEFAULT_CONTEXT, a);
+            DEFAULT_CONTEXT.addAxiom(a);
             for (final String icContextName : getContexts(a)) {
                 ContextDefinition ctx = getContextDefinition(icContextName);
-                addAxiomToContext(ctx, a);
+                ctx.addAxiom(a);
             }
         });
 
@@ -134,11 +117,11 @@ public class OWL2JavaTransformer {
     }
 
     private ContextDefinition getContextDefinition(String icContextName) {
-        return contexts.computeIfAbsent(icContextName, ContextDefinition::new);
+        return contexts.computeIfAbsent(icContextName, name -> new ContextDefinition());
     }
 
     private List<String> getContexts(final OWLAxiom a) {
-        final List<String> contexts = new ArrayList<>();
+        final List<String> icContexts = new ArrayList<>();
         a.annotations().filter(p -> p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR))
          .forEach(p -> {
              LOG.info("Processing annotation : " + p);
@@ -149,9 +132,9 @@ public class OWL2JavaTransformer {
                  return;
              }
              LOG.debug("Found IC {} for context {}", a, icContextName);
-             contexts.add(icContextName);
+             icContexts.add(icContextName);
          });
-        return contexts;
+        return icContexts;
     }
 
     private void verifyContextExistence(String context) {
@@ -161,38 +144,34 @@ public class OWL2JavaTransformer {
         }
     }
 
-    public void transform(String context, String pkg, String targetDir, boolean withOWLAPI) {
+    public void transform(TransformationConfiguration transformConfig) {
+        final ContextDefinition def = getValidContext(transformConfig);
         LOG.info("Transforming context ...");
-        if (context == null) {
-            LOG.info(" - for all axioms");
-        } else {
-            LOG.info(" - for context '{}'.", context);
-            verifyContextExistence(context);
-        }
-
-        ContextDefinition def = context == null ? DEFAULT_CONTEXT : contexts.get(context);
-        new JavaTransformer().generateModel(ontology, def, pkg, targetDir, withOWLAPI);
+        new JavaTransformer(configuration).generateModel(ontology, def, transformConfig);
         LOG.info("Transformation SUCCESSFUL.");
+    }
+
+    private ContextDefinition getValidContext(TransformationConfiguration configuration) {
+        if (configuration.areAllAxiomsIntegrityConstraints()) {
+            LOG.info(" - for all axioms");
+            return DEFAULT_CONTEXT;
+        }
+        final String context = configuration.getContext();
+        verifyContextExistence(context);
+        LOG.info(" - for context '{}'.", context);
+        return contexts.get(context);
     }
 
     /**
      * Generates only vocabulary of the loaded ontology.
      *
-     * @param context    Integrity constraints context, if null is supplied, the whole ontology is interpreted as integrity constraints.
-     * @param targetDir  Directory into which the vocabulary file will be generated
-     * @param pkg        Package
-     * @param withOWLAPI Whether OWLAPI-based IRIs of the generated vocabulary items should be created as well
+     * @param transformConfig Configuration of the generation process
      */
-    public void generateVocabulary(String context, String pkg, String targetDir, boolean withOWLAPI) {
+    public void generateVocabulary(TransformationConfiguration transformConfig) {
         LOG.info("Generating vocabulary ...");
-        if (context == null) {
-            LOG.info(" - for all axioms");
-        } else {
-            LOG.info(" - for context '{}'.", context);
-            verifyContextExistence(context);
-        }
-        ContextDefinition def = (context == null) ? DEFAULT_CONTEXT : contexts.get(context);
-        new JavaTransformer().generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
+
+        ContextDefinition def = getValidContext(transformConfig);
+        new JavaTransformer(configuration).generateVocabulary(ontology, def, transformConfig);
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
@@ -202,12 +181,15 @@ public class OWL2JavaTransformer {
             return name;
         }
 
+        @Override
         public void visit(@Nonnull IRI iri) {
         }
 
+        @Override
         public void visit(@Nonnull OWLAnonymousIndividual individual) {
         }
 
+        @Override
         public void visit(@Nonnull OWLLiteral literal) {
             name = literal.getLiteral();
         }

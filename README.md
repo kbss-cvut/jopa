@@ -117,7 +117,7 @@ There are two ways of getting JOPA for your project:
 
 ## More Info
 
-More information about JOPA can be found for example in articles [4], [5] and at [https://kbss.felk.cvut.cz/web/portal/jopa](https://kbss.felk.cvut.cz/web/portal/jopa).
+More information about JOPA can be found for example in articles [4], [5] and at [https://kbss.felk.cvut.cz/web/kbss/jopa](https://kbss.felk.cvut.cz/web/kbss/jopa).
 
 JOPA build status and code metrics can be found at:
 

@@ -46,7 +46,7 @@ public class DetachedValueMerger implements ValueMerger {
     }
 
     private ValueMerger getMerger(FieldSpecification<?, ?> att) {
-        if (uow.isTypeManaged(att.getJavaType())) {
+        if (uow.isEntityType(att.getJavaType())) {
             return managedTypeMerger;
         } else if (Collection.class.isAssignableFrom(att.getJavaType())) {
             return collectionMerger;

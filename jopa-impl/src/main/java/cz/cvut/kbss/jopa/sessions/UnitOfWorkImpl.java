@@ -750,7 +750,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         assert id != null;
         // Original is null until commit
-//        cloneMapping.put(entity, entity);
         getNewObjectsCloneToOriginal().put(entity, null);
         registerEntityWithPersistenceContext(entity);
         registerEntityWithOntologyContext(descriptor, entity);
@@ -871,8 +870,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public boolean isTypeManaged(Class<?> cls) {
-        return parent.isTypeManaged(cls);
+    public boolean isEntityType(Class<?> cls) {
+        return parent.isEntityType(cls);
     }
 
     @Override
@@ -926,7 +925,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (fieldValueOrig == null) {
             clone = null;
         } else {
-            if (isTypeManaged(field.getType())) {
+            if (isEntityType(field.getType())) {
                 clone = registerExistingObject(fieldValueOrig, fieldDescriptor);
                 putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldDescriptor);
             } else {

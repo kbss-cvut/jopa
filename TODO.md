@@ -6,7 +6,6 @@
     - [x] Mapped superclass
     - [x] Single inheritance
     - [ ] Multiple inheritance
-- [ ] Benchmark comparison with Empire and AliBaba
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] JOPA Specification doc, which would explain behaviour and principles
@@ -37,3 +36,4 @@
 
 ### Currently in Progress
 - [ ] Jena OntoDriver.
+- [ ] Benchmark comparison with Empire and AliBaba.

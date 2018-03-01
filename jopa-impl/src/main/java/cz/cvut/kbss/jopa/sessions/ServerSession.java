@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,9 +18,7 @@ import cz.cvut.kbss.jopa.accessors.DefaultStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
@@ -31,8 +29,10 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.net.URI;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * The ServerSession is the primary interface for accessing the ontology.
@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 public class ServerSession extends AbstractSession implements Wrapper {
 
     private final MetamodelImpl metamodel;
-    private final Set<Class<?>> managedClasses;
 
     private CacheManager liveObjectCache;
     private StorageAccessor storageAccessor;
@@ -52,27 +51,13 @@ public class ServerSession extends AbstractSession implements Wrapper {
     ServerSession() {
         super(new Configuration(Collections.emptyMap()));
         this.metamodel = null;
-        this.managedClasses = null;
     }
 
     public ServerSession(OntologyStorageProperties storageProperties, Configuration configuration,
                          MetamodelImpl metamodel) {
         super(configuration);
         this.metamodel = metamodel;
-        this.managedClasses = processTypes(metamodel.getEntities());
         initialize(storageProperties, configuration, metamodel);
-    }
-
-    /**
-     * Process the entity types and extract simple Java classes from them.
-     *
-     * @param entities Set of managed entity types.
-     * @return Set of managed entity classes.
-     */
-    private Set<Class<?>> processTypes(Set<EntityType<?>> entities) {
-        Set<Class<?>> types = new HashSet<>(entities.size());
-        types.addAll(entities.stream().map(Type::getJavaType).collect(Collectors.toList()));
-        return types;
     }
 
     /**
@@ -108,12 +93,9 @@ public class ServerSession extends AbstractSession implements Wrapper {
         return liveObjectCache;
     }
 
-    public boolean transactionStarted(EntityTransaction t, AbstractEntityManager em) {
-        if (!t.isActive() || t.isRollbackOnly()) {
-            return false;
-        }
+    public void transactionStarted(EntityTransaction t, AbstractEntityManager em) {
+        assert t.isActive();
         runningTransactions.put(t, em);
-        return true;
     }
 
     public void transactionFinished(EntityTransaction t) {
@@ -160,8 +142,8 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     @Override
-    public boolean isTypeManaged(Class<?> cls) {
-        return cls != null && managedClasses.contains(cls);
+    public boolean isEntityType(Class<?> cls) {
+        return metamodel.isEntityType(cls);
     }
 
     @Override

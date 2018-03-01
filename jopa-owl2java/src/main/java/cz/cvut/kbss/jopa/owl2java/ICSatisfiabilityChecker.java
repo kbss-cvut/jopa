@@ -42,6 +42,7 @@ public class ICSatisfiabilityChecker implements IntegrityConstraintVisitor {
         result = r.isEntailed(f.getOWLSubClassOfAxiom(cpc.getSubClass(), cpc.getSupClass()));
     }
 
+    @Override
     public void visit(DataParticipationConstraint cpc) {
         result = r.isSatisfiable(f.getOWLObjectIntersectionOf(cpc.getSubject(),
             f.getOWLDataMaxCardinality(cpc.getMax(), cpc.getPredicate(),
@@ -49,6 +50,7 @@ public class ICSatisfiabilityChecker implements IntegrityConstraintVisitor {
                 .getMin(), cpc.getPredicate())));
     }
 
+    @Override
     public void visit(ObjectParticipationConstraint cpc) {
         result = r.isSatisfiable(f.getOWLObjectIntersectionOf(cpc.getSubject(),
             f.getOWLObjectMaxCardinality(cpc.getMax(), cpc.getPredicate(),
@@ -60,21 +62,25 @@ public class ICSatisfiabilityChecker implements IntegrityConstraintVisitor {
         return result;
     }
 
+    @Override
     public void visit(ObjectDomainConstraint cpc) {
         // TODO Auto-generated method stub
 
     }
 
+    @Override
     public void visit(ObjectRangeConstraint cpc) {
         // TODO Auto-generated method stub
 
     }
 
+    @Override
     public void visit(DataDomainConstraint cpc) {
         // TODO Auto-generated method stub
 
     }
 
+    @Override
     public void visit(DataRangeConstraint cpc) {
         // TODO Auto-generated method stub
 

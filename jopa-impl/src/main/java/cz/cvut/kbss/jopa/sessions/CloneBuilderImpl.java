@@ -195,7 +195,7 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     boolean isTypeManaged(Class<?> cls) {
-        return uow.isTypeManaged(cls);
+        return uow.isEntityType(cls);
     }
 
     boolean isOriginalInUoW(Object original) {

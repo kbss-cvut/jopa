@@ -19,6 +19,10 @@ import org.semanticweb.owlapi.model.*;
 
 public class Utils {
 
+    private Utils() {
+        throw new AssertionError();
+    }
+
     static OWLDatatype ensureDatatype(final OWLDataRange r) throws UnsupportedICException {
         if (!r.isOWLDatatype()) {
             throw new UnsupportedICException("Data ranges not supported: " + r);

@@ -70,7 +70,7 @@ public class ChangeManagerTest {
         MockitoAnnotations.initMocks(this);
         initInstances();
         manager = new ChangeManagerImpl(providerMock);
-        when(providerMock.isTypeManaged(any(Class.class))).thenAnswer(invocation -> {
+        when(providerMock.isEntityType(any(Class.class))).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             return TestEnvironmentUtils.getManagedTypes().contains(cls);
         });

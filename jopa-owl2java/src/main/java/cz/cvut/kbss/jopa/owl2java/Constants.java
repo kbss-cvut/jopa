@@ -23,9 +23,21 @@ public class Constants {
             "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#isIntegrityConstraintFor";
 
     /**
+     * Annotation property specifying the name of Java class mapped by the annotated ontological class.
+     */
+    public static final String P_CLASS_NAME = "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#javaClassName";
+
+    /**
      * Name of the class containing generated vocabulary.
      */
     public static final String VOCABULARY_CLASS = "Vocabulary";
+
+    /**
+     * Default package into which the generated model and/or vocabulary file will be put.
+     *
+     * Note that the model will be generated into a subpackage called {@link #MODEL_PACKAGE}.
+     */
+    public static final String DEFAULT_TARGET_PACKAGE = "generated";
 
     /**
      * Package into which the model is generated.

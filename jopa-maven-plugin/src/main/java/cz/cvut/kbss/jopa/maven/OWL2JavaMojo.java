@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.maven;
 
 import cz.cvut.kbss.jopa.owl2java.OWL2JavaTransformer;
+import cz.cvut.kbss.jopa.owl2java.TransformationConfiguration;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -78,12 +79,18 @@ public class OWL2JavaMojo extends AbstractMojo {
             owl2java.setOntology(pOntologyIRI, null, true);
         }
 
+        final TransformationConfiguration.TransformationConfigurationBuilder builder =
+                TransformationConfiguration.builder();
+        if (!pWholeOntologyAsICS) {
+            builder.context(pContextName);
+        }
+        final TransformationConfiguration config =
+                builder.packageName(pPackage).targetDir(pOutputDirectory).addOwlapiIris(pWithOWLAPI).build();
+
         if (pVocabularyOnly) {
-            owl2java.generateVocabulary(pWholeOntologyAsICS ? null : pContextName,
-                    pPackage, pOutputDirectory, pWithOWLAPI);
+            owl2java.generateVocabulary(config);
         } else {
-            owl2java.transform(pWholeOntologyAsICS ? null : pContextName,
-                    pPackage, pOutputDirectory, pWithOWLAPI);
+            owl2java.transform(config);
         }
 
         getLog().info("OWL2Java successfully generated!");
