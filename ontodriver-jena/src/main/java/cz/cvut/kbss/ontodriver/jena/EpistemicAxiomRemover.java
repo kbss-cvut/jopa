@@ -2,11 +2,17 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 
 import java.net.URI;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class performs an epistemic removal of statements.
@@ -42,5 +48,32 @@ class EpistemicAxiomRemover {
                 connector.remove(subject, property, null);
             }
         });
+    }
+
+    /**
+     * Removes statements corresponding to the specified values.
+     * <p>
+     * This version removes precisely statements whose subject, property and object match the specified data.
+     *
+     * @param subject    Statement subject
+     * @param properties Assertions to values
+     * @param context    Context from which to remove the statements
+     */
+    void remove(NamedResource subject, Map<Assertion, Set<Value<?>>> properties, URI context) {
+        final Resource resource = ResourceFactory.createResource(subject.getIdentifier().toString());
+        if (context != null) {
+            final String strCtx = context.toString();
+            properties.forEach((assertion, values) -> {
+                final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
+                values.forEach(value -> connector
+                        .remove(resource, property, JenaUtils.valueToRdfNode(assertion, value), strCtx));
+            });
+        } else {
+            properties.forEach((assertion, values) -> {
+                final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
+                values.forEach(
+                        value -> connector.remove(resource, property, JenaUtils.valueToRdfNode(assertion, value)));
+            });
+        }
     }
 }

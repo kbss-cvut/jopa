@@ -63,12 +63,12 @@ class JenaAdapter implements Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         beginTransactionIfNotActive();
-        return new AxiomLoader(connector).find(descriptor);
+        return new ExplicitAxiomLoader(connector).find(descriptor);
     }
 
     boolean contains(Axiom<?> axiom, URI context) {
         beginTransactionIfNotActive();
-        return new AxiomLoader(connector).contains(axiom, context);
+        return new ExplicitAxiomLoader(connector).contains(axiom, context);
     }
 
     List<URI> getContext() {
@@ -95,6 +95,11 @@ class JenaAdapter implements Wrapper {
     TypesHandler typesHandler() {
         beginTransactionIfNotActive();
         return new TypesHandler(connector);
+    }
+
+    PropertiesHandler propertiesHandler() {
+        beginTransactionIfNotActive();
+        return new PropertiesHandler(connector);
     }
 
     void close() throws JenaDriverException {

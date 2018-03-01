@@ -275,4 +275,10 @@ public class JenaConnectionTest {
         expectClosedException();
         connection.update(new AxiomValueDescriptor(SUBJECT));
     }
+
+    @Test
+    public void propertiesReturnsPropertiesHandler() {
+        final JenaProperties result = connection.properties();
+        assertNotNull(result);
+    }
 }

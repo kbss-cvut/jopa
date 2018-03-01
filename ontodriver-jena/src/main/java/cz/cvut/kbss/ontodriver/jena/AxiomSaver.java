@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.*;
 
@@ -19,6 +20,11 @@ class AxiomSaver {
         this.connector = connector;
     }
 
+    /**
+     * Persists statements corresponding to axioms specified in the descriptor.
+     *
+     * @param descriptor Data container
+     */
     void saveAxioms(AxiomValueDescriptor descriptor) {
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
         final Map<String, List<Statement>> statements = new HashMap<>();
@@ -68,5 +74,25 @@ class AxiomSaver {
             }
             return ResourceFactory.createStatement(subject, property, value);
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Persists statements corresponding to the specified data.
+     *
+     * @param subject    Statement subject
+     * @param properties Assertion to value map, which will be transformed to property to statement object
+     * @param context    Context into which statements should be inserted
+     */
+    void saveAxioms(NamedResource subject, Map<Assertion, Set<Value<?>>> properties, URI context) {
+        final Resource resource = ResourceFactory.createResource(subject.getIdentifier().toString());
+        final List<Statement> statements = new ArrayList<>(properties.size());
+        for (Map.Entry<Assertion, Set<Value<?>>> e : properties.entrySet()) {
+            statements.addAll(transformToStatements(e.getKey(), e.getValue(), resource));
+        }
+        if (context != null) {
+            connector.add(statements, context.toString());
+        } else {
+            connector.add(statements);
+        }
     }
 }

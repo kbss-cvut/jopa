@@ -13,8 +13,7 @@ import java.util.*;
 import static cz.cvut.kbss.ontodriver.model.Assertion.createDataPropertyAssertion;
 import static cz.cvut.kbss.ontodriver.model.Assertion.createObjectPropertyAssertion;
 
-// TODO The loader does not support inferred statements, yet
-class AxiomLoader {
+class ExplicitAxiomLoader {
 
     private static final Assertion UNSPECIFIED_ASSERTION = Assertion.createUnspecifiedPropertyAssertion(false);
 
@@ -23,7 +22,7 @@ class AxiomLoader {
     private Map<String, Assertion> assertedProperties;
     private Assertion unspecifiedProperty;
 
-    AxiomLoader(StorageConnector connector) {
+    ExplicitAxiomLoader(StorageConnector connector) {
         this.connector = connector;
     }
 
@@ -50,9 +49,7 @@ class AxiomLoader {
     private void mapProperties(AxiomDescriptor descriptor) {
         this.assertedProperties = new HashMap<>(descriptor.getAssertions().size());
         for (Assertion a : descriptor.getAssertions()) {
-            if (a.isInferred()) {
-                continue;   // For now
-            }
+            assert !a.isInferred();
             if (a.equals(UNSPECIFIED_ASSERTION)) {
                 this.unspecifiedProperty = a;
                 continue;
@@ -126,11 +123,10 @@ class AxiomLoader {
     }
 
     private Assertion createAssertionForStatement(Property property, RDFNode value) {
-        assert unspecifiedProperty != null;
         if (value.isResource()) {
-            return createObjectPropertyAssertion(URI.create(property.getURI()), unspecifiedProperty.isInferred());
+            return createObjectPropertyAssertion(URI.create(property.getURI()), false);
         } else {
-            return createDataPropertyAssertion(URI.create(property.getURI()), unspecifiedProperty.isInferred());
+            return createDataPropertyAssertion(URI.create(property.getURI()), false);
         }
     }
 
@@ -164,5 +160,23 @@ class AxiomLoader {
     private boolean assertionContextSameAsSubject(URI subjectCtx, URI assertionCtx) {
         return assertionCtx == null && subjectCtx == null || (subjectCtx != null && assertionCtx != null && subjectCtx
                 .equals(assertionCtx));
+    }
+
+    /**
+     * Loads all statements with the specified subject.
+     *
+     * @param subject Statement subject
+     * @param context Context identifier, optional
+     * @return Matching statements
+     */
+    Collection<Axiom<?>> find(NamedResource subject, URI context) {
+        final Resource resource = ResourceFactory.createResource(subject.getIdentifier().toString());
+        final Collection<Statement> statements = findInternal(resource, null, context);
+        final List<Axiom<?>> axioms = new ArrayList<>(statements.size());
+        for (Statement statement : statements) {
+            final Assertion a = createAssertionForStatement(statement.getPredicate(), statement.getObject());
+            resolveValue(a, statement.getObject()).ifPresent(v -> axioms.add(new AxiomImpl<>(subject, a, v)));
+        }
+        return axioms;
     }
 }
