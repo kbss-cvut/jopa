@@ -251,4 +251,28 @@ public class JenaConnectionTest {
         inOrder.verify(adapterMock).remove(descriptor);
         inOrder.verify(adapterMock).commit();
     }
+
+    @Test
+    public void updatePassesDataToAdapter() throws Exception {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        connection.update(descriptor);
+        verify(adapterMock).update(descriptor);
+    }
+
+    @Test
+    public void updateCommitsTransactionWhenConnectionIsAutoCommit() throws Exception {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        connection.setAutoCommit(true);
+        connection.update(descriptor);
+        final InOrder inOrder = inOrder(adapterMock);
+        inOrder.verify(adapterMock).update(descriptor);
+        inOrder.verify(adapterMock).commit();
+    }
+
+    @Test
+    public void updateThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        connection.update(new AxiomValueDescriptor(SUBJECT));
+    }
 }

@@ -135,7 +135,10 @@ public class JenaConnection implements Connection {
 
     @Override
     public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
-
+        ensureOpen();
+        Objects.requireNonNull(descriptor);
+        adapter.update(descriptor);
+        commitIfAuto();
     }
 
     @Override
