@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.list.JenaLists;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
@@ -279,6 +280,12 @@ public class JenaConnectionTest {
     @Test
     public void propertiesReturnsPropertiesHandler() {
         final JenaProperties result = connection.properties();
+        assertNotNull(result);
+    }
+
+    @Test
+    public void listsReturnsListHandler() {
+        final JenaLists result = connection.lists();
         assertNotNull(result);
     }
 }

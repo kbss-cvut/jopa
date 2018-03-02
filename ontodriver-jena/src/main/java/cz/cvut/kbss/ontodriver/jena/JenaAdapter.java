@@ -1,11 +1,11 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.list.ListHandler;
 import cz.cvut.kbss.ontodriver.jena.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.util.Transaction;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * <li>Datatype literal types are based on Jena's mapping, as described in a table at <a href="https://jena.apache.org/documentation/notes/typed-literals.html">https://jena.apache.org/documentation/notes/typed-literals.html</a></li>
  * </ul>
  */
-class JenaAdapter implements Wrapper {
+public class JenaAdapter implements Wrapper {
 
     private final Transaction transaction = new Transaction();
 
@@ -100,6 +100,16 @@ class JenaAdapter implements Wrapper {
     PropertiesHandler propertiesHandler() {
         beginTransactionIfNotActive();
         return new PropertiesHandler(connector);
+    }
+
+    public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> simpleListHandler() {
+        beginTransactionIfNotActive();
+        return ListHandler.simpleListHandler(connector);
+    }
+
+    public ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> referencedListHandler() {
+        beginTransactionIfNotActive();
+        return ListHandler.referencedListHandler(connector);
     }
 
     void close() throws JenaDriverException {

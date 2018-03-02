@@ -1,13 +1,13 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.list.JenaLists;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
@@ -157,8 +157,9 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public Lists lists() {
-        return null;
+    public JenaLists lists() {
+        ensureOpen();
+        return new JenaLists(adapter, this::ensureOpen, this::commitIfAuto);
     }
 
     @Override
