@@ -10,7 +10,8 @@ public class MemoryStorageTest extends StorageTestUtil {
 
     @Test
     public void initializationCreatesTransactionalInMemoryDataset() {
-        final Storage storage = new MemoryStorage();
+
+        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
         storage.initialize();
         final Dataset dataset = storage.getDataset();
         assertNotNull(dataset);

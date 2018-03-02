@@ -25,6 +25,7 @@ class FileStorage extends Storage {
     private final String location;
 
     FileStorage(Configuration configuration) {
+        super(configuration);
         this.location = configuration.getStorageProperties().getPhysicalURI().toString();
     }
 

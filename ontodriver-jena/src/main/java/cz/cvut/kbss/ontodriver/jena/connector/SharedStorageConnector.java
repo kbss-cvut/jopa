@@ -36,7 +36,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public synchronized void begin() {
         verifyOpen();
         transaction.begin();
-        storage.getDataset().begin(ReadWrite.WRITE);
+        storage.begin(ReadWrite.WRITE);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         transaction.verifyActive();
         transaction.commit();
         storage.writeChanges();
-        storage.getDataset().commit();
+        storage.commit();
         transaction.afterCommit();
     }
 
@@ -53,7 +53,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public void rollback() {
         verifyOpen();
         transaction.rollback();
-        storage.getDataset().abort();
+        storage.rollback();
         transaction.afterRollback();
     }
 
@@ -61,7 +61,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public Collection<Statement> find(Resource subject, Property property, RDFNode value) {
         verifyOpen();
         return Txn.calculateRead(storage.getDataset(), () -> {
-            final StmtIterator it = storage.getDataset().getDefaultModel().listStatements(subject, property, value);
+            final StmtIterator it = storage.getDefaultGraph().listStatements(subject, property, value);
             return it.toList();
         });
     }
@@ -70,8 +70,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public Collection<Statement> find(Resource subject, Property property, RDFNode value, String context) {
         verifyOpen();
         return Txn.calculateRead(storage.getDataset(), () -> {
-            final StmtIterator it = storage.getDataset().getNamedModel(context)
-                                           .listStatements(subject, property, value);
+            final StmtIterator it = storage.getNamedGraph(context).listStatements(subject, property, value);
             return it.toList();
         });
     }
@@ -80,14 +79,14 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public boolean contains(Resource subject, Property property, RDFNode value) {
         verifyOpen();
         return Txn.calculateRead(storage.getDataset(),
-                () -> storage.getDataset().getDefaultModel().contains(subject, property, value));
+                () -> storage.getDefaultGraph().contains(subject, property, value));
     }
 
     @Override
     public boolean contains(Resource subject, Property property, RDFNode value, String context) {
         verifyOpen();
         return Txn.calculateRead(storage.getDataset(),
-                () -> storage.getDataset().getNamedModel(context).contains(subject, property, value));
+                () -> storage.getNamedGraph(context).contains(subject, property, value));
     }
 
     @Override
@@ -103,46 +102,43 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public void add(List<Statement> statements) {
         verifyOpen();
         transaction.verifyActive();
-        storage.getDataset().getDefaultModel().add(statements);
+        storage.add(statements);
     }
 
     @Override
     public void add(List<Statement> statements, String context) {
         verifyOpen();
         transaction.verifyActive();
-        final Model targetGraph = storage.getDataset().getNamedModel(context);
-        targetGraph.add(statements);
+        storage.add(statements, context);
     }
 
     @Override
     public void remove(List<Statement> statements) {
         verifyOpen();
         transaction.verifyActive();
-        storage.getDataset().getDefaultModel().remove(statements);
+        storage.remove(statements);
     }
 
     @Override
     public void remove(List<Statement> statements, String context) {
         verifyOpen();
         transaction.verifyActive();
-        final Model targetGraph = storage.getDataset().getNamedModel(context);
-        targetGraph.remove(statements);
+        storage.remove(statements, context);
     }
 
     @Override
     public void remove(Resource subject, Property property, RDFNode object) {
         verifyOpen();
         transaction.verifyActive();
-        final Model defaultGraph = storage.getDataset().getDefaultModel();
-        defaultGraph.remove(defaultGraph.listStatements(subject, property, object));
+        storage.remove(storage.getDefaultGraph().listStatements(subject, property, object));
     }
 
     @Override
     public void remove(Resource subject, Property property, RDFNode object, String context) {
         verifyOpen();
         transaction.verifyActive();
-        final Model targetGraph = storage.getDataset().getNamedModel(context);
-        targetGraph.remove(targetGraph.listStatements(subject, property, object));
+        storage.remove(storage.getNamedGraph(context).listStatements(subject, property, object), context);
+
     }
 
     @Override

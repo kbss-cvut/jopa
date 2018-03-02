@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.*;
@@ -13,16 +14,20 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
 
     private final AbstractStorageConnector centralConnector;
 
+    private final boolean useDefaultAsUnion;
+
     private LocalModel localModel;
 
     ChangeTrackingStorageConnector(AbstractStorageConnector centralConnector) {
         this.centralConnector = centralConnector;
+        this.useDefaultAsUnion =
+                configuration != null && configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
     }
 
     @Override
     public void begin() {
         transaction.begin();
-        this.localModel = new LocalModel();
+        this.localModel = new LocalModel(useDefaultAsUnion);
     }
 
     @Override

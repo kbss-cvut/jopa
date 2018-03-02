@@ -73,6 +73,17 @@ public class JenaOntoDriverProperties {
      */
     public static final String SDB = "sdb";
 
+    /**
+     * Parameter specifying whether the default graph should be treated as union of all the named graphs + the default graph.
+     * <p>
+     * Default graph being a union of all graphs is typical for storages like RDF4J, GraphDB, Virtuoso (querying without
+     * graph queries across all graphs).
+     * <p>
+     * This parameter influences only querying/reading, it has no effect on write operations, which work with the default graph
+     * as is in Jena.
+     */
+    public static final String JENA_TREAT_DEFAULT_GRAPH_AS_UNION = "cz.cvut.kbss.ontodriver.jena.default_graph_as_union";
+
     private JenaOntoDriverProperties() {
         throw new AssertionError();
     }

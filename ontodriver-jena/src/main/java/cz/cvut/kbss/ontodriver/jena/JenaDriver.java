@@ -19,7 +19,8 @@ public class JenaDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
             .asList(ConfigParam.AUTO_COMMIT, ConfigParam.ONTOLOGY_LANGUAGE,
-                    JenaConfigParam.ISOLATION_STRATEGY, JenaConfigParam.STORAGE_TYPE);
+                    JenaConfigParam.ISOLATION_STRATEGY, JenaConfigParam.STORAGE_TYPE,
+                    JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
 
     private volatile boolean open;
 

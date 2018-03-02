@@ -17,30 +17,43 @@ class LocalModel {
     private final Dataset added;
     private final Dataset removed;
 
+    /**
+     * Whether default graph should be treated as union of all graphs.
+     */
+    private final boolean defaultAsUnion;
+
     enum Containment {
         ADDED, REMOVED, UNKNOWN
     }
 
-    LocalModel() {
+    LocalModel(boolean defaultAsUnion) {
         this.added = DatasetFactory.create();
         this.removed = DatasetFactory.create();
+        this.defaultAsUnion = defaultAsUnion;
     }
 
     List<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
-                                            RDFNode value) {
-        return enhanceStatements(statements, subject, property, value, added.getDefaultModel(),
-                removed.getDefaultModel());
+                                      RDFNode value) {
+        return enhanceStatements(statements, subject, property, value, addedDefault(), removedDefault());
+    }
+
+    private Model addedDefault() {
+        return defaultAsUnion ? added.getUnionModel().union(added.getDefaultModel()) : added.getDefaultModel();
+    }
+
+    private Model removedDefault() {
+        return defaultAsUnion ? removed.getUnionModel().union(removed.getDefaultModel()) : removed.getDefaultModel();
     }
 
     List<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
-                                            RDFNode value, String context) {
+                                      RDFNode value, String context) {
         return enhanceStatements(statements, subject, property, value, added.getNamedModel(context),
                 removed.getNamedModel(context));
     }
 
     private List<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
-                                                    Property property, RDFNode value, Model addedModel,
-                                                    Model removedModel) {
+                                              Property property, RDFNode value, Model addedModel,
+                                              Model removedModel) {
         final List<Statement> statements = new ArrayList<>(toEnhance);
         statements.addAll(addedModel.listStatements(subject, property, value).toList());
         statements.removeAll(removedModel.listStatements(subject, property, value).toList());
@@ -48,10 +61,10 @@ class LocalModel {
     }
 
     Containment contains(Resource subject, Property property, RDFNode value) {
-        if (removed.getDefaultModel().contains(subject, property, value)) {
+        if (removedDefault().contains(subject, property, value)) {
             return Containment.REMOVED;
         } else {
-            return added.getDefaultModel().contains(subject, property, value) ? Containment.ADDED : Containment.UNKNOWN;
+            return addedDefault().contains(subject, property, value) ? Containment.ADDED : Containment.UNKNOWN;
         }
     }
 
@@ -67,6 +80,9 @@ class LocalModel {
     void addStatements(List<Statement> statements) {
         added.getDefaultModel().add(statements);
         removed.getDefaultModel().remove(statements);
+        if (defaultAsUnion) {
+            removed.listNames().forEachRemaining(n -> removed.getNamedModel(n).remove(statements));
+        }
     }
 
     void addStatements(List<Statement> statements, String context) {
@@ -77,6 +93,9 @@ class LocalModel {
     void removeStatements(List<Statement> statements) {
         removed.getDefaultModel().add(statements);
         added.getDefaultModel().remove(statements);
+        if (defaultAsUnion) {
+            added.listNames().forEachRemaining(n -> added.getNamedModel(n).remove(statements));
+        }
     }
 
     void removeStatements(List<Statement> statements, String context) {

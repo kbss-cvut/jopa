@@ -31,6 +31,7 @@ public class JenaPersistenceFactory implements PersistenceFactory {
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         map.put(JOPAPersistenceProperties.LANG, "en");
         map.put(JenaOntoDriverProperties.JENA_STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
+        map.put(JenaOntoDriverProperties.JENA_TREAT_DEFAULT_GRAPH_AS_UNION, Boolean.toString(true));
         return map;
     }
 }
