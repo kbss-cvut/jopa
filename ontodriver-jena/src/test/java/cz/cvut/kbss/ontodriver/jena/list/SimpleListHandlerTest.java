@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.list;
 
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
@@ -40,7 +41,7 @@ public class SimpleListHandlerTest {
 
     @Test
     public void loadListRetrievesAllListElements() {
-        final List<URI> expected = generateList();
+        final List<URI> expected = generateList(null);
         final List<Axiom<NamedResource>> result = handler
                 .loadList(new SimpleListDescriptorImpl(RESOURCE, HAS_LIST, HAS_NEXT));
         final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
@@ -48,10 +49,26 @@ public class SimpleListHandlerTest {
         assertEquals(expected, actual);
     }
 
-    private List<URI> generateList() {
+    private List<URI> generateList(String context) {
         final Property hasList = createProperty(HAS_LIST.getIdentifier().toString());
         final Property hasNext = createProperty(HAS_NEXT.getIdentifier().toString());
         final Resource owner = createResource(RESOURCE.getIdentifier().toString());
-        return ListTestUtil.generateList(owner, hasList, hasNext, connectorMock);
+        if (context != null) {
+            return ListTestUtil.generateSimpleList(owner, hasList, hasNext, connectorMock, context);
+        } else {
+            return ListTestUtil.generateSimpleList(owner, hasList, hasNext, connectorMock);
+        }
+    }
+
+    @Test
+    public void loadListFromContextRetrievesAllListElements() {
+        final URI context = Generator.generateUri();
+        final List<URI> expected = generateList(context.toString());
+        final SimpleListDescriptor descriptor = new SimpleListDescriptorImpl(RESOURCE, HAS_LIST, HAS_NEXT);
+        descriptor.setContext(context);
+        final List<Axiom<NamedResource>> result = handler.loadList(descriptor);
+        final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
+                                       .collect(Collectors.toList());
+        assertEquals(expected, actual);
     }
 }

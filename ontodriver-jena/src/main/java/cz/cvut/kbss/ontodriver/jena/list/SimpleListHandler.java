@@ -25,7 +25,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         final Property hasList = ResourceFactory
                 .createProperty(descriptor.getListProperty().getIdentifier().toString());
         final Property hasNext = ResourceFactory.createProperty(descriptor.getNextNode().getIdentifier().toString());
-        final SimpleListIterator it = new SimpleListIterator(owner, hasList, hasNext, connector);
+        final String context = descriptor.getContext() != null ? descriptor.getContext().toString() : null;
+        final SimpleListIterator it = new SimpleListIterator(owner, hasList, hasNext, context, connector);
         while (it.hasNext()) {
             result.add(it.next());
         }
