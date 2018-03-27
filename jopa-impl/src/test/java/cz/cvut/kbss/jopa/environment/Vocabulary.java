@@ -20,6 +20,7 @@ public class Vocabulary {
     public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
 
     public static final String c_OwlClassA = CLASS_BASE + "OWLClassA";
+    public static final String c_OwlClassB = CLASS_BASE + "OWLClassB";
     public static final String c_OwlClassD = CLASS_BASE + "OWLClassD";
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
     public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";

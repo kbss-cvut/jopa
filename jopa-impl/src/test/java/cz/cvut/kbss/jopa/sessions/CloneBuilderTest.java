@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,20 +14,27 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import com.sun.javafx.beans.IDProperty;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -38,7 +45,7 @@ import java.util.Map.Entry;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class CloneBuilderTest {
 
@@ -62,8 +69,7 @@ public class CloneBuilderTest {
     private MetamodelMocks metamodelMocks;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-
+    public static void setUpBeforeClass() {
         initManagedTypes();
         defaultDescriptor = new EntityDescriptor();
     }
@@ -147,13 +153,13 @@ public class CloneBuilderTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testBuildCloneNullOriginal() throws Exception {
+    public void testBuildCloneNullOriginal() {
         builder.buildClone(null, new CloneConfiguration(defaultDescriptor));
         fail("This line should not have been reached.");
     }
 
     @Test(expected = NullPointerException.class)
-    public void testBuildCloneNullContextUri() throws Exception {
+    public void testBuildCloneNullContextUri() {
         builder.buildClone(entityA, null);
     }
 
@@ -274,7 +280,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testCloneObjectProperty() throws Exception {
+    public void testCloneObjectProperty() {
         final OWLClassD another = new OWLClassD();
         another.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityDD"));
         another.setOwlClassA(entityA);
@@ -381,7 +387,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testMergeChangesOnString() throws Exception {
+    public void testMergeChangesOnString() {
         final OWLClassA a = new OWLClassA();
         a.setUri(entityA.getUri());
         a.setStringAttribute("oldString");
@@ -398,7 +404,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testMergeChangesPropertiesFromNull() throws Exception {
+    public void testMergeChangesPropertiesFromNull() {
         final OWLClassB b = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
         assertNull(b.getProperties());
         b.setProperties(Generators.generateStringProperties());
@@ -413,7 +419,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testMergeChangesRefListFromNull() throws Exception {
+    public void testMergeChangesRefListFromNull() {
         final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityC, c);
         assertNull(entityC.getReferencedList());
@@ -432,7 +438,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void mergeChangesHandlesSingletonCollection() throws Exception {
+    public void mergeChangesHandlesSingletonCollection() {
         entityC.setReferencedList(Collections.singletonList(entityA));
         final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
         final OWLClassA newA = new OWLClassA();
@@ -449,7 +455,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testBuildCloneWithMultipleWrapperTypesAndStringKey() throws Exception {
+    public void testBuildCloneWithMultipleWrapperTypesAndStringKey() {
         final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityM, m);
         assertEquals(entityM.getKey(), m.getKey());
@@ -461,7 +467,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testMergeChangesWithMultipleWrapperTypesAndStringKey() throws Exception {
+    public void testMergeChangesWithMultipleWrapperTypesAndStringKey() {
         final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor));
         assertNotSame(entityM, m);
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(entityM, m, defaultDescriptor);
@@ -491,7 +497,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void cloningSkipsTransientFields() throws Exception {
+    public void cloningSkipsTransientFields() {
         final OWLClassO entityO = new OWLClassO();
         entityO.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#entityO"));
         entityO.setStringAttribute("String");
@@ -507,7 +513,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void reusesAlreadyClonedInstancesWhenCloningCollections() throws Exception {
+    public void reusesAlreadyClonedInstancesWhenCloningCollections() {
         final OWLClassA cloneA = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         entityC.setReferencedList(new ArrayList<>());
         entityC.getReferencedList().add(entityA);
@@ -519,7 +525,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void cloneBuildingHandlesCyclesInObjectGraphByRegisteringAlreadyVisitedObjects() throws Exception {
+    public void cloneBuildingHandlesCyclesInObjectGraphByRegisteringAlreadyVisitedObjects() {
         final OWLClassG entityG = initGWithBackwardReference();
 
         final OWLClassG cloneG = (OWLClassG) builder.buildClone(entityG, new CloneConfiguration(defaultDescriptor));
@@ -537,7 +543,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testBuildCloneOfInstanceWithArrayAsListFieldValue() throws Exception {
+    public void testBuildCloneOfInstanceWithArrayAsListFieldValue() {
         final OWLClassC instance = new OWLClassC(URI.create("http://test"));
         final OWLClassA another = new OWLClassA(URI.create("http://anotherA"));
         instance.setSimpleList(Arrays.asList(entityA, another));
@@ -550,7 +556,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void mergeOfFieldOfManagedTypeUsesOriginalValueForMerge() throws Exception {
+    public void mergeOfFieldOfManagedTypeUsesOriginalValueForMerge() {
         entityD.setOwlClassA(entityA);
         final OWLClassD dClone = new OWLClassD();
         dClone.setUri(entityD.getUri());
@@ -573,7 +579,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void buildCloneClonesMappedSuperclassFieldsAsWell() throws Exception {
+    public void buildCloneClonesMappedSuperclassFieldsAsWell() {
 
         final OWLClassQ clone = (OWLClassQ) builder.buildClone(entityQ, new CloneConfiguration(defaultDescriptor));
         assertNotNull(clone);
@@ -587,7 +593,7 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void mergeChangesMergesChangesOnMappedSuperclassFields() throws Exception {
+    public void mergeChangesMergesChangesOnMappedSuperclassFields() {
         final OWLClassQ qClone = new OWLClassQ();
         qClone.setUri(entityQ.getUri());
         qClone.setStringAttribute("newStringAtt");
@@ -607,5 +613,72 @@ public class CloneBuilderTest {
         assertEquals(qClone.getStringAttribute(), entityQ.getStringAttribute());
         assertEquals(qClone.getParentString(), entityQ.getParentString());
         assertEquals(qClone.getOwlClassA().getUri(), entityQ.getOwlClassA().getUri());
+    }
+
+    @Test
+    public void buildCloneDoesNotAttemptToRegisterCloneWithoutIdentifier() throws Exception {
+        final A a = new A();
+        final B b = new B();
+        a.uri = Generators.createIndividualIdentifier();
+        b.uri = Generators.createIndividualIdentifier();
+        a.b = Collections.singleton(b);
+        b.a = a;
+        initMetamodelForAB();
+        doAnswer(invocation -> {
+            Object obj = invocation.getArguments()[0];
+            Descriptor desc = (Descriptor) invocation.getArguments()[1];
+            final Object clone = builder.buildClone(obj, new CloneConfiguration(desc));
+            // THIS is the important verification
+            assertNotNull(EntityPropertiesUtils.getIdentifier(clone, metamodel));
+            return clone;
+        }).when(uow).registerExistingObject(any(), any(), any());
+
+        final B result = (B) builder.buildClone(b, new CloneConfiguration(defaultDescriptor));
+        assertNotNull(result);
+        assertNotNull(result.a);
+        assertEquals(result, result.a.b.iterator().next());
+        assertEquals(b.uri, result.uri);
+        assertEquals(a.uri, result.a.uri);
+    }
+
+    private void initMetamodelForAB() throws Exception {
+        when(uow.isEntityType(A.class)).thenReturn(true);
+        when(uow.isEntityType(B.class)).thenReturn(true);
+        final EntityTypeImpl<A> etA = mock(EntityTypeImpl.class);
+        final EntityTypeImpl<B> etB = mock(EntityTypeImpl.class);
+        final Identifier idA = new IRIIdentifierImpl<>(etA, A.class.getDeclaredField("uri"), true);
+        final Identifier idB = new IRIIdentifierImpl<>(etB, B.class.getDeclaredField("uri"), true);
+        when(etA.getIdentifier()).thenReturn(idA);
+        when(etB.getIdentifier()).thenReturn(idB);
+        final PluralAttribute hasB = mock(PluralAttribute.class);
+        when(hasB.getJavaField()).thenReturn(A.class.getDeclaredField("b"));
+        when(hasB.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(hasB.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(hasB.getElementType()).thenReturn(etB);
+        when(etA.getFieldSpecifications()).thenReturn(new HashSet<>(Arrays.asList(idA, hasB)));
+        when(etA.getFieldSpecification("b")).thenReturn(hasB);
+        final SingularAttribute hasA = mock(SingularAttribute.class);
+        when(hasA.getJavaField()).thenReturn(B.class.getDeclaredField("a"));
+        when(hasA.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(etB.getFieldSpecifications()).thenReturn(new HashSet<>(Arrays.asList(idB, hasA)));
+        when(etB.getFieldSpecification("a")).thenReturn(hasA);
+        doReturn(etA).when(metamodel).entity(A.class);
+        doReturn(etB).when(metamodel).entity(B.class);
+    }
+
+    private static class A {
+        @Id
+        private URI uri;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasB")
+        private Set<B> b;
+    }
+
+    private static class B {
+        @Id
+        private URI uri;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasA")
+        private A a;
     }
 }
