@@ -10,6 +10,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,10 +21,10 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.*;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
-import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
+import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SimpleListIteratorTest {
@@ -111,8 +112,125 @@ public class SimpleListIteratorTest {
         final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
         thrown.expect(ListProcessingException.class);
         thrown.expectMessage("Expected successor of node " + nodeUri + " to be a named resource.");
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             iterator.next();
         }
+    }
+
+    @Test
+    public void removeWithoutReconnectRemovesLastElementInList() {
+        final List<URI> list = generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        while (iterator.hasNext()) {
+            iterator.next();
+        }
+        iterator.removeWithoutReconnect();
+        verify(connectorMock).remove(createResource(list.get(list.size() - 2).toString()), HAS_NEXT,
+                createResource(list.get(list.size() - 1).toString()));
+    }
+
+    @Test
+    public void removeWithoutReconnectRemovesFirstElementInList() {
+        final List<URI> list = generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        iterator.nextValue();
+        iterator.removeWithoutReconnect();
+        verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()));
+    }
+
+    @Test
+    public void removeWithoutReconnectThrowsIllegalStateExceptionWhenNextWasNotCalledBefore() {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage(containsString("Cannot call remove before calling next."));
+        generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        iterator.removeWithoutReconnect();
+    }
+
+    @Test
+    public void removeWithoutReconnectThrowsIllegalStateExceptionWhenRemoveIsCalledTwiceOnElement() {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage(containsString("Cannot call remove multiple times on one element."));
+        generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        iterator.nextValue();
+        iterator.removeWithoutReconnect();
+        iterator.removeWithoutReconnect();
+    }
+
+    @Test
+    public void replaceConnectsNodeToListEnd() {
+        final List<URI> list = generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        while (iterator.hasNext()) {
+            iterator.nextValue();
+        }
+        final Resource newOne = createResource(Generator.generateUri().toString());
+        iterator.replace(newOne);
+        verify(connectorMock).remove(createResource(list.get(list.size() - 2).toString()), HAS_NEXT,
+                createResource(list.get(list.size() - 1).toString()));
+        final Statement expectedAdded = createStatement(createResource(list.get(list.size() - 2).toString()), HAS_NEXT,
+                newOne);
+        verify(connectorMock).add(Collections.singletonList(expectedAdded));
+    }
+
+    @Test
+    public void replaceReplacesNodeInsideList() {
+        final List<URI> list = generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        int index = Generator.randomInt(list.size() - 1);
+        if (index == 0) {
+            index = index + 1;
+        }
+        int i = 0;
+        while (iterator.hasNext() && i <= index) {
+            iterator.nextValue();
+            i++;
+        }
+        final Resource newOne = createResource(Generator.generateUri().toString());
+        iterator.replace(newOne);
+        verify(connectorMock).remove(createResource(list.get(index - 1).toString()), HAS_NEXT,
+                createResource(list.get(index).toString()));
+        verify(connectorMock).remove(createResource(list.get(index).toString()), HAS_NEXT,
+                createResource(list.get(index + 1).toString()));
+        final Statement expectedAddedPrevLink = createStatement(createResource(list.get(index - 1).toString()),
+                HAS_NEXT,
+                newOne);
+        final Statement expectedAddedNextLink = createStatement(newOne, HAS_NEXT,
+                createResource(list.get(index + 1).toString()));
+        verify(connectorMock).add(Arrays.asList(expectedAddedPrevLink, expectedAddedNextLink));
+    }
+
+    @Test
+    public void replaceReplacesFirstNodeInList() {
+        final List<URI> list = generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        iterator.nextValue();
+        final Resource newOne = createResource(Generator.generateUri().toString());
+        iterator.replace(newOne);
+        verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()));
+        verify(connectorMock)
+                .remove(createResource(list.get(0).toString()), HAS_NEXT, createResource(list.get(1).toString()));
+        final Statement expectedAddedPrevLink = createStatement(RESOURCE, HAS_LIST, newOne);
+        final Statement expectedAddedNextLink = createStatement(newOne, HAS_NEXT,
+                createResource(list.get(1).toString()));
+        verify(connectorMock).add(Arrays.asList(expectedAddedPrevLink, expectedAddedNextLink));
+    }
+
+    @Test
+    public void replaceDoesNotConnectNextNodeToItselfWhenListItemIsBeingRemoved() {
+        final List<URI> list = generateList();
+        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        iterator.nextValue();
+        iterator.nextValue();
+        final Resource newOne = createResource(list.get(2).toString());
+        iterator.replace(newOne);
+        verify(connectorMock)
+                .remove(createResource(list.get(0).toString()), HAS_NEXT, createResource(list.get(1).toString()));
+        verify(connectorMock)
+                .remove(createResource(list.get(1).toString()), HAS_NEXT, createResource(list.get(2).toString()));
+        final Statement expectedAddedPrevLink = createStatement(createResource(list.get(0).toString()), HAS_NEXT,
+                newOne);
+        verify(connectorMock).add(Collections.singletonList(expectedAddedPrevLink));
     }
 }

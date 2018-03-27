@@ -17,6 +17,10 @@ public class Generator {
         return RANDOM.nextInt();
     }
 
+    public static int randomInt(int max) {
+        return RANDOM.nextInt(max);
+    }
+
     public static boolean randomBoolean() {
         return RANDOM.nextBoolean();
     }

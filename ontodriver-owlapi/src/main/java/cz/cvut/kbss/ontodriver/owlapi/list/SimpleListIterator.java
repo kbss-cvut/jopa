@@ -119,7 +119,7 @@ class SimpleListIterator extends OwlapiListIterator {
      */
     @Override
     List<OWLOntologyChange> replaceNode(NamedResource newValue) {
-        final List<OWLOntologyChange> changes = new ArrayList<>(2);
+        final List<OWLOntologyChange> changes = new ArrayList<>(4);
         changes.addAll(removeWithoutReconnect());
         final OWLNamedIndividual newNode = dataFactory.getOWLNamedIndividual(IRI.create(newValue.getIdentifier()));
         changes.add(new MutableAddAxiom(ontology,

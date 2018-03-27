@@ -90,6 +90,22 @@ public class ChangeTrackingStorageConnectorTest {
     }
 
     @Test
+    public void findPreventsDuplicateStatementsFromCentralAndLocalModel() throws Exception {
+        centralConnector.begin();
+        final Statement statement = ResourceFactory
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
+                        createResource(TYPE_ONE));
+        centralConnector.add(Collections.singletonList(statement));
+        centralConnector.commit();
+        connector.begin();
+        getLocalModel().addStatements(Collections.singletonList(statement));
+        final Collection<Statement> result = connector.find(createResource(SUBJECT), null, null);
+        assertEquals(1, result.size());
+        assertTrue(result.contains(statement));
+
+    }
+
+    @Test
     public void containsReturnsTrueForStatementsPresentInLocalChanges() throws Exception {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),

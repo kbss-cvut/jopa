@@ -75,14 +75,14 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public List<Statement> find(Resource subject, Property property, RDFNode value) {
+    public Collection<Statement> find(Resource subject, Property property, RDFNode value) {
         transaction.verifyActive();
         final Collection<Statement> existing = centralConnector.find(subject, property, value);
         return localModel.enhanceStatements(existing, subject, property, value);
     }
 
     @Override
-    public List<Statement> find(Resource subject, Property property, RDFNode value, String context) {
+    public Collection<Statement> find(Resource subject, Property property, RDFNode value, String context) {
         transaction.verifyActive();
         final Collection<Statement> existing = centralConnector.find(subject, property, value, context);
         return localModel.enhanceStatements(existing, subject, property, value, context);
@@ -141,13 +141,13 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     @Override
     public void remove(Resource subject, Property property, RDFNode object) {
         transaction.verifyActive();
-        localModel.removeStatements(find(subject, property, object));
+        localModel.removeStatements(new ArrayList<>(find(subject, property, object)));
     }
 
     @Override
     public void remove(Resource subject, Property property, RDFNode object, String context) {
         transaction.verifyActive();
-        localModel.removeStatements(find(subject, property, object, context), context);
+        localModel.removeStatements(new ArrayList<>(find(subject, property, object, context)), context);
     }
 
     @Override

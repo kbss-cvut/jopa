@@ -201,7 +201,6 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateRemoveFromSimpleListInContext() throws Exception {
-        logger.debug("Test: remove element from simple list stored in a different context than its owner.");
         this.em = getEntityManager("MultiUpdateRemoveFromSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);

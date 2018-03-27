@@ -4,10 +4,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Tracks transactional changes.
@@ -32,8 +29,8 @@ class LocalModel {
         this.defaultAsUnion = defaultAsUnion;
     }
 
-    List<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
-                                      RDFNode value) {
+    Collection<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
+                                            RDFNode value) {
         return enhanceStatements(statements, subject, property, value, addedDefault(), removedDefault());
     }
 
@@ -45,16 +42,16 @@ class LocalModel {
         return defaultAsUnion ? removed.getUnionModel().union(removed.getDefaultModel()) : removed.getDefaultModel();
     }
 
-    List<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
-                                      RDFNode value, String context) {
+    Collection<Statement> enhanceStatements(Collection<Statement> statements, Resource subject, Property property,
+                                            RDFNode value, String context) {
         return enhanceStatements(statements, subject, property, value, added.getNamedModel(context),
                 removed.getNamedModel(context));
     }
 
-    private List<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
-                                              Property property, RDFNode value, Model addedModel,
-                                              Model removedModel) {
-        final List<Statement> statements = new ArrayList<>(toEnhance);
+    private Collection<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
+                                                    Property property, RDFNode value, Model addedModel,
+                                                    Model removedModel) {
+        final Set<Statement> statements = new HashSet<>(toEnhance);
         statements.addAll(addedModel.listStatements(subject, property, value).toList());
         statements.removeAll(removedModel.listStatements(subject, property, value).toList());
         return statements;

@@ -128,7 +128,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     public void testRemoveFromSimpleList() {
         this.em = getEntityManager("RemoveFromSimpleList", false);
         final int size = 5;
-        entityC.setSimpleList(Generators.createSimpleList(size));
+        entityC.setSimpleList(Generators.createSimpleList(10));
         em.getTransaction().begin();
         em.persist(entityC);
         entityC.getSimpleList().forEach(em::persist);
