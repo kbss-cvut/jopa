@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -72,38 +71,12 @@ abstract class ListHandlerTestBase<D extends ListDescriptor, V extends ListValue
         assertEquals(expected, actual);
     }
 
-    @Test
-    public void persistListInsertsStatementsCorrespondingToList() {
-        final List<URI> list = IntStream.range(0, 5).mapToObj(i -> Generator.generateUri())
-                                        .collect(Collectors.toList());
-        final V descriptor = listValueDescriptor();
-        list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
-        handler.persistList(descriptor);
-        final List<Statement> expected = getExpectedStatementsForPersist(list);
-        verify(connectorMock).add(expected);
-    }
-
     abstract V listValueDescriptor();
-
-    abstract List<Statement> getExpectedStatementsForPersist(List<URI> list);
 
     @Test
     public void persistListDoesNothingForEmptyDescriptor() {
         final V descriptor = listValueDescriptor();
         handler.persistList(descriptor);
         verify(connectorMock, never()).add(anyListOf(Statement.class));
-    }
-
-    @Test
-    public void persistListWithContextInsertsStatementsCorrespondingToListIntoContext() {
-        final List<URI> list = IntStream.range(0, 5).mapToObj(i -> Generator.generateUri())
-                                        .collect(Collectors.toList());
-        final V descriptor = listValueDescriptor();
-        list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
-        final URI context = Generator.generateUri();
-        descriptor.setContext(context);
-        handler.persistList(descriptor);
-        final List<Statement> expected = getExpectedStatementsForPersist(list);
-        verify(connectorMock).add(expected, context.toString());
     }
 }

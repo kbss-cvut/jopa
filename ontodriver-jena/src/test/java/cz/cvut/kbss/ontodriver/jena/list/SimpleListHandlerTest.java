@@ -51,7 +51,17 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         return new SimpleListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT);
     }
 
-    List<Statement> getExpectedStatementsForPersist(List<URI> list) {
+    @Test
+    public void persistListInsertsStatementsCorrespondingToList() {
+        final List<URI> list = listUtil.generateList();
+        final SimpleListValueDescriptor descriptor = listValueDescriptor();
+        list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
+        handler.persistList(descriptor);
+        final List<Statement> expected = getExpectedStatementsForPersist(list);
+        verify(connectorMock).add(expected);
+    }
+
+    private List<Statement> getExpectedStatementsForPersist(List<URI> list) {
         final List<Statement> expected = new ArrayList<>(list.size());
         expected.add(createStatement(OWNER_RESOURCE,
                 HAS_LIST_PROPERTY, createResource(list.get(0).toString())));
@@ -61,6 +71,18 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
                     createResource(list.get(i + 1).toString())));
         }
         return expected;
+    }
+
+    @Test
+    public void persistListWithContextInsertsStatementsCorrespondingToListIntoContext() {
+        final List<URI> list = listUtil.generateList();
+        final SimpleListValueDescriptor descriptor = listValueDescriptor();
+        list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
+        final URI context = Generator.generateUri();
+        descriptor.setContext(context);
+        handler.persistList(descriptor);
+        final List<Statement> expected = getExpectedStatementsForPersist(list);
+        verify(connectorMock).add(expected, context.toString());
     }
 
     @Test

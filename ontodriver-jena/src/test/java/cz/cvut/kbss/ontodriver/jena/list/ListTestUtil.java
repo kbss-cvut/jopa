@@ -55,7 +55,7 @@ public class ListTestUtil {
         return list;
     }
 
-    private static List<URI> generateList() {
+    List<URI> generateList() {
         return IntStream.range(0, SIZE).mapToObj(i -> Generator.generateUri()).collect(Collectors.toList());
     }
 
