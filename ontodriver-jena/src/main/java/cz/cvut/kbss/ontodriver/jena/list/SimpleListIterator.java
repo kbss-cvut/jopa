@@ -3,7 +3,6 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -32,30 +31,6 @@ class SimpleListIterator extends AbstractListIterator {
     NamedResource nextValue() {
         resolveNextListNode();
         return NamedResource.create(currentNode.getURI());
-    }
-
-    /**
-     * Removes the current node without reconnecting the subsequent nodes to the previous one.
-     */
-    void removeWithoutReconnect() {
-        if (first()) {
-            throw new IllegalStateException("Cannot call remove before calling nextAxiom.");
-        }
-        if (removed) {
-            throw new IllegalStateException("Cannot call remove multiple times on one element.");
-        }
-        assert previousNode != null;
-        assert currentNode != null;
-        remove(previousNode, index == 0 ? hasList : hasNext, currentNode);
-        this.removed = true;
-    }
-
-    private void remove(Resource subject, Property property, RDFNode object) {
-        if (context != null) {
-            connector.remove(subject, property, object, context);
-        } else {
-            connector.remove(subject, property, object);
-        }
     }
 
     /**

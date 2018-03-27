@@ -9,8 +9,10 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
 class ReferencedListIterator extends AbstractListIterator {
 
@@ -60,7 +62,15 @@ class ReferencedListIterator extends AbstractListIterator {
     }
 
     @Override
-    void replace(Resource replacement) {
+    void removeWithoutReconnect() {
+        super.removeWithoutReconnect();
+        remove(currentNode, hasContent, null);
+    }
 
+    @Override
+    void replace(Resource replacement) {
+        remove(currentNode, hasContent, null);
+        final Statement toAdd = createStatement(currentNode, hasContent, replacement);
+        connector.add(Collections.singletonList(toAdd));
     }
 }

@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -100,26 +99,6 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         iterator.nextValue();
         iterator.removeWithoutReconnect();
         verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()));
-    }
-
-    @Test
-    public void removeWithoutReconnectThrowsIllegalStateExceptionWhenNextWasNotCalledBefore() {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Cannot call remove before calling nextAxiom."));
-        generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
-        iterator.removeWithoutReconnect();
-    }
-
-    @Test
-    public void removeWithoutReconnectThrowsIllegalStateExceptionWhenRemoveIsCalledTwiceOnElement() {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Cannot call remove multiple times on one element."));
-        generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
-        iterator.nextValue();
-        iterator.removeWithoutReconnect();
-        iterator.removeWithoutReconnect();
     }
 
     @Test

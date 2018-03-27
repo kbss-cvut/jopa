@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
@@ -87,5 +88,25 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
         thrown.expect(IntegrityConstraintViolatedException.class);
         thrown.expectMessage("Encountered multiple successors of list node " + RESOURCE.getURI());
         iterator.nextAxiom();
+    }
+
+    @Test
+    public void removeWithoutReconnectThrowsIllegalStateExceptionWhenNextWasNotCalledBefore() {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage(containsString("Cannot call remove before calling next."));
+        generateList();
+        final AbstractListIterator iterator = iterator();
+        iterator.removeWithoutReconnect();
+    }
+
+    @Test
+    public void removeWithoutReconnectThrowsIllegalStateExceptionWhenRemoveIsCalledTwiceOnElement() {
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage(containsString("Cannot call remove multiple times on one element."));
+        generateList();
+        final AbstractListIterator iterator = iterator();
+        iterator.nextValue();
+        iterator.removeWithoutReconnect();
+        iterator.removeWithoutReconnect();
     }
 }

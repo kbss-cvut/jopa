@@ -83,9 +83,33 @@ abstract class AbstractListIterator {
         }
     }
 
+    void remove(Resource subject, Property property, RDFNode object) {
+        if (context != null) {
+            connector.remove(subject, property, object, context);
+        } else {
+            connector.remove(subject, property, object);
+        }
+    }
+
     abstract Axiom<NamedResource> nextAxiom();
 
     abstract NamedResource nextValue();
+
+    /**
+     * Removes the current node without reconnecting the subsequent nodes to the previous one.
+     */
+    void removeWithoutReconnect() {
+        if (first()) {
+            throw new IllegalStateException("Cannot call remove before calling next.");
+        }
+        if (removed) {
+            throw new IllegalStateException("Cannot call remove multiple times on one element.");
+        }
+        assert previousNode != null;
+        assert currentNode != null;
+        remove(previousNode, index == 0 ? hasList : hasNext, currentNode);
+        this.removed = true;
+    }
 
     abstract void replace(Resource replacement);
 }

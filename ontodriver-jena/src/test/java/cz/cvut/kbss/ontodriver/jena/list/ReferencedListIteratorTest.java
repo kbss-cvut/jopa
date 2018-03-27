@@ -9,6 +9,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
@@ -18,12 +19,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
-import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedListIterator, ReferencedListDescriptor> {
@@ -112,5 +112,42 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         while (iterator.hasNext()) {
             iterator.nextAxiom();
         }
+    }
+
+    @Test
+    public void removeWithoutReconnectRemovesLastElementInList() {
+        generateList();
+        final ReferencedListIterator iterator = iterator();
+        while (iterator.hasNext()) {
+            iterator.nextAxiom();
+        }
+        iterator.removeWithoutReconnect();
+        final List<Resource> nodes = testUtil.getReferencedListNodes();
+        verify(connectorMock).remove(nodes.get(nodes.size() - 2), HAS_NEXT, nodes.get(nodes.size() - 1));
+        verify(connectorMock).remove(eq(nodes.get(nodes.size() - 1)), eq(HAS_CONTENT), any());
+    }
+
+    @Test
+    public void removeWithoutReconnectRemovesFirstElementInList() {
+        generateList();
+        final ReferencedListIterator iterator = iterator();
+        iterator.nextValue();
+        iterator.removeWithoutReconnect();
+        final List<Resource> nodes = testUtil.getReferencedListNodes();
+        verify(connectorMock).remove(RESOURCE, HAS_LIST, nodes.get(0));
+        verify(connectorMock).remove(eq(nodes.get(0)), eq(HAS_CONTENT), any());
+    }
+
+    @Test
+    public void replaceReplacesNodeContent() {
+        generateList();
+        final ReferencedListIterator iterator = iterator();
+        iterator.nextValue();
+        final Resource replacement = createResource(Generator.generateUri().toString());
+        iterator.replace(replacement);
+        final List<Resource> nodes = testUtil.getReferencedListNodes();
+        verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null);
+        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
+        verify(connectorMock).add(Collections.singletonList(added));
     }
 }

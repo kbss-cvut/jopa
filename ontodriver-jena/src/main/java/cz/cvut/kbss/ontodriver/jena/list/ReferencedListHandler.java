@@ -71,6 +71,14 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
 
     @Override
     void updateList(ReferencedListValueDescriptor descriptor) {
+        final AbstractListIterator it = new ReferencedListIterator(descriptor, connector);
+        int i = 0;
+        while (it. hasNext() && i < descriptor.getValues().size()) {
+            final NamedResource value = it.nextValue();
+            i++;
+        }
+        if (i < descriptor.getValues().size()) {
 
+        }
     }
 }
