@@ -6,9 +6,10 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
@@ -16,13 +17,30 @@ import static org.mockito.Mockito.when;
 
 public class ListTestUtil {
 
-    static List<URI> generateSimpleList(Resource owner, Property hasList, Property hasNext,
-                                        StorageConnector connectorMock) {
-        final List<URI> list = new ArrayList<>();
+    private static final int SIZE = 5;
+
+    private final Resource owner;
+    private final Property hasList;
+    private final Property hasNext;
+    private final StorageConnector connectorMock;
+
+    private Property hasContent;
+
+    ListTestUtil(Resource owner, Property hasList, Property hasNext, StorageConnector connectorMock) {
+        this.owner = owner;
+        this.hasList = hasList;
+        this.hasNext = hasNext;
+        this.connectorMock = connectorMock;
+    }
+
+    void setHasContent(Property hasContent) {
+        this.hasContent = hasContent;
+    }
+
+    List<URI> generateSimpleList() {
+        final List<URI> list = generateList();
         URI previous = null;
-        for (int i = 0; i < 5; i++) {
-            final URI node = Generator.generateUri();
-            list.add(node);
+        for (final URI node : list) {
             if (previous != null) {
                 final Resource prevResource = createResource(previous.toString());
                 when(connectorMock.find(prevResource, hasNext, null)).thenReturn(Collections
@@ -35,13 +53,14 @@ public class ListTestUtil {
         return list;
     }
 
-    static List<URI> generateSimpleList(Resource owner, Property hasList, Property hasNext,
-                                        StorageConnector connectorMock, String context) {
-        final List<URI> list = new ArrayList<>();
+    private static List<URI> generateList() {
+        return IntStream.range(0, SIZE).mapToObj(i -> Generator.generateUri()).collect(Collectors.toList());
+    }
+
+    List<URI> generateSimpleList(String context) {
+        final List<URI> list = generateList();
         URI previous = null;
-        for (int i = 0; i < 5; i++) {
-            final URI node = Generator.generateUri();
-            list.add(node);
+        for (final URI node : list) {
             if (previous != null) {
                 final Resource prevResource = createResource(previous.toString());
                 when(connectorMock.find(prevResource, hasNext, null, context)).thenReturn(Collections
@@ -51,6 +70,52 @@ public class ListTestUtil {
         }
         when(connectorMock.find(owner, hasList, null, context)).thenReturn(
                 Collections.singletonList(createStatement(owner, hasList, createResource(list.get(0).toString()))));
+        return list;
+    }
+
+    List<URI> generateReferencedList() {
+        final List<URI> list = generateList();
+        Resource firstNode = null;
+        URI previous = null;
+        for (final URI content : list) {
+            final Resource node = createResource(Generator.generateUri().toString());
+            if (previous != null) {
+                final Resource prevResource = createResource(previous.toString());
+                when(connectorMock.find(prevResource, hasNext, null)).thenReturn(Collections
+                        .singletonList(createStatement(prevResource, hasNext, node)));
+            }
+            when(connectorMock.find(node, hasContent, null)).thenReturn(
+                    Collections.singletonList(createStatement(node, hasContent, createResource(content.toString()))));
+            if (firstNode == null) {
+                firstNode = node;
+            }
+            previous = content;
+        }
+        when(connectorMock.find(owner, hasList, null))
+                .thenReturn(Collections.singletonList(createStatement(owner, hasList, firstNode)));
+        return list;
+    }
+
+    List<URI> generateReferencedList(String context) {
+        final List<URI> list = generateList();
+        Resource firstNode = null;
+        URI previous = null;
+        for (final URI content : list) {
+            final Resource node = createResource(Generator.generateUri().toString());
+            if (previous != null) {
+                final Resource prevResource = createResource(previous.toString());
+                when(connectorMock.find(prevResource, hasNext, null, context)).thenReturn(Collections
+                        .singletonList(createStatement(prevResource, hasNext, node)));
+            }
+            when(connectorMock.find(node, hasContent, null, context)).thenReturn(
+                    Collections.singletonList(createStatement(node, hasContent, createResource(content.toString()))));
+            if (firstNode == null) {
+                firstNode = node;
+            }
+            previous = content;
+        }
+        when(connectorMock.find(owner, hasList, null, context))
+                .thenReturn(Collections.singletonList(createStatement(owner, hasList, firstNode)));
         return list;
     }
 }
