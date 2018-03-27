@@ -1,8 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.list;
 
-import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.jena.exception.ListProcessingException;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -10,83 +9,29 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
-class SimpleListIterator {
+class SimpleListIterator extends AbstractListIterator {
 
-    private final StorageConnector connector;
-
-    private final Property hasList;
-    private final Property hasNext;
-
-    private final String context;
-
-    private int index;
-    private boolean removed = false;
-    private Resource previous;
-    private Resource current;
-    private Collection<Statement> cursor;
-
-    SimpleListIterator(Resource owner, Property hasList, Property hasNext, String context, StorageConnector connector) {
-        this.current = owner;
-        this.hasList = hasList;
-        this.hasNext = hasNext;
-        this.context = context;
-        this.connector = connector;
-        this.index = -1;
-        moveCursor(current);
+    SimpleListIterator(SimpleListDescriptor descriptor, StorageConnector connector) {
+        super(descriptor, connector);
     }
 
-    private void moveCursor(Resource from) {
-        if (context != null) {
-            this.cursor = connector.find(from, first() ? hasList : hasNext, null, context);
-        } else {
-            this.cursor = connector.find(from, first() ? hasList : hasNext, null);
-        }
-    }
-
-    boolean hasNext() {
-        return !cursor.isEmpty();
-    }
-
-    Axiom<NamedResource> next() {
-        final NamedResource subject = NamedResource.create(current.getURI());
+    Axiom<NamedResource> nextAxiom() {
+        final NamedResource subject = NamedResource.create(currentNode.getURI());
         final Assertion assertion = Assertion
                 .createObjectPropertyAssertion(URI.create(first() ? hasList.getURI() : hasNext.getURI()), false);
         final NamedResource value = nextValue();
         return new AxiomImpl<>(subject, assertion, new Value<>(value));
     }
 
-    private boolean first() {
-        return index == -1;
-    }
-
     NamedResource nextValue() {
-        verifySuccessorCount();
-        final RDFNode node = cursor.iterator().next().getObject();
-        if (!node.isURIResource()) {
-            throw new ListProcessingException("Expected successor of node " + current + " to be a named resource.");
-        }
-        final Resource item = node.asResource();
-        index++;
-        this.removed = false;
-        this.previous = current;
-        this.current = item;
-        final NamedResource value = NamedResource.create(item.getURI());
-        moveCursor(current);
-        return value;
-    }
-
-    private void verifySuccessorCount() {
-        if (!hasNext()) {
-            throw new NoSuchElementException("No more elements available.");
-        }
-        if (cursor.size() > 1) {
-            throw new IntegrityConstraintViolatedException(
-                    "Encountered multiple successors of list node " + current.getURI());
-        }
+        resolveNextListNode();
+        return NamedResource.create(currentNode.getURI());
     }
 
     /**
@@ -94,14 +39,14 @@ class SimpleListIterator {
      */
     void removeWithoutReconnect() {
         if (first()) {
-            throw new IllegalStateException("Cannot call remove before calling next.");
+            throw new IllegalStateException("Cannot call remove before calling nextAxiom.");
         }
         if (removed) {
             throw new IllegalStateException("Cannot call remove multiple times on one element.");
         }
-        assert previous != null;
-        assert current != null;
-        remove(previous, index == 0 ? hasList : hasNext, current);
+        assert previousNode != null;
+        assert currentNode != null;
+        remove(previousNode, index == 0 ? hasList : hasNext, currentNode);
         this.removed = true;
     }
 
@@ -122,11 +67,11 @@ class SimpleListIterator {
     void replace(Resource replacement) {
         removeWithoutReconnect();
         final List<Statement> toAdd = new ArrayList<>(2);
-        toAdd.add(createStatement(previous, index == 0 ? hasList : hasNext, replacement));
+        toAdd.add(createStatement(previousNode, index == 0 ? hasList : hasNext, replacement));
         if (hasNext()) {
             verifySuccessorCount();
             final RDFNode nextNode = cursor.iterator().next().getObject();
-            remove(current, hasNext, nextNode);
+            remove(currentNode, hasNext, nextNode);
             if (!nextNode.equals(replacement)) {
                 final Statement linkToNext = createStatement(replacement, hasNext, nextNode);
                 toAdd.add(linkToNext);
@@ -135,7 +80,7 @@ class SimpleListIterator {
                 moveCursor(replacement);
             }
         }
-        this.current = replacement;
+        this.currentNode = replacement;
         if (context != null) {
             connector.add(toAdd, context);
         } else {

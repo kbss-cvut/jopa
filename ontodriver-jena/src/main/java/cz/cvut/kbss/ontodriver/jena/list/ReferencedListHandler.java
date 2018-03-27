@@ -15,8 +15,8 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
     }
 
     @Override
-    List<Axiom<NamedResource>> loadList(ReferencedListDescriptor descriptor) {
-        return null;
+    AbstractListIterator iterator(ReferencedListDescriptor descriptor) {
+        return new ReferencedListIterator(descriptor, connector);
     }
 
     @Override

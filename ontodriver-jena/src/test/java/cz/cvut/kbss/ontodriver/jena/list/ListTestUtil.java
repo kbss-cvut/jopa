@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class ListTestUtil {
     private final StorageConnector connectorMock;
 
     private Property hasContent;
+    private List<Resource> referencedListNodes;
 
     ListTestUtil(Resource owner, Property hasList, Property hasNext, StorageConnector connectorMock) {
         this.owner = owner;
@@ -75,8 +77,9 @@ public class ListTestUtil {
 
     List<URI> generateReferencedList() {
         final List<URI> list = generateList();
+        this.referencedListNodes = new ArrayList<>(list.size());
         Resource firstNode = null;
-        URI previous = null;
+        Resource previous = null;
         for (final URI content : list) {
             final Resource node = createResource(Generator.generateUri().toString());
             if (previous != null) {
@@ -89,7 +92,8 @@ public class ListTestUtil {
             if (firstNode == null) {
                 firstNode = node;
             }
-            previous = content;
+            previous = node;
+            referencedListNodes.add(node);
         }
         when(connectorMock.find(owner, hasList, null))
                 .thenReturn(Collections.singletonList(createStatement(owner, hasList, firstNode)));
@@ -98,8 +102,9 @@ public class ListTestUtil {
 
     List<URI> generateReferencedList(String context) {
         final List<URI> list = generateList();
+        this.referencedListNodes = new ArrayList<>(list.size());
         Resource firstNode = null;
-        URI previous = null;
+        Resource previous = null;
         for (final URI content : list) {
             final Resource node = createResource(Generator.generateUri().toString());
             if (previous != null) {
@@ -112,10 +117,15 @@ public class ListTestUtil {
             if (firstNode == null) {
                 firstNode = node;
             }
-            previous = content;
+            previous = node;
+            referencedListNodes.add(node);
         }
         when(connectorMock.find(owner, hasList, null, context))
                 .thenReturn(Collections.singletonList(createStatement(owner, hasList, firstNode)));
         return list;
+    }
+
+    public List<Resource> getReferencedListNodes() {
+        return referencedListNodes;
     }
 }

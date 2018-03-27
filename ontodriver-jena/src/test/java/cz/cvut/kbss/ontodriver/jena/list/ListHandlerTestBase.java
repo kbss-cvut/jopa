@@ -21,6 +21,7 @@ import java.util.stream.IntStream;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -49,6 +50,7 @@ abstract class ListHandlerTestBase<D extends ListDescriptor, V extends ListValue
     public void loadListRetrievesAllListElements() {
         final List<URI> expected = generateList(null);
         final List<Axiom<NamedResource>> result = handler.loadList(listDescriptor());
+        assertNotNull(result);
         final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
                                        .collect(Collectors.toList());
         assertEquals(expected, actual);

@@ -1,25 +1,22 @@
 package cz.cvut.kbss.ontodriver.jena.list;
 
-import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.ListProcessingException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -27,40 +24,42 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class SimpleListIteratorTest {
-
-    private static final Resource RESOURCE = createResource(Generator.generateUri().toString());
-    private static final Property HAS_LIST = ResourceFactory.createProperty(Generator.generateUri().toString());
-    private static final Property HAS_NEXT = ResourceFactory.createProperty(Generator.generateUri().toString());
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
-    @Mock
-    private StorageConnector connectorMock;
+public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListIterator, SimpleListDescriptor> {
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        super.setUp();
     }
 
-    @Test
-    public void hasNextReturnsTrueForListHead() {
-        generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
-        assertTrue(iterator.hasNext());
+    @Override
+    SimpleListIterator iterator() {
+        return new SimpleListIterator(descriptor(null), connectorMock);
     }
 
-    private List<URI> generateList() {
-        return ListTestUtil.generateSimpleList(RESOURCE, HAS_LIST, HAS_NEXT, connectorMock);
+    @Override
+    SimpleListDescriptor descriptor(String context) {
+        final NamedResource owner = NamedResource.create(RESOURCE.getURI());
+        final Assertion hasList = Assertion.createObjectPropertyAssertion(URI.create(HAS_LIST.getURI()), false);
+        final Assertion hasNext = Assertion.createObjectPropertyAssertion(URI.create(HAS_NEXT.getURI()), false);
+        final SimpleListDescriptor descriptor = new SimpleListDescriptorImpl(owner, hasList, hasNext);
+        if (context != null) {
+            descriptor.setContext(URI.create(context));
+        }
+        return descriptor;
+    }
+
+    @Override
+    List<URI> generateList() {
+        return testUtil.generateSimpleList();
     }
 
     @Test
     public void nextReturnsFirstListElement() {
         final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final AbstractListIterator iterator = iterator();
         assertTrue(iterator.hasNext());
-        final Axiom<NamedResource> head = iterator.next();
+        final Axiom<NamedResource> head = iterator.nextAxiom();
         assertNotNull(head);
         assertEquals(NamedResource.create(RESOURCE.getURI()), head.getSubject());
         assertEquals(Assertion.createObjectPropertyAssertion(URI.create(HAS_LIST.getURI()), false),
@@ -69,60 +68,25 @@ public class SimpleListIteratorTest {
     }
 
     @Test
-    public void nextThrowsNoSuchElementWhenNoMoreElementsExist() {
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
-        assertFalse(iterator.hasNext());
-        thrown.expect(NoSuchElementException.class);
-        iterator.next();
-    }
-
-    @Test
-    public void nextAllowsToReadWholeList() {
-        final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
-        final List<URI> actual = new ArrayList<>();
-        while (iterator.hasNext()) {
-            final Axiom<NamedResource> axiom = iterator.next();
-            if (!axiom.getSubject().getIdentifier().equals(URI.create(RESOURCE.getURI()))) {
-                assertEquals(URI.create(HAS_NEXT.getURI()), axiom.getAssertion().getIdentifier());
-            }
-            actual.add(axiom.getValue().getValue().getIdentifier());
-        }
-        assertEquals(list, actual);
-    }
-
-    @Test
-    public void nextThrowsIntegrityConstraintViolationWhenMultipleNextNodesAreFound() {
-        generateList();
-        when(connectorMock.find(RESOURCE, HAS_LIST, null)).thenReturn(
-                Arrays.asList(createStatement(RESOURCE, HAS_LIST, createResource()),
-                        createStatement(RESOURCE, HAS_LIST, createResource())));
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
-        thrown.expect(IntegrityConstraintViolatedException.class);
-        thrown.expectMessage("Encountered multiple successors of list node " + RESOURCE.getURI());
-        iterator.next();
-    }
-
-    @Test
     public void nextThrowsListProcessingExceptionWhenNodeIsLiteral() {
         final List<URI> list = generateList();
         final String nodeUri = list.get(list.size() - 1).toString();
         when(connectorMock.find(createResource(nodeUri), HAS_NEXT, null)).thenReturn(
                 Collections.singletonList(createStatement(createResource(nodeUri), HAS_NEXT, createTypedLiteral(117))));
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         thrown.expect(ListProcessingException.class);
         thrown.expectMessage("Expected successor of node " + nodeUri + " to be a named resource.");
         while (iterator.hasNext()) {
-            iterator.next();
+            iterator.nextAxiom();
         }
     }
 
     @Test
     public void removeWithoutReconnectRemovesLastElementInList() {
         final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         while (iterator.hasNext()) {
-            iterator.next();
+            iterator.nextAxiom();
         }
         iterator.removeWithoutReconnect();
         verify(connectorMock).remove(createResource(list.get(list.size() - 2).toString()), HAS_NEXT,
@@ -132,7 +96,7 @@ public class SimpleListIteratorTest {
     @Test
     public void removeWithoutReconnectRemovesFirstElementInList() {
         final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         iterator.nextValue();
         iterator.removeWithoutReconnect();
         verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()));
@@ -141,9 +105,9 @@ public class SimpleListIteratorTest {
     @Test
     public void removeWithoutReconnectThrowsIllegalStateExceptionWhenNextWasNotCalledBefore() {
         thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Cannot call remove before calling next."));
+        thrown.expectMessage(containsString("Cannot call remove before calling nextAxiom."));
         generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         iterator.removeWithoutReconnect();
     }
 
@@ -152,7 +116,7 @@ public class SimpleListIteratorTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage(containsString("Cannot call remove multiple times on one element."));
         generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         iterator.nextValue();
         iterator.removeWithoutReconnect();
         iterator.removeWithoutReconnect();
@@ -161,7 +125,7 @@ public class SimpleListIteratorTest {
     @Test
     public void replaceConnectsNodeToListEnd() {
         final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         while (iterator.hasNext()) {
             iterator.nextValue();
         }
@@ -177,7 +141,7 @@ public class SimpleListIteratorTest {
     @Test
     public void replaceReplacesNodeInsideList() {
         final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         int index = Generator.randomInt(list.size() - 1);
         if (index == 0) {
             index = index + 1;
@@ -204,7 +168,7 @@ public class SimpleListIteratorTest {
     @Test
     public void replaceReplacesFirstNodeInList() {
         final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         iterator.nextValue();
         final Resource newOne = createResource(Generator.generateUri().toString());
         iterator.replace(newOne);
@@ -220,7 +184,7 @@ public class SimpleListIteratorTest {
     @Test
     public void replaceDoesNotConnectNextNodeToItselfWhenListItemIsBeingRemoved() {
         final List<URI> list = generateList();
-        final SimpleListIterator iterator = new SimpleListIterator(RESOURCE, HAS_LIST, HAS_NEXT, null, connectorMock);
+        final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         iterator.nextValue();
         iterator.nextValue();
         final Resource newOne = createResource(list.get(2).toString());

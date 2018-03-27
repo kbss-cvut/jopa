@@ -3,7 +3,6 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -23,22 +22,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    public List<Axiom<NamedResource>> loadList(SimpleListDescriptor descriptor) {
-        final List<Axiom<NamedResource>> result = new ArrayList<>();
-        final SimpleListIterator it = getListIterator(descriptor);
-        while (it.hasNext()) {
-            result.add(it.next());
-        }
-        return result;
-    }
-
-    private SimpleListIterator getListIterator(SimpleListDescriptor descriptor) {
-        final Resource owner = createResource(descriptor.getListOwner().getIdentifier().toString());
-        final Property hasList = ResourceFactory
-                .createProperty(descriptor.getListProperty().getIdentifier().toString());
-        final Property hasNext = ResourceFactory.createProperty(descriptor.getNextNode().getIdentifier().toString());
-        final String context = descriptor.getContext() != null ? descriptor.getContext().toString() : null;
-        return new SimpleListIterator(owner, hasList, hasNext, context, connector);
+    SimpleListIterator iterator(SimpleListDescriptor descriptor) {
+        return new SimpleListIterator(descriptor, connector);
     }
 
     @Override
@@ -80,7 +65,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 
     @Override
     void updateList(SimpleListValueDescriptor descriptor) {
-        final SimpleListIterator it = getListIterator(descriptor);
+        final SimpleListIterator it = iterator(descriptor);
         if (!it.hasNext() && !descriptor.getValues().isEmpty()) {
             persistList(descriptor);
         } else {
