@@ -61,10 +61,6 @@ class ReferencedListIterator extends AbstractListIterator {
         }
     }
 
-    Resource getCurrentNode() {
-        return currentNode;
-    }
-
     @Override
     void removeWithoutReconnect() {
         super.removeWithoutReconnect();

@@ -27,16 +27,12 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
     }
 
     @Override
-    void persistList(ReferencedListValueDescriptor descriptor) {
-        final List<NamedResource> values = descriptor.getValues();
-        if (values.isEmpty()) {
-            return;
-        }
-        Resource owner = createResource(descriptor.getListOwner().getIdentifier().toString());
-        appendNewNodes(descriptor, 0, owner);
+    AbstractListIterator iterator(ReferencedListValueDescriptor descriptor) {
+        return iterator((ReferencedListDescriptor) descriptor);
     }
 
-    private void appendNewNodes(ReferencedListValueDescriptor descriptor, int i, Resource lastNode) {
+    @Override
+    void appendNewNodes(ReferencedListValueDescriptor descriptor, int i, Resource lastNode) {
         assert lastNode != null;
         final List<Statement> toAdd = new ArrayList<>((descriptor.getValues().size() - i) * 2);
         final Property hasList = createProperty(descriptor.getListProperty().getIdentifier().toString());
@@ -76,31 +72,5 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
             }
         } while (!statements.isEmpty());
         return node;
-    }
-
-    @Override
-    void updateList(ReferencedListValueDescriptor descriptor) {
-        final ReferencedListIterator it = new ReferencedListIterator(descriptor, connector);
-        int i = 0;
-        Resource lastNode = createResource(descriptor.getListOwner().getIdentifier().toString());
-        while (it.hasNext() && i < descriptor.getValues().size()) {
-            final NamedResource value = it.nextValue();
-            if (!value.equals(descriptor.getValues().get(i))) {
-                it.replace(createResource(descriptor.getValues().get(i).getIdentifier().toString()));
-            }
-            lastNode = it.getCurrentNode();
-            i++;
-        }
-        removeObsoleteNodes(it);
-        if (i < descriptor.getValues().size()) {
-            appendNewNodes(descriptor, i, lastNode);
-        }
-    }
-
-    private void removeObsoleteNodes(ReferencedListIterator it) {
-        while (it.hasNext()) {
-            it.nextValue();
-            it.removeWithoutReconnect();
-        }
     }
 }

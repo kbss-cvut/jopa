@@ -27,7 +27,7 @@ abstract class AbstractListIterator {
     final String context;
 
     int index;
-    boolean removed = false;
+    private boolean removed = false;
 
     Resource previousNode;
     Resource currentNode;
@@ -94,6 +94,17 @@ abstract class AbstractListIterator {
     abstract Axiom<NamedResource> nextAxiom();
 
     abstract NamedResource nextValue();
+
+    /**
+     * Only returns current node.
+     * <p>
+     * Does not advance the iterator like {@link #nextAxiom()} and {@link #nextValue()} do.
+     *
+     * @return Current list node
+     */
+    Resource getCurrentNode() {
+        return currentNode;
+    }
 
     /**
      * Removes the current node without reconnecting the subsequent nodes to the previous one.

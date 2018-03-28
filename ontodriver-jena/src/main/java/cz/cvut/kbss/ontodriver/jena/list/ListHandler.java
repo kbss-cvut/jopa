@@ -5,9 +5,12 @@ import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import org.apache.jena.rdf.model.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 public abstract class ListHandler<D extends ListDescriptor, V extends ListValueDescriptor> {
 
@@ -28,9 +31,42 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
 
     abstract AbstractListIterator iterator(D descriptor);
 
-    abstract void persistList(V descriptor);
+    abstract AbstractListIterator iterator(V descriptor);
 
-    abstract void updateList(V descriptor);
+    void persistList(V descriptor) {
+        final List<NamedResource> values = descriptor.getValues();
+        if (values.isEmpty()) {
+            return;
+        }
+        Resource owner = createResource(descriptor.getListOwner().getIdentifier().toString());
+        appendNewNodes(descriptor, 0, owner);
+    }
+
+    abstract void appendNewNodes(V descriptor, int index, Resource lastNode);
+
+    void updateList(V descriptor) {
+        final AbstractListIterator it = iterator(descriptor);
+        int i = 0;
+        while (it.hasNext() && i < descriptor.getValues().size()) {
+            final NamedResource update = descriptor.getValues().get(i);
+            final NamedResource existing = it.nextValue();
+            if (!existing.equals(update)) {
+                it.replace(createResource(update.getIdentifier().toString()));
+            }
+            i++;
+        }
+        removeObsoleteNodes(it);
+        if (i < descriptor.getValues().size()) {
+            appendNewNodes(descriptor, i, it.getCurrentNode());
+        }
+    }
+
+    private void removeObsoleteNodes(AbstractListIterator it) {
+        while (it.hasNext()) {
+            it.nextValue();
+            it.removeWithoutReconnect();
+        }
+    }
 
     public static SimpleListHandler simpleListHandler(StorageConnector connector) {
         return new SimpleListHandler(connector);
