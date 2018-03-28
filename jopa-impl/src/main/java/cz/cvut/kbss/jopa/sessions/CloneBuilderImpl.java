@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
@@ -99,7 +100,13 @@ public class CloneBuilderImpl implements CloneBuilder {
     private void populateAttributes(Object original, Object clone, CloneConfiguration configuration) {
         final Class<?> originalClass = original.getClass();
         final EntityType<?> et = getMetamodel().entity(originalClass);
+        // Ensure the identifier is cloned before any other attributes
+        // This prevents problems where circular references between entities lead to clones being registered with null identifier
+        cloneIdentifier(original, clone, et);
         for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
+            if (fs == et.getIdentifier()) {
+                continue;   // Already cloned
+            }
             final Field f = fs.getJavaField();
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             if (origVal == null) {
@@ -136,6 +143,12 @@ public class CloneBuilderImpl implements CloneBuilder {
             }
             EntityPropertiesUtils.setFieldValue(f, clone, clonedValue);
         }
+    }
+
+    private void cloneIdentifier(Object original, Object clone, EntityType<?> et) {
+        final Identifier identifier = et.getIdentifier();
+        final Object idValue = EntityPropertiesUtils.getFieldValue(identifier.getJavaField(), original);
+        EntityPropertiesUtils.setFieldValue(identifier.getJavaField(), clone, idValue);
     }
 
     private Descriptor getFieldDescriptor(Field field, Class<?> entityClass, Descriptor entityDescriptor) {

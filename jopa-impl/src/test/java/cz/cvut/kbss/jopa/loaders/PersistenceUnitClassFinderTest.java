@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,9 +22,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PersistenceUnitClassFinderTest {
 
@@ -57,28 +55,27 @@ public class PersistenceUnitClassFinderTest {
     private PersistenceUnitClassFinder finder = new PersistenceUnitClassFinder();
 
     @Test(expected = IllegalArgumentException.class)
-    public void throwsExceptionWhenScanPackageIsNotSupplied() throws Exception {
+    public void throwsExceptionWhenScanPackageIsNotSupplied() {
         final Map<String, String> properties = Collections.emptyMap();
         finder.scanClasspath(new Configuration(properties));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void throwsExceptionWhenScanPackageIsEmpty() throws Exception {
-        final Map<String, String> properties = Collections.singletonMap(
-                JOPAPersistenceProperties.SCAN_PACKAGE, "");
+    public void throwsExceptionWhenScanPackageIsEmpty() {
+        final Map<String, String> properties = Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "");
         finder.scanClasspath(new Configuration(properties));
     }
 
     @Test
-    public void doesNotFailWhenUnknownPackageNameIsPassed() throws Exception {
-        final Map<String, String> properties = Collections.singletonMap(
-                JOPAPersistenceProperties.SCAN_PACKAGE, "com.cvut");
+    public void doesNotFailWhenUnknownPackageNameIsPassed() {
+        final Map<String, String> properties = Collections
+                .singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "com.cvut");
         finder.scanClasspath(new Configuration(properties));
         assertTrue(finder.getEntities().isEmpty());
     }
 
     @Test
-    public void loadsEntityClassesWhenCorrectPackageIsSet() throws Exception {
+    public void loadsEntityClassesWhenCorrectPackageIsSet() {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
         finder.scanClasspath(new Configuration(properties));
@@ -86,7 +83,7 @@ public class PersistenceUnitClassFinderTest {
     }
 
     @Test
-    public void loadsEntityClassesWhenAncestorPackageIsSet() throws Exception {
+    public void loadsEntityClassesWhenAncestorPackageIsSet() {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss");
         finder.scanClasspath(new Configuration(properties));
@@ -97,7 +94,7 @@ public class PersistenceUnitClassFinderTest {
      * Bug #5.
      */
     @Test
-    public void entityLoadHandlesEntityNameContainingClassStringWhenProcessingJar() throws Exception {
+    public void entityLoadHandlesEntityNameContainingClassStringWhenProcessingJar() {
         final Map<String, String> properties = Collections.singletonMap(
                 JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test.jar");
         finder.scanClasspath(new Configuration(properties));

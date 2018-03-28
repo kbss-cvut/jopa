@@ -195,8 +195,8 @@ public class BasicStorageConnectorTest {
     @Test
     public void getSnapshotResolvesImportsOfTheTransactionalSnapshot() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
-        final String importedOntoLocation = "http://onto.fel.cvut.cz/ontologies/ufo/current/ontology.xml";
-        final IRI importedOntoIri = IRI.create("http://onto.fel.cvut.cz/ontologies/ufo");
+        final String importedOntoLocation = "https://www.w3.org/TR/2003/PR-owl-guide-20031215/wine";
+        final IRI importedOntoIri = IRI.create("http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine");
         final OWLImportsDeclaration importDecl = manager.getOWLDataFactory()
                                                         .getOWLImportsDeclaration(IRI.create(importedOntoLocation));
         manager.applyChange(new AddImport(ontology, importDecl));
