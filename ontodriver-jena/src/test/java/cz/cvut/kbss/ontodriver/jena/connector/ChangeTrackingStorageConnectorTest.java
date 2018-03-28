@@ -21,6 +21,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class ChangeTrackingStorageConnectorTest {
 
@@ -30,7 +31,7 @@ public class ChangeTrackingStorageConnectorTest {
     @Before
     public void setUp() {
         final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
-        this.centralConnector = new SharedStorageConnector(configuration);
+        this.centralConnector = spy(new SharedStorageConnector(configuration));
         this.connector = new ChangeTrackingStorageConnector(centralConnector);
     }
 
@@ -333,5 +334,26 @@ public class ChangeTrackingStorageConnectorTest {
     public void unwrapPassesCallToUnderlyingSharedConnector() {
         final Dataset dataset = connector.unwrap(Dataset.class);
         assertSame(centralConnector.storage.dataset, dataset);
+    }
+
+    @Test
+    public void executeSelectQueryPassesQueryToSharedConnector() throws Exception {
+        final String query = "SELECT * WHERE { ?x ?y ?z . }";
+        connector.executeSelectQuery(query);
+        verify(centralConnector).executeSelectQuery(query);
+    }
+
+    @Test
+    public void executeAskQueryPassesQueryToSharedConnector() throws Exception {
+        final String query = "ASK WHERE { ?x a <" + Generator.generateUri() + ">. }";
+        connector.executeAskQuery(query);
+        verify(centralConnector).executeAskQuery(query);
+    }
+
+    @Test
+    public void executeUpdateQueryPassesQueryToSharedConnector() throws Exception {
+        final String query = "INSERT DATA { _:a a <" + Generator.generateUri() + "> . }";
+        connector.executeUpdate(query);
+        verify(centralConnector).executeUpdate(query);
     }
 }

@@ -3,11 +3,14 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
-import cz.cvut.kbss.ontodriver.util.Vocabulary;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,9 +22,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -268,8 +271,10 @@ public class SharedStorageConnectorTest {
         connector.begin();
         connector.remove(RESOURCE, null, null);
         connector.commit();
-        assertFalse(connector.storage.getDataset().getDefaultModel().contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
-        assertFalse(connector.storage.getDataset().getNamedModel(NAMED_GRAPH).contains(RESOURCE, RDF.type, createResource(TYPE_TWO)));
+        assertFalse(connector.storage.getDataset().getDefaultModel()
+                                     .contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
+        assertFalse(connector.storage.getDataset().getNamedModel(NAMED_GRAPH)
+                                     .contains(RESOURCE, RDF.type, createResource(TYPE_TWO)));
     }
 
     @Test
@@ -299,8 +304,10 @@ public class SharedStorageConnectorTest {
                 createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO))
         ));
         connector.commit();
-        assertFalse(connector.storage.getDataset().getDefaultModel().contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
-        assertFalse(connector.storage.getDataset().getNamedModel(NAMED_GRAPH).contains(RESOURCE, RDF.type, createResource(TYPE_TWO)));
+        assertFalse(connector.storage.getDataset().getDefaultModel()
+                                     .contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
+        assertFalse(connector.storage.getDataset().getNamedModel(NAMED_GRAPH)
+                                     .contains(RESOURCE, RDF.type, createResource(TYPE_TWO)));
     }
 
     @Test
@@ -314,7 +321,73 @@ public class SharedStorageConnectorTest {
                 createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO))
         ));
         connector.commit();
-        assertFalse(connector.storage.getDataset().getDefaultModel().contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
-        assertTrue(connector.storage.getDataset().getNamedModel(NAMED_GRAPH).contains(RESOURCE, RDF.type, createResource(TYPE_TWO)));
+        assertFalse(connector.storage.getDataset().getDefaultModel()
+                                     .contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
+        assertTrue(connector.storage.getDataset().getNamedModel(NAMED_GRAPH)
+                                    .contains(RESOURCE, RDF.type, createResource(TYPE_TWO)));
+    }
+
+    @Test
+    public void executeSelectQueryReturnsQueryResultSet() throws Exception {
+        final SharedStorageConnector connector = initConnector();
+        generateTestData(connector.storage.getDataset());
+        final String query = "SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }";
+        final ResultSet result = connector.executeSelectQuery(query);
+        assertNotNull(result);
+        assertTrue(result.hasNext());
+        assertEquals(RESOURCE, result.next().getResource("x"));
+    }
+
+    @Test
+    public void executeSelectQueryThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
+        final SharedStorageConnector connector = initConnector();
+        generateTestData(connector.storage.getDataset());
+        final String query = "SELECT * WHERE { ?x a <" + TYPE_ONE + "> ";
+        thrown.expect(JenaDriverException.class);
+        thrown.expectMessage(containsString("Execution of query " + query + " failed"));
+        connector.executeSelectQuery(query);
+    }
+
+    @Test
+    public void executeAskQueryReturnsQueryResultSet() throws Exception {
+        final SharedStorageConnector connector = initConnector();
+        generateTestData(connector.storage.getDataset());
+        final String query = "ASK WHERE { ?x a <" + TYPE_ONE + "> . }";
+        final boolean result = connector.executeAskQuery(query);
+        assertTrue(result);
+    }
+
+    @Test
+    public void executeAskQueryThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
+        final SharedStorageConnector connector = initConnector();
+        generateTestData(connector.storage.getDataset());
+        // Malformed query
+        final String query = "ASK WHERE { ?x " + TYPE_ONE + "> . }";
+        thrown.expect(JenaDriverException.class);
+        thrown.expectMessage(containsString("Execution of query " + query + " failed"));
+        connector.executeAskQuery(query);
+    }
+
+    @Test
+    public void executeUpdateUpdatesData() throws Exception {
+        final SharedStorageConnector connector = initConnector();
+        generateTestData(connector.storage.getDataset());
+        final String newType = Generator.generateUri().toString();
+        final String update = "INSERT DATA { <" + SUBJECT + "> a <" + newType + "> . }";
+        connector.executeUpdate(update);
+        final Collection<Statement> result = connector.find(RESOURCE, RDF.type, null);
+        assertTrue(result.stream().anyMatch(s -> s.getObject().asResource().getURI().equals(newType)));
+    }
+
+    @Test
+    public void executeUpdateThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
+        final SharedStorageConnector connector = initConnector();
+        generateTestData(connector.storage.getDataset());
+        final String newType = Generator.generateUri().toString();
+        // Malformed query
+        final String update = "INSERT DATA {" + SUBJECT + "> a <" + newType + "> . }";
+        thrown.expect(JenaDriverException.class);
+        thrown.expectMessage(containsString("Execution of update " + update + " failed"));
+        connector.executeUpdate(update);
     }
 }

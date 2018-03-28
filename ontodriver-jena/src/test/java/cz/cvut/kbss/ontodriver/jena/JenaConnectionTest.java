@@ -5,6 +5,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.list.JenaLists;
+import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
@@ -287,5 +288,18 @@ public class JenaConnectionTest {
     public void listsReturnsListHandler() {
         final JenaLists result = connection.lists();
         assertNotNull(result);
+    }
+
+    @Test
+    public void createStatementReturnsJenaStatement() {
+        connection.createStatement();
+        verify(adapterMock).createStatement();
+    }
+
+    @Test
+    public void createStatementThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        connection.createStatement();
     }
 }

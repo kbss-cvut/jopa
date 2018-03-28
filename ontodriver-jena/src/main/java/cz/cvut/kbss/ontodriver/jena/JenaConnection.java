@@ -8,6 +8,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.list.JenaLists;
+import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
@@ -75,8 +76,9 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public Statement createStatement() throws OntoDriverException {
-        return null;
+    public JenaStatement createStatement() {
+        ensureOpen();
+        return adapter.createStatement();
     }
 
     @Override

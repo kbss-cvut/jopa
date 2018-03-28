@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -17,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -204,5 +206,14 @@ public class JenaAdapterTest {
         assertEquals(SUBJECT_RESOURCE, result.getSubject());
         assertEquals(assertionToProperty(assertion), result.getPredicate());
         assertEquals(ResourceFactory.createResource(newValue.toString()), result.getObject());
+    }
+
+    @Test
+    public void createStatementReturnsNewJenaStatement() throws Exception {
+        final JenaStatement result = adapter.createStatement();
+        assertNotNull(result);
+        final Field execField = JenaStatement.class.getDeclaredField("executor");
+        execField.setAccessible(true);
+        assertSame(connectorMock, execField.get(result));
     }
 }

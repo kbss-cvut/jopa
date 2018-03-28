@@ -2,9 +2,10 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
-import org.apache.jena.query.ReadWrite;
+import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.system.Txn;
+import org.apache.jena.update.UpdateAction;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -139,6 +140,35 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         transaction.verifyActive();
         storage.remove(storage.getNamedGraph(context).listStatements(subject, property, object), context);
 
+    }
+
+    @Override
+    public ResultSet executeSelectQuery(String query) throws JenaDriverException {
+        try {
+            QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset());
+            return exec.execSelect();
+        } catch (RuntimeException e) {
+            throw new JenaDriverException("Execution of query " + query + " failed.", e);
+        }
+    }
+
+    @Override
+    public boolean executeAskQuery(String query) throws JenaDriverException {
+        try {
+            QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset());
+            return exec.execAsk();
+        } catch (RuntimeException e) {
+            throw new JenaDriverException("Execution of query " + query + " failed.", e);
+        }
+    }
+
+    @Override
+    public void executeUpdate(String query) throws JenaDriverException {
+        try {
+            UpdateAction.parseExecute(query, storage.getDataset());
+        } catch (RuntimeException e) {
+            throw new JenaDriverException("Execution of update " + query + " failed.", e);
+        }
     }
 
     @Override

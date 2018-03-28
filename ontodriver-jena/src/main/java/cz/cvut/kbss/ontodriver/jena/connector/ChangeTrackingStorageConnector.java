@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.*;
 
 import java.util.*;
@@ -148,6 +149,27 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     public void remove(Resource subject, Property property, RDFNode object, String context) {
         transaction.verifyActive();
         localModel.removeStatements(new ArrayList<>(find(subject, property, object, context)), context);
+    }
+
+    @Override
+    public ResultSet executeSelectQuery(String query) throws JenaDriverException {
+        Objects.requireNonNull(query);
+        // Since query results are not enhanced with transactional changes, do not require an active transaction
+        return centralConnector.executeSelectQuery(query);
+    }
+
+    @Override
+    public boolean executeAskQuery(String query) throws JenaDriverException {
+        Objects.requireNonNull(query);
+        // Since query results are not enhanced with transactional changes, do not require an active transaction
+        return centralConnector.executeAskQuery(query);
+    }
+
+    @Override
+    public void executeUpdate(String query) throws JenaDriverException {
+        Objects.requireNonNull(query);
+        // SPARQL Update queries have their own executor in Jena, so let them transcend the transactional boundaries
+        centralConnector.executeUpdate(query);
     }
 
     @Override

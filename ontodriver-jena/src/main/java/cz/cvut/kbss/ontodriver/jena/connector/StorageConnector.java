@@ -11,7 +11,7 @@ import org.apache.jena.rdf.model.Statement;
 import java.util.Collection;
 import java.util.List;
 
-public interface StorageConnector extends Closeable, Wrapper {
+public interface StorageConnector extends Closeable, Wrapper, StatementExecutor {
 
     /**
      * Begins a transaction.
