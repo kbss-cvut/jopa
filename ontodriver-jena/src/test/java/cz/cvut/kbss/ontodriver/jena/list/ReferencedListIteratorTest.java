@@ -145,9 +145,25 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         iterator.nextValue();
         final Resource replacement = createResource(Generator.generateUri().toString());
         iterator.replace(replacement);
+
         final List<Resource> nodes = testUtil.getReferencedListNodes();
         verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null);
         final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
         verify(connectorMock).add(Collections.singletonList(added));
+    }
+
+    @Test
+    public void replaceReplacesNodeContentInContext() {
+        final String context = Generator.generateUri().toString();
+        testUtil.generateReferencedList(context);
+        final ReferencedListIterator iterator = new ReferencedListIterator(descriptor(context), connectorMock);
+        iterator.nextValue();
+        final Resource replacement = createResource(Generator.generateUri().toString());
+        iterator.replace(replacement);
+
+        final List<Resource> nodes = testUtil.getReferencedListNodes();
+        verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null, context);
+        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
+        verify(connectorMock).add(Collections.singletonList(added), context);
     }
 }

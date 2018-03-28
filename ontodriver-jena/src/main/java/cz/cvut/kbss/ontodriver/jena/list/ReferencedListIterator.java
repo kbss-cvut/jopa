@@ -61,6 +61,10 @@ class ReferencedListIterator extends AbstractListIterator {
         }
     }
 
+    Resource getCurrentNode() {
+        return currentNode;
+    }
+
     @Override
     void removeWithoutReconnect() {
         super.removeWithoutReconnect();
@@ -71,6 +75,10 @@ class ReferencedListIterator extends AbstractListIterator {
     void replace(Resource replacement) {
         remove(currentNode, hasContent, null);
         final Statement toAdd = createStatement(currentNode, hasContent, replacement);
-        connector.add(Collections.singletonList(toAdd));
+        if (context != null) {
+            connector.add(Collections.singletonList(toAdd), context);
+        } else {
+            connector.add(Collections.singletonList(toAdd));
+        }
     }
 }

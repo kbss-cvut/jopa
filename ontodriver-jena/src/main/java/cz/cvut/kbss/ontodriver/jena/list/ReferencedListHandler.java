@@ -32,21 +32,21 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         if (values.isEmpty()) {
             return;
         }
+        Resource owner = createResource(descriptor.getListOwner().getIdentifier().toString());
+        appendNewNodes(descriptor, 0, owner);
+    }
+
+    private void appendNewNodes(ReferencedListValueDescriptor descriptor, int i, Resource lastNode) {
+        assert lastNode != null;
+        final List<Statement> toAdd = new ArrayList<>((descriptor.getValues().size() - i) * 2);
+        final Property hasList = createProperty(descriptor.getListProperty().getIdentifier().toString());
         final Property hasNext = createProperty(descriptor.getNextNode().getIdentifier().toString());
         final Property hasContent = createProperty(descriptor.getNodeContent().getIdentifier().toString());
         final String context = descriptor.getContext() != null ? descriptor.getContext().toString() : null;
-        Resource previous = createResource(descriptor.getListOwner().getIdentifier().toString());
-        final List<Statement> toAdd = new ArrayList<>(values.size() * 2);
-        for (int i = 0; i < values.size(); i++) {
-            final Resource node = generateNewListNode(descriptor.getListProperty().getIdentifier(), i, context);
-            if (i == 0) {
-                toAdd.add(createStatement(previous,
-                        createProperty(descriptor.getListProperty().getIdentifier().toString()), node));
-            } else {
-                toAdd.add(createStatement(previous, hasNext, node));
-            }
-            toAdd.add(createStatement(node, hasContent, createResource(values.get(i).getIdentifier().toString())));
-            previous = node;
+        for (; i < descriptor.getValues().size(); i++) {
+            lastNode =
+                    appendNode(lastNode, descriptor.getValues().get(i), i == 0 ? hasList : hasNext, hasContent, context,
+                            toAdd);
         }
         if (context != null) {
             connector.add(toAdd, context);
@@ -55,11 +55,20 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         }
     }
 
-    private Resource generateNewListNode(URI property, int index, String context) {
+    private Resource appendNode(Resource previousNode, NamedResource value, Property link, Property hasContent,
+                                String context, List<Statement> statements) {
+        final Resource node = generateNewListNode(value.getIdentifier(), context);
+        statements.add(createStatement(previousNode, link, node));
+        statements.add(createStatement(node, hasContent, createResource(value.getIdentifier().toString())));
+        return node;
+    }
+
+    private Resource generateNewListNode(URI baseUri, String context) {
         Resource node;
+        int index = 0;
         Collection<Statement> statements;
         do {
-            node = createResource(property.toString() + "-SEQ_" + index++);
+            node = createResource(baseUri.toString() + "-SEQ_" + index++);
             if (context != null) {
                 statements = connector.find(node, null, null, context);
             } else {
@@ -71,14 +80,27 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
 
     @Override
     void updateList(ReferencedListValueDescriptor descriptor) {
-        final AbstractListIterator it = new ReferencedListIterator(descriptor, connector);
+        final ReferencedListIterator it = new ReferencedListIterator(descriptor, connector);
         int i = 0;
-        while (it. hasNext() && i < descriptor.getValues().size()) {
+        Resource lastNode = createResource(descriptor.getListOwner().getIdentifier().toString());
+        while (it.hasNext() && i < descriptor.getValues().size()) {
             final NamedResource value = it.nextValue();
+            if (!value.equals(descriptor.getValues().get(i))) {
+                it.replace(createResource(descriptor.getValues().get(i).getIdentifier().toString()));
+            }
+            lastNode = it.getCurrentNode();
             i++;
         }
+        removeObsoleteNodes(it);
         if (i < descriptor.getValues().size()) {
+            appendNewNodes(descriptor, i, lastNode);
+        }
+    }
 
+    private void removeObsoleteNodes(ReferencedListIterator it) {
+        while (it.hasNext()) {
+            it.nextValue();
+            it.removeWithoutReconnect();
         }
     }
 }

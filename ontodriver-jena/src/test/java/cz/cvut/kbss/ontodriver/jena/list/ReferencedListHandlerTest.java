@@ -3,7 +3,6 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -16,15 +15,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class ReferencedListHandlerTest
@@ -70,6 +69,10 @@ public class ReferencedListHandlerTest
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture());
         final List<Statement> added = captor.getValue();
+        verifyAddedStatements(list, added);
+    }
+
+    private void verifyAddedStatements(List<URI> list, List<Statement> added) {
         for (URI value : list) {
             assertTrue(added.stream().anyMatch(s -> s.getObject().asResource().getURI().equals(value.toString()) &&
                     s.getPredicate().equals(HAS_CONTENT_PROPERTY)));
@@ -87,10 +90,7 @@ public class ReferencedListHandlerTest
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture(), eq(context.toString()));
         final List<Statement> added = captor.getValue();
-        for (URI value : list) {
-            assertTrue(added.stream().anyMatch(s -> s.getObject().asResource().getURI().equals(value.toString()) &&
-                    s.getPredicate().equals(HAS_CONTENT_PROPERTY)));
-        }
+        verifyAddedStatements(list, added);
     }
 
     @Test
@@ -114,26 +114,98 @@ public class ReferencedListHandlerTest
 
     @Test
     public void updateListRemovesRemainingExistingNodes() {
-        // TODO
+        final List<URI> list = generateList(null);
+        final ReferencedListValueDescriptor descriptor =
+                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final List<URI> update = list.subList(0, list.size() / 2);
+        update.forEach(item -> descriptor.addValue(NamedResource.create(item)));
+        handler.updateList(descriptor);
+
+        for (int i = update.size(); i < list.size(); i++) {
+            verify(connectorMock).remove(listUtil.getReferencedListNodes().get(i - 1), HAS_NEXT_PROPERTY,
+                    listUtil.getReferencedListNodes().get(i));
+            verify(connectorMock).remove(listUtil.getReferencedListNodes().get(i), HAS_CONTENT_PROPERTY, null);
+        }
     }
 
     @Test
-    public void updateReplacesModifiedNode() {
-        // TODO
+    public void updateReplacesModifiedNodeContent() {
+        final List<URI> list = generateList(null);
+        final ReferencedListValueDescriptor descriptor =
+                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final List<URI> update = new ArrayList<>(list);
+        final URI replace = Generator.generateUri();
+        final int index = Generator.randomInt(list.size());
+        update.set(index, replace);
+        update.forEach(item -> descriptor.addValue(NamedResource.create(item)));
+        handler.updateList(descriptor);
+
+        verify(connectorMock).remove(listUtil.getReferencedListNodes().get(index), HAS_CONTENT_PROPERTY, null);
+        final Statement added = createStatement(listUtil.getReferencedListNodes().get(index), HAS_CONTENT_PROPERTY,
+                createResource(replace.toString()));
+        verify(connectorMock).add(Collections.singletonList(added));
     }
 
     @Test
     public void updateClearsOriginalListWhenUpdateIsEmpty() {
-        // TODO
+        final List<URI> list = generateList(null);
+        final ReferencedListValueDescriptor descriptor =
+                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        handler.updateList(descriptor);
+
+        for (int i = 0; i < list.size(); i++) {
+            final Resource node = listUtil.getReferencedListNodes().get(i);
+            if (i == 0) {
+                verify(connectorMock).remove(createResource(OWNER.getIdentifier().toString()), HAS_LIST_PROPERTY, node);
+            } else {
+                verify(connectorMock).remove(listUtil.getReferencedListNodes().get(i - 1), HAS_NEXT_PROPERTY, node);
+            }
+            verify(connectorMock).remove(node, HAS_CONTENT_PROPERTY, null);
+        }
     }
 
     @Test
     public void updatePersistsListWhenOriginalWasEmpty() {
-        // TODO
+        final ReferencedListValueDescriptor descriptor =
+                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final List<URI> list = listUtil.generateList();
+        list.forEach(u -> descriptor.addValue(NamedResource.create(u)));
+        handler.updateList(descriptor);
+
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture());
+        final List<Statement> added = captor.getValue();
+        verifyAddedStatements(list, added);
     }
 
     @Test
     public void updateListWorksInContext() {
-        // TODO
+        final URI context = Generator.generateUri();
+        final List<URI> list = generateList(context.toString());
+        final ReferencedListValueDescriptor descriptor =
+                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        descriptor.setContext(context);
+        final URI firstReplaced = Generator.generateUri();
+        descriptor.addValue(NamedResource.create(firstReplaced));
+        list.subList(1, list.size()).forEach(item -> descriptor.addValue(NamedResource.create(item)));
+        final URI added = Generator.generateUri();
+        descriptor.addValue(NamedResource.create(added));
+        handler.updateList(descriptor);
+
+        final List<Resource> nodes = listUtil.getReferencedListNodes();
+        verify(connectorMock)
+                .remove(nodes.get(0), HAS_CONTENT_PROPERTY, null, context.toString());
+        verify(connectorMock).add(Collections.singletonList(
+                createStatement(nodes.get(0), HAS_CONTENT_PROPERTY,
+                        createResource(firstReplaced.toString()))), context.toString());
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock, times(2)).add(captor.capture(), eq(context.toString()));
+        final List<Statement> statementsInserted =
+                captor.getAllValues().get(1);    // First was the content insert in list head
+        assertEquals(nodes.get(nodes.size() - 1), statementsInserted.get(0).getSubject());
+        assertEquals(HAS_NEXT_PROPERTY, statementsInserted.get(0).getPredicate());
+        assertEquals(statementsInserted.get(0).getObject(), statementsInserted.get(1).getSubject());
+        assertEquals(HAS_CONTENT_PROPERTY, statementsInserted.get(1).getPredicate());
+        assertEquals(added.toString(), statementsInserted.get(1).getObject().asResource().getURI());
     }
 }
