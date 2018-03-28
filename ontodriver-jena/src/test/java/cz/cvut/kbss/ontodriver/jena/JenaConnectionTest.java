@@ -5,7 +5,6 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.list.JenaLists;
-import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;

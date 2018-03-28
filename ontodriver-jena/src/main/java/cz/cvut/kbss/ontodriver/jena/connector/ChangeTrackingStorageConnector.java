@@ -1,9 +1,9 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.*;
 
 import java.util.*;
@@ -159,7 +159,7 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public boolean executeAskQuery(String query) throws JenaDriverException {
+    public ResultSet executeAskQuery(String query) throws JenaDriverException {
         Objects.requireNonNull(query);
         // Since query results are not enhanced with transactional changes, do not require an active transaction
         return centralConnector.executeAskQuery(query);

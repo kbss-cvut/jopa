@@ -1,12 +1,12 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -332,10 +332,12 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final String query = "SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }";
-        final ResultSet result = connector.executeSelectQuery(query);
-        assertNotNull(result);
-        assertTrue(result.hasNext());
-        assertEquals(RESOURCE, result.next().getResource("x"));
+        try (ResultSet result = connector.executeSelectQuery(query)) {
+            assertNotNull(result);
+            assertTrue(result.hasNext());
+            result.next();
+            assertEquals(SUBJECT, result.getString("x"));
+        }
     }
 
     @Test
@@ -353,8 +355,11 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final String query = "ASK WHERE { ?x a <" + TYPE_ONE + "> . }";
-        final boolean result = connector.executeAskQuery(query);
-        assertTrue(result);
+        final ResultSet result = connector.executeAskQuery(query);
+        assertNotNull(result);
+        assertTrue(result.hasNext());
+        result.next();
+        assertTrue(result.getBoolean(0));
     }
 
     @Test

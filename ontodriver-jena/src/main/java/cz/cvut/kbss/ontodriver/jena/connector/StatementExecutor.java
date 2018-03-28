@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
-import org.apache.jena.query.ResultSet;
 
 public interface StatementExecutor {
 
@@ -21,7 +21,7 @@ public interface StatementExecutor {
      * @return ASK result
      * @throws JenaDriverException If query execution fails
      */
-    boolean executeAskQuery(String query) throws JenaDriverException;
+    ResultSet executeAskQuery(String query) throws JenaDriverException;
 
     /**
      * Executes the specified SPARQL 1.1 Update query.
