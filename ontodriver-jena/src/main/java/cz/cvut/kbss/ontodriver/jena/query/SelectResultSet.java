@@ -2,7 +2,6 @@ package cz.cvut.kbss.ontodriver.jena.query;
 
 
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
@@ -10,7 +9,11 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Observer;
 
 public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
@@ -84,6 +87,7 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     }
 
     private Literal getLiteral(String varName) throws JenaDriverException {
+        Objects.requireNonNull(varName);
         final RDFNode value = current.get(varName);
         assert value != null;
         if (!value.isLiteral()) {
@@ -93,83 +97,163 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     }
 
     @Override
-    public byte getByte(int variableIndex) throws OntoDriverException {
-        return 0;
+    public byte getByte(int variableIndex) throws JenaDriverException {
+        ensureState();
+        return getLiteral(getVariableAt(variableIndex)).getByte();
     }
 
     @Override
-    public byte getByte(String variableName) throws OntoDriverException {
-        return 0;
+    public byte getByte(String variableName) throws JenaDriverException {
+        ensureState();
+        ensureVariableExists(variableName);
+        return getLiteral(variableName).getByte();
     }
 
     @Override
-    public double getDouble(int variableIndex) throws OntoDriverException {
-        return 0;
+    public double getDouble(int variableIndex) throws JenaDriverException {
+        ensureState();
+        return getLiteral(getVariableAt(variableIndex)).getDouble();
     }
 
     @Override
-    public double getDouble(String variableName) throws OntoDriverException {
-        return 0;
+    public double getDouble(String variableName) throws JenaDriverException {
+        ensureState();
+        ensureVariableExists(variableName);
+        return getLiteral(variableName).getDouble();
     }
 
     @Override
-    public float getFloat(int variableIndex) throws OntoDriverException {
-        return 0;
+    public float getFloat(int variableIndex) throws JenaDriverException {
+        ensureState();
+        return getLiteral(getVariableAt(variableIndex)).getFloat();
     }
 
     @Override
-    public float getFloat(String variableName) throws OntoDriverException {
-        return 0;
+    public float getFloat(String variableName) throws JenaDriverException {
+        ensureState();
+        ensureVariableExists(variableName);
+        return getLiteral(variableName).getFloat();
     }
 
     @Override
-    public int getInt(int variableIndex) throws OntoDriverException {
-        return 0;
+    public int getInt(int variableIndex) throws JenaDriverException {
+        ensureState();
+        return getLiteral(getVariableAt(variableIndex)).getInt();
     }
 
     @Override
-    public int getInt(String variableName) throws OntoDriverException {
-        return 0;
+    public int getInt(String variableName) throws JenaDriverException {
+        ensureState();
+        ensureVariableExists(variableName);
+        return getLiteral(variableName).getInt();
     }
 
     @Override
-    public long getLong(int variableIndex) throws OntoDriverException {
-        return 0;
+    public long getLong(int variableIndex) throws JenaDriverException {
+        ensureState();
+        return getLiteral(getVariableAt(variableIndex)).getLong();
     }
 
     @Override
-    public long getLong(String variableName) throws OntoDriverException {
-        return 0;
+    public long getLong(String variableName) throws JenaDriverException {
+        ensureState();
+        ensureVariableExists(variableName);
+        return getLiteral(variableName).getLong();
     }
 
     @Override
-    public Object getObject(int variableIndex) throws OntoDriverException {
-        return null;
+    public Object getObject(int variableIndex) {
+        ensureState();
+        return toObject(current.get(getVariableAt(variableIndex)));
+    }
+
+    private Object toObject(RDFNode value) {
+        if (value.isLiteral()) {
+            return value.asLiteral().getValue();
+        } else {
+            assert value.isResource();
+            if (value.isURIResource()) {
+                return URI.create(value.asResource().getURI());
+            } else {
+                return value.asResource().getId().getLabelString();
+            }
+        }
     }
 
     @Override
-    public Object getObject(String variableName) throws OntoDriverException {
-        return null;
+    public Object getObject(String variableName) {
+        ensureState();
+        ensureVariableExists(variableName);
+        return toObject(current.get(Objects.requireNonNull(variableName)));
     }
 
     @Override
-    public <T> T getObject(int variableIndex, Class<T> cls) throws OntoDriverException {
-        return null;
+    public <T> T getObject(int variableIndex, Class<T> cls) throws JenaDriverException {
+        ensureState();
+        return toObject(current.get(getVariableAt(variableIndex)), cls);
+    }
+
+    private <T> T toObject(RDFNode value, Class<T> cls) throws JenaDriverException {
+        Objects.requireNonNull(cls);
+        if (cls.isAssignableFrom(value.getClass())) {
+            return cls.cast(value);
+        }
+        Object objectValue;
+        if (value.isLiteral()) {
+            objectValue = value.asLiteral().getValue();
+        } else {
+            assert value.isResource();
+            if (value.isURIResource()) {
+                objectValue = URI.create(value.asResource().getURI());
+            } else {
+                objectValue = value.asResource().getId().getLabelString();
+            }
+        }
+        if (objectValue != null && cls.isAssignableFrom(objectValue.getClass())) {
+            return cls.cast(objectValue);
+        } else {
+            return buildUsingConstructor(cls, value, objectValue);
+        }
+    }
+
+    private <T> T buildUsingConstructor(Class<T> cls, RDFNode jenaValue, Object javaValue) throws JenaDriverException {
+        final Constructor<?>[] constructors = cls.getDeclaredConstructors();
+        try {
+            for (Constructor<?> c : constructors) {
+                if (c.getParameterCount() != 1) {
+                    continue;
+                }
+                if (c.getParameterTypes()[0].isAssignableFrom(jenaValue.getClass())) {
+                    return cls.cast(c.newInstance(jenaValue));
+                }
+                if (c.getParameterTypes()[0].isAssignableFrom(javaValue.getClass())) {
+                    return cls.cast(c.newInstance(javaValue));
+                }
+            }
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new JenaDriverException("Unable to instantiate class " + cls + " with value " + jenaValue, e);
+        }
+        throw new JenaDriverException("No suitable constructor for value " + jenaValue + " found in type " + cls);
     }
 
     @Override
-    public <T> T getObject(String variableName, Class<T> cls) throws OntoDriverException {
-        return null;
+    public <T> T getObject(String variableName, Class<T> cls) throws JenaDriverException {
+        ensureState();
+        ensureVariableExists(variableName);
+        return toObject(current.get(variableName), cls);
     }
 
     @Override
-    public short getShort(int variableIndex) throws OntoDriverException {
-        return 0;
+    public short getShort(int variableIndex) throws JenaDriverException {
+        ensureState();
+        return getLiteral(getVariableAt(variableIndex)).getShort();
     }
 
     @Override
-    public short getShort(String variableName) throws OntoDriverException {
-        return 0;
+    public short getShort(String variableName) throws JenaDriverException {
+        ensureState();
+        ensureVariableExists(variableName);
+        return getLiteral(variableName).getShort();
     }
 
     @Override
@@ -240,7 +324,7 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
 
     @Override
     public void registerObserver(Observer observer) {
-
+        throw new UnsupportedOperationException("Not supported by the current version.");
     }
 
     @Override
