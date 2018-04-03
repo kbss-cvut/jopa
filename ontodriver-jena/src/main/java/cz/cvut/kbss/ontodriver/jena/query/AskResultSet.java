@@ -25,6 +25,18 @@ public class AskResultSet extends AbstractResultSet {
         return 1;
     }
 
+    @Override
+    public boolean isBound(int variableIndex) {
+        // ASK query variables are always bound
+        return true;
+    }
+
+    @Override
+    public boolean isBound(String variableName) {
+        // ASK query variables are always bound
+        return true;
+    }
+
     // We discard column index and column name, because in a boolean result, there is no such concept. Therefore,
     // the result is returned for any column index and column name.
 

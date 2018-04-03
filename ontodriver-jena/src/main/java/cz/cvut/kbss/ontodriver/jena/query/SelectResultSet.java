@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.query;
 
 
+import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
@@ -37,6 +38,19 @@ public class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
+    public boolean isBound(int variableIndex) {
+        ensureState();
+        return variableIndex >= 0 && variableIndex < jenaResult.getResultVars().size() && current
+                .get(getVariableAt(variableIndex)) != null;
+    }
+
+    @Override
+    public boolean isBound(String variableName) {
+        ensureState();
+        return jenaResult.getResultVars().contains(variableName) && current.get(variableName) != null;
+    }
+
+    @Override
     public boolean getBoolean(int variableIndex) throws JenaDriverException {
         ensureState();
         return getBoolean(getVariableAt(variableIndex));
@@ -52,12 +66,20 @@ public class SelectResultSet extends AbstractResultSet {
     private Literal getLiteral(String varName) throws JenaDriverException {
         Objects.requireNonNull(varName);
         assert current != null;
-        final RDFNode value = current.get(varName);
+        final RDFNode value = getCurrent(varName);
         assert value != null;
         if (!value.isLiteral()) {
             throw new JenaDriverException("Expected value " + value + " to be a literal.");
         }
         return current.get(varName).asLiteral();
+    }
+
+    private RDFNode getCurrent(String varName) {
+        final RDFNode value = current.get(varName);
+        if (value == null) {
+            throw new VariableNotBoundException("Variable " + varName + " is not bound in the current result row.");
+        }
+        return value;
     }
 
     @Override
@@ -129,13 +151,11 @@ public class SelectResultSet extends AbstractResultSet {
     public Object getObject(int variableIndex) {
         ensureState();
         assert current != null;
-        return toObject(current.get(getVariableAt(variableIndex)));
+        return toObject(getCurrent(getVariableAt(variableIndex)));
     }
 
     private Object toObject(RDFNode value) {
-        if (value == null) {
-            return null;
-        }
+        assert value != null;
         if (value.isLiteral()) {
             return value.asLiteral().getValue();
         } else {
@@ -153,14 +173,14 @@ public class SelectResultSet extends AbstractResultSet {
         ensureState();
         ensureVariableExists(variableName);
         assert current != null;
-        return toObject(current.get(Objects.requireNonNull(variableName)));
+        return toObject(getCurrent(Objects.requireNonNull(variableName)));
     }
 
     @Override
     public <T> T getObject(int variableIndex, Class<T> cls) throws JenaDriverException {
         ensureState();
         assert current != null;
-        return toObject(current.get(getVariableAt(variableIndex)), cls);
+        return toObject(getCurrent(getVariableAt(variableIndex)), cls);
     }
 
     private <T> T toObject(RDFNode value, Class<T> cls) throws JenaDriverException {
@@ -211,7 +231,7 @@ public class SelectResultSet extends AbstractResultSet {
         ensureState();
         ensureVariableExists(variableName);
         assert current != null;
-        return toObject(current.get(variableName), cls);
+        return toObject(getCurrent(variableName), cls);
     }
 
     @Override
@@ -245,7 +265,7 @@ public class SelectResultSet extends AbstractResultSet {
         ensureState();
         ensureVariableExists(variableName);
         assert current != null;
-        final RDFNode value = current.get(variableName);
+        final RDFNode value = getCurrent(variableName);
         if (value.isResource()) {
             return value.asResource().getURI();
         } else {

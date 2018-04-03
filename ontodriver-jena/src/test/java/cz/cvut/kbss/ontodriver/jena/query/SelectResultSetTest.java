@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.query;
 
+import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.QueryExecution;
@@ -25,11 +26,13 @@ import static org.mockito.Mockito.*;
 
 public class SelectResultSetTest {
 
-    private static final String QUERY = "SELECT * WHERE { ?x ?y ?z . }";
-
     private static final Resource SUBJECT = createResource(Generator.generateUri().toString());
     private static final Resource TYPE_ONE = createResource(Generator.generateUri().toString());
     private static final Property PROPERTY = createProperty(Generator.generateUri().toString());
+
+    private static final String QUERY = "SELECT * WHERE { ?x ?y ?z . }";
+    private static final String OPTIONAL_QUERY =
+            "SELECT ?x ?y ?z WHERE { ?x a ?y . OPTIONAL { ?x <" + PROPERTY.getURI() + "> ?z . }}";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -531,11 +534,40 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectReturnsNullForNonPresentOptionalValue() {
+    public void getObjectThrowsVariableNotBoundForNonPresentOptionalValue() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
-        this.selectResult =
-                resultFor("SELECT ?x ?y ?z WHERE { ?x a ?y . OPTIONAL { ?x <" + PROPERTY.getURI() + "> ?z . }}");
+        this.selectResult = resultFor(OPTIONAL_QUERY);
         selectResult.next();
+        thrown.expect(VariableNotBoundException.class);
+        thrown.expectMessage(containsString("not bound in the current result row"));
         assertNull(selectResult.getObject(2));
+    }
+
+    @Test
+    public void isBoundReturnsTrueForBoundVariableIndex() {
+        saveValueAndExecuteQuery(117);
+        assertTrue(selectResult.isBound(1));
+    }
+
+    @Test
+    public void isBoundReturnsFalseForUnboundVariableIndex() {
+        model.add(SUBJECT, RDF.type, TYPE_ONE);
+        this.selectResult = resultFor(OPTIONAL_QUERY);
+        selectResult.next();
+        assertFalse(selectResult.isBound(2));
+    }
+
+    @Test
+    public void isBoundReturnsTrueForBoundVariableName() {
+        saveValueAndExecuteQuery(117);
+        assertTrue(selectResult.isBound("x"));
+    }
+
+    @Test
+    public void isBoundReturnsFalseForUnboundVariableName() {
+        model.add(SUBJECT, RDF.type, TYPE_ONE);
+        this.selectResult = resultFor(OPTIONAL_QUERY);
+        selectResult.next();
+        assertFalse(selectResult.isBound("z"));
     }
 }

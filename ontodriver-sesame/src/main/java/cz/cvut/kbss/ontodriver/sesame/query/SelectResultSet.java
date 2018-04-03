@@ -75,7 +75,8 @@ public class SelectResultSet extends AbstractResultSet {
 
     @Override
     public boolean isBound(int variableIndex) {
-        return variableIndex < bindings.size() && current.getValue(bindings.get(variableIndex)) != null;
+        return variableIndex >= 0 && variableIndex < bindings.size() && current
+                .getValue(bindings.get(variableIndex)) != null;
     }
 
     @Override
