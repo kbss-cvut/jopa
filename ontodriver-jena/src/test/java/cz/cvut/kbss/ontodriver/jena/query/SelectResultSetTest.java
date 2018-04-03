@@ -529,4 +529,13 @@ public class SelectResultSetTest {
         final ResultJenaBased result = selectResult.getObject("z", ResultJenaBased.class);
         assertEquals(117, result.value);
     }
+
+    @Test
+    public void getObjectReturnsNullForNonPresentOptionalValue() {
+        model.add(SUBJECT, RDF.type, TYPE_ONE);
+        this.selectResult =
+                resultFor("SELECT ?x ?y ?z WHERE { ?x a ?y . OPTIONAL { ?x <" + PROPERTY.getURI() + "> ?z . }}");
+        selectResult.next();
+        assertNull(selectResult.getObject(2));
+    }
 }

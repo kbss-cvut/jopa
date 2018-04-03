@@ -133,6 +133,9 @@ public class SelectResultSet extends AbstractResultSet {
     }
 
     private Object toObject(RDFNode value) {
+        if (value == null) {
+            return null;
+        }
         if (value.isLiteral()) {
             return value.asLiteral().getValue();
         } else {
