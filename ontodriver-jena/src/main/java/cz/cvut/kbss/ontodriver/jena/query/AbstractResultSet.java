@@ -7,7 +7,7 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import java.util.NoSuchElementException;
 import java.util.Observer;
 
-abstract class AbstractResultSet implements ResultSet {
+public abstract class AbstractResultSet implements ResultSet {
 
     private boolean open = true;
     private int rowIndex = -1;

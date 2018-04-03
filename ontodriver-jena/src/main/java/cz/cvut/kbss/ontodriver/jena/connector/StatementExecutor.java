@@ -2,6 +2,8 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
+import org.apache.jena.query.Query;
 
 public interface StatementExecutor {
 
@@ -12,7 +14,7 @@ public interface StatementExecutor {
      * @return ARQ result set
      * @throws JenaDriverException If query execution fails
      */
-    ResultSet executeSelectQuery(String query) throws JenaDriverException;
+    AbstractResultSet executeSelectQuery(Query query) throws JenaDriverException;
 
     /**
      * Executes the specified SPARQL ASK query.
@@ -21,7 +23,7 @@ public interface StatementExecutor {
      * @return ASK result
      * @throws JenaDriverException If query execution fails
      */
-    ResultSet executeAskQuery(String query) throws JenaDriverException;
+    AbstractResultSet executeAskQuery(Query query) throws JenaDriverException;
 
     /**
      * Executes the specified SPARQL 1.1 Update query.

@@ -5,6 +5,8 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.After;
@@ -338,14 +340,14 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void executeSelectQueryPassesQueryToSharedConnector() throws Exception {
-        final String query = "SELECT * WHERE { ?x ?y ?z . }";
+        final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
         connector.executeSelectQuery(query);
         verify(centralConnector).executeSelectQuery(query);
     }
 
     @Test
     public void executeAskQueryPassesQueryToSharedConnector() throws Exception {
-        final String query = "ASK WHERE { ?x a <" + Generator.generateUri() + ">. }";
+        final Query query = QueryFactory.create("ASK WHERE { ?x a <" + Generator.generateUri() + ">. }");
         connector.executeAskQuery(query);
         verify(centralConnector).executeAskQuery(query);
     }

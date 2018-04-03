@@ -3,8 +3,10 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.AskResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.SelectResultSet;
+import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.ReadWrite;
@@ -148,7 +150,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public ResultSet executeSelectQuery(String query) throws JenaDriverException {
+    public AbstractResultSet executeSelectQuery(Query query) throws JenaDriverException {
         try {
             QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset());
             final org.apache.jena.query.ResultSet rs = exec.execSelect();
@@ -159,7 +161,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public ResultSet executeAskQuery(String query) throws JenaDriverException {
+    public AbstractResultSet executeAskQuery(Query query) throws JenaDriverException {
         try (final QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset())) {
             return new AskResultSet(exec.execAsk());
         } catch (RuntimeException e) {

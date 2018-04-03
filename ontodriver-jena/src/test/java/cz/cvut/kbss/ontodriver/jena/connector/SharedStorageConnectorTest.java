@@ -7,6 +7,8 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -26,8 +28,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class SharedStorageConnectorTest {
 
@@ -331,7 +332,7 @@ public class SharedStorageConnectorTest {
     public void executeSelectQueryReturnsQueryResultSet() throws Exception {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
-        final String query = "SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }";
+        final Query query = QueryFactory.create("SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }");
         try (ResultSet result = connector.executeSelectQuery(query)) {
             assertNotNull(result);
             assertTrue(result.hasNext());
@@ -344,9 +345,11 @@ public class SharedStorageConnectorTest {
     public void executeSelectQueryThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
-        final String query = "SELECT * WHERE { ?x a <" + TYPE_ONE + "> ";
+        final Query query = QueryFactory.create("SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }");
         thrown.expect(JenaDriverException.class);
         thrown.expectMessage(containsString("Execution of query " + query + " failed"));
+        // Causes NPX in execution
+        doReturn(null).when(connector.storage).getDataset();
         connector.executeSelectQuery(query);
     }
 
@@ -354,7 +357,7 @@ public class SharedStorageConnectorTest {
     public void executeAskQueryReturnsQueryResultSet() throws Exception {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
-        final String query = "ASK WHERE { ?x a <" + TYPE_ONE + "> . }";
+        final Query query = QueryFactory.create("ASK WHERE { ?x a <" + TYPE_ONE + "> . }");
         final ResultSet result = connector.executeAskQuery(query);
         assertNotNull(result);
         assertTrue(result.hasNext());
@@ -366,10 +369,11 @@ public class SharedStorageConnectorTest {
     public void executeAskQueryThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
-        // Malformed query
-        final String query = "ASK WHERE { ?x " + TYPE_ONE + "> . }";
+        final Query query = QueryFactory.create("ASK WHERE { ?x a <" + TYPE_ONE + "> . }");
         thrown.expect(JenaDriverException.class);
         thrown.expectMessage(containsString("Execution of query " + query + " failed"));
+        // Causes NPX in execution
+        doReturn(null).when(connector.storage).getDataset();
         connector.executeAskQuery(query);
     }
 
