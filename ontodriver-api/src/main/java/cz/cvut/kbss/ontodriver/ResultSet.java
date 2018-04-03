@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -44,6 +44,31 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      */
     int getColumnCount();
+
+    /**
+     * Checks whether a value at the specified index is bound in the current result row.
+     * <p>
+     * Note that this method will return {@code false} also in case the index is out of range of the variables known to
+     * the result set as a whole.
+     *
+     * @param variableIndex Index of the variable
+     * @return {@code true} when value is bound in the current row, {@code false} otherwise
+     * @throws IllegalStateException If called on a closed result set
+     * @throws OntoDriverException   When unable to resolve binding status
+     */
+    boolean isBound(int variableIndex) throws OntoDriverException;
+
+    /**
+     * Checks whether a value of the specified variable is bound in the current result row.
+     * <p>
+     * Note that this method will return {@code false} also in case the variable is not known to the result set at all.
+     *
+     * @param variableName Variable name
+     * @return {@code true} when value is bound in the current row, {@code false} otherwise
+     * @throws IllegalStateException If called on a closed result set
+     * @throws OntoDriverException   When unable to resolve binding status
+     */
+    boolean isBound(String variableName) throws OntoDriverException;
 
     /**
      * Move the cursor to the first row.

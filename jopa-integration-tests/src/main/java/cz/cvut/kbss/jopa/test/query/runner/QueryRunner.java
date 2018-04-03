@@ -209,7 +209,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void testSelectWithOptionalReturnsNullInUnfilledColumns() throws Exception {
+    public void selectWithOptionalReturnsNullInUnfilledColumns() {
         logger.debug("Test: select query with optional. The result should have nulls in places of empty values.");
         final String query =
                 "SELECT ?x ?s WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> ." +

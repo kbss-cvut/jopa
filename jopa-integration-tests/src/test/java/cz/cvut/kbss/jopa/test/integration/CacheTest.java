@@ -66,6 +66,7 @@ public class CacheTest extends IntegrationTestBase {
         final String query = "SELECT ?x WHERE { ?x a <" + Vocabulary.C_OWL_CLASS_A + "> . }";
         when(statementMock.executeQuery(query)).thenReturn(resultSetMock);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultSetMock.isBound(0)).thenReturn(true);
         when(resultSetMock.getString(0)).thenReturn(instanceUri.toString());
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA(instanceUri));
         final OWLClassA firstA = em.find(OWLClassA.class, instanceUri);
