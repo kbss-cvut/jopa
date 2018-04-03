@@ -59,7 +59,7 @@ public class QueryTest extends QueryRunner {
 
     @Ignore
     @Override
-    public void testSelectWithOptionalReturnsNullInUnfilledColumns() {
+    public void selectWithOptionalReturnsNullInUnfilledColumns() {
         // OWL2Query does not support OPTIONAL pattern
     }
 

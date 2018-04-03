@@ -202,7 +202,7 @@ public class QueryImpl extends AbstractQuery implements Query {
         } else {
             final Object[] row = new Object[columnCount];
             for (int i = 0; i < columnCount; i++) {
-                final Object ob = resultSet.getObject(i);
+                final Object ob = resultSet.isBound(i) ? resultSet.getObject(i) : null;
                 row[i] = ob;
             }
             return row;

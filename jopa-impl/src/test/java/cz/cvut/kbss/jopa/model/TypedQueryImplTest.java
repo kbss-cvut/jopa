@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -84,6 +84,7 @@ public class TypedQueryImplTest extends QueryTestBase {
                 .thenReturn(uris.get(0), uris.subList(1, uris.size()).toArray(new String[count]));
         when(resultSetMock.hasNext())
                 .thenReturn(hasNext.get(0), hasNext.subList(1, hasNext.size()).toArray(new Boolean[count]));
+        when(resultSetMock.isBound(0)).thenReturn(true);
         return uris;
     }
 
@@ -134,13 +135,13 @@ public class TypedQueryImplTest extends QueryTestBase {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void throwsExceptionWhenNegativeIsUsedForSetMaxResults() throws Exception {
+    public void throwsExceptionWhenNegativeIsUsedForSetMaxResults() {
         final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
         query.setMaxResults(-1).getResultList();
     }
 
     @Test(expected = NoResultException.class)
-    public void throwsNoResultExceptionWhenThereIsNoResultForGetSingle() throws Exception {
+    public void throwsNoResultExceptionWhenThereIsNoResultForGetSingle() {
         final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
         query.getSingleResult();
     }
@@ -199,6 +200,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         when(resultSetMock.hasNext()).thenReturn(true, true, false);
         final List<String> uris = Arrays.asList(Generators.createIndividualIdentifier().toString(),
                 Generators.createIndividualIdentifier().toString());
+        when(resultSetMock.isBound(0)).thenReturn(true);
         when(resultSetMock.getString(0)).thenReturn(uris.get(0), uris.get(1));
         when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
                 .thenReturn(new OWLClassA(URI.create(uris.get(0))));
@@ -261,7 +263,7 @@ public class TypedQueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetMaxResultsInvokesRollbackMarker() throws Exception {
+    public void exceptionInSetMaxResultsInvokesRollbackMarker() {
         final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_QUERY, OWLClassA.class);
         try {
             q.setMaxResults(-1);
@@ -363,6 +365,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
         final URI uri = Generators.createIndividualIdentifier();
         final OWLClassA a = Generators.generateOwlClassAInstance();
+        when(resultSetMock.isBound(0)).thenReturn(true);
         when(resultSetMock.getString(anyInt())).thenReturn(uri.toString());
         when(uowMock.readObject(eq(OWLClassA.class), eq(uri), any(Descriptor.class))).thenReturn(a);
         q.setFirstResult(2);
