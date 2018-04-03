@@ -1,17 +1,18 @@
 package cz.cvut.kbss.ontodriver.jena.query;
 
-import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
-import java.util.Observer;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 
-public class AskResultSet implements ResultSet {
+public class AskResultSet extends AbstractResultSet {
 
     private final boolean result;
 
     public AskResultSet(boolean result) {
-        this.result= result;
+        this.result = result;
     }
 
     @Override
@@ -21,171 +22,168 @@ public class AskResultSet implements ResultSet {
 
     @Override
     public int getColumnCount() {
-        return 0;
+        return 1;
+    }
+
+    // We discard column index and column name, because in a boolean result, there is no such concept. Therefore,
+    // the result is returned for any column index and column name.
+
+    @Override
+    public boolean getBoolean(int columnIndex) {
+        ensureState();
+        return result;
     }
 
     @Override
-    public void first() throws OntoDriverException {
-
+    public boolean getBoolean(String columnLabel) {
+        ensureState();
+        return result;
     }
 
     @Override
-    public boolean getBoolean(int columnIndex) throws OntoDriverException {
-        return false;
+    public byte getByte(int columnIndex) {
+        ensureState();
+        throw unsupported("byte");
+    }
+
+    private UnsupportedOperationException unsupported(String type) {
+        return new UnsupportedOperationException("ASK query results cannot return " + type + " values.");
     }
 
     @Override
-    public boolean getBoolean(String columnLabel) throws OntoDriverException {
-        return false;
+    public byte getByte(String columnLabel) {
+        ensureState();
+        throw unsupported("byte");
     }
 
     @Override
-    public byte getByte(int columnIndex) throws OntoDriverException {
-        return 0;
+    public double getDouble(int columnIndex) {
+        ensureState();
+        throw unsupported("double");
     }
 
     @Override
-    public byte getByte(String columnLabel) throws OntoDriverException {
-        return 0;
+    public double getDouble(String columnLabel) {
+        ensureState();
+        throw unsupported("double");
     }
 
     @Override
-    public double getDouble(int columnIndex) throws OntoDriverException {
-        return 0;
+    public float getFloat(int columnIndex) {
+        ensureState();
+        throw unsupported("float");
     }
 
     @Override
-    public double getDouble(String columnLabel) throws OntoDriverException {
-        return 0;
+    public float getFloat(String columnLabel) {
+        ensureState();
+        throw unsupported("float");
     }
 
     @Override
-    public float getFloat(int columnIndex) throws OntoDriverException {
-        return 0;
+    public int getInt(int columnIndex) {
+        ensureState();
+        throw unsupported("int");
     }
 
     @Override
-    public float getFloat(String columnLabel) throws OntoDriverException {
-        return 0;
+    public int getInt(String columnLabel) {
+        ensureState();
+        throw unsupported("int");
     }
 
     @Override
-    public int getInt(int columnIndex) throws OntoDriverException {
-        return 0;
+    public long getLong(int columnIndex) {
+        ensureState();
+        throw unsupported("long");
     }
 
     @Override
-    public int getInt(String columnLabel) throws OntoDriverException {
-        return 0;
+    public long getLong(String columnLabel) {
+        ensureState();
+        throw unsupported("long");
     }
 
     @Override
-    public long getLong(int columnIndex) throws OntoDriverException {
-        return 0;
+    public Object getObject(int columnIndex) {
+        ensureState();
+        return result;
     }
 
     @Override
-    public long getLong(String columnLabel) throws OntoDriverException {
-        return 0;
-    }
-
-    @Override
-    public Object getObject(int columnIndex) throws OntoDriverException {
-        return null;
-    }
-
-    @Override
-    public Object getObject(String columnLabel) throws OntoDriverException {
-        return null;
+    public Object getObject(String columnLabel) {
+        ensureState();
+        return result;
     }
 
     @Override
     public <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException {
-        return null;
+        return toObject(cls);
+    }
+
+    private <T> T toObject(Class<T> cls) throws JenaDriverException {
+        ensureState();
+        Objects.requireNonNull(cls);
+        if (cls.isAssignableFrom(Boolean.class)) {
+            return cls.cast(result);
+        }
+        if (cls.isAssignableFrom(String.class)) {
+            return cls.cast(Boolean.toString(result));
+        }
+        return buildUsingConstructor(cls);
+    }
+
+    private <T> T buildUsingConstructor(Class<T> cls) throws JenaDriverException {
+        try {
+            for (Constructor<?> c : cls.getDeclaredConstructors()) {
+                if (c.getParameterCount() != 1) {
+                    continue;
+                }
+                final Class<?> paramType = c.getParameterTypes()[0];
+                if (paramType.isAssignableFrom(Boolean.class) || paramType.isAssignableFrom(boolean.class)) {
+                    return cls.cast(c.newInstance(result));
+                } else if (paramType.isAssignableFrom(String.class)) {
+                    return cls.cast(c.newInstance(Boolean.toString(result)));
+                }
+            }
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new JenaDriverException("Unable to instantiate class " + cls + " with value " + result, e);
+        }
+        throw new JenaDriverException("No suitable constructor for value " + result + " found in type " + cls);
     }
 
     @Override
     public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException {
-        return null;
+        return toObject(cls);
     }
 
     @Override
-    public int getRowIndex() throws OntoDriverException {
-        return 0;
+    public short getShort(int columnIndex) {
+        ensureState();
+        throw unsupported("short");
     }
 
     @Override
-    public short getShort(int columnIndex) throws OntoDriverException {
-        return 0;
+    public short getShort(String columnLabel) {
+        ensureState();
+        throw unsupported("short");
     }
 
     @Override
-    public short getShort(String columnLabel) throws OntoDriverException {
-        return 0;
+    public String getString(int columnIndex) {
+        ensureState();
+        return Boolean.toString(result);
     }
 
     @Override
-    public Statement getStatement() throws OntoDriverException {
-        return null;
+    public String getString(String columnLabel) {
+        ensureState();
+        return Boolean.toString(result);
     }
 
     @Override
-    public String getString(int columnIndex) throws OntoDriverException {
-        return null;
-    }
-
-    @Override
-    public String getString(String columnLabel) throws OntoDriverException {
-        return null;
-    }
-
-    @Override
-    public boolean isFirst() throws OntoDriverException {
-        return false;
-    }
-
-    @Override
-    public boolean hasNext() throws OntoDriverException {
-        return false;
-    }
-
-    @Override
-    public void last() throws OntoDriverException {
-
-    }
-
-    @Override
-    public void next() throws OntoDriverException {
-
-    }
-
-    @Override
-    public void previous() throws OntoDriverException {
-
-    }
-
-    @Override
-    public void registerObserver(Observer observer) throws OntoDriverException {
-
-    }
-
-    @Override
-    public void relative(int rows) throws OntoDriverException {
-
-    }
-
-    @Override
-    public void setRowIndex(int rowIndex) throws OntoDriverException {
-
-    }
-
-    @Override
-    public void close() throws OntoDriverException {
-
-    }
-
-    @Override
-    public boolean isOpen() {
-        return false;
+    public boolean hasNext() {
+        ensureOpen();
+        return getRowIndex() == -1;
     }
 }

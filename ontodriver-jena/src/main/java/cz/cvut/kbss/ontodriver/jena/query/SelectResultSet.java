@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.query;
 
 
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
@@ -12,47 +11,23 @@ import org.apache.jena.rdf.model.RDFNode;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Observer;
 
-public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
-
-    private boolean open = true;
-
-    private JenaStatement statement;
+public class SelectResultSet extends AbstractResultSet {
 
     private final QueryExecution execution;
     private final ResultSet jenaResult;
     private QuerySolution current;
-    private int rowIndex = -1;
 
     public SelectResultSet(QueryExecution execution, ResultSet jenaResult) {
         this.execution = execution;
         this.jenaResult = jenaResult;
     }
 
-    void setStatement(JenaStatement statement) {
-        this.statement = statement;
-    }
-
-    @Override
-    public Statement getStatement() {
-        ensureOpen();
-        assert statement != null;
-        return statement;
-    }
-
     @Override
     public int findColumn(String variableName) {
         ensureOpen();
         return jenaResult.getResultVars().indexOf(variableName);
-    }
-
-    private void ensureOpen() {
-        if (!open) {
-            throw new IllegalStateException("This result set is closed.");
-        }
     }
 
     @Override
@@ -62,21 +37,9 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     }
 
     @Override
-    public void first() {
-        throw new UnsupportedOperationException("This result set does not support returning to the first rowIndex.");
-    }
-
-    @Override
     public boolean getBoolean(int variableIndex) throws JenaDriverException {
         ensureState();
         return getBoolean(getVariableAt(variableIndex));
-    }
-
-    private void ensureState() {
-        ensureOpen();
-        if (current == null) {
-            throw new IllegalStateException("Must call next before getting any values.");
-        }
     }
 
     @Override
@@ -88,6 +51,7 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
 
     private Literal getLiteral(String varName) throws JenaDriverException {
         Objects.requireNonNull(varName);
+        assert current != null;
         final RDFNode value = current.get(varName);
         assert value != null;
         if (!value.isLiteral()) {
@@ -164,6 +128,7 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     @Override
     public Object getObject(int variableIndex) {
         ensureState();
+        assert current != null;
         return toObject(current.get(getVariableAt(variableIndex)));
     }
 
@@ -184,12 +149,14 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     public Object getObject(String variableName) {
         ensureState();
         ensureVariableExists(variableName);
+        assert current != null;
         return toObject(current.get(Objects.requireNonNull(variableName)));
     }
 
     @Override
     public <T> T getObject(int variableIndex, Class<T> cls) throws JenaDriverException {
         ensureState();
+        assert current != null;
         return toObject(current.get(getVariableAt(variableIndex)), cls);
     }
 
@@ -240,6 +207,7 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     public <T> T getObject(String variableName, Class<T> cls) throws JenaDriverException {
         ensureState();
         ensureVariableExists(variableName);
+        assert current != null;
         return toObject(current.get(variableName), cls);
     }
 
@@ -273,6 +241,7 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     public String getString(String variableName) {
         ensureState();
         ensureVariableExists(variableName);
+        assert current != null;
         final RDFNode value = current.get(variableName);
         if (value.isResource()) {
             return value.asResource().getURI();
@@ -282,15 +251,10 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     }
 
     private void ensureVariableExists(String name) {
+        assert current != null;
         if (!current.contains(name)) {
             throw new IllegalArgumentException("Variable \'" + name + "\' not found in the result set.");
         }
-    }
-
-    @Override
-    public boolean isFirst() {
-        ensureOpen();
-        return rowIndex == 0;
     }
 
     @Override
@@ -300,67 +264,18 @@ public class SelectResultSet implements cz.cvut.kbss.ontodriver.ResultSet {
     }
 
     @Override
-    public void last() {
-        ensureOpen();
-        while (hasNext()) {
-            next();
-        }
-    }
-
-    @Override
     public void next() {
-        ensureOpen();
-        if (!hasNext()) {
-            throw new NoSuchElementException("No more rows found in this result set.");
-        }
+        super.next();
         this.current = jenaResult.next();
-        this.rowIndex++;
-    }
-
-    @Override
-    public void previous() {
-        throw new UnsupportedOperationException("Moving back is not supported by this result set.");
-    }
-
-    @Override
-    public void registerObserver(Observer observer) {
-        throw new UnsupportedOperationException("Not supported by the current version.");
-    }
-
-    @Override
-    public void relative(int rows) {
-        ensureOpen();
-        setRowIndex(rowIndex + rows);
-    }
-
-    @Override
-    public int getRowIndex() {
-        return rowIndex;
-    }
-
-    @Override
-    public void setRowIndex(int newIndex) {
-        ensureOpen();
-        if (newIndex < rowIndex) {
-            throw new UnsupportedOperationException("Moving back is not supported by this result set.");
-        }
-        while (rowIndex < newIndex) {
-            next();
-        }
     }
 
     @Override
     public void close() throws JenaDriverException {
         try {
             execution.close();
-            this.open = false;
+            super.close();
         } catch (RuntimeException e) {
             throw new JenaDriverException("Unable to close result set.", e);
         }
-    }
-
-    @Override
-    public boolean isOpen() {
-        return open;
     }
 }
