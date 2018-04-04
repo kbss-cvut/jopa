@@ -6,6 +6,8 @@ import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.rdf.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
@@ -14,6 +16,8 @@ import static cz.cvut.kbss.ontodriver.model.Assertion.createDataPropertyAssertio
 import static cz.cvut.kbss.ontodriver.model.Assertion.createObjectPropertyAssertion;
 
 class ExplicitAxiomLoader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ExplicitAxiomLoader.class);
 
     private static final Assertion UNSPECIFIED_ASSERTION = Assertion.createUnspecifiedPropertyAssertion(false);
 
@@ -49,6 +53,10 @@ class ExplicitAxiomLoader {
     private void mapProperties(AxiomDescriptor descriptor) {
         this.assertedProperties = new HashMap<>(descriptor.getAssertions().size());
         for (Assertion a : descriptor.getAssertions()) {
+            if (a.isInferred()) {
+                LOG.warn("Inference is not supported by the current version of Jena OntoDriver.");
+                continue;
+            }
             assert !a.isInferred();
             if (a.equals(UNSPECIFIED_ASSERTION)) {
                 this.unspecifiedProperty = a;
