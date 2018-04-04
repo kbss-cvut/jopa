@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
 import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.apache.jena.rdf.model.Property;
@@ -211,6 +212,15 @@ public class JenaAdapterTest {
     @Test
     public void createStatementReturnsNewJenaStatement() throws Exception {
         final JenaStatement result = adapter.createStatement();
+        assertNotNull(result);
+        final Field execField = JenaStatement.class.getDeclaredField("executor");
+        execField.setAccessible(true);
+        assertSame(connectorMock, execField.get(result));
+    }
+
+    @Test
+    public void prepareStatementReturnsNewPreparedStatement() throws Exception {
+        final JenaPreparedStatement result = adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }");
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
         execField.setAccessible(true);

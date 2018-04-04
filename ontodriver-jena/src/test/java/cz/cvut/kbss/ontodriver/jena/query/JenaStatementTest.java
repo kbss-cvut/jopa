@@ -123,4 +123,14 @@ public class JenaStatementTest {
         statement.executeUpdate(update);
         verify(rsMock).close();
     }
+
+    @Test
+    public void closeClosesCurrentResultSetAsWell() throws Exception {
+        final AskResultSet rsMock = mock(AskResultSet.class);
+        when(executor.executeAskQuery(any())).thenReturn(rsMock);
+        final String query = "ASK { ?x a <http://xmlns.com/foaf/0.1/Person> . }";
+        statement.executeQuery(query);
+        statement.close();
+        verify(rsMock).close();
+    }
 }

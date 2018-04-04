@@ -40,7 +40,7 @@ public class JenaStatement implements Statement {
         return resultSet;
     }
 
-    private void ensureOpen() {
+    void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("Statement is closed.");
         }
@@ -80,7 +80,8 @@ public class JenaStatement implements Statement {
     }
 
     @Override
-    public void close() {
+    public void close() throws JenaDriverException {
         this.open = false;
+        closeCurrentResultSet();
     }
 }

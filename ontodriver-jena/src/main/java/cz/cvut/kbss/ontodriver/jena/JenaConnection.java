@@ -81,13 +81,15 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
-        return null;
+    public PreparedStatement prepareStatement(String sparql) {
+        ensureOpen();
+        return adapter.prepareStatement(Objects.requireNonNull(sparql));
     }
 
     @Override
     public boolean isConsistent(URI context) throws OntoDriverException {
-        return false;
+        ensureOpen();
+        throw new UnsupportedOperationException("Not supported, yet.");
     }
 
     @Override

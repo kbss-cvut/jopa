@@ -301,4 +301,18 @@ public class JenaConnectionTest {
         expectClosedException();
         connection.createStatement();
     }
+
+    @Test
+    public void prepareStatementCreatesPreparedStatement() {
+        final String query = "SELECT * WHERE { ?x ?y ?z . }";
+        connection.prepareStatement(query);
+        verify(adapterMock).prepareStatement(query);
+    }
+
+    @Test
+    public void prepareStatementThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        connection.prepareStatement("SELECT * WHERE { ?x ?y ?z . }");
+    }
 }
