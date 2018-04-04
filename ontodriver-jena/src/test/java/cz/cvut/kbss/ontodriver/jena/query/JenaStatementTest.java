@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -132,5 +133,6 @@ public class JenaStatementTest {
         statement.executeQuery(query);
         statement.close();
         verify(rsMock).close();
+        assertFalse(statement.isOpen());
     }
 }

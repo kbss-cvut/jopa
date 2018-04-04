@@ -57,6 +57,7 @@ public class JenaStatement implements Statement {
     private void closeCurrentResultSet() throws JenaDriverException {
         if (currentResultSet != null) {
             currentResultSet.close();
+            this.currentResultSet = null;
         }
     }
 
@@ -83,5 +84,10 @@ public class JenaStatement implements Statement {
     public void close() throws JenaDriverException {
         this.open = false;
         closeCurrentResultSet();
+    }
+
+    @Override
+    public boolean isOpen() {
+        return open;
     }
 }

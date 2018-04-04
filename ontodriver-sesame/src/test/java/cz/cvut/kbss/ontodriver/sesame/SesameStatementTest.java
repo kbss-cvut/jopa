@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,8 +30,10 @@ import static org.mockito.Mockito.*;
 
 public class SesameStatementTest {
 
-    private static final String SELECT_ENTITY_QUERY = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
-    private static final String ASK_BOOLEAN_QUERY = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+    private static final String SELECT_ENTITY_QUERY =
+            "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+    private static final String ASK_BOOLEAN_QUERY =
+            "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
 
     @Mock
     private StatementExecutor executorMock;
@@ -39,7 +41,7 @@ public class SesameStatementTest {
     private SesameStatement statement;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.statement = new SesameStatement(executorMock);
     }
@@ -69,6 +71,7 @@ public class SesameStatementTest {
         assertTrue(rs.isOpen());
         statement.close();
         assertFalse(rs.isOpen());
+        assertFalse(statement.isOpen());
     }
 
     @Test

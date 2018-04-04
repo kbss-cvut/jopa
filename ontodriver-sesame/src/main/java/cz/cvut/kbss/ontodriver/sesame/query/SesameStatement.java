@@ -89,7 +89,12 @@ public class SesameStatement implements Statement {
     }
 
     @Override
-    public void close() throws Exception {
+    public boolean isOpen() {
+        return open;
+    }
+
+    @Override
+    public void close() throws OntoDriverException {
         if (!open) {
             return;
         }
