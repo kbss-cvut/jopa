@@ -112,7 +112,7 @@ public class OwlapiAdapterTest {
 
     private URI getOntologyUri() {
         final Optional<IRI> iri = ontology.getOntologyID().getOntologyIRI();
-        return iri.isPresent() ? iri.get().toURI() : null;
+        return iri.map(IRI::toURI).orElse(null);
     }
 
     @Test

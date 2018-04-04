@@ -83,7 +83,7 @@ class ExplicitAxiomLoader {
             }
             final Assertion a =
                     assertedProperties.containsKey(property.getURI()) ? assertedProperties.get(property.getURI()) :
-                    createAssertionForStatement(property, statement.getObject());
+                            createAssertionForStatement(property, statement.getObject());
             final Optional<Value<?>> value = resolveValue(a, statement.getObject());
             value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
         }
@@ -166,8 +166,7 @@ class ExplicitAxiomLoader {
     }
 
     private boolean assertionContextSameAsSubject(URI subjectCtx, URI assertionCtx) {
-        return assertionCtx == null && subjectCtx == null || (subjectCtx != null && assertionCtx != null && subjectCtx
-                .equals(assertionCtx));
+        return assertionCtx == null && subjectCtx == null || (subjectCtx != null && subjectCtx.equals(assertionCtx));
     }
 
     /**

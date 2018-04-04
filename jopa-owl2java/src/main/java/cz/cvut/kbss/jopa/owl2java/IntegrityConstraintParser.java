@@ -318,12 +318,12 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
         superClass.accept(icp);
 
         for (final OWLObjectProperty property : opRanges.keySet()) {
-            if (superClass.getSignature().contains(property)) {
+            if (superClass.signature().anyMatch(e -> e.equals(property))) {
                 OWLManager.getOWLDataFactory().getOWLObjectAllValuesFrom(property, opRanges.get(property)).accept(icp);
             }
         }
         for (final OWLDataProperty property : dpRanges.keySet()) {
-            if (superClass.getSignature().contains(property)) {
+            if (superClass.signature().anyMatch(e -> e.equals(property))) {
                 OWLManager.getOWLDataFactory().getOWLDataAllValuesFrom(property, dpRanges.get(property)).accept(icp);
             }
         }

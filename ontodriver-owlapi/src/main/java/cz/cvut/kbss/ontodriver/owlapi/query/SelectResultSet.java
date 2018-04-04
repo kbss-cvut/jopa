@@ -32,6 +32,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
@@ -101,7 +102,7 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void first() throws OntoDriverException {
+    public void first() {
         ensureOpen();
         this.currentIndex = -1;
         this.iterator = queryResult.iterator();
@@ -257,7 +258,7 @@ class SelectResultSet extends AbstractResultSet {
         if (owlValue instanceof OWLLiteral) {
             return OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue);
         }
-        final Set<OWLEntity> sig = owlValue.getSignature();
+        final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
         if (sig.isEmpty()) {
             return owlValue.toString();
         } else {
@@ -286,7 +287,7 @@ class SelectResultSet extends AbstractResultSet {
                 return cls.cast(ob);
             }
         } else {
-            final Set<OWLEntity> sig = owlValue.getSignature();
+            final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
             if (!sig.isEmpty()) {
                 final URI uri = URI.create(sig.iterator().next().toStringID());
                 if (cls.isAssignableFrom(uri.getClass())) {
@@ -347,7 +348,7 @@ class SelectResultSet extends AbstractResultSet {
         if (owlValue instanceof OWLLiteral) {
             return OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue).toString();
         }
-        final Set<OWLEntity> sig = owlValue.getSignature();
+        final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
         if (sig.isEmpty()) {
             return owlValue.toString();
         } else {
@@ -361,19 +362,19 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public boolean isFirst() throws OntoDriverException {
+    public boolean isFirst() {
         ensureOpen();
         return currentIndex == 0;
     }
 
     @Override
-    public boolean hasNext() throws OntoDriverException {
+    public boolean hasNext() {
         ensureOpen();
         return iterator.hasNext();
     }
 
     @Override
-    public void last() throws OntoDriverException {
+    public void last() {
         ensureOpen();
         while (hasNext()) {
             next();
@@ -381,7 +382,7 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void next() throws OntoDriverException {
+    public void next() {
         ensureOpen();
         if (!hasNext()) {
             throw new NoSuchElementException("The result set has no more rows.");
@@ -391,24 +392,24 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void previous() throws OntoDriverException {
+    public void previous() {
         ensureOpen();
         relative(-1);
     }
 
     @Override
-    public void registerObserver(Observer observer) throws OntoDriverException {
+    public void registerObserver(Observer observer) {
         // Not implemented yet
     }
 
     @Override
-    public void relative(int rows) throws OntoDriverException {
+    public void relative(int rows) {
         ensureOpen();
         setRowIndex(currentIndex + rows);
     }
 
     @Override
-    public void setRowIndex(int rowIndex) throws OntoDriverException {
+    public void setRowIndex(int rowIndex) {
         ensureOpen();
         if (rowIndex == currentIndex) {
             return;

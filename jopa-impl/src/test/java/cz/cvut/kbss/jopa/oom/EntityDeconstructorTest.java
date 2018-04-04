@@ -366,7 +366,7 @@ public class EntityDeconstructorTest {
         assertTrue(containsDPAssertion(res, OWLClassM.getDateAttributeField(), entityM.getDateAttribute(), true));
     }
 
-    private boolean containsInstanceClassAssertion(AxiomValueDescriptor descriptor, String classIri) throws Exception {
+    private boolean containsInstanceClassAssertion(AxiomValueDescriptor descriptor, String classIri) {
         final List<Value<?>> values = descriptor.getAssertionValues(Assertion.createClassAssertion(false));
         assertEquals(1, values.size());
         return values.get(0).getValue().toString().equals(classIri);

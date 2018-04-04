@@ -14,6 +14,9 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
@@ -25,7 +28,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 
-abstract class ListHandlerWithStorageTestBase {
+abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extends ListValueDescriptor> {
 
     static NamedResource OWNER = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#EntityC");
@@ -37,14 +40,15 @@ abstract class ListHandlerWithStorageTestBase {
 
     protected Connector connector;
 
+    protected ListHandler<D, V> handler;
+
     @After
     public void tearDown() throws Exception {
         connector.close();
         repositoryProvider.close();
     }
 
-    void verifyListContent(Collection<Axiom<NamedResource>> expected, Collection<Axiom<NamedResource>> actual)
-            throws Exception {
+    void verifyListContent(Collection<Axiom<NamedResource>> expected, Collection<Axiom<NamedResource>> actual) {
         assertEquals(expected.size(), actual.size());
         // This is more explicit on failure than just containsAll
         final Iterator<Axiom<NamedResource>> itExp = expected.iterator();
@@ -53,4 +57,14 @@ abstract class ListHandlerWithStorageTestBase {
             assertEquals(itExp.next(), itAct.next());
         }
     }
+
+    void updateAndCheck(V descriptor) throws Exception {
+        final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
+        handler.updateList(descriptor);
+        connector.commit();
+        connector.begin();
+        verifyListContent(axioms, handler.loadList((D) descriptor));
+    }
+
+    abstract Collection<Axiom<NamedResource>> generateAxiomsForList(V listDescriptor);
 }

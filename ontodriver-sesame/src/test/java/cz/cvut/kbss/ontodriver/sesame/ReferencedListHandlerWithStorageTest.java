@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
@@ -26,12 +27,11 @@ import java.util.Collection;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorageTestBase {
+public class ReferencedListHandlerWithStorageTest
+        extends ListHandlerWithStorageTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
-    private static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
-
-
-    private ReferencedListHandler handler;
+    private static final String NODE_CONTENT_PROPERTY =
+            "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
 
     @Before
     public void setUp() throws Exception {
@@ -63,7 +63,8 @@ public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorage
         return desc;
     }
 
-    private Collection<Axiom<NamedResource>> generateAxiomsForList(ReferencedListValueDescriptor listDescriptor) {
+    @Override
+    Collection<Axiom<NamedResource>> generateAxiomsForList(ReferencedListValueDescriptor listDescriptor) {
         final Collection<Axiom<NamedResource>> axioms = new ArrayList<>(listDescriptor.getValues().size());
         if (listDescriptor.getValues().isEmpty()) {
             return axioms;
@@ -135,14 +136,6 @@ public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorage
                     .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Appended_" + i));
         }
         updateAndCheck(updated);
-    }
-
-    private void updateAndCheck(ReferencedListValueDescriptor descriptor) throws Exception {
-        final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
-        handler.updateList(descriptor);
-        connector.commit();
-        connector.begin();
-        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test
