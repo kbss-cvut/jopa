@@ -25,12 +25,12 @@ import static org.junit.Assert.*;
 public class StatementHolderTest {
 
     @Test(expected = NullPointerException.class)
-    public void constructorThrowsExceptionForNullStatement() throws Exception {
+    public void constructorThrowsExceptionForNullStatement() {
         new StatementHolder(null);
     }
 
     @Test
-    public void analyzingStatementWithoutParametersDoesNothing() throws Exception {
+    public void analyzingStatementWithoutParametersDoesNothing() {
         final String query = "SELECT nothing WHERE { <http://subject> <http://property> <http://subject> . }";
         final StatementHolder statementHolder = new StatementHolder(query);
         statementHolder.analyzeStatement();
@@ -50,7 +50,21 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void testAssembleSimpleQueryWithTwoParams() throws Exception {
+    public void analyzeQueryHandlesParameterFollowedImmediatelyByFullStop() throws Exception {
+        final String query = "SELECT * WHERE { ?x ?y ?z. }";
+        final StatementHolder holder = new StatementHolder(query);
+        holder.analyzeStatement();
+        assertEquals(query, holder.assembleStatement());
+        final Field paramNamesField = StatementHolder.class.getDeclaredField("paramNames");
+        paramNamesField.setAccessible(true);
+        final List<String> paramNames = (List<String>) paramNamesField.get(holder);
+        assertTrue(paramNames.contains("x"));
+        assertTrue(paramNames.contains("y"));
+        assertTrue(paramNames.contains("z"));
+    }
+
+    @Test
+    public void testAssembleSimpleQueryWithTwoParams() {
         final String query = "SELECT ?x WHERE { ?x <http://property> ?y . }";
         final String expected = "SELECT ?x WHERE { ?x <http://property> 'Bill' . }";
         final StatementHolder holder = new StatementHolder(query);
@@ -60,7 +74,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void testQueryWithNewlines() throws Exception {
+    public void testQueryWithNewlines() {
         final String query = "WITH <urn:sparql:tests:update:insert:delete:with>"
                 + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }"
                 + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> 'William' } WHERE\n"
@@ -76,7 +90,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void testQueryWithDoubleQuotes() throws Exception {
+    public void testQueryWithDoubleQuotes() {
         final String query = "WITH <urn:sparql:tests:update:insert:delete:with>"
                 + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }"
                 + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> \"William\" } WHERE\n"
@@ -111,14 +125,14 @@ public class StatementHolderTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void throwsExceptionWhenTryingToSetParameterOnStatementNotAnalysed() throws Exception {
+    public void throwsExceptionWhenTryingToSetParameterOnStatementNotAnalysed() {
         final String query = "SELECT ?x ?y WHERE { ?x <http://property> ?y . }";
         final StatementHolder holder = new StatementHolder(query);
         holder.setParameter("x", "'hey'");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void setUnknownParameterValueThrowsException() throws Exception {
+    public void setUnknownParameterValueThrowsException() {
         final String query = "SELECT ?x ?y WHERE { ?x <http://property> ?y . }";
         final StatementHolder holder = new StatementHolder(query);
         holder.analyzeStatement();
