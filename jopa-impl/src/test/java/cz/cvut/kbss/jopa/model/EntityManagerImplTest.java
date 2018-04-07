@@ -512,4 +512,12 @@ public class EntityManagerImplTest {
         final OWLClassK found = em.find(OWLClassK.class, inst.getUri());
         assertTrue(em.isLoaded(found, OWLClassK.getOwlClassEField().getName()));
     }
+
+    @Test
+    public void mergeOfAlreadyPersistedReturnsSameInstance() {
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        em.persist(a);
+        final OWLClassA result = em.merge(a);
+        assertSame(a, result);
+    }
 }
