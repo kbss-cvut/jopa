@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.query;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Query;
@@ -12,8 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -36,37 +36,37 @@ public class JenaStatementTest {
     @Test
     public void executeQueryExecutesSelect() throws JenaDriverException {
         final SelectResultSet rsMock = mock(SelectResultSet.class);
-        when(executor.executeSelectQuery(any())).thenReturn(rsMock);
+        when(executor.executeSelectQuery(any(), any())).thenReturn(rsMock);
         final String query = "SELECT * WHERE { ?x ?y ?z .}";
         final ResultSet rs = statement.executeQuery(query);
-        verify(executor).executeSelectQuery(any(Query.class));
+        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.CENTRAL));
         assertSame(rsMock, rs);
     }
 
     @Test
     public void executeQueryExecutesAsk() throws JenaDriverException {
         final AskResultSet rsMock = mock(AskResultSet.class);
-        when(executor.executeAskQuery(any())).thenReturn(rsMock);
+        when(executor.executeAskQuery(any(), any())).thenReturn(rsMock);
         final String query = "ASK { ?x a <http://xmlns.com/foaf/0.1/Person> . }";
         final ResultSet rs = statement.executeQuery(query);
-        verify(executor).executeAskQuery(any(Query.class));
+        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.CENTRAL));
         assertSame(rsMock, rs);
     }
 
     @Test
     public void executeQueryExecutesAskWhenPrefixesAreDeclared() throws JenaDriverException {
         final AskResultSet rsMock = mock(AskResultSet.class);
-        when(executor.executeAskQuery(any())).thenReturn(rsMock);
+        when(executor.executeAskQuery(any(), any())).thenReturn(rsMock);
         final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
                 "ASK { ?x a foaf:Person . }";
         statement.executeQuery(query);
-        verify(executor).executeAskQuery(any(Query.class));
+        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.CENTRAL));
     }
 
     @Test
     public void executeQuerySetsStatementOnResultSet() throws JenaDriverException {
         final SelectResultSet rsMock = mock(SelectResultSet.class);
-        when(executor.executeSelectQuery(any())).thenReturn(rsMock);
+        when(executor.executeSelectQuery(any(), any())).thenReturn(rsMock);
         final String query = "SELECT * WHERE { ?x ?y ?z .}";
         final AbstractResultSet rs = (AbstractResultSet) statement.executeQuery(query);
         verify(rs).setStatement(statement);
@@ -91,7 +91,7 @@ public class JenaStatementTest {
     @Test
     public void executeQueryClosesCurrentResultSet() throws JenaDriverException {
         final SelectResultSet rsMock = mock(SelectResultSet.class);
-        when(executor.executeSelectQuery(any())).thenReturn(rsMock);
+        when(executor.executeSelectQuery(any(), any())).thenReturn(rsMock);
         final String query = "SELECT * WHERE { ?x ?y ?z .}";
         final AbstractResultSet rs = (AbstractResultSet) statement.executeQuery(query);
         assertSame(rsMock, rs);
@@ -103,7 +103,7 @@ public class JenaStatementTest {
     public void executeUpdateExecutesUpdateQuery() throws JenaDriverException {
         final String query = "INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }";
         statement.executeUpdate(query);
-        verify(executor).executeUpdate(query);
+        verify(executor).executeUpdate(query, Statement.StatementOntology.CENTRAL);
     }
 
     @Test
@@ -117,7 +117,7 @@ public class JenaStatementTest {
     @Test
     public void executeUpdateClosesExistingResultSet() throws JenaDriverException {
         final AskResultSet rsMock = mock(AskResultSet.class);
-        when(executor.executeAskQuery(any())).thenReturn(rsMock);
+        when(executor.executeAskQuery(any(), any())).thenReturn(rsMock);
         final String query = "ASK { ?x a <http://xmlns.com/foaf/0.1/Person> . }";
         statement.executeQuery(query);
         final String update = "INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }";
@@ -128,11 +128,23 @@ public class JenaStatementTest {
     @Test
     public void closeClosesCurrentResultSetAsWell() throws Exception {
         final AskResultSet rsMock = mock(AskResultSet.class);
-        when(executor.executeAskQuery(any())).thenReturn(rsMock);
+        when(executor.executeAskQuery(any(), any())).thenReturn(rsMock);
         final String query = "ASK { ?x a <http://xmlns.com/foaf/0.1/Person> . }";
         statement.executeQuery(query);
         statement.close();
         verify(rsMock).close();
         assertFalse(statement.isOpen());
+    }
+
+    @Test
+    public void settingTargetOntologyIsReflectedInQueryExecutionParameter() throws Exception {
+        final SelectResultSet rsMock = mock(SelectResultSet.class);
+        when(executor.executeSelectQuery(any(), any())).thenReturn(rsMock);
+        final String query = "SELECT * WHERE { ?x ?y ?z .}";
+        statement.useOntology(Statement.StatementOntology.TRANSACTIONAL);
+        assertEquals(Statement.StatementOntology.TRANSACTIONAL, statement.getStatementOntology());
+        final ResultSet rs = statement.executeQuery(query);
+        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.TRANSACTIONAL));
+        assertSame(rsMock, rs);
     }
 }

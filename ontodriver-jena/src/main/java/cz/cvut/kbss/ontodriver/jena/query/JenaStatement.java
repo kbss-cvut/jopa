@@ -14,7 +14,6 @@ public class JenaStatement implements Statement {
 
     private final StatementExecutor executor;
 
-    // We are not using the target ontology setting at the moment
     private StatementOntology targetOntology = StatementOntology.CENTRAL;
     private boolean open = true;
 
@@ -31,9 +30,9 @@ public class JenaStatement implements Statement {
         closeCurrentResultSet();
         final AbstractResultSet resultSet;
         if (query.isAskType()) {
-            resultSet = executor.executeAskQuery(query);
+            resultSet = executor.executeAskQuery(query, targetOntology);
         } else {
-            resultSet = executor.executeSelectQuery(query);
+            resultSet = executor.executeSelectQuery(query, targetOntology);
         }
         resultSet.setStatement(this);
         this.currentResultSet = resultSet;
@@ -66,7 +65,7 @@ public class JenaStatement implements Statement {
         ensureOpen();
         Objects.requireNonNull(sparql);
         closeCurrentResultSet();
-        executor.executeUpdate(sparql);
+        executor.executeUpdate(sparql, targetOntology);
     }
 
     @Override

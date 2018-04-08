@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
@@ -48,12 +49,16 @@ public class SharedStorageConnector extends AbstractStorageConnector {
 
     @Override
     public synchronized void commit() throws JenaDriverException {
-        ensureOpen();
-        transaction.verifyActive();
+        ensureTransactionalState();
         transaction.commit();
         storage.writeChanges();
         storage.commit();
         transaction.afterCommit();
+    }
+
+    void ensureTransactionalState() {
+        ensureOpen();
+        transaction.verifyActive();
     }
 
     @Override
@@ -107,49 +112,44 @@ public class SharedStorageConnector extends AbstractStorageConnector {
 
     @Override
     public void add(List<Statement> statements) {
-        ensureOpen();
-        transaction.verifyActive();
+        ensureTransactionalState();
         storage.add(statements);
     }
 
     @Override
     public void add(List<Statement> statements, String context) {
-        ensureOpen();
-        transaction.verifyActive();
+        ensureTransactionalState();
         storage.add(statements, context);
     }
 
     @Override
     public void remove(List<Statement> statements) {
-        ensureOpen();
-        transaction.verifyActive();
+        ensureTransactionalState();
         storage.remove(statements);
     }
 
     @Override
     public void remove(List<Statement> statements, String context) {
-        ensureOpen();
-        transaction.verifyActive();
+        ensureTransactionalState();
         storage.remove(statements, context);
     }
 
     @Override
     public void remove(Resource subject, Property property, RDFNode object) {
-        ensureOpen();
-        transaction.verifyActive();
+        ensureTransactionalState();
         storage.remove(storage.getDefaultGraph().listStatements(subject, property, object));
     }
 
     @Override
     public void remove(Resource subject, Property property, RDFNode object, String context) {
-        ensureOpen();
-        transaction.verifyActive();
+        ensureTransactionalState();
         storage.remove(storage.getNamedGraph(context).listStatements(subject, property, object), context);
 
     }
 
     @Override
-    public AbstractResultSet executeSelectQuery(Query query) throws JenaDriverException {
+    public AbstractResultSet executeSelectQuery(Query query, StatementOntology target) throws JenaDriverException {
+        ensureOpen();
         try {
             QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset());
             final org.apache.jena.query.ResultSet rs = exec.execSelect();
@@ -160,7 +160,8 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public AbstractResultSet executeAskQuery(Query query) throws JenaDriverException {
+    public AbstractResultSet executeAskQuery(Query query, StatementOntology target) throws JenaDriverException {
+        ensureOpen();
         try (final QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset())) {
             return new AskResultSet(exec.execAsk());
         } catch (RuntimeException e) {
@@ -169,7 +170,8 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public void executeUpdate(String query) throws JenaDriverException {
+    public void executeUpdate(String query, StatementOntology target) throws JenaDriverException {
+        ensureOpen();
         try {
             UpdateAction.parseExecute(query, storage.getDataset());
         } catch (RuntimeException e) {
@@ -179,6 +181,9 @@ public class SharedStorageConnector extends AbstractStorageConnector {
 
     @Override
     public synchronized void close() {
+        if (!isOpen()) {
+            return;
+        }
         storage.close();
         super.close();
     }

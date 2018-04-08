@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
@@ -21,9 +22,7 @@ import java.util.List;
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class ChangeTrackingStorageConnectorTest {
 
@@ -201,7 +200,8 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void removeAddsStatementsMatchingRemovalCriteriaToLocalModelForRemoval() throws Exception {
-        final Statement existing = createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
+        final Statement existing =
+                createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
         centralConnector.begin();
         centralConnector.add(Collections.singletonList(existing));
         centralConnector.commit();
@@ -214,7 +214,8 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void removeRemovesLocallyAddedStatements() throws Exception {
-        final Statement added = createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
+        final Statement added =
+                createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
 
         connector.begin();
         assertTrue(getLocalModel().getRemoved().isEmpty());
@@ -226,7 +227,8 @@ public class ChangeTrackingStorageConnectorTest {
 
     @Test
     public void removeAddsStatementsMatchingRemovalCriteriaToLocalModelContext() throws Exception {
-        final Statement existing = createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
+        final Statement existing =
+                createStatement(RESOURCE, createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_ONE));
         centralConnector.begin();
         centralConnector.add(Collections.singletonList(existing), NAMED_GRAPH);
         centralConnector.commit();
@@ -341,21 +343,21 @@ public class ChangeTrackingStorageConnectorTest {
     @Test
     public void executeSelectQueryPassesQueryToSharedConnector() throws Exception {
         final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
-        connector.executeSelectQuery(query);
-        verify(centralConnector).executeSelectQuery(query);
+        connector.executeSelectQuery(query, StatementOntology.CENTRAL);
+        verify(centralConnector).executeSelectQuery(query, StatementOntology.CENTRAL);
     }
 
     @Test
     public void executeAskQueryPassesQueryToSharedConnector() throws Exception {
         final Query query = QueryFactory.create("ASK WHERE { ?x a <" + Generator.generateUri() + ">. }");
-        connector.executeAskQuery(query);
-        verify(centralConnector).executeAskQuery(query);
+        connector.executeAskQuery(query, StatementOntology.CENTRAL);
+        verify(centralConnector).executeAskQuery(query, StatementOntology.CENTRAL);
     }
 
     @Test
     public void executeUpdateQueryPassesQueryToSharedConnector() throws Exception {
         final String query = "INSERT DATA { _:a a <" + Generator.generateUri() + "> . }";
-        connector.executeUpdate(query);
-        verify(centralConnector).executeUpdate(query);
+        connector.executeUpdate(query, StatementOntology.CENTRAL);
+        verify(centralConnector).executeUpdate(query, StatementOntology.CENTRAL);
     }
 }

@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.query;
 
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.StatementHolder;
@@ -17,6 +18,7 @@ import java.lang.reflect.Field;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,8 +40,8 @@ public class JenaPreparedStatementTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(executor.executeSelectQuery(any())).thenReturn(resultSet);
-        when(executor.executeAskQuery(any())).thenReturn(resultSet);
+        when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
+        when(executor.executeAskQuery(any(), any())).thenReturn(resultSet);
     }
 
     @Test
@@ -88,7 +90,8 @@ public class JenaPreparedStatementTest {
         statement.setObject("y", value);
         final String expected = QUERY.replace("?y", value);
         statement.executeQuery();
-        verify(executor).executeSelectQuery(QueryFactory.create(expected));
+        verify(executor)
+                .executeSelectQuery(eq(QueryFactory.create(expected)), eq(Statement.StatementOntology.CENTRAL));
     }
 
     @Test
@@ -108,7 +111,7 @@ public class JenaPreparedStatementTest {
         statement.setObject("type", value);
         final String expected = update.replace("?type", value);
         statement.executeUpdate();
-        verify(executor).executeUpdate(expected);
+        verify(executor).executeUpdate(eq(expected), eq(Statement.StatementOntology.CENTRAL));
     }
 
     @Test
@@ -128,7 +131,8 @@ public class JenaPreparedStatementTest {
         statement.setObject("y", value);
         statement.clearParameters();
         statement.executeQuery();
-        verify(executor).executeSelectQuery(QueryFactory.create(QUERY));
+        verify(executor)
+                .executeSelectQuery(eq(QueryFactory.create(QUERY)), eq(Statement.StatementOntology.CENTRAL));
     }
 
     @Test

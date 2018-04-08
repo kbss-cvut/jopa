@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
@@ -154,24 +155,24 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public AbstractResultSet executeSelectQuery(Query query) throws JenaDriverException {
+    public AbstractResultSet executeSelectQuery(Query query, StatementOntology target) throws JenaDriverException {
         Objects.requireNonNull(query);
         // Since query results are not enhanced with transactional changes, do not require an active transaction
-        return centralConnector.executeSelectQuery(query);
+        return centralConnector.executeSelectQuery(query, target);
     }
 
     @Override
-    public AbstractResultSet executeAskQuery(Query query) throws JenaDriverException {
+    public AbstractResultSet executeAskQuery(Query query, StatementOntology target) throws JenaDriverException {
         Objects.requireNonNull(query);
         // Since query results are not enhanced with transactional changes, do not require an active transaction
-        return centralConnector.executeAskQuery(query);
+        return centralConnector.executeAskQuery(query, target);
     }
 
     @Override
-    public void executeUpdate(String query) throws JenaDriverException {
+    public void executeUpdate(String query, StatementOntology target) throws JenaDriverException {
         Objects.requireNonNull(query);
         // SPARQL Update queries have their own executor in Jena, so let them transcend the transactional boundaries
-        centralConnector.executeUpdate(query);
+        centralConnector.executeUpdate(query, target);
     }
 
     @Override

@@ -1,9 +1,14 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
 import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
@@ -288,5 +293,86 @@ public class SnapshotStorageConnectorTest {
         verify(centralConnector).add(Collections.singletonList(added), context);
         verify(centralConnector).commit();
         assertFalse(connector.transaction.isActive());
+    }
+
+    @Test
+    public void executeSelectQueryUsesTransactionalSnapshotToRunQuery() throws OntoDriverException {
+        connector.begin();
+        final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
+        connector.add(Collections.singletonList(added));
+        final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
+        try (final AbstractResultSet resultSet = connector.executeSelectQuery(query, StatementOntology.TRANSACTIONAL)) {
+            assertTrue(resultSet.hasNext());
+            resultSet.next();
+            final String x = resultSet.getString(0);
+            assertEquals(SUBJECT, x);
+        }
+        verify(centralConnector, never()).executeSelectQuery(eq(query), any());
+    }
+
+    @Test
+    public void executeSelectQueryPassesQueryToCentralConnectorWhenConfigured() throws OntoDriverException {
+        connector.begin();
+        final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
+        final AbstractResultSet resultSet = connector.executeSelectQuery(query, StatementOntology.CENTRAL);
+        resultSet.close();
+        verify(centralConnector).executeSelectQuery(query, StatementOntology.CENTRAL);
+    }
+
+    @Test
+    public void executeAskQueryUsesTransactionalSnapshotToRunQuery() throws OntoDriverException {
+        connector.begin();
+        final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
+        connector.add(Collections.singletonList(added));
+        final Query query = QueryFactory.create("ASK { <" + SUBJECT + "> ?y ?z . }");
+        try (final AbstractResultSet resultSet = connector.executeAskQuery(query, StatementOntology.TRANSACTIONAL)) {
+            assertTrue(resultSet.hasNext());
+            resultSet.next();
+            assertTrue(resultSet.getBoolean(0));
+        }
+        verify(centralConnector, never()).executeAskQuery(eq(query), any());
+    }
+
+    @Test
+    public void executeAskQueryPassesQueryToCentralConnectorWhenConfigured() throws OntoDriverException {
+        connector.begin();
+        final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
+        connector.add(Collections.singletonList(added));
+        final Query query = QueryFactory.create("ASK { <" + SUBJECT + "> ?y ?z . }");
+        try (final AbstractResultSet resultSet = connector.executeAskQuery(query, StatementOntology.CENTRAL)) {
+            assertTrue(resultSet.hasNext());
+            resultSet.next();
+            assertFalse(resultSet.getBoolean(0));
+        }
+        verify(centralConnector).executeAskQuery(eq(query), eq(StatementOntology.CENTRAL));
+    }
+
+    @Test
+    public void executeUpdateUsesTransactionalSnapshotToRunQuery() throws OntoDriverException {
+        connector.begin();
+        final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
+        connector.executeUpdate(update, StatementOntology.TRANSACTIONAL);
+        verify(centralConnector, never()).executeUpdate(eq(update), any());
+        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+    }
+
+    @Test
+    public void executeUpdatePassesQueryToCentralConnectorWhenConfigured() throws OntoDriverException {
+        connector.begin();
+        final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
+        connector.executeUpdate(update, StatementOntology.CENTRAL);
+        verify(centralConnector).executeUpdate(update, StatementOntology.CENTRAL);
+    }
+
+    @Test
+    public void commitExecutesQueriesRunOnTransactionalSnapshotOnCentral() throws OntoDriverException {
+        connector.begin();
+        final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
+        connector.executeUpdate(update, StatementOntology.TRANSACTIONAL);
+        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+        assertFalse(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+        connector.commit();
+        verify(centralConnector).executeUpdate(update, StatementOntology.CENTRAL);
+        assertTrue(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
     }
 }

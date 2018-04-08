@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
@@ -333,7 +334,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final Query query = QueryFactory.create("SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }");
-        try (ResultSet result = connector.executeSelectQuery(query)) {
+        try (ResultSet result = connector.executeSelectQuery(query, StatementOntology.CENTRAL)) {
             assertNotNull(result);
             assertTrue(result.hasNext());
             result.next();
@@ -350,7 +351,7 @@ public class SharedStorageConnectorTest {
         thrown.expectMessage(containsString("Execution of query " + query + " failed"));
         // Causes NPX in execution
         doReturn(null).when(connector.storage).getDataset();
-        connector.executeSelectQuery(query);
+        connector.executeSelectQuery(query, StatementOntology.CENTRAL);
     }
 
     @Test
@@ -358,7 +359,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final Query query = QueryFactory.create("ASK WHERE { ?x a <" + TYPE_ONE + "> . }");
-        final ResultSet result = connector.executeAskQuery(query);
+        final ResultSet result = connector.executeAskQuery(query, StatementOntology.CENTRAL);
         assertNotNull(result);
         assertTrue(result.hasNext());
         result.next();
@@ -374,7 +375,7 @@ public class SharedStorageConnectorTest {
         thrown.expectMessage(containsString("Execution of query " + query + " failed"));
         // Causes NPX in execution
         doReturn(null).when(connector.storage).getDataset();
-        connector.executeAskQuery(query);
+        connector.executeAskQuery(query, StatementOntology.CENTRAL);
     }
 
     @Test
@@ -383,7 +384,7 @@ public class SharedStorageConnectorTest {
         generateTestData(connector.storage.getDataset());
         final String newType = Generator.generateUri().toString();
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + newType + "> . }";
-        connector.executeUpdate(update);
+        connector.executeUpdate(update, StatementOntology.CENTRAL);
         final Collection<Statement> result = connector.find(RESOURCE, RDF.type, null);
         assertTrue(result.stream().anyMatch(s -> s.getObject().asResource().getURI().equals(newType)));
     }
@@ -397,6 +398,6 @@ public class SharedStorageConnectorTest {
         final String update = "INSERT DATA {" + SUBJECT + "> a <" + newType + "> . }";
         thrown.expect(JenaDriverException.class);
         thrown.expectMessage(containsString("Execution of update " + update + " failed"));
-        connector.executeUpdate(update);
+        connector.executeUpdate(update, StatementOntology.CENTRAL);
     }
 }
