@@ -29,6 +29,10 @@ abstract class AbstractStorageConnector implements StorageConnector {
         this.open = true;
     }
 
+    Storage getStorage() {
+        return storage;
+    }
+
     @Override
     public synchronized void close() {
         this.open = false;
@@ -39,7 +43,7 @@ abstract class AbstractStorageConnector implements StorageConnector {
         return open;
     }
 
-    void verifyOpen() {
+    void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("This connector is closed.");
         }

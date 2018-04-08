@@ -21,6 +21,7 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     private LocalModel localModel;
 
     ChangeTrackingStorageConnector(AbstractStorageConnector centralConnector) {
+        super(centralConnector.configuration);
         this.centralConnector = centralConnector;
         this.useDefaultAsUnion =
                 configuration != null && configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
