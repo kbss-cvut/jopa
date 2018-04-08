@@ -17,7 +17,7 @@ public abstract class ConnectorFactory implements Closeable {
         return open;
     }
 
-    void verifyOpen() {
+    void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("Factory is closed.");
         }

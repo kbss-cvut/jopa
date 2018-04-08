@@ -5,6 +5,7 @@ import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.jena.connector.ReadCommittedConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.SnapshotConnectorFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +52,15 @@ public class JenaDriverTest {
         final Field factoryField = JenaDriver.class.getDeclaredField("connectorFactory");
         factoryField.setAccessible(true);
         return (ConnectorFactory) factoryField.get(driver);
+    }
+
+    @Test
+    public void initCreatesSnapshotConnectorFactoryWhenConfigured() throws Exception {
+        properties.put(JenaOntoDriverProperties.JENA_ISOLATION_STRATEGY, JenaOntoDriverProperties.SNAPSHOT);
+        this.driver = new JenaDriver(storageProps, properties);
+        assertNotNull(driver);
+        assertTrue(driver.isOpen());
+        assertTrue(getConnectorFactory() instanceof SnapshotConnectorFactory);
     }
 
     @Test

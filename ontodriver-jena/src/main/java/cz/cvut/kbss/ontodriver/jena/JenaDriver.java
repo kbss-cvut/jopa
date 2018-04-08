@@ -11,6 +11,7 @@ import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.jena.connector.ReadCommittedConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.SnapshotConnectorFactory;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 
 import java.util.*;
@@ -39,7 +40,7 @@ public class JenaDriver implements Closeable, ConnectionListener {
         this.connectorFactory = buildConnectorFactory();
         this.openConnections = Collections.synchronizedSet(new HashSet<>());
         this.autoCommit = configuration.isSet(ConfigParam.AUTO_COMMIT) ? configuration.is(ConfigParam.AUTO_COMMIT) :
-                          Constants.DEFAULT_AUTO_COMMIT;
+                Constants.DEFAULT_AUTO_COMMIT;
         this.open = true;
     }
 
@@ -49,6 +50,8 @@ public class JenaDriver implements Closeable, ConnectionListener {
         switch (isolationStrategy) {
             case JenaOntoDriverProperties.READ_COMMITTED:
                 return new ReadCommittedConnectorFactory(configuration);
+            case JenaOntoDriverProperties.SNAPSHOT:
+                return new SnapshotConnectorFactory(configuration);
             default:
                 throw new IllegalArgumentException("Unsupported transaction isolation strategy " + isolationStrategy);
         }

@@ -23,7 +23,7 @@ public class ReadCommittedConnectorFactory extends ConnectorFactory {
 
     @Override
     public synchronized StorageConnector createConnector() {
-        verifyOpen();
+        ensureOpen();
         return new ChangeTrackingStorageConnector(centralConnector);
     }
 }
