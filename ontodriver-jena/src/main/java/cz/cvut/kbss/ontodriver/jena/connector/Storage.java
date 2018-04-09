@@ -8,6 +8,7 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
@@ -38,7 +39,8 @@ abstract class Storage {
     }
 
     Model getDefaultGraph() {
-        return defaultAsUnion ? dataset.getUnionModel().union(dataset.getDefaultModel()) : dataset.getDefaultModel();
+        return defaultAsUnion ? ModelFactory.createUnion(dataset.getUnionModel(), dataset.getDefaultModel()) :
+                dataset.getDefaultModel();
     }
 
     Model getNamedGraph(String ctx) {

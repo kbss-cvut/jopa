@@ -7,9 +7,9 @@ import org.apache.jena.system.Txn;
 
 import java.util.Iterator;
 
-class TransactionalSnapshotStorage extends Storage {
+class SnapshotStorage extends Storage {
 
-    TransactionalSnapshotStorage(Configuration configuration) {
+    SnapshotStorage(Configuration configuration) {
         super(configuration);
     }
 
