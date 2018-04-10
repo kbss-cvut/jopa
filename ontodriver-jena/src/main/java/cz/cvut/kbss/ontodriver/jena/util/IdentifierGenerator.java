@@ -34,7 +34,7 @@ public class IdentifierGenerator {
         URI result;
         do {
             result = IdentifierUtils.generateIdentifier(classUri);
-            exists = storageConnector.contains(ResourceFactory.createResource(result.toString()), property, type);
+            exists = storageConnector.contains(ResourceFactory.createResource(result.toString()), property, type, null);
             i++;
         } while (exists && i < GENERATOR_THRESHOLD);
         if (i >= GENERATOR_THRESHOLD) {

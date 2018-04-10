@@ -55,7 +55,7 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
 
     private void mergeRemovedStatements() {
         final Dataset removed = localModel.getRemoved();
-        centralConnector.remove(removed.getDefaultModel().listStatements().toList());
+        centralConnector.remove(removed.getDefaultModel().listStatements().toList(), null);
         removed.listNames().forEachRemaining(context -> {
             final Model model = removed.getNamedModel(context);
             centralConnector.remove(model.listStatements().toList(), context);
@@ -64,7 +64,7 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
 
     private void mergeAddedStatements() {
         final Dataset added = localModel.getAdded();
-        centralConnector.add(added.getDefaultModel().listStatements().toList());
+        centralConnector.add(added.getDefaultModel().listStatements().toList(), null);
         added.listNames().forEachRemaining(context -> {
             final Model model = added.getNamedModel(context);
             centralConnector.add(model.listStatements().toList(), context);
@@ -79,25 +79,10 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public Collection<Statement> find(Resource subject, Property property, RDFNode value) {
-        transaction.verifyActive();
-        final Collection<Statement> existing = centralConnector.find(subject, property, value);
-        return localModel.enhanceStatements(existing, subject, property, value);
-    }
-
-    @Override
     public Collection<Statement> find(Resource subject, Property property, RDFNode value, String context) {
         transaction.verifyActive();
         final Collection<Statement> existing = centralConnector.find(subject, property, value, context);
         return localModel.enhanceStatements(existing, subject, property, value, context);
-    }
-
-    @Override
-    public boolean contains(Resource subject, Property property, RDFNode value) {
-        transaction.verifyActive();
-        final LocalModel.Containment localStatus = localModel.contains(subject, property, value);
-        return localStatus == LocalModel.Containment.ADDED ||
-                localStatus == LocalModel.Containment.UNKNOWN && centralConnector.contains(subject, property, value);
     }
 
     @Override
@@ -119,33 +104,15 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public void add(List<Statement> statements) {
-        transaction.verifyActive();
-        localModel.addStatements(statements);
-    }
-
-    @Override
     public void add(List<Statement> statements, String context) {
         transaction.verifyActive();
         localModel.addStatements(statements, context);
     }
 
     @Override
-    public void remove(List<Statement> statements) {
-        transaction.verifyActive();
-        localModel.removeStatements(statements);
-    }
-
-    @Override
     public void remove(List<Statement> statements, String context) {
         transaction.verifyActive();
         localModel.removeStatements(statements, context);
-    }
-
-    @Override
-    public void remove(Resource subject, Property property, RDFNode object) {
-        transaction.verifyActive();
-        localModel.removeStatements(new ArrayList<>(find(subject, property, object)));
     }
 
     @Override

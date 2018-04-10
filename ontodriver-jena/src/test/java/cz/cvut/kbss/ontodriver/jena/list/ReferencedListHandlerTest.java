@@ -67,7 +67,7 @@ public class ReferencedListHandlerTest
         list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
         handler.persistList(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> added = captor.getValue();
         verifyAddedStatements(list, added);
     }
@@ -102,7 +102,7 @@ public class ReferencedListHandlerTest
         descriptor.addValue(NamedResource.create(newItem));
         handler.updateList(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> added = captor.getValue();
         assertEquals(2, added.size());
         final List<Resource> nodes = listUtil.getReferencedListNodes();
@@ -123,8 +123,8 @@ public class ReferencedListHandlerTest
 
         for (int i = update.size(); i < list.size(); i++) {
             verify(connectorMock).remove(listUtil.getReferencedListNodes().get(i - 1), HAS_NEXT_PROPERTY,
-                    listUtil.getReferencedListNodes().get(i));
-            verify(connectorMock).remove(listUtil.getReferencedListNodes().get(i), HAS_CONTENT_PROPERTY, null);
+                    listUtil.getReferencedListNodes().get(i), null);
+            verify(connectorMock).remove(listUtil.getReferencedListNodes().get(i), HAS_CONTENT_PROPERTY, null, null);
         }
     }
 
@@ -140,10 +140,10 @@ public class ReferencedListHandlerTest
         update.forEach(item -> descriptor.addValue(NamedResource.create(item)));
         handler.updateList(descriptor);
 
-        verify(connectorMock).remove(listUtil.getReferencedListNodes().get(index), HAS_CONTENT_PROPERTY, null);
+        verify(connectorMock).remove(listUtil.getReferencedListNodes().get(index), HAS_CONTENT_PROPERTY, null, null);
         final Statement added = createStatement(listUtil.getReferencedListNodes().get(index), HAS_CONTENT_PROPERTY,
                 createResource(replace.toString()));
-        verify(connectorMock).add(Collections.singletonList(added));
+        verify(connectorMock).add(Collections.singletonList(added), null);
     }
 
     @Test
@@ -156,11 +156,13 @@ public class ReferencedListHandlerTest
         for (int i = 0; i < list.size(); i++) {
             final Resource node = listUtil.getReferencedListNodes().get(i);
             if (i == 0) {
-                verify(connectorMock).remove(createResource(OWNER.getIdentifier().toString()), HAS_LIST_PROPERTY, node);
+                verify(connectorMock)
+                        .remove(createResource(OWNER.getIdentifier().toString()), HAS_LIST_PROPERTY, node, null);
             } else {
-                verify(connectorMock).remove(listUtil.getReferencedListNodes().get(i - 1), HAS_NEXT_PROPERTY, node);
+                verify(connectorMock)
+                        .remove(listUtil.getReferencedListNodes().get(i - 1), HAS_NEXT_PROPERTY, node, null);
             }
-            verify(connectorMock).remove(node, HAS_CONTENT_PROPERTY, null);
+            verify(connectorMock).remove(node, HAS_CONTENT_PROPERTY, null, null);
         }
     }
 
@@ -173,7 +175,7 @@ public class ReferencedListHandlerTest
         handler.updateList(descriptor);
 
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> added = captor.getValue();
         verifyAddedStatements(list, added);
     }

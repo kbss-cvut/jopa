@@ -38,18 +38,13 @@ public class TypesHandler implements Types {
     private Collection<Statement> getStatements(NamedResource individual, URI context) {
         final Resource subject = ResourceFactory.createResource(individual.getIdentifier().toString());
         final Property property = ResourceFactory.createProperty(Vocabulary.RDF_TYPE);
-        return context != null ? connector.find(subject, property, null, context.toString()) :
-               connector.find(subject, property, null);
+        return connector.find(subject, property, null, context != null ? context.toString() : null);
     }
 
     @Override
     public void addTypes(NamedResource individual, URI context, Set<URI> types) {
         final List<Statement> statements = generateStatementsForTypes(individual, types);
-        if (context != null) {
-            connector.add(statements, context.toString());
-        } else {
-            connector.add(statements);
-        }
+        connector.add(statements, context != null ? context.toString() : null);
     }
 
     private List<Statement> generateStatementsForTypes(NamedResource individual, Set<URI> types) {
@@ -63,10 +58,6 @@ public class TypesHandler implements Types {
     @Override
     public void removeTypes(NamedResource individual, URI context, Set<URI> types) {
         final List<Statement> statements = generateStatementsForTypes(individual, types);
-        if (context != null) {
-            connector.remove(statements, context.toString());
-        } else {
-            connector.remove(statements);
-        }
+        connector.remove(statements, context != null ? context.toString() : null);
     }
 }

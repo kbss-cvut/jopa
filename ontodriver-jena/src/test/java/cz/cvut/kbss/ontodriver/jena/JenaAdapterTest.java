@@ -70,7 +70,7 @@ public class JenaAdapterTest {
         descriptor.addAssertionValue(a, new Value<>(type));
         adapter.persist(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
     }
@@ -83,7 +83,7 @@ public class JenaAdapterTest {
         descriptor.addAssertionValue(a, new Value<>(type));
         adapter.persist(descriptor);
         adapter.commit();
-        verify(connectorMock).add(anyListOf(Statement.class));
+        verify(connectorMock).add(anyListOf(Statement.class), eq(null));
         verify(connectorMock).commit();
     }
 
@@ -101,7 +101,7 @@ public class JenaAdapterTest {
         descriptor.addAssertionValue(a, new Value<>(type));
         adapter.persist(descriptor);
         adapter.rollback();
-        verify(connectorMock).add(anyListOf(Statement.class));
+        verify(connectorMock).add(anyListOf(Statement.class), eq(null));
         verify(connectorMock).rollback();
         verify(connectorMock, never()).commit();
     }
@@ -132,7 +132,7 @@ public class JenaAdapterTest {
         final String typeUri = Generator.generateUri().toString();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
-        when(connectorMock.contains(any(), any(), any())).thenReturn(true);
+        when(connectorMock.contains(any(), any(), any(), anyString())).thenReturn(true);
         assertTrue(adapter.contains(ax, null));
     }
 
@@ -166,7 +166,7 @@ public class JenaAdapterTest {
         final Statement s = ResourceFactory
                 .createStatement(SUBJECT_RESOURCE, assertionToProperty(assertion),
                         ResourceFactory.createResource(Generator.generateUri().toString()));
-        when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singletonList(s));
+        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singletonList(s));
 
         final Collection<Axiom<?>> result = adapter.find(descriptor);
         assertEquals(1, result.size());
@@ -174,7 +174,7 @@ public class JenaAdapterTest {
         assertEquals(SUBJECT, axiom.getSubject());
         assertEquals(assertion, axiom.getAssertion());
         assertEquals(s.getObject().asResource().getURI(), axiom.getValue().stringValue());
-        verify(connectorMock).find(SUBJECT_RESOURCE, null, null);
+        verify(connectorMock).find(SUBJECT_RESOURCE, null, null, null);
     }
 
     private Property assertionToProperty(Assertion assertion) {
@@ -188,7 +188,7 @@ public class JenaAdapterTest {
         descriptor.addAssertion(assertion);
 
         adapter.remove(descriptor);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null);
+        verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null, null);
     }
 
     @Test
@@ -197,15 +197,15 @@ public class JenaAdapterTest {
         final Statement s = ResourceFactory
                 .createStatement(SUBJECT_RESOURCE, assertionToProperty(assertion),
                         ResourceFactory.createResource(Generator.generateUri().toString()));
-        when(connectorMock.find(any(), any(), any())).thenReturn(Collections.singletonList(s));
+        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singletonList(s));
         final URI newValue = Generator.generateUri();
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         descriptor.addAssertionValue(assertion, new Value<>(NamedResource.create(newValue)));
 
         adapter.update(descriptor);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null);
+        verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null, null);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         assertEquals(1, captor.getValue().size());
         final Statement result = (Statement) captor.getValue().get(0);
         assertEquals(SUBJECT_RESOURCE, result.getSubject());

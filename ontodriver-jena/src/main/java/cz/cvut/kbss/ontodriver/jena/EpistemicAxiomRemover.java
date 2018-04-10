@@ -42,11 +42,7 @@ class EpistemicAxiomRemover {
         descriptor.getAssertions().stream().filter(a -> !a.isInferred()).forEach(assertion -> {
             final URI context = descriptor.getAssertionContext(assertion);
             final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
-            if (context != null) {
-                connector.remove(subject, property, null, context.toString());
-            } else {
-                connector.remove(subject, property, null);
-            }
+            connector.remove(subject, property, null, context != null ? context.toString() : null);
         });
     }
 
@@ -72,7 +68,8 @@ class EpistemicAxiomRemover {
             properties.forEach((assertion, values) -> {
                 final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
                 values.forEach(
-                        value -> connector.remove(resource, property, JenaUtils.valueToRdfNode(assertion, value)));
+                        value -> connector
+                                .remove(resource, property, JenaUtils.valueToRdfNode(assertion, value), null));
             });
         }
     }

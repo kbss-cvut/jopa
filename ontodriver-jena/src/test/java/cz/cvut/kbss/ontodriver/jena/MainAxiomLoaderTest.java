@@ -47,23 +47,23 @@ public class MainAxiomLoaderTest {
     @Test
     public void containsChecksForNonInferredStatementsOnlyWhenAssertionIsNotInferred() {
         final Resource cls = createResource(Generator.generateUri().toString());
-        when(connectorMock.contains(SUBJECT_RES, RDF.type, cls)).thenReturn(true);
+        when(connectorMock.contains(SUBJECT_RES, RDF.type, cls, null)).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(cls.getURI())));
         assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock).contains(SUBJECT_RES, RDF.type, cls);
-        verify(inferredConnectorMock, never()).containsWithInference(SUBJECT_RES, RDF.type, cls);
+        verify(connectorMock).contains(SUBJECT_RES, RDF.type, cls, null);
+        verify(inferredConnectorMock, never()).containsWithInference(SUBJECT_RES, RDF.type, cls, null);
     }
 
     @Test
     public void containsChecksForInferredStatementsWhenAssertionIsInferred() {
         final Resource cls = createResource(Generator.generateUri().toString());
-        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, cls)).thenReturn(true);
+        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, cls, null)).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(cls.getURI())));
         assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls);
-        verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls);
+        verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls, null);
+        verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls, null);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class MainAxiomLoaderTest {
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), false),
                         new Value<>(OBJECT));
-        when(connectorMock.find(SUBJECT_RES, null, null)).thenReturn(Collections.singletonList(
+        when(connectorMock.find(SUBJECT_RES, null, null, null)).thenReturn(Collections.singletonList(
                 createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
         ));
         final Collection<Axiom<?>> result = axiomLoader.find(SUBJECT, null);
@@ -84,9 +84,10 @@ public class MainAxiomLoaderTest {
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), true),
                         new Value<>(OBJECT));
-        when(inferredConnectorMock.findWithInference(SUBJECT_RES, null, null)).thenReturn(Collections.singletonList(
-                createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
-        ));
+        when(inferredConnectorMock.findWithInference(SUBJECT_RES, null, null, null))
+                .thenReturn(Collections.singletonList(
+                        createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
+                ));
         final Collection<Axiom<?>> result = axiomLoader.findWithInference(SUBJECT, null);
         assertEquals(1, result.size());
         assertTrue(result.contains(axiom));
@@ -97,14 +98,15 @@ public class MainAxiomLoaderTest {
         final Axiom<NamedResource> inferred =
                 new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), true),
                         new Value<>(OBJECT));
-        when(inferredConnectorMock.findWithInference(SUBJECT_RES, PROPERTY, null)).thenReturn(Collections.singletonList(
-                createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
-        ));
+        when(inferredConnectorMock.findWithInference(SUBJECT_RES, PROPERTY, null, null))
+                .thenReturn(Collections.singletonList(
+                        createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
+                ));
         final Property proTwo = createProperty(Generator.generateUri().toString());
         final Axiom<Integer> asserted =
                 new AxiomImpl<>(SUBJECT, Assertion.createDataPropertyAssertion(URI.create(proTwo.getURI()), false),
                         new Value<>(117));
-        when(connectorMock.find(SUBJECT_RES, null, null)).thenReturn(Collections.singletonList(
+        when(connectorMock.find(SUBJECT_RES, null, null, null)).thenReturn(Collections.singletonList(
                 createStatement(SUBJECT_RES, proTwo, createTypedLiteral(117))
         ));
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);

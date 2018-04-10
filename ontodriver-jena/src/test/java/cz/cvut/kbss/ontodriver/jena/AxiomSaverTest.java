@@ -47,7 +47,7 @@ public class AxiomSaverTest {
         descriptor.addAssertionValue(a, new Value<>(type));
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createResource(SUBJECT.toString()), arg.get(0).getSubject());
@@ -63,7 +63,7 @@ public class AxiomSaverTest {
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createProperty(assertion.getIdentifier().toString()), arg.get(0).getPredicate());
@@ -73,12 +73,12 @@ public class AxiomSaverTest {
     @Test
     public void saveAxiomsAddsLiteralStatementsForDatatypePropertyAssertionAxioms() {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
-        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), "en",false);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), "en", false);
         final Integer value = 117;
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createTypedLiteral(value), arg.get(0).getObject());
@@ -93,7 +93,7 @@ public class AxiomSaverTest {
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createLangLiteral(value, lang), arg.get(0).getObject());
@@ -107,7 +107,7 @@ public class AxiomSaverTest {
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createResource(value), arg.get(0).getObject());
@@ -121,7 +121,7 @@ public class AxiomSaverTest {
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createTypedLiteral(value), arg.get(0).getObject());
@@ -146,7 +146,7 @@ public class AxiomSaverTest {
         descriptor.addAssertionValue(assertion, Value.nullValue());
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         assertTrue(captor.getValue().isEmpty());
     }
 }

@@ -73,7 +73,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     @Test
     public void nextThrowsListProcessingExceptionWhenNodeIsLiteral() {
         generateList();
-        when(connectorMock.find(RESOURCE, HAS_LIST, null)).thenReturn(
+        when(connectorMock.find(RESOURCE, HAS_LIST, null, null)).thenReturn(
                 Collections.singletonList(createStatement(RESOURCE, HAS_LIST, createTypedLiteral(117))));
         final ReferencedListIterator iterator = iterator();
         thrown.expect(ListProcessingException.class);
@@ -88,7 +88,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         final List<URI> list = generateList();
         final int index = Generator.randomInt(list.size());
         final Resource node = testUtil.getReferencedListNodes().get(index);
-        when(connectorMock.find(node, HAS_CONTENT, null)).thenReturn(Arrays.asList(
+        when(connectorMock.find(node, HAS_CONTENT, null, null)).thenReturn(Arrays.asList(
                 createStatement(node, HAS_CONTENT, createResource(Generator.generateUri().toString())),
                 createStatement(node, HAS_CONTENT, createResource(list.get(index).toString()))
         ));
@@ -105,7 +105,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         final List<URI> list = generateList();
         final int index = Generator.randomInt(list.size());
         final Resource node = testUtil.getReferencedListNodes().get(index);
-        when(connectorMock.find(node, HAS_CONTENT, null)).thenReturn(Collections.emptyList());
+        when(connectorMock.find(node, HAS_CONTENT, null, null)).thenReturn(Collections.emptyList());
         final ReferencedListIterator iterator = iterator();
         thrown.expect(IntegrityConstraintViolatedException.class);
         thrown.expectMessage("No content found for list node " + node.getURI());
@@ -123,8 +123,8 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         }
         iterator.removeWithoutReconnect();
         final List<Resource> nodes = testUtil.getReferencedListNodes();
-        verify(connectorMock).remove(nodes.get(nodes.size() - 2), HAS_NEXT, nodes.get(nodes.size() - 1));
-        verify(connectorMock).remove(eq(nodes.get(nodes.size() - 1)), eq(HAS_CONTENT), any());
+        verify(connectorMock).remove(nodes.get(nodes.size() - 2), HAS_NEXT, nodes.get(nodes.size() - 1), null);
+        verify(connectorMock).remove(eq(nodes.get(nodes.size() - 1)), eq(HAS_CONTENT), any(), eq(null));
     }
 
     @Test
@@ -134,8 +134,8 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         iterator.nextValue();
         iterator.removeWithoutReconnect();
         final List<Resource> nodes = testUtil.getReferencedListNodes();
-        verify(connectorMock).remove(RESOURCE, HAS_LIST, nodes.get(0));
-        verify(connectorMock).remove(eq(nodes.get(0)), eq(HAS_CONTENT), any());
+        verify(connectorMock).remove(RESOURCE, HAS_LIST, nodes.get(0), null);
+        verify(connectorMock).remove(eq(nodes.get(0)), eq(HAS_CONTENT), any(), eq(null));
     }
 
     @Test
@@ -147,9 +147,9 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         iterator.replace(replacement);
 
         final List<Resource> nodes = testUtil.getReferencedListNodes();
-        verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null);
+        verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null, null);
         final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
-        verify(connectorMock).add(Collections.singletonList(added));
+        verify(connectorMock).add(Collections.singletonList(added), null);
     }
 
     @Test

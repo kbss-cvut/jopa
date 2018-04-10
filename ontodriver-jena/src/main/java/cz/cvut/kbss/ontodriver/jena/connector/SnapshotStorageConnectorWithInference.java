@@ -28,57 +28,42 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
     }
 
     @Override
-    public List<Statement> find(Resource subject, Property property, RDFNode value) {
-        ensureTransactionalState();
-        return storage.getRawDefaultGraph().listStatements(subject, property, value).toList();
-    }
-
-    @Override
     public List<Statement> find(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
-        return storage.getRawNamedGraph(context).listStatements(subject, property, value).toList();
+        if (context != null) {
+            return storage.getRawNamedGraph(context).listStatements(subject, property, value).toList();
+        } else {
+            return storage.getRawDefaultGraph().listStatements(subject, property, value).toList();
+        }
     }
-
-    @Override
-    public boolean contains(Resource subject, Property property, RDFNode value) {
-        ensureTransactionalState();
-        return storage.getRawDefaultGraph().contains(subject, property, value);
-    }
-
     @Override
     public boolean contains(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
-        return storage.getRawNamedGraph(context).contains(subject, property, value);
-    }
-
-    @Override
-    public List<Statement> findWithInference(Resource subject, Property property, RDFNode value) {
-        ensureTransactionalState();
-        return storage.getDefaultGraph().listStatements(subject, property, value).toList();
+        if (context != null) {
+            return storage.getRawNamedGraph(context).contains(subject, property, value);
+        } else {
+            return storage.getRawDefaultGraph().contains(subject, property, value);
+        }
     }
 
     @Override
     public List<Statement> findWithInference(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
-        return storage.getNamedGraph(context).listStatements(subject, property, value).toList();
-    }
-
-    @Override
-    public boolean containsWithInference(Resource subject, Property property, RDFNode value) {
-        ensureTransactionalState();
-        return storage.getDefaultGraph().contains(subject, property, value);
+        if (context != null) {
+            return storage.getNamedGraph(context).listStatements(subject, property, value).toList();
+        } else {
+            return storage.getDefaultGraph().listStatements(subject, property, value).toList();
+        }
     }
 
     @Override
     public boolean containsWithInference(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
-        return storage.getNamedGraph(context).contains(subject, property, value);
-    }
-
-    @Override
-    public boolean isConsistent() {
-        ensureTransactionalState();
-        return storage.checkConsistency().isValid();
+        if (context != null) {
+            return storage.getNamedGraph(context).contains(subject, property, value);
+        } else {
+            return storage.getDefaultGraph().contains(subject, property, value);
+        }
     }
 
     @Override

@@ -71,14 +71,14 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
 
     private void applyRemovals() {
         final Dataset removed = transactionalChanges.getRemoved();
-        centralConnector.remove(removed.getDefaultModel().listStatements().toList());
+        centralConnector.remove(removed.getDefaultModel().listStatements().toList(), null);
         removed.listNames()
                .forEachRemaining(n -> centralConnector.remove(removed.getNamedModel(n).listStatements().toList(), n));
     }
 
     private void applyAdditions() {
         final Dataset added = transactionalChanges.getAdded();
-        centralConnector.add(added.getDefaultModel().listStatements().toList());
+        centralConnector.add(added.getDefaultModel().listStatements().toList(), null);
         added.listNames()
              .forEachRemaining(n -> centralConnector.add(added.getNamedModel(n).listStatements().toList(), n));
     }
@@ -103,29 +103,24 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
         this.transactionalUpdates = null;
     }
 
-
-    @Override
-    public List<Statement> find(Resource subject, Property property, RDFNode value) {
-        ensureTransactionalState();
-        return storage.getDefaultGraph().listStatements(subject, property, value).toList();
-    }
-
     @Override
     public List<Statement> find(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
-        return storage.getNamedGraph(context).listStatements(subject, property, value).toList();
-    }
-
-    @Override
-    public boolean contains(Resource subject, Property property, RDFNode value) {
-        ensureTransactionalState();
-        return storage.getDefaultGraph().contains(subject, property, value);
+        if (context != null) {
+            return storage.getNamedGraph(context).listStatements(subject, property, value).toList();
+        } else {
+            return storage.getDefaultGraph().listStatements(subject, property, value).toList();
+        }
     }
 
     @Override
     public boolean contains(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
-        return storage.getNamedGraph(context).contains(subject, property, value);
+        if (context != null) {
+            return storage.getNamedGraph(context).contains(subject, property, value);
+        } else {
+            return storage.getDefaultGraph().contains(subject, property, value);
+        }
     }
 
     @Override
@@ -138,13 +133,6 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     }
 
     @Override
-    public void add(List<Statement> statements) {
-        ensureTransactionalState();
-        storage.add(statements);
-        transactionalChanges.addStatements(statements);
-    }
-
-    @Override
     public void add(List<Statement> statements, String context) {
         ensureTransactionalState();
         storage.add(statements, context);
@@ -152,24 +140,10 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     }
 
     @Override
-    public void remove(List<Statement> statements) {
-        ensureTransactionalState();
-        storage.remove(statements);
-        transactionalChanges.removeStatements(statements);
-    }
-
-    @Override
     public void remove(List<Statement> statements, String context) {
         ensureTransactionalState();
         storage.remove(statements, context);
         transactionalChanges.removeStatements(statements, context);
-    }
-
-    @Override
-    public void remove(Resource subject, Property property, RDFNode object) {
-        ensureTransactionalState();
-        final List<Statement> toRemove = find(subject, property, object);
-        remove(toRemove);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class SnapshotStorageConnectorWithInferenceTest {
     public void findReturnsStatementsFromRawDefaultModel() throws Exception {
         generateTestData(null);
         connector.begin();
-        final List<Statement> result = connector.find(createResource(SUBJECT), RDF.type, null);
+        final List<Statement> result = connector.find(createResource(SUBJECT), RDF.type, null, null);
         assertEquals(1, result.size());
         assertEquals(createResource(TYPE_ONE), result.get(0).getObject());
     }
@@ -55,11 +55,7 @@ public class SnapshotStorageConnectorWithInferenceTest {
         final List<Statement> data = Arrays.asList(
                 statement(TYPE_ONE, RDFS.subClassOf.getURI(), TYPE_TWO),
                 statement(SUBJECT, RDF.type.getURI(), TYPE_ONE));
-        if (context != null) {
-            centralConnector.add(data, context);
-        } else {
-            centralConnector.add(data);
-        }
+        centralConnector.add(data, context);
         centralConnector.commit();
     }
 
@@ -67,7 +63,7 @@ public class SnapshotStorageConnectorWithInferenceTest {
     public void findWithInferenceReturnsStatementsIncludingInferredKnowledge() throws Exception {
         generateTestData(null);
         connector.begin();
-        final Collection<Statement> result = connector.findWithInference(createResource(SUBJECT), RDF.type, null);
+        final Collection<Statement> result = connector.findWithInference(createResource(SUBJECT), RDF.type, null, null);
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(s -> s.getObject().equals(createResource(TYPE_TWO))));
     }
@@ -95,16 +91,16 @@ public class SnapshotStorageConnectorWithInferenceTest {
     public void containsUsesOnlyRawDefaultGraph() throws Exception {
         generateTestData(null);
         connector.begin();
-        assertFalse(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
-        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+        assertFalse(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO), null));
+        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
     }
 
     @Test
     public void containsWithInferenceUsesInferredKnowledgeInDefaultGraph() throws Exception {
         generateTestData(null);
         connector.begin();
-        assertTrue(connector.containsWithInference(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
-        assertTrue(connector.containsWithInference(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+        assertTrue(connector.containsWithInference(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO), null));
+        assertTrue(connector.containsWithInference(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
     }
 
     @Test
@@ -130,23 +126,23 @@ public class SnapshotStorageConnectorWithInferenceTest {
         generateTestData(null);
         connector.begin();
         final Resource another = createResource(Generator.generateUri().toString());
-        connector.add(Collections.singletonList(statement(another.getURI(), RDF.type.getURI(), TYPE_ONE)));
-        assertTrue(connector.containsWithInference(another, RDF.type, createResource(TYPE_TWO)));
+        connector.add(Collections.singletonList(statement(another.getURI(), RDF.type.getURI(), TYPE_ONE)), null);
+        assertTrue(connector.containsWithInference(another, RDF.type, createResource(TYPE_TWO), null));
     }
 
     @Test
     public void removeStatementsInfluencesInferenceResults() throws Exception {
         generateTestData(null);
         connector.begin();
-        connector.remove(null, RDF.type, createResource(TYPE_ONE));
-        assertFalse(connector.containsWithInference(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
+        connector.remove(null, RDF.type, createResource(TYPE_ONE), null);
+        assertFalse(connector.containsWithInference(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO), null));
     }
 
     @Test
     public void isConsistentVerifiesConsistencyOfDefaultGraph() throws Exception {
         generateTestData(null);
         connector.begin();
-        assertTrue(connector.isConsistent());
+        assertTrue(connector.isConsistent(null));
     }
 
     @Test

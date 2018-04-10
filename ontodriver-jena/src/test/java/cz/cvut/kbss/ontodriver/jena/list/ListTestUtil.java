@@ -45,12 +45,12 @@ public class ListTestUtil {
         for (final URI node : list) {
             if (previous != null) {
                 final Resource prevResource = createResource(previous.toString());
-                when(connectorMock.find(prevResource, hasNext, null)).thenReturn(Collections
+                when(connectorMock.find(prevResource, hasNext, null, null)).thenReturn(Collections
                         .singletonList(createStatement(prevResource, hasNext, createResource(node.toString()))));
             }
             previous = node;
         }
-        when(connectorMock.find(owner, hasList, null)).thenReturn(
+        when(connectorMock.find(owner, hasList, null, null)).thenReturn(
                 Collections.singletonList(createStatement(owner, hasList, createResource(list.get(0).toString()))));
         return list;
     }
@@ -84,10 +84,10 @@ public class ListTestUtil {
             final Resource node = createResource(Generator.generateUri().toString());
             if (previous != null) {
                 final Resource prevResource = createResource(previous.toString());
-                when(connectorMock.find(prevResource, hasNext, null)).thenReturn(Collections
+                when(connectorMock.find(prevResource, hasNext, null, null)).thenReturn(Collections
                         .singletonList(createStatement(prevResource, hasNext, node)));
             }
-            when(connectorMock.find(node, hasContent, null)).thenReturn(
+            when(connectorMock.find(node, hasContent, null, null)).thenReturn(
                     Collections.singletonList(createStatement(node, hasContent, createResource(content.toString()))));
             if (firstNode == null) {
                 firstNode = node;
@@ -95,7 +95,7 @@ public class ListTestUtil {
             previous = node;
             referencedListNodes.add(node);
         }
-        when(connectorMock.find(owner, hasList, null))
+        when(connectorMock.find(owner, hasList, null, null))
                 .thenReturn(Collections.singletonList(createStatement(owner, hasList, firstNode)));
         return list;
     }

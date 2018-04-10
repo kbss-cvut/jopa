@@ -40,11 +40,7 @@ class ReferencedListIterator extends AbstractListIterator {
 
     private Resource resolveNodeContent() {
         final Collection<Statement> contentStatements;
-        if (context != null) {
-            contentStatements = connector.find(currentNode, hasContent, null, context);
-        } else {
-            contentStatements = connector.find(currentNode, hasContent, null);
-        }
+        contentStatements = connector.find(currentNode, hasContent, null, context);
         verifyContentValueCount(contentStatements);
         final Statement statement = contentStatements.iterator().next();
         assert statement.getObject().isResource();
@@ -71,10 +67,6 @@ class ReferencedListIterator extends AbstractListIterator {
     void replace(Resource replacement) {
         remove(currentNode, hasContent, null);
         final Statement toAdd = createStatement(currentNode, hasContent, replacement);
-        if (context != null) {
-            connector.add(Collections.singletonList(toAdd), context);
-        } else {
-            connector.add(Collections.singletonList(toAdd));
-        }
+        connector.add(Collections.singletonList(toAdd), context);
     }
 }

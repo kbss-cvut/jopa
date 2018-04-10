@@ -44,11 +44,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
                     appendNode(lastNode, descriptor.getValues().get(i), i == 0 ? hasList : hasNext, hasContent, context,
                             toAdd);
         }
-        if (context != null) {
-            connector.add(toAdd, context);
-        } else {
-            connector.add(toAdd);
-        }
+        connector.add(toAdd, context);
     }
 
     private Resource appendNode(Resource previousNode, NamedResource value, Property link, Property hasContent,
@@ -65,11 +61,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         Collection<Statement> statements;
         do {
             node = createResource(baseUri.toString() + "-SEQ_" + index++);
-            if (context != null) {
-                statements = connector.find(node, null, null, context);
-            } else {
-                statements = connector.find(node, null, null);
-            }
+            statements = connector.find(node, null, null, context);
         } while (!statements.isEmpty());
         return node;
     }

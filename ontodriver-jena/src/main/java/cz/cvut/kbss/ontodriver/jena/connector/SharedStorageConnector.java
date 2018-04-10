@@ -70,35 +70,22 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public Collection<Statement> find(Resource subject, Property property, RDFNode value) {
-        ensureOpen();
-        return Txn.calculateRead(storage.getDataset(), () -> {
-            final StmtIterator it = storage.getDefaultGraph().listStatements(subject, property, value);
-            return it.toList();
-        });
-    }
-
-    @Override
     public Collection<Statement> find(Resource subject, Property property, RDFNode value, String context) {
         ensureOpen();
         return Txn.calculateRead(storage.getDataset(), () -> {
-            final StmtIterator it = storage.getNamedGraph(context).listStatements(subject, property, value);
+            final Model target = context != null ? storage.getNamedGraph(context) : storage.getDefaultGraph();
+            final StmtIterator it = target.listStatements(subject, property, value);
             return it.toList();
         });
-    }
-
-    @Override
-    public boolean contains(Resource subject, Property property, RDFNode value) {
-        ensureOpen();
-        return Txn.calculateRead(storage.getDataset(),
-                () -> storage.getDefaultGraph().contains(subject, property, value));
     }
 
     @Override
     public boolean contains(Resource subject, Property property, RDFNode value, String context) {
         ensureOpen();
-        return Txn.calculateRead(storage.getDataset(),
-                () -> storage.getNamedGraph(context).contains(subject, property, value));
+        return Txn.calculateRead(storage.getDataset(), () -> {
+            final Model target = context != null ? storage.getNamedGraph(context) : storage.getDefaultGraph();
+            return target.contains(subject, property, value);
+        });
     }
 
     @Override
@@ -111,21 +98,9 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public void add(List<Statement> statements) {
-        ensureTransactionalState();
-        storage.add(statements);
-    }
-
-    @Override
     public void add(List<Statement> statements, String context) {
         ensureTransactionalState();
         storage.add(statements, context);
-    }
-
-    @Override
-    public void remove(List<Statement> statements) {
-        ensureTransactionalState();
-        storage.remove(statements);
     }
 
     @Override
@@ -135,16 +110,13 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public void remove(Resource subject, Property property, RDFNode object) {
-        ensureTransactionalState();
-        storage.remove(storage.getDefaultGraph().listStatements(subject, property, object));
-    }
-
-    @Override
     public void remove(Resource subject, Property property, RDFNode object, String context) {
         ensureTransactionalState();
-        storage.remove(storage.getNamedGraph(context).listStatements(subject, property, object), context);
-
+        if (context != null) {
+            storage.remove(storage.getNamedGraph(context).listStatements(subject, property, object), context);
+        } else {
+            storage.remove(storage.getDefaultGraph().listStatements(subject, property, object), null);
+        }
     }
 
     @Override

@@ -201,7 +201,7 @@ public class SnapshotStorageWithInferenceTest {
         this.storage = new SnapshotStorageWithInference(configuration);
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
-        final ValidityReport result = storage.checkConsistency();
+        final ValidityReport result = storage.checkConsistency(null);
         assertNotNull(result);
         assertTrue(result.isValid());
     }
@@ -223,7 +223,7 @@ public class SnapshotStorageWithInferenceTest {
         this.storage = new SnapshotStorageWithInference(configuration);
         storage.initialize();
         storage.addCentralData(getInconsistentDataset());
-        final ValidityReport result = storage.checkConsistency();
+        final ValidityReport result = storage.checkConsistency(null);
         assertNotNull(result);
         assertFalse(result.isValid());
     }

@@ -56,10 +56,6 @@ class SimpleListIterator extends AbstractListIterator {
             }
         }
         this.currentNode = replacement;
-        if (context != null) {
-            connector.add(toAdd, context);
-        } else {
-            connector.add(toAdd);
-        }
+        connector.add(toAdd, context);
     }
 }

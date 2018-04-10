@@ -63,36 +63,36 @@ abstract class Storage {
         dataset.close();
     }
 
-    void add(List<Statement> statements) {
-        dataset.getDefaultModel().add(statements);
-    }
-
     void add(List<Statement> statements, String context) {
-        dataset.getNamedModel(context).add(statements);
-    }
-
-    void remove(List<Statement> statements) {
-        dataset.getDefaultModel().remove(statements);
-        if (defaultAsUnion) {
-            dataset.listNames().forEachRemaining(n -> dataset.getNamedModel(n).remove(statements));
+        if (context != null) {
+            dataset.getNamedModel(context).add(statements);
+        } else {
+            dataset.getDefaultModel().add(statements);
         }
     }
 
-    void remove(StmtIterator iterator) {
-        iterator.forEachRemaining(statement -> {
-            dataset.getDefaultModel().remove(statement);
-            if (defaultAsUnion) {
-                dataset.listNames().forEachRemaining(n -> dataset.getNamedModel(n).remove(statement));
-            }
-        });
-    }
-
     void remove(List<Statement> statements, String context) {
-        dataset.getNamedModel(context).remove(statements);
+        if (context != null) {
+            dataset.getNamedModel(context).remove(statements);
+        } else {
+            dataset.getDefaultModel().remove(statements);
+            if (defaultAsUnion) {
+                dataset.listNames().forEachRemaining(n -> dataset.getNamedModel(n).remove(statements));
+            }
+        }
     }
 
     void remove(StmtIterator iterator, String context) {
-        dataset.getNamedModel(context).remove(iterator);
+        if (context != null) {
+            dataset.getNamedModel(context).remove(iterator);
+        } else {
+            iterator.forEachRemaining(statement -> {
+                dataset.getDefaultModel().remove(statement);
+                if (defaultAsUnion) {
+                    dataset.listNames().forEachRemaining(n -> dataset.getNamedModel(n).remove(statement));
+                }
+            });
+        }
     }
 
     /**

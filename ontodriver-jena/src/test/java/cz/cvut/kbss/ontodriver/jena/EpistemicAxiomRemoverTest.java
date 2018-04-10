@@ -42,8 +42,8 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertion(op);
 
         remover.remove(descriptor);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, createProperty(dp.getIdentifier().toString()), null);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, createProperty(op.getIdentifier().toString()), null);
+        verify(connectorMock).remove(SUBJECT_RESOURCE, createProperty(dp.getIdentifier().toString()), null, null);
+        verify(connectorMock).remove(SUBJECT_RESOURCE, createProperty(op.getIdentifier().toString()), null, null);
     }
 
     @Test

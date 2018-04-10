@@ -58,7 +58,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
         handler.persistList(descriptor);
         final List<Statement> expected = getExpectedStatementsForPersist(list);
-        verify(connectorMock).add(expected);
+        verify(connectorMock).add(expected, null);
     }
 
     private List<Statement> getExpectedStatementsForPersist(List<URI> list) {
@@ -95,7 +95,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         handler.updateList(descriptor);
         final Statement expectedAdd = createStatement(createResource(list.get(list.size() - 1).toString()),
                 createProperty(HAS_NEXT.getIdentifier().toString()), createResource(newItem.toString()));
-        verify(connectorMock).add(Collections.singletonList(expectedAdd));
+        verify(connectorMock).add(Collections.singletonList(expectedAdd), null);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         final Property hasNext = createProperty(HAS_NEXT.getIdentifier().toString());
         for (int i = update.size() - 1; i < list.size() - 1; i++) {
             verify(connectorMock).remove(createResource(list.get(i).toString()), hasNext,
-                    createResource(list.get(i + 1).toString()));
+                    createResource(list.get(i + 1).toString()), null);
         }
     }
 
@@ -127,13 +127,13 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         final Resource removed = createResource(list.get(index).toString());
         final Resource next = createResource(list.get(index + 1).toString());
         final Property previousLink = index == 0 ? HAS_LIST_PROPERTY : HAS_NEXT_PROPERTY;
-        verify(connectorMock).remove(previous, previousLink, removed);
-        verify(connectorMock).remove(removed, HAS_NEXT_PROPERTY, next);
+        verify(connectorMock).remove(previous, previousLink, removed, null);
+        verify(connectorMock).remove(removed, HAS_NEXT_PROPERTY, next, null);
         final List<Statement> expectedAdded = new ArrayList<>(2);
         expectedAdded.add(createStatement(previous, previousLink, createResource(replace.toString())));
         expectedAdded.add(createStatement(createResource(replace.toString()),
                 HAS_NEXT_PROPERTY, next));
-        verify(connectorMock).add(expectedAdded);
+        verify(connectorMock).add(expectedAdded, null);
     }
 
     @Test
@@ -144,10 +144,10 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         for (int i = 0; i < list.size(); i++) {
             if (i == 0) {
                 verify(connectorMock).remove(OWNER_RESOURCE,
-                        HAS_LIST_PROPERTY, createResource(list.get(i).toString()));
+                        HAS_LIST_PROPERTY, createResource(list.get(i).toString()), null);
             } else {
                 verify(connectorMock).remove(createResource(list.get(i - 1).toString()),
-                        HAS_NEXT_PROPERTY, createResource(list.get(i).toString()));
+                        HAS_NEXT_PROPERTY, createResource(list.get(i).toString()), null);
             }
         }
     }
@@ -165,7 +165,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
             expectedAdded.add(createStatement(createResource(update.get(i).toString()), HAS_NEXT_PROPERTY,
                     createResource(update.get(i + 1).toString())));
         }
-        verify(connectorMock).add(expectedAdded);
+        verify(connectorMock).add(expectedAdded, null);
     }
 
     @Test

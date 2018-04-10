@@ -17,6 +17,7 @@ import java.net.URI;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,17 +48,17 @@ public class IdentifierGeneratorTest {
 
     @Test
     public void generateIdentifierChecksForExistenceOfNewlyGeneratedIdentifier() {
-        when(connectorMock.contains(any(), any(), any())).thenReturn(false);
+        when(connectorMock.contains(any(), any(), any(), anyString())).thenReturn(false);
         final URI result = generator.generateIdentifier(TYPE_URI);
         assertNotNull(result);
         verify(connectorMock)
                 .contains(ResourceFactory.createResource(result.toString()), ResourceFactory.createProperty(
-                        Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_URI.toString()));
+                        Vocabulary.RDF_TYPE), ResourceFactory.createResource(TYPE_URI.toString()), null);
     }
 
     @Test
     public void throwsIdentifierGenerationExceptionWhenMaximumAttemptsToGenerateAreExceeded() {
-        when(connectorMock.contains(any(), any(), any())).thenReturn(true);
+        when(connectorMock.contains(any(), any(), any(), anyString())).thenReturn(true);
         thrown.expect(IdentifierGenerationException.class);
         generator.generateIdentifier(TYPE_URI);
     }

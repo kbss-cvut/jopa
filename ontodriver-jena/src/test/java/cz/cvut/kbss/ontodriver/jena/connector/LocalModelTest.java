@@ -21,7 +21,7 @@ public class LocalModelTest {
     @Test
     public void addStatementsAddsThemIntoDefaultAddModel() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.addStatements(Collections.singletonList(statement));
+        localModel.addStatements(Collections.singletonList(statement), null);
         final Dataset added = localModel.getAdded();
         assertTrue(added.getDefaultModel().contains(statement));
     }
@@ -37,7 +37,7 @@ public class LocalModelTest {
     @Test
     public void removeStatementsAddsThemIntoDefaultRemoveModel() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.removeStatements(Collections.singletonList(statement));
+        localModel.removeStatements(Collections.singletonList(statement), null);
         final Dataset removed = localModel.getRemoved();
         assertTrue(removed.getDefaultModel().contains(statement));
     }
@@ -53,9 +53,9 @@ public class LocalModelTest {
     @Test
     public void containsReturnsAddedForStatementInAdded() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.addStatements(Collections.singletonList(statement));
+        localModel.addStatements(Collections.singletonList(statement), null);
         assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
     }
 
     @Test
@@ -69,9 +69,9 @@ public class LocalModelTest {
     @Test
     public void containsReturnsRemovedForStatementInRemoved() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.removeStatements(Collections.singletonList(statement));
+        localModel.removeStatements(Collections.singletonList(statement), null);
         assertEquals(LocalModel.Containment.REMOVED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
     }
 
     @Test
@@ -85,16 +85,16 @@ public class LocalModelTest {
     @Test
     public void containsReturnsUnknownForStatementNotInLocalModel() {
         assertEquals(LocalModel.Containment.UNKNOWN,
-                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE)));
+                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), null));
     }
 
     @Test
     public void addStatementsRemovesThemFromRemoved() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.removeStatements(Collections.singletonList(statement));
+        localModel.removeStatements(Collections.singletonList(statement), null);
         assertTrue(localModel.getRemoved().getDefaultModel()
                              .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
-        localModel.addStatements(Collections.singletonList(statement));
+        localModel.addStatements(Collections.singletonList(statement), null);
         assertFalse(localModel.getRemoved().getDefaultModel()
                               .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
     }
@@ -113,10 +113,10 @@ public class LocalModelTest {
     @Test
     public void removeStatementsRemovesThemFromAdded() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.addStatements(Collections.singletonList(statement));
+        localModel.addStatements(Collections.singletonList(statement), null);
         assertTrue(localModel.getAdded().getDefaultModel()
                              .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
-        localModel.removeStatements(Collections.singletonList(statement));
+        localModel.removeStatements(Collections.singletonList(statement), null);
         assertFalse(localModel.getAdded().getDefaultModel()
                               .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
     }
@@ -135,11 +135,11 @@ public class LocalModelTest {
     @Test
     public void enhanceStatementsAddsAddedStatements() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.addStatements(Collections.singletonList(statement));
+        localModel.addStatements(Collections.singletonList(statement), null);
         final Collection<Statement> toEnhance = Collections
                 .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
         final Collection<Statement> result = localModel
-                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null);
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
         assertEquals(2, result.size());
         assertTrue(result.contains(statement));
         assertTrue(result.containsAll(toEnhance));
@@ -148,11 +148,11 @@ public class LocalModelTest {
     @Test
     public void enhanceStatementsRemovesRemovedStatements() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
-        localModel.removeStatements(Collections.singletonList(statement));
+        localModel.removeStatements(Collections.singletonList(statement), null);
         final Collection<Statement> toEnhance = Collections
                 .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE));
         final Collection<Statement> result = localModel
-                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null);
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
         assertTrue(result.isEmpty());
     }
 
@@ -191,7 +191,7 @@ public class LocalModelTest {
         final LocalModel model = new LocalModel(true);
         final Statement added = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         model.addStatements(Collections.singletonList(added), NAMED_GRAPH);
-        assertEquals(LocalModel.Containment.ADDED, model.contains(createResource(SUBJECT), null, null));
+        assertEquals(LocalModel.Containment.ADDED, model.contains(createResource(SUBJECT), null, null, null));
     }
 
     @Test
@@ -202,7 +202,7 @@ public class LocalModelTest {
         final Collection<Statement> toEnhance = Collections
                 .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
         final Collection<Statement> result = model
-                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null);
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
         assertTrue(result.isEmpty());
     }
 
@@ -211,7 +211,7 @@ public class LocalModelTest {
         final LocalModel model = new LocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         model.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
-        model.removeStatements(Collections.singletonList(statement));
+        model.removeStatements(Collections.singletonList(statement), null);
         assertTrue(model.getAdded().isEmpty());
     }
 
@@ -220,7 +220,7 @@ public class LocalModelTest {
         final LocalModel model = new LocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         model.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
-        model.addStatements(Collections.singletonList(statement));
+        model.addStatements(Collections.singletonList(statement), null);
         assertTrue(model.getRemoved().isEmpty());
         assertTrue(model.getAdded().getDefaultModel().contains(statement));
     }

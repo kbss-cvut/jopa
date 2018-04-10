@@ -33,7 +33,7 @@ public class JenaDataAccessor implements DataAccessor {
             }
             toAdd.add(createStatement(subject, property, value));
         }
-        ds.add(toAdd);
+        ds.add(toAdd, null);
         ds.commit();
     }
 

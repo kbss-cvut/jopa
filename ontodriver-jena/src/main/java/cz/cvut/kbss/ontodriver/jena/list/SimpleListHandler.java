@@ -9,6 +9,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,11 +40,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         for (; index < descriptor.getValues().size(); index++) {
             lastNode = appendNode(lastNode, index == 0 ? hasList : hasNext, descriptor.getValues().get(index), toAdd);
         }
-        if (descriptor.getContext() != null) {
-            connector.add(toAdd, descriptor.getContext().toString());
-        } else {
-            connector.add(toAdd);
-        }
+        final URI context = descriptor.getContext();
+        connector.add(toAdd, context != null ? context.toString() : null);
     }
 
     private Resource appendNode(Resource previous, Property property, NamedResource value, List<Statement> statements) {

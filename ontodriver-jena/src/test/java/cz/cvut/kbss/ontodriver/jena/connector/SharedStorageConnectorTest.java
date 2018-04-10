@@ -54,7 +54,7 @@ public class SharedStorageConnectorTest {
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
 
-        final Collection<Statement> result = connector.find(RESOURCE, null, null);
+        final Collection<Statement> result = connector.find(RESOURCE, null, null, null);
         assertFalse(result.isEmpty());
     }
 
@@ -83,7 +83,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.unwrap(Dataset.class);
         generateTestData(ds);
-        assertTrue(connector.contains(null, RDF.type, createResource(TYPE_ONE)));
+        assertTrue(connector.contains(null, RDF.type, createResource(TYPE_ONE), null));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class SharedStorageConnectorTest {
         final Statement statement = ResourceFactory.createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO));
         assertFalse(connector.storage.getDataset().getDefaultModel().contains(statement));
         connector.begin();
-        connector.add(Collections.singletonList(statement));
+        connector.add(Collections.singletonList(statement), null);
         assertTrue(connector.storage.getDataset().getDefaultModel().contains(statement));
     }
 
@@ -131,7 +131,7 @@ public class SharedStorageConnectorTest {
         final Statement statement = ResourceFactory.createStatement(RESOURCE, RDF.type, createResource(TYPE_ONE));
         assertTrue(connector.storage.getDataset().getDefaultModel().contains(statement));
         connector.begin();
-        connector.remove(Collections.singletonList(statement));
+        connector.remove(Collections.singletonList(statement), null);
         assertFalse(connector.storage.getDataset().getDefaultModel().contains(statement));
     }
 
@@ -154,7 +154,7 @@ public class SharedStorageConnectorTest {
         generateTestData(ds);
         assertTrue(ds.getDefaultModel().contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
         connector.begin();
-        connector.remove(RESOURCE, RDF.type, null);
+        connector.remove(RESOURCE, RDF.type, null, null);
         assertFalse(ds.getDefaultModel().contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
     }
 
@@ -182,7 +182,7 @@ public class SharedStorageConnectorTest {
         connector.begin();
         assertTrue(connector.storage.getDataset().isInTransaction());
         final Statement statement = ResourceFactory.createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO));
-        connector.add(Collections.singletonList(statement));
+        connector.add(Collections.singletonList(statement), null);
         connector.commit();
         assertFalse(connector.storage.getDataset().isInTransaction());
         assertTrue(connector.storage.getDataset().getDefaultModel().contains(statement));
@@ -193,7 +193,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         connector.begin();
         final Statement statement = ResourceFactory.createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO));
-        connector.add(Collections.singletonList(statement));
+        connector.add(Collections.singletonList(statement), null);
         connector.commit();
         verify(connector.storage).writeChanges();
     }
@@ -203,7 +203,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         connector.begin();
         final Statement statement = ResourceFactory.createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO));
-        connector.add(Collections.singletonList(statement));
+        connector.add(Collections.singletonList(statement), null);
         assertTrue(connector.storage.getDataset().getDefaultModel().contains(statement));
         connector.rollback();
         assertFalse(connector.storage.getDataset().getDefaultModel().contains(statement));
@@ -261,7 +261,7 @@ public class SharedStorageConnectorTest {
         generateTestData(connector.storage.getDataset());
 
         connector.begin();
-        connector.remove(RESOURCE, null, null);
+        connector.remove(RESOURCE, null, null, null);
         connector.commit();
         assertFalse(connector.storage.getDataset().getDefaultModel()
                                      .contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
@@ -275,7 +275,7 @@ public class SharedStorageConnectorTest {
         generateTestData(connector.storage.getDataset());
 
         connector.begin();
-        connector.remove(RESOURCE, null, null);
+        connector.remove(RESOURCE, null, null, null);
         connector.commit();
         assertFalse(connector.storage.getDataset().getDefaultModel()
                                      .contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
@@ -294,7 +294,7 @@ public class SharedStorageConnectorTest {
         connector.remove(Arrays.asList(
                 createStatement(RESOURCE, RDF.type, createResource(TYPE_ONE)),
                 createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO))
-        ));
+        ), null);
         connector.commit();
         assertFalse(connector.storage.getDataset().getDefaultModel()
                                      .contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
@@ -311,7 +311,7 @@ public class SharedStorageConnectorTest {
         connector.remove(Arrays.asList(
                 createStatement(RESOURCE, RDF.type, createResource(TYPE_ONE)),
                 createStatement(RESOURCE, RDF.type, createResource(TYPE_TWO))
-        ));
+        ), null);
         connector.commit();
         assertFalse(connector.storage.getDataset().getDefaultModel()
                                      .contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
@@ -375,7 +375,7 @@ public class SharedStorageConnectorTest {
         final String newType = Generator.generateUri().toString();
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + newType + "> . }";
         connector.executeUpdate(update, StatementOntology.CENTRAL);
-        final Collection<Statement> result = connector.find(RESOURCE, RDF.type, null);
+        final Collection<Statement> result = connector.find(RESOURCE, RDF.type, null, null);
         assertTrue(result.stream().anyMatch(s -> s.getObject().asResource().getURI().equals(newType)));
     }
 

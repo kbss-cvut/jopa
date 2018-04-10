@@ -81,7 +81,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
     @Test
     public void nextThrowsIntegrityConstraintViolationWhenMultipleNextNodesAreFound() {
         generateList();
-        when(connectorMock.find(RESOURCE, HAS_LIST, null)).thenReturn(
+        when(connectorMock.find(RESOURCE, HAS_LIST, null, null)).thenReturn(
                 Arrays.asList(createStatement(RESOURCE, HAS_LIST, createResource()),
                         createStatement(RESOURCE, HAS_LIST, createResource())));
         final AbstractListIterator iterator = iterator();

@@ -28,11 +28,7 @@ class InferredAxiomLoader extends AbstractAxiomLoader {
 
     @Override
     boolean contains(Resource subject, Property property, RDFNode object, URI context) {
-        if (context != null) {
-            return connector.containsWithInference(subject, property, object, context.toString());
-        } else {
-            return connector.containsWithInference(subject, property, object);
-        }
+        return connector.containsWithInference(subject, property, object, context != null ? context.toString() : null);
     }
 
     @Override
@@ -53,10 +49,6 @@ class InferredAxiomLoader extends AbstractAxiomLoader {
 
     @Override
     Collection<Statement> findStatements(Resource subject, Property property, URI context) {
-        if (context != null) {
-            return connector.findWithInference(subject, property, null, context.toString());
-        } else {
-            return connector.findWithInference(subject, property, null);
-        }
+        return connector.findWithInference(subject, property, null, context != null ? context.toString() : null);
     }
 }

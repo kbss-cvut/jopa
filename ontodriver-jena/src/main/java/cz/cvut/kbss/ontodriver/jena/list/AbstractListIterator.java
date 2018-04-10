@@ -44,11 +44,7 @@ abstract class AbstractListIterator {
     }
 
     void moveCursor(Resource from) {
-        if (context != null) {
-            this.cursor = connector.find(from, first() ? hasList : hasNext, null, context);
-        } else {
-            this.cursor = connector.find(from, first() ? hasList : hasNext, null);
-        }
+        this.cursor = connector.find(from, first() ? hasList : hasNext, null, context);
     }
 
     void resolveNextListNode() {
@@ -84,11 +80,7 @@ abstract class AbstractListIterator {
     }
 
     void remove(Resource subject, Property property, RDFNode object) {
-        if (context != null) {
-            connector.remove(subject, property, object, context);
-        } else {
-            connector.remove(subject, property, object);
-        }
+        connector.remove(subject, property, object, context);
     }
 
     abstract Axiom<NamedResource> nextAxiom();

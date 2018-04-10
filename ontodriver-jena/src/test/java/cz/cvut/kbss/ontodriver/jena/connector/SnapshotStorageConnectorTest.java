@@ -49,7 +49,7 @@ public class SnapshotStorageConnectorTest {
     public void beginCopiesDatasetFromCentralConnector() throws JenaDriverException {
         centralConnector.begin();
         final Statement existing = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        centralConnector.add(Collections.singletonList(existing));
+        centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
 
         connector.begin();
@@ -57,7 +57,7 @@ public class SnapshotStorageConnectorTest {
         assertTrue(dataset.getDefaultModel().contains(existing));
         assertNotSame(centralConnector.getStorage().getDataset(), dataset);
         centralConnector.begin();
-        centralConnector.remove(Collections.singletonList(existing));
+        centralConnector.remove(Collections.singletonList(existing), null);
         centralConnector.commit();
         assertTrue(dataset.getDefaultModel().contains(existing));
     }
@@ -100,9 +100,9 @@ public class SnapshotStorageConnectorTest {
     public void addStatementsInTransactionsAddsThemToTransactionalChanges() throws Exception {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        connector.add(Collections.singletonList(added));
+        connector.add(Collections.singletonList(added), null);
         assertEquals(LocalModel.Containment.ADDED,
-                getTransactionalChanges().contains(added.getSubject(), added.getPredicate(), added.getObject()));
+                getTransactionalChanges().contains(added.getSubject(), added.getPredicate(), added.getObject(), null));
     }
 
     private LocalModel getTransactionalChanges() throws Exception {
@@ -117,7 +117,7 @@ public class SnapshotStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         assertFalse(dataset().getDefaultModel()
                              .contains(added.getSubject(), added.getPredicate(), added.getObject()));
-        connector.add(Collections.singletonList(added));
+        connector.add(Collections.singletonList(added), null);
         assertTrue(dataset().getDefaultModel()
                             .contains(added.getSubject(), added.getPredicate(), added.getObject()));
     }
@@ -130,9 +130,9 @@ public class SnapshotStorageConnectorTest {
     public void rollbackDiscardsTransactionalChanges() throws Exception {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        connector.add(Collections.singletonList(added));
+        connector.add(Collections.singletonList(added), null);
         assertEquals(LocalModel.Containment.ADDED,
-                getTransactionalChanges().contains(added.getSubject(), added.getPredicate(), added.getObject()));
+                getTransactionalChanges().contains(added.getSubject(), added.getPredicate(), added.getObject(), null));
         connector.rollback();
         assertNull(getTransactionalChanges());
     }
@@ -154,10 +154,10 @@ public class SnapshotStorageConnectorTest {
     public void findQueriesTransactionalSnapshot() {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        connector.add(Collections.singletonList(added));
-        final Collection<Statement> result = connector.find(added.getSubject(), added.getPredicate(), null);
+        connector.add(Collections.singletonList(added), null);
+        final Collection<Statement> result = connector.find(added.getSubject(), added.getPredicate(), null, null);
         assertTrue(result.contains(added));
-        verify(centralConnector, never()).find(any(), any(), any());
+        verify(centralConnector, never()).find(any(), any(), any(), anyString());
     }
 
     @Test
@@ -168,7 +168,7 @@ public class SnapshotStorageConnectorTest {
         connector.add(Collections.singletonList(added), context);
         final Collection<Statement> result = connector.find(added.getSubject(), added.getPredicate(), null, context);
         assertTrue(result.contains(added));
-        verify(centralConnector, never()).find(any(), any(), any());
+        verify(centralConnector, never()).find(any(), any(), any(), anyString());
         verify(centralConnector, never()).find(any(), any(), any(), eq(context));
     }
 
@@ -176,9 +176,9 @@ public class SnapshotStorageConnectorTest {
     public void containsQueriesTransactionalSnapshot() {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        connector.add(Collections.singletonList(added));
-        assertTrue(connector.contains(added.getSubject(), added.getPredicate(), null));
-        verify(centralConnector, never()).contains(any(), any(), any());
+        connector.add(Collections.singletonList(added), null);
+        assertTrue(connector.contains(added.getSubject(), added.getPredicate(), null, null));
+        verify(centralConnector, never()).contains(any(), any(), any(), anyString());
     }
 
     @Test
@@ -188,7 +188,7 @@ public class SnapshotStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), context);
         assertTrue(connector.contains(added.getSubject(), added.getPredicate(), null, context));
-        verify(centralConnector, never()).contains(any(), any(), any());
+        verify(centralConnector, never()).contains(any(), any(), any(), anyString());
         verify(centralConnector, never()).contains(any(), any(), any(), eq(context));
     }
 
@@ -208,12 +208,12 @@ public class SnapshotStorageConnectorTest {
     public void removeRemovesStatementsFromSnapshot() throws JenaDriverException {
         centralConnector.begin();
         final Statement existing = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        centralConnector.add(Collections.singletonList(existing));
+        centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject()));
-        connector.remove(Collections.singletonList(existing));
-        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject()));
+        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
+        connector.remove(Collections.singletonList(existing), null);
+        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
     }
 
     @Test
@@ -233,12 +233,12 @@ public class SnapshotStorageConnectorTest {
     public void removeRemovesStatementsFilteredBySubjectPredicateObjectFromSnapshot() throws JenaDriverException {
         centralConnector.begin();
         final Statement existing = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        centralConnector.add(Collections.singletonList(existing));
+        centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject()));
-        connector.remove(existing.getSubject(), existing.getPredicate(), null);
-        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject()));
+        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
+        connector.remove(existing.getSubject(), existing.getPredicate(), null, null);
+        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
     }
 
     @Test
@@ -259,18 +259,18 @@ public class SnapshotStorageConnectorTest {
     public void commitAppliesChangesToCentralConnector() throws JenaDriverException {
         centralConnector.begin();
         final Statement existing = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        centralConnector.add(Collections.singletonList(existing));
+        centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
         reset(centralConnector);
 
         connector.begin();
-        connector.remove(existing.getSubject(), existing.getPredicate(), existing.getObject());
+        connector.remove(existing.getSubject(), existing.getPredicate(), existing.getObject(), null);
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO));
-        connector.add(Collections.singletonList(added));
+        connector.add(Collections.singletonList(added), null);
         connector.commit();
         verify(centralConnector).begin();
-        verify(centralConnector).remove(Collections.singletonList(existing));
-        verify(centralConnector).add(Collections.singletonList(added));
+        verify(centralConnector).remove(Collections.singletonList(existing), null);
+        verify(centralConnector).add(Collections.singletonList(added), null);
         verify(centralConnector).commit();
     }
 
@@ -299,7 +299,7 @@ public class SnapshotStorageConnectorTest {
     public void executeSelectQueryUsesTransactionalSnapshotToRunQuery() throws OntoDriverException {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        connector.add(Collections.singletonList(added));
+        connector.add(Collections.singletonList(added), null);
         final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
         try (final AbstractResultSet resultSet = connector.executeSelectQuery(query, StatementOntology.TRANSACTIONAL)) {
             assertTrue(resultSet.hasNext());
@@ -323,7 +323,7 @@ public class SnapshotStorageConnectorTest {
     public void executeAskQueryUsesTransactionalSnapshotToRunQuery() throws OntoDriverException {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        connector.add(Collections.singletonList(added));
+        connector.add(Collections.singletonList(added), null);
         final Query query = QueryFactory.create("ASK { <" + SUBJECT + "> ?y ?z . }");
         try (final AbstractResultSet resultSet = connector.executeAskQuery(query, StatementOntology.TRANSACTIONAL)) {
             assertTrue(resultSet.hasNext());
@@ -337,7 +337,7 @@ public class SnapshotStorageConnectorTest {
     public void executeAskQueryPassesQueryToCentralConnectorWhenConfigured() throws OntoDriverException {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
-        connector.add(Collections.singletonList(added));
+        connector.add(Collections.singletonList(added), null);
         final Query query = QueryFactory.create("ASK { <" + SUBJECT + "> ?y ?z . }");
         try (final AbstractResultSet resultSet = connector.executeAskQuery(query, StatementOntology.CENTRAL)) {
             assertTrue(resultSet.hasNext());
@@ -353,7 +353,7 @@ public class SnapshotStorageConnectorTest {
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
         connector.executeUpdate(update, StatementOntology.TRANSACTIONAL);
         verify(centralConnector, never()).executeUpdate(eq(update), any());
-        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
     }
 
     @Test
@@ -369,10 +369,10 @@ public class SnapshotStorageConnectorTest {
         connector.begin();
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
         connector.executeUpdate(update, StatementOntology.TRANSACTIONAL);
-        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
-        assertFalse(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
+        assertFalse(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
         connector.commit();
         verify(centralConnector).executeUpdate(update, StatementOntology.CENTRAL);
-        assertTrue(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
+        assertTrue(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
     }
 }

@@ -90,11 +90,7 @@ class SnapshotStorageWithInference extends SnapshotStorage {
                 dataset.getNamedModel(context);
     }
 
-    ValidityReport checkConsistency() {
-        return getDefaultGraph().validate();
-    }
-
     ValidityReport checkConsistency(String context) {
-        return getNamedGraph(context).validate();
+        return context != null ? getNamedGraph(context).validate() : getDefaultGraph().validate();
     }
 }

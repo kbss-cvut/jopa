@@ -50,7 +50,7 @@ public class PropertiesHandlerTest {
         final List<Statement> statements = Arrays
                 .asList(createStatement(SUBJECT_RESOURCE, pOne, ResourceFactory.createTypedLiteral(vOne)),
                         createStatement(SUBJECT_RESOURCE, pTwo, createResource(vTwo.toString())));
-        when(connectorMock.find(SUBJECT_RESOURCE, null, null)).thenReturn(statements);
+        when(connectorMock.find(SUBJECT_RESOURCE, null, null, null)).thenReturn(statements);
 
         final Collection<Axiom<?>> result = handler.getProperties(SUBJECT, null, false);
         final List<Axiom<?>> lResult = new ArrayList<>(result);
@@ -78,7 +78,7 @@ public class PropertiesHandlerTest {
         assertEquals(Assertion.createDataPropertyAssertion(URI.create(pOne.getURI()), false),
                 lResult.get(0).getAssertion());
         assertEquals(new Value<>(vOne), lResult.get(0).getValue());
-        verify(connectorMock, never()).find(any(), any(), any());
+        verify(connectorMock, never()).find(any(), any(), any(),eq(null));
     }
 
     @Test
@@ -91,7 +91,7 @@ public class PropertiesHandlerTest {
         handler.addProperties(SUBJECT, null,
                 Collections.singletonMap(a, new HashSet<>(Arrays.asList(new Value<>(vOne), new Value<>(vTwo)))));
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         assertEquals(2, captor.getValue().size());
         captor.getValue().forEach(item -> {
             final Statement s = (Statement) item;
@@ -134,9 +134,9 @@ public class PropertiesHandlerTest {
         handler.removeProperties(SUBJECT, null,
                 Collections.singletonMap(a, new HashSet<>(Arrays.asList(new Value<>(vOne), new Value<>(vTwo)))));
         verify(connectorMock)
-                .remove(SUBJECT_RESOURCE, createProperty(a.getIdentifier().toString()), createTypedLiteral(vOne));
+                .remove(SUBJECT_RESOURCE, createProperty(a.getIdentifier().toString()), createTypedLiteral(vOne), null);
         verify(connectorMock)
-                .remove(SUBJECT_RESOURCE, createProperty(a.getIdentifier().toString()), createTypedLiteral(vTwo));
+                .remove(SUBJECT_RESOURCE, createProperty(a.getIdentifier().toString()), createTypedLiteral(vTwo), null);
     }
 
     @Test

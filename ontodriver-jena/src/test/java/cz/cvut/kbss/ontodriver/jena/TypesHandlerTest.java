@@ -25,8 +25,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,7 +51,7 @@ public class TypesHandlerTest {
         final Set<Statement> statements = types.stream().map(t -> ResourceFactory
                 .createStatement(SUBJECT_RESOURCE, createProperty(RDF_TYPE), createResource(t)))
                                                .collect(Collectors.toSet());
-        when(connectorMock.find(any(), any(), any())).thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
         final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, null, false);
         assertEquals(result.size(), statements.size());
         result.forEach(a -> {
@@ -60,7 +59,7 @@ public class TypesHandlerTest {
             assertEquals(Assertion.createClassAssertion(false), a.getAssertion());
             assertTrue(types.contains(a.getValue().stringValue()));
         });
-        verify(connectorMock).find(SUBJECT_RESOURCE, createProperty(RDF_TYPE), null);
+        verify(connectorMock).find(SUBJECT_RESOURCE, createProperty(RDF_TYPE), null, null);
     }
 
     private static Set<String> generateTypes() {
@@ -90,7 +89,7 @@ public class TypesHandlerTest {
         final Set<String> types = generateTypes();
         handler.addTypes(SUBJECT, null, types.stream().map(URI::create).collect(Collectors.toSet()));
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).add(captor.capture());
+        verify(connectorMock).add(captor.capture(), eq(null));
         verifyTypesStatements(types, captor.getValue());
     }
 
@@ -118,7 +117,7 @@ public class TypesHandlerTest {
         final Set<String> types = generateTypes();
         handler.removeTypes(SUBJECT, null, types.stream().map(URI::create).collect(Collectors.toSet()));
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(connectorMock).remove(captor.capture());
+        verify(connectorMock).remove(captor.capture(), eq(null));
         verifyTypesStatements(types, captor.getValue());
     }
 

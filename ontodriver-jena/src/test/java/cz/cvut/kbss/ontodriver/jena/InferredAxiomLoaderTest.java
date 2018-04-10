@@ -17,9 +17,7 @@ import java.net.URI;
 import java.util.*;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,10 +42,10 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final URI clsUri = Generator.generateUri();
         final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(clsUri)));
-        when(connectorMock.containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString())))
+        when(connectorMock.containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), null))
                 .thenReturn(true);
         assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock).containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()));
+        verify(connectorMock).containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), null);
     }
 
     @Test
@@ -70,9 +68,9 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final Resource cls = createResource(Generator.generateUri().toString());
         final Property property = createProperty(aTwo.getIdentifier().toString());
         final Resource object = createResource(Generator.generateUri().toString());
-        when(connectorMock.findWithInference(SUBJECT_RES, RDF.type, null))
+        when(connectorMock.findWithInference(SUBJECT_RES, RDF.type, null, null))
                 .thenReturn(Collections.singletonList(createStatement(SUBJECT_RES, RDF.type, cls)));
-        when(connectorMock.findWithInference(SUBJECT_RES, property, null))
+        when(connectorMock.findWithInference(SUBJECT_RES, property, null, null))
                 .thenReturn(Collections.singletonList(createStatement(SUBJECT_RES, property, object)));
         descriptor.addAssertion(aOne);
         descriptor.addAssertion(aTwo);
@@ -84,8 +82,8 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final Optional<Axiom<?>> refAxiom = result.stream().filter(a -> a.getAssertion().equals(aTwo)).findAny();
         assertTrue(refAxiom.isPresent());
         assertEquals(NamedResource.create(object.getURI()), refAxiom.get().getValue().getValue());
-        verify(connectorMock).findWithInference(SUBJECT_RES, RDF.type, null);
-        verify(connectorMock).findWithInference(SUBJECT_RES, property, null);
+        verify(connectorMock).findWithInference(SUBJECT_RES, RDF.type, null, null);
+        verify(connectorMock).findWithInference(SUBJECT_RES, property, null, null);
     }
 
     @Test
@@ -123,7 +121,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final Property propertyOne = createProperty(aOne.getIdentifier().toString());
         final Property propertyTwo = createProperty(aTwo.getIdentifier().toString());
         final Resource object = createResource(Generator.generateUri().toString());
-        when(connectorMock.findWithInference(SUBJECT_RES, null, null)).thenReturn(Arrays.asList(
+        when(connectorMock.findWithInference(SUBJECT_RES, null, null, null)).thenReturn(Arrays.asList(
                 createStatement(SUBJECT_RES, propertyOne, literal),
                 createStatement(SUBJECT_RES, propertyTwo, object)
         ));
@@ -135,7 +133,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final Optional<Axiom<?>> refAxiom = result.stream().filter(a -> a.getAssertion().equals(aTwo)).findAny();
         assertTrue(refAxiom.isPresent());
         assertEquals(NamedResource.create(object.getURI()), refAxiom.get().getValue().getValue());
-        verify(connectorMock).findWithInference(SUBJECT_RES, null, null);
+        verify(connectorMock).findWithInference(SUBJECT_RES, null, null, null);
     }
 
     @Test
@@ -143,7 +141,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final Literal literal = createTypedLiteral(117);
         final Property propertyOne = createProperty(Generator.generateUri().toString());
         final Resource object = createResource(Generator.generateUri().toString());
-        when(connectorMock.findWithInference(SUBJECT_RES, null, null)).thenReturn(Arrays.asList(
+        when(connectorMock.findWithInference(SUBJECT_RES, null, null, null)).thenReturn(Arrays.asList(
                 createStatement(SUBJECT_RES, propertyOne, literal),
                 createStatement(SUBJECT_RES, RDF.type, object)
         ));

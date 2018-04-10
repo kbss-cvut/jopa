@@ -70,7 +70,7 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
     public void nextThrowsListProcessingExceptionWhenNodeIsLiteral() {
         final List<URI> list = generateList();
         final String nodeUri = list.get(list.size() - 1).toString();
-        when(connectorMock.find(createResource(nodeUri), HAS_NEXT, null)).thenReturn(
+        when(connectorMock.find(createResource(nodeUri), HAS_NEXT, null, null)).thenReturn(
                 Collections.singletonList(createStatement(createResource(nodeUri), HAS_NEXT, createTypedLiteral(117))));
         final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         thrown.expect(ListProcessingException.class);
@@ -89,7 +89,7 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         }
         iterator.removeWithoutReconnect();
         verify(connectorMock).remove(createResource(list.get(list.size() - 2).toString()), HAS_NEXT,
-                createResource(list.get(list.size() - 1).toString()));
+                createResource(list.get(list.size() - 1).toString()), null);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
         iterator.nextValue();
         iterator.removeWithoutReconnect();
-        verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()));
+        verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()), null);
     }
 
     @Test
@@ -111,10 +111,10 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         final Resource newOne = createResource(Generator.generateUri().toString());
         iterator.replace(newOne);
         verify(connectorMock).remove(createResource(list.get(list.size() - 2).toString()), HAS_NEXT,
-                createResource(list.get(list.size() - 1).toString()));
+                createResource(list.get(list.size() - 1).toString()), null);
         final Statement expectedAdded = createStatement(createResource(list.get(list.size() - 2).toString()), HAS_NEXT,
                 newOne);
-        verify(connectorMock).add(Collections.singletonList(expectedAdded));
+        verify(connectorMock).add(Collections.singletonList(expectedAdded), null);
     }
 
     @Test
@@ -133,15 +133,15 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         final Resource newOne = createResource(Generator.generateUri().toString());
         iterator.replace(newOne);
         verify(connectorMock).remove(createResource(list.get(index - 1).toString()), HAS_NEXT,
-                createResource(list.get(index).toString()));
+                createResource(list.get(index).toString()), null);
         verify(connectorMock).remove(createResource(list.get(index).toString()), HAS_NEXT,
-                createResource(list.get(index + 1).toString()));
+                createResource(list.get(index + 1).toString()), null);
         final Statement expectedAddedPrevLink = createStatement(createResource(list.get(index - 1).toString()),
                 HAS_NEXT,
                 newOne);
         final Statement expectedAddedNextLink = createStatement(newOne, HAS_NEXT,
                 createResource(list.get(index + 1).toString()));
-        verify(connectorMock).add(Arrays.asList(expectedAddedPrevLink, expectedAddedNextLink));
+        verify(connectorMock).add(Arrays.asList(expectedAddedPrevLink, expectedAddedNextLink), null);
     }
 
     @Test
@@ -151,13 +151,13 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         iterator.nextValue();
         final Resource newOne = createResource(Generator.generateUri().toString());
         iterator.replace(newOne);
-        verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()));
+        verify(connectorMock).remove(RESOURCE, HAS_LIST, createResource(list.get(0).toString()), null);
         verify(connectorMock)
-                .remove(createResource(list.get(0).toString()), HAS_NEXT, createResource(list.get(1).toString()));
+                .remove(createResource(list.get(0).toString()), HAS_NEXT, createResource(list.get(1).toString()), null);
         final Statement expectedAddedPrevLink = createStatement(RESOURCE, HAS_LIST, newOne);
         final Statement expectedAddedNextLink = createStatement(newOne, HAS_NEXT,
                 createResource(list.get(1).toString()));
-        verify(connectorMock).add(Arrays.asList(expectedAddedPrevLink, expectedAddedNextLink));
+        verify(connectorMock).add(Arrays.asList(expectedAddedPrevLink, expectedAddedNextLink), null);
     }
 
     @Test
@@ -169,11 +169,11 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         final Resource newOne = createResource(list.get(2).toString());
         iterator.replace(newOne);
         verify(connectorMock)
-                .remove(createResource(list.get(0).toString()), HAS_NEXT, createResource(list.get(1).toString()));
+                .remove(createResource(list.get(0).toString()), HAS_NEXT, createResource(list.get(1).toString()), null);
         verify(connectorMock)
-                .remove(createResource(list.get(1).toString()), HAS_NEXT, createResource(list.get(2).toString()));
+                .remove(createResource(list.get(1).toString()), HAS_NEXT, createResource(list.get(2).toString()), null);
         final Statement expectedAddedPrevLink = createStatement(createResource(list.get(0).toString()), HAS_NEXT,
                 newOne);
-        verify(connectorMock).add(Collections.singletonList(expectedAddedPrevLink));
+        verify(connectorMock).add(Collections.singletonList(expectedAddedPrevLink), null);
     }
 }

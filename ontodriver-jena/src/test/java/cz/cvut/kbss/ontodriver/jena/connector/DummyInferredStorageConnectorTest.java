@@ -29,8 +29,8 @@ public class DummyInferredStorageConnectorTest {
 
     @Test
     public void containsWithInferenceByDefaultUsesRegularContains() {
-        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_ONE)),
-                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_ONE)));
+        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_ONE), null),
+                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_ONE), null));
     }
 
     @Test
@@ -41,8 +41,8 @@ public class DummyInferredStorageConnectorTest {
 
     @Test
     public void findWithInferenceByDefaultUsesRegularFind() {
-        assertEquals(wrappedConnector.find(RESOURCE, RDF.type, null),
-                connector.findWithInference(RESOURCE, RDF.type, null));
+        assertEquals(wrappedConnector.find(RESOURCE, RDF.type, null, null),
+                connector.findWithInference(RESOURCE, RDF.type, null, null));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class DummyInferredStorageConnectorTest {
 
     @Test
     public void isConsistentReturnsTrue() {
-        assertTrue(connector.isConsistent());
+        assertTrue(connector.isConsistent(null));
     }
 
     @Test

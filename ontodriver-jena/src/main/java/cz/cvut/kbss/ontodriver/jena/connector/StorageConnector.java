@@ -29,51 +29,31 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
     void rollback();
 
     /**
-     * Retrieves statements corresponding to the specified criteria.
-     * <p>
-     * All the parameters are optional, their absence signifies that any value in that position is acceptable.
-     *
-     * @param subject  Statement subject, optional
-     * @param property Property, optional
-     * @param value    Value, optional
-     * @return Collection of matching statements
-     */
-    Collection<Statement> find(Resource subject, Property property, RDFNode value);
-
-    /**
      * Retrieves statements corresponding to the specified criteria from the specified named graph.
      * <p>
      * The first three parameters are optional, their absence signifies that any value in that position is acceptable.
+     * <p>
+     * {@code context} is also optional, its absence means that the default graph should be used.
      *
      * @param subject  Statement subject, optional
      * @param property Property, optional
      * @param value    Value, optional
-     * @param context  Named graph URI
+     * @param context  Named graph IRI, optional
      * @return Collection of matching statements
      */
     Collection<Statement> find(Resource subject, Property property, RDFNode value, String context);
 
     /**
-     * Checks whether the storage contains any statements matching the specified criteria.
-     * <p>
-     * All the parameters are optional, their absence signifies that any value in that position is acceptable.
-     *
-     * @param subject  Subject, optional
-     * @param property Property, optional
-     * @param value    Value, optional
-     * @return {@code true} if at least one statement matches the criteria, {@code false} otherwise
-     */
-    boolean contains(Resource subject, Property property, RDFNode value);
-
-    /**
      * Checks whether the specified context (named graph) contains any statements matching the specified criteria.
      * <p>
      * The first three parameters are optional, their absence signifies that any value in that position is acceptable.
+     * <p>
+     * {@code context} is also optional, its absence means that the default graph should be used.
      *
      * @param subject  Subject, optional
      * @param property Property, optional
      * @param value    Value, optional
-     * @param context  Named graph URI
+     * @param context  Named graph IRI, optional
      * @return {@code true} if at least one statement matches the criteria, {@code false} otherwise
      */
     boolean contains(Resource subject, Property property, RDFNode value, String context);
@@ -86,61 +66,38 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
     List<String> getContexts();
 
     /**
-     * Adds the specified statements to the storage.
-     * <p>
-     * Requires an active transaction.
-     *
-     * @param statements Statements to add
-     */
-    void add(List<Statement> statements);
-
-    /**
      * Adds the specified statements to the specified context in the storage.
      * <p>
      * Requires an active transaction.
+     * <p>
+     * {@code context} is optional, its absence means that the statements will be added into the the default graph.
      *
      * @param statements Statements to add
-     * @param context    Target context
+     * @param context    Target context, optional
      */
     void add(List<Statement> statements, String context);
-
-    /**
-     * Removes the specified statements from the storage.
-     * <p>
-     * Requires an active transaction.
-     *
-     * @param statements Statements to remove
-     */
-    void remove(List<Statement> statements);
 
     /**
      * Removes the specified statements from the specified context in the storage.
      * <p>
      * Requires an active transaction.
+     * <p>
+     * {@code context} is optional, its absence means that the statements will be removed from the the default graph.
      *
      * @param statements Statements to remove
-     * @param context    Target context
+     * @param context    Target context, optional
      */
     void remove(List<Statement> statements, String context);
 
     /**
-     * Removes statements matching the specified pattern from the storage.
-     * <p>
-     * This operation works with the default context.
-     *
-     * @param subject  Statement subject, optional
-     * @param property Statement property, optional
-     * @param object   Statement object, optional
-     */
-    void remove(Resource subject, Property property, RDFNode object);
-
-    /**
      * Removes statements matching the specified pattern from the specified storage context.
+     * <p>
+     * {@code context} is optional, its absence means that the statements will be removed from the the default graph.
      *
      * @param subject  Statement subject, optional
      * @param property Statement property, optional
      * @param object   Statement object, optional
-     * @param context  Repository context IRI
+     * @param context  Repository context IRI, optional
      */
     void remove(Resource subject, Property property, RDFNode object, String context);
 

@@ -34,13 +34,7 @@ class AxiomSaver {
             statements.putIfAbsent(strContext, new ArrayList<>());
             statements.get(strContext).addAll(transformToStatements(a, descriptor.getAssertionValues(a), subject));
         }
-        statements.forEach((ctx, toAdd) -> {
-            if (ctx != null) {
-                connector.add(toAdd, ctx);
-            } else {
-                connector.add(toAdd);
-            }
-        });
+        statements.forEach((ctx, toAdd) -> connector.add(toAdd, ctx));
     }
 
     private List<Statement> transformToStatements(Assertion assertion, Collection<Value<?>> values, Resource subject) {
@@ -89,10 +83,6 @@ class AxiomSaver {
         for (Map.Entry<Assertion, Set<Value<?>>> e : properties.entrySet()) {
             statements.addAll(transformToStatements(e.getKey(), e.getValue(), resource));
         }
-        if (context != null) {
-            connector.add(statements, context.toString());
-        } else {
-            connector.add(statements);
-        }
+        connector.add(statements, context != null ? context.toString() : null);
     }
 }

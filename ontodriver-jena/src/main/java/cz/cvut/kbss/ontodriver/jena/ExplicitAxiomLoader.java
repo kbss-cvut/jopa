@@ -27,11 +27,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
 
     @Override
     boolean contains(Resource subject, Property property, RDFNode object, URI context) {
-        if (context != null) {
-            return connector.contains(subject, property, object, context.toString());
-        } else {
-            return connector.contains(subject, property, object);
-        }
+        return connector.contains(subject, property, object, context != null ? context.toString() : null);
     }
 
     @Override
@@ -53,11 +49,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
 
     @Override
     Collection<Statement> findStatements(Resource subject, Property property, URI context) {
-        if (context != null) {
-            return connector.find(subject, property, null, context.toString());
-        } else {
-            return connector.find(subject, property, null);
-        }
+        return connector.find(subject, property, null, context != null ? context.toString() : null);
     }
 
     private List<Axiom<?>> transformStatementsToAxioms(AxiomDescriptor descriptor, Collection<Statement> statements) {
