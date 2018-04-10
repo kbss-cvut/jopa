@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.*;
 
@@ -37,6 +38,10 @@ public class OwlapiDataAccessor implements DataAccessor {
             if (t.getProperty().toString().equals(CommonVocabulary.RDF_TYPE)) {
                 final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
                 axiom = new AddAxiom(ontology, df.getOWLClassAssertionAxiom(cls, ind));
+            } else if (t.getProperty().toString().equals(Vocabulary.RDFS_SUBCLASS_OF)) {
+                final OWLClass subclass = df.getOWLClass(IRI.create(t.getSubject().toString()));
+                final OWLClass superclass = df.getOWLClass(IRI.create(t.getValue().toString()));
+                axiom = new AddAxiom(ontology, df.getOWLSubClassOfAxiom(subclass, superclass));
             } else if (t.getValue() instanceof URI) {
                 final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(t.getProperty()));
                 final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) t.getValue()));

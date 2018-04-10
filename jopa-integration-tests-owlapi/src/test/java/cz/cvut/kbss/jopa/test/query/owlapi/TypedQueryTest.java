@@ -19,10 +19,7 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,12 +64,14 @@ public class TypedQueryTest extends TypedQueryRunner {
     }
 
     @Ignore
+    @Test
     @Override
     public void usingUntypedQueryAllowsToSpecifyLimitInQuery() {
         // OWL2Query does not support LIMIT in queries
     }
 
     @Override
+    @Test
     public void setFirstResultCanBeUsedToOffsetFirstQueryResult() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         final int offset = expected.size() / 2;

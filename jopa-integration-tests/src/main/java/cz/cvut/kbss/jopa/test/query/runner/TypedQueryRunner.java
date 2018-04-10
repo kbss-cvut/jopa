@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -214,7 +214,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Ignore
     @Test
-    public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() throws Exception {
+    public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() {
         logger.debug("Test: execute an ASK query which returns changes yet to be committed in transaction.");
         final OWLClassE e = new OWLClassE();
         getEntityManager().getTransaction().begin();
@@ -254,7 +254,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void usingDescriptorAllowsToCustomizeQueryResults() throws Exception {
+    public void usingDescriptorAllowsToCustomizeQueryResults() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         expected.forEach(a -> assertNotNull(a.getStringAttribute()));
         final Descriptor descriptor = new EntityDescriptor();
@@ -266,7 +266,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() throws Exception {
+    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         final int size = expected.size() / 2;
         final List<OWLClassA> result = getEntityManager().createNativeQuery("SELECT ?x WHERE {" +
@@ -277,7 +277,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void setFirstResultCanBeUsedToOffsetFirstQueryResult() throws Exception {
+    public void setFirstResultCanBeUsedToOffsetFirstQueryResult() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         expected.sort(Comparator.comparing(OWLClassA::getUri));
         final int offset = expected.size() / 2;

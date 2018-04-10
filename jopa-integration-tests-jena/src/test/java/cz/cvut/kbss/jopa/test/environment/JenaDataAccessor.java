@@ -1,11 +1,14 @@
 package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.assertTrue;
@@ -13,10 +16,10 @@ import static org.junit.Assert.assertTrue;
 public class JenaDataAccessor implements DataAccessor {
 
     @Override
-    public void persistTestData(Collection<Triple> data, EntityManager em) {
-        em.getTransaction().begin();
-        final Dataset ds = em.unwrap(Dataset.class);
-        final Model model = ds.getDefaultModel();
+    public void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
+        final StorageConnector ds = em.unwrap(StorageConnector.class);
+        ds.begin();
+        final List<Statement> toAdd = new ArrayList<>(data.size());
         for (Triple t : data) {
             final Resource subject = createResource(t.getSubject().toString());
             final Property property = createProperty(t.getProperty().toString());
@@ -28,9 +31,10 @@ public class JenaDataAccessor implements DataAccessor {
                         ResourceFactory.createLangLiteral(t.getValue().toString(), t.getLanguage()) :
                         ResourceFactory.createTypedLiteral(t.getValue());
             }
-            model.add(subject, property, value);
+            toAdd.add(createStatement(subject, property, value));
         }
-        em.getTransaction().commit();
+        ds.add(toAdd);
+        ds.commit();
     }
 
     @Override
