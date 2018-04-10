@@ -2,22 +2,17 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.rdf.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
 
-import static cz.cvut.kbss.ontodriver.model.Assertion.createDataPropertyAssertion;
-import static cz.cvut.kbss.ontodriver.model.Assertion.createObjectPropertyAssertion;
-
-class ExplicitAxiomLoader {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ExplicitAxiomLoader.class);
+class ExplicitAxiomLoader extends AbstractAxiomLoader {
 
     private static final Assertion UNSPECIFIED_ASSERTION = Assertion.createUnspecifiedPropertyAssertion(false);
 
@@ -30,10 +25,8 @@ class ExplicitAxiomLoader {
         this.connector = connector;
     }
 
-    boolean contains(Axiom<?> axiom, URI context) {
-        final Resource subject = ResourceFactory.createResource(axiom.getSubject().getIdentifier().toString());
-        final Property property = ResourceFactory.createProperty(axiom.getAssertion().getIdentifier().toString());
-        final RDFNode object = JenaUtils.valueToRdfNode(axiom.getAssertion(), axiom.getValue());
+    @Override
+    boolean contains(Resource subject, Property property, RDFNode object, URI context) {
         if (context != null) {
             return connector.contains(subject, property, object, context.toString());
         } else {
@@ -41,32 +34,25 @@ class ExplicitAxiomLoader {
         }
     }
 
-    Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
-        mapProperties(descriptor);
+    @Override
+    Collection<Axiom<?>> find(AxiomDescriptor descriptor, Map<String, Assertion> assertions) {
+        this.assertedProperties = assertions;
+        this.unspecifiedProperty = resolveUnspecifiedProperty();
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
-        final Collection<Statement> statements = findInternal(subject, null, descriptor.getSubjectContext());
+        final Collection<Statement> statements = findStatements(subject, null, descriptor.getSubjectContext());
         final List<Axiom<?>> result = transformStatementsToAxioms(descriptor, statements);
         result.addAll(loadAxiomsForPropertiesInContext(descriptor, subject));
         return result;
     }
 
-    private void mapProperties(AxiomDescriptor descriptor) {
-        this.assertedProperties = new HashMap<>(descriptor.getAssertions().size());
-        for (Assertion a : descriptor.getAssertions()) {
-            if (a.isInferred()) {
-                LOG.warn("Inference is not supported by the current version of Jena OntoDriver.");
-                continue;
-            }
-            assert !a.isInferred();
-            if (a.equals(UNSPECIFIED_ASSERTION)) {
-                this.unspecifiedProperty = a;
-                continue;
-            }
-            assertedProperties.put(a.getIdentifier().toString(), a);
-        }
+    private Assertion resolveUnspecifiedProperty() {
+        final Optional<Assertion> unspecified =
+                assertedProperties.values().stream().filter(a -> a.equals(UNSPECIFIED_ASSERTION)).findAny();
+        return unspecified.orElse(null);
     }
 
-    private Collection<Statement> findInternal(Resource subject, Property property, URI context) {
+    @Override
+    Collection<Statement> findStatements(Resource subject, Property property, URI context) {
         if (context != null) {
             return connector.find(subject, property, null, context.toString());
         } else {
@@ -83,7 +69,7 @@ class ExplicitAxiomLoader {
             }
             final Assertion a =
                     assertedProperties.containsKey(property.getURI()) ? assertedProperties.get(property.getURI()) :
-                            createAssertionForStatement(property, statement.getObject());
+                            createAssertionForStatement(statement);
             final Optional<Value<?>> value = resolveValue(a, statement.getObject());
             value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
         }
@@ -102,42 +88,6 @@ class ExplicitAxiomLoader {
         return !assertionContextSameAsSubject(descriptor.getSubjectContext(), descriptor.getAssertionContext(a));
     }
 
-    private Optional<Value<?>> resolveValue(Assertion assertion, RDFNode object) {
-        if (object.isResource()) {
-            if (object.isAnon() || assertion.getType() == Assertion.AssertionType.DATA_PROPERTY) {
-                return Optional.empty();
-            }
-            return Optional.of(new Value<>(NamedResource.create(object.asResource().getURI())));
-        } else {
-            if (shouldSkipLiteral(assertion, object)) {
-                return Optional.empty();
-            }
-            return Optional.of(new Value<>(JenaUtils.literalToValue(object.asLiteral())));
-        }
-    }
-
-    private boolean shouldSkipLiteral(Assertion assertion, RDFNode object) {
-        assert object.isLiteral();
-        return assertion.getType() == Assertion.AssertionType.OBJECT_PROPERTY ||
-                !doesLanguageMatch(assertion, object.asLiteral());
-    }
-
-    private boolean doesLanguageMatch(Assertion assertion, Literal literal) {
-        if (!(literal.getValue() instanceof String)) {
-            return true;
-        }
-        return !assertion.hasLanguage() || literal.getLanguage().isEmpty() ||
-                assertion.getLanguage().equals(literal.getLanguage());
-    }
-
-    private Assertion createAssertionForStatement(Property property, RDFNode value) {
-        if (value.isResource()) {
-            return createObjectPropertyAssertion(URI.create(property.getURI()), false);
-        } else {
-            return createDataPropertyAssertion(URI.create(property.getURI()), false);
-        }
-    }
-
     private List<Axiom<?>> loadAxiomsForPropertiesInContext(AxiomDescriptor descriptor, Resource subject) {
         final List<Axiom<?>> axioms = new ArrayList<>();
         for (Assertion a : assertedProperties.values()) {
@@ -146,7 +96,7 @@ class ExplicitAxiomLoader {
                 continue;
             }
             final Property property = ResourceFactory.createProperty(a.getIdentifier().toString());
-            final Collection<Statement> statements = findInternal(subject, property, assertionCtx);
+            final Collection<Statement> statements = findStatements(subject, property, assertionCtx);
             statements.forEach(statement -> {
                 final Optional<Value<?>> value = resolveValue(a, statement.getObject());
                 value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
@@ -155,9 +105,9 @@ class ExplicitAxiomLoader {
         if (unspecifiedProperty != null && !assertionContextSameAsSubject(descriptor.getSubjectContext(),
                 descriptor.getAssertionContext(unspecifiedProperty))) {
             final Collection<Statement> statements =
-                    findInternal(subject, null, descriptor.getAssertionContext(unspecifiedProperty));
+                    findStatements(subject, null, descriptor.getAssertionContext(unspecifiedProperty));
             for (Statement s : statements) {
-                final Assertion a = createAssertionForStatement(s.getPredicate(), s.getObject());
+                final Assertion a = createAssertionForStatement(s);
                 final Optional<Value<?>> value = resolveValue(a, s.getObject());
                 value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
             }
@@ -167,23 +117,5 @@ class ExplicitAxiomLoader {
 
     private boolean assertionContextSameAsSubject(URI subjectCtx, URI assertionCtx) {
         return assertionCtx == null && subjectCtx == null || (subjectCtx != null && subjectCtx.equals(assertionCtx));
-    }
-
-    /**
-     * Loads all statements with the specified subject.
-     *
-     * @param subject Statement subject
-     * @param context Context identifier, optional
-     * @return Matching statements
-     */
-    Collection<Axiom<?>> find(NamedResource subject, URI context) {
-        final Resource resource = ResourceFactory.createResource(subject.getIdentifier().toString());
-        final Collection<Statement> statements = findInternal(resource, null, context);
-        final List<Axiom<?>> axioms = new ArrayList<>(statements.size());
-        for (Statement statement : statements) {
-            final Assertion a = createAssertionForStatement(statement.getPredicate(), statement.getObject());
-            resolveValue(a, statement.getObject()).ifPresent(v -> axioms.add(new AxiomImpl<>(subject, a, v)));
-        }
-        return axioms;
     }
 }

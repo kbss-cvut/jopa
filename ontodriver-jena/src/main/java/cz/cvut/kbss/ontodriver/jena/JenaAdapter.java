@@ -65,7 +65,8 @@ public class JenaAdapter implements Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         beginTransactionIfNotActive();
-        return new ExplicitAxiomLoader(connector).find(descriptor);
+        // TODO
+        return new MainAxiomLoader(connector, null).find(descriptor);
     }
 
     boolean contains(Axiom<?> axiom, URI context) {
