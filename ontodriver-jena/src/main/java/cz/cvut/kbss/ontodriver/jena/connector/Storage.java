@@ -112,8 +112,10 @@ abstract class Storage {
             case JenaOntoDriverProperties.FILE:
                 storage = new FileStorage(configuration);
                 break;
-            case JenaOntoDriverProperties.SDB:
             case JenaOntoDriverProperties.TDB:
+                storage = new TDBStorage(configuration);
+                break;
+            case JenaOntoDriverProperties.SDB:
                 throw new UnsupportedOperationException("Not implemented yet.");
             default:
                 throw new OntoDriverInitializationException("Unsupported storage type \'" + type + "\'.");
