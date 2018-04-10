@@ -4,8 +4,10 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.connector.ConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.InferenceConnectorFactory;
 import cz.cvut.kbss.ontodriver.jena.connector.ReadCommittedConnectorFactory;
 import cz.cvut.kbss.ontodriver.jena.connector.SnapshotConnectorFactory;
+import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +63,15 @@ public class JenaDriverTest {
         assertNotNull(driver);
         assertTrue(driver.isOpen());
         assertTrue(getConnectorFactory() instanceof SnapshotConnectorFactory);
+    }
+
+    @Test
+    public void initCreatesInferenceConnectorFactoryWhenReasonerFactoryIsConfigured() throws Exception {
+        properties.put(OntoDriverProperties.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.driver = new JenaDriver(storageProps, properties);
+        assertNotNull(driver);
+        assertTrue(driver.isOpen());
+        assertTrue(getConnectorFactory() instanceof InferenceConnectorFactory);
     }
 
     @Test

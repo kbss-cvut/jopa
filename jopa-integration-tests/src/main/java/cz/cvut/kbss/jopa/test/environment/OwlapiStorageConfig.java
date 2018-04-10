@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 
 import java.io.File;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class OwlapiStorageConfig extends StorageConfig {
         config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TYPE.getDriverClass());
         config.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, TestEnvironment.IRI_BASE + base);
         config.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, url.toURI().toString());
+        config.put(OntoDriverProperties.REASONER_FACTORY_CLASS, TestEnvironment.REASONER_FACTORY_CLASS);
         return config;
     }
 

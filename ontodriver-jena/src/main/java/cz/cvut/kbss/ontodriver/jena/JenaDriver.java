@@ -9,9 +9,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.config.Constants;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
-import cz.cvut.kbss.ontodriver.jena.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.jena.connector.ReadCommittedConnectorFactory;
-import cz.cvut.kbss.ontodriver.jena.connector.SnapshotConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.*;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 
 import java.util.*;
@@ -19,7 +17,7 @@ import java.util.*;
 public class JenaDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(ConfigParam.AUTO_COMMIT, ConfigParam.ONTOLOGY_LANGUAGE,
+            .asList(ConfigParam.AUTO_COMMIT, ConfigParam.ONTOLOGY_LANGUAGE, ConfigParam.REASONER_FACTORY_CLASS,
                     JenaConfigParam.ISOLATION_STRATEGY, JenaConfigParam.STORAGE_TYPE,
                     JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
 
@@ -47,6 +45,11 @@ public class JenaDriver implements Closeable, ConnectionListener {
     private ConnectorFactory buildConnectorFactory() {
         final String isolationStrategy = configuration
                 .getProperty(JenaConfigParam.ISOLATION_STRATEGY, Constants.DEFAULT_ISOLATION_STRATEGY);
+        if (configuration.isSet(ConfigParam.REASONER_FACTORY_CLASS)) {
+            // Once reasoner factory is set, this takes precedence, because only this factory is able to provide
+            // proper reasoning support
+            return new InferenceConnectorFactory(configuration);
+        }
         switch (isolationStrategy) {
             case JenaOntoDriverProperties.READ_COMMITTED:
                 return new ReadCommittedConnectorFactory(configuration);
@@ -58,7 +61,8 @@ public class JenaDriver implements Closeable, ConnectionListener {
     }
 
     JenaConnection acquireConnection() {
-        final JenaAdapter adapter = new JenaAdapter(connectorFactory.createConnector());
+        final StorageConnector connector = connectorFactory.createConnector();
+        final JenaAdapter adapter = new JenaAdapter(connector, connectorFactory.createInferredConnector(connector));
         final JenaConnection connection = new JenaConnection(adapter);
         connection.registerListener(this);
         connection.setAutoCommit(autoCommit);

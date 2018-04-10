@@ -4,6 +4,9 @@ import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 import org.apache.jena.query.Dataset;
 
+/**
+ * Base implementation of the {@link StorageConnector} interface.
+ */
 abstract class AbstractStorageConnector implements StorageConnector {
 
     final Configuration configuration;

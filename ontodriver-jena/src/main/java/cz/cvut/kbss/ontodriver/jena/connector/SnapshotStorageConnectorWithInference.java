@@ -7,6 +7,9 @@ import org.apache.jena.rdf.model.Statement;
 
 import java.util.List;
 
+/**
+ * This connector implementation supports proper inference.
+ */
 class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector implements InferredStorageConnector {
 
     private SnapshotStorageWithInference storage;

@@ -3,9 +3,10 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.JenaDataSource;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
 import java.net.URI;
 
@@ -29,5 +30,14 @@ class StorageTestUtil {
     static Statement statement(String subject, String property, String value) {
         return ResourceFactory
                 .createStatement(createResource(subject), createProperty(property), createResource(value));
+    }
+
+    static void generateTestData(Dataset dataset) {
+        final Model m = dataset.getDefaultModel();
+        m.add(createResource(TYPE_ONE), RDFS.subClassOf, createResource(TYPE_TWO));
+        m.add(RESOURCE, RDF.type, createResource(TYPE_ONE));
+        final Model namedGraph = ModelFactory.createDefaultModel();
+        namedGraph.add(RESOURCE, RDF.type, createResource(TYPE_TWO));
+        dataset.addNamedModel(NAMED_GRAPH, namedGraph);
     }
 }

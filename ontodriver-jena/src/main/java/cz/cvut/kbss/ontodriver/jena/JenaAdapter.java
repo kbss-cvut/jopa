@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.jena;
 import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.list.ListHandler;
@@ -30,9 +31,11 @@ public class JenaAdapter implements Wrapper {
     private final Transaction transaction = new Transaction();
 
     private final StorageConnector connector;
+    private final InferredStorageConnector inferenceConnector;
 
-    JenaAdapter(StorageConnector connector) {
+    JenaAdapter(StorageConnector connector, InferredStorageConnector inferenceConnector) {
         this.connector = connector;
+        this.inferenceConnector = inferenceConnector;
     }
 
     void commit() throws JenaDriverException {
@@ -65,13 +68,12 @@ public class JenaAdapter implements Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         beginTransactionIfNotActive();
-        // TODO
-        return new MainAxiomLoader(connector, null).find(descriptor);
+        return new MainAxiomLoader(connector, inferenceConnector).find(descriptor);
     }
 
     boolean contains(Axiom<?> axiom, URI context) {
         beginTransactionIfNotActive();
-        return new ExplicitAxiomLoader(connector).contains(axiom, context);
+        return new MainAxiomLoader(connector, inferenceConnector).contains(axiom, context);
     }
 
     List<URI> getContext() {

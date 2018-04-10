@@ -36,4 +36,13 @@ public abstract class ConnectorFactoryTestBase {
         assertFalse(factory.isOpen());
         factory.createConnector();
     }
+
+    @Test
+    public void createInferredConnectorReturnsCorrectConnector() throws Exception {
+        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final ConnectorFactory factory = connectorFactory(configuration);
+        final StorageConnector connector = factory.createConnector();
+        final InferredStorageConnector result = factory.createInferredConnector(connector);
+        assertTrue(result instanceof DummyInferredStorageConnector);
+    }
 }

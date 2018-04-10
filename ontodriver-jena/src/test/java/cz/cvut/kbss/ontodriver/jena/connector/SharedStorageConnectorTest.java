@@ -10,8 +10,6 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
@@ -58,14 +56,6 @@ public class SharedStorageConnectorTest {
 
         final Collection<Statement> result = connector.find(RESOURCE, null, null);
         assertFalse(result.isEmpty());
-    }
-
-    private void generateTestData(Dataset dataset) {
-        final Model m = dataset.getDefaultModel();
-        m.add(RESOURCE, RDF.type, m.createResource(TYPE_ONE));
-        final Model namedGraph = ModelFactory.createDefaultModel();
-        namedGraph.add(RESOURCE, RDF.type, m.createResource(TYPE_TWO));
-        dataset.addNamedModel(NAMED_GRAPH, namedGraph);
     }
 
     @Test

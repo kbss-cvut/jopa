@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
@@ -43,12 +44,15 @@ public class JenaAdapterTest {
     @Mock
     private StorageConnector connectorMock;
 
+    @Mock
+    private InferredStorageConnector inferredConnectorMock;
+
     private JenaAdapter adapter;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.adapter = new JenaAdapter(connectorMock);
+        this.adapter = new JenaAdapter(connectorMock, inferredConnectorMock);
     }
 
     @Test
