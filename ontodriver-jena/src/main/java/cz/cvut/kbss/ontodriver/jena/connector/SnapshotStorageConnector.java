@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class SnapshotStorageConnector extends SharedStorageConnector {
 
-    private final AbstractStorageConnector centralConnector;
+    final AbstractStorageConnector centralConnector;
 
     private LocalModel transactionalChanges;
     private List<String> transactionalUpdates;
@@ -45,7 +45,7 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
         this.transactionalChanges = new LocalModel(configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION));
     }
 
-    private void snapshotCentralDataset() {
+    void snapshotCentralDataset() {
         final SnapshotStorage s = new SnapshotStorage(configuration);
         s.initialize();
         s.addCentralData(centralConnector.getStorage().getDataset());

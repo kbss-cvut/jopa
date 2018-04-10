@@ -2,16 +2,21 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.ConfigParam;
 import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.ReasonerInitializationException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerFactory;
+import org.apache.jena.reasoner.ValidityReport;
 import org.apache.jena.reasoner.rulesys.OWLFBRuleReasonerFactory;
+import org.apache.jena.reasoner.rulesys.OWLMiniReasonerFactory;
 import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.junit.Before;
@@ -89,7 +94,7 @@ public class SnapshotStorageWithInferenceTest {
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
         final Model result = storage.getDefaultGraph();
-        assertTrue(result instanceof InfModel);
+        assertNotNull(result);
         assertTrue(result.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
     }
 
@@ -190,6 +195,51 @@ public class SnapshotStorageWithInferenceTest {
         assertFalse(result.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
     }
 
+    @Test
+    public void checkConsistencyReturnsValidityReportForDefaultGraph() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration);
+        storage.initialize();
+        storage.addCentralData(getDatasetWithDefaultModel());
+        final ValidityReport result = storage.checkConsistency();
+        assertNotNull(result);
+        assertTrue(result.isValid());
+    }
+
+    @Test
+    public void checkConsistencyReturnsValidityReportForNamedGraph() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration);
+        storage.initialize();
+        storage.addCentralData(getDatasetWithDataInNamedGraph());
+        final ValidityReport result = storage.checkConsistency(NAMED_GRAPH);
+        assertNotNull(result);
+        assertTrue(result.isValid());
+    }
+
+    @Test
+    public void checkConsistencyReturnsValidityReportForInconsistentDefaultGraph() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, OWLMiniReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration);
+        storage.initialize();
+        storage.addCentralData(getInconsistentDataset());
+        final ValidityReport result = storage.checkConsistency();
+        assertNotNull(result);
+        assertFalse(result.isValid());
+    }
+
+    private Dataset getInconsistentDataset() {
+        final Model model = ModelFactory.createOntologyModel();
+        final Resource clsOne = createResource(Generator.generateUri().toString());
+        final Resource clsTwo = createResource(Generator.generateUri().toString());
+        model.add(clsOne, RDF.type, RDFS.Class);
+        model.add(clsTwo, RDF.type, RDFS.Class);
+        model.add(clsOne, OWL.disjointWith, clsTwo);
+        model.add(createResource(SUBJECT), RDF.type, clsOne);
+        model.add(createResource(SUBJECT), RDF.type, clsTwo);
+        return DatasetFactory.create(model);
+    }
+
     @Ignore
     @Test
     public void supportedConfigurationIsPassedToReasonerOnCreation() {
@@ -197,7 +247,7 @@ public class SnapshotStorageWithInferenceTest {
         this.storage = new SnapshotStorageWithInference(configuration);
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
-        final InfModel result = (InfModel) storage.getDefaultGraph();
+        final InfModel result = storage.getDefaultGraph();
         final Reasoner reasoner = result.getReasoner();
         // TODO
     }

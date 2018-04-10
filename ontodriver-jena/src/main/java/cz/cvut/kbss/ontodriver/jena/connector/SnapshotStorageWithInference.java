@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.reasoner.ReasonerFactory;
+import org.apache.jena.reasoner.ValidityReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +54,9 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     }
 
     @Override
-    Model getDefaultGraph() {
+    InfModel getDefaultGraph() {
         if (inferredGraphs.containsKey(null)) {
-            return super.getDefaultGraph();
+            return inferredGraphs.get(null);
         } else {
             // This does not behave the same as other storages - when defaultAsUnion is set, it uses the currently held
             // versions of the named graphs, which may be without inference. It should probably initialize reasoners for
@@ -72,19 +73,28 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     }
 
     @Override
-    Model getNamedGraph(String ctx) {
-        if (inferredGraphs.containsKey(ctx)) {
-            return inferredGraphs.get(ctx);
+    InfModel getNamedGraph(String context) {
+        if (inferredGraphs.containsKey(context)) {
+            return inferredGraphs.get(context);
         } else {
             final InfModel model =
-                    ModelFactory.createInfModel(reasonerFactory.create(null), dataset.getNamedModel(ctx));
-            dataset.addNamedModel(ctx, model);
-            inferredGraphs.put(ctx, model);
+                    ModelFactory.createInfModel(reasonerFactory.create(null), dataset.getNamedModel(context));
+            dataset.addNamedModel(context, model);
+            inferredGraphs.put(context, model);
             return model;
         }
     }
 
-    Model getRawNamedGraph(String ctx) {
-        return inferredGraphs.containsKey(ctx) ? inferredGraphs.get(ctx).getRawModel() : dataset.getNamedModel(ctx);
+    Model getRawNamedGraph(String context) {
+        return inferredGraphs.containsKey(context) ? inferredGraphs.get(context).getRawModel() :
+                dataset.getNamedModel(context);
+    }
+
+    ValidityReport checkConsistency() {
+        return getDefaultGraph().validate();
+    }
+
+    ValidityReport checkConsistency(String context) {
+        return getNamedGraph(context).validate();
     }
 }
