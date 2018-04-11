@@ -21,7 +21,7 @@ public class JenaOntoDriverProperties {
      *
      * @see #JENA_ISOLATION_STRATEGY
      */
-    public static final String READ_COMMITTED = "read_committed";
+    public static final String READ_COMMITTED = "read-committed";
 
     /**
      * Storage access isolation strategy.
