@@ -84,9 +84,10 @@ public interface Statement extends AutoCloseable {
      * Closes this statement, releasing any resources it has hold.
      * <p>
      * Calling the method close on a Statement object that is already closed has no effect.
+     * <p>
+     * Note: When a {@code Statement} object is closed, its current {@code ResultSet} object, if one exists, is also closed.
      *
      * @throws OntoDriverException If closing the statement fails
-     * @apiNote When a {@code Statement} object is closed, its current {@code ResultSet} object, if one exists, is also closed.
      */
     @Override
     void close() throws OntoDriverException;
