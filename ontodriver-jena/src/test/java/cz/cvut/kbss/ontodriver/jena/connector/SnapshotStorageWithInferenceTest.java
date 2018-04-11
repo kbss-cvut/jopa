@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.ConfigParam;
 import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.ReasonerInitializationException;
 import org.apache.jena.query.Dataset;
@@ -13,19 +14,20 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerFactory;
 import org.apache.jena.reasoner.ValidityReport;
-import org.apache.jena.reasoner.rulesys.OWLFBRuleReasonerFactory;
-import org.apache.jena.reasoner.rulesys.OWLMiniReasonerFactory;
-import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
+import org.apache.jena.reasoner.rulesys.*;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.ReasonerVocabulary;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -50,7 +52,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void initializationCreatesRDFSReasonerBasedOnConfiguredReasonerFactoryClass() throws Exception {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         assertTrue(getReasonerFactory() instanceof RDFSRuleReasonerFactory);
     }
 
@@ -68,7 +70,7 @@ public class SnapshotStorageWithInferenceTest {
         thrown.expectCause(isA(ClassNotFoundException.class));
         thrown.expectMessage(containsString("Reasoner factory class"));
         thrown.expectMessage(containsString("not found"));
-        new SnapshotStorageWithInference(configuration);
+        new SnapshotStorageWithInference(configuration, Collections.emptyMap());
     }
 
     @Test
@@ -77,20 +79,20 @@ public class SnapshotStorageWithInferenceTest {
         thrown.expect(ReasonerInitializationException.class);
         thrown.expectMessage(
                 containsString("Class " + String.class.getName() + " is not a ReasonerFactory implementation"));
-        new SnapshotStorageWithInference(configuration);
+        new SnapshotStorageWithInference(configuration, Collections.emptyMap());
     }
 
     @Test
     public void initializationCreatesOWLReasonerBasedOnConfiguredReasonerFactoryClass() throws Exception {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, OWLFBRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         assertTrue(getReasonerFactory() instanceof OWLFBRuleReasonerFactory);
     }
 
     @Test
     public void getDefaultGraphReturnsInferredDefaultGraph() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
         final Model result = storage.getDefaultGraph();
@@ -114,7 +116,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void getDefaultGraphReusesInfModelAfterFirstCall() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
         final Model result = storage.getDefaultGraph();
@@ -124,7 +126,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void getRawDefaultModelReturnsDefaultGraphWithoutInference() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
         final Model result = storage.getRawDefaultGraph();
@@ -135,7 +137,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void getRawDefaultModelReturnsDefaultGraphWithoutInferenceWhenInferredModelExists() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
         assertTrue(storage.getDefaultGraph().contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
@@ -148,7 +150,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void getNamedGraphReturnsModelWithInferences() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDataInNamedGraph());
         final Model result = storage.getNamedGraph(NAMED_GRAPH);
@@ -164,7 +166,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void getNamedGraphReusesInfModelAfterFirstCall() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDataInNamedGraph());
         final Model first = storage.getNamedGraph(NAMED_GRAPH);
@@ -174,7 +176,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void getRawNamedGraphReturnsGraphWithoutInference() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDataInNamedGraph());
         final Model result = storage.getRawNamedGraph(NAMED_GRAPH);
@@ -185,7 +187,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void getRawNamedGraphReturnsGraphWithoutInferenceWhenInferredAlreadyExists() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDataInNamedGraph());
         assertTrue(storage.getNamedGraph(NAMED_GRAPH)
@@ -198,7 +200,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void checkConsistencyReturnsValidityReportForDefaultGraph() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
         final ValidityReport result = storage.checkConsistency(null);
@@ -209,7 +211,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void checkConsistencyReturnsValidityReportForNamedGraph() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getDatasetWithDataInNamedGraph());
         final ValidityReport result = storage.checkConsistency(NAMED_GRAPH);
@@ -220,7 +222,7 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void checkConsistencyReturnsValidityReportForInconsistentDefaultGraph() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, OWLMiniReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.initialize();
         storage.addCentralData(getInconsistentDataset());
         final ValidityReport result = storage.checkConsistency(null);
@@ -240,15 +242,44 @@ public class SnapshotStorageWithInferenceTest {
         return DatasetFactory.create(model);
     }
 
-    @Ignore
     @Test
-    public void supportedConfigurationIsPassedToReasonerOnCreation() {
+    public void configurationIsPassedToReasonerOnCreation() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration);
+        final Map<String, String> config = Collections.singletonMap(ReasonerVocabulary.PROPtraceOn.getURI(), Boolean.TRUE.toString());
+        this.storage = new SnapshotStorageWithInference(configuration, config);
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
-        final InfModel result = storage.getDefaultGraph();
-        final Reasoner reasoner = result.getReasoner();
-        // TODO
+        final InfModel infModel = storage.getDefaultGraph();
+        final Reasoner reasoner = infModel.getReasoner();
+        assertTrue(((RDFSRuleReasoner) reasoner).isTraceOn());
+    }
+
+    @Test
+    public void configurationSkipsUnsupportedConfigurationParameters() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        final Map<String, String> config = new HashMap<>(4);
+        config.put(JenaOntoDriverProperties.JENA_ISOLATION_STRATEGY, JenaOntoDriverProperties.SNAPSHOT);
+        config.put(JenaOntoDriverProperties.JENA_STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
+        this.storage = new SnapshotStorageWithInference(configuration, config);
+        storage.initialize();
+        storage.addCentralData(getDatasetWithDefaultModel());
+        final InfModel infModel = storage.getDefaultGraph();
+        final Reasoner reasoner = infModel.getReasoner();
+        assertFalse(((RDFSRuleReasoner) reasoner).isTraceOn());
+    }
+
+    @Test
+    public void configurationSkipsParametersNotSupportedByParticularReasoner() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, GenericRuleReasonerFactory.class.getName());
+        final Map<String, String> config = new HashMap<>(4);
+        config.put(ReasonerVocabulary.PROPtraceOn.getURI(), Boolean.TRUE.toString());
+        // This is not supported by the RDFSRuleReasoner
+        config.put(ReasonerVocabulary.PROPruleMode.getURI(), "yadayada");
+        this.storage = new SnapshotStorageWithInference(configuration, config);
+        storage.initialize();
+        storage.addCentralData(getDatasetWithDefaultModel());
+        final InfModel infModel = storage.getDefaultGraph();
+        final Reasoner reasoner = infModel.getReasoner();
+        assertTrue(((GenericRuleReasoner) reasoner).isTraceOn());
     }
 }

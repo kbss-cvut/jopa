@@ -40,7 +40,7 @@ public class JenaOntoDriverProperties {
      * <li>{@link #FILE}</li>
      * <li>{@link #IN_MEMORY}</li>
      * <li>{@link #TDB}</li>
-     * <li>{@link #SDB}</li>
+     * <li>{@link #SDB} - SDB storage is currently not supported (and probably won't be, since SDB development has stopped)</li>
      * </ul>
      */
     public static final String JENA_STORAGE_TYPE = "cz.cvut.kbss.ontodriver.jena.storage";

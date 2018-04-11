@@ -38,7 +38,7 @@ public class SnapshotStorageConnectorWithInferenceTest {
         final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
         this.centralConnector = spy(new SharedStorageConnector(configuration));
-        this.connector = new SnapshotStorageConnectorWithInference(centralConnector);
+        this.connector = new SnapshotStorageConnectorWithInference(centralConnector, Collections.emptyMap());
     }
 
     @Test

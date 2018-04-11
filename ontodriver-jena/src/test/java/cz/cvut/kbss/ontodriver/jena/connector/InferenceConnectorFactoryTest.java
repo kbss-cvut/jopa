@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.config.Configuration;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -11,7 +12,7 @@ public class InferenceConnectorFactoryTest extends ConnectorFactoryTestBase {
 
     @Override
     ConnectorFactory connectorFactory(Configuration configuration) {
-        return new InferenceConnectorFactory(configuration);
+        return new InferenceConnectorFactory(configuration, Collections.emptyMap());
     }
 
     @Override
@@ -22,7 +23,7 @@ public class InferenceConnectorFactoryTest extends ConnectorFactoryTestBase {
     }
 
     @Test
-    public void createInferredConnectorReturnsCorrectConnector() throws Exception {
+    public void createInferredConnectorReturnsCorrectConnector() {
         final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();

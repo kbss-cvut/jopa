@@ -47,7 +47,7 @@ public final class Configuration {
 
     public boolean is(String property) {
         final String propertyValue = get(property, null);
-        return propertyValue != null && Boolean.parseBoolean(propertyValue);
+        return Boolean.parseBoolean(propertyValue);
     }
 
     public synchronized void set(String property, String value) {

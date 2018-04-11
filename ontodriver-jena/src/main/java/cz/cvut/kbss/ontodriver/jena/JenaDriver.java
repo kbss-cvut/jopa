@@ -35,20 +35,20 @@ public class JenaDriver implements Closeable, ConnectionListener {
         this.configuration = new Configuration(storageProperties);
         CONFIGS.stream().filter(c -> properties.containsKey(c.toString()))
                .forEach(c -> configuration.setProperty(c, properties.get(c.toString())));
-        this.connectorFactory = buildConnectorFactory();
+        this.connectorFactory = buildConnectorFactory(properties);
         this.openConnections = Collections.synchronizedSet(new HashSet<>());
         this.autoCommit = configuration.isSet(ConfigParam.AUTO_COMMIT) ? configuration.is(ConfigParam.AUTO_COMMIT) :
                 Constants.DEFAULT_AUTO_COMMIT;
         this.open = true;
     }
 
-    private ConnectorFactory buildConnectorFactory() {
+    private ConnectorFactory buildConnectorFactory(Map<String, String> properties) {
         final String isolationStrategy = configuration
                 .getProperty(JenaConfigParam.ISOLATION_STRATEGY, Constants.DEFAULT_ISOLATION_STRATEGY);
         if (configuration.isSet(ConfigParam.REASONER_FACTORY_CLASS)) {
             // Once reasoner factory is set, this takes precedence, because only this factory is able to provide
             // proper reasoning support
-            return new InferenceConnectorFactory(configuration);
+            return new InferenceConnectorFactory(configuration, properties);
         }
         switch (isolationStrategy) {
             case JenaOntoDriverProperties.READ_COMMITTED:

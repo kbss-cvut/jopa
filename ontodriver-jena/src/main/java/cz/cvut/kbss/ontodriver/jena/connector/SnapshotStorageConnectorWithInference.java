@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This connector implementation supports proper inference.
@@ -13,14 +14,17 @@ import java.util.List;
 class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector implements InferredStorageConnector {
 
     private SnapshotStorageWithInference storage;
+    private final Map<String, String> reasonerConfig;
 
-    SnapshotStorageConnectorWithInference(AbstractStorageConnector centralConnector) {
+    SnapshotStorageConnectorWithInference(AbstractStorageConnector centralConnector,
+                                          Map<String, String> reasonerConfig) {
         super(centralConnector);
+        this.reasonerConfig = reasonerConfig;
     }
 
     @Override
     void snapshotCentralDataset() {
-        final SnapshotStorageWithInference s = new SnapshotStorageWithInference(configuration);
+        final SnapshotStorageWithInference s = new SnapshotStorageWithInference(configuration, reasonerConfig);
         s.initialize();
         s.addCentralData(centralConnector.getStorage().getDataset());
         this.storage = s;
@@ -36,6 +40,7 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
             return storage.getRawDefaultGraph().listStatements(subject, property, value).toList();
         }
     }
+
     @Override
     public boolean contains(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
