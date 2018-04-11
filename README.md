@@ -6,13 +6,19 @@ JOPA is a Java OWL persistence framework aimed at efficient programmatic access 
 on integrity constraints [1] in OWL that JOPA uses to establish the contract between a JOPA-enabled Java application and
 an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
+Notable changes:
+
+* **0.10.0** - Jena OntoDriver implementation
+* **0.9.0** - Single class inheritance support
+* **0.8.0** - Mapped superclass support
+
 ### Main Features
 
 * Object-ontological mapping (OOM) based on integrity constraints,
 * Explicit access to inferred knowledge,
 * Access to unmapped properties and individual's types,
 * Transactions,
-* Separate storage access layer (currently RDF4J (Sesame) and OWLAPI drivers available).
+* Separate storage access layer - Jena, OWLAPI, RDF4J (Sesame) drivers are available.
 
 #### Object-ontological mapping based on integrity constraints
 
@@ -68,6 +74,12 @@ There are two main reasons for such split - first, it decouples storage-specific
 Second, it enables the application to switch the underlying storage with as little as 2-3 lines of configuration code. Nothing else
 needs to be modified.
 
+Supported storages:
+
+* Jena (since **0.10.0**)
+* OWLAPI
+* Sesame/RDF4J
+
 ### Not Supported, yet
 
 JOPA currently does not support two important features - multiple inheritance and referential integrity.
@@ -78,7 +90,7 @@ As for referential integrity, this for example means that removing an instance t
 not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.
 Design possibilities and their implications are currently being studied.
 
-Other missing/planned stuff can be found in [TODO.md](TODO.md).
+Other missing/planned stuff can be found in [TODO.md](TODO.md) and in the GitHub issue tracker.
 
 ## Modules
 
@@ -89,10 +101,11 @@ The whole framework consists of several modules:
 * _JOPA Implementation_ - persistence provider implementation,
 * _OntoDriver Sesame_ - OntoDriver implementation for RDF4J (Sesame)-accessed storages,
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files,
+* _Ontodriver Jena_ - OntoDriver implementation of Jena-based storages,
 * _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-sesame-owl2java)),
 * _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
 
-Other modules represent integration tests and various utilities. Jena OntoDriver is planned as future work.
+Other modules represent integration tests and various utilities.
   
 ## Usage
 
@@ -131,7 +144,8 @@ Javadoc of the latest stable version is available at [https://kbss.felk.cvut.cz/
 Some related libraries:
 
 * [JB4JSON-LD](https://github.com/kbss-cvut/jb4jsonld) - Serialization and deserialization of POJOs into JSON-LD,
-* [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA.
+* [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA,
+* [Reporting Tool](https://github.com/kbss-cvut/reporting-tool) - Real-live use case of JOPA.
 
 ## References
   
@@ -140,4 +154,5 @@ Some related libraries:
 * [3] The Java Language Specification, Java SE 8 Edition [https://docs.oracle.com/javase/specs/jls/se8/html/index.html](https://docs.oracle.com/javase/specs/jls/se8/html/index.html)
 * [4] P. Křemen and Z. Kouba: Ontology-Driven Information System Design. IEEE Transactions on Systems, Man, and Cybernetics: Part C, 42(3):334–344, May 2012 [http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1)
 * [5] M. Ledvinka and P. Křemen: JOPA: Accessing Ontologies in an Object-oriented Way. In Proceedings of the 17th International Conference on Enterprise Information Systems. Porto: SciTePress - Science and Technology Publications, 2015, p. 212-222. ISBN 978-989-758-096-0. [http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1](http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1)
-* [6] Ledvinka, M.; Křemen, P.; Kostov, B.; Blaško, M. SISel: Aviation Safety Powered by Semantic Technologies In: Data a znalosti 2017. Plzeň: Západočeská univerzita v Plzni, 2017. pp. 77-82. ISBN 978-80-261-0720-0. [https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf](https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf)
+* [6] Ledvinka, M.; Křemen, P.; Kostov, B. JOPA: Efficient Ontology-based Information System Design In: The Semantic Web: ESWC 2016 Satellite Events. Cham: Springer International Publishing AG, 2016. pp. 156-160. 9989. ISSN 0302-9743. ISBN 978-3-319-47601-8. [ESWC 2016 Demo](http://2016.eswc-conferences.org/sites/default/files/papers/Accepted%20Posters%20and%20Demos/ESWC2016_DEMO_JOPA.pdf)
+* [7] Ledvinka, M.; Křemen, P.; Kostov, B.; Blaško, M. SISel: Aviation Safety Powered by Semantic Technologies In: Data a znalosti 2017. Plzeň: Západočeská univerzita v Plzni, 2017. pp. 77-82. ISBN 978-80-261-0720-0. [https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf](https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf)
