@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Types;
+import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
@@ -8,6 +9,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 
 import java.net.URI;
 import java.util.Collection;
@@ -16,17 +18,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TypesHandler implements Types {
-    // TODO We are not dealing with inferred statements, yet
 
     private final StorageConnector connector;
 
-    TypesHandler(StorageConnector connector) {
+    private final InferredStorageConnector inferenceConnector;
+
+    TypesHandler(StorageConnector connector, InferredStorageConnector inferenceConnector) {
         this.connector = connector;
+        this.inferenceConnector = inferenceConnector;
     }
 
     @Override
     public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred) {
-        final Collection<Statement> statements = getStatements(individual, context);
+        final Collection<Statement> statements = getStatements(individual, context, includeInferred);
         final Assertion assertion = Assertion.createClassAssertion(includeInferred);
         // Skip possible non-resources and anonymous resources (not likely to appear, but safety first)
         return statements.stream().filter(s -> s.getObject().isResource() && !s.getObject().isAnon())
@@ -35,10 +39,14 @@ public class TypesHandler implements Types {
                         Collectors.toSet());
     }
 
-    private Collection<Statement> getStatements(NamedResource individual, URI context) {
+    private Collection<Statement> getStatements(NamedResource individual, URI context, boolean includedInferred) {
         final Resource subject = ResourceFactory.createResource(individual.getIdentifier().toString());
-        final Property property = ResourceFactory.createProperty(Vocabulary.RDF_TYPE);
-        return connector.find(subject, property, null, context != null ? context.toString() : null);
+        final String ctx = context != null ? context.toString() : null;
+        if (includedInferred) {
+            return inferenceConnector.findWithInference(subject, RDF.type, null, ctx);
+        } else {
+            return connector.find(subject, RDF.type, null, ctx);
+        }
     }
 
     @Override
