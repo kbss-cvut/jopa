@@ -24,8 +24,6 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 class SnapshotStorageWithInference extends SnapshotStorage {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SnapshotStorageWithInference.class);
-
     /**
      * Configuration parameters supported by at least one of the Jena reasoners. Used to pre-filter reasoner config.
      */

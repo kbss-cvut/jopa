@@ -58,7 +58,7 @@ public class AskResultSet extends AbstractResultSet {
         throw unsupported("byte");
     }
 
-    private UnsupportedOperationException unsupported(String type) {
+    private static UnsupportedOperationException unsupported(String type) {
         return new UnsupportedOperationException("ASK query results cannot return " + type + " values.");
     }
 

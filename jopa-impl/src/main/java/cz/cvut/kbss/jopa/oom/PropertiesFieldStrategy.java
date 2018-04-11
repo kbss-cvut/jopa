@@ -167,7 +167,7 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
 
     private Map<Assertion, Set<Value<?>>> createAssertionsForAll(Map<?, Set<?>> map) {
         final Map<Assertion, Set<Value<?>>> diff = new HashMap<>(map.size());
-        map.forEach((key, value) -> diff.put(propertyToAssertion(key), objectsToValues(value)));
+        map.forEach((key, val) -> diff.put(propertyToAssertion(key), objectsToValues(val)));
         return diff;
     }
 
@@ -186,11 +186,11 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
 
         void addValue(Axiom<?> ax) {
             final Object property = mapPropertyIdentifier(ax.getAssertion());
-            final Object value = mapPropertyValue(ax.getValue());
+            final Object val = mapPropertyValue(ax.getValue());
             if (!map.containsKey(property)) {
                 map.put(property, new HashSet<>());
             }
-            map.get(property).add(value);
+            map.get(property).add(val);
         }
 
         private Object mapPropertyIdentifier(Assertion a) {

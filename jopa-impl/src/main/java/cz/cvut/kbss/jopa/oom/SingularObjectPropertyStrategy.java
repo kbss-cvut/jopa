@@ -71,8 +71,8 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
         final Object extractedValue = extractFieldValueFromInstance(instance);
         if (referenceSavingResolver
                 .shouldSaveReference(attribute.getJavaType(), extractedValue, getAttributeContext())) {
-            final Value<NamedResource> value = extractReferenceIdentifier(extractedValue);
-            valueBuilder.addValue(createAssertion(), value, getAttributeContext());
+            final Value<NamedResource> val = extractReferenceIdentifier(extractedValue);
+            valueBuilder.addValue(createAssertion(), val, getAttributeContext());
         } else {
             referenceSavingResolver
                     .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), extractedValue,

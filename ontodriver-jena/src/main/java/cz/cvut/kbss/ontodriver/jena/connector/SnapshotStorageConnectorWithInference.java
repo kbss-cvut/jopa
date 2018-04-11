@@ -13,7 +13,7 @@ import java.util.Map;
  */
 class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector implements InferredStorageConnector {
 
-    private SnapshotStorageWithInference storage;
+    //    private SnapshotStorageWithInference storage;
     private final Map<String, String> reasonerConfig;
 
     SnapshotStorageConnectorWithInference(AbstractStorageConnector centralConnector,
@@ -28,16 +28,17 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
         s.initialize();
         s.addCentralData(centralConnector.getStorage().getDataset());
         this.storage = s;
-        super.storage = s;  // So that we don't have to override the inherited modification methods
     }
 
     @Override
     public List<Statement> find(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
         if (context != null) {
-            return storage.getRawNamedGraph(context).listStatements(subject, property, value).toList();
+            return ((SnapshotStorageWithInference) storage).getRawNamedGraph(context)
+                                                           .listStatements(subject, property, value).toList();
         } else {
-            return storage.getRawDefaultGraph().listStatements(subject, property, value).toList();
+            return ((SnapshotStorageWithInference) storage).getRawDefaultGraph()
+                                                           .listStatements(subject, property, value).toList();
         }
     }
 
@@ -45,9 +46,10 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
     public boolean contains(Resource subject, Property property, RDFNode value, String context) {
         ensureTransactionalState();
         if (context != null) {
-            return storage.getRawNamedGraph(context).contains(subject, property, value);
+            return ((SnapshotStorageWithInference) storage).getRawNamedGraph(context)
+                                                           .contains(subject, property, value);
         } else {
-            return storage.getRawDefaultGraph().contains(subject, property, value);
+            return ((SnapshotStorageWithInference) storage).getRawDefaultGraph().contains(subject, property, value);
         }
     }
 
@@ -74,6 +76,6 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
     @Override
     public boolean isConsistent(String context) {
         ensureTransactionalState();
-        return storage.checkConsistency(context).isValid();
+        return ((SnapshotStorageWithInference) storage).checkConsistency(context).isValid();
     }
 }

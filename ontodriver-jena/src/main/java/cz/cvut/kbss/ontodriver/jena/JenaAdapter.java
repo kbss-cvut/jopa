@@ -99,7 +99,7 @@ public class JenaAdapter implements Wrapper {
 
     TypesHandler typesHandler() {
         beginTransactionIfNotActive();
-        return new TypesHandler(connector);
+        return new TypesHandler(connector, inferenceConnector);
     }
 
     PropertiesHandler propertiesHandler() {

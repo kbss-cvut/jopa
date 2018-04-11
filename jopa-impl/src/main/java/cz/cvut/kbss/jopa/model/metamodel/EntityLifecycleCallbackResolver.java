@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -123,20 +123,36 @@ class EntityLifecycleCallbackResolver {
     }
 
     private void verifyEntityListenerCallbackSignature(Class<?> listenerType, Method callback) {
-        if (callback.getParameterCount() != 1) {
-            throw MetamodelInitializationException
-                    .invalidArgumentsForEntityListenerCallback(listenerType, callback);
+        verifyCallbackParameterCount(listenerType, callback);
+        verifyCallbackParameterTypes(listenerType, callback);
+        verifyCallbackReturnType(listenerType, callback);
+        verifyCallbackModifiers(listenerType, callback);
+    }
+
+    private void verifyCallbackModifiers(Class<?> listenerType, Method callback) {
+        if (Modifier.isFinal(callback.getModifiers()) || Modifier.isStatic(callback.getModifiers())) {
+            throw MetamodelInitializationException.invalidEntityListenerCallbackModifier(listenerType, callback);
         }
+    }
+
+    private void verifyCallbackReturnType(Class<?> listenerType, Method callback) {
+        if (!callback.getReturnType().equals(Void.TYPE)) {
+            throw MetamodelInitializationException.invalidReturnTypeForEntityListenerCallback(listenerType, callback);
+        }
+    }
+
+    private void verifyCallbackParameterTypes(Class<?> listenerType, Method callback) {
         final Class<?> paramType = callback.getParameterTypes()[0];
         if (!paramType.isAssignableFrom(Object.class) && !paramType.isAssignableFrom(managedType.getJavaType())) {
             throw MetamodelInitializationException
                     .invalidEntityListenerCallbackParameterType(managedType.getJavaType(), listenerType, callback);
         }
-        if (!callback.getReturnType().equals(Void.TYPE)) {
-            throw MetamodelInitializationException.invalidReturnTypeForEntityListenerCallback(listenerType, callback);
-        }
-        if (Modifier.isFinal(callback.getModifiers()) || Modifier.isStatic(callback.getModifiers())) {
-            throw MetamodelInitializationException.invalidEntityListenerCallbackModifier(listenerType, callback);
+    }
+
+    private void verifyCallbackParameterCount(Class<?> listenerType, Method callback) {
+        if (callback.getParameterCount() != 1) {
+            throw MetamodelInitializationException
+                    .invalidArgumentsForEntityListenerCallback(listenerType, callback);
         }
     }
 }

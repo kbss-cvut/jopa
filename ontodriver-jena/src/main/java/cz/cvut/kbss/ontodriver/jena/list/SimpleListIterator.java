@@ -20,6 +20,7 @@ class SimpleListIterator extends AbstractListIterator {
         super(descriptor, connector);
     }
 
+    @Override
     Axiom<NamedResource> nextAxiom() {
         final NamedResource subject = NamedResource.create(currentNode.getURI());
         final Assertion assertion = Assertion
@@ -28,6 +29,7 @@ class SimpleListIterator extends AbstractListIterator {
         return new AxiomImpl<>(subject, assertion, new Value<>(value));
     }
 
+    @Override
     NamedResource nextValue() {
         resolveNextListNode();
         return NamedResource.create(currentNode.getURI());
@@ -39,6 +41,7 @@ class SimpleListIterator extends AbstractListIterator {
      *
      * @param replacement The replacement node
      */
+    @Override
     void replace(Resource replacement) {
         removeWithoutReconnect();
         final List<Statement> toAdd = new ArrayList<>(2);
