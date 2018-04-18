@@ -7,6 +7,8 @@ import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public abstract class ConnectorFactoryTestBase {
 
@@ -38,11 +40,22 @@ public abstract class ConnectorFactoryTestBase {
     }
 
     @Test
-    public void createInferredConnectorReturnsCorrectConnector() throws Exception {
+    public void createInferredConnectorReturnsCorrectConnector() {
         final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
         final InferredStorageConnector result = factory.createInferredConnector(connector);
         assertTrue(result instanceof DummyInferredStorageConnector);
+    }
+
+    @Test
+    public void reloadStorageReloadsSharedConnectorStorage() throws Exception {
+        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final ConnectorFactory factory = connectorFactory(configuration);
+        final SharedStorageConnector sharedStorageConnector = getCentralConnector(factory);
+        sharedStorageConnector.storage = spy(sharedStorageConnector.storage);
+
+        factory.reloadStorage();
+        verify(sharedStorageConnector.storage).reload();
     }
 }

@@ -95,6 +95,10 @@ abstract class Storage {
         }
     }
 
+    void reload() {
+        // Do nothing by default
+    }
+
     /**
      * Creates a storage accessor according to the specified configuration.
      *
@@ -116,7 +120,7 @@ abstract class Storage {
                 storage = new TDBStorage(configuration);
                 break;
             case JenaOntoDriverProperties.SDB:
-                throw new UnsupportedOperationException("Not implemented yet.");
+                throw new UnsupportedOperationException("Not implemented, yet.");
             default:
                 throw new OntoDriverInitializationException("Unsupported storage type \'" + type + "\'.");
         }

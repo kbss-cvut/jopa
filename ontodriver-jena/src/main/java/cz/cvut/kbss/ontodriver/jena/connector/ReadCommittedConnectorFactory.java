@@ -16,14 +16,20 @@ public class ReadCommittedConnectorFactory extends ConnectorFactory {
     }
 
     @Override
-    public synchronized void close() throws JenaDriverException {
-        super.close();
-        centralConnector.close();
+    public StorageConnector createConnector() {
+        ensureOpen();
+        return new ChangeTrackingStorageConnector(centralConnector);
     }
 
     @Override
-    public synchronized StorageConnector createConnector() {
+    public synchronized void reloadStorage() {
         ensureOpen();
-        return new ChangeTrackingStorageConnector(centralConnector);
+        centralConnector.reloadStorage();
+    }
+
+    @Override
+    public synchronized void close() throws JenaDriverException {
+        super.close();
+        centralConnector.close();
     }
 }

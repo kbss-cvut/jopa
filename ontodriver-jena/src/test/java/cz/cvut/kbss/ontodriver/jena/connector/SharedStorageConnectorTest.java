@@ -390,4 +390,11 @@ public class SharedStorageConnectorTest {
         thrown.expectMessage(containsString("Execution of update " + update + " failed"));
         connector.executeUpdate(update, StatementOntology.CENTRAL);
     }
+
+    @Test
+    public void reloadStorageReloadsUnderlyingStorage() {
+        final SharedStorageConnector connector = initConnector();
+        connector.reloadStorage();
+        verify(connector.storage).reload();
+    }
 }

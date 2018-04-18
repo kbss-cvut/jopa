@@ -1,15 +1,16 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-public class JenaDataSource implements DataSource {
+public class JenaDataSource implements ReloadableDataSource {
 
     private volatile boolean open = true;
 
@@ -20,13 +21,17 @@ public class JenaDataSource implements DataSource {
 
     @Override
     public synchronized Connection getConnection() {
-        if (!open) {
-            throw new IllegalStateException("The data source is closed.");
-        }
+        ensureOpen();
         if (driver == null) {
             connect();
         }
         return driver.acquireConnection();
+    }
+
+    private void ensureOpen() {
+        if (!open) {
+            throw new IllegalStateException("The data source is closed.");
+        }
     }
 
     private void connect() {
@@ -63,5 +68,11 @@ public class JenaDataSource implements DataSource {
     @Override
     public boolean isOpen() {
         return open;
+    }
+
+    @Override
+    public void reload() throws JenaDriverException {
+        ensureOpen();
+        driver.reloadStorage();
     }
 }

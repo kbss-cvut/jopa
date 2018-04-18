@@ -16,9 +16,15 @@ public class SnapshotConnectorFactory extends ConnectorFactory {
     }
 
     @Override
-    public synchronized StorageConnector createConnector() {
+    public StorageConnector createConnector() {
         ensureOpen();
         return new SnapshotStorageConnector(centralConnector);
+    }
+
+    @Override
+    public synchronized void reloadStorage() {
+        ensureOpen();
+        centralConnector.reloadStorage();
     }
 
     @Override

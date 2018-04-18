@@ -5,7 +5,7 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
 public abstract class ConnectorFactory implements Closeable {
 
-    private boolean open = true;
+    private volatile boolean open = true;
 
     @Override
     public synchronized void close() throws JenaDriverException {
@@ -42,4 +42,11 @@ public abstract class ConnectorFactory implements Closeable {
     public InferredStorageConnector createInferredConnector(StorageConnector connector) {
         return new DummyInferredStorageConnector(connector);
     }
+
+    /**
+     * Reloads data from storage if it is a file-based one.
+     * <p>
+     * Does nothing for other types of storage.
+     */
+    public abstract void reloadStorage();
 }

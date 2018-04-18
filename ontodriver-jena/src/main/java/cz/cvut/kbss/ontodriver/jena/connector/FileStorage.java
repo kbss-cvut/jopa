@@ -68,4 +68,16 @@ class FileStorage extends Storage {
             throw new JenaDriverException("Unable to write out dataset changes.", e);
         }
     }
+
+    /**
+     * Reloads data from the underlying file.
+     */
+    @Override
+    synchronized void reload() {
+        if (dataset.isInTransaction()) {
+            throw new IllegalStateException("Cannot reload storage which is in transaction.");
+        }
+        dataset.close();
+        initialize();
+    }
 }

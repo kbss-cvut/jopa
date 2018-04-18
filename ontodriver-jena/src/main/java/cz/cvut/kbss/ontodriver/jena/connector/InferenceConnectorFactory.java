@@ -17,7 +17,7 @@ public class InferenceConnectorFactory extends ConnectorFactory {
     }
 
     @Override
-    public synchronized StorageConnector createConnector() {
+    public StorageConnector createConnector() {
         ensureOpen();
         return new SnapshotStorageConnectorWithInference(centralConnector, reasonerConfig);
     }
@@ -26,6 +26,12 @@ public class InferenceConnectorFactory extends ConnectorFactory {
     public InferredStorageConnector createInferredConnector(StorageConnector connector) {
         assert connector instanceof SnapshotStorageConnectorWithInference;
         return (InferredStorageConnector) connector;
+    }
+
+    @Override
+    public synchronized void reloadStorage() {
+        ensureOpen();
+        centralConnector.reloadStorage();
     }
 
     @Override

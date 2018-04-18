@@ -159,4 +159,14 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         storage.close();
         super.close();
     }
+
+    /**
+     * Reloads data from the underlying storage (if possible).
+     * <p>
+     * Note that this applies only to RDF file-based storage access, other storage do not support reloading.
+     */
+    public synchronized void reloadStorage() {
+        ensureOpen();
+        storage.reload();
+    }
 }

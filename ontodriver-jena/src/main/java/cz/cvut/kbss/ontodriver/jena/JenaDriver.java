@@ -10,6 +10,7 @@ import cz.cvut.kbss.ontodriver.jena.config.Constants;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.connector.*;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 
 import java.util.*;
@@ -61,6 +62,7 @@ public class JenaDriver implements Closeable, ConnectionListener {
     }
 
     JenaConnection acquireConnection() {
+        ensureOpen();
         final StorageConnector connector = connectorFactory.createConnector();
         final JenaAdapter adapter = new JenaAdapter(connector, connectorFactory.createInferredConnector(connector));
         final JenaConnection connection = new JenaConnection(adapter);
@@ -70,9 +72,24 @@ public class JenaDriver implements Closeable, ConnectionListener {
         return connection;
     }
 
+    private void ensureOpen() {
+        if (!open) {
+            throw new IllegalStateException("Driver is closed.");
+        }
+    }
+
     @Override
     public void connectionClosed(JenaConnection connection) {
         openConnections.remove(connection);
+    }
+
+    synchronized void reloadStorage() throws JenaDriverException {
+        ensureOpen();
+        try {
+            connectorFactory.reloadStorage();
+        } catch (IllegalStateException e) {
+            throw new JenaDriverException(e);
+        }
     }
 
     @Override
