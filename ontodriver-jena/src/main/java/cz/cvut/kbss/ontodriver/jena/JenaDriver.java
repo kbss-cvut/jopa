@@ -15,7 +15,7 @@ import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 
 import java.util.*;
 
-public class JenaDriver implements Closeable, ConnectionListener {
+class JenaDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
             .asList(ConfigParam.AUTO_COMMIT, ConfigParam.ONTOLOGY_LANGUAGE, ConfigParam.REASONER_FACTORY_CLASS,

@@ -62,7 +62,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLOntologyIRIMapper iriMapper;
 
-    public BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
+    BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
         super(configuration);
     }
 
@@ -77,9 +77,27 @@ public class BasicStorageConnector extends AbstractConnector {
         resolveIriMapper();
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         setIriMapper(ontologyManager);
+        loadOntology(storageProperties);
+        initializeReasonerFactory();
+        this.reasoner = getReasoner(ontology);
+    }
+
+    private void resolveIriMapper() {
+        if (configuration.isSet(OwlapiConfigParam.MAPPING_FILE_LOCATION)) {
+            this.iriMapper = new DefaultOntologyIriMapper(new MappingFileParser(configuration));
+        }
+    }
+
+    private void setIriMapper(OWLOntologyManager manager) {
+        if (iriMapper != null) {
+            manager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
+        }
+    }
+
+    private void loadOntology(OntologyStorageProperties storageProperties) throws OwlapiDriverException {
         try {
-            this.ontology = ontologyManager.loadOntologyFromOntologyDocument(
-                    IRI.create(storageProperties.getPhysicalURI()));
+            this.ontology =
+                    ontologyManager.loadOntologyFromOntologyDocument(IRI.create(storageProperties.getPhysicalURI()));
             if (!ontology.getOntologyID().getOntologyIRI().isPresent() ||
                     !ontology.getOntologyID().getOntologyIRI().get().equals(
                             IRI.create(storageProperties.getOntologyURI()))) {
@@ -94,20 +112,6 @@ public class BasicStorageConnector extends AbstractConnector {
                 LOG.trace("Unable to load ontology from document.", e);
             }
             tryCreatingOntology();
-        }
-        initializeReasonerFactory();
-        this.reasoner = getReasoner(ontology);
-    }
-
-    private void resolveIriMapper() {
-        if (configuration.isSet(OwlapiConfigParam.MAPPING_FILE_LOCATION)) {
-            this.iriMapper = new DefaultOntologyIriMapper(new MappingFileParser(configuration));
-        }
-    }
-
-    private void setIriMapper(OWLOntologyManager manager) {
-        if (iriMapper != null) {
-            manager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
         }
     }
 
@@ -233,6 +237,17 @@ public class BasicStorageConnector extends AbstractConnector {
         ensureOpen();
         assert snapshot != null;
         ontologyManager.removeOntology(snapshot.getOntology());
+    }
+
+    @Override
+    void reloadData() throws OwlapiDriverException {
+        WRITE.lock();
+        try {
+            loadOntology(configuration.getStorageProperties());
+            this.reasoner = getReasoner(ontology);
+        } finally {
+            WRITE.unlock();
+        }
     }
 
     @Override

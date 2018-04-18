@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,19 +19,27 @@ import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class BasicConnectorFactoryTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private static OntologyStorageProperties storageProperties;
 
@@ -70,5 +78,36 @@ public class BasicConnectorFactoryTest {
         assertTrue(connector.isOpen());
         factory.close();
         assertFalse(connector.isOpen());
+    }
+
+    @Test
+    public void getConnectorOnCloseFactoryThrowsIllegalStateException() throws Exception {
+        final Configuration config = new Configuration(storageProperties);
+        assertTrue(factory.isOpen());
+        factory.getConnector(config);
+        factory.close();
+        assertFalse(factory.isOpen());
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("The factory is closed.");
+        factory.getConnector(config);
+    }
+
+    @Test
+    public void reloadDataReloadsDataOnSharedConnector() throws Exception {
+        final AbstractConnector connector = spy(factory.getConnector(new Configuration(storageProperties)));
+        final Field connectorField = BasicConnectorFactory.class.getDeclaredField("connector");
+        connectorField.setAccessible(true);
+        connectorField.set(factory, connector);
+        factory.reloadData();
+        verify(connector).reloadData();
+    }
+
+    @Test
+    public void reloadDataDoesNothingWhenConnectorDoesNotYetExist() throws Exception {
+        final Field connectorField = BasicConnectorFactory.class.getDeclaredField("connector");
+        connectorField.setAccessible(true);
+        assertNull(connectorField.get(factory));
+        factory.reloadData();
+        assertNull(connectorField.get(factory));
     }
 }

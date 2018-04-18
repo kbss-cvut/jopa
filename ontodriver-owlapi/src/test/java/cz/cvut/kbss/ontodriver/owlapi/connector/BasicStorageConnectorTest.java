@@ -211,4 +211,28 @@ public class BasicStorageConnectorTest {
                                                                         .equals(importedOntoIri)).findAny();
         assertTrue(imported.isPresent());
     }
+
+    @Test
+    public void reloadStorageReloadsOntologyFromFile() throws Exception {
+        final URI physicalUri = initOntology(Collections.emptySet());
+        final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        final IRI clsIri = IRI.create(Generator.generateUri());
+        final IRI individual = IRI.create(Generator.generateUri());
+        connector.executeRead(snapshot -> {
+            assertFalse(snapshot.getOntology().containsClassInSignature(clsIri));
+            return null;
+        });
+        final OWLDataFactory df = manager.getOWLDataFactory();
+        final OWLClassAssertionAxiom clsAxiom =
+                df.getOWLClassAssertionAxiom(df.getOWLClass(clsIri), df.getOWLNamedIndividual(individual));
+        manager.applyChange(new AddAxiom(ontology, clsAxiom));
+        manager.saveOntology(ontology, IRI.create(physicalUri));
+
+        connector.reloadData();
+        connector.executeRead(snapshot -> {
+            assertTrue(snapshot.getOntology().containsClassInSignature(clsIri));
+            return null;
+        });
+    }
 }

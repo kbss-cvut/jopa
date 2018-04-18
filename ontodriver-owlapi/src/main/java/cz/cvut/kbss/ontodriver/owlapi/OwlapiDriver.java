@@ -37,7 +37,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
                     OwlapiConfigParam.WRITE_ON_COMMIT);
 
     private final Configuration configuration;
-    private boolean open = true;
+    private volatile boolean open = true;
 
     private ConnectorFactory connectorFactory;
     private final Set<OwlapiConnection> openConnections = new HashSet<>();
@@ -49,7 +49,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
     }
 
     @Override
-    public void close() throws OntoDriverException {
+    public synchronized void close() throws OntoDriverException {
         if (!open) {
             return;
         }
@@ -80,6 +80,11 @@ class OwlapiDriver implements Closeable, ConnectionListener {
         openConnections.add(c);
         c.setListener(this);
         return c;
+    }
+
+    synchronized void reloadData() throws OwlapiDriverException {
+        assert open;
+        connectorFactory.reloadData();
     }
 
     @Override

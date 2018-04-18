@@ -316,16 +316,17 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
                 "<rdf:RDF\n" +
                 "  xmlns:owl = \"http://www.w3.org/2002/07/owl#\"\n" +
                 "  xmlns:rdf = \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "<owl:Ontology rdf:about=\"\"></owl:Ontology>" +
+                "<owl:Ontology rdf:about=\"http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine\"></owl:Ontology>" +
                 "</rdf:RDF>";
         Files.write(storage.toPath(), initialContent.getBytes());
         props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, storage.toURI().toString());
-        props.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, storage.toURI().toString());
+        props.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine");
         props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.toString(false));
         addFileStorageProperties(props);
         this.em = getEntityManager("reloadAllowsToReloadFileStorageContent", false, props);
         final String subject = "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#CaliforniaRegion";
         final String type = "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#Region";
+        em.getTransaction().begin();
         final TypedQuery<Boolean> query =
                 em.createNativeQuery("ASK { ?x a ?y . }", Boolean.class).setParameter("x", URI.create(subject))
                   .setParameter("y", URI.create(type));
@@ -334,6 +335,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
         final ReloadableDataSource ds = em.getEntityManagerFactory().unwrap(ReloadableDataSource.class);
         ds.reload();
+        // Need to force OWLAPI driver to open a new ontology snapshot with the reloaded data
+        em.getTransaction().commit();
         assertTrue(query.getSingleResult());
     }
 
