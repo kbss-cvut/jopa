@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,19 +14,28 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.ontodriver.ReloadableDataSource;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -297,4 +306,42 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final OWLClassA resTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
         assertEquals(value, resTwo.getStringAttribute());
     }
+
+    @Test
+    public void reloadAllowsToReloadFileStorageContent() throws Exception {
+        final Map<String, String> props = new HashMap<>();
+        final File storage = Files.createTempFile("reload-driver-test", ".owl").toFile();
+        storage.deleteOnExit();
+        final String initialContent = "<?xml version=\"1.0\"?>\n" +
+                "<rdf:RDF\n" +
+                "  xmlns:owl = \"http://www.w3.org/2002/07/owl#\"\n" +
+                "  xmlns:rdf = \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+                "<owl:Ontology rdf:about=\"\"></owl:Ontology>" +
+                "</rdf:RDF>";
+        Files.write(storage.toPath(), initialContent.getBytes());
+        props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, storage.toURI().toString());
+        props.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, storage.toURI().toString());
+        props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.toString(false));
+        addFileStorageProperties(props);
+        this.em = getEntityManager("reloadAllowsToReloadFileStorageContent", false, props);
+        final String subject = "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#CaliforniaRegion";
+        final String type = "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#Region";
+        final TypedQuery<Boolean> query =
+                em.createNativeQuery("ASK { ?x a ?y . }", Boolean.class).setParameter("x", URI.create(subject))
+                  .setParameter("y", URI.create(type));
+        assertFalse(query.getSingleResult());
+        replaceFileContents(storage);
+
+        final ReloadableDataSource ds = em.getEntityManagerFactory().unwrap(ReloadableDataSource.class);
+        ds.reload();
+        assertTrue(query.getSingleResult());
+    }
+
+    private void replaceFileContents(File target) throws IOException {
+        try (final InputStream is = new URL("http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine").openStream()) {
+            Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    protected abstract void addFileStorageProperties(Map<String, String> properties);
 }
