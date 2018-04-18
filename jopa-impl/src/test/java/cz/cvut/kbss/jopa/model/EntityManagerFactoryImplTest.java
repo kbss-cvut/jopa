@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,8 +27,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -99,5 +98,18 @@ public class EntityManagerFactoryImplTest {
             emOne.close();
             emTwo.close();
         }
+    }
+
+    @Test
+    public void unwrapReturnsReturnsEntityManagerFactoryImplWhenTypeMatches() {
+        final EntityManagerFactoryImpl result = emf.unwrap(EntityManagerFactoryImpl.class);
+        assertNotNull(result);
+        assertSame(emf, result);
+    }
+
+    @Test
+    public void unwrapForwardsCallToServerSessionWhenClassDoesNotMatch() {
+        final DataSourceStub result = emf.unwrap(DataSourceStub.class);
+        assertSame(emf.getServerSession().unwrap(DataSourceStub.class), result);
     }
 }
