@@ -14,7 +14,17 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 import joptsimple.OptionParser;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,19 +36,16 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.vocab.XSDVocabulary;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static cz.cvut.kbss.jopa.owl2java.TestUtils.*;
+import static cz.cvut.kbss.jopa.owl2java.TestUtils.BAD_IMPORT_ONTOLOGY_IRI;
+import static cz.cvut.kbss.jopa.owl2java.TestUtils.CONTEXT;
+import static cz.cvut.kbss.jopa.owl2java.TestUtils.IC_ONTOLOGY_IRI;
+import static cz.cvut.kbss.jopa.owl2java.TestUtils.MAPPING_FILE_NAME;
+import static cz.cvut.kbss.jopa.owl2java.TestUtils.VOCABULARY_FILE;
+import static cz.cvut.kbss.jopa.owl2java.TestUtils.getTempDirectory;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class OWL2JavaTransformerTest {
 
@@ -89,7 +96,8 @@ public class OWL2JavaTransformerTest {
     private TransformationConfiguration configure(String context, String packageName, String targetDir,
                                                   boolean withOwlapiIris) {
         return TransformationConfiguration.builder().context(context).packageName(packageName).targetDir(targetDir)
-                                          .addOwlapiIris(withOwlapiIris).build();
+                                          .addOwlapiIris(withOwlapiIris)
+                                          .propertiesType(PropertiesType.string).build();
     }
 
     @Test
