@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -139,7 +139,8 @@ public abstract class Generators {
             case 3: //double
                 return ((double) propertyIndex + 1) / (valueIndex + 1);
             case 4: // date
-                return new Date();
+                // Generate date rounded to seconds to prevent issues with time rounding
+                return new Date((System.currentTimeMillis() / 1000) * 1000);
             case 5: // String
                 return "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
             default:

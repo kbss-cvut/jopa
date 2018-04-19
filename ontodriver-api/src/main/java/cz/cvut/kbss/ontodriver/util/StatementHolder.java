@@ -59,13 +59,23 @@ public class StatementHolder {
                         inParam = true;
                     }
                     break;
+                case '<':
+                case '>':
+                case ',':
                 case '\n':
+                case ')':
                 case ' ':
+                case '.':
+                case ';':
+                case '{':
+                case '}':
+                case '[':
+                case ']':
                     if (inParam) {
                         lastParamEndIndex = i;
-                        inParam = false;
                         final String param = statement.substring(paramStartIndex, i);
                         paramNames.add(param);
+                        inParam = false;
                     }
                     break;
                 default:

@@ -16,17 +16,22 @@ package cz.cvut.kbss.ontodriver.sesame.query;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -35,6 +40,9 @@ import static org.mockito.Mockito.when;
 public class SelectResultSetTest {
 
     private static final List<String> BINDINGS = Arrays.asList("x", "y", "z");
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private TupleQueryResult resultMock;
@@ -48,7 +56,7 @@ public class SelectResultSetTest {
     private ResultSet resultSet;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(resultMock.getBindingNames()).thenReturn(BINDINGS);
         when(resultMock.next()).thenReturn(bindingSetMock);
@@ -98,18 +106,54 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectReturnsNullWhenOptionalFindsNoBinding() throws Exception {
-        when(bindingSetMock.getValue("x")).thenReturn(null);
-
+    public void isBoundReturnsTrueForBoundVariableIndex() throws Exception {
+        when(bindingSetMock.getBindingNames()).thenReturn(Collections.singleton("x"));
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(117));
         resultSet.next();
-        assertNull(resultSet.getObject("x"));
+        assertTrue(resultSet.isBound(0));
     }
 
     @Test
-    public void getObjectTypedReturnsNullWhenOptionalFindsNoBinding() throws Exception {
+    public void isBoundReturnsFalseForUnboundVariableIndex() throws Exception {
+        when(bindingSetMock.getBindingNames()).thenReturn(Collections.singleton("x"));
         when(bindingSetMock.getValue("x")).thenReturn(null);
-
         resultSet.next();
-        assertNull(resultSet.getObject("x", URI.class));
+        assertFalse(resultSet.isBound(0));
+    }
+
+    @Test
+    public void isBoundReturnsTrueForBoundVariableName() throws Exception {
+        when(bindingSetMock.getBindingNames()).thenReturn(Collections.singleton("x"));
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(117));
+        resultSet.next();
+        assertTrue(resultSet.isBound("x"));
+    }
+
+    @Test
+    public void isBoundReturnsFalseForUnboundVariableName() throws Exception {
+        when(bindingSetMock.getBindingNames()).thenReturn(Collections.singleton("x"));
+        when(bindingSetMock.getValue("x")).thenReturn(null);
+        resultSet.next();
+        assertFalse(resultSet.isBound("x"));
+    }
+
+    @Test
+    public void getObjectThrowsVariableNotBoundWhenVariableIsInResultSetButIsNotBoundInRow() throws Exception {
+        when(bindingSetMock.getBindingNames()).thenReturn(new HashSet<>(Arrays.asList("x", "y")));
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(117));
+        resultSet.next();
+        thrown.expect(VariableNotBoundException.class);
+        thrown.expectMessage("Variable \"y\" is not bound in the current result row.");
+        resultSet.getObject("y");
+    }
+
+    @Test
+    public void getIntByIndexThrowsVariableNotBoundWhenVariableIsInResultSetButIsNotBoundInRow() throws Exception {
+        when(bindingSetMock.getBindingNames()).thenReturn(new HashSet<>(Arrays.asList("x", "y")));
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(117));
+        resultSet.next();
+        thrown.expect(VariableNotBoundException.class);
+        thrown.expectMessage("Variable at index 1 is not bound in the current result row.");
+        resultSet.getInt(1);
     }
 }

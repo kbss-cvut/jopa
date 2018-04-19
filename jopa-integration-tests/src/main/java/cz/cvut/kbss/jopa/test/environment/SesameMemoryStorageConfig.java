@@ -21,16 +21,10 @@ import java.util.Map;
 
 /**
  * Persistent storage configuration for Sesame in-memory store.
- *
- * @author ledvima1
  */
 public class SesameMemoryStorageConfig extends StorageConfig {
 
-    protected static final OntologyConnectorType TYPE = OntologyConnectorType.SESAME;
-
-    public SesameMemoryStorageConfig() {
-        super();
-    }
+    private static final OntologyConnectorType TYPE = OntologyConnectorType.SESAME;
 
     @Override
     public Map<String, String> createStorageConfiguration(int index) {

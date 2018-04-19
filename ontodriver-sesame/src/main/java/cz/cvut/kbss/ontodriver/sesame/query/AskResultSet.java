@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,6 +35,18 @@ public class AskResultSet extends AbstractResultSet {
     @Override
     public int getColumnCount() {
         return 1;
+    }
+
+    @Override
+    public boolean isBound(int variableIndex) {
+        // Return always true, as we do not care about index/name for ASK results
+        return true;
+    }
+
+    @Override
+    public boolean isBound(String variableName) {
+        // Return always true, as we do not care about index/name for ASK results
+        return true;
     }
 
     // We discard column index and column name, because in a boolean result, there is no such concept. Therefore,
@@ -154,7 +166,7 @@ public class AskResultSet extends AbstractResultSet {
         if (type.isAssignableFrom(String.class)) {
             return type.cast(getString(0));
         }
-        throw new SesameDriverException("Unable to return booelan result as type " + type);
+        throw new SesameDriverException("Unable to return boolean result as type " + type);
     }
 
     @Override

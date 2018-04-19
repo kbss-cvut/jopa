@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -98,11 +98,12 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
+        assert resultSet.isBound(0);
         final URI uri = URI.create(resultSet.getString(0));
         return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
     }
 
-    private X loadResultValue(ResultSet resultSet) throws OntoDriverException {
+    private X loadResultValue(ResultSet resultSet) {
         try {
             return resultSet.getObject(0, resultType);
         } catch (OntoDriverException e) {

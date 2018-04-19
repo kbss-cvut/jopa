@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -209,7 +210,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void testSelectWithOptionalReturnsNullInUnfilledColumns() throws Exception {
+    public void selectWithOptionalReturnsNullInUnfilledColumns() {
         logger.debug("Test: select query with optional. The result should have nulls in places of empty values.");
         final String query =
                 "SELECT ?x ?s WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> ." +
@@ -359,5 +360,57 @@ public abstract class QueryRunner extends BaseQueryRunner {
             assertEquals(tExpected.getIntAttribute(), tActual.getIntAttribute());
             verifyOwlClassAInstance(tExpected.getOwlClassA(), tActual.getOwlClassA());
         }
+    }
+
+    @Test
+    public void executeUpdateRunsUpdateOnRepository() {
+        final EntityManager em = getEntityManager();
+        final OWLClassA instance = QueryTestEnvironment.getData(OWLClassA.class).get(0);
+        final String newValue = "UpdatedValue";
+        final String update = "DELETE { ?inst ?property ?origValue . }" +
+                "INSERT { ?inst ?property ?newValue . } WHERE {" +
+                "?inst ?property ?origValue . }";
+        em.createNativeQuery(update).setParameter("inst", instance.getUri()).setParameter("property", URI.create(
+                Vocabulary.P_A_STRING_ATTRIBUTE)).setParameter("newValue", newValue, "en").executeUpdate();
+
+        final OWLClassA result = em.find(OWLClassA.class, instance.getUri());
+        assertEquals(newValue, result.getStringAttribute());
+    }
+
+    @Test
+    public void executeUpdateRunsDeleteOnRepository() {
+        final EntityManager em = getEntityManager();
+        final OWLClassA instance = QueryTestEnvironment.getData(OWLClassA.class).get(0);
+        assertNotNull(instance.getStringAttribute());
+        final String update = "DELETE { ?inst ?property ?origValue . } WHERE {" +
+                "?inst ?property ?origValue . }";
+        em.createNativeQuery(update).setParameter("inst", instance.getUri())
+          .setParameter("property", URI.create(Vocabulary.P_A_STRING_ATTRIBUTE)).executeUpdate();
+
+        final OWLClassA result = em.find(OWLClassA.class, instance.getUri());
+        assertNull(result.getStringAttribute());
+    }
+
+    @Test
+    public void executeUpdateRunsInsertOnRepository() {
+        final EntityManager em = getEntityManager();
+        final URI newType = Generators.generateUri();
+        final OWLClassA instance = QueryTestEnvironment.getData(OWLClassA.class).get(0);
+        final String update = "INSERT DATA { ?inst a ?newType . }";
+        em.createNativeQuery(update).setParameter("inst", instance.getUri())
+          .setParameter("newType", newType).executeUpdate();
+
+        final OWLClassA result = em.find(OWLClassA.class, instance.getUri());
+        assertTrue(result.getTypes().contains(newType.toString()));
+    }
+
+    @Test
+    public void settingStringParameterEscapesTheParameterValue() {
+        final EntityManager em = getEntityManager();
+        final String query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n" +
+                "SELECT ?x WHERE { ?x rdfs:comment ?comment . }";
+        final String paramValue = "string\nWith\nNewlines";
+        final List result = em.createNativeQuery(query).setParameter("comment", paramValue, "en").getResultList();
+        assertTrue(result.isEmpty());   // The point here is that no exception is thrown and a result is returned
     }
 }

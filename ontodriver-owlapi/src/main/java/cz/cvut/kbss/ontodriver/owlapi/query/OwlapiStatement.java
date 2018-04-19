@@ -75,8 +75,14 @@ public class OwlapiStatement implements Statement {
         return targetOntology;
     }
 
+
     @Override
-    public void close() throws Exception {
+    public boolean isOpen() {
+        return open;
+    }
+
+    @Override
+    public void close() throws OntoDriverException {
         this.open = false;
         closeExistingResultSet();
     }

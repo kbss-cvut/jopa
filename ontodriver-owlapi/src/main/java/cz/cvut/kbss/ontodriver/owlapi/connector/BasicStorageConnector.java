@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -62,7 +62,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLOntologyIRIMapper iriMapper;
 
-    public BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
+    BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
         super(configuration);
     }
 
@@ -77,9 +77,27 @@ public class BasicStorageConnector extends AbstractConnector {
         resolveIriMapper();
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         setIriMapper(ontologyManager);
+        loadOntology(storageProperties);
+        initializeReasonerFactory();
+        this.reasoner = getReasoner(ontology);
+    }
+
+    private void resolveIriMapper() {
+        if (configuration.isSet(OwlapiConfigParam.MAPPING_FILE_LOCATION)) {
+            this.iriMapper = new DefaultOntologyIriMapper(new MappingFileParser(configuration));
+        }
+    }
+
+    private void setIriMapper(OWLOntologyManager manager) {
+        if (iriMapper != null) {
+            manager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
+        }
+    }
+
+    private void loadOntology(OntologyStorageProperties storageProperties) throws OwlapiDriverException {
         try {
-            this.ontology = ontologyManager.loadOntologyFromOntologyDocument(
-                    IRI.create(storageProperties.getPhysicalURI()));
+            this.ontology =
+                    ontologyManager.loadOntologyFromOntologyDocument(IRI.create(storageProperties.getPhysicalURI()));
             if (!ontology.getOntologyID().getOntologyIRI().isPresent() ||
                     !ontology.getOntologyID().getOntologyIRI().get().equals(
                             IRI.create(storageProperties.getOntologyURI()))) {
@@ -94,20 +112,6 @@ public class BasicStorageConnector extends AbstractConnector {
                 LOG.trace("Unable to load ontology from document.", e);
             }
             tryCreatingOntology();
-        }
-        initializeReasonerFactory();
-        this.reasoner = getReasoner(ontology);
-    }
-
-    private void resolveIriMapper() {
-        if (configuration.isSet(OwlapiConfigParam.MAPPING_FILE_LOCATION)) {
-            this.iriMapper = new DefaultOntologyIriMapper(new MappingFileParser(configuration));
-        }
-    }
-
-    private void setIriMapper(OWLOntologyManager manager) {
-        if (iriMapper != null) {
-            manager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
         }
     }
 
@@ -166,10 +170,10 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void cloneOntologyContent(OWLOntology target) {
-        ontologyManager.addAxioms(target, ontology.getAxioms());
+        ontologyManager.addAxioms(target, ontology.axioms());
         ontologyManager
                 .applyChanges(
-                        ontology.getImportsDeclarations().stream().map(i -> new AddImport(target, i)).collect(
+                        ontology.importsDeclarations().map(i -> new AddImport(target, i)).collect(
                                 Collectors.toList()));
     }
 
@@ -233,6 +237,17 @@ public class BasicStorageConnector extends AbstractConnector {
         ensureOpen();
         assert snapshot != null;
         ontologyManager.removeOntology(snapshot.getOntology());
+    }
+
+    @Override
+    void reloadData() throws OwlapiDriverException {
+        WRITE.lock();
+        try {
+            loadOntology(configuration.getStorageProperties());
+            this.reasoner = getReasoner(ontology);
+        } finally {
+            WRITE.unlock();
+        }
     }
 
     @Override

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
@@ -26,10 +27,8 @@ import java.util.Collection;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTestBase {
-
-
-    private SimpleListHandler handler;
+public class SimpleListHandlerWithStorageTest
+        extends ListHandlerWithStorageTestBase<SimpleListDescriptor, SimpleListValueDescriptor> {
 
     @Before
     public void setUp() throws Exception {
@@ -60,7 +59,8 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
         return desc;
     }
 
-    private Collection<Axiom<NamedResource>> generateAxiomsForList(SimpleListValueDescriptor listDescriptor) {
+    @Override
+    Collection<Axiom<NamedResource>> generateAxiomsForList(SimpleListValueDescriptor listDescriptor) {
         final Collection<Axiom<NamedResource>> axioms = new ArrayList<>(listDescriptor.getValues().size());
         if (listDescriptor.getValues().isEmpty()) {
             return axioms;
@@ -135,14 +135,6 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
                     .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Appended_" + i));
         }
         updateAndCheck(updated);
-    }
-
-    private void updateAndCheck(SimpleListValueDescriptor descriptor) throws Exception {
-        final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
-        handler.updateList(descriptor);
-        connector.commit();
-        connector.begin();
-        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test

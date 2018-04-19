@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -62,13 +62,13 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     }
 
     @Test
-    public void loadListReturnsEmptyListWhenNoListHeadIsFound() throws Exception {
+    public void loadListReturnsEmptyListWhenNoListHeadIsFound() {
         final Collection<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertTrue(result.isEmpty());
     }
 
     @Test
-    public void loadsListWithHeadOnly() throws Exception {
+    public void loadsListWithHeadOnly() {
         final List<URI> list = LIST_ITEMS.subList(0, 1);
         testHelper.persistList(list);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
@@ -80,10 +80,14 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     }
 
     @Test
-    public void loadsListWithMultipleItems() throws Exception {
+    public void loadsListWithMultipleItems() {
         testHelper.persistList(LIST_ITEMS);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertEquals(LIST_ITEMS.size(), result.size());
+        verifyLoadedList(result);
+    }
+
+    private void verifyLoadedList(List<Axiom<NamedResource>> result) {
         for (int i = 0; i < LIST_ITEMS.size(); i++) {
             if (i == 0) {
                 assertEquals(HAS_LIST, result.get(i).getAssertion());
@@ -95,7 +99,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
-    public void loadingListWithItemWithMultipleSuccessorsThrowsException() throws Exception {
+    public void loadingListWithItemWithMultipleSuccessorsThrowsException() {
         testHelper.persistList(LIST_ITEMS.subList(0, 5));
         addExtraSuccessor(LIST_ITEMS.get(2), LIST_ITEMS.get(8));
         listHandler.loadList(descriptor);
@@ -110,21 +114,14 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     }
 
     @Test
-    public void loadsListWithInferredProperties() throws Exception {
+    public void loadsListWithInferredProperties() {
         initReasoner(LIST_ITEMS);
         final SimpleListDescriptor infDescriptor = new SimpleListDescriptorImpl(SUBJECT,
                 Assertion.createObjectPropertyAssertion(HAS_LIST.getIdentifier(), true),
                 Assertion.createObjectPropertyAssertion(HAS_NEXT.getIdentifier(), true));
         final List<Axiom<NamedResource>> result = listHandler.loadList(infDescriptor);
         assertEquals(LIST_ITEMS.size(), result.size());
-        for (int i = 0; i < LIST_ITEMS.size(); i++) {
-            if (i == 0) {
-                assertEquals(HAS_LIST, result.get(i).getAssertion());
-            } else {
-                assertEquals(HAS_NEXT, result.get(i).getAssertion());
-            }
-            assertEquals(LIST_ITEMS.get(i), result.get(i).getValue().getValue().getIdentifier());
-        }
+        verifyLoadedList(result);
         verify(reasonerMock)
                 .getObjectPropertyValues(dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier())),
                         dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST.getIdentifier())));
@@ -152,14 +149,14 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     }
 
     @Test
-    public void persistEmptyListDoesNothing() throws Exception {
+    public void persistEmptyListDoesNothing() {
         listHandler.persistList(valueDescriptor);
         verify(manager, never()).addAxiom(eq(ontology), any(OWLAxiom.class));
         verify(manager, never()).applyChanges(anyList());
     }
 
     @Test
-    public void persistListWithOneElementCreatesOnlyHead() throws Exception {
+    public void persistListWithOneElementCreatesOnlyHead() {
         valueDescriptor.addValue(NamedResource.create(LIST_ITEMS.get(0)));
         listHandler.persistList(valueDescriptor);
 
@@ -170,7 +167,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         final AddAxiom ax = (AddAxiom) args.get(0);
         final OWLAxiom axiom = ax.getAxiom();
         assertTrue(axiom instanceof OWLObjectPropertyAssertionAxiom);
-        final OWLObjectProperty property = axiom.getObjectPropertiesInSignature().iterator().next();
+        final OWLObjectProperty property = axiom.objectPropertiesInSignature().iterator().next();
         assertEquals(HAS_LIST.getIdentifier(), property.getIRI().toURI());
         final OWLIndividual value = ((OWLObjectPropertyAssertionAxiom) axiom).getObject();
         assertEquals(LIST_ITEMS.get(0), value.asOWLNamedIndividual().getIRI().toURI());
@@ -178,7 +175,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     }
 
     @Test
-    public void persistNonEmptyListCreatesListInOntology() throws Exception {
+    public void persistNonEmptyListCreatesListInOntology() {
         LIST_ITEMS.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
         listHandler.persistList(valueDescriptor);
 

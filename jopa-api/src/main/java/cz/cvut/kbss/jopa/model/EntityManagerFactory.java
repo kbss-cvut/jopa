@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,11 +14,12 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import java.util.Map;
-
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.sessions.Cache;
+
+import java.util.Map;
 
 public interface EntityManagerFactory {
     /**
@@ -117,4 +118,15 @@ public interface EntityManagerFactory {
      * @since JPA 2.1
      */
     void addNamedQuery(String name, Query query);
+
+    /**
+     * Return an object of the specified type to allow access to the provider-specific API. If the provider's
+     * EntityManagerFactory implementation does not support the specified class, the {@link OWLPersistenceException} is
+     * thrown.
+     *
+     * @param cls The class of the object to be returned. This can be also an implementation of the underlying driver
+     * @return an instance of the specified class
+     * @throws OWLPersistenceException If the provider does not support the specified class
+     */
+    <T> T unwrap(Class<T> cls);
 }

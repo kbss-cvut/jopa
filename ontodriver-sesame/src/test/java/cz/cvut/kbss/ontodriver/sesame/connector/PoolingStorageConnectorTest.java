@@ -14,11 +14,11 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.sesame.Transaction;
-import cz.cvut.kbss.ontodriver.sesame.TransactionState;
 import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.util.Transaction;
+import cz.cvut.kbss.ontodriver.util.TransactionState;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -337,7 +337,8 @@ public class PoolingStorageConnectorTest {
         when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
         when(centralMock.acquireConnection()).thenReturn(conn);
         connector.begin();
-        connector.addStatements(Collections.singletonList(vf.createStatement(subject, property, vf.createLiteral(117))));
+        connector
+                .addStatements(Collections.singletonList(vf.createStatement(subject, property, vf.createLiteral(117))));
         assertTrue(connector.containsStatement(subject, property, null, false));
         verify(conn, never()).hasStatement(subject, property, null, false);
     }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,6 +31,8 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -72,7 +74,7 @@ public class BasicStorageConnectorTest {
         targetFile.deleteOnExit();
         final OWLOntologyManager om = OWLManager.createOWLOntologyManager();
         final OWLOntology o = om.createOntology(IRI.create(ONTOLOGY_URI));
-        om.addAxioms(o, axioms);
+        om.addAxioms(o, axioms.stream());
         om.saveOntology(o, IRI.create(targetFile));
         this.manager = om;
         this.ontology = o;
@@ -175,7 +177,7 @@ public class BasicStorageConnectorTest {
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
         this.connector = new BasicStorageConnector(new Configuration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        final Set<OWLAxiom> transactionalAxioms = snapshot.getOntology().getAxioms();
+        final Set<OWLAxiom> transactionalAxioms = snapshot.getOntology().axioms().collect(Collectors.toSet());
         assertTrue(transactionalAxioms.containsAll(axioms));
     }
 
@@ -204,10 +206,33 @@ public class BasicStorageConnectorTest {
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
         this.connector = new BasicStorageConnector(new Configuration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        final Set<OWLOntology> imports = snapshot.getOntology().getImports();
-        assertTrue(imports.size() > 0);
-        final Optional<OWLOntology> imported = imports.stream().filter(imp -> imp.getOntologyID().getOntologyIRI().get()
-                                                                                 .equals(importedOntoIri)).findAny();
+        final Stream<OWLOntology> imports = snapshot.getOntology().imports();
+        final Optional<OWLOntology> imported = imports.filter(imp -> imp.getOntologyID().getOntologyIRI().get()
+                                                                        .equals(importedOntoIri)).findAny();
         assertTrue(imported.isPresent());
+    }
+
+    @Test
+    public void reloadStorageReloadsOntologyFromFile() throws Exception {
+        final URI physicalUri = initOntology(Collections.emptySet());
+        final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        final IRI clsIri = IRI.create(Generator.generateUri());
+        final IRI individual = IRI.create(Generator.generateUri());
+        connector.executeRead(snapshot -> {
+            assertFalse(snapshot.getOntology().containsClassInSignature(clsIri));
+            return null;
+        });
+        final OWLDataFactory df = manager.getOWLDataFactory();
+        final OWLClassAssertionAxiom clsAxiom =
+                df.getOWLClassAssertionAxiom(df.getOWLClass(clsIri), df.getOWLNamedIndividual(individual));
+        manager.applyChange(new AddAxiom(ontology, clsAxiom));
+        manager.saveOntology(ontology, IRI.create(physicalUri));
+
+        connector.reloadData();
+        connector.executeRead(snapshot -> {
+            assertTrue(snapshot.getOntology().containsClassInSignature(clsIri));
+            return null;
+        });
     }
 }

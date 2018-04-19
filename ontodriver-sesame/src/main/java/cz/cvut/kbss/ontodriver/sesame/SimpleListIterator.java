@@ -77,7 +77,7 @@ class SimpleListIterator extends AbstractSesameIterator {
     }
 
     @Override
-    public Resource currentContent() throws SesameDriverException {
+    public Resource currentContent() {
         assert current.getObject() instanceof Resource;
 
         return (Resource) current.getObject();

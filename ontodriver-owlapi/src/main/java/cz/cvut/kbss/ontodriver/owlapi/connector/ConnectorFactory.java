@@ -26,6 +26,11 @@ public interface ConnectorFactory {
 
     boolean isOpen();
 
+    /**
+     * Reloads data from the underlying ontology storage.
+     */
+    void reloadData() throws OwlapiDriverException;
+
     static ConnectorFactory createFactory() {
         return new BasicConnectorFactory();
     }

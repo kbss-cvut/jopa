@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -128,7 +128,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     public void testRemoveFromSimpleList() {
         this.em = getEntityManager("RemoveFromSimpleList", false);
         final int size = 5;
-        entityC.setSimpleList(Generators.createSimpleList(size));
+        entityC.setSimpleList(Generators.createSimpleList(10));
         em.getTransaction().begin();
         em.persist(entityC);
         entityC.getSimpleList().forEach(em::persist);
@@ -261,7 +261,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void removeDeletesAllPropertyAssertionsMappedByEntity() throws Exception {
+    public void removeDeletesAllPropertyAssertionsMappedByEntity() {
         this.em = getEntityManager("RemoveDeletesAllMappedAttributes", false);
         em.getTransaction().begin();
         entityC.setSimpleList(Generators.createSimpleList(5));
@@ -282,7 +282,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         }
     }
 
-    private List<String> resolveCProperties() throws Exception {
+    private List<String> resolveCProperties() {
         final List<String> lst = new ArrayList<>();
         for (Field f : OWLClassC.class.getDeclaredFields()) {
             if (f.getAnnotation(Id.class) != null || EntityPropertiesUtils.isFieldTransient(f)) {
@@ -309,7 +309,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         final String property = entityB.getProperties().keySet().iterator().next();
         final Set<String> values = entityB.getProperties().get(property);
-        assertTrue(values.size() > 0);
+        assertFalse(values.isEmpty());
         final String valueToRemove = values.iterator().next();
         em.getTransaction().begin();
         final OWLClassB toUpdate = em.find(OWLClassB.class, entityB.getUri());
@@ -392,6 +392,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
         assertTrue(TestEnvironmentUtils.arePropertiesEqual(toUpdate.getProperties(), res.getProperties()));
     }
 

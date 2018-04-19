@@ -26,12 +26,12 @@ class DataDomainConstraintImpl extends AbstractDataDomainRangeConstraintImpl
         super(p, o);
     }
 
-
+    @Override
     public OWLClass getDomain() {
         return getClazz();
     }
 
-
+    @Override
     public void accept(IntegrityConstraintVisitor visitor) {
         visitor.visit(this);
     }

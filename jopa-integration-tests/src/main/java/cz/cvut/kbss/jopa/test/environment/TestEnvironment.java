@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,8 +35,9 @@ public class TestEnvironment {
      */
     public static final boolean DELETE_ONTOLOGY_FILE = true;
 
-    // private static final String REASONER_FACTORY_CLASS =
-    // "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
+    private TestEnvironment() {
+        throw new AssertionError();
+    }
 
     /**
      * Creates persistence connector, with enabled second level cache, for OWLAPI accessed ontology stored in a file.
@@ -122,9 +123,7 @@ public class TestEnvironment {
         }
         /* Set location of the entities (package) */
         params.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");
-        params.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
-                JOPAPersistenceProvider.class.getName());
-        params.put(JOPAPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
+        params.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, JOPAPersistenceProvider.class.getName());
         return params;
     }
 

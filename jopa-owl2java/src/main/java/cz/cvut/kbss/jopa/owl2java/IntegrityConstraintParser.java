@@ -317,17 +317,18 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
         final IntegrityConstraintClassParser icp = new IntegrityConstraintClassParser(subjClass);
         superClass.accept(icp);
 
-        for (final OWLObjectProperty property : opRanges.keySet()) {
-            if (superClass.getSignature().contains(property)) {
-                OWLManager.getOWLDataFactory().getOWLObjectAllValuesFrom(property, opRanges.get(property)).accept(icp);
+        for (Map.Entry<OWLObjectProperty, OWLClass> entry : opRanges.entrySet()) {
+            final OWLObjectProperty property = entry.getKey();
+            if (superClass.signature().anyMatch(e -> e.equals(property))) {
+                OWLManager.getOWLDataFactory().getOWLObjectAllValuesFrom(property, entry.getValue()).accept(icp);
             }
         }
-        for (final OWLDataProperty property : dpRanges.keySet()) {
-            if (superClass.getSignature().contains(property)) {
-                OWLManager.getOWLDataFactory().getOWLDataAllValuesFrom(property, dpRanges.get(property)).accept(icp);
+        for (Map.Entry<OWLDataProperty, OWLDatatype> entry : dpRanges.entrySet()) {
+            final OWLDataProperty property = entry.getKey();
+            if (superClass.signature().anyMatch(e -> e.equals(property))) {
+                OWLManager.getOWLDataFactory().getOWLDataAllValuesFrom(property, entry.getValue()).accept(icp);
             }
         }
-
         icp.getIntegrityConstraints().forEach((ic) -> integrityConstraintSet.addIntegrityConstraint(ic));
     }
 

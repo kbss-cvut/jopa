@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.BindingValueMismatchException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
@@ -31,6 +32,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
@@ -87,7 +89,20 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void first() throws OntoDriverException {
+    public boolean isBound(int variableIndex) {
+        ensureState();
+        return indexesToVariables.containsKey(variableIndex) && currentRow
+                .get(indexesToVariables.get(variableIndex)) != null;
+    }
+
+    @Override
+    public boolean isBound(String variableName) {
+        ensureState();
+        return namesToVariables.containsKey(variableName) && currentRow.get(namesToVariables.get(variableName)) != null;
+    }
+
+    @Override
+    public void first() {
         ensureOpen();
         this.currentIndex = -1;
         this.iterator = queryResult.iterator();
@@ -115,17 +130,25 @@ class SelectResultSet extends AbstractResultSet {
         return (OWLLiteral) currentValue;
     }
 
-    private OWLObject getCurrentValue(int columnIndex) throws OntoDriverException {
+    private OWLObject getCurrentValue(int columnIndex) throws OwlapiDriverException {
+        ensureState();
+        if (!indexesToVariables.containsKey(columnIndex)) {
+            throw new OwlapiDriverException("No result binding found for index " + columnIndex);
+        }
+        final Variable<OWLObject> v = indexesToVariables.get(columnIndex);
+        final GroundTerm<OWLObject> gt = currentRow.get(v);
+        if (gt == null) {
+            throw new VariableNotBoundException(
+                    "Variable at index " + columnIndex + " not bound in the current result row.");
+        }
+        return gt.getWrappedObject();
+    }
+
+    private void ensureState() {
         ensureOpen();
         if (currentRow == null) {
             throw new IllegalStateException("Current row is null.");
         }
-        if (!indexesToVariables.containsKey(columnIndex)) {
-            throw new OntoDriverException("No result binding found for index " + columnIndex);
-        }
-        final Variable<OWLObject> v = indexesToVariables.get(columnIndex);
-        final GroundTerm<OWLObject> gt = currentRow.get(v);
-        return gt != null ? gt.getWrappedObject() : null;
     }
 
     @Override
@@ -150,16 +173,17 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     private OWLObject getCurrentValue(String columnLabel) throws OwlapiDriverException {
-        ensureOpen();
-        if (currentRow == null) {
-            throw new IllegalStateException("Current row is null.");
-        }
+        ensureState();
         if (!namesToVariables.containsKey(columnLabel)) {
             throw new OwlapiDriverException("No result binding found for label " + columnLabel);
         }
         final Variable<OWLObject> v = namesToVariables.get(columnLabel);
         final GroundTerm<OWLObject> gt = currentRow.get(v);
-        return gt != null ? gt.getWrappedObject() : null;
+        if (gt == null) {
+            throw new VariableNotBoundException(
+                    "Variable \"" + columnLabel + "\" not bound in the current result row.");
+        }
+        return gt.getWrappedObject();
     }
 
     @Override
@@ -234,7 +258,7 @@ class SelectResultSet extends AbstractResultSet {
         if (owlValue instanceof OWLLiteral) {
             return OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue);
         }
-        final Set<OWLEntity> sig = owlValue.getSignature();
+        final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
         if (sig.isEmpty()) {
             return owlValue.toString();
         } else {
@@ -263,7 +287,7 @@ class SelectResultSet extends AbstractResultSet {
                 return cls.cast(ob);
             }
         } else {
-            final Set<OWLEntity> sig = owlValue.getSignature();
+            final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
             if (!sig.isEmpty()) {
                 final URI uri = URI.create(sig.iterator().next().toStringID());
                 if (cls.isAssignableFrom(uri.getClass())) {
@@ -299,7 +323,7 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public int getRowIndex() throws OntoDriverException {
+    public int getRowIndex() {
         return currentIndex;
     }
 
@@ -324,7 +348,7 @@ class SelectResultSet extends AbstractResultSet {
         if (owlValue instanceof OWLLiteral) {
             return OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue).toString();
         }
-        final Set<OWLEntity> sig = owlValue.getSignature();
+        final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
         if (sig.isEmpty()) {
             return owlValue.toString();
         } else {
@@ -338,19 +362,19 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public boolean isFirst() throws OntoDriverException {
+    public boolean isFirst() {
         ensureOpen();
         return currentIndex == 0;
     }
 
     @Override
-    public boolean hasNext() throws OntoDriverException {
+    public boolean hasNext() {
         ensureOpen();
         return iterator.hasNext();
     }
 
     @Override
-    public void last() throws OntoDriverException {
+    public void last() {
         ensureOpen();
         while (hasNext()) {
             next();
@@ -358,7 +382,7 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void next() throws OntoDriverException {
+    public void next() {
         ensureOpen();
         if (!hasNext()) {
             throw new NoSuchElementException("The result set has no more rows.");
@@ -368,24 +392,24 @@ class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void previous() throws OntoDriverException {
+    public void previous() {
         ensureOpen();
         relative(-1);
     }
 
     @Override
-    public void registerObserver(Observer observer) throws OntoDriverException {
+    public void registerObserver(Observer observer) {
         // Not implemented yet
     }
 
     @Override
-    public void relative(int rows) throws OntoDriverException {
+    public void relative(int rows) {
         ensureOpen();
         setRowIndex(currentIndex + rows);
     }
 
     @Override
-    public void setRowIndex(int rowIndex) throws OntoDriverException {
+    public void setRowIndex(int rowIndex) {
         ensureOpen();
         if (rowIndex == currentIndex) {
             return;

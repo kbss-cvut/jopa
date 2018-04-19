@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.test;
 
+import cz.cvut.kbss.jopa.CommonVocabulary;
+
 public class Vocabulary {
 
     public static final String CLASS_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
@@ -32,6 +34,7 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_Q = CLASS_IRI_BASE + "OWLClassQ";
     public static final String C_OWL_CLASS_S_PARENT = CLASS_IRI_BASE + "OWLClassSParent";
     public static final String C_OWL_CLASS_V = CLASS_IRI_BASE + "OWLClassV";
+    public static final String C_OWL_CLASS_W = CLASS_IRI_BASE + "OWLClassW";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
@@ -62,6 +65,8 @@ public class Vocabulary {
             "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
     public static final String P_HAS_REFERENCED_LIST =
             "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+
+    public static final String RDFS_SUBCLASS_OF = CommonVocabulary.RDFS_NAMESPACE + "subClassOf";
 
     private Vocabulary() {
         throw new AssertionError();

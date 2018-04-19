@@ -54,12 +54,12 @@ public class IntegrationTestBase {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         em.close();
         emf.close();
     }
 
-    TestDataSource getDataSource() {
+    private TestDataSource getDataSource() {
         return ((EntityManagerFactoryImpl) emf).getServerSession().unwrap(TestDataSource.class);
     }
 

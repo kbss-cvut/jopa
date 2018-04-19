@@ -1,10 +1,14 @@
 # JOPA - Release Notes
 
+## 0.10.0 - April 11, 2018
+- Jena OntoDriver implementation (Enhancement #18).
+    - In-memory, File and TDB storage are supported.
+
 ## 0.9.16 - March 29, 2018
 - Fixed bug in cloning instances with circular dependencies (using collections).
 - Updated the compiler and AspectJ plugins.
 
-## 0.9.15 - Feburary 21, 2018
+## 0.9.15 - February 21, 2018
 - Fixed dependency conflict in JOPA Maven plugin (Bug #29).
 
 ## 0.9.14 - February 20, 2018

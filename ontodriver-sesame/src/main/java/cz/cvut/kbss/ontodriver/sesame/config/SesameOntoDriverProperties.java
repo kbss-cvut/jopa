@@ -16,10 +16,6 @@ package cz.cvut.kbss.ontodriver.sesame.config;
 
 public abstract class SesameOntoDriverProperties {
 
-    private SesameOntoDriverProperties() {
-        throw new AssertionError();
-    }
-
     /**
      * Specifies whether a in-memory storage should be used for local Sesame repositories.
      * <p>
@@ -53,4 +49,8 @@ public abstract class SesameOntoDriverProperties {
      * This will in most cases have better performance than loading with bound property.
      */
     public static final String SESAME_LOAD_ALL_THRESHOLD = "cz.cvut.kbss.ontodriver.sesame.load-all-threshold";
+
+    private SesameOntoDriverProperties() {
+        throw new AssertionError();
+    }
 }

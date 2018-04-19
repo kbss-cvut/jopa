@@ -64,14 +64,14 @@ public class ReferencedListHandlerTest
     }
 
     @Test
-    public void loadListReturnsEmptyListWhenNoHeadIsFound() throws Exception {
+    public void loadListReturnsEmptyListWhenNoHeadIsFound() {
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
-    public void loadListLoadsSingleElementListWithHeadOnly() throws Exception {
+    public void loadListLoadsSingleElementListWithHeadOnly() {
         final List<URI> headOnly = LIST_ITEMS.subList(0, 1);
         testHelper.persistList(headOnly);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
@@ -80,7 +80,7 @@ public class ReferencedListHandlerTest
     }
 
     @Test
-    public void loadListWithMultipleItems() throws Exception {
+    public void loadListWithMultipleItems() {
         testHelper.persistList(LIST_ITEMS);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertEquals(LIST_ITEMS.size(), result.size());
@@ -90,7 +90,7 @@ public class ReferencedListHandlerTest
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
-    public void loadingListWithItemWithMultipleSuccessorsThrowsException() throws Exception {
+    public void loadingListWithItemWithMultipleSuccessorsThrowsException() {
         testHelper.persistList(LIST_ITEMS.subList(0, 5));
         addExtraPropertyValue(ListTestHelper.HAS_NEXT_PROPERTY, LIST_ITEMS.get(8));
         listHandler.loadList(descriptor);
@@ -107,14 +107,14 @@ public class ReferencedListHandlerTest
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
-    public void loadingListWithNodeWithMultipleContentElementsThrowsException() throws Exception {
+    public void loadingListWithNodeWithMultipleContentElementsThrowsException() {
         testHelper.persistList(LIST_ITEMS.subList(0, 8));
         addExtraPropertyValue(ListTestHelper.HAS_CONTENT_PROPERTY, LIST_ITEMS.get(0));
         listHandler.loadList(descriptor);
     }
 
     @Test
-    public void loadListWithInferredNodeContent() throws Exception {
+    public void loadListWithInferredNodeContent() {
         initReasoner();
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(SUBJECT,
                 HAS_LIST, HAS_NEXT, Assertion.createObjectPropertyAssertion(HAS_CONTENT.getIdentifier(), true));
@@ -136,7 +136,7 @@ public class ReferencedListHandlerTest
     }
 
     @Test
-    public void loadListWithInferredHead() throws Exception {
+    public void loadListWithInferredHead() {
         initReasoner();
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(SUBJECT,
                 Assertion.createObjectPropertyAssertion(HAS_LIST.getIdentifier(), true), HAS_NEXT, HAS_CONTENT);
@@ -146,13 +146,13 @@ public class ReferencedListHandlerTest
     }
 
     @Test
-    public void persistEmptyListDoesNothing() throws Exception {
+    public void persistEmptyListDoesNothing() {
         listHandler.persistList(valueDescriptor);
         verify(manager, never()).applyChanges(anyList());
     }
 
     @Test
-    public void persistListWithHeadOnly() throws Exception {
+    public void persistListWithHeadOnly() {
         valueDescriptor.addValue(NamedResource.create(LIST_ITEMS.get(0)));
         listHandler.persistList(valueDescriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
@@ -171,7 +171,7 @@ public class ReferencedListHandlerTest
             final OWLAxiom axiom = ax.getAxiom();
             assertTrue(axiom instanceof OWLObjectPropertyAssertionAxiom);
             final OWLObjectPropertyAssertionAxiom assertion = (OWLObjectPropertyAssertionAxiom) axiom;
-            OWLObjectProperty property = axiom.getObjectPropertiesInSignature().iterator().next();
+            OWLObjectProperty property = axiom.objectPropertiesInSignature().iterator().next();
             if (property.equals(hasContentProperty)) {
                 final OWLIndividual value = assertion.getObject();
                 assertEquals(expectedElements.get(i / 2), value.asOWLNamedIndividual().getIRI().toURI());
@@ -189,7 +189,7 @@ public class ReferencedListHandlerTest
     }
 
     @Test
-    public void persistListWithMultipleElementsSavesTheList() throws Exception {
+    public void persistListWithMultipleElementsSavesTheList() {
         LIST_ITEMS.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
         listHandler.persistList(valueDescriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);

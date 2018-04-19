@@ -92,11 +92,8 @@ public final class Configuration {
      * @return Property value (false for unknown)
      */
     public boolean is(ConfigurationParameter property) {
-        if (configuration.containsKey(property)) {
-            final String value = configuration.get(property);
-            return Boolean.parseBoolean(value);
-        }
-        return false;
+        Objects.requireNonNull(property);
+        return Boolean.parseBoolean(configuration.get(property));
     }
 
     /**

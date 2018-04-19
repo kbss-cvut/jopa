@@ -8,7 +8,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.9.16</version>
+        <version>0.10.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -17,29 +17,26 @@
     <description>Jena implementation of the OntoDriver API</description>
 
     <properties>
-        <org.apache.jena.version>2.12.1</org.apache.jena.version>
+        <org.apache.jena.version>3.6.0</org.apache.jena.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-core</artifactId>
-            <version>${org.apache.jena.version}</version>
-        </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>ontodriver-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena</artifactId>
+            <version>${org.apache.jena.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
+        </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

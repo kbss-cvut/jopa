@@ -17,8 +17,13 @@ package cz.cvut.kbss.jopa.test.integration.sesame;
 import cz.cvut.kbss.jopa.test.environment.SesameDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsRunner;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 public class RetrieveOperationsTest extends RetrieveOperationsRunner {
 
@@ -26,5 +31,17 @@ public class RetrieveOperationsTest extends RetrieveOperationsRunner {
 
     public RetrieveOperationsTest() {
         super(LOG, new SesamePersistenceFactory(), new SesameDataAccessor());
+    }
+
+    @Ignore
+    @Test
+    @Override
+    public void reloadAllowsToReloadFileStorageContent() throws Exception {
+        // Do nothing, RDF4J driver does not support accessing plain RDF files
+    }
+
+    @Override
+    protected void addFileStorageProperties(Map<String, String> properties) {
+        properties.put(SesameOntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.toString(false));
     }
 }

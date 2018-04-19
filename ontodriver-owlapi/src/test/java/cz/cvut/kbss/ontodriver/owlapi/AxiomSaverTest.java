@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -39,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.*;
+import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asSet;
 
 public class AxiomSaverTest {
 
@@ -76,7 +77,7 @@ public class AxiomSaverTest {
     }
 
     @Test
-    public void persistValueWithNullDoesNothing() throws Exception {
+    public void persistValueWithNullDoesNothing() {
         final Assertion dpAssertion = Assertion.createDataPropertyAssertion(ASSERTION_URI, false);
         final Assertion opAssertion = Assertion.createObjectPropertyAssertion(ASSERTION_URI, false);
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(ASSERTION_URI, false);
@@ -88,7 +89,7 @@ public class AxiomSaverTest {
     }
 
     @Test
-    public void testPersistIndividualWithDataProperty() throws Exception {
+    public void testPersistIndividualWithDataProperty() {
         final Assertion dpAssertion = Assertion.createDataPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-dataAttribute"), false);
         final Set<Object> values = new HashSet<>();
@@ -113,7 +114,7 @@ public class AxiomSaverTest {
     }
 
     private void verifyDataPropertyValuesInOntology(Assertion assertion, Set<Object> values) {
-        final Set<OWLDataPropertyAssertionAxiom> dpAxioms = ontology.getDataPropertyAssertionAxioms(individual);
+        final Set<OWLDataPropertyAssertionAxiom> dpAxioms = asSet(ontology.dataPropertyAssertionAxioms(individual));
         assertEquals(values.size(), dpAxioms.size());
         for (OWLDataPropertyAssertionAxiom axiom : dpAxioms) {
             assertEquals(assertion.getIdentifier(), axiom.getProperty().asOWLDataProperty().getIRI().toURI());
@@ -123,7 +124,7 @@ public class AxiomSaverTest {
     }
 
     @Test
-    public void testPersistIndividualWithAnnotationProperty() throws Exception {
+    public void testPersistIndividualWithAnnotationProperty() {
         // This just makes sure that the individual explicitly exists in the ontology
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-annotationAttribute"), false);
@@ -140,7 +141,8 @@ public class AxiomSaverTest {
     }
 
     private void verifyAnnotationPropertyValuesInOntology(Assertion assertion, Set<Object> values) {
-        final Set<OWLAnnotationAssertionAxiom> apAxioms = ontology.getAnnotationAssertionAxioms(individual.getIRI());
+        final Set<OWLAnnotationAssertionAxiom> apAxioms =
+                asSet(ontology.annotationAssertionAxioms(individual.getIRI()));
         assertEquals(values.size(), apAxioms.size());
         for (OWLAnnotationAssertionAxiom axiom : apAxioms) {
             assertEquals(assertion.getIdentifier(), axiom.getProperty().getIRI().toURI());
@@ -155,7 +157,7 @@ public class AxiomSaverTest {
     }
 
     @Test
-    public void testPersistIndividualWithObjectProperty() throws Exception {
+    public void testPersistIndividualWithObjectProperty() {
         final Assertion assertion = Assertion.createObjectPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"), false);
         descriptor.addAssertion(assertion);
@@ -171,7 +173,7 @@ public class AxiomSaverTest {
     }
 
     private void verifyObjectPropertyValuesInOntology(Assertion assertion, Set<NamedResource> values) {
-        final Set<OWLObjectPropertyAssertionAxiom> opAxioms = ontology.getObjectPropertyAssertionAxioms(individual);
+        final Set<OWLObjectPropertyAssertionAxiom> opAxioms = asSet(ontology.objectPropertyAssertionAxioms(individual));
         assertEquals(values.size(), opAxioms.size());
         for (OWLObjectPropertyAssertionAxiom axiom : opAxioms) {
             assertEquals(assertion.getIdentifier(), axiom.getProperty().asOWLObjectProperty().getIRI().toURI());
@@ -182,7 +184,7 @@ public class AxiomSaverTest {
     }
 
     @Test
-    public void testPersistIndividualWithUnspecifiedPropertyTypePropertiesExist() throws Exception {
+    public void testPersistIndividualWithUnspecifiedPropertyTypePropertiesExist() {
         final Assertion opAssertion = Assertion.createPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"), false);
         descriptor.addAssertion(opAssertion);
@@ -225,7 +227,7 @@ public class AxiomSaverTest {
     }
 
     @Test
-    public void testPersistIndividualWithUnspecifiedPropertyTypePropertiesUnknown() throws Exception {
+    public void testPersistIndividualWithUnspecifiedPropertyTypePropertiesUnknown() {
         final Assertion opAssertion = Assertion.createPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"), false);
         descriptor.addAssertion(opAssertion);

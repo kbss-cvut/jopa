@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -70,4 +70,24 @@ public interface Statement extends AutoCloseable {
      * @see #useOntology(StatementOntology)
      */
     StatementOntology getStatementOntology();
+
+    /**
+     * Whether this statement is still open.
+     * <p>
+     * A {@code Statement} is closed if the method {@link #close()} has been called on it.
+     *
+     * @return Open status
+     */
+    boolean isOpen();
+
+    /**
+     * Closes this statement, releasing any resources it has hold.
+     * <p>
+     * Calling the method close on a Statement object that is already closed has no effect.
+     *
+     * @throws OntoDriverException If closing the statement fails
+     * @apiNote When a {@code Statement} object is closed, its current {@code ResultSet} object, if one exists, is also closed.
+     */
+    @Override
+    void close() throws OntoDriverException;
 }

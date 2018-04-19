@@ -20,11 +20,18 @@ import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class RetrieveOperationsTest extends RetrieveOperationsRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(RetrieveOperationsTest.class);
 
     public RetrieveOperationsTest() {
         super(LOG, new OwlapiPersistenceFactory(), new OwlapiDataAccessor());
+    }
+
+    @Override
+    protected void addFileStorageProperties(Map<String, String> properties) {
+        // Do nothing, OWLAPI already works with file-based storage
     }
 }

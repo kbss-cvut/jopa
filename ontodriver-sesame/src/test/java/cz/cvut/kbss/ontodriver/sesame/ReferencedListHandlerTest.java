@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
@@ -21,7 +22,6 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.*;
@@ -42,30 +41,19 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ReferencedListHandlerTest extends ListHandlerTestBase {
+public class ReferencedListHandlerTest extends ListHandlerTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
-    private static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
+    private static final String NODE_CONTENT_PROPERTY =
+            "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
 
-    private static IRI hasListProperty;
-    private static IRI nextNodeProperty;
     private static IRI nodeContentProperty;
-
-    private ReferencedListDescriptor listDescriptor;
-    private ReferencedListValueDescriptor valueDescriptor;
 
     private List<Statement> added = new ArrayList<>();
     private List<Statement> removed = new ArrayList<>();
 
-    private ReferencedListHandler handler;
-
-    @Mock
-    private Connector connector;
-
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         init();
-        hasListProperty = vf.createIRI(LIST_PROPERTY);
-        nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
         nodeContentProperty = vf.createIRI(NODE_CONTENT_PROPERTY);
     }
 
@@ -97,21 +85,10 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
     }
 
     @Test
-    public void staticFactoryMethodForReferencedLists() throws Exception {
+    public void staticFactoryMethodForReferencedLists() {
         final ListHandler<?, ?> h = ListHandler.createForReferencedList(connector, vf);
         assertNotNull(h);
         assertTrue(h instanceof ReferencedListHandler);
-    }
-
-    @Test
-    public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-        when(connector.findStatements(owner, hasListProperty, null, false))
-                .thenReturn(Collections.emptyList());
-        final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-        assertNotNull(res);
-        assertTrue(res.isEmpty());
-        verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
-                any(Value.class), any(Boolean.class), eq(null));
     }
 
     @Test

@@ -42,6 +42,7 @@ public class QueryImplTest extends QueryTestBase {
         final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultSetMock.isBound(anyInt())).thenReturn(true);
         when(resultSetMock.getObject(anyInt())).thenReturn("str");
         final Object[] result = (Object[]) q.getSingleResult();
         assertEquals(2, result.length); // Two variables
@@ -89,6 +90,7 @@ public class QueryImplTest extends QueryTestBase {
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         final String res = "str";
+        when(resultSetMock.isBound(anyInt())).thenReturn(true);
         when(resultSetMock.getObject(anyInt())).thenReturn(res);
         final List result = q.getResultList();
         for (Object row : result) {
@@ -182,7 +184,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetMaxResultsInvokesRollbackMarker() throws Exception {
+    public void exceptionInSetMaxResultsInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setMaxResults(-1);
@@ -277,5 +279,22 @@ public class QueryImplTest extends QueryTestBase {
         assertEquals(1, result.size());
         assertEquals("str", result.get(0));
         verify(resultSetMock).getObject(anyInt());
+    }
+
+    @Test
+    public void getResultListSetsValuesOfUnboundVariablesToNullInResultArrays() throws Exception {
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultSetMock.isBound(0)).thenReturn(true);
+        when(resultSetMock.isBound(1)).thenReturn(false);
+        when(resultSetMock.getObject(0)).thenReturn("str");
+        final List result = q.getResultList();
+        assertEquals(1, result.size());
+        assertEquals("str", ((Object [])result.get(0))[0]);
+        assertNull(((Object [])result.get(0))[1]);
+        verify(resultSetMock).isBound(0);
+        verify(resultSetMock).isBound(1);
+        verify(resultSetMock, never()).getObject(1);
     }
 }

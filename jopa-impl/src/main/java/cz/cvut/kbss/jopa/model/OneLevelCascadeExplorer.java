@@ -24,7 +24,7 @@ import java.util.List;
 
 public abstract class OneLevelCascadeExplorer {
 
-    private CascadeType ct;
+    protected CascadeType ct;
 
     public void start(final AbstractEntityManager pc, final Object o, CascadeType ct) {
         this.ct = ct;
@@ -46,7 +46,7 @@ public abstract class OneLevelCascadeExplorer {
         }
     }
 
-    protected void exploreCascaded(final Attribute<?, ?> at, final Object o) throws IllegalAccessException {
+    protected void exploreCascaded(final Attribute<?, ?> at, final Object o) {
         // empty body
     }
 

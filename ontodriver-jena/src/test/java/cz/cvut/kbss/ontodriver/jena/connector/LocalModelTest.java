@@ -1,0 +1,227 @@
+package cz.cvut.kbss.ontodriver.jena.connector;
+
+import cz.cvut.kbss.ontodriver.util.Vocabulary;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Statement;
+import org.junit.Test;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.junit.Assert.*;
+
+public class LocalModelTest {
+
+    private LocalModel localModel = new LocalModel(false);
+
+    @Test
+    public void addStatementsAddsThemIntoDefaultAddModel() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(statement), null);
+        final Dataset added = localModel.getAdded();
+        assertTrue(added.getDefaultModel().contains(statement));
+    }
+
+    @Test
+    public void addStatementsWithContextAddsThemIntoContextAddModel() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        final Dataset added = localModel.getAdded();
+        assertTrue(added.getNamedModel(NAMED_GRAPH).contains(statement));
+    }
+
+    @Test
+    public void removeStatementsAddsThemIntoDefaultRemoveModel() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.removeStatements(Collections.singletonList(statement), null);
+        final Dataset removed = localModel.getRemoved();
+        assertTrue(removed.getDefaultModel().contains(statement));
+    }
+
+    @Test
+    public void removeStatementsWithContextAddsThemIntoContextRemoveModel() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        final Dataset removed = localModel.getRemoved();
+        assertTrue(removed.getNamedModel(NAMED_GRAPH).contains(statement));
+    }
+
+    @Test
+    public void containsReturnsAddedForStatementInAdded() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(statement), null);
+        assertEquals(LocalModel.Containment.ADDED,
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
+    }
+
+    @Test
+    public void containsReturnsAddedForStatementsInAddedContext() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        assertEquals(LocalModel.Containment.ADDED,
+                localModel.contains(null, statement.getPredicate(), null, NAMED_GRAPH));
+    }
+
+    @Test
+    public void containsReturnsRemovedForStatementInRemoved() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.removeStatements(Collections.singletonList(statement), null);
+        assertEquals(LocalModel.Containment.REMOVED,
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
+    }
+
+    @Test
+    public void containsReturnsRemovedForStatementInRemovedContext() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        assertEquals(LocalModel.Containment.REMOVED,
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, NAMED_GRAPH));
+    }
+
+    @Test
+    public void containsReturnsUnknownForStatementNotInLocalModel() {
+        assertEquals(LocalModel.Containment.UNKNOWN,
+                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), null));
+    }
+
+    @Test
+    public void addStatementsRemovesThemFromRemoved() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.removeStatements(Collections.singletonList(statement), null);
+        assertTrue(localModel.getRemoved().getDefaultModel()
+                             .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+        localModel.addStatements(Collections.singletonList(statement), null);
+        assertFalse(localModel.getRemoved().getDefaultModel()
+                              .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+    }
+
+    @Test
+    public void addStatementsRemovesThemFromRemoved_Context() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        assertTrue(localModel.getRemoved().getNamedModel(NAMED_GRAPH)
+                             .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+        localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        assertFalse(localModel.getRemoved().getNamedModel(NAMED_GRAPH)
+                              .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+    }
+
+    @Test
+    public void removeStatementsRemovesThemFromAdded() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(statement), null);
+        assertTrue(localModel.getAdded().getDefaultModel()
+                             .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+        localModel.removeStatements(Collections.singletonList(statement), null);
+        assertFalse(localModel.getAdded().getDefaultModel()
+                              .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+    }
+
+    @Test
+    public void removeStatementsRemovesThemFromAdded_Context() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        assertTrue(localModel.getAdded().getNamedModel(NAMED_GRAPH)
+                             .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+        localModel.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        assertFalse(localModel.getAdded().getNamedModel(NAMED_GRAPH)
+                              .contains(statement.getSubject(), statement.getPredicate(), statement.getObject()));
+    }
+
+    @Test
+    public void enhanceStatementsAddsAddedStatements() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(statement), null);
+        final Collection<Statement> toEnhance = Collections
+                .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
+        final Collection<Statement> result = localModel
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(statement));
+        assertTrue(result.containsAll(toEnhance));
+    }
+
+    @Test
+    public void enhanceStatementsRemovesRemovedStatements() {
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.removeStatements(Collections.singletonList(statement), null);
+        final Collection<Statement> toEnhance = Collections
+                .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE));
+        final Collection<Statement> result = localModel
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void enhanceStatementsWorksInContext() {
+        final Statement added = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(added), NAMED_GRAPH);
+        final Statement removed = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        localModel.removeStatements(Collections.singletonList(removed), NAMED_GRAPH);
+        final Collection<Statement> toEnhance = Collections
+                .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
+        final Collection<Statement> result = localModel
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null,
+                        NAMED_GRAPH);
+        assertEquals(1, result.size());
+        assertTrue(result.contains(added));
+    }
+
+    @Test
+    public void getContextsGetsNamedGraphsInLocalModel() {
+        final Statement added = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        localModel.addStatements(Collections.singletonList(added), NAMED_GRAPH);
+        final List<String> result = localModel.getContexts();
+        assertTrue(result.contains(NAMED_GRAPH));
+    }
+
+    @Test
+    public void getContextReturnsEmptyListWhenNoNamedGraphsArePresent() {
+        final List<String> contexts = localModel.getContexts();
+        assertNotNull(contexts);
+        assertTrue(contexts.isEmpty());
+    }
+
+    @Test
+    public void containsUsesUnionGraphWhenConfigured() {
+        final LocalModel model = new LocalModel(true);
+        final Statement added = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
+        model.addStatements(Collections.singletonList(added), NAMED_GRAPH);
+        assertEquals(LocalModel.Containment.ADDED, model.contains(createResource(SUBJECT), null, null, null));
+    }
+
+    @Test
+    public void enhanceUsesUnionGraphWhenConfigured() {
+        final LocalModel model = new LocalModel(true);
+        final Statement removed = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        model.removeStatements(Collections.singletonList(removed), NAMED_GRAPH);
+        final Collection<Statement> toEnhance = Collections
+                .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
+        final Collection<Statement> result = model
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void removeRemovesStatementsFromAllNamedGraphsWhenDefaultAsUnionIsConfigured() {
+        final LocalModel model = new LocalModel(true);
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        model.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        model.removeStatements(Collections.singletonList(statement), null);
+        assertTrue(model.getAdded().isEmpty());
+    }
+
+    @Test
+    public void addToDefaultRemovesStatementsFromRemovedContext() {
+        final LocalModel model = new LocalModel(true);
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        model.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
+        model.addStatements(Collections.singletonList(statement), null);
+        assertTrue(model.getRemoved().isEmpty());
+        assertTrue(model.getAdded().getDefaultModel().contains(statement));
+    }
+}

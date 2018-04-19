@@ -24,8 +24,6 @@ import org.slf4j.Logger;
 
 abstract class BaseInheritanceRunner extends BaseRunner {
 
-    // Mapped superclass
-    OWLClassQ entityQ;
     // Single inheritance - OWLClassT and OWLClassU are subclasses of OWLClassS
     OWLClassT entityT;
     OWLClassU entityU;

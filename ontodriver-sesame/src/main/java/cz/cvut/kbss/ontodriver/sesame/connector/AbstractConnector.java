@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,39 +15,39 @@
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.Transaction;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.util.Transaction;
 
 abstract class AbstractConnector implements Connector {
 
-	protected Transaction transaction;
-	protected boolean open;
+    protected Transaction transaction;
+    protected boolean open;
 
-	protected AbstractConnector() {
-		this.transaction = new Transaction();
-	}
+    protected AbstractConnector() {
+        this.transaction = new Transaction();
+    }
 
-	@Override
-	public boolean isOpen() {
-		return open;
-	}
+    @Override
+    public boolean isOpen() {
+        return open;
+    }
 
-	@Override
-	public void close() throws OntoDriverException {
-		if (!open) {
-			return;
-		}
-		this.open = false;
-	}
+    @Override
+    public void close() throws OntoDriverException {
+        if (!open) {
+            return;
+        }
+        this.open = false;
+    }
 
-	@Override
-	public void begin() throws SesameDriverException {
-		transaction.begin();
-	}
+    @Override
+    public void begin() throws SesameDriverException {
+        transaction.begin();
+    }
 
-	protected void verifyTransactionActive() {
-		if (!transaction.isActive()) {
-			throw new IllegalStateException();
-		}
-	}
+    protected void verifyTransactionActive() {
+        if (!transaction.isActive()) {
+            throw new IllegalStateException();
+        }
+    }
 }

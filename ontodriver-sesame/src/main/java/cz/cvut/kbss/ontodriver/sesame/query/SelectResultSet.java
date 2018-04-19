@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.sesame.query;
 
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -28,6 +29,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 
 // TODO Resolve mapping of data values with language tag
 public class SelectResultSet extends AbstractResultSet {
@@ -69,6 +71,18 @@ public class SelectResultSet extends AbstractResultSet {
     public int getColumnCount() {
         ensureOpen();
         return bindings.size();
+    }
+
+    @Override
+    public boolean isBound(int variableIndex) {
+        return variableIndex >= 0 && variableIndex < bindings.size() && current
+                .getValue(bindings.get(variableIndex)) != null;
+    }
+
+    @Override
+    public boolean isBound(String variableName) {
+        Objects.requireNonNull(variableName);
+        return bindings.contains(variableName) && current.getValue(variableName) != null;
     }
 
     @Override
@@ -200,21 +214,19 @@ public class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public Object getObject(int columnIndex) throws OntoDriverException {
+    public Object getObject(int columnIndex) {
         ensureOpen();
         return toObject(getCurrent(columnIndex));
     }
 
     @Override
-    public Object getObject(String columnLabel) throws OntoDriverException {
+    public Object getObject(String columnLabel) {
         ensureOpen();
         return toObject(getCurrent(columnLabel));
     }
 
     private Object toObject(Value val) {
-        if (val == null) {
-            return null;
-        }
+        assert val != null;
         if (val instanceof Literal) {
             return SesameUtils.getDataPropertyValue((Literal) val);
         } else if (val instanceof IRI) {
@@ -237,9 +249,7 @@ public class SelectResultSet extends AbstractResultSet {
     }
 
     private <T> T toObject(Value val, Class<T> cls) throws OntoDriverException {
-        if (val == null) {
-            return null;
-        }
+        assert val != null;
         if (cls.isAssignableFrom(val.getClass())) {
             return cls.cast(val);
         }
@@ -309,13 +319,13 @@ public class SelectResultSet extends AbstractResultSet {
     }
 
     @Override
-    public String getString(int columnIndex) throws OntoDriverException {
+    public String getString(int columnIndex) {
         ensureOpen();
         return getStringImpl(getCurrent(columnIndex));
     }
 
     @Override
-    public String getString(String columnLabel) throws OntoDriverException {
+    public String getString(String columnLabel) {
         ensureOpen();
         return getStringImpl(getCurrent(columnLabel));
     }
@@ -350,6 +360,7 @@ public class SelectResultSet extends AbstractResultSet {
 
     private Object getLiteralValue(int columnIndex) throws OntoDriverException {
         final Value val = getCurrent(columnIndex);
+        assert val != null;
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
@@ -358,6 +369,7 @@ public class SelectResultSet extends AbstractResultSet {
 
     private Object getLiteralValue(String columnName) throws OntoDriverException {
         final Value val = getCurrent(columnName);
+        assert val != null;
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
@@ -370,7 +382,12 @@ public class SelectResultSet extends AbstractResultSet {
             throw new IllegalArgumentException(
                     "The column index is out of bounds of the column count.");
         }
-        return current.getValue(bindings.get(columnIndex));
+        final Value v = current.getValue(bindings.get(columnIndex));
+        if (v == null) {
+            throw new VariableNotBoundException(
+                    "Variable at index " + columnIndex + " is not bound in the current result row.");
+        }
+        return v;
     }
 
     private void ensureState() {
@@ -384,6 +401,11 @@ public class SelectResultSet extends AbstractResultSet {
         if (!bindings.contains(columnName)) {
             throw new IllegalArgumentException("Unknown column name " + columnName);
         }
-        return current.getValue(columnName);
+        final Value v = current.getValue(columnName);
+        if (v == null) {
+            throw new VariableNotBoundException(
+                    "Variable \"" + columnName + "\" is not bound in the current result row.");
+        }
+        return v;
     }
 }

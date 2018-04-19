@@ -24,9 +24,6 @@ public abstract class StorageConfig {
     protected String name;
     protected String directory;
 
-    public StorageConfig() {
-    }
-
     public void setName(String name) {
         assert name != null;
         this.name = name;

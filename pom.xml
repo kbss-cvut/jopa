@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.9.16</version>
+    <version>0.10.0</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -20,14 +20,14 @@
         <module>jopa-owl2java</module>
         <module>jopa-maven-plugin</module>
         <module>ontodriver-sesame</module>
-        <module>ontodriver-jena</module>
         <module>ontodriver-owlapi</module>
+        <module>ontodriver-jena</module>
         <module>jopa-impl</module>
         <module>jopa-integration-tests</module>
         <module>jopa-integration-tests-sesame</module>
         <module>jopa-integration-tests-owlapi</module>
+        <module>jopa-integration-tests-jena</module>
         <module>jopa-distribution</module>
-        <!--<module>jopa-integration-tests-jena</module>-->
     </modules>
 
     <properties>
