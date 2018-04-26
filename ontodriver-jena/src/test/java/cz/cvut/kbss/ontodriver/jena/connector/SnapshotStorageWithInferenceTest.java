@@ -7,14 +7,13 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.ReasonerInitializationException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.InfModel;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerFactory;
 import org.apache.jena.reasoner.ValidityReport;
 import org.apache.jena.reasoner.rulesys.*;
+import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -24,7 +23,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -245,7 +246,8 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void configurationIsPassedToReasonerOnCreation() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        final Map<String, String> config = Collections.singletonMap(ReasonerVocabulary.PROPtraceOn.getURI(), Boolean.TRUE.toString());
+        final Map<String, String> config =
+                Collections.singletonMap(ReasonerVocabulary.PROPtraceOn.getURI(), Boolean.TRUE.toString());
         this.storage = new SnapshotStorageWithInference(configuration, config);
         storage.initialize();
         storage.addCentralData(getDatasetWithDefaultModel());
@@ -281,5 +283,46 @@ public class SnapshotStorageWithInferenceTest {
         final InfModel infModel = storage.getDefaultGraph();
         final Reasoner reasoner = infModel.getReasoner();
         assertTrue(((GenericRuleReasoner) reasoner).isTraceOn());
+    }
+
+    @Test
+    public void initializationFromCentralConnectorCreatesIndependentDefaultGraph() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
+        storage.initialize();
+        final Dataset central = getDatasetWithDefaultModel();
+        storage.addCentralData(central);
+        final Model result = storage.getRawDefaultGraph();
+        result.add(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO));
+        assertFalse(central.getDefaultModel().contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
+    }
+
+    @Test
+    public void initializationFromCentralConnectorCreatesIndependentNamedGraphs() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
+        storage.initialize();
+        final Dataset central = getDatasetWithDataInNamedGraph();
+        storage.addCentralData(central);
+        final Model result = storage.getRawNamedGraph(NAMED_GRAPH);
+        result.add(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO));
+        assertFalse(central.getNamedModel(NAMED_GRAPH)
+                           .contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
+    }
+
+    @Test
+    public void initializationFromCentralTDBConnectorSupportsNonTransactionalModels() throws Exception {
+        final File storageDir = Files.createTempDirectory("tdb-test").toFile();
+        storageDir.deleteOnExit();
+        final Dataset tdbDataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
+        tdbDataset.begin(ReadWrite.WRITE);
+        generateTestData(tdbDataset);
+        tdbDataset.commit();
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
+        storage.initialize();
+        storage.addCentralData(tdbDataset);
+        final Model defaultGraph = storage.getDefaultGraph();
+        assertTrue(defaultGraph.contains(createResource(SUBJECT), RDF.type, (RDFNode) null));
     }
 }

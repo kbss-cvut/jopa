@@ -2,6 +2,8 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.ConfigParam;
 import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
+import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.rdf.model.Resource;
@@ -14,6 +16,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -159,5 +163,18 @@ public class SnapshotStorageConnectorWithInferenceTest {
         connector.rollback();
         connector.close();
         assertFalse(connector.isOpen());
+    }
+
+    @Test
+    public void containsOnTDBBackedStorageHandlesTransactionalBehavior() throws Exception {
+        final File storageDir = Files.createTempDirectory("tdb-test").toFile();
+        storageDir.deleteOnExit();
+        final Configuration config = createConfiguration(storageDir.getAbsolutePath());
+        config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.TDB);
+        config.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.centralConnector = new SharedStorageConnector(config);
+        this.connector = new SnapshotStorageConnectorWithInference(centralConnector, Collections.emptyMap());
+        connector.begin();
+        assertFalse(connector.contains(createResource(SUBJECT), RDF.type, null, null));
     }
 }

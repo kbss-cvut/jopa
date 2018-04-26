@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.config.ConfigParam;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.jena.exception.ReasonerInitializationException;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Model;
@@ -12,9 +13,8 @@ import org.apache.jena.reasoner.IllegalParameterException;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerFactory;
 import org.apache.jena.reasoner.ValidityReport;
+import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.ReasonerVocabulary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -72,6 +72,22 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     @Override
     void initialize() {
         this.dataset = DatasetFactory.createGeneral();
+    }
+
+    @Override
+    void addCentralData(Dataset central) {
+        Txn.executeRead(central, () -> {
+            final Iterator<String> it = central.listNames();
+            while (it.hasNext()) {
+                final String name = it.next();
+                dataset.addNamedModel(name, cloneModel(central.getNamedModel(name)));
+            }
+            dataset.setDefaultModel(cloneModel(central.getDefaultModel()));
+        });
+    }
+
+    private Model cloneModel(Model model) {
+        return ModelFactory.createDefaultModel().add(model);
     }
 
     @Override
