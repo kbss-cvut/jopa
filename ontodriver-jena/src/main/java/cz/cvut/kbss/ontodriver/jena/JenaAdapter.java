@@ -118,10 +118,12 @@ public class JenaAdapter implements Wrapper {
     }
 
     public JenaStatement createStatement() {
+        beginTransactionIfNotActive();
         return new JenaStatement(connector);
     }
 
     public JenaPreparedStatement prepareStatement(String sparql) {
+        beginTransactionIfNotActive();
         return new JenaPreparedStatement(connector, sparql);
     }
 

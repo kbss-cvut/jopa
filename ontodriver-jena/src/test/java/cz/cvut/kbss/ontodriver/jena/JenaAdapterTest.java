@@ -223,11 +223,23 @@ public class JenaAdapterTest {
     }
 
     @Test
+    public void createStatementStartsTransactionIfNotAlreadyActive() {
+        adapter.createStatement();
+        verify(connectorMock).begin();
+    }
+
+    @Test
     public void prepareStatementReturnsNewPreparedStatement() throws Exception {
         final JenaPreparedStatement result = adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }");
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
         execField.setAccessible(true);
         assertSame(connectorMock, execField.get(result));
+    }
+
+    @Test
+    public void prepareStatementStartsTransactionIfNotAlreadyActive() {
+        adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }");
+        verify(connectorMock).begin();
     }
 }

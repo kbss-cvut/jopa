@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.jena;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.*;
+import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 
@@ -86,7 +87,12 @@ abstract class AbstractAxiomLoader {
             if (shouldSkipLiteral(assertion, object)) {
                 return Optional.empty();
             }
-            return Optional.of(new Value<>(JenaUtils.literalToValue(object.asLiteral())));
+            Object val = JenaUtils.literalToValue(object.asLiteral());
+            // Jena does not like java.util.Date
+            if (val instanceof XSDDateTime) {
+                val = ((XSDDateTime) val).asCalendar().getTime();
+            }
+            return Optional.of(new Value<>(val));
         }
     }
 
