@@ -151,4 +151,13 @@ public class SnapshotStorageConnectorWithInferenceTest {
         connector.begin();
         assertTrue(connector.isConsistent(NAMED_GRAPH));
     }
+
+    @Test
+    public void closeAfterRollbackWorksCorrectly() throws Exception {
+        generateTestData(null);
+        connector.begin();
+        connector.rollback();
+        connector.close();
+        assertFalse(connector.isOpen());
+    }
 }

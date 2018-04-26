@@ -375,4 +375,12 @@ public class SnapshotStorageConnectorTest {
         verify(centralConnector).executeUpdate(update, StatementOntology.CENTRAL);
         assertTrue(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
     }
+
+    @Test
+    public void closeAfterRollbackWorksCorrectly() {
+        connector.begin();
+        connector.rollback();
+        connector.close();
+        assertFalse(connector.isOpen());
+    }
 }

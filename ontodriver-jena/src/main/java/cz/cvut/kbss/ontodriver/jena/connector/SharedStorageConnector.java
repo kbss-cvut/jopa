@@ -156,7 +156,9 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         if (!isOpen()) {
             return;
         }
-        storage.close();
+        if (storage != null) {
+            storage.close();
+        }
         super.close();
     }
 
