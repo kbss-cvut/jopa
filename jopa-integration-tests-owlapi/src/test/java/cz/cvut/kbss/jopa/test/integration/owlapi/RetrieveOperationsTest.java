@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.test.integration.owlapi;
 
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsRunner;
@@ -32,6 +33,8 @@ public class RetrieveOperationsTest extends RetrieveOperationsRunner {
 
     @Override
     protected void addFileStorageProperties(Map<String, String> properties) {
-        // Do nothing, OWLAPI already works with file-based storage
+        // Unfortunately, OWLAPI and Jena handle file paths differently
+        final String orig = properties.get(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY);
+        properties.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, "file:" + orig);
     }
 }

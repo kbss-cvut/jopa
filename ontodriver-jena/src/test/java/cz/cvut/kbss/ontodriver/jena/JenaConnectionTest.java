@@ -315,4 +315,17 @@ public class JenaConnectionTest {
         expectClosedException();
         connection.prepareStatement("SELECT * WHERE { ?x ?y ?z . }");
     }
+
+    @Test
+    public void isConsistentInvokesConsistencyCheckOnAdapter() {
+        connection.isConsistent(null);
+        verify(adapterMock).isConsistent(null);
+    }
+
+    @Test
+    public void isConsistentThrowsIllegalStateExceptionForClosedConnection() throws Exception {
+        connection.close();
+        expectClosedException();
+        connection.isConsistent(Generator.generateUri());
+    }
 }
