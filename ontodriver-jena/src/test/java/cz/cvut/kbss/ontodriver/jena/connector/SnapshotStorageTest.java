@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.File;
@@ -17,9 +18,18 @@ import static org.junit.Assert.assertTrue;
 
 public class SnapshotStorageTest {
 
+    private File storageDir;
+
+    @After
+    public void tearDown() {
+        if (storageDir != null) {
+            StorageTestUtil.deleteStorageDir(storageDir);
+        }
+    }
+
     @Test
     public void initializationFromCentralTDBConnectorSupportsNonTransactionalModels() throws Exception {
-        final File storageDir = Files.createTempDirectory("tdb-test").toFile();
+        this.storageDir = Files.createTempDirectory("tdb-test").toFile();
         storageDir.deleteOnExit();
         final Dataset tdbDataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
         tdbDataset.begin(ReadWrite.WRITE);

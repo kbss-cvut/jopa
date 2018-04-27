@@ -168,13 +168,16 @@ public class SnapshotStorageConnectorWithInferenceTest {
     @Test
     public void containsOnTDBBackedStorageHandlesTransactionalBehavior() throws Exception {
         final File storageDir = Files.createTempDirectory("tdb-test").toFile();
-        storageDir.deleteOnExit();
-        final Configuration config = createConfiguration(storageDir.getAbsolutePath());
-        config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.TDB);
-        config.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.centralConnector = new SharedStorageConnector(config);
-        this.connector = new SnapshotStorageConnectorWithInference(centralConnector, Collections.emptyMap());
-        connector.begin();
-        assertFalse(connector.contains(createResource(SUBJECT), RDF.type, null, null));
+        try {
+            final Configuration config = createConfiguration(storageDir.getAbsolutePath());
+            config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.TDB);
+            config.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+            this.centralConnector = new SharedStorageConnector(config);
+            this.connector = new SnapshotStorageConnectorWithInference(centralConnector, Collections.emptyMap());
+            connector.begin();
+            assertFalse(connector.contains(createResource(SUBJECT), RDF.type, null, null));
+        } finally {
+            StorageTestUtil.deleteStorageDir(storageDir);
+        }
     }
 }

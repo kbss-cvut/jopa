@@ -8,6 +8,7 @@ import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
+import java.io.File;
 import java.net.URI;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
@@ -39,5 +40,16 @@ class StorageTestUtil {
         final Model namedGraph = ModelFactory.createDefaultModel();
         namedGraph.add(RESOURCE, RDF.type, createResource(TYPE_TWO));
         dataset.addNamedModel(NAMED_GRAPH, namedGraph);
+    }
+
+    static void deleteStorageDir(File directory) {
+        if (directory.exists()) {
+            if (directory.listFiles() != null) {
+                for (File f : directory.listFiles()) {
+                    f.delete();
+                }
+            }
+            directory.delete();
+        }
     }
 }

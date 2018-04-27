@@ -332,17 +332,20 @@ public class SnapshotStorageWithInferenceTest {
     @Test
     public void initializationFromCentralTDBConnectorSupportsNonTransactionalModels() throws Exception {
         final File storageDir = Files.createTempDirectory("tdb-test").toFile();
-        storageDir.deleteOnExit();
-        final Dataset tdbDataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
-        tdbDataset.begin(ReadWrite.WRITE);
-        generateTestData(tdbDataset);
-        tdbDataset.commit();
-        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
-        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
-        storage.initialize();
-        storage.addCentralData(tdbDataset);
-        final Model defaultGraph = storage.getDefaultGraph();
-        assertTrue(defaultGraph.contains(createResource(SUBJECT), RDF.type, (RDFNode) null));
+        try {
+            final Dataset tdbDataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
+            tdbDataset.begin(ReadWrite.WRITE);
+            generateTestData(tdbDataset);
+            tdbDataset.commit();
+            configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+            this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
+            storage.initialize();
+            storage.addCentralData(tdbDataset);
+            final Model defaultGraph = storage.getDefaultGraph();
+            assertTrue(defaultGraph.contains(createResource(SUBJECT), RDF.type, (RDFNode) null));
+        } finally {
+            StorageTestUtil.deleteStorageDir(storageDir);
+        }
     }
 
     @Test

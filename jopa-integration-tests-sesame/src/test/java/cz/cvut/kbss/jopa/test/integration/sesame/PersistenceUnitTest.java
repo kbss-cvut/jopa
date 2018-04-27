@@ -31,11 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Path;
+import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -50,12 +49,33 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
     @Test
     public void multiplePersistenceUnitsOnLocalNativeStoreCanExistSimultaneously() throws Exception {
         final File dir = Files.createTempDirectory("sesame-native-test").toFile();
-        dir.deleteOnExit();
-        final int count = Generators.randomPositiveInt(2, 5);
-        final List<EntityManagerFactory> emfs = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            emfs.add(buildLocalNativeEmf("testPu" + i, dir));
+        try {
+            final int count = Generators.randomPositiveInt(2, 5);
+            final List<EntityManagerFactory> emfs = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                emfs.add(buildLocalNativeEmf("testPu" + i, dir));
+            }
+            final List<OWLClassA> instances = generateTestData(emfs);
+            verifyTestData(emfs, instances);
+            emfs.forEach(EntityManagerFactory::close);
+        } finally {
+            recursivelyDeleteDirectory(dir);
         }
+    }
+
+    private EntityManagerFactory buildLocalNativeEmf(String puName, File directory) {
+        final Map<String, String> config = new HashMap<>();
+        config.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
+                directory.getAbsolutePath() + File.separator + "repositories" + File.separator + "test");
+        config.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, JOPAPersistenceProvider.class.getName());
+        config.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+        config.put(JOPAPersistenceProperties.LANG, "en");
+        config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, SesameDataSource.class.getName());
+        config.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");
+        return Persistence.createEntityManagerFactory(puName, config);
+    }
+
+    private List<OWLClassA> generateTestData(List<EntityManagerFactory> emfs) {
         final List<OWLClassA> instances = new ArrayList<>();
         emfs.forEach(emf -> {
             final EntityManager em = emf.createEntityManager();
@@ -70,6 +90,10 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
                 em.close();
             }
         });
+        return instances;
+    }
+
+    private void verifyTestData(List<EntityManagerFactory> emfs, List<OWLClassA> instances) {
         emfs.forEach(emf -> {
             final OWLClassA a = instances.get(0);
             final EntityManager em = emf.createEntityManager();
@@ -79,18 +103,12 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
                 em.close();
             }
         });
-        emfs.forEach(EntityManagerFactory::close);
     }
 
-    private EntityManagerFactory buildLocalNativeEmf(String puName, File directory) {
-        final Map<String, String> config = new HashMap<>();
-        config.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-                directory.getAbsolutePath() + File.separator + "repositories" + File.separator + "test");
-        config.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, JOPAPersistenceProvider.class.getName());
-        config.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        config.put(JOPAPersistenceProperties.LANG, "en");
-        config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, SesameDataSource.class.getName());
-        config.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");
-        return Persistence.createEntityManagerFactory(puName, config);
+    private void recursivelyDeleteDirectory(File directory) throws IOException {
+        Files.walk(directory.toPath())
+             .sorted(Comparator.reverseOrder())
+             .map(Path::toFile)
+             .forEach(File::delete);
     }
 }
