@@ -19,6 +19,7 @@ import org.apache.jena.vocabulary.ReasonerVocabulary;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
@@ -47,7 +48,9 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     SnapshotStorageWithInference(Configuration configuration, Map<String, String> reasonerConfig) {
         super(configuration);
         this.reasonerFactory = initReasonerFactory(configuration);
-        this.reasonerConfig = reasonerConfig;
+        this.reasonerConfig = reasonerConfig.entrySet().stream()
+                                            .filter(e -> SUPPORTED_CONFIG.contains(e.getKey()))
+                                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private ReasonerFactory initReasonerFactory(Configuration configuration) {
@@ -78,39 +81,34 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     void addCentralData(Dataset central) {
         Txn.executeRead(central, () -> {
             final Iterator<String> it = central.listNames();
+            InfModel clonedModel;
             while (it.hasNext()) {
                 final String name = it.next();
-                dataset.addNamedModel(name, cloneModel(central.getNamedModel(name)));
+                clonedModel = cloneModel(central.getNamedModel(name));
+                inferredGraphs.put(name, clonedModel);
+                dataset.addNamedModel(name, clonedModel);
             }
-            dataset.setDefaultModel(cloneModel(central.getDefaultModel()));
+            clonedModel = cloneModel(central.getDefaultModel());
+            inferredGraphs.put(null, clonedModel);
+            dataset.setDefaultModel(clonedModel);
         });
     }
 
-    private Model cloneModel(Model model) {
-        return ModelFactory.createDefaultModel().add(model);
+    private InfModel cloneModel(Model model) {
+        return ModelFactory.createInfModel(createReasoner(), ModelFactory.createDefaultModel().add(model));
     }
 
     @Override
     InfModel getDefaultGraph() {
-        if (inferredGraphs.containsKey(null)) {
-            return inferredGraphs.get(null);
-        } else {
-            // This does not behave the same as other storages - when defaultAsUnion is set, it uses the currently held
-            // versions of the named graphs, which may be without inference. It should probably initialize reasoners for
-            // all named graphs in the dataset.
-            final InfModel model = ModelFactory.createInfModel(createReasoner(), dataset.getDefaultModel());
-            dataset.setDefaultModel(model);
-            inferredGraphs.put(null, model);
-            return model;
-        }
+        return inferredGraphs.get(null);
     }
 
     private Reasoner createReasoner() {
         final Reasoner reasoner = reasonerFactory.create(null);
-        reasonerConfig.entrySet().stream().filter(e -> SUPPORTED_CONFIG.contains(e.getKey())).forEach(e -> {
-            final Property prop = createProperty(e.getKey());
+        reasonerConfig.forEach((key, value) -> {
+            final Property prop = createProperty(key);
             try {
-                reasoner.setParameter(prop, e.getValue());
+                reasoner.setParameter(prop, value);
             } catch (IllegalParameterException ex) {
                 LOG.error("Failed to set property " + prop + " on reasoner.", ex);
             }
@@ -124,15 +122,12 @@ class SnapshotStorageWithInference extends SnapshotStorage {
 
     @Override
     InfModel getNamedGraph(String context) {
-        if (inferredGraphs.containsKey(context)) {
-            return inferredGraphs.get(context);
-        } else {
-            final InfModel model =
-                    ModelFactory.createInfModel(createReasoner(), dataset.getNamedModel(context));
+        return inferredGraphs.computeIfAbsent(context, c -> {
+            // If the context does not exist, we need to create it, so that the default Dataset behavior is preserved
+            final InfModel model = ModelFactory.createInfModel(createReasoner(), ModelFactory.createDefaultModel());
             dataset.addNamedModel(context, model);
-            inferredGraphs.put(context, model);
             return model;
-        }
+        });
     }
 
     Model getRawNamedGraph(String context) {

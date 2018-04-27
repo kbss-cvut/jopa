@@ -9,6 +9,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.reasoner.InfGraph;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerFactory;
 import org.apache.jena.reasoner.ValidityReport;
@@ -91,6 +92,15 @@ public class SnapshotStorageWithInferenceTest {
     }
 
     @Test
+    public void initializationEagerlyCreatesInferredModelForDefaultGraph() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
+        storage.initialize();
+        storage.addCentralData(getDatasetWithDefaultModel());
+        assertTrue(storage.dataset.getDefaultModel().getGraph() instanceof InfGraph);
+    }
+
+    @Test
     public void getDefaultGraphReturnsInferredDefaultGraph() {
         configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
         this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
@@ -146,6 +156,15 @@ public class SnapshotStorageWithInferenceTest {
         assertFalse(result instanceof InfModel);
         assertTrue(result.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
         assertFalse(result.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
+    }
+
+    @Test
+    public void initializationEagerlyCreatesInfModelForNamedGraphsFromCentral() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
+        storage.initialize();
+        storage.addCentralData(getDatasetWithDataInNamedGraph());
+        assertTrue(storage.getDataset().getNamedModel(NAMED_GRAPH).getGraph() instanceof InfGraph);
     }
 
     @Test
@@ -324,5 +343,16 @@ public class SnapshotStorageWithInferenceTest {
         storage.addCentralData(tdbDataset);
         final Model defaultGraph = storage.getDefaultGraph();
         assertTrue(defaultGraph.contains(createResource(SUBJECT), RDF.type, (RDFNode) null));
+    }
+
+    @Test
+    public void getNamedModelReturnsInfModelAlsoForUnknownContextName() {
+        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
+        storage.initialize();
+        storage.addCentralData(getDatasetWithDefaultModel());
+        // Does not exist
+        final InfModel result = storage.getNamedGraph(NAMED_GRAPH);
+        assertNotNull(result);
     }
 }
