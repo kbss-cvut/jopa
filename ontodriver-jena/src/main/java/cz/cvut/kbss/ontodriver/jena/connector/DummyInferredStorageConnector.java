@@ -1,5 +1,8 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -11,6 +14,7 @@ import java.util.Collection;
  * This connector does not support inference, it wraps a regular {@link StorageConnector} and calls its regular methods
  * instead of performing any inference, e.g. {@link StorageConnector#contains(Resource, Property, RDFNode, String)} for
  * {@link #containsWithInference(Resource, Property, RDFNode, String)}.
+ * <p>
  * Thus, inference-based methods give the same results as regular connector methods.
  */
 class DummyInferredStorageConnector implements InferredStorageConnector {
@@ -34,5 +38,25 @@ class DummyInferredStorageConnector implements InferredStorageConnector {
     @Override
     public boolean isConsistent(String context) {
         return true;
+    }
+
+    @Override
+    public AbstractResultSet executeSelectQuery(Query query,
+                                                cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
+                                                                                                            JenaDriverException {
+        return connector.executeSelectQuery(query, target);
+    }
+
+    @Override
+    public AbstractResultSet executeAskQuery(Query query,
+                                             cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
+                                                                                                         JenaDriverException {
+        return connector.executeAskQuery(query, target);
+    }
+
+    @Override
+    public void executeUpdate(String query, cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
+                                                                                                        JenaDriverException {
+        connector.executeUpdate(query, target);
     }
 }

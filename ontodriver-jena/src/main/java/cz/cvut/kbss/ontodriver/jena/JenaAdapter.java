@@ -122,16 +122,14 @@ public class JenaAdapter implements Wrapper {
         return ListHandler.referencedListHandler(connector);
     }
 
-    public JenaStatement createStatement() {
+    JenaStatement createStatement() {
         beginTransactionIfNotActive();
-        // TODO This has to support inference
-        return new JenaStatement(connector);
+        return new JenaStatement(inferenceConnector);
     }
 
-    public JenaPreparedStatement prepareStatement(String sparql) {
+    JenaPreparedStatement prepareStatement(String sparql) {
         beginTransactionIfNotActive();
-        // TODO This has to support inference
-        return new JenaPreparedStatement(connector, sparql);
+        return new JenaPreparedStatement(inferenceConnector, sparql);
     }
 
     void close() throws JenaDriverException {

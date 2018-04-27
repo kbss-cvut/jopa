@@ -219,7 +219,7 @@ public class JenaAdapterTest {
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
         execField.setAccessible(true);
-        assertSame(connectorMock, execField.get(result));
+        assertSame(inferredConnectorMock, execField.get(result));
     }
 
     @Test
@@ -234,7 +234,7 @@ public class JenaAdapterTest {
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
         execField.setAccessible(true);
-        assertSame(connectorMock, execField.get(result));
+        assertSame(inferredConnectorMock, execField.get(result));
     }
 
     @Test
