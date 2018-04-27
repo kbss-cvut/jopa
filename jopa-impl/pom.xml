@@ -38,8 +38,8 @@
         </dependency>
         <dependency>
             <groupId>org.jgrapht</groupId>
-            <artifactId>jgrapht-jdk1.5</artifactId>
-            <version>0.7.3</version>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.1.0</version>
             <scope>runtime</scope>
         </dependency>
     </dependencies>
@@ -50,7 +50,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.11</version>
+                <version>${maven.aspectj.plugin.version}</version>
                 <configuration>
                     <complianceLevel>1.8</complianceLevel>
                     <source>1.8</source>
@@ -94,7 +94,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20</version>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/src/test/resources/entity-loader-test-jar.jar
