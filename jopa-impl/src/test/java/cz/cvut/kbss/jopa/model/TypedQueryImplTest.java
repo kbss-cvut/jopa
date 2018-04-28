@@ -65,7 +65,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         verifyResults(uris, res, 5);
     }
 
-    private <T> TypedQuery<T> create(Class<T> type, String query) {
+    private <T> TypedQueryImpl<T> create(Class<T> type, String query) {
         return queryFactory.createNativeQuery(query, type);
     }
 
@@ -375,5 +375,32 @@ public class TypedQueryImplTest extends QueryTestBase {
         assertEquals(a, result.get(0));
         verify(resultSetMock).getString(anyInt());
         verify(uowMock).readObject(eq(OWLClassA.class), any(), any());
+    }
+
+    @Test
+    public void noUniqueResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() throws Exception {
+        final TypedQueryImpl<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        initDataForQuery(5);
+        query.setRollbackOnlyMarker(handler);
+        thrown.expect(NoUniqueResultException.class);
+
+        try {
+            query.getSingleResult();
+        } finally {
+            verify(handler, never()).execute();
+        }
+    }
+
+    @Test
+    public void noResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() {
+        final TypedQueryImpl<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        query.setRollbackOnlyMarker(handler);
+        thrown.expect(NoResultException.class);
+
+        try {
+            query.getSingleResult();
+        } finally {
+            verify(handler, never()).execute();
+        }
     }
 }

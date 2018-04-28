@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.exceptions.NoResultException;
+import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -211,5 +213,9 @@ abstract class AbstractQuery implements Query {
                 LOG.error("Unable to close statement after query evaluation.", e);
             }
         }
+    }
+
+    protected boolean exceptionCausesRollback(RuntimeException e) {
+        return !(e instanceof NoUniqueResultException) && !(e instanceof NoResultException);
     }
 }
