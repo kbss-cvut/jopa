@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -95,12 +96,11 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void loadOntology(OntologyStorageProperties storageProperties) throws OwlapiDriverException {
+        final Optional<IRI> ontologyIri = storageProperties.getOntologyURI().map(IRI::create);
         try {
             this.ontology =
                     ontologyManager.loadOntologyFromOntologyDocument(IRI.create(storageProperties.getPhysicalURI()));
-            if (!ontology.getOntologyID().getOntologyIRI().isPresent() ||
-                    !ontology.getOntologyID().getOntologyIRI().get().equals(
-                            IRI.create(storageProperties.getOntologyURI()))) {
+            if (!ontology.getOntologyID().getOntologyIRI().equals(ontologyIri)) {
                 throw new InvalidOntologyIriException(
                         "Expected ontology with IRI " + storageProperties.getOntologyURI() +
                                 " but the loaded ontology has IRI " + ontology.getOntologyID().getOntologyIRI());
@@ -111,15 +111,15 @@ public class BasicStorageConnector extends AbstractConnector {
             } else {
                 LOG.trace("Unable to load ontology from document.", e);
             }
-            tryCreatingOntology();
+            tryCreatingOntology(ontologyIri);
         }
     }
 
-    private void tryCreatingOntology() throws OwlapiDriverException {
+    private void tryCreatingOntology(Optional<IRI> ontologyIri) throws OwlapiDriverException {
         LOG.trace("Creating new ontology in {}.", configuration.getStorageProperties().getPhysicalURI());
         try {
-            this.ontology = ontologyManager
-                    .createOntology(IRI.create(configuration.getStorageProperties().getOntologyURI()));
+            this.ontology = ontologyIri.isPresent() ? ontologyManager.createOntology(ontologyIri.get()) :
+                    ontologyManager.createOntology();
             ontology.saveOntology(IRI.create(configuration.getStorageProperties().getPhysicalURI()));
         } catch (OWLOntologyCreationException | OWLOntologyStorageException e) {
             throw new OwlapiDriverException(
