@@ -63,7 +63,7 @@ public class OwlapiUtils {
             return dataFactory.getOWLLiteral((String) value, lang);
         } else if (value instanceof Date) {
             SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
-            return dataFactory.getOWLLiteral(sdf.format(((Date) value)),
+            return dataFactory.getOWLLiteral(sdf.format((Date) value),
                     dataFactory.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
         } else if (value.getClass().isEnum()) {
             return dataFactory.getOWLLiteral(value.toString());
@@ -82,7 +82,7 @@ public class OwlapiUtils {
     public static Object owlLiteralToValue(final OWLLiteral literal) {
         if (literal.isRDFPlainLiteral()) {
             return literal.getLiteral();
-        } else if (literal.getDatatype().isBuiltIn())
+        } else if (literal.getDatatype().isBuiltIn()) {
             switch (literal.getDatatype().getBuiltInDatatype()) {
                 case XSD_SHORT:
                     return Short.parseShort(literal.getLiteral());
@@ -113,7 +113,7 @@ public class OwlapiUtils {
                                 "The date time '" + literal.getLiteral() + "' cannot be parsed.");
                     }
             }
-
+        }
         throw new IllegalArgumentException("Unsupported datatype: " + literal.getDatatype());
     }
 

@@ -133,7 +133,7 @@ class StorageConnector extends AbstractConnector {
     }
 
     /**
-     * Creates native repository. </p>
+     * Creates native repository.
      * <p>
      * This kind of repository stores data in files and is persistent after the VM shuts down.
      */

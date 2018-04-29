@@ -20,6 +20,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
  * Interface for retrieving concrete implementations of the OntoDriver API and/or classes the implementations use (e.g.
  * classes of the underlying storage framework).
  */
+@FunctionalInterface
 public interface Wrapper {
 
     /**

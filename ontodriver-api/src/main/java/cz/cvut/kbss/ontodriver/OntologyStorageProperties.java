@@ -122,11 +122,11 @@ public class OntologyStorageProperties {
      */
     public static class OntologyStoragePropertiesBuilder {
 
-        protected URI ontologyUri;
-        protected URI physicalUri;
-        protected String username;
-        protected String password;
-        protected String driverClass;
+        private URI ontologyUri;
+        private URI physicalUri;
+        private String username;
+        private String password;
+        private String driverClass;
 
         public OntologyStoragePropertiesBuilder ontologyUri(URI ontologyUri) {
             this.ontologyUri = ontologyUri;
