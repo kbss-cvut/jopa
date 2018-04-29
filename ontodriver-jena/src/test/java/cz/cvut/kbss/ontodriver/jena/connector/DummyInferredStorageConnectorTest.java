@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
@@ -23,7 +23,7 @@ public class DummyInferredStorageConnectorTest {
 
     @Before
     public void setUp() {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final SharedStorageConnector wrapped = new SharedStorageConnector(configuration);
         wrapped.storage = spy(wrapped.storage);
         this.wrappedConnector = spy(wrapped);

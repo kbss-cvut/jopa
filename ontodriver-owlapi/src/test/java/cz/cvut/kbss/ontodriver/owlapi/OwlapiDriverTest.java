@@ -16,7 +16,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
 import org.junit.Before;
@@ -55,7 +55,7 @@ public class OwlapiDriverTest {
         final Field instanceField = OwlapiDriver.class.getDeclaredField("connectorFactory");
         instanceField.setAccessible(true);
         this.factoryMock = mock(ConnectorFactory.class);
-        when(factoryMock.getConnector(any(Configuration.class))).thenReturn(connectorMock);
+        when(factoryMock.getConnector(any(DriverConfiguration.class))).thenReturn(connectorMock);
         when(factoryMock.isOpen()).thenReturn(true);
         this.driver = new OwlapiDriver(STORAGE_PROPERTIES, Collections.emptyMap());
         instanceField.set(driver, factoryMock);

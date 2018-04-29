@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
 import java.util.HashMap;
@@ -11,7 +11,7 @@ public class InferenceConnectorFactory extends ConnectorFactory {
     private final SharedStorageConnector centralConnector;
     private final Map<String, String> reasonerConfig;
 
-    public InferenceConnectorFactory(Configuration configuration, Map<String, String> reasonerConfig) {
+    public InferenceConnectorFactory(DriverConfiguration configuration, Map<String, String> reasonerConfig) {
         this.centralConnector = new SharedStorageConnector(configuration);
         this.reasonerConfig = new HashMap<>(reasonerConfig);
     }

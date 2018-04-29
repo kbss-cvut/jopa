@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
@@ -24,7 +24,7 @@ abstract class Storage {
 
     Dataset dataset;
 
-    Storage(Configuration configuration) {
+    Storage(DriverConfiguration configuration) {
         this.defaultAsUnion = configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
     }
 
@@ -106,7 +106,7 @@ abstract class Storage {
      * @return Storage accessor instance
      * @throws OntoDriverInitializationException When storage type is not supported
      */
-    static Storage create(Configuration configuration) {
+    static Storage create(DriverConfiguration configuration) {
         final String type = configuration.getProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
         final Storage storage;
         switch (type) {

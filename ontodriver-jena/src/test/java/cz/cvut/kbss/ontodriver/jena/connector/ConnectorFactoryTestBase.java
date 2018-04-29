@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -15,13 +15,13 @@ public abstract class ConnectorFactoryTestBase {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    abstract ConnectorFactory connectorFactory(Configuration configuration);
+    abstract ConnectorFactory connectorFactory(DriverConfiguration configuration);
 
     abstract SharedStorageConnector getCentralConnector(ConnectorFactory factory) throws Exception;
 
     @Test
     public void closeClosesCentralConnector() throws Exception {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         assertTrue(getCentralConnector(factory).isOpen());
         factory.close();
@@ -32,7 +32,7 @@ public abstract class ConnectorFactoryTestBase {
     @Test
     public void createConnectorOnClosedFactoryThrowsIllegalStateException() throws Exception {
         thrown.expect(IllegalStateException.class);
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         factory.close();
         assertFalse(factory.isOpen());
@@ -41,7 +41,7 @@ public abstract class ConnectorFactoryTestBase {
 
     @Test
     public void createInferredConnectorReturnsCorrectConnector() {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
         final InferredStorageConnector result = factory.createInferredConnector(connector);
@@ -50,7 +50,7 @@ public abstract class ConnectorFactoryTestBase {
 
     @Test
     public void reloadStorageReloadsSharedConnectorStorage() throws Exception {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         final SharedStorageConnector sharedStorageConnector = getCentralConnector(factory);
         sharedStorageConnector.storage = spy(sharedStorageConnector.storage);

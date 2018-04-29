@@ -15,7 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
@@ -60,7 +60,7 @@ public class BasicStorageConnectorTest {
     @Test
     public void loadsExistingOntology() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
-        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, null)));
         assertNotNull(connector);
         assertTrue(connector.isOpen());
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
@@ -85,7 +85,7 @@ public class BasicStorageConnectorTest {
     public void throwsExceptionWhenLoadedOntologyHasDifferentIri() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
         final URI logicalUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/different");
-        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, logicalUri)));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, logicalUri)));
     }
 
     @Test
@@ -94,7 +94,7 @@ public class BasicStorageConnectorTest {
                 "java.io.tmpdir") + File.separator + "connectortest" + System.currentTimeMillis() + ".owl");
         assertFalse(f.exists());
         final URI physicalUri = f.toURI();
-        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, null)));
         assertNotNull(connector);
         assertTrue(f.exists());
         f.deleteOnExit();
@@ -103,7 +103,7 @@ public class BasicStorageConnectorTest {
     @Test
     public void getSnapshotReturnsDistinctSnapshots() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
-        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, null)));
         final OntologySnapshot snapshotOne = connector.getOntologySnapshot();
         final OntologySnapshot snapshotTwo = connector.getOntologySnapshot();
 
@@ -113,7 +113,7 @@ public class BasicStorageConnectorTest {
     @Test(expected = IllegalStateException.class)
     public void throwsExceptionWhenTryingToGetSnapshotOfClosedConnector() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
-        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, null)));
         connector.close();
         assertFalse(connector.isOpen());
         connector.getOntologySnapshot();
@@ -122,7 +122,7 @@ public class BasicStorageConnectorTest {
     @Test(expected = IllegalStateException.class)
     public void throwsExceptionWhenApplyChangesCalledOnClose() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
-        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, null)));
         connector.close();
         assertFalse(connector.isOpen());
         connector.applyChanges(Collections.emptyList());
@@ -131,7 +131,7 @@ public class BasicStorageConnectorTest {
     @Test
     public void applyChangesModifiesTheCentralOntology() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
-        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, null)));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final OWLClass cls = addClassToOntology(snapshot);
         final OntologySnapshot result = connector.getOntologySnapshot();
@@ -152,11 +152,11 @@ public class BasicStorageConnectorTest {
     public void successfullySavesOntologyOnClose() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
-        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OWLClass cls = addClassToOntology(connector.getOntologySnapshot());
         connector.close();
 
-        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot res = connector.getOntologySnapshot();
         assertTrue(res.getOntology().containsClassInSignature(cls.getIRI()));
     }
@@ -165,7 +165,7 @@ public class BasicStorageConnectorTest {
     public void getSnapshotCreatesNewAnonymousTransactionalOntology() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
-        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         assertTrue(snapshot.getOntology().getOntologyID().isAnonymous());
     }
@@ -175,7 +175,7 @@ public class BasicStorageConnectorTest {
         final Set<OWLAxiom> axioms = Generator.generateAxioms();
         final URI physicalUri = initOntology(axioms);
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
-        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final Set<OWLAxiom> transactionalAxioms = snapshot.getOntology().axioms().collect(Collectors.toSet());
         assertTrue(transactionalAxioms.containsAll(axioms));
@@ -185,7 +185,7 @@ public class BasicStorageConnectorTest {
     public void closeSnapshotRemovesTransactionalOntologyFromManager() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
-        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final OWLOntology transactionalOntology = snapshot.getOntology();
         final OWLOntologyManager manager = snapshot.getOntologyManager(); // We know this is the root manager
@@ -204,7 +204,7 @@ public class BasicStorageConnectorTest {
         manager.applyChange(new AddImport(ontology, importDecl));
         manager.saveOntology(ontology, IRI.create(physicalUri));
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
-        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final Stream<OWLOntology> imports = snapshot.getOntology().imports();
         final Optional<OWLOntology> imported = imports.filter(imp -> imp.getOntologyID().getOntologyIRI().get()
@@ -216,7 +216,7 @@ public class BasicStorageConnectorTest {
     public void reloadStorageReloadsOntologyFromFile() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet());
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
-        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final IRI clsIri = IRI.create(Generator.generateUri());
         final IRI individual = IRI.create(Generator.generateUri());
         connector.executeRead(snapshot -> {

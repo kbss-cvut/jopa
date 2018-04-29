@@ -15,8 +15,8 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.exception.*;
@@ -62,7 +62,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLOntologyIRIMapper iriMapper;
 
-    BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
+    BasicStorageConnector(DriverConfiguration configuration) throws OwlapiDriverException {
         super(configuration);
     }
 
@@ -128,7 +128,7 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void initializeReasonerFactory() {
-        final String reasonerFactoryClass = configuration.getProperty(ConfigParam.REASONER_FACTORY_CLASS);
+        final String reasonerFactoryClass = configuration.getProperty(DriverConfigParam.REASONER_FACTORY_CLASS);
         if (reasonerFactoryClass == null) {
             LOG.warn("Reasoner factory class not found. Reasoner won't be available.");
             return;

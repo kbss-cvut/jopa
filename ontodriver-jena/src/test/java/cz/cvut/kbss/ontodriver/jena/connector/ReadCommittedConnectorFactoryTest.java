@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -12,7 +12,7 @@ public class ReadCommittedConnectorFactoryTest extends ConnectorFactoryTestBase 
 
     @Test
     public void createConnectorCreatesNewChangeTrackingConnectorWrappingCentralConnector() throws Exception {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
         assertTrue(connector instanceof ChangeTrackingStorageConnector);
@@ -21,7 +21,7 @@ public class ReadCommittedConnectorFactoryTest extends ConnectorFactoryTestBase 
     }
 
     @Override
-    ConnectorFactory connectorFactory(Configuration configuration) {
+    ConnectorFactory connectorFactory(DriverConfiguration configuration) {
         return new ReadCommittedConnectorFactory(configuration);
     }
 

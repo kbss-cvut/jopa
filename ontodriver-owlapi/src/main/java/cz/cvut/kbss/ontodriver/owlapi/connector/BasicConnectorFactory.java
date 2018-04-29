@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 
@@ -29,7 +29,7 @@ public class BasicConnectorFactory implements ConnectorFactory {
     }
 
     @Override
-    public synchronized AbstractConnector getConnector(Configuration configuration) throws OwlapiDriverException {
+    public synchronized AbstractConnector getConnector(DriverConfiguration configuration) throws OwlapiDriverException {
         ensureOpen();
         if (connector == null) {
             initConnector(configuration);
@@ -43,7 +43,7 @@ public class BasicConnectorFactory implements ConnectorFactory {
         }
     }
 
-    private void initConnector(Configuration configuration) throws OwlapiDriverException {
+    private void initConnector(DriverConfiguration configuration) throws OwlapiDriverException {
         this.connector = new BasicStorageConnector(configuration);
     }
 

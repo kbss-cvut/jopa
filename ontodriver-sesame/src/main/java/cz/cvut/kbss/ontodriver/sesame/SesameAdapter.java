@@ -16,8 +16,8 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -51,12 +51,12 @@ class SesameAdapter implements Closeable, Wrapper {
     private boolean open;
     private final Transaction transaction;
 
-    public SesameAdapter(Connector connector, Configuration configuration) {
+    public SesameAdapter(Connector connector, DriverConfiguration configuration) {
         assert connector != null;
 
         this.connector = connector;
         this.valueFactory = connector.getValueFactory();
-        this.language = configuration.getProperty(ConfigParam.ONTOLOGY_LANGUAGE);
+        this.language = configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE);
         this.open = true;
         this.transaction = new Transaction();
     }

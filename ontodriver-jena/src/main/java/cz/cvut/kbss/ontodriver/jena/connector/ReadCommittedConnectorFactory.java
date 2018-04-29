@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
 /**
@@ -11,7 +11,7 @@ public class ReadCommittedConnectorFactory extends ConnectorFactory {
 
     private final SharedStorageConnector centralConnector;
 
-    public ReadCommittedConnectorFactory(Configuration configuration) {
+    public ReadCommittedConnectorFactory(DriverConfiguration configuration) {
         this.centralConnector = new SharedStorageConnector(configuration);
     }
 

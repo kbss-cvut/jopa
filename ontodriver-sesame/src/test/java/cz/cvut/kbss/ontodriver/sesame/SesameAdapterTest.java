@@ -15,8 +15,8 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
@@ -46,7 +46,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyVararg;
 import static org.mockito.Mockito.*;
 
 public class SesameAdapterTest {
@@ -74,8 +73,8 @@ public class SesameAdapterTest {
         when(connectorMock.getValueFactory()).thenReturn(vf);
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
-        final Configuration configuration = new Configuration(sp);
-        configuration.setProperty(ConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
+        final DriverConfiguration configuration = new DriverConfiguration(sp);
+        configuration.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
         this.adapter = new SesameAdapter(connectorMock, configuration);
 
     }
@@ -84,7 +83,7 @@ public class SesameAdapterTest {
     public void testSesameAdapter() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
-        this.adapter = new SesameAdapter(connectorMock, new Configuration(sp));
+        this.adapter = new SesameAdapter(connectorMock, new DriverConfiguration(sp));
         final Field langField = SesameAdapter.class.getDeclaredField("language");
         langField.setAccessible(true);
         final String lang = (String) langField.get(adapter);

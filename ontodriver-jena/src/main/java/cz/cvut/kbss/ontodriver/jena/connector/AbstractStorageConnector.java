@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 import org.apache.jena.query.Dataset;
 
@@ -9,7 +9,7 @@ import org.apache.jena.query.Dataset;
  */
 abstract class AbstractStorageConnector implements StorageConnector {
 
-    final Configuration configuration;
+    final DriverConfiguration configuration;
 
     final Transaction transaction = new Transaction();
 
@@ -26,7 +26,7 @@ abstract class AbstractStorageConnector implements StorageConnector {
         this.open = true;
     }
 
-    AbstractStorageConnector(Configuration configuration) {
+    AbstractStorageConnector(DriverConfiguration configuration) {
         this.configuration = configuration;
         initialize();
         this.open = true;

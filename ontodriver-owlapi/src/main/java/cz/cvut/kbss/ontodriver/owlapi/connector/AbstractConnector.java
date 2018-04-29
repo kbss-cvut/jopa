@@ -15,7 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.Closeable;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 
@@ -26,11 +26,11 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
  */
 abstract class AbstractConnector implements Closeable, Connector {
 
-    final Configuration configuration;
+    final DriverConfiguration configuration;
 
     private volatile boolean open;
 
-    AbstractConnector(Configuration configuration) throws OwlapiDriverException {
+    AbstractConnector(DriverConfiguration configuration) throws OwlapiDriverException {
         assert configuration != null;
 
         this.configuration = configuration;

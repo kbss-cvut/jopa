@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
@@ -39,8 +39,8 @@ public class SnapshotStorageConnectorWithInferenceTest {
 
     @Before
     public void setUp() {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
-        configuration.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
+        configuration.setProperty(DriverConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
         this.centralConnector = spy(new SharedStorageConnector(configuration));
         this.connector = new SnapshotStorageConnectorWithInference(centralConnector, Collections.emptyMap());
     }
@@ -169,9 +169,9 @@ public class SnapshotStorageConnectorWithInferenceTest {
     public void containsOnTDBBackedStorageHandlesTransactionalBehavior() throws Exception {
         final File storageDir = Files.createTempDirectory("tdb-test").toFile();
         try {
-            final Configuration config = createConfiguration(storageDir.getAbsolutePath());
+            final DriverConfiguration config = createConfiguration(storageDir.getAbsolutePath());
             config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.TDB);
-            config.setProperty(ConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
+            config.setProperty(DriverConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
             this.centralConnector = new SharedStorageConnector(config);
             this.connector = new SnapshotStorageConnectorWithInference(centralConnector, Collections.emptyMap());
             connector.begin();

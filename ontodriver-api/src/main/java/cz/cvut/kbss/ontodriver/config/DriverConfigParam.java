@@ -19,7 +19,7 @@ package cz.cvut.kbss.ontodriver.config;
  * <p>
  * Based on {@link OntoDriverProperties}
  */
-public enum ConfigParam implements ConfigurationParameter {
+public enum DriverConfigParam implements ConfigurationParameter {
 
     AUTO_COMMIT(OntoDriverProperties.CONNECTION_AUTO_COMMIT),
     REASONER_FACTORY_CLASS(OntoDriverProperties.REASONER_FACTORY_CLASS),
@@ -29,7 +29,7 @@ public enum ConfigParam implements ConfigurationParameter {
 
     private final String name;
 
-    ConfigParam(String name) {
+    DriverConfigParam(String name) {
         this.name = name;
     }
 

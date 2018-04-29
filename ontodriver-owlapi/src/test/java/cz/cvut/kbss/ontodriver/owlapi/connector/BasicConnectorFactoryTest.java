@@ -15,7 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,16 +65,16 @@ public class BasicConnectorFactoryTest {
 
     @Test
     public void getConnectorReturnsTheSameCentralConnectorForAllCalls() throws Exception {
-        final Connector connectorOne = factory.getConnector(new Configuration(storageProperties));
+        final Connector connectorOne = factory.getConnector(new DriverConfiguration(storageProperties));
         assertNotNull(connectorOne);
-        final Connector connectorTwo = factory.getConnector(new Configuration(storageProperties));
+        final Connector connectorTwo = factory.getConnector(new DriverConfiguration(storageProperties));
         assertNotNull(connectorTwo);
         assertSame(connectorOne, connectorTwo);
     }
 
     @Test
     public void closesConnectorOnFactoryClose() throws Exception {
-        final AbstractConnector connector = factory.getConnector(new Configuration(storageProperties));
+        final AbstractConnector connector = factory.getConnector(new DriverConfiguration(storageProperties));
         assertTrue(connector.isOpen());
         factory.close();
         assertFalse(connector.isOpen());
@@ -82,7 +82,7 @@ public class BasicConnectorFactoryTest {
 
     @Test
     public void getConnectorOnCloseFactoryThrowsIllegalStateException() throws Exception {
-        final Configuration config = new Configuration(storageProperties);
+        final DriverConfiguration config = new DriverConfiguration(storageProperties);
         assertTrue(factory.isOpen());
         factory.getConnector(config);
         factory.close();
@@ -94,7 +94,7 @@ public class BasicConnectorFactoryTest {
 
     @Test
     public void reloadDataReloadsDataOnSharedConnector() throws Exception {
-        final AbstractConnector connector = spy(factory.getConnector(new Configuration(storageProperties)));
+        final AbstractConnector connector = spy(factory.getConnector(new DriverConfiguration(storageProperties)));
         final Field connectorField = BasicConnectorFactory.class.getDeclaredField("connector");
         connectorField.setAccessible(true);
         connectorField.set(factory, connector);

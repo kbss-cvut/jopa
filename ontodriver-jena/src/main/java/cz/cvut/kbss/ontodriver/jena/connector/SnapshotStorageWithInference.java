@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.ReasonerInitializationException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
@@ -45,7 +45,7 @@ class SnapshotStorageWithInference extends SnapshotStorage {
 
     private Map<String, InfModel> inferredGraphs = new HashMap<>();
 
-    SnapshotStorageWithInference(Configuration configuration, Map<String, String> reasonerConfig) {
+    SnapshotStorageWithInference(DriverConfiguration configuration, Map<String, String> reasonerConfig) {
         super(configuration);
         this.reasonerFactory = initReasonerFactory(configuration);
         this.reasonerConfig = reasonerConfig.entrySet().stream()
@@ -53,8 +53,8 @@ class SnapshotStorageWithInference extends SnapshotStorage {
                                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private ReasonerFactory initReasonerFactory(Configuration configuration) {
-        final String factoryClass = configuration.getProperty(ConfigParam.REASONER_FACTORY_CLASS, "");
+    private ReasonerFactory initReasonerFactory(DriverConfiguration configuration) {
+        final String factoryClass = configuration.getProperty(DriverConfigParam.REASONER_FACTORY_CLASS, "");
         LOG.trace("Creating reasoner using reasoner factory class {}.", factoryClass);
         try {
             final Class<? extends ReasonerFactory> rfClass =

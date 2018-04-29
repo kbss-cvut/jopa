@@ -17,8 +17,8 @@ package cz.cvut.kbss.ontodriver.owlapi;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
@@ -31,19 +31,19 @@ import java.util.*;
 class OwlapiDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(ConfigParam.AUTO_COMMIT, ConfigParam.MODULE_EXTRACTION_SIGNATURE, ConfigParam.ONTOLOGY_LANGUAGE,
-                    ConfigParam.REASONER_FACTORY_CLASS,
+            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.MODULE_EXTRACTION_SIGNATURE, DriverConfigParam.ONTOLOGY_LANGUAGE,
+                    DriverConfigParam.REASONER_FACTORY_CLASS,
                     OwlapiConfigParam.IRI_MAPPING_DELIMITER, OwlapiConfigParam.MAPPING_FILE_LOCATION,
                     OwlapiConfigParam.WRITE_ON_COMMIT);
 
-    private final Configuration configuration;
+    private final DriverConfiguration configuration;
     private volatile boolean open = true;
 
     private ConnectorFactory connectorFactory;
     private final Set<OwlapiConnection> openConnections = new HashSet<>();
 
     OwlapiDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {
-        this.configuration = new Configuration(storageProperties);
+        this.configuration = new DriverConfiguration(storageProperties);
         configuration.addConfiguration(properties, CONFIGS);
         this.connectorFactory = ConnectorFactory.createFactory();
     }

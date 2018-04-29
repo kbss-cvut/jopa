@@ -14,13 +14,13 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 
 public interface ConnectorFactory {
 
-    Connector getConnector(Configuration configuration) throws OwlapiDriverException;
+    Connector getConnector(DriverConfiguration configuration) throws OwlapiDriverException;
 
     void close() throws OntoDriverException;
 

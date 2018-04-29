@@ -2,8 +2,8 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.config.Constants;
@@ -18,13 +18,13 @@ import java.util.*;
 class JenaDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(ConfigParam.AUTO_COMMIT, ConfigParam.ONTOLOGY_LANGUAGE, ConfigParam.REASONER_FACTORY_CLASS,
+            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.ONTOLOGY_LANGUAGE, DriverConfigParam.REASONER_FACTORY_CLASS,
                     JenaConfigParam.ISOLATION_STRATEGY, JenaConfigParam.STORAGE_TYPE,
                     JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
 
     private volatile boolean open;
 
-    private final Configuration configuration;
+    private final DriverConfiguration configuration;
     private final ConnectorFactory connectorFactory;
 
     private final Set<JenaConnection> openConnections;
@@ -33,12 +33,12 @@ class JenaDriver implements Closeable, ConnectionListener {
 
     JenaDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {
         assert properties != null;
-        this.configuration = new Configuration(storageProperties);
+        this.configuration = new DriverConfiguration(storageProperties);
         CONFIGS.stream().filter(c -> properties.containsKey(c.toString()))
                .forEach(c -> configuration.setProperty(c, properties.get(c.toString())));
         this.connectorFactory = buildConnectorFactory(properties);
         this.openConnections = Collections.synchronizedSet(new HashSet<>());
-        this.autoCommit = configuration.isSet(ConfigParam.AUTO_COMMIT) ? configuration.is(ConfigParam.AUTO_COMMIT) :
+        this.autoCommit = configuration.isSet(DriverConfigParam.AUTO_COMMIT) ? configuration.is(DriverConfigParam.AUTO_COMMIT) :
                 Constants.DEFAULT_AUTO_COMMIT;
         this.open = true;
     }
@@ -46,7 +46,7 @@ class JenaDriver implements Closeable, ConnectionListener {
     private ConnectorFactory buildConnectorFactory(Map<String, String> properties) {
         final String isolationStrategy = configuration
                 .getProperty(JenaConfigParam.ISOLATION_STRATEGY, Constants.DEFAULT_ISOLATION_STRATEGY);
-        if (configuration.isSet(ConfigParam.REASONER_FACTORY_CLASS)) {
+        if (configuration.isSet(DriverConfigParam.REASONER_FACTORY_CLASS)) {
             // Once reasoner factory is set, this takes precedence, because only this factory is able to provide
             // proper reasoning support
             return new InferenceConnectorFactory(configuration, properties);

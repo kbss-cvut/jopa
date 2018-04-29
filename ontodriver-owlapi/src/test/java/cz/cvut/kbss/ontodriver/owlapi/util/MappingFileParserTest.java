@@ -15,7 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 
 public class MappingFileParserTest {
 
-    private Configuration configuration = new Configuration(
+    private DriverConfiguration configuration = new DriverConfiguration(
             OntologyStorageProperties.driver(OwlapiDataSource.class.getName()).physicalUri("testFile").build());
 
     @Test(expected = MappingFileParserException.class)

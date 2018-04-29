@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
@@ -54,13 +54,13 @@ class StorageConnector extends AbstractConnector {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
-    private final Configuration configuration;
+    private final DriverConfiguration configuration;
 
     private Repository repository;
     private RepositoryManager manager;
     private RepositoryConnection connection;
 
-    StorageConnector(Configuration configuration) throws SesameDriverException {
+    StorageConnector(DriverConfiguration configuration) throws SesameDriverException {
         assert configuration != null;
 
         this.configuration = configuration;
@@ -106,7 +106,7 @@ class StorageConnector extends AbstractConnector {
         return manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
     }
 
-    private Repository createLocalRepository(Configuration configuration) {
+    private Repository createLocalRepository(DriverConfiguration configuration) {
         final URI localUri = configuration.getStorageProperties().getPhysicalURI();
         if (!isFileUri(localUri) && configuration.is(SesameConfigParam.USE_VOLATILE_STORAGE)) {
             return createInMemoryRepository(configuration);
@@ -122,7 +122,7 @@ class StorageConnector extends AbstractConnector {
     /**
      * Creates a local in-memory Sesame repository which is disposed when the VM shuts down.
      */
-    private Repository createInMemoryRepository(Configuration configuration) {
+    private Repository createInMemoryRepository(DriverConfiguration configuration) {
         LOG.trace("Creating local in-memory repository.");
         final MemoryStore ms = new MemoryStore();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
@@ -137,7 +137,7 @@ class StorageConnector extends AbstractConnector {
      * <p>
      * This kind of repository stores data in files and is persistent after the VM shuts down.
      */
-    private Repository createNativeRepository(Configuration configuration, final URI localUri) {
+    private Repository createNativeRepository(DriverConfiguration configuration, final URI localUri) {
         LOG.trace("Creating local native repository at " + localUri);
         final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
         if (tmp.length != 2) {
@@ -159,7 +159,7 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId, Configuration configuration) {
+    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId, DriverConfiguration configuration) {
         SailImplConfig backend = new NativeStoreConfig();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
             backend = new ForwardChainingRDFSInferencerConfig(backend);

@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
@@ -40,7 +40,7 @@ public class SnapshotStorageConnectorTest {
 
     @Before
     public void setUp() {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         this.centralConnector = spy(new SharedStorageConnector(configuration));
         this.connector = new SnapshotStorageConnector(centralConnector);
     }

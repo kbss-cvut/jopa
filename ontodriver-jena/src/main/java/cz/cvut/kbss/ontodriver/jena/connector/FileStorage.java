@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.DatasetFactory;
@@ -24,7 +24,7 @@ class FileStorage extends Storage {
 
     private final String location;
 
-    FileStorage(Configuration configuration) {
+    FileStorage(DriverConfiguration configuration) {
         super(configuration);
         this.location = configuration.getStorageProperties().getPhysicalURI().toString();
     }
