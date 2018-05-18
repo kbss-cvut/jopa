@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -25,6 +23,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -1273,5 +1272,24 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(entityJ.getOwlClassA().size() + 1, result.getOwlClassA().size());
         final Set<URI> aUris = new HashSet<>(Arrays.asList(entityA.getUri(), entityA2.getUri(), newA.getUri()));
         result.getOwlClassA().forEach(a -> assertTrue(aUris.contains(a.getUri())));
+    }
+
+    /**
+     * Bug #33
+     */
+    @Ignore
+    @Test
+    public void mergeWithUpdatedPropertyValueRemovesOriginalAssertion() {
+        this.em = getEntityManager("mergeWithUpdatedPropertyValueRemovesOriginalAssertion", false);
+        persist(entityH, entityA);
+
+        em.getTransaction().begin();
+        entityH.setOwlClassA(entityA2);
+        em.merge(entityH);
+        em.getTransaction().commit();
+
+        final OWLClassH result = em.find(OWLClassH.class, entityH.getUri());
+        assertEquals(entityA2.getUri(), result.getOwlClassA().getUri());
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 }
