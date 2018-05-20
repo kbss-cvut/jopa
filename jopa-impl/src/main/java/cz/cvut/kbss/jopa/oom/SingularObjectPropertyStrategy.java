@@ -77,6 +77,8 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
             referenceSavingResolver
                     .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), extractedValue,
                             getAttributeContext());
+            // This will cause the existing property assertion to be removed
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
         }
     }
 

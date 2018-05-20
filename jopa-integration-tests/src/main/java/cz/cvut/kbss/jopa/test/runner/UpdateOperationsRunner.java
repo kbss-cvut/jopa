@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -258,7 +257,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
         assertEquals(entityC.getSimpleList().size() - 1, resC.getSimpleList().size());
         for (OWLClassA aa : resC.getSimpleList()) {
-            assertFalse(resA.getUri().equals(aa.getUri()));
+            assertNotEquals(resA.getUri(), aa.getUri());
         }
     }
 
@@ -378,7 +377,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
         assertEquals(entityC.getReferencedList().size() - 1, resC.getReferencedList().size());
         for (OWLClassA aa : resC.getReferencedList()) {
-            assertFalse(resA.getUri().equals(aa.getUri()));
+            assertNotEquals(resA.getUri(), aa.getUri());
         }
     }
 
@@ -1277,7 +1276,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     /**
      * Bug #33
      */
-    @Ignore
     @Test
     public void mergeWithUpdatedPropertyValueRemovesOriginalAssertion() {
         this.em = getEntityManager("mergeWithUpdatedPropertyValueRemovesOriginalAssertion", false);
@@ -1291,5 +1289,25 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassH result = em.find(OWLClassH.class, entityH.getUri());
         assertEquals(entityA2.getUri(), result.getOwlClassA().getUri());
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    /**
+     * Bug #33, but for plural attributes
+     */
+    @Test
+    public void mergeWithUpdatedPropertyValueRemovesOriginalAssertionsFromPluralAttribute() {
+        this.em = getEntityManager("mergeWithUpdatedPropertyValueRemovesOriginalAssertionsFromPluralAttribute", false);
+        persist(entityJ);
+
+        assertEquals(2, entityJ.getOwlClassA().size());
+        final OWLClassA newA = new OWLClassA(Generators.generateUri());
+        entityJ.setOwlClassA(Collections.singleton(newA));
+        em.getTransaction().begin();
+        em.merge(entityJ);
+        em.getTransaction().commit();
+
+        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        assertEquals(1, result.getOwlClassA().size());
+        assertEquals(newA.getUri(), result.getOwlClassA().iterator().next().getUri());
     }
 }
