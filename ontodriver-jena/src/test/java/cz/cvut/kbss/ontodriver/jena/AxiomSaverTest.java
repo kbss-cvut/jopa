@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -125,6 +127,22 @@ public class AxiomSaverTest {
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
         assertEquals(ResourceFactory.createTypedLiteral(value), arg.get(0).getObject());
+    }
+
+    @Test
+    public void saveAxiomsAddsCorrectDateTimeLiteralForDateDataPropertyAxiomValue() {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        final Date value = new Date();
+        descriptor.addAssertionValue(assertion, new Value<>(value));
+        saver.saveAxioms(descriptor);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), eq(null));
+        final List<Statement> arg = captor.getValue();
+        assertEquals(1, arg.size());
+        final GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(value);
+        assertEquals(ResourceFactory.createTypedLiteral(cal), arg.get(0).getObject());
     }
 
     @Test

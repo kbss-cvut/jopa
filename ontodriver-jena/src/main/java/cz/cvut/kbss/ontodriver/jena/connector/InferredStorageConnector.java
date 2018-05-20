@@ -7,7 +7,7 @@ import org.apache.jena.rdf.model.Statement;
 
 import java.util.Collection;
 
-public interface InferredStorageConnector {
+public interface InferredStorageConnector extends StatementExecutor {
 
     /**
      * Retrieves statements corresponding to the specified criteria from the specified named graph.

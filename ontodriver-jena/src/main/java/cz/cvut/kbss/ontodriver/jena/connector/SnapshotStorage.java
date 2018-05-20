@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.system.Txn;
@@ -9,7 +9,7 @@ import java.util.Iterator;
 
 class SnapshotStorage extends Storage {
 
-    SnapshotStorage(Configuration configuration) {
+    SnapshotStorage(DriverConfiguration configuration) {
         super(configuration);
     }
 

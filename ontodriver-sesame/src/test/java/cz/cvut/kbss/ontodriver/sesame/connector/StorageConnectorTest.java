@@ -15,7 +15,7 @@
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
@@ -76,7 +76,7 @@ public class StorageConnectorTest {
         this.repositoryFolder = parentDir;
         final OntologyStorageProperties storageProperties = OntologyStorageProperties.driver(DRIVER)
                                                                                      .physicalUri(fileUri).build();
-        connector = new StorageConnector(new Configuration(storageProperties));
+        connector = new StorageConnector(new DriverConfiguration(storageProperties));
         assertTrue(parentDir.exists());
         final File repositoryDir = new File(fileUri);
         assertTrue(repositoryDir.exists());
@@ -97,7 +97,7 @@ public class StorageConnectorTest {
         this.repositoryFolder = parentDir;
         final OntologyStorageProperties storageProperties = OntologyStorageProperties.driver(DRIVER)
                                                                                      .physicalUri(invalidUri).build();
-        new StorageConnector(new Configuration(storageProperties));
+        new StorageConnector(new DriverConfiguration(storageProperties));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class StorageConnectorTest {
         final OntologyStorageProperties storageProperties = OntologyStorageProperties.driver(DRIVER)
                                                                                      .physicalUri(repoUri).build();
 
-        final StorageConnector connector = new StorageConnector(new Configuration(storageProperties));
+        final StorageConnector connector = new StorageConnector(new DriverConfiguration(storageProperties));
         assertTrue(connector.isOpen());
         connector.close();
     }
@@ -136,7 +136,7 @@ public class StorageConnectorTest {
     }
 
     private void createInMemoryConnector() throws SesameDriverException {
-        final Configuration conf = new Configuration(
+        final DriverConfiguration conf = new DriverConfiguration(
                 OntologyStorageProperties.driver(DRIVER).physicalUri("test").build());
         conf.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         this.connector = new StorageConnector(conf);

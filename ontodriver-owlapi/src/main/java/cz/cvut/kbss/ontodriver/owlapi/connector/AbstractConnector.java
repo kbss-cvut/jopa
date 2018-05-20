@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.Closeable;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 
@@ -26,11 +26,11 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
  */
 abstract class AbstractConnector implements Closeable, Connector {
 
-    final Configuration configuration;
+    final DriverConfiguration configuration;
 
     private volatile boolean open;
 
-    AbstractConnector(Configuration configuration) throws OwlapiDriverException {
+    AbstractConnector(DriverConfiguration configuration) throws OwlapiDriverException {
         assert configuration != null;
 
         this.configuration = configuration;
@@ -52,6 +52,13 @@ abstract class AbstractConnector implements Closeable, Connector {
         if (!open) {
             throw new IllegalStateException("The connector is closed.");
         }
+    }
+
+    /**
+     * Reloads ontology from the underlying storage.
+     */
+    void reloadData() throws OwlapiDriverException {
+        // Do nothing by default
     }
 
     /**

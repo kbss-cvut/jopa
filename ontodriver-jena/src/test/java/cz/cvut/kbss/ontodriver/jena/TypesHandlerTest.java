@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena;
 
+import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -8,6 +9,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,41 +27,31 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class TypesHandlerTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
     private static final Resource SUBJECT_RESOURCE = createResource(SUBJECT.getIdentifier().toString());
 
+    private Set<String> types;
+
     @Mock
     private StorageConnector connectorMock;
+
+    @Mock
+    private InferredStorageConnector inferredConnectorMock;
 
     private TypesHandler handler;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.handler = new TypesHandler(connectorMock);
-    }
-
-    @Test
-    public void getTypesLoadsTypesFromStorage() {
-        final Set<String> types = generateTypes();
-        final Set<Statement> statements = types.stream().map(t -> ResourceFactory
-                .createStatement(SUBJECT_RESOURCE, createProperty(RDF_TYPE), createResource(t)))
-                                               .collect(Collectors.toSet());
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
-        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, null, false);
-        assertEquals(result.size(), statements.size());
-        result.forEach(a -> {
-            assertEquals(SUBJECT, a.getSubject());
-            assertEquals(Assertion.createClassAssertion(false), a.getAssertion());
-            assertTrue(types.contains(a.getValue().stringValue()));
-        });
-        verify(connectorMock).find(SUBJECT_RESOURCE, createProperty(RDF_TYPE), null, null);
+        this.handler = new TypesHandler(connectorMock, inferredConnectorMock);
+        this.types = generateTypes();
     }
 
     private static Set<String> generateTypes() {
@@ -67,21 +59,42 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void getTypesLoadsTypesFromContext() {
-        final URI context = Generator.generateUri();
-        final Set<String> types = generateTypes();
-        final Set<Statement> statements = types.stream().map(t -> ResourceFactory
-                .createStatement(SUBJECT_RESOURCE, createProperty(RDF_TYPE), createResource(t)))
-                                               .collect(Collectors.toSet());
-        when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
-        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, context, false);
+    public void getTypesLoadsTypesFromStorage() {
+        final Set<Statement> statements = generateTypesStatements();
+        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, null, false);
+        verifyLoadedTypes(statements, result, false);
+        verify(inferredConnectorMock, never()).findWithInference(any(), any(), any(), anyString());
+        verify(connectorMock).find(SUBJECT_RESOURCE, RDF.type, null, null);
+    }
+
+    private Set<Statement> generateTypesStatements() {
+        final Set<Statement> statements = statementsForTypes();
+        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
+        return statements;
+    }
+
+    private Set<Statement> statementsForTypes() {
+        return types.stream().map(t -> ResourceFactory
+                .createStatement(SUBJECT_RESOURCE, RDF.type, createResource(t)))
+                    .collect(Collectors.toSet());
+    }
+
+    private void verifyLoadedTypes(Set<Statement> statements, Set<Axiom<URI>> result, boolean inferred) {
         assertEquals(result.size(), statements.size());
         result.forEach(a -> {
             assertEquals(SUBJECT, a.getSubject());
-            assertEquals(Assertion.createClassAssertion(false), a.getAssertion());
+            assertEquals(Assertion.createClassAssertion(inferred), a.getAssertion());
             assertTrue(types.contains(a.getValue().stringValue()));
         });
-        verify(connectorMock).find(SUBJECT_RESOURCE, createProperty(RDF_TYPE), null, context.toString());
+    }
+
+    @Test
+    public void getTypesLoadsTypesFromContext() {
+        final URI context = Generator.generateUri();
+        final Set<Statement> statements = generateTypesStatements();
+        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, context, false);
+        verifyLoadedTypes(statements, result, false);
+        verify(connectorMock).find(SUBJECT_RESOURCE, RDF.type, null, context.toString());
     }
 
     @Test
@@ -129,5 +142,15 @@ public class TypesHandlerTest {
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).remove(captor.capture(), eq(context.toString()));
         verifyTypesStatements(types, captor.getValue());
+    }
+
+    @Test
+    public void getTypesLoadsTypesWithInferenceWhenInferredSwitchIsOn() {
+        final Set<Statement> statements = statementsForTypes();
+        when(inferredConnectorMock.findWithInference(any(), any(), any(), anyString())).thenReturn(statements);
+        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, null, true);
+        verifyLoadedTypes(statements, result, true);
+        verify(connectorMock, never()).find(SUBJECT_RESOURCE, RDF.type, null, null);
+        verify(inferredConnectorMock).findWithInference(SUBJECT_RESOURCE, RDF.type, null, null);
     }
 }

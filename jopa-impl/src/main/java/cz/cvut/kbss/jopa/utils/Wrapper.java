@@ -14,6 +14,10 @@
  */
 package cz.cvut.kbss.jopa.utils;
 
+/**
+ * Marks classes which allow to unwrap provider-specific implementations.
+ */
+@FunctionalInterface
 public interface Wrapper {
 
     /**

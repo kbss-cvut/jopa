@@ -1,13 +1,14 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.JenaDataSource;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
+import java.io.File;
 import java.net.URI;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
@@ -22,8 +23,8 @@ class StorageTestUtil {
 
     static final Resource RESOURCE = ResourceFactory.createResource(SUBJECT);
 
-    static Configuration createConfiguration(String physicalUri) {
-        return new Configuration(OntologyStorageProperties.driver(JenaDataSource.class.toString()).physicalUri(
+    static DriverConfiguration createConfiguration(String physicalUri) {
+        return new DriverConfiguration(OntologyStorageProperties.driver(JenaDataSource.class.toString()).physicalUri(
                 URI.create(physicalUri)).build());
     }
 
@@ -39,5 +40,16 @@ class StorageTestUtil {
         final Model namedGraph = ModelFactory.createDefaultModel();
         namedGraph.add(RESOURCE, RDF.type, createResource(TYPE_TWO));
         dataset.addNamedModel(NAMED_GRAPH, namedGraph);
+    }
+
+    static void deleteStorageDir(File directory) {
+        if (directory.exists()) {
+            if (directory.listFiles() != null) {
+                for (File f : directory.listFiles()) {
+                    f.delete();
+                }
+            }
+            directory.delete();
+        }
     }
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -92,15 +92,13 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
                                                        Collection<?> container, CloneConfiguration configuration) {
         Class<?> javaClass = container.getClass();
-        Collection<?> result = createNewInstance(javaClass, container.size());
-        if (result != null) {
-            // Makes shallow copy
-            cloneCollectionContent(cloneOwner, field, container, result, configuration);
-        }
-        return result;
+        final Optional<Collection<?>> result = createNewInstance(javaClass, container.size());
+        // Makes shallow copy
+        result.ifPresent(r -> cloneCollectionContent(cloneOwner, field, container, r, configuration));
+        return result.orElse(null);
     }
 
-    private Collection<?> createNewInstance(Class<?> type, int size) {
+    private Optional<Collection<?>> createNewInstance(Class<?> type, int size) {
         Object[] params = null;
         Class<?>[] types = {int.class};
         // Look for constructor taking initial size as parameter
@@ -112,7 +110,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             ctor = DefaultInstanceBuilder.getDeclaredConstructorFor(type, null);
         }
         if (ctor == null) {
-            return null;
+            return Optional.empty();
         }
         Collection<?> result = null;
         try {
@@ -129,7 +127,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 // Do nothing
             }
         }
-        return result;
+        return Optional.ofNullable(result);
     }
 
     /**
@@ -237,10 +235,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         if (clone instanceof IndirectCollection) {
             clone = ((IndirectCollection<Collection<Object>>) clone).getReferencedCollection();
         }
-        Collection<Object> orig = (Collection<Object>) createNewInstance(clone.getClass(), clone.size());
-        if (orig == null) {
-            orig = createDefaultCollection(clone.getClass());
-        }
+        final Optional<Collection<?>> origOpt = createNewInstance(clone.getClass(), clone.size());
+        Collection<Object> orig = (Collection<Object>) origOpt.orElse(createDefaultCollection(clone.getClass()));
         EntityPropertiesUtils.setFieldValue(field, target, orig);
 
         if (clone.isEmpty()) {

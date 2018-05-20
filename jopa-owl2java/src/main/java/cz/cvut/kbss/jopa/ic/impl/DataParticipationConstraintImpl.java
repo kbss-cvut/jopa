@@ -30,7 +30,7 @@ class DataParticipationConstraintImpl extends
         super(subject, predicate, object, min, max);
     }
 
-
+    @Override
     public void accept(IntegrityConstraintVisitor v) {
         v.visit(this);
     }

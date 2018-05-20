@@ -128,7 +128,9 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             markTransactionForRollback();
             throw queryEvaluationException(e);
         } catch (RuntimeException e) {
-            markTransactionForRollback();
+            if (exceptionCausesRollback(e)) {
+                markTransactionForRollback();
+            }
             throw e;
         }
     }

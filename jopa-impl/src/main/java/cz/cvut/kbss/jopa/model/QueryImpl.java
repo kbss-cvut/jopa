@@ -77,7 +77,9 @@ public class QueryImpl extends AbstractQuery implements Query {
             markTransactionForRollback();
             throw queryEvaluationException(e);
         } catch (RuntimeException e) {
-            markTransactionForRollback();
+            if (exceptionCausesRollback(e)) {
+                markTransactionForRollback();
+            }
             throw e;
         }
     }

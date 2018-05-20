@@ -16,7 +16,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
 import org.junit.Before;
@@ -31,6 +31,7 @@ import java.util.Collections;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class OwlapiDriverTest {
@@ -38,6 +39,10 @@ public class OwlapiDriverTest {
     private static final OntologyStorageProperties STORAGE_PROPERTIES = OntologyStorageProperties.ontologyUri(
             URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
             URI.create("http://example.com")).driver(OwlapiDataSource.class.getCanonicalName()).build();
+
+
+    @Mock
+    private ConnectorFactory factoryMock;
 
     @Mock
     private Connector connectorMock;
@@ -49,11 +54,11 @@ public class OwlapiDriverTest {
         MockitoAnnotations.initMocks(this);
         final Field instanceField = OwlapiDriver.class.getDeclaredField("connectorFactory");
         instanceField.setAccessible(true);
-        final ConnectorFactory mockFactory = mock(ConnectorFactory.class);
-        when(mockFactory.getConnector(any(Configuration.class))).thenReturn(connectorMock);
-        when(mockFactory.isOpen()).thenReturn(true);
+        this.factoryMock = mock(ConnectorFactory.class);
+        when(factoryMock.getConnector(any(DriverConfiguration.class))).thenReturn(connectorMock);
+        when(factoryMock.isOpen()).thenReturn(true);
         this.driver = new OwlapiDriver(STORAGE_PROPERTIES, Collections.emptyMap());
-        instanceField.set(driver, mockFactory);
+        instanceField.set(driver, factoryMock);
     }
 
     @Test
@@ -75,5 +80,11 @@ public class OwlapiDriverTest {
         driver.close();
         assertFalse(cOne.isOpen());
         assertFalse(cTwo.isOpen());
+    }
+
+    @Test
+    public void reloadDataReloadsDataInConnector() throws Exception {
+        driver.reloadData();
+        verify(factoryMock).reloadData();
     }
 }

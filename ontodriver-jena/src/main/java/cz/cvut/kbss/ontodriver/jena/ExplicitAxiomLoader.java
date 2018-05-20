@@ -107,7 +107,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
         return axioms;
     }
 
-    private boolean assertionContextSameAsSubject(URI subjectCtx, URI assertionCtx) {
+    private static boolean assertionContextSameAsSubject(URI subjectCtx, URI assertionCtx) {
         return assertionCtx == null && subjectCtx == null || (subjectCtx != null && subjectCtx.equals(assertionCtx));
     }
 }

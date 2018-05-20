@@ -15,8 +15,8 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.exception.*;
@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -62,7 +63,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLOntologyIRIMapper iriMapper;
 
-    public BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
+    BasicStorageConnector(DriverConfiguration configuration) throws OwlapiDriverException {
         super(configuration);
     }
 
@@ -77,24 +78,7 @@ public class BasicStorageConnector extends AbstractConnector {
         resolveIriMapper();
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         setIriMapper(ontologyManager);
-        try {
-            this.ontology = ontologyManager.loadOntologyFromOntologyDocument(
-                    IRI.create(storageProperties.getPhysicalURI()));
-            if (!ontology.getOntologyID().getOntologyIRI().isPresent() ||
-                    !ontology.getOntologyID().getOntologyIRI().get().equals(
-                            IRI.create(storageProperties.getOntologyURI()))) {
-                throw new InvalidOntologyIriException(
-                        "Expected ontology with IRI " + storageProperties.getOntologyURI() +
-                                " but the loaded ontology has IRI " + ontology.getOntologyID().getOntologyIRI());
-            }
-        } catch (OWLOntologyCreationException e) {
-            if (e.getCause() instanceof FileNotFoundException) {
-                LOG.trace("Ontology file {} does not exist.", storageProperties.getPhysicalURI());
-            } else {
-                LOG.trace("Unable to load ontology from document.", e);
-            }
-            tryCreatingOntology();
-        }
+        loadOntology(storageProperties);
         initializeReasonerFactory();
         this.reasoner = getReasoner(ontology);
     }
@@ -111,11 +95,31 @@ public class BasicStorageConnector extends AbstractConnector {
         }
     }
 
-    private void tryCreatingOntology() throws OwlapiDriverException {
+    private void loadOntology(OntologyStorageProperties storageProperties) throws OwlapiDriverException {
+        final Optional<IRI> ontologyIri = storageProperties.getOntologyURI().map(IRI::create);
+        try {
+            this.ontology =
+                    ontologyManager.loadOntologyFromOntologyDocument(IRI.create(storageProperties.getPhysicalURI()));
+            if (!ontology.getOntologyID().getOntologyIRI().equals(ontologyIri)) {
+                throw new InvalidOntologyIriException(
+                        "Expected ontology with IRI " + storageProperties.getOntologyURI() +
+                                " but the loaded ontology has IRI " + ontology.getOntologyID().getOntologyIRI());
+            }
+        } catch (OWLOntologyCreationException e) {
+            if (e.getCause() instanceof FileNotFoundException) {
+                LOG.trace("Ontology file {} does not exist.", storageProperties.getPhysicalURI());
+            } else {
+                LOG.trace("Unable to load ontology from document.", e);
+            }
+            tryCreatingOntology(ontologyIri);
+        }
+    }
+
+    private void tryCreatingOntology(Optional<IRI> ontologyIri) throws OwlapiDriverException {
         LOG.trace("Creating new ontology in {}.", configuration.getStorageProperties().getPhysicalURI());
         try {
-            this.ontology = ontologyManager
-                    .createOntology(IRI.create(configuration.getStorageProperties().getOntologyURI()));
+            this.ontology = ontologyIri.isPresent() ? ontologyManager.createOntology(ontologyIri.get()) :
+                    ontologyManager.createOntology();
             ontology.saveOntology(IRI.create(configuration.getStorageProperties().getPhysicalURI()));
         } catch (OWLOntologyCreationException | OWLOntologyStorageException e) {
             throw new OwlapiDriverException(
@@ -124,7 +128,7 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void initializeReasonerFactory() {
-        final String reasonerFactoryClass = configuration.getProperty(ConfigParam.REASONER_FACTORY_CLASS);
+        final String reasonerFactoryClass = configuration.getProperty(DriverConfigParam.REASONER_FACTORY_CLASS);
         if (reasonerFactoryClass == null) {
             LOG.warn("Reasoner factory class not found. Reasoner won't be available.");
             return;
@@ -233,6 +237,17 @@ public class BasicStorageConnector extends AbstractConnector {
         ensureOpen();
         assert snapshot != null;
         ontologyManager.removeOntology(snapshot.getOntology());
+    }
+
+    @Override
+    void reloadData() throws OwlapiDriverException {
+        WRITE.lock();
+        try {
+            loadOntology(configuration.getStorageProperties());
+            this.reasoner = getReasoner(ontology);
+        } finally {
+            WRITE.unlock();
+        }
     }
 
     @Override

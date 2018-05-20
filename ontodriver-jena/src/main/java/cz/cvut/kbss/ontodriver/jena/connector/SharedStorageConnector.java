@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.AskResultSet;
@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class SharedStorageConnector extends AbstractStorageConnector {
 
-    SharedStorageConnector(Configuration configuration) {
+    SharedStorageConnector(DriverConfiguration configuration) {
         super(configuration);
     }
 
@@ -156,7 +156,19 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         if (!isOpen()) {
             return;
         }
-        storage.close();
+        if (storage != null) {
+            storage.close();
+        }
         super.close();
+    }
+
+    /**
+     * Reloads data from the underlying storage (if possible).
+     * <p>
+     * Note that this applies only to RDF file-based storage access, other storage do not support reloading.
+     */
+    public synchronized void reloadStorage() {
+        ensureOpen();
+        storage.reload();
     }
 }

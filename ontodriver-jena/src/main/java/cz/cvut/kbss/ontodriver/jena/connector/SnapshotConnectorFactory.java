@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
 /**
@@ -11,14 +11,20 @@ public class SnapshotConnectorFactory extends ConnectorFactory {
 
     private final SharedStorageConnector centralConnector;
 
-    public SnapshotConnectorFactory(Configuration configuration) {
+    public SnapshotConnectorFactory(DriverConfiguration configuration) {
         this.centralConnector = new SharedStorageConnector(configuration);
     }
 
     @Override
-    public synchronized StorageConnector createConnector() {
+    public StorageConnector createConnector() {
         ensureOpen();
         return new SnapshotStorageConnector(centralConnector);
+    }
+
+    @Override
+    public synchronized void reloadStorage() {
+        ensureOpen();
+        centralConnector.reloadStorage();
     }
 
     @Override

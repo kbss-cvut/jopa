@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.owlapi.exception.MappingFileParserException;
@@ -40,7 +40,7 @@ public class MappingFileParser {
 
     private final String delimiter;
 
-    public MappingFileParser(Configuration configuration) {
+    public MappingFileParser(DriverConfiguration configuration) {
         final String mappingFilePath = configuration.getProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION);
         assert mappingFilePath != null;
         this.mappingFile = resolveMappingFile(mappingFilePath);

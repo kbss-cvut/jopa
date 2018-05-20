@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,13 +14,11 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -136,16 +134,8 @@ class AxiomValueGatherer {
                 connection.lists().persistReferencedList(d);
             }
         } catch (OntoDriverException e) {
-            handlePersistException(e);
+            throw new StorageAccessException(e);
         }
-    }
-
-    private void handlePersistException(OntoDriverException e) {
-        if (e.getCause() instanceof OWLIndividualExistsException) {
-            throw new OWLEntityExistsException(
-                    "Individual " + axiomDescriptor.getSubject() + " already exists in the ontology.", e.getCause());
-        }
-        throw new StorageAccessException(e);
     }
 
     void update(Connection connection) {

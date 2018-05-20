@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 public class InferenceConnectorFactoryTest extends ConnectorFactoryTestBase {
 
     @Override
-    ConnectorFactory connectorFactory(Configuration configuration) {
+    ConnectorFactory connectorFactory(DriverConfiguration configuration) {
         return new InferenceConnectorFactory(configuration, Collections.emptyMap());
     }
 
@@ -24,7 +24,7 @@ public class InferenceConnectorFactoryTest extends ConnectorFactoryTestBase {
 
     @Test
     public void createInferredConnectorReturnsCorrectConnector() {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
         final InferredStorageConnector result = factory.createInferredConnector(connector);

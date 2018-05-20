@@ -15,8 +15,8 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -60,9 +60,9 @@ public class SesameAdapterWithStoreTest {
     public void setUp() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
-        final Configuration configuration = new Configuration(sp);
+        final DriverConfiguration configuration = new DriverConfiguration(sp);
         configuration.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.toString(true));
-        configuration.setProperty(ConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
+        configuration.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
         this.factory = ConnectorFactory.getInstance();
         this.connector = factory.createStorageConnector(configuration);
         this.adapter = new SesameAdapter(connector, configuration);

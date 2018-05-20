@@ -219,7 +219,13 @@ public class JenaAdapterTest {
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
         execField.setAccessible(true);
-        assertSame(connectorMock, execField.get(result));
+        assertSame(inferredConnectorMock, execField.get(result));
+    }
+
+    @Test
+    public void createStatementStartsTransactionIfNotAlreadyActive() {
+        adapter.createStatement();
+        verify(connectorMock).begin();
     }
 
     @Test
@@ -228,6 +234,26 @@ public class JenaAdapterTest {
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
         execField.setAccessible(true);
-        assertSame(connectorMock, execField.get(result));
+        assertSame(inferredConnectorMock, execField.get(result));
+    }
+
+    @Test
+    public void prepareStatementStartsTransactionIfNotAlreadyActive() {
+        adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }");
+        verify(connectorMock).begin();
+    }
+
+    @Test
+    public void isConsistentChecksForConsistencyOnInferredConnector() {
+        adapter.isConsistent(null);
+        verify(inferredConnectorMock).isConsistent(null);
+    }
+
+    @Test
+    public void isConsistentStartsTransactionIfNotAlreadyActive() {
+        final URI context = Generator.generateUri();
+        adapter.isConsistent(context);
+        verify(connectorMock).begin();
+        verify(inferredConnectorMock).isConsistent(context.toString());
     }
 }

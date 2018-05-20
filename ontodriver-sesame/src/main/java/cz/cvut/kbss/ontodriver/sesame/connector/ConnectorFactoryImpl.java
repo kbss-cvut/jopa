@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
@@ -29,7 +29,7 @@ final class ConnectorFactoryImpl implements ConnectorFactory {
     }
 
     @Override
-    public Connector createStorageConnector(Configuration configuration) throws SesameDriverException {
+    public Connector createStorageConnector(DriverConfiguration configuration) throws SesameDriverException {
         if (!open) {
             throw new IllegalStateException("The factory is closed!");
         }
@@ -43,7 +43,7 @@ final class ConnectorFactoryImpl implements ConnectorFactory {
         return new PoolingStorageConnector(centralConnector);
     }
 
-    private void initCentralConnector(Configuration configuration) throws SesameDriverException {
+    private void initCentralConnector(DriverConfiguration configuration) throws SesameDriverException {
         this.centralConnector = new StorageConnector(configuration);
     }
 

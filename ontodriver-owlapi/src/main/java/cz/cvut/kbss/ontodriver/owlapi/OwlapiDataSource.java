@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,8 +15,8 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.util.Collections;
@@ -28,7 +28,7 @@ import java.util.Objects;
  *
  * @author ledvima1
  */
-public class OwlapiDataSource implements DataSource {
+public class OwlapiDataSource implements ReloadableDataSource {
 
     private OntologyStorageProperties storageProperties;
     private Map<String, String> properties;
@@ -62,13 +62,21 @@ public class OwlapiDataSource implements DataSource {
     }
 
     @Override
-    public void setStorageProperties(OntologyStorageProperties storageProperties) throws OntoDriverException {
+    public void setStorageProperties(OntologyStorageProperties storageProperties) {
         this.storageProperties = Objects.requireNonNull(storageProperties);
     }
 
     @Override
-    public void setProperties(Map<String, String> properties) throws OntoDriverException {
+    public void setProperties(Map<String, String> properties) {
         this.properties = Objects.requireNonNull(properties);
+    }
+
+    @Override
+    public synchronized void reload() throws OntoDriverException {
+        ensureOpen();
+        if (connected) {
+            driver.reloadData();
+        }
     }
 
     @Override

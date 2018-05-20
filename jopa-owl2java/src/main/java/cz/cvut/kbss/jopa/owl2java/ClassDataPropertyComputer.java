@@ -56,8 +56,7 @@ public class ClassDataPropertyComputer {
             card = Card.MULTIPLE;
             for (final DataParticipationConstraint opc : getParticipationConstraints()) {
                 final OWLDatatype dt2 = opc.getObject();
-                if (getFiller().equals(dt2)
-                        || dt2.equals(OWLManager.getOWLDataFactory().getTopDatatype())) {
+                if (getFiller().equals(dt2) || dt2.equals(OWLManager.getOWLDataFactory().getTopDatatype())) {
                     if (opc.getMax() == 1) {
                         card = Card.ONE;
                         return;

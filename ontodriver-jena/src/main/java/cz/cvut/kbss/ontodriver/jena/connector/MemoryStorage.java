@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import org.apache.jena.query.DatasetFactory;
 
 /**
@@ -8,7 +8,7 @@ import org.apache.jena.query.DatasetFactory;
  */
 class MemoryStorage extends Storage {
 
-    MemoryStorage(Configuration configuration) {
+    MemoryStorage(DriverConfiguration configuration) {
         super(configuration);
     }
 

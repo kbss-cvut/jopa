@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.maven;
 
 import cz.cvut.kbss.jopa.owl2java.OWL2JavaTransformer;
 import cz.cvut.kbss.jopa.owl2java.TransformationConfiguration;
+import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -32,6 +33,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String ALL_IC_PARAM = "whole-ontology-as-ics";
     private static final String VOCABULARY_PARAM = "vocabulary-only";
     private static final String IGNORE_FAILED_IMPORTS_PARAM = "ignore-failed-imports";
+    private static final String PROPERTIES_TYPE = "properties-type";
 
     @Parameter(alias = MAPPING_FILE_PARAM)
     private String pMappingFile;
@@ -60,6 +62,8 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = IGNORE_FAILED_IMPORTS_PARAM, defaultValue = "false")
     private boolean ignoreFailedImports;
 
+    @Parameter(alias = PROPERTIES_TYPE, defaultValue = "string") private String pPropertiesType;
+
     @Override
     public void execute() {
         OWL2JavaTransformer owl2java = new OWL2JavaTransformer();
@@ -84,6 +88,11 @@ public class OWL2JavaMojo extends AbstractMojo {
         if (!pWholeOntologyAsICS) {
             builder.context(pContextName);
         }
+
+        if (pPropertiesType != null) {
+            builder.propertiesType(PropertiesType.valueOf(pPropertiesType));
+        }
+
         final TransformationConfiguration config =
                 builder.packageName(pPackage).targetDir(pOutputDirectory).addOwlapiIris(pWithOWLAPI).build();
 
@@ -106,5 +115,6 @@ public class OWL2JavaMojo extends AbstractMojo {
         getLog().info(ALL_IC_PARAM + ": " + pWholeOntologyAsICS);
         getLog().info(VOCABULARY_PARAM + ": " + pVocabularyOnly);
         getLog().info(IGNORE_FAILED_IMPORTS_PARAM + ": " + ignoreFailedImports);
+        getLog().info(PROPERTIES_TYPE + ": " + pPropertiesType);
     }
 }

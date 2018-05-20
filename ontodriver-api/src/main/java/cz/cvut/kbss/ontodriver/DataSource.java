@@ -33,6 +33,7 @@ public interface DataSource extends Closeable {
      *
      * @return A {@code Connection} to the data source
      * @throws OntoDriverException If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed data source
      */
     Connection getConnection() throws OntoDriverException;
 

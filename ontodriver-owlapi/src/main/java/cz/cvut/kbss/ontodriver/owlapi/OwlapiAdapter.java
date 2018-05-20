@@ -14,8 +14,8 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
@@ -58,9 +58,9 @@ public class OwlapiAdapter {
         INITIAL, RUNNING
     }
 
-    public OwlapiAdapter(Connector connector, Configuration configuration) {
+    public OwlapiAdapter(Connector connector, DriverConfiguration configuration) {
         this.connector = connector;
-        this.language = configuration.getProperty(ConfigParam.ONTOLOGY_LANGUAGE, "en");
+        this.language = configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, "en");
     }
 
     private void startTransactionIfNotActive() {

@@ -16,7 +16,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import org.junit.Before;
@@ -58,7 +58,7 @@ public class SesameDriverTest {
         MockitoAnnotations.initMocks(this);
         this.driver = new SesameDriver(storageProperties, Collections.emptyMap());
         when(connectorFactoryMock.isOpen()).thenReturn(Boolean.TRUE);
-        when(connectorFactoryMock.createStorageConnector(new Configuration(storageProperties)))
+        when(connectorFactoryMock.createStorageConnector(new DriverConfiguration(storageProperties)))
                 .thenReturn(connectorMock);
         final Field factoryField = SesameDriver.class.getDeclaredField("connectorFactory");
         factoryField.setAccessible(true);
@@ -78,8 +78,8 @@ public class SesameDriverTest {
         final Connection res = driver.acquireConnection();
         assertNotNull(res);
         assertNotNull(res.lists());
-        verify(connectorFactoryMock).createStorageConnector(new Configuration(storageProperties));
-        verify(connectorFactoryMock).createStorageConnector(new Configuration(storageProperties));
+        verify(connectorFactoryMock).createStorageConnector(new DriverConfiguration(storageProperties));
+        verify(connectorFactoryMock).createStorageConnector(new DriverConfiguration(storageProperties));
     }
 
     @Test

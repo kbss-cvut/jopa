@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,10 +26,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -118,6 +116,12 @@ public class IndirectListTest {
     }
 
     @Test
+    public void addAllDoesNothingWhenNoNewElementsAreAdded() {
+        owner.getReferencedList().addAll(Collections.emptyList());
+        verify(uow, never()).attributeChanged(owner, ownerField);
+    }
+
+    @Test
     public void testAddAllAtIndex() {
         final List<OWLClassA> toAdd = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -130,6 +134,14 @@ public class IndirectListTest {
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupList.size() + toAdd.size(), target.size());
         assertEquals(toAdd.get(0), target.get(index));
+    }
+
+    @Test
+    public void addAllAtIndexDoesNothingWhenNoElementsAreAdded() {
+        final int origSize = target.size();
+        owner.getReferencedList().addAll(2, Collections.emptyList());
+        verify(uow, never()).attributeChanged(owner, ownerField);
+        assertEquals(origSize, target.size());
     }
 
     @Test
@@ -166,6 +178,12 @@ public class IndirectListTest {
         owner.getReferencedList().removeAll(toRemove);
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupList.size() - toRemoveSize, target.size());
+    }
+
+    @Test
+    public void removeAllDoesNothingWhenNoElementsAreRemoved() {
+        owner.getReferencedList().removeAll(Collections.emptyList());
+        verify(uow, never()).attributeChanged(owner, ownerField);
     }
 
     @Test
@@ -273,5 +291,13 @@ public class IndirectListTest {
     public void sublistReturnsAnotherIndirectList() {
         final List<OWLClassA> result = target.subList(0, target.size() / 2);
         assertTrue(result instanceof IndirectList);
+    }
+
+    @Test
+    public void removeIfNotifiesUoWOfRemovedElements() {
+        final Set<URI> toRemove = target.stream().filter(e -> Generators.randomBoolean()).map(OWLClassA::getUri)
+                                        .collect(Collectors.toSet());
+        owner.getReferencedList().removeIf(e -> toRemove.contains(e.getUri()));
+        verify(uow, times(toRemove.size())).attributeChanged(owner, ownerField);
     }
 }

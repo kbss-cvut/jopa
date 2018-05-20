@@ -451,4 +451,22 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Axiom<?> axiom = result.iterator().next();
         assertEquals(value, axiom.getValue().getValue());
     }
+
+    @Test
+    public void findLoadsDataPropertyWithXSDDateTimeValueAsDate() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(assertion);
+        final Date value = new Date();
+        final Calendar cal = new GregorianCalendar();
+        cal.setTime(value);
+        final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
+                createTypedLiteral(cal));
+        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
+
+        final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
+        assertEquals(1, result.size());
+        final Axiom<?> axiom = result.iterator().next();
+        assertEquals(value, axiom.getValue().getValue());
+    }
 }

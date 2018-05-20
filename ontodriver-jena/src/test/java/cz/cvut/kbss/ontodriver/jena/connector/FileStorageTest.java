@@ -5,19 +5,26 @@ import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
 public class FileStorageTest extends StorageTestUtil {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void initializesStorageByReadingFileWithSingleGraph() throws Exception {
@@ -76,5 +83,39 @@ public class FileStorageTest extends StorageTestUtil {
         final String str = String.join("\n", lines);
         assertThat(str, containsString(rName));
         assertThat(str, containsString(rValue));
+    }
+
+    @Test
+    public void reloadReloadsDatasetFromFile() throws Exception {
+        final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
+        file.deleteOnExit();
+        final Storage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
+        storage.initialize();
+        final Resource subj = createResource(SUBJECT);
+        final Resource obj = createResource(TYPE_TWO);
+        assertFalse(storage.getDefaultGraph().contains(subj, RDF.type, obj));
+
+        final Model m = RDFDataMgr.loadModel(file.getAbsolutePath());
+        m.add(createStatement(subj, RDF.type, obj));
+        try (final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
+            RDFDataMgr.write(out, m, Lang.TTL);
+        }
+        m.close();
+
+        storage.reload();
+        assertTrue(storage.getDefaultGraph().contains(subj, RDF.type, obj));
+    }
+
+    @Test
+    public void reloadThrowsIllegalStateWhenStorageIsInTransaction() throws Exception {
+        final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
+        file.deleteOnExit();
+        final Storage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
+        storage.initialize();
+
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage(containsString("Cannot reload storage which is in transaction"));
+        storage.begin(ReadWrite.WRITE);
+        storage.reload();
     }
 }

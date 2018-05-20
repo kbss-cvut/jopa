@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Holds properties of an ontology storage.
@@ -50,7 +51,7 @@ public class OntologyStorageProperties {
      */
     private final String password;
 
-    OntologyStorageProperties(OntologyStoragePropertiesBuilder builder) {
+    private OntologyStorageProperties(OntologyStoragePropertiesBuilder builder) {
         this.physicalUri = Objects.requireNonNull(builder.physicalUri, "Ontology physical URI is required!");
         this.driver = Objects.requireNonNull(builder.driverClass, "OntDriver data source class name is required!");
         this.ontologyUri = builder.ontologyUri;
@@ -58,8 +59,8 @@ public class OntologyStorageProperties {
         this.password = builder.password;
     }
 
-    public URI getOntologyURI() {
-        return ontologyUri;
+    public Optional<URI> getOntologyURI() {
+        return Optional.ofNullable(ontologyUri);
     }
 
     public URI getPhysicalURI() {
@@ -121,11 +122,11 @@ public class OntologyStorageProperties {
      */
     public static class OntologyStoragePropertiesBuilder {
 
-        protected URI ontologyUri;
-        protected URI physicalUri;
-        protected String username;
-        protected String password;
-        protected String driverClass;
+        private URI ontologyUri;
+        private URI physicalUri;
+        private String username;
+        private String password;
+        private String driverClass;
 
         public OntologyStoragePropertiesBuilder ontologyUri(URI ontologyUri) {
             this.ontologyUri = ontologyUri;

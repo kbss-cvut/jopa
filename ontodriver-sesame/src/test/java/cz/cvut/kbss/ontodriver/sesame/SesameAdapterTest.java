@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,8 +15,8 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyVararg;
+import static org.mockito.Mockito.anyCollectionOf;
 import static org.mockito.Mockito.*;
 
 public class SesameAdapterTest {
@@ -64,18 +64,18 @@ public class SesameAdapterTest {
     private SesameAdapter adapter;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         subjectIri = vf.createIRI(SUBJECT.getIdentifier().toString());
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(connectorMock.getValueFactory()).thenReturn(vf);
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
-        final Configuration configuration = new Configuration(sp);
-        configuration.setProperty(ConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
+        final DriverConfiguration configuration = new DriverConfiguration(sp);
+        configuration.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
         this.adapter = new SesameAdapter(connectorMock, configuration);
 
     }
@@ -84,7 +84,7 @@ public class SesameAdapterTest {
     public void testSesameAdapter() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
-        this.adapter = new SesameAdapter(connectorMock, new Configuration(sp));
+        this.adapter = new SesameAdapter(connectorMock, new DriverConfiguration(sp));
         final Field langField = SesameAdapter.class.getDeclaredField("language");
         langField.setAccessible(true);
         final String lang = (String) langField.get(adapter);
@@ -536,7 +536,7 @@ public class SesameAdapterTest {
                 vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
         when(
                 connectorMock.findStatements(subjectIri, vf.createIRI(propertyOne), null, false,
-                        (org.eclipse.rdf4j.model.IRI) null)).thenReturn(statements);
+                        null)).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertTrue(res.isEmpty());
     }
@@ -614,7 +614,7 @@ public class SesameAdapterTest {
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
-        assertTrue(res.toString().contains("#"));
+        assertTrue(res.toString().contains("/instance"));
         verify(connectorMock).containsStatement(vf.createIRI(res.toString()), RDF.TYPE,
                 vf.createIRI(clsUri.toString()), true);
     }
@@ -778,7 +778,7 @@ public class SesameAdapterTest {
         adapter.update(desc);
         verify(connectorMock).findStatements(subjectIri, sesameProperty, null, inferred, null);
         verify(connectorMock).removeStatements(statements);
-        verify(connectorMock, never()).addStatements(any(Collection.class));
+        verify(connectorMock, never()).addStatements(anyCollectionOf(Statement.class));
     }
 
     @Test
@@ -787,9 +787,9 @@ public class SesameAdapterTest {
         final boolean inferred = false;
         final Assertion assertion = Assertion.createClassAssertion(inferred);
         final String[] newTypes = {"http://krizik.felk.cvut.cz/ontologies/types#tOne",
-                "http://krizik.felk.cvut.cz/ontologies/types#tTwo",
-                "http://krizik.felk.cvut.cz/ontologies/types#tFour",
-                "http://krizik.felk.cvut.cz/ontologies/types#tFive"};
+                                   "http://krizik.felk.cvut.cz/ontologies/types#tTwo",
+                                   "http://krizik.felk.cvut.cz/ontologies/types#tFour",
+                                   "http://krizik.felk.cvut.cz/ontologies/types#tFive"};
         desc.addAssertion(assertion);
         final URI context = Generator.generateUri();
         final IRI iriContext = vf.createIRI(context.toString());

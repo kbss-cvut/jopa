@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Random;
 
 public class TestUtils {
@@ -44,6 +46,13 @@ public class TestUtils {
         final File targetDir = Files.createTempDirectory("owl2java-test").toFile();
         targetDir.deleteOnExit();
         return targetDir;
+    }
+
+    static void recursivelyDeleteDirectory(File directory) throws IOException {
+        Files.walk(directory.toPath())
+             .sorted(Comparator.reverseOrder())
+             .map(Path::toFile)
+             .forEach(File::delete);
     }
 
     static void addAxiom(OWLAxiom axiom, OWL2JavaTransformer transformer) throws Exception {

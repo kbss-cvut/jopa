@@ -23,9 +23,9 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ConfigurationTest {
+public class DriverConfigurationTest {
 
-    private Configuration configuration = new Configuration(
+    private DriverConfiguration configuration = new DriverConfiguration(
             OntologyStorageProperties.driver("cz.cvut.kbss.ontodriver.sesame.SesameDataSource")
                                      .physicalUri("memory-store").build());
 
@@ -37,30 +37,30 @@ public class ConfigurationTest {
         props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, "false");
 
         configuration.addConfiguration(props,
-                Arrays.asList(ConfigParam.AUTO_COMMIT, ConfigParam.MODULE_EXTRACTION_SIGNATURE,
-                        ConfigParam.USE_TRANSACTIONAL_ONTOLOGY));
-        assertNotNull(configuration.getProperty(ConfigParam.AUTO_COMMIT));
-        assertNotNull(configuration.getProperty(ConfigParam.USE_TRANSACTIONAL_ONTOLOGY));
-        assertNull(configuration.getProperty(ConfigParam.ONTOLOGY_LANGUAGE));   // Not in the known properties
+                Arrays.asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.MODULE_EXTRACTION_SIGNATURE,
+                        DriverConfigParam.USE_TRANSACTIONAL_ONTOLOGY));
+        assertNotNull(configuration.getProperty(DriverConfigParam.AUTO_COMMIT));
+        assertNotNull(configuration.getProperty(DriverConfigParam.USE_TRANSACTIONAL_ONTOLOGY));
+        assertNull(configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE));   // Not in the known properties
     }
 
     @Test
     public void getWithDefaultReturnsDefaultWhenConfigParamValueIsNotFound() {
-        assertNull(configuration.getProperty(ConfigParam.ONTOLOGY_LANGUAGE));
+        assertNull(configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE));
         final String defaultLang = "en";
-        assertEquals(defaultLang, configuration.getProperty(ConfigParam.ONTOLOGY_LANGUAGE, defaultLang));
+        assertEquals(defaultLang, configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, defaultLang));
     }
 
     @Test
     public void testGetPropertyAsBoolean() {
-        configuration.setProperty(ConfigParam.AUTO_COMMIT, "true");
-        final boolean res = configuration.is(ConfigParam.AUTO_COMMIT);
+        configuration.setProperty(DriverConfigParam.AUTO_COMMIT, "true");
+        final boolean res = configuration.is(DriverConfigParam.AUTO_COMMIT);
         assertTrue(res);
     }
 
     @Test
     public void getAsBooleanReturnsFalseForUnknownProperty() {
-        final boolean res = configuration.is(ConfigParam.AUTO_COMMIT);
+        final boolean res = configuration.is(DriverConfigParam.AUTO_COMMIT);
         assertFalse(res);
     }
 }

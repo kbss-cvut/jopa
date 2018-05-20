@@ -87,9 +87,9 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public boolean isConsistent(URI context) throws OntoDriverException {
+    public boolean isConsistent(URI context) {
         ensureOpen();
-        throw new UnsupportedOperationException("Not supported, yet.");
+        return adapter.isConsistent(context);
     }
 
     @Override

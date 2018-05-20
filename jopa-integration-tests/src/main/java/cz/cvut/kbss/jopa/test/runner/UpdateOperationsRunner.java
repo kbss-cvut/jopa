@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -259,7 +257,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
         assertEquals(entityC.getSimpleList().size() - 1, resC.getSimpleList().size());
         for (OWLClassA aa : resC.getSimpleList()) {
-            assertFalse(resA.getUri().equals(aa.getUri()));
+            assertNotEquals(resA.getUri(), aa.getUri());
         }
     }
 
@@ -379,7 +377,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
         assertEquals(entityC.getReferencedList().size() - 1, resC.getReferencedList().size());
         for (OWLClassA aa : resC.getReferencedList()) {
-            assertFalse(resA.getUri().equals(aa.getUri()));
+            assertNotEquals(resA.getUri(), aa.getUri());
         }
     }
 
@@ -1273,5 +1271,43 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(entityJ.getOwlClassA().size() + 1, result.getOwlClassA().size());
         final Set<URI> aUris = new HashSet<>(Arrays.asList(entityA.getUri(), entityA2.getUri(), newA.getUri()));
         result.getOwlClassA().forEach(a -> assertTrue(aUris.contains(a.getUri())));
+    }
+
+    /**
+     * Bug #33
+     */
+    @Test
+    public void mergeWithUpdatedPropertyValueRemovesOriginalAssertion() {
+        this.em = getEntityManager("mergeWithUpdatedPropertyValueRemovesOriginalAssertion", false);
+        persist(entityH, entityA);
+
+        em.getTransaction().begin();
+        entityH.setOwlClassA(entityA2);
+        em.merge(entityH);
+        em.getTransaction().commit();
+
+        final OWLClassH result = em.find(OWLClassH.class, entityH.getUri());
+        assertEquals(entityA2.getUri(), result.getOwlClassA().getUri());
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    /**
+     * Bug #33, but for plural attributes
+     */
+    @Test
+    public void mergeWithUpdatedPropertyValueRemovesOriginalAssertionsFromPluralAttribute() {
+        this.em = getEntityManager("mergeWithUpdatedPropertyValueRemovesOriginalAssertionsFromPluralAttribute", false);
+        persist(entityJ);
+
+        assertEquals(2, entityJ.getOwlClassA().size());
+        final OWLClassA newA = new OWLClassA(Generators.generateUri());
+        entityJ.setOwlClassA(Collections.singleton(newA));
+        em.getTransaction().begin();
+        em.merge(entityJ);
+        em.getTransaction().commit();
+
+        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        assertEquals(1, result.getOwlClassA().size());
+        assertEquals(newA.getUri(), result.getOwlClassA().iterator().next().getUri());
     }
 }

@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.10.0</version>
+        <version>0.10.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -14,7 +14,7 @@
     <description>Integration tests of JOPA and OWLAPI OntoDriver implementation</description>
 
     <properties>
-        <pellet.version>2.4.0-SNAPSHOT</pellet.version>
+        <com.github.galigator.openllet.version>2.6.4</com.github.galigator.openllet.version>
     </properties>
 
     <repositories>
@@ -53,13 +53,13 @@
         <dependency>
             <groupId>com.github.galigator.openllet</groupId>
             <artifactId>openllet-owlapi</artifactId>
-            <version>2.6.3</version>
+            <version>${com.github.galigator.openllet.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.galigator.openllet</groupId>
             <artifactId>openllet-explanation</artifactId>
-            <version>2.6.3</version>
+            <version>${com.github.galigator.openllet.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -78,7 +78,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.11</version>
+                <version>${maven.aspectj.plugin.version}</version>
                 <configuration>
                     <complianceLevel>1.8</complianceLevel>
                     <source>1.8</source>
@@ -117,7 +117,7 @@
 
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
+                <version>${maven.javadoc.plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

@@ -17,8 +17,8 @@ package cz.cvut.kbss.ontodriver.sesame;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
@@ -30,10 +30,10 @@ import java.util.*;
 class SesameDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(ConfigParam.AUTO_COMMIT, ConfigParam.ONTOLOGY_LANGUAGE,
+            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.ONTOLOGY_LANGUAGE,
                     SesameConfigParam.USE_INFERENCE, SesameConfigParam.USE_VOLATILE_STORAGE);
 
-    private final Configuration configuration;
+    private final DriverConfiguration configuration;
     private boolean open;
     private final ConnectorFactory connectorFactory;
 
@@ -43,7 +43,7 @@ class SesameDriver implements Closeable, ConnectionListener {
         assert storageProperties != null;
         assert properties != null;
 
-        this.configuration = new Configuration(storageProperties);
+        this.configuration = new DriverConfiguration(storageProperties);
         configuration.addConfiguration(properties, CONFIGS);
         this.openedConnections = new HashSet<>();
         this.connectorFactory = ConnectorFactory.getInstance();

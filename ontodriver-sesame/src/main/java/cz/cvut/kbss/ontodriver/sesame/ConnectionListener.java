@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.Connection;
 
+@FunctionalInterface
 interface ConnectionListener {
 
 	/**

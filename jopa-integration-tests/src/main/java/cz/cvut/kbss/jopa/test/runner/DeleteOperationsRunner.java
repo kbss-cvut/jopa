@@ -261,7 +261,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void removeDeletesAllPropertyAssertionsMappedByEntity() throws Exception {
+    public void removeDeletesAllPropertyAssertionsMappedByEntity() {
         this.em = getEntityManager("RemoveDeletesAllMappedAttributes", false);
         em.getTransaction().begin();
         entityC.setSimpleList(Generators.createSimpleList(5));
@@ -309,7 +309,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         final String property = entityB.getProperties().keySet().iterator().next();
         final Set<String> values = entityB.getProperties().get(property);
-        assertTrue(values.size() > 0);
+        assertFalse(values.isEmpty());
         final String valueToRemove = values.iterator().next();
         em.getTransaction().begin();
         final OWLClassB toUpdate = em.find(OWLClassB.class, entityB.getUri());

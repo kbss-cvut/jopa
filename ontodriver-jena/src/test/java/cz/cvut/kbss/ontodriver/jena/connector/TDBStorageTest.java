@@ -5,6 +5,7 @@ import org.apache.jena.query.ReadWrite;
 import org.apache.jena.tdb.TDB;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.File;
@@ -19,6 +20,15 @@ public class TDBStorageTest {
 
     private TDBStorage storage;
 
+    private File storageDir;
+
+    @After
+    public void tearDown() {
+        if (storageDir != null) {
+            StorageTestUtil.deleteStorageDir(storageDir);
+        }
+    }
+
     @Test
     public void initializeCreatesNewTDBStorage() throws Exception {
         final File storageDir = initTDBStorage();
@@ -29,7 +39,7 @@ public class TDBStorageTest {
     }
 
     private File initTDBStorage() throws IOException {
-        final File storageDir = Files.createTempDirectory("tdb-test").toFile();
+        this.storageDir = Files.createTempDirectory("tdb-test").toFile();
         storageDir.deleteOnExit();
         this.storage = new TDBStorage(createConfiguration(storageDir.getAbsolutePath()));
         storage.initialize();
@@ -38,7 +48,7 @@ public class TDBStorageTest {
 
     @Test
     public void initializeLoadsExistingTDBDataset() throws Exception {
-        final File storageDir = Files.createTempDirectory("tdb-test").toFile();
+        this.storageDir = Files.createTempDirectory("tdb-test").toFile();
         storageDir.deleteOnExit();
         final Dataset dataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
         dataset.begin(ReadWrite.WRITE);
@@ -56,7 +66,7 @@ public class TDBStorageTest {
 
     @Test
     public void initializeCreatesNewTDBStorageWhenTargetDirectoryDoesNotExist() throws Exception {
-        final File storageDir = Files.createTempDirectory("tdb-test").toFile();
+        this.storageDir = Files.createTempDirectory("tdb-test").toFile();
         storageDir.deleteOnExit();
         storageDir.delete();
         assertFalse(storageDir.exists());

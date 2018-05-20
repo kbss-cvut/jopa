@@ -159,4 +159,22 @@ public class SingularObjectPropertyStrategyTest {
 
         verify(gatherer).addValue(strategy.createAssertion(), Value.nullValue(), null);
     }
+
+    @Test
+    public void buildAxiomValueAddsNullValueToAxiomBuilderWhenRefererenceIsRegisteredAsPending() throws Exception {
+        final OWLClassD d = new OWLClassD();
+        d.setUri(IDENTIFIER);
+        final OWLClassA a = new OWLClassA();
+        d.setOwlClassA(a);
+        a.setUri(Generators.createIndividualIdentifier());
+        final Attribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
+                strategy(metamodelMocks.forOwlClassD().entityType(), att);
+        when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
+        when(referenceResolverMock.shouldSaveReference(att.getJavaType(), a, null)).thenReturn(false);
+        strategy.setReferenceSavingResolver(referenceResolverMock);
+        strategy.buildAxiomValuesFromInstance(d, gatherer);
+
+        verify(gatherer).addValue(strategy.createAssertion(), Value.nullValue(), null);
+    }
 }

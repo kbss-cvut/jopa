@@ -64,7 +64,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public void close() {
-        verifyOpen();
+        ensureOpen();
         synchronized (this) {
             if (!open) {
                 return;
@@ -87,7 +87,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public EntityManager createEntityManager(Map<String, String> map) {
-        verifyOpen();
+        ensureOpen();
 
         final Map<String, String> newMap = new HashMap<>(map);
 
@@ -101,7 +101,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         return c;
     }
 
-    private void verifyOpen() {
+    private void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("The entity manager factory is closed.");
         }
@@ -133,26 +133,35 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public Map<String, String> getProperties() {
-        verifyOpen();
+        ensureOpen();
         return configuration.getProperties();
     }
 
     @Override
     public Metamodel getMetamodel() {
-        verifyOpen();
+        ensureOpen();
         return metamodel;
     }
 
     @Override
     public PersistenceUnitUtil getPersistenceUnitUtil() {
-        verifyOpen();
+        ensureOpen();
         return this;
     }
 
     @Override
     public void addNamedQuery(String name, Query query) {
-        verifyOpen();
+        ensureOpen();
         throw new NotYetImplementedException();
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> cls) {
+        ensureOpen();
+        if (cls.isAssignableFrom(this.getClass())) {
+            return cls.cast(this);
+        }
+        return serverSession.unwrap(cls);
     }
 
     @Override
@@ -189,7 +198,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public Cache getCache() {
-        verifyOpen();
+        ensureOpen();
         initServerSession();
         return serverSession.getLiveObjectCache();
     }

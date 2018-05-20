@@ -1,15 +1,19 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
+import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class DummyInferredStorageConnectorTest {
 
@@ -19,10 +23,10 @@ public class DummyInferredStorageConnectorTest {
 
     @Before
     public void setUp() {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final SharedStorageConnector wrapped = new SharedStorageConnector(configuration);
         wrapped.storage = spy(wrapped.storage);
-        this.wrappedConnector = wrapped;
+        this.wrappedConnector = spy(wrapped);
         generateTestData(wrapped.storage.getDataset());
         this.connector = new DummyInferredStorageConnector(wrappedConnector);
     }
@@ -59,5 +63,29 @@ public class DummyInferredStorageConnectorTest {
     @Test
     public void isContextConsistentReturnsTrue() {
         assertTrue(connector.isConsistent(NAMED_GRAPH));
+    }
+
+    @Test
+    public void executeSelectQueryForwardsCallToWrappedConnector() throws Exception {
+        final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
+        final AbstractResultSet resultSet =
+                connector.executeSelectQuery(query, Statement.StatementOntology.TRANSACTIONAL);
+        assertNotNull(resultSet);
+        verify(wrappedConnector).executeSelectQuery(query, Statement.StatementOntology.TRANSACTIONAL);
+    }
+
+    @Test
+    public void executeAskQueryForwardsCallToWrappedConnector() throws Exception {
+        final Query query = QueryFactory.create("ASK { ?x a <" + TYPE_ONE + "> . }");
+        final AbstractResultSet resultSet = connector.executeAskQuery(query, Statement.StatementOntology.CENTRAL);
+        assertNotNull(resultSet);
+        verify(wrappedConnector).executeAskQuery(query, Statement.StatementOntology.CENTRAL);
+    }
+
+    @Test
+    public void executeUpdateQueryForwardsCallToWrappedConnector() throws Exception {
+        final String query = "INSERT DATA { _:b1 a <" + TYPE_ONE + "> . }";
+        connector.executeUpdate(query, Statement.StatementOntology.TRANSACTIONAL);
+        verify(wrappedConnector).executeUpdate(query, Statement.StatementOntology.TRANSACTIONAL);
     }
 }

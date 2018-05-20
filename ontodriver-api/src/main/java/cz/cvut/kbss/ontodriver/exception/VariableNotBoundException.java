@@ -8,9 +8,6 @@ package cz.cvut.kbss.ontodriver.exception;
  */
 public class VariableNotBoundException extends RuntimeException {
 
-    public VariableNotBoundException() {
-    }
-
     public VariableNotBoundException(String message) {
         super(message);
     }

@@ -1,8 +1,9 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.ReasonerInitializationException;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Model;
@@ -12,19 +13,17 @@ import org.apache.jena.reasoner.IllegalParameterException;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerFactory;
 import org.apache.jena.reasoner.ValidityReport;
+import org.apache.jena.system.Txn;
 import org.apache.jena.vocabulary.ReasonerVocabulary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 class SnapshotStorageWithInference extends SnapshotStorage {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SnapshotStorageWithInference.class);
 
     /**
      * Configuration parameters supported by at least one of the Jena reasoners. Used to pre-filter reasoner config.
@@ -46,14 +45,16 @@ class SnapshotStorageWithInference extends SnapshotStorage {
 
     private Map<String, InfModel> inferredGraphs = new HashMap<>();
 
-    SnapshotStorageWithInference(Configuration configuration, Map<String, String> reasonerConfig) {
+    SnapshotStorageWithInference(DriverConfiguration configuration, Map<String, String> reasonerConfig) {
         super(configuration);
         this.reasonerFactory = initReasonerFactory(configuration);
-        this.reasonerConfig = reasonerConfig;
+        this.reasonerConfig = reasonerConfig.entrySet().stream()
+                                            .filter(e -> SUPPORTED_CONFIG.contains(e.getKey()))
+                                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private ReasonerFactory initReasonerFactory(Configuration configuration) {
-        final String factoryClass = configuration.getProperty(ConfigParam.REASONER_FACTORY_CLASS, "");
+    private ReasonerFactory initReasonerFactory(DriverConfiguration configuration) {
+        final String factoryClass = configuration.getProperty(DriverConfigParam.REASONER_FACTORY_CLASS, "");
         LOG.trace("Creating reasoner using reasoner factory class {}.", factoryClass);
         try {
             final Class<? extends ReasonerFactory> rfClass =
@@ -77,26 +78,37 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     }
 
     @Override
+    void addCentralData(Dataset central) {
+        Txn.executeRead(central, () -> {
+            final Iterator<String> it = central.listNames();
+            InfModel clonedModel;
+            while (it.hasNext()) {
+                final String name = it.next();
+                clonedModel = cloneModel(central.getNamedModel(name));
+                inferredGraphs.put(name, clonedModel);
+                dataset.addNamedModel(name, clonedModel);
+            }
+            clonedModel = cloneModel(central.getDefaultModel());
+            inferredGraphs.put(null, clonedModel);
+            dataset.setDefaultModel(clonedModel);
+        });
+    }
+
+    private InfModel cloneModel(Model model) {
+        return ModelFactory.createInfModel(createReasoner(), ModelFactory.createDefaultModel().add(model));
+    }
+
+    @Override
     InfModel getDefaultGraph() {
-        if (inferredGraphs.containsKey(null)) {
-            return inferredGraphs.get(null);
-        } else {
-            // This does not behave the same as other storages - when defaultAsUnion is set, it uses the currently held
-            // versions of the named graphs, which may be without inference. It should probably initialize reasoners for
-            // all named graphs in the dataset.
-            final InfModel model = ModelFactory.createInfModel(createReasoner(), dataset.getDefaultModel());
-            dataset.setDefaultModel(model);
-            inferredGraphs.put(null, model);
-            return model;
-        }
+        return inferredGraphs.get(null);
     }
 
     private Reasoner createReasoner() {
         final Reasoner reasoner = reasonerFactory.create(null);
-        reasonerConfig.entrySet().stream().filter(e -> SUPPORTED_CONFIG.contains(e.getKey())).forEach(e -> {
-            final Property prop = createProperty(e.getKey());
+        reasonerConfig.forEach((key, value) -> {
+            final Property prop = createProperty(key);
             try {
-                reasoner.setParameter(prop, e.getValue());
+                reasoner.setParameter(prop, value);
             } catch (IllegalParameterException ex) {
                 LOG.error("Failed to set property " + prop + " on reasoner.", ex);
             }
@@ -110,15 +122,12 @@ class SnapshotStorageWithInference extends SnapshotStorage {
 
     @Override
     InfModel getNamedGraph(String context) {
-        if (inferredGraphs.containsKey(context)) {
-            return inferredGraphs.get(context);
-        } else {
-            final InfModel model =
-                    ModelFactory.createInfModel(createReasoner(), dataset.getNamedModel(context));
+        return inferredGraphs.computeIfAbsent(context, c -> {
+            // If the context does not exist, we need to create it, so that the default Dataset behavior is preserved
+            final InfModel model = ModelFactory.createInfModel(createReasoner(), ModelFactory.createDefaultModel());
             dataset.addNamedModel(context, model);
-            inferredGraphs.put(context, model);
             return model;
-        }
+        });
     }
 
     Model getRawNamedGraph(String context) {

@@ -17,7 +17,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 import com.google.common.collect.Multimap;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
@@ -74,7 +74,7 @@ public class OwlapiAdapterTest {
         when(connectorMock.getOntologyUri())
                 .thenReturn(snapshot.getOntology().getOntologyID().getOntologyIRI().get().toURI());
 
-        this.adapter = spy(new OwlapiAdapter(connectorMock, new Configuration(
+        this.adapter = spy(new OwlapiAdapter(connectorMock, new DriverConfiguration(
                 OntologyStorageProperties.driver(OwlapiDataSource.class.getName()).physicalUri("testFile").build())));
     }
 

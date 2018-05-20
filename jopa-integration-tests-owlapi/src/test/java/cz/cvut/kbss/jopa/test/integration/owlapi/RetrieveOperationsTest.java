@@ -14,11 +14,14 @@
  */
 package cz.cvut.kbss.jopa.test.integration.owlapi;
 
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 public class RetrieveOperationsTest extends RetrieveOperationsRunner {
 
@@ -26,5 +29,12 @@ public class RetrieveOperationsTest extends RetrieveOperationsRunner {
 
     public RetrieveOperationsTest() {
         super(LOG, new OwlapiPersistenceFactory(), new OwlapiDataAccessor());
+    }
+
+    @Override
+    protected void addFileStorageProperties(Map<String, String> properties) {
+        // Unfortunately, OWLAPI and Jena handle file paths differently
+        final String orig = properties.get(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY);
+        properties.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, "file:" + orig);
     }
 }

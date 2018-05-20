@@ -86,6 +86,11 @@ public class JenaAdapter implements Wrapper {
         return new IdentifierGenerator(connector).generateIdentifier(classUri);
     }
 
+    boolean isConsistent(URI context) {
+        beginTransactionIfNotActive();
+        return inferenceConnector.isConsistent(context != null ? context.toString() : null);
+    }
+
     void update(AxiomValueDescriptor descriptor) {
         beginTransactionIfNotActive();
         new EpistemicAxiomRemover(connector).remove(descriptor);
@@ -99,7 +104,7 @@ public class JenaAdapter implements Wrapper {
 
     TypesHandler typesHandler() {
         beginTransactionIfNotActive();
-        return new TypesHandler(connector);
+        return new TypesHandler(connector, inferenceConnector);
     }
 
     PropertiesHandler propertiesHandler() {
@@ -117,12 +122,14 @@ public class JenaAdapter implements Wrapper {
         return ListHandler.referencedListHandler(connector);
     }
 
-    public JenaStatement createStatement() {
-        return new JenaStatement(connector);
+    JenaStatement createStatement() {
+        beginTransactionIfNotActive();
+        return new JenaStatement(inferenceConnector);
     }
 
-    public JenaPreparedStatement prepareStatement(String sparql) {
-        return new JenaPreparedStatement(connector, sparql);
+    JenaPreparedStatement prepareStatement(String sparql) {
+        beginTransactionIfNotActive();
+        return new JenaPreparedStatement(inferenceConnector, sparql);
     }
 
     void close() throws JenaDriverException {

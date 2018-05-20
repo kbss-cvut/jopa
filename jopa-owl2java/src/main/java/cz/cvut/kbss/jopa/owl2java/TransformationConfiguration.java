@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
+
 public class TransformationConfiguration {
 
     private final String context;
@@ -10,11 +12,14 @@ public class TransformationConfiguration {
 
     private final boolean generateOwlapiIris;
 
+    private PropertiesType propertiesType;
+
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
         this.context = builder.context;
         this.packageName = builder.packageName;
         this.targetDir = builder.targetDir;
         this.generateOwlapiIris = builder.owlapiIris;
+        this.propertiesType = builder.propertiesType;
     }
 
     public String getContext() {
@@ -37,6 +42,10 @@ public class TransformationConfiguration {
         return generateOwlapiIris;
     }
 
+    public PropertiesType getPropertiesType() {
+        return propertiesType;
+    }
+
     public static TransformationConfigurationBuilder builder() {
         return new TransformationConfigurationBuilder();
     }
@@ -45,6 +54,7 @@ public class TransformationConfiguration {
         private String context;
         private String packageName = "generated";
         private String targetDir = "";
+        private PropertiesType propertiesType;
         private boolean owlapiIris;
 
         public TransformationConfigurationBuilder context(String context) {
@@ -64,6 +74,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder addOwlapiIris(boolean add) {
             this.owlapiIris = add;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder propertiesType(PropertiesType propertiesType) {
+            this.propertiesType = propertiesType;
             return this;
         }
 

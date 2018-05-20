@@ -221,6 +221,7 @@ public final class JAnnotationUse extends JAnnotationValue {
     public JAnnotationUse param(String name, final Class<?> value) {
         addValue(name, new JAnnotationStringValue(
                 new JExpressionImpl() {
+                    @Override
                     public void generate(JFormatter f) {
                         f.p(value.getName().replace('$', '.'));
                         f.p(".class");

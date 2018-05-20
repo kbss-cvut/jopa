@@ -63,6 +63,11 @@ class AxiomSaver {
             final Literal value;
             if (a.hasLanguage() && v.getValue() instanceof String) {
                 value = ResourceFactory.createLangLiteral(v.stringValue(), a.getLanguage());
+            } else if (v.getValue() instanceof Date) {
+                // Jena does not like java.util.Date, it works with Calendar values
+                final GregorianCalendar cal = new GregorianCalendar();
+                cal.setTime((Date) v.getValue());
+                value = ResourceFactory.createTypedLiteral(cal);
             } else {
                 value = ResourceFactory.createTypedLiteral(v.getValue());
             }

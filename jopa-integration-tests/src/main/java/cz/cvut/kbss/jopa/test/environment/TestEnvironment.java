@@ -35,8 +35,9 @@ public class TestEnvironment {
      */
     public static final boolean DELETE_ONTOLOGY_FILE = true;
 
-    // private static final String REASONER_FACTORY_CLASS =
-    // "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
+    private TestEnvironment() {
+        throw new AssertionError();
+    }
 
     /**
      * Creates persistence connector, with enabled second level cache, for OWLAPI accessed ontology stored in a file.

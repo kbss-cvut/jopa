@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.tdb.TDB;
 import org.apache.jena.tdb.TDBFactory;
@@ -9,7 +9,7 @@ class TDBStorage extends Storage {
 
     private final String location;
 
-    TDBStorage(Configuration configuration) {
+    TDBStorage(DriverConfiguration configuration) {
         super(configuration);
         this.location = configuration.getStorageProperties().getPhysicalURI().toString();
     }

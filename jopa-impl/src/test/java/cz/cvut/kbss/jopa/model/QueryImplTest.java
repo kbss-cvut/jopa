@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -296,5 +297,30 @@ public class QueryImplTest extends QueryTestBase {
         verify(resultSetMock).isBound(0);
         verify(resultSetMock).isBound(1);
         verify(resultSetMock, never()).getObject(1);
+    }
+
+    @Test
+    public void noUniqueResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() throws Exception {
+        final Query query = queryWithRollbackMarker(SELECT_QUERY);
+        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
+        thrown.expect(NoUniqueResultException.class);
+        try {
+            query.getSingleResult();
+        } finally {
+            verify(handler, never()).execute();
+        }
+    }
+
+    @Test
+    public void noResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() {
+        final Query query = queryWithRollbackMarker(SELECT_QUERY);
+        thrown.expect(NoResultException.class);
+        try {
+            query.getSingleResult();
+        } finally {
+            verify(handler, never()).execute();
+        }
     }
 }

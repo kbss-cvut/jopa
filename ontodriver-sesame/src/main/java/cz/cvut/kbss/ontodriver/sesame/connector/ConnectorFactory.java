@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
@@ -29,7 +29,7 @@ public interface ConnectorFactory {
      * @return New storage connector
      * @throws SesameDriverException When storage access error occurs
      */
-    Connector createStorageConnector(Configuration configuration) throws SesameDriverException;
+    Connector createStorageConnector(DriverConfiguration configuration) throws SesameDriverException;
 
     /**
      * Closes this factory

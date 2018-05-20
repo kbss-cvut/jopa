@@ -1,5 +1,15 @@
 # JOPA - Release Notes
 
+## 0.10.1 - May 20, 2018
+- Fixed bug where old object property assertion was not removed on merge (Bug #33).
+- Allow to reload file-based storage in OntoDriver (Enhancement #33).
+    - Use the `ReloadableDataSource`, which can be unwrapped from an `EntityManagerFactory`.
+- Fixes in the Jena driver. Support for consistency checks.
+- Do not mark transaction for rollback on `NoResultException` and `NoUniqueResultException`. 
+    This improves compatibility with Spring declarative transaction support (`jopa-spring-transaction`).
+- Library updates (AspectJ 1.9.1, RDF4J 2.3.1).
+- Support for anonymous ontologies in OWLAPI driver.
+
 ## 0.10.0 - April 11, 2018
 - Jena OntoDriver implementation (Enhancement #18).
     - In-memory, File and TDB storage are supported.

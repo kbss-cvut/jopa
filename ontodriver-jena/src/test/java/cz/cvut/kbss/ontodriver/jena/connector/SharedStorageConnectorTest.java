@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
-import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
@@ -42,7 +42,7 @@ public class SharedStorageConnectorTest {
     }
 
     private SharedStorageConnector initConnector() {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final SharedStorageConnector connector = new SharedStorageConnector(configuration);
         connector.storage = spy(connector.storage);
         return connector;
@@ -255,7 +255,7 @@ public class SharedStorageConnectorTest {
 
     @Test
     public void removeOnDefaultDeletesStatementsFromNamedGraphWhenDefaultAsUnionIsSet() throws Exception {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         configuration.setProperty(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION, Boolean.toString(true));
         final SharedStorageConnector connector = new SharedStorageConnector(configuration);
         generateTestData(connector.storage.getDataset());
@@ -285,7 +285,7 @@ public class SharedStorageConnectorTest {
 
     @Test
     public void removeStatementsOnDefaultDeletesThemFromNamedGraphsWhenDefaultAsUnionIsSet() throws Exception {
-        final Configuration configuration = StorageTestUtil.createConfiguration("test:uri");
+        final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         configuration.setProperty(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION, Boolean.toString(true));
         final SharedStorageConnector connector = new SharedStorageConnector(configuration);
         generateTestData(connector.storage.getDataset());
@@ -389,5 +389,12 @@ public class SharedStorageConnectorTest {
         thrown.expect(JenaDriverException.class);
         thrown.expectMessage(containsString("Execution of update " + update + " failed"));
         connector.executeUpdate(update, StatementOntology.CENTRAL);
+    }
+
+    @Test
+    public void reloadStorageReloadsUnderlyingStorage() {
+        final SharedStorageConnector connector = initConnector();
+        connector.reloadStorage();
+        verify(connector.storage).reload();
     }
 }

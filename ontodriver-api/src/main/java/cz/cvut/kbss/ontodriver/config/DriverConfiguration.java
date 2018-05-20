@@ -24,12 +24,12 @@ import java.util.Objects;
 /**
  * Holds configuration of the OntoDriver.
  */
-public final class Configuration {
+public final class DriverConfiguration {
 
     private final Map<ConfigurationParameter, String> configuration = new HashMap<>();
     private final OntologyStorageProperties storageProperties;
 
-    public Configuration(OntologyStorageProperties storageProperties) {
+    public DriverConfiguration(OntologyStorageProperties storageProperties) {
         Objects.requireNonNull(storageProperties);
         this.storageProperties = storageProperties;
     }
@@ -115,7 +115,7 @@ public final class Configuration {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Configuration that = (Configuration) o;
+        DriverConfiguration that = (DriverConfiguration) o;
 
         return configuration.equals(that.configuration) && storageProperties.equals(that.storageProperties);
 

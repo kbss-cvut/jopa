@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -45,6 +45,8 @@ public class OWL2JavaTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    private File targetDir;
+
     @Before
     public void setUp() {
         this.mappingFilePath = resolveMappingFilePath();
@@ -58,24 +60,27 @@ public class OWL2JavaTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         System.setOut(null);
         System.setErr(null);
+        if (targetDir != null) {
+            TestUtils.recursivelyDeleteDirectory(targetDir);
+        }
     }
 
     @Test
     public void vocabularyCommandGeneratesVocabularyFromICs() throws Exception {
-        final File targetDir = TestUtils.getTempDirectory();
+        this.targetDir = TestUtils.getTempDirectory();
         final String packageName = "";
         final String[] args = new String[]{"vocabulary", TestUtils.IC_ONTOLOGY_IRI,
-                "-m",
-                mappingFilePath,
-                "-p",
-                packageName,
-                "-c",
-                TestUtils.CONTEXT,
-                "-d",
-                targetDir.getAbsolutePath()};
+                                           "-m",
+                                           mappingFilePath,
+                                           "-p",
+                                           packageName,
+                                           "-c",
+                                           TestUtils.CONTEXT,
+                                           "-d",
+                                           targetDir.getAbsolutePath()};
         OWL2Java.main(args);
         final List<String> fileNames = Arrays.asList(targetDir.list());
         assertEquals(1, fileNames.size());
@@ -84,32 +89,32 @@ public class OWL2JavaTest {
 
     @Test
     public void transformGeneratesClassesAndVocabularyFromICs() throws Exception {
-        final File targetDir = TestUtils.getTempDirectory();
+        this.targetDir = TestUtils.getTempDirectory();
         final String packageName = "cz.cvut.kbss.jopa.owl2java";
         final String[] args = new String[]{"transform", TestUtils.IC_ONTOLOGY_IRI,
-                "-m",
-                mappingFilePath,
-                "-p",
-                packageName,
-                "-c",
-                TestUtils.CONTEXT,
-                "-d",
-                targetDir.getAbsolutePath()};
+                                           "-m",
+                                           mappingFilePath,
+                                           "-p",
+                                           packageName,
+                                           "-c",
+                                           TestUtils.CONTEXT,
+                                           "-d",
+                                           targetDir.getAbsolutePath()};
         OWL2Java.main(args);
         assertTrue(targetDir.list().length > 0);
     }
 
     @Test
     public void transformPrintsErrorAndQuitsWhenContextIsMissing() throws Exception {
-        final File targetDir = TestUtils.getTempDirectory();
+        this.targetDir = TestUtils.getTempDirectory();
         final String packageName = "cz.cvut.kbss.jopa.owl2java";
         final String[] args = new String[]{"transform", TestUtils.IC_ONTOLOGY_IRI,
-                "-m",
-                mappingFilePath,
-                "-p",
-                packageName,
-                "-d",
-                targetDir.getAbsolutePath()};
+                                           "-m",
+                                           mappingFilePath,
+                                           "-p",
+                                           packageName,
+                                           "-d",
+                                           targetDir.getAbsolutePath()};
         OWL2Java.main(args);
         assertEquals(0, targetDir.list().length);
         verifyErrorContent("The parameter '-[a-z]' is obligatory");
@@ -124,17 +129,17 @@ public class OWL2JavaTest {
 
     @Test
     public void transformPrintsErrorAndQuitesWhenOntologyIriIsMissing() throws Exception {
-        final File targetDir = TestUtils.getTempDirectory();
+        this.targetDir = TestUtils.getTempDirectory();
         final String packageName = "cz.cvut.kbss.jopa.owl2java";
         final String[] args = new String[]{"transform",
-                "-m",
-                mappingFilePath,
-                "-p",
-                packageName,
-                "-c",
-                TestUtils.CONTEXT,
-                "-d",
-                targetDir.getAbsolutePath()};
+                                           "-m",
+                                           mappingFilePath,
+                                           "-p",
+                                           packageName,
+                                           "-c",
+                                           TestUtils.CONTEXT,
+                                           "-d",
+                                           targetDir.getAbsolutePath()};
         OWL2Java.main(args);
         assertEquals(0, targetDir.list().length);
         verifyErrorContent("Exactly one ontology IRI has to be specified, got 0");
@@ -142,21 +147,21 @@ public class OWL2JavaTest {
 
     @Test
     public void transformUsesCustomJavaClassNameSpecifiedByCustomAnnotation() throws Exception {
-        final File targetDir = TestUtils.getTempDirectory();
+        this.targetDir = TestUtils.getTempDirectory();
         final String packageName = "";
         final String classNameAnnotation = "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#JavaClassName";
         final String className = "Company.java";
         final String[] args = new String[]{"transform", TestUtils.IC_ONTOLOGY_IRI,
-                "-m",
-                mappingFilePath,
-                "-p",
-                packageName,
-                "-c",
-                TestUtils.CONTEXT,
-                "-jca",
-                classNameAnnotation,
-                "-d",
-                targetDir.getAbsolutePath()};
+                                           "-m",
+                                           mappingFilePath,
+                                           "-p",
+                                           packageName,
+                                           "-c",
+                                           TestUtils.CONTEXT,
+                                           "-jca",
+                                           classNameAnnotation,
+                                           "-d",
+                                           targetDir.getAbsolutePath()};
         OWL2Java.main(args);
         final File modelDir = new File(targetDir.getAbsolutePath() + File.separator + "model");
         final Set<String> fileNames = new HashSet<>(Arrays.asList(modelDir.list()));

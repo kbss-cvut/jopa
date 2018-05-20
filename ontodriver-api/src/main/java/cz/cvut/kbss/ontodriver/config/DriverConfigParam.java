@@ -12,25 +12,29 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.exception;
+package cz.cvut.kbss.ontodriver.config;
 
 /**
- * Thrown when trying to insert an individual into the ontology, but it already exists there.
+ * Configuration parameters common to all OntoDrivers.
+ * <p>
+ * Based on {@link OntoDriverProperties}
  */
-public class OWLIndividualExistsException extends RuntimeException {
+public enum DriverConfigParam implements ConfigurationParameter {
 
-    public OWLIndividualExistsException() {
+    AUTO_COMMIT(OntoDriverProperties.CONNECTION_AUTO_COMMIT),
+    REASONER_FACTORY_CLASS(OntoDriverProperties.REASONER_FACTORY_CLASS),
+    ONTOLOGY_LANGUAGE(OntoDriverProperties.ONTOLOGY_LANGUAGE),
+    USE_TRANSACTIONAL_ONTOLOGY(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY),
+    MODULE_EXTRACTION_SIGNATURE(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE);
+
+    private final String name;
+
+    DriverConfigParam(String name) {
+        this.name = name;
     }
 
-    public OWLIndividualExistsException(String message) {
-        super(message);
-    }
-
-    public OWLIndividualExistsException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public OWLIndividualExistsException(Throwable cause) {
-        super(cause);
+    @Override
+    public String toString() {
+        return name;
     }
 }
