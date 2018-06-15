@@ -5,6 +5,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Rule;
@@ -71,5 +72,17 @@ public class StorageTest extends StorageTestUtil {
                         Generator.generateUri().toString())));
         assertFalse(result.getNamedGraph(ctx).isEmpty());
         assertFalse(result.getDefaultGraph().isEmpty());
+    }
+
+    @Test
+    public void setDatasetThrowsUnsupportedOperationException() throws Exception {
+        final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
+        file.deleteOnExit();
+        final DriverConfiguration config = createConfiguration(file.getAbsolutePath());
+        config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.FILE);
+        final Storage storage = Storage.create(config);
+        assertNotNull(storage);
+        thrown.expect(UnsupportedOperationException.class);
+        storage.setDataset(DatasetFactory.create());
     }
 }

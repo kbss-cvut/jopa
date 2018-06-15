@@ -5,6 +5,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import org.apache.jena.query.Dataset;
 
 import java.util.Collections;
 import java.util.Map;
@@ -74,5 +75,18 @@ public class JenaDataSource implements ReloadableDataSource {
     public void reload() throws JenaDriverException {
         ensureOpen();
         driver.reloadStorage();
+    }
+
+    /**
+     * Sets dataset in the underlying storage.
+     * <p>
+     * Not that this operation is supported only for in-memory storage.
+     *
+     * @param dataset Dataset to set
+     * @throws JenaDriverException If setting new dataset fails
+     */
+    public void setDataset(Dataset dataset) throws JenaDriverException {
+        ensureOpen();
+        driver.setDataset(dataset);
     }
 }

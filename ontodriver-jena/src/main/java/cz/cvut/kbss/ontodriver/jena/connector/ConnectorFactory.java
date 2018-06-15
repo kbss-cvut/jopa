@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import org.apache.jena.query.Dataset;
 
 public abstract class ConnectorFactory implements Closeable {
 
@@ -33,8 +34,8 @@ public abstract class ConnectorFactory implements Closeable {
     /**
      * Creates an inference-supporting storage connector.
      * <p>
-     * The {@code connector} parameter is required because both connector need to be kept in sync so that
-     * non-inferred data are consistent across both connectors.
+     * The {@code connector} parameter is required because both connector need to be kept in sync so that non-inferred
+     * data are consistent across both connectors.
      *
      * @param connector Existing storage connector
      * @return New inference-supporting storage connector
@@ -49,4 +50,13 @@ public abstract class ConnectorFactory implements Closeable {
      * Does nothing for other types of storage.
      */
     public abstract void reloadStorage();
+
+    /**
+     * Sets dataset on the underlying connector.
+     * <p>
+     * Not that this operation is supported only for in-memory storage.
+     *
+     * @param dataset Dataset to set
+     */
+    public abstract void setDataset(Dataset dataset);
 }

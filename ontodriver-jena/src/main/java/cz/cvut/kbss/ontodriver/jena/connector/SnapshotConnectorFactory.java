@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import org.apache.jena.query.Dataset;
 
 /**
  * Creates connectors implementing the {@link cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties#SNAPSHOT}
@@ -25,6 +26,12 @@ public class SnapshotConnectorFactory extends ConnectorFactory {
     public synchronized void reloadStorage() {
         ensureOpen();
         centralConnector.reloadStorage();
+    }
+
+    @Override
+    public void setDataset(Dataset dataset) {
+        ensureOpen();
+        centralConnector.setDataset(dataset);
     }
 
     @Override

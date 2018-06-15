@@ -5,11 +5,13 @@ import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
-import cz.cvut.kbss.ontodriver.jena.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.jena.connector.InferenceConnectorFactory;
-import cz.cvut.kbss.ontodriver.jena.connector.ReadCommittedConnectorFactory;
-import cz.cvut.kbss.ontodriver.jena.connector.SnapshotConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.*;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
 import org.apache.jena.riot.Lang;
@@ -34,6 +36,7 @@ import java.util.Set;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.*;
 
 public class JenaDriverTest {
@@ -190,5 +193,34 @@ public class JenaDriverTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Driver is closed.");
         driver.acquireConnection();
+    }
+
+    @Test
+    public void setDatasetReplacesUnderlyingDataset() throws Exception {
+        this.driver = new JenaDriver(storageProps, properties);
+        assertNotNull(driver);
+        final Dataset newDataset = DatasetFactory.createTxnMem();
+        final URI subject = Generator.generateUri();
+        final URI type = Generator.generateUri();
+        newDataset.getDefaultModel()
+                  .add(createStatement(createResource(subject.toString()), RDF.type, createResource(type.toString())));
+        driver.setDataset(newDataset);
+
+        final JenaConnection connection = driver.acquireConnection();
+        final Set<Axiom<URI>> types = connection.types().getTypes(NamedResource.create(subject), null, false);
+        assertEquals(1, types.size());
+        assertEquals(type, types.iterator().next().getValue().getValue());
+    }
+
+    @Test
+    public void setDatasetThrowsJenaDriverExceptionWhenTryingToReplaceDatasetInTransaction() throws Exception {
+        this.driver = new JenaDriver(storageProps, properties);
+        assertNotNull(driver);
+        final JenaConnection connection = driver.acquireConnection();
+        final SharedStorageConnector centralConnector = connection.unwrap(SharedStorageConnector.class);
+        centralConnector.begin();
+        thrown.expect(JenaDriverException.class);
+        thrown.expectCause(isA(IllegalStateException.class));
+        driver.setDataset(DatasetFactory.create());
     }
 }
