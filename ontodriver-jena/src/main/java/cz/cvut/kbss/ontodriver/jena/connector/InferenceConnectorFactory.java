@@ -1,19 +1,16 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
-import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
-import org.apache.jena.query.Dataset;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class InferenceConnectorFactory extends ConnectorFactory {
+public class InferenceConnectorFactory extends SharedConnectorBasedConnectorFactory {
 
-    private final SharedStorageConnector centralConnector;
     private final Map<String, String> reasonerConfig;
 
     public InferenceConnectorFactory(DriverConfiguration configuration, Map<String, String> reasonerConfig) {
-        this.centralConnector = new SharedStorageConnector(configuration);
+        super(configuration);
         this.reasonerConfig = new HashMap<>(reasonerConfig);
     }
 
@@ -27,23 +24,5 @@ public class InferenceConnectorFactory extends ConnectorFactory {
     public InferredStorageConnector createInferredConnector(StorageConnector connector) {
         assert connector instanceof SnapshotStorageConnectorWithInference;
         return (InferredStorageConnector) connector;
-    }
-
-    @Override
-    public synchronized void reloadStorage() {
-        ensureOpen();
-        centralConnector.reloadStorage();
-    }
-
-    @Override
-    public void setDataset(Dataset dataset) {
-        ensureOpen();
-        centralConnector.setDataset(dataset);
-    }
-
-    @Override
-    public synchronized void close() throws JenaDriverException {
-        super.close();
-        centralConnector.close();
     }
 }

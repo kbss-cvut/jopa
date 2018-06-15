@@ -27,7 +27,7 @@ public class ReadCommittedConnectorFactoryTest extends ConnectorFactoryTestBase 
 
     @Override
     SharedStorageConnector getCentralConnector(ConnectorFactory factory) throws Exception {
-        final Field connectorField = ReadCommittedConnectorFactory.class.getDeclaredField("centralConnector");
+        final Field connectorField = SharedConnectorBasedConnectorFactory.class.getDeclaredField("centralConnector");
         connectorField.setAccessible(true);
         return (SharedStorageConnector) connectorField.get(factory);
     }
