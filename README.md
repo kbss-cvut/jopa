@@ -139,6 +139,10 @@ JOPA build status and code metrics can be found at:
 
 Javadoc of the latest stable version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
 
+### Performance
+
+A performance comparison of JOPA with other mapping libraries can be found at [https://kbss.felk.cvut.cz/web/kbss/otm-benchmark](https://kbss.felk.cvut.cz/web/kbss/otm-benchmark).
+
 ## Related
 
 Some related libraries:

@@ -35,4 +35,3 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
-- [ ] Benchmark comparison with Empire and AliBaba.
