@@ -17,6 +17,7 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import org.eclipse.rdf4j.repository.Repository;
 
 final class ConnectorFactoryImpl implements ConnectorFactory {
 
@@ -30,9 +31,18 @@ final class ConnectorFactoryImpl implements ConnectorFactory {
 
     @Override
     public Connector createStorageConnector(DriverConfiguration configuration) throws SesameDriverException {
+        ensureOpen();
+        ensureConnected(configuration);
+        return new PoolingStorageConnector(centralConnector);
+    }
+
+    private void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("The factory is closed!");
         }
+    }
+
+    private void ensureConnected(DriverConfiguration configuration) throws SesameDriverException {
         if (centralConnector == null) {
             synchronized (this) {
                 if (centralConnector == null) {
@@ -40,11 +50,17 @@ final class ConnectorFactoryImpl implements ConnectorFactory {
                 }
             }
         }
-        return new PoolingStorageConnector(centralConnector);
     }
 
     private void initCentralConnector(DriverConfiguration configuration) throws SesameDriverException {
         this.centralConnector = new StorageConnector(configuration);
+    }
+
+    @Override
+    public void setRepository(Repository repository, DriverConfiguration configuration) throws SesameDriverException {
+        ensureOpen();
+        ensureConnected(configuration);
+        centralConnector.setRepository(repository);
     }
 
     @Override

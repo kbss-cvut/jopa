@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,8 @@ import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import org.eclipse.rdf4j.repository.Repository;
 
 import java.util.Collections;
 import java.util.Map;
@@ -53,26 +55,21 @@ public class SesameDataSource implements DataSource {
 
     @Override
     public synchronized Connection getConnection() throws OntoDriverException {
-        if (!open) {
-            throw new IllegalStateException("The data source is closed.");
-        }
-        if (!connected) {
-            connect();
-        }
+        ensureOpen();
+        ensureConnected();
         return driver.acquireConnection();
     }
 
-    @Override
-    public void setStorageProperties(OntologyStorageProperties storageProperties) throws OntoDriverException {
-        this.storageProperties = Objects.requireNonNull(storageProperties);
+    private void ensureOpen() {
+        if (!open) {
+            throw new IllegalStateException("The data source is closed.");
+        }
     }
 
-    @Override
-    public void setProperties(Map<String, String> properties) throws OntoDriverException {
-        this.properties = Objects.requireNonNull(properties);
-    }
-
-    private void connect() {
+    private void ensureConnected() {
+        if (connected) {
+            return;
+        }
         if (storageProperties == null) {
             throw new IllegalStateException("Cannot initialize OntoDriver without storageProperties configuration.");
         }
@@ -81,5 +78,34 @@ public class SesameDataSource implements DataSource {
         }
         this.driver = new SesameDriver(storageProperties, properties);
         this.connected = true;
+    }
+
+    @Override
+    public void setStorageProperties(OntologyStorageProperties storageProperties) {
+        ensureOpen();
+        this.storageProperties = Objects.requireNonNull(storageProperties);
+    }
+
+    @Override
+    public void setProperties(Map<String, String> properties) {
+        ensureOpen();
+        this.properties = Objects.requireNonNull(properties);
+    }
+
+    /**
+     * Sets the underlying repository.
+     * <p>
+     * Note that this functionality is supported only for in-memory stores.
+     *
+     * @param repository The new repository
+     */
+    public synchronized void setRepository(Repository repository) throws SesameDriverException {
+        ensureOpen();
+        ensureConnected();
+        try {
+            driver.setRepository(repository);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new SesameDriverException(e);
+        }
     }
 }

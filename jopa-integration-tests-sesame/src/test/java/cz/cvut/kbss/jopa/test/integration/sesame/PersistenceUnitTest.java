@@ -20,12 +20,19 @@ import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.SesameDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.PersistenceUnitTestRunner;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +43,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class PersistenceUnitTest extends PersistenceUnitTestRunner {
 
@@ -110,5 +119,30 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
              .sorted(Comparator.reverseOrder())
              .map(Path::toFile)
              .forEach(File::delete);
+    }
+
+    @Test
+    public void setRepositorySetsUnderlyingRepository() throws Exception {
+        this.em = getEntityManager("setRepositorySetsUnderlyingRepository", false);
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+        final Repository repo = new SailRepository(new MemoryStore());
+        repo.initialize();
+        final RepositoryConnection conn = repo.getConnection();
+        final ValueFactory vf = conn.getValueFactory();
+        conn.add(vf.createStatement(vf.createIRI(entityA.getUri().toString()), RDF.TYPE,
+                vf.createIRI(Vocabulary.C_OWL_CLASS_A)));
+        conn.add(vf.createStatement(vf.createIRI(entityA.getUri().toString()),
+                vf.createIRI(Vocabulary.P_A_STRING_ATTRIBUTE), vf.createLiteral(entityA.getStringAttribute(), "en")));
+        conn.close();
+        final EntityManager newEm = em.getEntityManagerFactory().createEntityManager();
+        em.close();
+        newEm.getEntityManagerFactory().unwrap(SesameDataSource.class).setRepository(repo);
+        try {
+            final OWLClassA result = newEm.find(OWLClassA.class, entityA.getUri());
+            assertNotNull(result);
+            assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+        } finally {
+            newEm.close();
+        }
     }
 }

@@ -17,13 +17,14 @@ package cz.cvut.kbss.ontodriver.sesame;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
-import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import org.eclipse.rdf4j.repository.Repository;
 
 import java.util.*;
 
@@ -94,5 +95,17 @@ class SesameDriver implements Closeable, ConnectionListener {
             return;
         }
         openedConnections.remove(connection);
+    }
+
+    /**
+     * Sets the underlying repository.
+     * <p>
+     * Note that this functionality is supported only for in-memory stores.
+     *
+     * @param repository The new repository
+     */
+    void setRepository(Repository repository) throws SesameDriverException {
+        assert open;
+        connectorFactory.setRepository(repository, configuration);
     }
 }

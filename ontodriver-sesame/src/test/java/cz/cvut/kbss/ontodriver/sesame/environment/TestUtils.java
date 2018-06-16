@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -13,6 +13,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.environment;
+
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
+import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -50,5 +54,10 @@ public final class TestUtils {
 
     public static String randomUri() {
         return "http://krizik.felk.cvut.cz/ontologies/ontodriver/sesame#uri" + RAND.nextInt();
+    }
+
+    public static DriverConfiguration createDriverConfig(String physicalUri) {
+        return new DriverConfiguration(
+                OntologyStorageProperties.driver(SesameDataSource.class.getName()).physicalUri(physicalUri).build());
     }
 }
