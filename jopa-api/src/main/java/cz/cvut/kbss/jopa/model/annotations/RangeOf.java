@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RangeOf {
-	
+
 	/**
 	 * IRI of the object property
 	 * 

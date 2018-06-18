@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -79,7 +77,7 @@ class StorageConnector extends AbstractConnector {
             if (isRemote) {
                 this.repository = connectToRemoteRepository(serverUri.toString());
             } else {
-                this.repository = createLocalRepository(configuration);
+                this.repository = createLocalRepository();
             }
             verifyRepositoryCreated(serverUri, isRemote);
             repository.initialize();
@@ -109,10 +107,10 @@ class StorageConnector extends AbstractConnector {
         return manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
     }
 
-    private Repository createLocalRepository(DriverConfiguration configuration) {
+    private Repository createLocalRepository() {
         final URI localUri = configuration.getStorageProperties().getPhysicalURI();
         if (!isFileUri(localUri) && configuration.is(SesameConfigParam.USE_VOLATILE_STORAGE)) {
-            return createInMemoryRepository(configuration);
+            return createInMemoryRepository();
         } else {
             return createNativeRepository(configuration, localUri);
         }
@@ -125,7 +123,7 @@ class StorageConnector extends AbstractConnector {
     /**
      * Creates a local in-memory Sesame repository which is disposed when the VM shuts down.
      */
-    private Repository createInMemoryRepository(DriverConfiguration configuration) {
+    private Repository createInMemoryRepository() {
         LOG.trace("Creating local in-memory repository.");
         final MemoryStore ms = new MemoryStore();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
@@ -162,7 +160,8 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId, DriverConfiguration configuration) {
+    private static RepositoryConfig createLocalNativeRepositoryConfig(String repoId,
+                                                                      DriverConfiguration configuration) {
         SailImplConfig backend = new NativeStoreConfig();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
             backend = new ForwardChainingRDFSInferencerConfig(backend);
@@ -407,6 +406,6 @@ class StorageConnector extends AbstractConnector {
         }
         final Sail sail = ((SailRepository) repo).getSail();
         return sail instanceof SailWrapper ? ((SailWrapper) sail).getBaseSail() instanceof MemoryStore :
-                sail instanceof MemoryStore;
+               sail instanceof MemoryStore;
     }
 }

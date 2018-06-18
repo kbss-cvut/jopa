@@ -1,21 +1,18 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import org.semanticweb.owlapi.model.OWLObject;
 
@@ -56,12 +53,12 @@ class AskResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void first() throws OntoDriverException {
+    public void first() {
         // Do nothing
     }
 
     @Override
-    public boolean getBoolean(int columnIndex) throws OntoDriverException {
+    public boolean getBoolean(int columnIndex) {
         ensureState();
         return result;
     }
@@ -75,89 +72,89 @@ class AskResultSet extends AbstractResultSet {
     }
 
     @Override
-    public boolean getBoolean(String columnLabel) throws OntoDriverException {
+    public boolean getBoolean(String columnLabel) {
         ensureState();
         return result;
     }
 
     @Override
-    public byte getByte(int columnIndex) throws OntoDriverException {
+    public byte getByte(int columnIndex) {
         ensureState();
         throw unsupported("byte");
     }
 
-    private UnsupportedOperationException unsupported(String type) {
+    private static UnsupportedOperationException unsupported(String type) {
         return new UnsupportedOperationException("ASK query results cannot return " + type + "values.");
     }
 
     @Override
-    public byte getByte(String columnLabel) throws OntoDriverException {
+    public byte getByte(String columnLabel) {
         ensureState();
         throw unsupported("byte");
     }
 
     @Override
-    public double getDouble(int columnIndex) throws OntoDriverException {
+    public double getDouble(int columnIndex) {
         ensureState();
         throw unsupported("double");
     }
 
     @Override
-    public double getDouble(String columnLabel) throws OntoDriverException {
+    public double getDouble(String columnLabel) {
         ensureState();
         throw unsupported("double");
     }
 
     @Override
-    public float getFloat(int columnIndex) throws OntoDriverException {
+    public float getFloat(int columnIndex) {
         ensureState();
         throw unsupported("float");
     }
 
     @Override
-    public float getFloat(String columnLabel) throws OntoDriverException {
+    public float getFloat(String columnLabel) {
         ensureState();
         throw unsupported("float");
     }
 
     @Override
-    public int getInt(int columnIndex) throws OntoDriverException {
+    public int getInt(int columnIndex) {
         ensureState();
         throw unsupported("int");
     }
 
     @Override
-    public int getInt(String columnLabel) throws OntoDriverException {
+    public int getInt(String columnLabel) {
         ensureState();
         throw unsupported("int");
     }
 
     @Override
-    public long getLong(int columnIndex) throws OntoDriverException {
+    public long getLong(int columnIndex) {
         ensureState();
         throw unsupported("long");
     }
 
     @Override
-    public long getLong(String columnLabel) throws OntoDriverException {
+    public long getLong(String columnLabel) {
         ensureState();
         throw unsupported("long");
     }
 
     @Override
-    public Object getObject(int columnIndex) throws OntoDriverException {
+    public Object getObject(int columnIndex) {
         ensureState();
         return result;
     }
 
     @Override
-    public Object getObject(String columnLabel) throws OntoDriverException {
+    public Object getObject(String columnLabel) {
         ensureState();
         return result;
     }
 
     @Override
-    public <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException {
+    public <T> T getObject(int columnIndex, Class<T> cls) {
         ensureState();
         if (cls.isAssignableFrom(Boolean.class)) {
             return cls.cast(result);
@@ -169,56 +166,56 @@ class AskResultSet extends AbstractResultSet {
     }
 
     @Override
-    public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException {
+    public <T> T getObject(String columnLabel, Class<T> cls) {
         return getObject(0, cls);
     }
 
     @Override
-    public int getRowIndex() throws OntoDriverException {
+    public int getRowIndex() {
         return 0;
     }
 
     @Override
-    public short getShort(int columnIndex) throws OntoDriverException {
+    public short getShort(int columnIndex) {
         ensureState();
         throw unsupported("short");
     }
 
     @Override
-    public short getShort(String columnLabel) throws OntoDriverException {
+    public short getShort(String columnLabel) {
         ensureState();
         throw unsupported("short");
     }
 
     @Override
-    public String getString(int columnIndex) throws OntoDriverException {
+    public String getString(int columnIndex) {
         ensureState();
         return Boolean.toString(result);
     }
 
     @Override
-    public String getString(String columnLabel) throws OntoDriverException {
+    public String getString(String columnLabel) {
         ensureState();
         return Boolean.toString(result);
     }
 
     @Override
-    public boolean isFirst() throws OntoDriverException {
+    public boolean isFirst() {
         return true;
     }
 
     @Override
-    public boolean hasNext() throws OntoDriverException {
+    public boolean hasNext() {
         return !nextCalled;
     }
 
     @Override
-    public void last() throws OntoDriverException {
+    public void last() {
         // do nothing
     }
 
     @Override
-    public void next() throws OntoDriverException {
+    public void next() {
         if (!hasNext()) {
             throw new IllegalStateException("No more elements in this result set.");
         }
@@ -226,22 +223,22 @@ class AskResultSet extends AbstractResultSet {
     }
 
     @Override
-    public void previous() throws OntoDriverException {
+    public void previous() {
         // Do nothing
     }
 
     @Override
-    public void registerObserver(Observer observer) throws OntoDriverException {
+    public void registerObserver(Observer observer) {
 
     }
 
     @Override
-    public void relative(int rows) throws OntoDriverException {
+    public void relative(int rows) {
         throw new UnsupportedOperationException("Row-based navigation not supported by ASK result set.");
     }
 
     @Override
-    public void setRowIndex(int rowIndex) throws OntoDriverException {
+    public void setRowIndex(int rowIndex) {
         throw new UnsupportedOperationException("Row-based navigation not supported by ASK result set.");
     }
 }
