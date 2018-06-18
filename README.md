@@ -101,11 +101,20 @@ The whole framework consists of several modules:
 * _JOPA Implementation_ - persistence provider implementation,
 * _OntoDriver Sesame_ - OntoDriver implementation for RDF4J (Sesame)-accessed storages,
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files,
-* _Ontodriver Jena_ - OntoDriver implementation of Jena-based storages,
+* _Ontodriver Jena_ - OntoDriver implementation for Jena-based storages,
 * _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-sesame-owl2java)),
 * _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
 
 Other modules represent integration tests and various utilities.
+
+## Documentation
+
+Check out the [Wiki](https://github.com/kbss-cvut/jopa/wiki) for general information about JOPA, explanation of its features and their usage.
+We will be gradually building up its content.
+
+Javadoc of the latest stable version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
+
+For more practical examples of JOPA features, see the JOPA examples repository at [https://github.com/kbss-cvut/jopa-examples](https://github.com/kbss-cvut/jopa-examples).
   
 ## Usage
 
@@ -128,6 +137,23 @@ There are two ways of getting JOPA for your project:
 * Clone repository/download zip and build it with Maven,
 * Use a Maven dependency from the [Maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22cz.cvut.kbss.jopa%22).
 
+Basically, the _jopa-impl_ module and one of the OntoDriver implementations is all that is needed:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <artifactId>jopa-impl</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <artifactId>ontodriver-jena</artifactId>
+        <!-- OR <artifactId>ontodriver-owlapi</artifactId> -->
+        <!-- OR <artifactId>ontodriver-sesame</artifactId> -->
+    </dependency>
+</dependencies>
+```
+
 ## More Info
 
 More information about JOPA can be found for example in articles [4], [5] and at [https://kbss.felk.cvut.cz/web/kbss/jopa](https://kbss.felk.cvut.cz/web/kbss/jopa).
@@ -137,7 +163,9 @@ JOPA build status and code metrics can be found at:
 * KBSS Jenkins [https://kbss.felk.cvut.cz/jenkins](https://kbss.felk.cvut.cz/jenkins),
 * KBSS SonarQube [https://kbss.felk.cvut.cz/sonarqube](https://kbss.felk.cvut.cz/sonarqube).
 
-Javadoc of the latest stable version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
+### Performance
+
+A performance comparison of JOPA and other object-triple mapping libraries can be found at [https://kbss.felk.cvut.cz/web/kbss/otm-benchmark](https://kbss.felk.cvut.cz/web/kbss/otm-benchmark).
 
 ## Related
 

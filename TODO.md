@@ -8,8 +8,6 @@
     - [ ] Multiple inheritance
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
-- [ ] JOPA Specification doc, which would explain behaviour and principles
-    - Perhaps use the github wiki? Or something on KBSS Liferay?   
 - [ ] Add support for `EntityManager.getReference`
 - [ ] Add a `@Context` annotation, which would specify that a field/entity should always be loaded from the specified context.
     - This could be overwritten with a descriptor passed to EM
@@ -26,7 +24,8 @@
 - [ ] Add possibility to generate integrity constraints from the object model
 - [ ] When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
     - CodeModel API does not support any such feature, it always removes files and replaces them with new ones
-- [ ] Add support for Lobs and Blobs    
+- [ ] Add support for Lobs and Blobs
+- [ ] Resolve support of the `readOnly` attribute in persistent field annotations
 
 ## Research Topics
 
@@ -35,4 +34,4 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
-- [ ] Benchmark comparison with Empire and AliBaba.
+- [ ] JOPA Specification doc, which would explain behaviour and principles. On Github Wiki.

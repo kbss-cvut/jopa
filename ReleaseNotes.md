@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.10.2 - June 18, 2018
+- Fixed bug SPARQL query parser which prevent the use of property paths together with variables.
+- Added support for setting the in-memory storage in Jena and RDF4J driver (Enhancement #32).
+- Working on Github Wiki.
+
 ## 0.10.1 - May 20, 2018
 - Fixed bug where old object property assertion was not removed on merge (Bug #33).
 - Allow to reload file-based storage in OntoDriver (Enhancement #33).

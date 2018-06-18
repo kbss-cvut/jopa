@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -34,7 +32,9 @@ import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
+import org.eclipse.rdf4j.sail.Sail;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
+import org.eclipse.rdf4j.sail.helpers.SailWrapper;
 import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.eclipse.rdf4j.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 class StorageConnector extends AbstractConnector {
 
@@ -76,7 +77,7 @@ class StorageConnector extends AbstractConnector {
             if (isRemote) {
                 this.repository = connectToRemoteRepository(serverUri.toString());
             } else {
-                this.repository = createLocalRepository(configuration);
+                this.repository = createLocalRepository();
             }
             verifyRepositoryCreated(serverUri, isRemote);
             repository.initialize();
@@ -106,10 +107,10 @@ class StorageConnector extends AbstractConnector {
         return manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
     }
 
-    private Repository createLocalRepository(DriverConfiguration configuration) {
+    private Repository createLocalRepository() {
         final URI localUri = configuration.getStorageProperties().getPhysicalURI();
         if (!isFileUri(localUri) && configuration.is(SesameConfigParam.USE_VOLATILE_STORAGE)) {
-            return createInMemoryRepository(configuration);
+            return createInMemoryRepository();
         } else {
             return createNativeRepository(configuration, localUri);
         }
@@ -122,7 +123,7 @@ class StorageConnector extends AbstractConnector {
     /**
      * Creates a local in-memory Sesame repository which is disposed when the VM shuts down.
      */
-    private Repository createInMemoryRepository(DriverConfiguration configuration) {
+    private Repository createInMemoryRepository() {
         LOG.trace("Creating local in-memory repository.");
         final MemoryStore ms = new MemoryStore();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
@@ -159,7 +160,8 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId, DriverConfiguration configuration) {
+    private static RepositoryConfig createLocalNativeRepositoryConfig(String repoId,
+                                                                      DriverConfiguration configuration) {
         SailImplConfig backend = new NativeStoreConfig();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
             backend = new ForwardChainingRDFSInferencerConfig(backend);
@@ -375,5 +377,35 @@ class StorageConnector extends AbstractConnector {
             return cls.cast(repository);
         }
         throw new SesameDriverException("No instance of class " + cls + " found.");
+    }
+
+    /**
+     * Replaces the currently open repository with the specified one.
+     * <p>
+     * Note that this functionality is only supported for in-memory stores.
+     *
+     * @param newRepository The new repository to set
+     */
+    public void setRepository(Repository newRepository) {
+        Objects.requireNonNull(newRepository);
+        if (!isInMemoryRepository(repository)) {
+            throw new UnsupportedOperationException("Cannot replace repository which is not in-memory.");
+        }
+        if (transaction.isActive()) {
+            throw new IllegalStateException("Cannot replace repository in transaction.");
+        }
+        repository.shutDown();
+        assert newRepository.isInitialized();
+        this.repository = newRepository;
+        // Since in-memory repositories are not registered in RepositoryManager, we shouldn't need to deal with it
+    }
+
+    private static boolean isInMemoryRepository(Repository repo) {
+        if (!(repo instanceof SailRepository)) {
+            return false;
+        }
+        final Sail sail = ((SailRepository) repo).getSail();
+        return sail instanceof SailWrapper ? ((SailWrapper) sail).getBaseSail() instanceof MemoryStore :
+               sail instanceof MemoryStore;
     }
 }

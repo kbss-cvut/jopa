@@ -2,9 +2,9 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
-import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.config.Constants;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
@@ -12,13 +12,15 @@ import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.connector.*;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
+import org.apache.jena.query.Dataset;
 
 import java.util.*;
 
 class JenaDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.ONTOLOGY_LANGUAGE, DriverConfigParam.REASONER_FACTORY_CLASS,
+            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.ONTOLOGY_LANGUAGE,
+                    DriverConfigParam.REASONER_FACTORY_CLASS,
                     JenaConfigParam.ISOLATION_STRATEGY, JenaConfigParam.STORAGE_TYPE,
                     JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
 
@@ -38,7 +40,8 @@ class JenaDriver implements Closeable, ConnectionListener {
                .forEach(c -> configuration.setProperty(c, properties.get(c.toString())));
         this.connectorFactory = buildConnectorFactory(properties);
         this.openConnections = Collections.synchronizedSet(new HashSet<>());
-        this.autoCommit = configuration.isSet(DriverConfigParam.AUTO_COMMIT) ? configuration.is(DriverConfigParam.AUTO_COMMIT) :
+        this.autoCommit =
+                configuration.isSet(DriverConfigParam.AUTO_COMMIT) ? configuration.is(DriverConfigParam.AUTO_COMMIT) :
                 Constants.DEFAULT_AUTO_COMMIT;
         this.open = true;
     }
@@ -88,6 +91,15 @@ class JenaDriver implements Closeable, ConnectionListener {
         try {
             connectorFactory.reloadStorage();
         } catch (IllegalStateException e) {
+            throw new JenaDriverException(e);
+        }
+    }
+
+    synchronized void setDataset(Dataset dataset) throws JenaDriverException {
+        ensureOpen();
+        try {
+            connectorFactory.setDataset(dataset);
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new JenaDriverException(e);
         }
     }

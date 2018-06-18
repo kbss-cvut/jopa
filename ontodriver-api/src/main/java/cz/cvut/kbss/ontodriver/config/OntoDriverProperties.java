@@ -16,10 +16,6 @@ package cz.cvut.kbss.ontodriver.config;
 
 public final class OntoDriverProperties {
 
-    private OntoDriverProperties() {
-        throw new AssertionError();
-    }
-
     /**
      * Property for setting default auto-commit strategy for connections.
      */
@@ -77,4 +73,8 @@ public final class OntoDriverProperties {
      * @see #MODULE_EXTRACTION_SIGNATURE
      */
     public static final String SIGNATURE_DELIMITER = "|";
+
+    private OntoDriverProperties() {
+        throw new AssertionError();
+    }
 }

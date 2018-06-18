@@ -6,10 +6,7 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.AskResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.SelectResultSet;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.ReadWrite;
+import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.system.Txn;
 import org.apache.jena.update.UpdateAction;
@@ -20,14 +17,16 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Main storage connector using the {@link cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties#READ_COMMITTED} connector strategy.
+ * Main storage connector using the {@link cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties#READ_COMMITTED}
+ * connector strategy.
  * <p>
  * Adding statements to it actually adds them to the repository.
  * <p>
  * Note on transactions:
  * <p>
- * Starting a transaction on this connector also starts a write transaction on the underlying dataset. Commit then commits
- * the transaction. Therefore, these transactions should be short. Reading can happen in parallel (as per Jena documentation).
+ * Starting a transaction on this connector also starts a write transaction on the underlying dataset. Commit then
+ * commits the transaction. Therefore, these transactions should be short. Reading can happen in parallel (as per Jena
+ * documentation).
  */
 public class SharedStorageConnector extends AbstractStorageConnector {
 
@@ -170,5 +169,17 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public synchronized void reloadStorage() {
         ensureOpen();
         storage.reload();
+    }
+
+    /**
+     * Sets new dataset on the underlying storage.
+     * <p>
+     * Note that this is supported only for in-memory storage.
+     *
+     * @param dataset The dataset to use
+     */
+    public synchronized void setDataset(Dataset dataset) {
+        ensureOpen();
+        storage.setDataset(dataset);
     }
 }

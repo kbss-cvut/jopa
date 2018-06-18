@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -67,21 +65,24 @@ abstract class EntityInstanceLoader {
     <T> T loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
-        if (!loadingParameters.shouldBypassCache() && cache.contains(et.getJavaType(), identifier, descriptor)) {
+        if (isCached(loadingParameters, et, descriptor)) {
             return cache.get(et.getJavaType(), identifier, descriptor);
         }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            if (axioms.isEmpty()) {
-                return null;
-            }
-            return entityBuilder.reconstructEntity(identifier, et, descriptor, axioms);
+            return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(identifier, et, descriptor, axioms);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new EntityReconstructionException(e);
         }
+    }
+
+    private <T> boolean isCached(LoadingParameters<T> loadingParameters, EntityType<? extends T> et,
+                                 Descriptor descriptor) {
+        return !loadingParameters.shouldBypassCache() &&
+                cache.contains(et.getJavaType(), loadingParameters.getIdentifier(), descriptor);
     }
 
     abstract static class EntityInstanceLoaderBuilder {

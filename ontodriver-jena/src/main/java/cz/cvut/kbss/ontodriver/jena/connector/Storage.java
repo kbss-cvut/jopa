@@ -100,6 +100,17 @@ abstract class Storage {
     }
 
     /**
+     * Sets the dataset on this storage.
+     *
+     * Note that by default this method throws {@link UnsupportedOperationException}, because such an operation is supported
+     * only by the in-memory storage.
+     * @param dataset The new dataset
+     */
+    void setDataset(Dataset dataset) {
+        throw new UnsupportedOperationException("Cannot set dataset on storage of type " + getClass().getSimpleName());
+    }
+
+    /**
      * Creates a storage accessor according to the specified configuration.
      *
      * @param configuration Access configuration
