@@ -140,16 +140,18 @@ There are two ways of getting JOPA for your project:
 Basically, the _jopa-impl_ module and one of the OntoDriver implementations is all that is needed:
 
 ```xml
-<dependency>
-    <groupId>cz.cvut.kbss.jopa</groupId>
-    <artifactId>jopa-impl</artifactId>
-</dependency>
-<dependency>
-    <groupId>cz.cvut.kbss.jopa</groupId>
-    <artifactId>ontodriver-jena</artifactId>
-    <!-- OR <artifactId>ontodriver-owlapi</artifactId> -->
-    <!-- OR <artifactId>ontodriver-sesame</artifactId> -->
-</dependency>
+<dependencies>
+    <dependency>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <artifactId>jopa-impl</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <artifactId>ontodriver-jena</artifactId>
+        <!-- OR <artifactId>ontodriver-owlapi</artifactId> -->
+        <!-- OR <artifactId>ontodriver-sesame</artifactId> -->
+    </dependency>
+</dependencies>
 ```
 
 ## More Info

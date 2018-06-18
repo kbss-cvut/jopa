@@ -8,8 +8,6 @@
     - [ ] Multiple inheritance
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
-- [ ] JOPA Specification doc, which would explain behaviour and principles
-    - Perhaps use the github wiki? Or something on KBSS Liferay?   
 - [ ] Add support for `EntityManager.getReference`
 - [ ] Add a `@Context` annotation, which would specify that a field/entity should always be loaded from the specified context.
     - This could be overwritten with a descriptor passed to EM
@@ -36,3 +34,4 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
+- [ ] JOPA Specification doc, which would explain behaviour and principles. On Github Wiki.
