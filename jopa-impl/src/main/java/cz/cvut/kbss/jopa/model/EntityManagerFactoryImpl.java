@@ -69,7 +69,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
             if (!open) {
                 return;
             }
-            open = false;
 
             em.stream().filter(EntityManager::isOpen).forEach(EntityManager::close);
             em.clear();
@@ -77,6 +76,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
                 serverSession.close();
                 this.serverSession = null;
             }
+            this.metamodel = null;
+            this.open = false;
         }
     }
 

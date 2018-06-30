@@ -30,9 +30,9 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The ServerSession is the primary interface for accessing the ontology.
@@ -72,7 +72,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
                             Metamodel metamodel) {
         assert configuration != null;
         assert metamodel != null;
-        this.runningTransactions = new HashMap<>();
+        this.runningTransactions = new ConcurrentHashMap<>();
         this.liveObjectCache = CacheFactory.createCache(configuration.getProperties());
         liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
         this.storageAccessor = new DefaultStorageAccessor(storageProperties, configuration.getProperties());

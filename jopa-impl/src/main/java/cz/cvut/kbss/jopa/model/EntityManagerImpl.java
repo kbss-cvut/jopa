@@ -386,7 +386,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         ensureOpen();
         removeCurrentPersistenceContext();
         emf.entityManagerClosed(this);
-        open = false;
+        this.transaction = null;
+        this.open = false;
     }
 
     @Override

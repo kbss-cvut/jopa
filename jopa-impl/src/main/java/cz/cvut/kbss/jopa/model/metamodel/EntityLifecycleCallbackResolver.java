@@ -23,8 +23,17 @@ import java.lang.reflect.Modifier;
 
 class EntityLifecycleCallbackResolver {
 
-    private AbstractIdentifiableType<?> managedType;
-    private EntityLifecycleListenerManager manager;
+    private final AbstractIdentifiableType<?> managedType;
+    private final EntityLifecycleListenerManager manager;
+
+    /**
+     * Creates a lifecycle callback resolver for the specified entity type.
+     * @param et The type to process
+     */
+    EntityLifecycleCallbackResolver(AbstractIdentifiableType<?> et) {
+        this.managedType = et;
+        this.manager = new EntityLifecycleListenerManager();
+    }
 
     /**
      * Builds an instance of {@link EntityLifecycleListenerManager} for the specified managed type.
@@ -36,16 +45,13 @@ class EntityLifecycleCallbackResolver {
      * <li>Reference to parent {@link EntityLifecycleListenerManager} (if exists).</li>
      * </ul>
      *
-     * @param et AbstractIdentifiableType to process
      * @return Lifecycle listener manager instance
      */
-    EntityLifecycleListenerManager resolve(AbstractIdentifiableType<?> et) {
-        this.managedType = et;
-        this.manager = new EntityLifecycleListenerManager();
+    EntityLifecycleListenerManager resolve() {
         resolveLifecycleCallbacks();
         resolveEntityListeners();
-        if (et.getSupertype() != null) {
-            manager.setParent(et.getSupertype().getLifecycleListenerManager());
+        if (managedType.getSupertype() != null) {
+            manager.setParent(managedType.getSupertype().getLifecycleListenerManager());
         }
         return manager;
     }
