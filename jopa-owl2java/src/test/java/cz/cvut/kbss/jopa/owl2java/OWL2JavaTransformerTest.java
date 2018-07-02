@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -32,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
@@ -345,5 +344,52 @@ public class OWL2JavaTransformerTest {
         final String fileContents = readFile(vocabularyFile);
         assertTrue(fileContents.contains("ONTOLOGY_IRI_model"));
         assertTrue(fileContents.contains("ONTOLOGY_IRI_model_A"));
+    }
+
+    @Test
+    public void setOntologyAddsDeclaredClassesIntoContextDefinition() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl",
+                mappingFilePath);
+        final ContextDefinition context = getContext("owl2java-ic");
+        assertTrue(context.classes
+                .contains(dataFactory
+                        .getOWLClass("http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#UnusedClass")));
+    }
+
+    private ContextDefinition getContext(String name) throws Exception {
+        final Method method = OWL2JavaTransformer.class.getDeclaredMethod("getContextDefinition", String.class);
+        method.setAccessible(true);
+        return (ContextDefinition) method.invoke(transformer, name);
+    }
+
+    @Test
+    public void setOntologyAddsDeclaredObjectPropertiesIntoContextDefinition() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl",
+                mappingFilePath);
+        final ContextDefinition context = getContext("owl2java-ic");
+        assertTrue(context.objectProperties.contains(dataFactory
+                .getOWLObjectProperty("http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedObjectProperty")));
+    }
+
+    @Test
+    public void setOntologyAddsDeclaredDataPropertiesIntoContextDefinition() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl",
+                mappingFilePath);
+        final ContextDefinition context = getContext("owl2java-ic");
+        assertTrue(context.dataProperties.contains(dataFactory
+                .getOWLDataProperty("http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedDataProperty")));
+    }
+
+    @Test
+    public void setOntologyAddsDeclaredAnnotationPropertiesIntoContextDefinition() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl",
+                mappingFilePath);
+        final ContextDefinition context = getContext("owl2java-ic");
+        assertTrue(context.annotationProperties.contains(dataFactory.getOWLAnnotationProperty(
+                "http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedAnnotationProperty")));
     }
 }

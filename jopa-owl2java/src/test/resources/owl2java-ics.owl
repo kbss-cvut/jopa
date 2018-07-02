@@ -33,6 +33,12 @@
 
         <owl:AnnotationProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#JavaClassName"/>
 
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedAnnotationProperty -->
+
+    <owl:AnnotationProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedAnnotationProperty">
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+    </owl:AnnotationProperty>
+
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +78,13 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy -->
 
     <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy"/>
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedObjectProperty -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedObjectProperty">
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+    </owl:ObjectProperty>
     
 
 
@@ -113,6 +126,13 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified -->
 
     <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified"/>
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedDataProperty -->
+
+        <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedDataProperty">
+            <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        </owl:DatatypeProperty>
     
 
 
@@ -567,6 +587,12 @@
         </owl:annotatedTarget>
         <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
     </owl:Axiom>
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#UnusedClass -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#UnusedClass">
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+    </owl:Class>
 </rdf:RDF>
 
 

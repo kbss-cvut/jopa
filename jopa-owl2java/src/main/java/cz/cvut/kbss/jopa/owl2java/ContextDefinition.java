@@ -41,7 +41,7 @@ class ContextDefinition {
 
     IntegrityConstraintSet set;
 
-    public void parse() {
+    void parse() {
         final IntegrityConstraintParser parser = new IntegrityConstraintParser();
         for (final OWLAxiom a : axioms) {
             a.accept(parser);
@@ -50,19 +50,21 @@ class ContextDefinition {
     }
 
     void addAxiom(OWLAxiom axiom) {
-        axiom.signature().filter(e -> !SKIPPED.contains(e.getIRI())).forEach(e -> {
-            if (e.isOWLClass()) {
-                classes.add(e.asOWLClass());
-            } else if (e.isOWLObjectProperty()) {
-                objectProperties.add(e.asOWLObjectProperty());
-            } else if (e.isOWLDataProperty()) {
-                dataProperties.add(e.asOWLDataProperty());
-            } else if (e.isOWLAnnotationProperty()) {
-                annotationProperties.add(e.asOWLAnnotationProperty());
-            } else if (e.isOWLNamedIndividual()) {
-                individuals.add(e.asOWLNamedIndividual());
-            }
-        });
+        axiom.signature().filter(e -> !SKIPPED.contains(e.getIRI())).forEach(this::add);
         axioms.add(axiom);
+    }
+
+    void add(OWLEntity e) {
+        if (e.isOWLClass()) {
+            classes.add(e.asOWLClass());
+        } else if (e.isOWLObjectProperty()) {
+            objectProperties.add(e.asOWLObjectProperty());
+        } else if (e.isOWLDataProperty()) {
+            dataProperties.add(e.asOWLDataProperty());
+        } else if (e.isOWLAnnotationProperty()) {
+            annotationProperties.add(e.asOWLAnnotationProperty());
+        } else if (e.isOWLNamedIndividual()) {
+            individuals.add(e.asOWLNamedIndividual());
+        }
     }
 }
