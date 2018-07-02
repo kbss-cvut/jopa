@@ -31,7 +31,7 @@ public class OWL2Java {
     private static void printHelp(Command cc) {
         final PrintStream os = System.out;
 
-        os.printf(cc.helpText);
+        os.print(cc.helpText);
         try {
             cc.parser.printHelpOn(os);
         } catch (Exception e) {
@@ -108,9 +108,9 @@ public class OWL2Java {
         OWL2JavaTransformer oj;
         oj = new OWL2JavaTransformer(os);
         if (os.has(Param.MAPPING_FILE.arg)) {
-            oj.setOntology(os.nonOptionArguments().get(1), os.valueOf(Param.MAPPING_FILE.arg).toString(), true);
+            oj.setOntology(os.nonOptionArguments().get(1), os.valueOf(Param.MAPPING_FILE.arg).toString());
         } else {
-            oj.setOntology(os.nonOptionArguments().get(1), null, true);
+            oj.setOntology(os.nonOptionArguments().get(1), null);
         }
         oj.ignoreMissingImports((Boolean) os.valueOf(Param.IGNORE_FAILED_IMPORTS.arg));
         return oj;

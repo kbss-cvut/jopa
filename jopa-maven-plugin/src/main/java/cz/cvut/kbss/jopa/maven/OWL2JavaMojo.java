@@ -78,9 +78,9 @@ public class OWL2JavaMojo extends AbstractMojo {
         owl2java.ignoreMissingImports(ignoreFailedImports);
 
         if (pMappingFile != null && !pMappingFile.isEmpty()) {
-            owl2java.setOntology(pOntologyIRI, pMappingFile, true);
+            owl2java.setOntology(pOntologyIRI, pMappingFile);
         } else {
-            owl2java.setOntology(pOntologyIRI, null, true);
+            owl2java.setOntology(pOntologyIRI, null);
         }
 
         final TransformationConfiguration.TransformationConfigurationBuilder builder =
