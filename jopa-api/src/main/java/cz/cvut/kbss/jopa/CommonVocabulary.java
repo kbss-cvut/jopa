@@ -26,6 +26,8 @@ public class CommonVocabulary {
 
     public static final String RDF_TYPE = RDF_NAMESPACE + "type";
 
+    public static final String RDF_VALUE = RDF_NAMESPACE + "value";
+
     /**
      * Boolean XML Schema data type.
      */
