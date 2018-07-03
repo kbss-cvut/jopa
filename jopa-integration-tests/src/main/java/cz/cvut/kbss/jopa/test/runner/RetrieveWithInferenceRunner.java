@@ -5,13 +5,13 @@ import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.Collections;
 
-import static cz.cvut.kbss.jopa.test.Vocabulary.RDFS_SUBCLASS_OF;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +27,7 @@ public abstract class RetrieveWithInferenceRunner extends BaseRunner {
     @Test
     public void retrievedEntityWithInferredTypesContainsInferredData() throws Exception {
         persistTestData(Collections.singleton(
-                new Triple(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS_SUBCLASS_OF),
+                new Triple(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
         persist(entityW);
 

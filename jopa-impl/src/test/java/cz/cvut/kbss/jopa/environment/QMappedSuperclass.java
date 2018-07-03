@@ -14,9 +14,9 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.environment.listener.MappedSuperclassListener;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
 import java.net.URI;
 
@@ -27,7 +27,7 @@ public class QMappedSuperclass {
     @Id(generated = true)
     private URI uri;
 
-    @OWLAnnotationProperty(iri = CommonVocabulary.RDFS_LABEL)
+    @OWLAnnotationProperty(iri = RDFS.LABEL)
     private String label;
 
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#QParent-stringAttribute")

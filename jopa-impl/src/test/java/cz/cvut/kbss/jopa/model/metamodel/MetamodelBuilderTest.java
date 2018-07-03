@@ -1,25 +1,23 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -86,13 +84,13 @@ public class MetamodelBuilderTest {
                 (EntityType<EntityWithNamespaceAttributes>) builder.getEntityClass(EntityWithNamespaceAttributes.class);
         assertEquals("http://www.example2.org/EntityWithNamespaceAttributes", result.getIRI().toString());
         final Attribute<? super EntityWithNamespaceAttributes, ?> labelAtt = result.getAttribute("label");
-        assertEquals(CommonVocabulary.RDFS_LABEL, labelAtt.getIRI().toString());
+        assertEquals(RDFS.LABEL, labelAtt.getIRI().toString());
         final Attribute<? super EntityWithNamespaceAttributes, ?> descriptionAtt = result.getAttribute("description");
-        assertEquals(CommonVocabulary.DC_DESCRIPTION, descriptionAtt.getIRI().toString());
+        assertEquals("http://purl.org/dc/elements/1.1/description", descriptionAtt.getIRI().toString());
     }
 
     @Namespaces({@Namespace(prefix = "dc", namespace = "http://purl.org/dc/elements/1.1/"),
-                 @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
+            @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
     private static class EntityWithNamespaceAttributes {
         @Id

@@ -1,27 +1,21 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test;
-
-import cz.cvut.kbss.jopa.CommonVocabulary;
 
 public class Vocabulary {
 
     public static final String CLASS_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
     public static final String ATTRIBUTE_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
-
-    public static final String C_THING = "http://www.w3.org/2002/07/owl#Thing";
 
     public static final String C_OWL_CLASS_A = CLASS_IRI_BASE + "OWLClassA";
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";
@@ -61,12 +55,12 @@ public class Vocabulary {
 
     public static final String V_HAS_THING = ATTRIBUTE_IRI_BASE + "hasThing";
 
+    public static final String DC_DESCRIPTION = "http://purl.org/dc/terms/description";
+
     public static final String P_HAS_SIMPLE_LIST =
             "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
     public static final String P_HAS_REFERENCED_LIST =
             "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
-
-    public static final String RDFS_SUBCLASS_OF = CommonVocabulary.RDFS_NAMESPACE + "subClassOf";
 
     private Vocabulary() {
         throw new AssertionError();

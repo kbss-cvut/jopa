@@ -1,20 +1,17 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassS;
 import cz.cvut.kbss.jopa.test.OWLClassSParent;
@@ -22,6 +19,7 @@ import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.After;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -41,7 +39,7 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         getEntityManager().clear();
         getEntityManager().getEntityManagerFactory().getCache().evictAll();
     }
@@ -52,7 +50,7 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
         final EntityManager em = getEntityManager();
         final OWLClassSParent result =
                 em.createNativeQuery("SELECT ?x WHERE { ?x ?hasName ?name . }", OWLClassSParent.class)
-                  .setParameter("hasName", URI.create(CommonVocabulary.RDFS_LABEL))
+                  .setParameter("hasName", URI.create(RDFS.LABEL))
                   .setParameter("name", t.getName(), "en").getSingleResult();
         assertNotNull(result);
         assertTrue(result instanceof OWLClassT);
@@ -73,7 +71,7 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
         final EntityManager em = getEntityManager();
         final OWLClassS result =
                 em.createNativeQuery("SELECT ?x WHERE { ?x ?hasName ?name . }", OWLClassS.class)
-                  .setParameter("hasName", URI.create(CommonVocabulary.RDFS_LABEL))
+                  .setParameter("hasName", URI.create(RDFS.LABEL))
                   .setParameter("name", t.getName(), "en").getSingleResult();
         assertNotNull(result);
         assertTrue(result instanceof OWLClassT);

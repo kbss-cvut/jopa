@@ -1,20 +1,17 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -23,6 +20,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -342,8 +340,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
                 "}", OWLClassT.MAPPING_NAME)
                                            .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_T))
                                            .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
-                                           .setParameter("rdfsLabel", URI.create(CommonVocabulary.RDFS_LABEL))
-                                           .setParameter("hasDescription", URI.create(CommonVocabulary.DC_DESCRIPTION))
+                                           .setParameter("rdfsLabel", URI.create(RDFS.LABEL))
+                                           .setParameter("hasDescription", URI.create(Vocabulary.DC_DESCRIPTION))
                                            .setParameter("hasInt", URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE))
                                            .getResultList();
         final Map<URI, OWLClassT> expected = new HashMap<>();
