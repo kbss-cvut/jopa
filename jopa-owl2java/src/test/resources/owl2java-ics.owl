@@ -8,7 +8,7 @@
      xmlns:ic="http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl">
-        <owl:imports rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl"/>
+        <owl:imports rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl"/>
     </owl:Ontology>
     
 

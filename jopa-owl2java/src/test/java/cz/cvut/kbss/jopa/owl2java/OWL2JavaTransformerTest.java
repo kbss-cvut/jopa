@@ -392,4 +392,37 @@ public class OWL2JavaTransformerTest {
         assertTrue(context.annotationProperties.contains(dataFactory.getOWLAnnotationProperty(
                 "http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#unusedAnnotationProperty")));
     }
+
+    @Test
+    public void generateVocabularyGeneratesJavadocFromRdfsComments() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
+        transformer.generateVocabulary(configure(null, "", targetDir.getAbsolutePath(), false));
+        final File vocabFile = new File(targetDir.getAbsolutePath() + File.separator + VOCABULARY_FILE);
+        assertTrue(readFile(vocabFile).contains("Connects artifact to its author."));
+    }
+
+    @Test
+    public void transformGeneratesJavadocOnAttributesFromRdfsComments() throws Exception {
+        this.targetDir = getTempDirectory();
+        assertEquals(0, targetDir.listFiles().length);
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
+        transformer.transform(configure(CONTEXT, "", targetDir.getAbsolutePath(), false));
+        final File reportClass = new File(
+                targetDir + File.separator + Constants.MODEL_PACKAGE + File.separator + "Report.java");
+        final List<String> lines = Files.readAllLines(reportClass.toPath());
+        assertTrue(readFile(reportClass).contains("Connects artifact to its author."));
+    }
+
+    @Test
+    public void transformGeneratesJavadocOnClassFromRdfsComments() throws Exception {
+        this.targetDir = getTempDirectory();
+        assertEquals(0, targetDir.listFiles().length);
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
+        transformer.transform(configure(CONTEXT, "", targetDir.getAbsolutePath(), false));
+        final File reportClass = new File(
+                targetDir + File.separator + Constants.MODEL_PACKAGE + File.separator + "Report.java");
+        final List<String> lines = Files.readAllLines(reportClass.toPath());
+        assertTrue(readFile(reportClass).contains("Represents a logical report filed by a person."));
+    }
 }

@@ -1,129 +1,98 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import com.sun.codemodel.JAnnotationArrayMember;
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JClass;
-import com.sun.codemodel.JClassAlreadyExistsException;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JDocComment;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldRef;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
-import com.sun.codemodel.JType;
-import com.sun.codemodel.JVar;
+import com.sun.codemodel.*;
 import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
-import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.Sequence;
-import cz.cvut.kbss.jopa.model.annotations.SequenceType;
-import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.joptsimpleparams.Param;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import joptsimple.OptionSet;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static cz.cvut.kbss.jopa.owl2java.Constants.MODEL_PACKAGE;
-import static cz.cvut.kbss.jopa.owl2java.Constants.PACKAGE_SEPARATOR;
-import static cz.cvut.kbss.jopa.owl2java.Constants.VERSION;
-import static cz.cvut.kbss.jopa.owl2java.Constants.VOCABULARY_CLASS;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
+import static cz.cvut.kbss.jopa.owl2java.Constants.*;
 
 public class JavaTransformer {
 
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-                                              "assert",
-                                              "boolean",
-                                              "break",
-                                              "byte",
-                                              "case",
-                                              "catch",
-                                              "char",
-                                              "class",
-                                              "const",
-                                              "continue",
-                                              "default",
-                                              "do",
-                                              "double",
-                                              "else",
-                                              "enum",
-                                              "extends",
-                                              "final",
-                                              "finally",
-                                              "float",
-                                              "for",
-                                              "goto",
-                                              "if",
-                                              "implements",
-                                              "import",
-                                              "instanceof",
-                                              "int",
-                                              "interface",
-                                              "long",
-                                              "native",
-                                              "new",
-                                              "package",
-                                              "private",
-                                              "protected",
-                                              "public",
-                                              "return",
-                                              "short",
-                                              "static",
-                                              "strictfp",
-                                              "super",
-                                              "switch",
-                                              "synchronized",
-                                              "this",
-                                              "throw",
-                                              "throws",
-                                              "transient",
-                                              "try",
-                                              "void",
-                                              "volatile",
-                                              "while"};
+            "assert",
+            "boolean",
+            "break",
+            "byte",
+            "case",
+            "catch",
+            "char",
+            "class",
+            "const",
+            "continue",
+            "default",
+            "do",
+            "double",
+            "else",
+            "enum",
+            "extends",
+            "final",
+            "finally",
+            "float",
+            "for",
+            "goto",
+            "if",
+            "implements",
+            "import",
+            "instanceof",
+            "int",
+            "interface",
+            "long",
+            "native",
+            "new",
+            "package",
+            "private",
+            "protected",
+            "public",
+            "return",
+            "short",
+            "static",
+            "strictfp",
+            "super",
+            "switch",
+            "synchronized",
+            "this",
+            "throw",
+            "throws",
+            "transient",
+            "try",
+            "void",
+            "volatile",
+            "while"};
 
     private static final String PREFIX_STRING = "s_";
     private static final String PREFIX_CLASS = "c_";
@@ -183,17 +152,28 @@ public class JavaTransformer {
         final String packageName = transformConfig.getPackageName();
         try {
             final JCodeModel cm = new JCodeModel();
-            voc = cm._class(packageName + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
+            voc = createVocabularyClass(packageName, cm);
             generateVocabulary(ontology, cm, context, transformConfig.shouldGenerateOwlapiIris());
             _generateModel(ontology, cm, context,
-                packageName + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR,
-                transformConfig.getPropertiesType());
+                    packageName + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR,
+                    transformConfig.getPropertiesType());
             writeOutModel(cm, transformConfig.getTargetDir());
         } catch (JClassAlreadyExistsException e1) {
             LOG.error("Transformation FAILED.", e1);
         } catch (IOException e) {
             LOG.error("File generation FAILED.", e);
         }
+    }
+
+    private JDefinedClass createVocabularyClass(String packageName, JCodeModel codeModel)
+            throws JClassAlreadyExistsException {
+        final JDefinedClass cls = codeModel._class(packageName + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
+        generateAuthorshipDoc(cls);
+        return cls;
+    }
+
+    private void generateAuthorshipDoc(JDocCommentable javaElem) {
+        javaElem.javadoc().add("This class was generated by OWL2Java " + VERSION);
     }
 
     /**
@@ -208,7 +188,7 @@ public class JavaTransformer {
                                    TransformationConfiguration transformConfig) {
         try {
             final JCodeModel cm = new JCodeModel();
-            this.voc = cm._class(transformConfig.getPackageName() + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
+            this.voc = createVocabularyClass(transformConfig.getPackageName(), cm);
             generateVocabulary(ontology, cm, context, transformConfig.shouldGenerateOwlapiIris());
             writeOutModel(cm, transformConfig.getTargetDir());
         } catch (JClassAlreadyExistsException e) {
@@ -241,7 +221,7 @@ public class JavaTransformer {
 
         if (!Card.NO.equals(comp.getCard())) {
             JClass filler = ensureCreated(context, pkg, cm, comp.getFiller(), ontology,
-                propertiesType);
+                    propertiesType);
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             switch (comp.getCard()) {
@@ -257,6 +237,7 @@ public class JavaTransformer {
             }
 
             final JFieldVar fv = addField(fieldName, subj, filler);
+            generateJavadoc(ontology, prop, fv);
 
             if (comp.getCard().equals(Card.SIMPLELIST)) {
                 fv.annotate(Sequence.class)
@@ -324,6 +305,7 @@ public class JavaTransformer {
                 assert false : "Unknown cardinality type";
                 return;
             }
+            generateJavadoc(ontology, prop, fv);
 
             fv.annotate(OWLDataProperty.class).param("iri", entities.get(prop));
 
@@ -350,21 +332,20 @@ public class JavaTransformer {
 
         for (final OWLClass clazz : context.classes) {
             LOG.info("  Generating class '{}'.", clazz);
-            final JDefinedClass subj =
-                ensureCreated(context, pkg, cm, clazz, ontology, propertiesType);
+            final JDefinedClass subj = ensureCreated(context, pkg, cm, clazz, ontology, propertiesType);
 
             context.set.getClassIntegrityConstraints(clazz).forEach((ic) -> {
                 if (ic instanceof AtomicSubClassConstraint) {
                     final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
                     subj._extends(ensureCreated(context, pkg, cm, icc.getSupClass(), ontology,
-                        propertiesType));
+                            propertiesType));
                 }
             });
 
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context
-                .objectProperties) {
+                    .objectProperties) {
                 _generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop,
-                    propertiesType);
+                        propertiesType);
             }
 
             for (org.semanticweb.owlapi.model.OWLDataProperty prop : context.dataProperties) {
@@ -405,6 +386,7 @@ public class JavaTransformer {
                         sFieldName.substring(PREFIX_STRING.length()),
                         cm.ref(IRI.class).staticInvoke("create").arg(fv1));
             }
+            generateJavadoc(o, c, fv1);
             entities.put(c, voc.staticRef(fv1));
         }
     }
@@ -435,15 +417,18 @@ public class JavaTransformer {
         return sb.toString();
     }
 
-    private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
-        final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
-                                                          .filter(a -> isJavaClassNameAnnotation(a) &&
-                                                                  a.getValue().isLiteral()).findFirst();
-        if (res.isPresent()) {
-            return res.get().getValue().asLiteral().get().getLiteral();
-        } else {
-            return toJavaNotation(validJavaIDForIRI(owlClass.getIRI()));
-        }
+    /**
+     * Generates Javadoc from rdfs:comment annotation (if present).
+     *
+     * @param ontology  Ontology from which the model/vocabulary is being generated
+     * @param owlEntity Annotated entity
+     * @param javaElem  Element to document with Javadoc
+     */
+    private boolean generateJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {
+        final Optional<OWLAnnotation> ann = EntitySearcher.getAnnotations(owlEntity, ontology)
+                                                          .filter(a -> a.getProperty().isComment()).findFirst();
+        ann.ifPresent(a -> a.getValue().asLiteral().ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral())));
+        return ann.isPresent() && ann.get().getValue().isLiteral();
     }
 
     private JDefinedClass create(final String pkg, final JCodeModel cm, final OWLClass clazz,
@@ -458,21 +443,20 @@ public class JavaTransformer {
             cls.annotate(cz.cvut.kbss.jopa.model.annotations.OWLClass.class)
                .param("iri", entities.get(clazz));
 
-            final JDocComment dc = cls.javadoc();
-            dc.add("This class was generated by the OWL2Java tool version " + VERSION);
+            generateClassJavadoc(ontology, clazz, cls);
 
             // if (clazz.equals(f.getOWLThing())) {
             // RDFS label
             final JClass ftLabel = cm.ref(String.class);
             final JFieldVar fvLabel = addField("name", cls, ftLabel);
             fvLabel.annotate(OWLAnnotationProperty.class).param("iri",
-                cm.ref(CommonVocabulary.class).staticRef("RDFS_LABEL"));
+                    cm.ref(RDFS.class).staticRef("LABEL"));
 
             // DC description
             final JClass ftDescription = cm.ref(String.class);
             final JFieldVar fvDescription = addField("description", cls, ftDescription);
             fvDescription.annotate(OWLAnnotationProperty.class).param("iri",
-                cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
+                    cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
 
             // @Types Set<String> types;
             final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
@@ -488,9 +472,9 @@ public class JavaTransformer {
 
             // @Properties public final Map<String,Set<String>> properties;
             final Class propertiesTypeC =
-                (propertiesType.equals(PropertiesType.object) ? Object.class : String.class);
+                    (propertiesType.equals(PropertiesType.object) ? Object.class : String.class);
             final JClass ftProperties = cm.ref(Map.class).narrow(cm.ref(String.class),
-                cm.ref(Set.class).narrow(propertiesTypeC));
+                    cm.ref(Set.class).narrow(propertiesTypeC));
             final JFieldVar fvProperties = addField("properties", cls, ftProperties);
             fvProperties.annotate(Properties.class);
             // }
@@ -500,6 +484,25 @@ public class JavaTransformer {
             cls = cm._getClass(name);
         }
         return cls;
+    }
+
+    private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
+        final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
+                                                          .filter(a -> isJavaClassNameAnnotation(a) &&
+                                                                  a.getValue().isLiteral()).findFirst();
+        if (res.isPresent()) {
+            return res.get().getValue().asLiteral().get().getLiteral();
+        } else {
+            return toJavaNotation(validJavaIDForIRI(owlClass.getIRI()));
+        }
+    }
+
+    private void generateClassJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {
+        final boolean generated = generateJavadoc(ontology, owlEntity, javaElem);
+        if (generated) {
+            javaElem.javadoc().add("\n\n");
+        }
+        generateAuthorshipDoc(javaElem);
     }
 
     private JDefinedClass ensureCreated(final ContextDefinition ctx, final String pkg,
