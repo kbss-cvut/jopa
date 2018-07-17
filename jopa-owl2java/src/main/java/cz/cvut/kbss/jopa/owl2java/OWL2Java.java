@@ -1,28 +1,26 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.cli.Command;
-import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
-import cz.cvut.kbss.jopa.owl2java.joptsimpleparams.Param;
-import java.io.PrintStream;
-import java.util.Arrays;
+import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.PrintStream;
+import java.util.Arrays;
 
 public class OWL2Java {
 
@@ -106,13 +104,13 @@ public class OWL2Java {
 
     private static OWL2JavaTransformer getTransformer(OptionSet os) {
         OWL2JavaTransformer oj;
-        oj = new OWL2JavaTransformer(os);
-        if (os.has(Param.MAPPING_FILE.arg)) {
-            oj.setOntology(os.nonOptionArguments().get(1), os.valueOf(Param.MAPPING_FILE.arg).toString());
+        oj = new OWL2JavaTransformer();
+        if (os.has(Option.MAPPING_FILE.arg)) {
+            oj.setOntology(os.nonOptionArguments().get(1), os.valueOf(Option.MAPPING_FILE.arg).toString());
         } else {
             oj.setOntology(os.nonOptionArguments().get(1), null);
         }
-        oj.ignoreMissingImports((Boolean) os.valueOf(Param.IGNORE_FAILED_IMPORTS.arg));
+        oj.ignoreMissingImports((Boolean) os.valueOf(Option.IGNORE_FAILED_IMPORTS.arg));
         return oj;
     }
 
@@ -128,25 +126,17 @@ public class OWL2Java {
     }
 
     private static void transformOwlToJava(OptionSet os) {
-        boolean whole = (Boolean) os.valueOf(Param.WHOLE_ONTOLOGY_AS_IC.arg);
+        boolean whole = (Boolean) os.valueOf(Option.WHOLE_ONTOLOGY_AS_IC.arg);
 
         if (!whole && invalidTransformationOptions(os)) {
             return;
         }
 
-        final TransformationConfiguration.TransformationConfigurationBuilder configBuilder =
-                TransformationConfiguration.builder();
-        if (!whole) {
-            configBuilder.context(os.valueOf(Param.CONTEXT.arg).toString());
-        }
-        configBuilder.packageName(os.valueOf(Param.PACKAGE.arg).toString())
-                     .targetDir(os.valueOf(Param.TARGET_DIR.arg).toString())
-                     .addOwlapiIris((Boolean) os.valueOf(Param.WITH_IRIS.arg)).propertiesType(
-            PropertiesType.valueOf(os.valueOf(Param.PROPERTIES_TYPE.arg).toString()));
+        final TransformationConfiguration config = TransformationConfiguration.config(os);
 
         final OWL2JavaTransformer transformer = getTransformer(os);
 
-        transformer.transform(configBuilder.build());
+        transformer.transform(config);
     }
 
     private static boolean invalidTransformationOptions(OptionSet os) {
@@ -154,8 +144,8 @@ public class OWL2Java {
             return true;
         }
 
-        if (!os.has(Param.CONTEXT.arg)) {
-            System.err.println("The parameter '-" + Param.CONTEXT.arg +
+        if (!os.has(Option.CONTEXT.arg)) {
+            System.err.println("The parameter '-" + Option.CONTEXT.arg +
                     "' is obligatory. Try the 'help' command for more details.");
             return true;
         }
@@ -163,22 +153,13 @@ public class OWL2Java {
     }
 
     private static void generateVocabulary(OptionSet os) {
-        boolean whole = (Boolean) os.valueOf(Param.WHOLE_ONTOLOGY_AS_IC.arg);
+        boolean whole = (Boolean) os.valueOf(Option.WHOLE_ONTOLOGY_AS_IC.arg);
         if (!whole && invalidTransformationOptions(os)) {
             return;
         }
         final OWL2JavaTransformer transformer = getTransformer(os);
 
-        final TransformationConfiguration.TransformationConfigurationBuilder builder =
-                TransformationConfiguration.builder();
-        if (!whole) {
-            builder.context(os.valueOf(Param.CONTEXT.arg).toString());
-        }
-        final TransformationConfiguration config = builder.packageName(os.valueOf(Param.PACKAGE.arg).toString())
-                                                          .targetDir(os.valueOf(Param.TARGET_DIR.arg).toString())
-                                                          .addOwlapiIris((Boolean) os.valueOf(Param.WITH_IRIS.arg))
-                                                          .build();
-
+        final TransformationConfiguration config = TransformationConfiguration.config(os);
 
         transformer.generateVocabulary(config);
     }

@@ -14,8 +14,6 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
@@ -42,15 +40,6 @@ public class OWL2JavaTransformer {
     private Map<String, ContextDefinition> contexts = new HashMap<>();
 
     private boolean ignoreMissingImports;
-    private final OptionSet configuration;
-
-    public OWL2JavaTransformer() {
-        this.configuration = new OptionParser().parse("");
-    }
-
-    OWL2JavaTransformer(OptionSet configuration) {
-        this.configuration = configuration;
-    }
 
     public Collection<String> listContexts() {
         return contexts.keySet();
@@ -179,7 +168,7 @@ public class OWL2JavaTransformer {
     public void transform(TransformationConfiguration transformConfig) {
         final ContextDefinition def = getValidContext(transformConfig);
         LOG.info("Transforming context ...");
-        new JavaTransformer(configuration).generateModel(ontology, def, transformConfig);
+        new JavaTransformer(transformConfig).generateModel(ontology, def);
         LOG.info("Transformation SUCCESSFUL.");
     }
 
@@ -203,7 +192,7 @@ public class OWL2JavaTransformer {
         LOG.info("Generating vocabulary ...");
 
         ContextDefinition def = getValidContext(transformConfig);
-        new JavaTransformer(configuration).generateVocabulary(ontology, def, transformConfig);
+        new JavaTransformer(transformConfig).generateVocabulary(ontology, def);
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {

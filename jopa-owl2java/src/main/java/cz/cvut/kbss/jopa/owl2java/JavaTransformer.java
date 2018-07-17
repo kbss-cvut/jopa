@@ -22,11 +22,10 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
-import cz.cvut.kbss.jopa.owl2java.joptsimpleparams.Param;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import joptsimple.OptionSet;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.search.EntitySearcher;
@@ -105,9 +104,9 @@ public class JavaTransformer {
 
     private Map<OWLClass, JDefinedClass> classes = new HashMap<>();
 
-    private final OptionSet configuration;
+    private final TransformationConfiguration configuration;
 
-    JavaTransformer(OptionSet configuration) {
+    JavaTransformer(TransformationConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -147,17 +146,14 @@ public class JavaTransformer {
         return fvId;
     }
 
-    public void generateModel(final OWLOntology ontology, final ContextDefinition context,
-                              TransformationConfiguration transformConfig) {
-        final String packageName = transformConfig.getPackageName();
+    public void generateModel(final OWLOntology ontology, final ContextDefinition context) {
+        final String packageName = configuration.getPackageName();
         try {
             final JCodeModel cm = new JCodeModel();
             voc = createVocabularyClass(packageName, cm);
-            generateVocabulary(ontology, cm, context, transformConfig.shouldGenerateOwlapiIris());
-            _generateModel(ontology, cm, context,
-                    packageName + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR,
-                    transformConfig.getPropertiesType());
-            writeOutModel(cm, transformConfig.getTargetDir());
+            generateVocabulary(ontology, cm, context);
+            _generateModel(ontology, cm, context, packageName + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR);
+            writeOutModel(cm);
         } catch (JClassAlreadyExistsException e1) {
             LOG.error("Transformation FAILED.", e1);
         } catch (IOException e) {
@@ -179,18 +175,16 @@ public class JavaTransformer {
     /**
      * Generates only vocabulary of the loaded ontology.
      *
-     * @param ontology        Ontology from which the vocabulary should be generated
-     * @param context         Integrity constraints context, if null is supplied, the whole ontology is interpreted as
-     *                        integrity constraints.
-     * @param transformConfig Configuration of the generation process
+     * @param ontology Ontology from which the vocabulary should be generated
+     * @param context  Integrity constraints context, if null is supplied, the whole ontology is interpreted as
+     *                 integrity constraints.
      */
-    public void generateVocabulary(final OWLOntology ontology, ContextDefinition context,
-                                   TransformationConfiguration transformConfig) {
+    public void generateVocabulary(final OWLOntology ontology, ContextDefinition context) {
         try {
             final JCodeModel cm = new JCodeModel();
-            this.voc = createVocabularyClass(transformConfig.getPackageName(), cm);
-            generateVocabulary(ontology, cm, context, transformConfig.shouldGenerateOwlapiIris());
-            writeOutModel(cm, transformConfig.getTargetDir());
+            this.voc = createVocabularyClass(configuration.getPackageName(), cm);
+            generateVocabulary(ontology, cm, context);
+            writeOutModel(cm);
         } catch (JClassAlreadyExistsException e) {
             LOG.error("Vocabulary generation FAILED, because the Vocabulary class already exists.", e);
         } catch (IOException e) {
@@ -198,8 +192,8 @@ public class JavaTransformer {
         }
     }
 
-    private void writeOutModel(JCodeModel cm, String targetDir) throws IOException {
-        final File file = new File(targetDir);
+    private void writeOutModel(JCodeModel cm) throws IOException {
+        final File file = new File(configuration.getTargetDir());
         file.mkdirs();
         cm.build(file);
     }
@@ -324,9 +318,9 @@ public class JavaTransformer {
     }
 
     private void _generateModel(final OWLOntology ontology, final JCodeModel cm,
-                                final ContextDefinition context, final String pkg,
-                                final PropertiesType propertiesType) {
+                                final ContextDefinition context, final String pkg) {
         LOG.info("Generating model ...");
+        final PropertiesType propertiesType = configuration.getPropertiesType();
 
         context.classes.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
 
@@ -354,8 +348,7 @@ public class JavaTransformer {
         }
     }
 
-    private void generateVocabulary(final OWLOntology o, final JCodeModel cm, ContextDefinition context,
-                                    boolean withOWLAPI) {
+    private void generateVocabulary(final OWLOntology o, final JCodeModel cm, ContextDefinition context) {
         final Collection<OWLEntity> col = new LinkedHashSet<>();
         col.add(o.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
         col.addAll(context.classes);
@@ -381,7 +374,7 @@ public class JavaTransformer {
 
             final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
                     | JMod.FINAL, String.class, sFieldName, JExpr.lit(c.getIRI().toString()));
-            if (withOWLAPI) {
+            if (configuration.shouldGenerateOwlapiIris()) {
                 voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class,
                         sFieldName.substring(PREFIX_STRING.length()),
                         cm.ref(IRI.class).staticInvoke("create").arg(fv1));
@@ -425,6 +418,9 @@ public class JavaTransformer {
      * @param javaElem  Element to document with Javadoc
      */
     private boolean generateJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {
+        if (!configuration.shouldGenerateJavadoc()) {
+            return false;
+        }
         final Optional<OWLAnnotation> ann = EntitySearcher.getAnnotations(owlEntity, ontology)
                                                           .filter(a -> a.getProperty().isComment()).findFirst();
         ann.ifPresent(a -> a.getValue().asLiteral().ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral())));
@@ -516,7 +512,8 @@ public class JavaTransformer {
     }
 
     private boolean isJavaClassNameAnnotation(OWLAnnotation a) {
-        final String classNameProperty = (String) configuration.valueOf(Param.JAVA_CLASSNAME_ANNOTATION.arg);
+        final String classNameProperty = (String) configuration.getCliParams()
+                                                               .valueOf(Option.JAVA_CLASSNAME_ANNOTATION.arg);
         return a.getProperty().getIRI()
                 .equals(IRI.create(classNameProperty != null ? classNameProperty : Constants.P_CLASS_NAME));
     }
