@@ -431,9 +431,33 @@ public class OWL2JavaTransformerTest {
     public void transformDoesNotGenerateJavadocWhenConfiguredNotTo() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.generateVocabulary(
+        transformer.transform(
                 config(null, "", targetDir.getAbsolutePath(), false).generateJavadoc(false).build());
         final File vocabFile = new File(targetDir.getAbsolutePath() + File.separator + VOCABULARY_FILE);
         assertFalse(readFile(vocabFile).contains("Connects artifact to its author."));
+    }
+
+    @Test
+    public void transformWithEmptyPackageNameGeneratesCorrectPackageNameForEntityClasses() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false).build());
+        final File modelFolder = new File(targetDir + File.separator + Constants.MODEL_PACKAGE);
+        for (File entity : modelFolder.listFiles()) {
+            final List<String> lines = Files.readAllLines(entity.toPath());
+            lines.removeIf(line -> line.length() == 0);
+            assertThat(lines.get(0), containsString("package " + Constants.MODEL_PACKAGE));
+        }
+    }
+
+    @Test
+    public void transformGeneratesSerializableEntities() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false).build());
+        final File modelFolder = new File(targetDir + File.separator + Constants.MODEL_PACKAGE);
+        for (File entityClass : modelFolder.listFiles()) {
+            assertThat(readFile(entityClass), containsString("implements Serializable"));
+        }
     }
 }

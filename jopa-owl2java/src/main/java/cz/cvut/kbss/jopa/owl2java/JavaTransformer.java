@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.owl2java.Constants.*;
@@ -147,13 +148,19 @@ public class JavaTransformer {
         return fvId;
     }
 
+    /**
+     * Generates an object model consisting of JOPA entity classes and a vocabulary file from the specified ontology and
+     * context definition.
+     *
+     * @param ontology Ontology from which the model is generated
+     * @param context  Context information
+     */
     public void generateModel(final OWLOntology ontology, final ContextDefinition context) {
-        final String packageName = configuration.getPackageName();
         try {
             final JCodeModel cm = new JCodeModel();
-            voc = createVocabularyClass(packageName, cm);
+            voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
-            _generateModel(ontology, cm, context, packageName + PACKAGE_SEPARATOR + MODEL_PACKAGE + PACKAGE_SEPARATOR);
+            _generateModel(ontology, cm, context, modelPackageName());
             writeOutModel(cm);
         } catch (JClassAlreadyExistsException e1) {
             LOG.error("Transformation FAILED.", e1);
@@ -162,9 +169,22 @@ public class JavaTransformer {
         }
     }
 
-    private JDefinedClass createVocabularyClass(String packageName, JCodeModel codeModel)
+    private String modelPackageName() {
+        final String packageConfig = configuration.getPackageName();
+        final StringBuilder sb = new StringBuilder(packageConfig);
+        if (!packageConfig.isEmpty()) {
+            sb.append(PACKAGE_SEPARATOR);
+        }
+        sb.append(MODEL_PACKAGE);
+        return sb.toString();
+    }
+
+    private JDefinedClass createVocabularyClass(JCodeModel codeModel)
             throws JClassAlreadyExistsException {
-        final JDefinedClass cls = codeModel._class(packageName + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
+        final String packageName = configuration.getPackageName();
+        final String className =
+                packageName.isEmpty() ? VOCABULARY_CLASS : packageName + PACKAGE_SEPARATOR + VOCABULARY_CLASS;
+        final JDefinedClass cls = codeModel._class(className);
         generateAuthorshipDoc(cls);
         return cls;
     }
@@ -183,7 +203,7 @@ public class JavaTransformer {
     public void generateVocabulary(final OWLOntology ontology, ContextDefinition context) {
         try {
             final JCodeModel cm = new JCodeModel();
-            this.voc = createVocabularyClass(configuration.getPackageName(), cm);
+            this.voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
             writeOutModel(cm);
         } catch (JClassAlreadyExistsException e) {
@@ -215,7 +235,7 @@ public class JavaTransformer {
         );
 
         if (!Card.NO.equals(comp.getCard())) {
-            JClass filler = ensureCreated(context, pkg, cm, comp.getFiller(), ontology,
+            JClass filler = ensureCreated(pkg, cm, comp.getFiller(), ontology,
                     propertiesType);
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
@@ -327,12 +347,12 @@ public class JavaTransformer {
 
         for (final OWLClass clazz : context.classes) {
             LOG.info("  Generating class '{}'.", clazz);
-            final JDefinedClass subj = ensureCreated(context, pkg, cm, clazz, ontology, propertiesType);
+            final JDefinedClass subj = ensureCreated(pkg, cm, clazz, ontology, propertiesType);
 
             context.set.getClassIntegrityConstraints(clazz).forEach((ic) -> {
                 if (ic instanceof AtomicSubClassConstraint) {
                     final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
-                    subj._extends(ensureCreated(context, pkg, cm, icc.getSupClass(), ontology,
+                    subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
                             propertiesType));
                 }
             });
@@ -432,35 +452,33 @@ public class JavaTransformer {
                                  final OWLOntology ontology, final PropertiesType propertiesType) {
         JDefinedClass cls;
 
-        String name = pkg + javaClassId(ontology, clazz);
+        String name = pkg + PACKAGE_SEPARATOR + javaClassId(ontology, clazz);
 
         try {
             cls = cm._class(name);
 
-            cls.annotate(cz.cvut.kbss.jopa.model.annotations.OWLClass.class)
-               .param("iri", entities.get(clazz));
+            cls.annotate(cz.cvut.kbss.jopa.model.annotations.OWLClass.class).param("iri", entities.get(clazz));
+            cls._implements(Serializable.class);
 
             generateClassJavadoc(ontology, clazz, cls);
 
-            // if (clazz.equals(f.getOWLThing())) {
             // RDFS label
             final JClass ftLabel = cm.ref(String.class);
             final JFieldVar fvLabel = addField("name", cls, ftLabel);
-            fvLabel.annotate(OWLAnnotationProperty.class).param("iri",
-                    cm.ref(RDFS.class).staticRef("LABEL"));
+            fvLabel.annotate(OWLAnnotationProperty.class).param("iri", cm.ref(RDFS.class).staticRef("LABEL"));
 
             // DC description
             final JClass ftDescription = cm.ref(String.class);
             final JFieldVar fvDescription = addField("description", cls, ftDescription);
-            fvDescription.annotate(OWLAnnotationProperty.class).param("iri",
-                    cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
+            fvDescription.annotate(OWLAnnotationProperty.class)
+                         .param("iri", cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
 
             // @Types Set<String> types;
             final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
             final JFieldVar fvTypes = addField("types", cls, ftTypes);
             fvTypes.annotate(Types.class);
 
-            // @Id public final String id;
+            // @Id(generated = true) protected String id;
             final JClass ftId = cm.ref(String.class);
             final JFieldVar fvId = addField("id", cls, ftId);
             JAnnotationUse a = fvId.annotate(Id.class);
@@ -468,13 +486,11 @@ public class JavaTransformer {
             a.param("generated", true);
 
             // @Properties public final Map<String,Set<String>> properties;
-            final Class propertiesTypeC =
-                    (propertiesType.equals(PropertiesType.object) ? Object.class : String.class);
-            final JClass ftProperties = cm.ref(Map.class).narrow(cm.ref(String.class),
-                    cm.ref(Set.class).narrow(propertiesTypeC));
+            final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
+            final JClass ftProperties = cm.ref(Map.class)
+                                          .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
             final JFieldVar fvProperties = addField("properties", cls, ftProperties);
             fvProperties.annotate(Properties.class);
-            // }
 
         } catch (JClassAlreadyExistsException e) {
             LOG.trace("Class already exists. Using the existing version. {}", e.getMessage());
@@ -502,10 +518,8 @@ public class JavaTransformer {
         generateAuthorshipDoc(javaElem);
     }
 
-    private JDefinedClass ensureCreated(final ContextDefinition ctx, final String pkg,
-                                        final JCodeModel cm, final OWLClass clazz,
-                                        final OWLOntology ontology,
-                                        final PropertiesType propertiesType) {
+    private JDefinedClass ensureCreated(final String pkg, final JCodeModel cm, final OWLClass clazz,
+                                        final OWLOntology ontology, final PropertiesType propertiesType) {
         if (!classes.containsKey(clazz)) {
             classes.put(clazz, create(pkg, cm, clazz, ontology, propertiesType));
         }
