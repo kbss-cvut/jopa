@@ -34,9 +34,9 @@ public enum Option {
     /**
      * Target package for the generated classes.
      * <p>
-     * Note that when generating the model, a {@code model} subpackage is put into the configured package for model
-     * classes. E.g., when generating into {@code cz.cvut.kbss}, the {@code Vocabulary} will be in this package, but the
-     * model classes will be in {@code cz.cvut.kbss.model}.
+     * Note that when generating the model, a {@link cz.cvut.kbss.jopa.owl2java.Constants#MODEL_PACKAGE} subpackage is
+     * put into the configured package for model classes. E.g., when generating into {@code cz.cvut.kbss}, the {@code
+     * Vocabulary} will be in this package, but the model classes will be in {@code cz.cvut.kbss.model}.
      */
     PACKAGE("p", "package"),
     /**

@@ -14,6 +14,7 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.cli.Command;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
+import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.slf4j.Logger;
