@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -32,7 +32,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("unused")
 public class EntityLifecycleCallbackResolverTest {
@@ -40,15 +41,17 @@ public class EntityLifecycleCallbackResolverTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private EntityLifecycleCallbackResolver resolver = new EntityLifecycleCallbackResolver();
-
     @Test
     public void resolveDiscoversEntityLifecycleListeners() throws Exception {
         final AbstractIdentifiableType<OWLClassR> type = typeFor(OWLClassR.class);
-        final EntityLifecycleListenerManager callbackManager = resolver.resolve(type);
+        final EntityLifecycleListenerManager callbackManager = resolve(type);
         assertTrue(callbackManager.getLifecycleCallbacks().containsKey(LifecycleEvent.POST_LOAD));
         assertEquals(OWLClassR.class.getDeclaredMethod("postLoad"),
                 callbackManager.getLifecycleCallbacks().get(LifecycleEvent.POST_LOAD));
+    }
+
+    private EntityLifecycleListenerManager resolve(AbstractIdentifiableType<?> et) {
+        return new EntityLifecycleCallbackResolver(et).resolve();
     }
 
     private <T> AbstractIdentifiableType<T> typeFor(Class<T> cls) {
@@ -58,13 +61,12 @@ public class EntityLifecycleCallbackResolverTest {
     }
 
     @Test
-    public void resolveThrowsMetamodelInitializationExceptionWhenMultipleListenersForOnePhaseAreDeclaredOnType()
-            throws Exception {
+    public void resolveThrowsMetamodelInitializationExceptionWhenMultipleListenersForOnePhaseAreDeclaredOnType() {
         thrown.expect(MetamodelInitializationException.class);
         thrown.expectMessage("The type [" + ClassWithMultipleListeners.class.getName() +
                 "] has multiple lifecycle callbacks for the lifecycle event [" + LifecycleEvent.POST_LOAD +
                 "].");
-        resolver.resolve(typeFor(ClassWithMultipleListeners.class));
+        resolve(typeFor(ClassWithMultipleListeners.class));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithMultipleListeners")
@@ -84,7 +86,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expectMessage("The callback method [takesArguments] in type [" +
                 ClassWithLifecycleListenerTakingArguments.class.getName() +
                 "] has incorrect signature. It should not have any arguments.");
-        resolver.resolve(typeFor(ClassWithLifecycleListenerTakingArguments.class));
+        resolve(typeFor(ClassWithLifecycleListenerTakingArguments.class));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithLifecycleListenerTakingArguments")
@@ -101,7 +103,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expectMessage("The callback method [returnsData] in type [" +
                 ClassWithNonVoidLifecycleListener.class.getName() +
                 "] has incorrect signature. Its return type should be void.");
-        resolver.resolve(typeFor(ClassWithNonVoidLifecycleListener.class));
+        resolve(typeFor(ClassWithNonVoidLifecycleListener.class));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithNonVoidLifecycleListener")
@@ -119,7 +121,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expectMessage("The callback method [finalListener] in type [" +
                 ClassWithFinalLifecycleListener.class.getName() +
                 "] has incorrect signature. It should not be static or final.");
-        resolver.resolve(typeFor(ClassWithFinalLifecycleListener.class));
+        resolve(typeFor(ClassWithFinalLifecycleListener.class));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithFinalLifecycleListener")
@@ -136,7 +138,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expectMessage("The callback method [staticListener] in type [" +
                 ClassWithStaticLifecycleListener.class.getName() +
                 "] has incorrect signature. It should not be static or final.");
-        resolver.resolve(typeFor(ClassWithStaticLifecycleListener.class));
+        resolve(typeFor(ClassWithStaticLifecycleListener.class));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithStaticLifecycleListener")
@@ -150,30 +152,30 @@ public class EntityLifecycleCallbackResolverTest {
     @Test
     public void resolveSetsUpReferenceToSupertypeLifecycleManager() throws Exception {
         final AbstractIdentifiableType<OWLClassS> parent = typeFor(OWLClassS.class);
-        parent.setLifecycleListenerManager(resolver.resolve(parent));
+        parent.setLifecycleListenerManager(resolve(parent));
         final AbstractIdentifiableType<OWLClassR> child = typeFor(OWLClassR.class);
         child.setSupertype(parent);
-        final EntityLifecycleListenerManager result = resolver.resolve(child);
+        final EntityLifecycleListenerManager result = resolve(child);
         final Field parentField = EntityLifecycleListenerManager.class.getDeclaredField("parent");
         parentField.setAccessible(true);
         assertEquals(parent.getLifecycleListenerManager(), parentField.get(result));
     }
 
     @Test
-    public void resolveCreatesInstanceOfEntityListenerDeclaredBySpecifiedEntityType() throws Exception {
+    public void resolveCreatesInstanceOfEntityListenerDeclaredBySpecifiedEntityType() {
         final AbstractIdentifiableType<OWLClassS> et = typeFor(OWLClassS.class);
-        final EntityLifecycleListenerManager result = resolver.resolve(et);
+        final EntityLifecycleListenerManager result = resolve(et);
         assertEquals(1, result.getEntityListeners().size());
         assertTrue(result.getEntityListeners().get(0) instanceof ParentListener);
     }
 
     @Test
-    public void resolveThrowsMetamodelInitializationExceptionWhenUnableToInstantiateEntityListener() throws Exception {
+    public void resolveThrowsMetamodelInitializationExceptionWhenUnableToInstantiateEntityListener() {
         thrown.expect(MetamodelInitializationException.class);
         thrown.expectMessage("Unable to instantiate entity listener of type " + InvalidListener.class
                 + ". The listener has to have a public no-arg constructor.");
         final AbstractIdentifiableType<EntityWithInvalidListener> et = typeFor(EntityWithInvalidListener.class);
-        resolver.resolve(et);
+        resolve(et);
     }
 
     private static class InvalidListener {
@@ -189,7 +191,7 @@ public class EntityLifecycleCallbackResolverTest {
     @Test
     public void resolveRegistersCallbacksDeclaredInEntityListener() throws Exception {
         final AbstractIdentifiableType<OWLClassS> et = typeFor(OWLClassS.class);
-        final EntityLifecycleListenerManager result = resolver.resolve(et);
+        final EntityLifecycleListenerManager result = resolve(et);
         assertEquals(1, result.getEntityListenerCallbacks().size());
         final Map<LifecycleEvent, Method> callbacks = result.getEntityListenerCallbacks().values().iterator().next();
         assertTrue(callbacks.containsKey(LifecycleEvent.PRE_PERSIST));
@@ -206,7 +208,7 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. It should take exactly one argument.");
         final AbstractIdentifiableType<EntityWithListenerWithInvalidArgumentCount> et = typeFor(
                 EntityWithListenerWithInvalidArgumentCount.class);
-        resolver.resolve(et);
+        resolve(et);
     }
 
     private static class ListenerWithInvalidArgumentCount {
@@ -231,7 +233,7 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. Its return type should be void.");
         final AbstractIdentifiableType<EntityWithListenerWithNonVoidCallback> et = typeFor(
                 EntityWithListenerWithNonVoidCallback.class);
-        resolver.resolve(et);
+        resolve(et);
     }
 
     private static class ListenerWithNonVoidCallback {
@@ -257,7 +259,7 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. It should not be static or final.");
         final AbstractIdentifiableType<EntityWithListenerWithStaticCallback> et = typeFor(
                 EntityWithListenerWithStaticCallback.class);
-        resolver.resolve(et);
+        resolve(et);
     }
 
     private static class ListenerWithStaticCallback {
@@ -281,7 +283,7 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has multiple callbacks for the lifecycle event [" + LifecycleEvent.POST_LOAD + "].");
         final AbstractIdentifiableType<EntityWithListenerWithMultipleConflictingCallbacks> et = typeFor(
                 EntityWithListenerWithMultipleConflictingCallbacks.class);
-        resolver.resolve(et);
+        resolve(et);
     }
 
     private static class ListenerWithMultipleCallbacksForSameEvent {
@@ -311,7 +313,7 @@ public class EntityLifecycleCallbackResolverTest {
                 EntityWithListenerWithInvalidParameterTypeCallback.class.getName() + "].");
         final AbstractIdentifiableType<EntityWithListenerWithInvalidParameterTypeCallback> et = typeFor(
                 EntityWithListenerWithInvalidParameterTypeCallback.class);
-        resolver.resolve(et);
+        resolve(et);
     }
 
     private static class ListenerWithInvalidParameterTypeCallback {

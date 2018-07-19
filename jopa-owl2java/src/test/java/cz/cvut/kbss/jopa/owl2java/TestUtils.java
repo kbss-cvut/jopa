@@ -56,9 +56,9 @@ public class TestUtils {
     }
 
     static void addAxiom(OWLAxiom axiom, OWL2JavaTransformer transformer) throws Exception {
-        final Field defaultContextField = OWL2JavaTransformer.class.getDeclaredField("DEFAULT_CONTEXT");
+        final Field defaultContextField = OWL2JavaTransformer.class.getDeclaredField("defaultContext");
         defaultContextField.setAccessible(true);
-        final ContextDefinition defaultContext = (ContextDefinition) defaultContextField.get(null);
+        final ContextDefinition defaultContext = (ContextDefinition) defaultContextField.get(transformer);
         final Method getContextMethod = OWL2JavaTransformer.class
                 .getDeclaredMethod("getContextDefinition", String.class);
         getContextMethod.setAccessible(true);

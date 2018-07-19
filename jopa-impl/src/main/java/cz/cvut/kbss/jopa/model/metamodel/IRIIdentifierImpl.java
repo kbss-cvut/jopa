@@ -62,11 +62,6 @@ public class IRIIdentifierImpl<T> implements IRIIdentifier {
     }
 
     @Override
-    public boolean isReadOnly() {
-        return false;
-    }
-
-    @Override
     public String getName() {
         return javaField.getName();
     }

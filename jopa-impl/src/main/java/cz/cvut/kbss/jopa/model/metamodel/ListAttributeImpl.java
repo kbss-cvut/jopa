@@ -143,12 +143,6 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
         }
 
         @Override
-        public ListAttributeBuilder readOnly(boolean readOnly) {
-            super.readOnly(readOnly);
-            return this;
-        }
-
-        @Override
         public ListAttributeBuilder participationConstraints(ParticipationConstraint[] constraints) {
             super.participationConstraints(constraints);
             return this;

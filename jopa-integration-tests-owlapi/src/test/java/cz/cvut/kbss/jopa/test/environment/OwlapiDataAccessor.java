@@ -1,22 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.environment;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.Vocabulary;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.*;
 
@@ -35,10 +33,10 @@ public class OwlapiDataAccessor implements DataAccessor {
         for (Triple t : data) {
             final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
             final AddAxiom axiom;
-            if (t.getProperty().toString().equals(CommonVocabulary.RDF_TYPE)) {
+            if (t.getProperty().toString().equals(RDF.TYPE)) {
                 final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
                 axiom = new AddAxiom(ontology, df.getOWLClassAssertionAxiom(cls, ind));
-            } else if (t.getProperty().toString().equals(Vocabulary.RDFS_SUBCLASS_OF)) {
+            } else if (t.getProperty().toString().equals(RDFS.SUB_CLASS_OF)) {
                 final OWLClass subclass = df.getOWLClass(IRI.create(t.getSubject().toString()));
                 final OWLClass superclass = df.getOWLClass(IRI.create(t.getValue().toString()));
                 axiom = new AddAxiom(ontology, df.getOWLSubClassOfAxiom(subclass, superclass));
@@ -46,7 +44,7 @@ public class OwlapiDataAccessor implements DataAccessor {
                 final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(t.getProperty()));
                 final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) t.getValue()));
                 axiom = new AddAxiom(ontology, df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));
-            } else if (t.getProperty().toString().equals(CommonVocabulary.RDFS_LABEL)) {
+            } else if (t.getProperty().toString().equals(RDFS.LABEL)) {
                 final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(t.getProperty()));
                 final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), df, t.getLanguage());
                 axiom = new AddAxiom(ontology, df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value));
@@ -65,7 +63,7 @@ public class OwlapiDataAccessor implements DataAccessor {
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
         for (Triple t : data) {
             final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
-            if (t.getProperty().toString().equals(CommonVocabulary.RDF_TYPE)) {
+            if (t.getProperty().toString().equals(RDF.TYPE)) {
                 final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
                 assertTrue(ontology.containsAxiom(df.getOWLClassAssertionAxiom(cls, ind)));
             } else if (t.getValue() instanceof URI) {

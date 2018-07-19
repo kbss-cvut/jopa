@@ -1,5 +1,7 @@
-package cz.cvut.kbss.jopa.owl2java;
+package cz.cvut.kbss.jopa.owl2java.config;
 
+import cz.cvut.kbss.jopa.owl2java.cli.CliParams;
+import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 
 public class TransformationConfiguration {
@@ -12,14 +14,32 @@ public class TransformationConfiguration {
 
     private final boolean generateOwlapiIris;
 
-    private PropertiesType propertiesType;
+    private final boolean generateJavadoc;
+
+    private final PropertiesType propertiesType;
+
+    private final CliParams cliParams;
 
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
         this.context = builder.context;
         this.packageName = builder.packageName;
         this.targetDir = builder.targetDir;
         this.generateOwlapiIris = builder.owlapiIris;
+        this.generateJavadoc = builder.generateJavadoc;
         this.propertiesType = builder.propertiesType;
+        this.cliParams = CliParams.empty();
+    }
+
+    private TransformationConfiguration(CliParams cliParams) {
+        this.cliParams = cliParams;
+        this.context =
+                cliParams.is(Option.WHOLE_ONTOLOGY_AS_IC.arg) ? null : cliParams.valueOf(Option.CONTEXT.arg).toString();
+        this.packageName = cliParams.valueOf(Option.PACKAGE.arg).toString();
+        this.targetDir = cliParams.valueOf(Option.TARGET_DIR.arg).toString();
+        this.generateOwlapiIris = cliParams.is(Option.WITH_IRIS.arg, Defaults.WITH_IRIS);
+        this.generateJavadoc = cliParams
+                .is(Option.GENERATE_JAVADOC_FROM_COMMENT.arg, Defaults.GENERATE_JAVADOC_FROM_COMMENT);
+        this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
     }
 
     public String getContext() {
@@ -42,8 +62,20 @@ public class TransformationConfiguration {
         return generateOwlapiIris;
     }
 
+    public boolean shouldGenerateJavadoc() {
+        return generateJavadoc;
+    }
+
     public PropertiesType getPropertiesType() {
         return propertiesType;
+    }
+
+    public CliParams getCliParams() {
+        return cliParams;
+    }
+
+    public static TransformationConfiguration config(CliParams cliParams) {
+        return new TransformationConfiguration(cliParams);
     }
 
     public static TransformationConfigurationBuilder builder() {
@@ -52,10 +84,11 @@ public class TransformationConfiguration {
 
     public static class TransformationConfigurationBuilder {
         private String context;
-        private String packageName = "generated";
-        private String targetDir = "";
-        private PropertiesType propertiesType;
-        private boolean owlapiIris;
+        private String packageName = Defaults.PACKAGE;
+        private String targetDir = Defaults.TARGET_DIR;
+        private PropertiesType propertiesType = PropertiesType.valueOf(Defaults.PROPERTIES_TYPE);
+        private boolean owlapiIris = Defaults.WITH_IRIS;
+        private boolean generateJavadoc = Defaults.GENERATE_JAVADOC_FROM_COMMENT;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -74,6 +107,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder addOwlapiIris(boolean add) {
             this.owlapiIris = add;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder generateJavadoc(boolean javadoc) {
+            this.generateJavadoc = javadoc;
             return this;
         }
 

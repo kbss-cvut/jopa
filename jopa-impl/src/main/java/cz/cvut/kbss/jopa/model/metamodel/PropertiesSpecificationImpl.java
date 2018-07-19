@@ -69,12 +69,6 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
     }
 
     @Override
-    public boolean isReadOnly() {
-        // TODO
-        return false;
-    }
-
-    @Override
     public String getName() {
         return javaField.getName();
     }

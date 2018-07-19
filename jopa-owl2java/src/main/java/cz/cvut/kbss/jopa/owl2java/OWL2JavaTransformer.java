@@ -1,25 +1,23 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.search.EntitySearcher;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,26 +26,21 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.net.URI;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OWL2JavaTransformer {
 
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
-    private static final ContextDefinition DEFAULT_CONTEXT = new ContextDefinition();
+    private OWLOntology ontology;
 
     private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
-    private OWLOntology ontology;
+
+    private final ContextDefinition defaultContext = new ContextDefinition();
     private Map<String, ContextDefinition> contexts = new HashMap<>();
+
     private boolean ignoreMissingImports;
-    private final OptionSet configuration;
-
-    public OWL2JavaTransformer() {
-        this.configuration = new OptionParser().parse("");
-    }
-
-    OWL2JavaTransformer(OptionSet configuration) {
-        this.configuration = configuration;
-    }
 
     public Collection<String> listContexts() {
         return contexts.keySet();
@@ -92,28 +85,39 @@ public class OWL2JavaTransformer {
         }
     }
 
-    public void setOntology(final String owlOntologyName,
-                            final String mappingFile, boolean includeImports) {
+    public void setOntology(final String owlOntologyName, final String mappingFile) {
         ontology = getWholeOntology(owlOntologyName, mappingFile);
 
-//        this.imports = ontology.getOWLOntologyManager().getOntologies();
-
-        LOG.info("Parsing integrity constraints");
+        LOG.debug("Parsing integrity constraints");
 
         ontology.axioms().forEach(a -> {
-            DEFAULT_CONTEXT.addAxiom(a);
+            defaultContext.addAxiom(a);
             for (final String icContextName : getContexts(a)) {
                 ContextDefinition ctx = getContextDefinition(icContextName);
                 ctx.addAxiom(a);
             }
         });
+        registerEntitiesInContexts();
 
-        DEFAULT_CONTEXT.parse();
+        defaultContext.parse();
         for (final ContextDefinition ctx : contexts.values()) {
             ctx.parse();
         }
 
-        LOG.info("Integrity constraints successfully parsed.");
+        LOG.debug("Integrity constraints successfully parsed.");
+    }
+
+    private void registerEntitiesInContexts() {
+        final Consumer<Stream<? extends OWLEntity>> consumer = (stream) -> stream.forEach(e -> {
+            defaultContext.add(e);
+            for (final String context : getContexts(e)) {
+                getContextDefinition(context).add(e);
+            }
+        });
+        consumer.accept(ontology.classesInSignature());
+        consumer.accept(ontology.objectPropertiesInSignature());
+        consumer.accept(ontology.dataPropertiesInSignature());
+        consumer.accept(ontology.annotationPropertiesInSignature());
     }
 
     private ContextDefinition getContextDefinition(String icContextName) {
@@ -124,16 +128,34 @@ public class OWL2JavaTransformer {
         final List<String> icContexts = new ArrayList<>();
         a.annotations().filter(p -> p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR))
          .forEach(p -> {
-             LOG.info("Processing annotation : " + p);
+             LOG.trace("Processing annotation : " + p);
              p.getValue().accept(v);
              final String icContextName = v.getName();
-             LOG.info("CONTEXT:" + icContextName);
+             LOG.trace("CONTEXT:" + icContextName);
              if (icContextName == null) {
                  return;
              }
              LOG.debug("Found IC {} for context {}", a, icContextName);
              icContexts.add(icContextName);
          });
+        return icContexts;
+    }
+
+    private List<String> getContexts(final OWLEntity entity) {
+        final List<String> icContexts = new ArrayList<>();
+        EntitySearcher.getAnnotations(entity, ontology)
+                      .filter(p -> p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR))
+                      .forEach(p -> {
+                          LOG.trace("Processing annotation : " + p);
+                          p.getValue().accept(v);
+                          final String icContextName = v.getName();
+                          LOG.trace("CONTEXT:" + icContextName);
+                          if (icContextName == null) {
+                              return;
+                          }
+                          LOG.debug("Found OWLEntity declaration {} for context {}", entity, icContextName);
+                          icContexts.add(icContextName);
+                      });
         return icContexts;
     }
 
@@ -147,14 +169,14 @@ public class OWL2JavaTransformer {
     public void transform(TransformationConfiguration transformConfig) {
         final ContextDefinition def = getValidContext(transformConfig);
         LOG.info("Transforming context ...");
-        new JavaTransformer(configuration).generateModel(ontology, def, transformConfig);
+        new JavaTransformer(transformConfig).generateModel(ontology, def);
         LOG.info("Transformation SUCCESSFUL.");
     }
 
     private ContextDefinition getValidContext(TransformationConfiguration configuration) {
         if (configuration.areAllAxiomsIntegrityConstraints()) {
             LOG.info(" - for all axioms");
-            return DEFAULT_CONTEXT;
+            return defaultContext;
         }
         final String context = configuration.getContext();
         verifyContextExistence(context);
@@ -171,7 +193,7 @@ public class OWL2JavaTransformer {
         LOG.info("Generating vocabulary ...");
 
         ContextDefinition def = getValidContext(transformConfig);
-        new JavaTransformer(configuration).generateVocabulary(ontology, def, transformConfig);
+        new JavaTransformer(transformConfig).generateVocabulary(ontology, def);
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {

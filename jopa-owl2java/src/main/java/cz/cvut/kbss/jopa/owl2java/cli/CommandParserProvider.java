@@ -1,12 +1,17 @@
 package cz.cvut.kbss.jopa.owl2java.cli;
 
-import cz.cvut.kbss.jopa.owl2java.Constants;
-import cz.cvut.kbss.jopa.owl2java.joptsimpleparams.Param;
-import cz.cvut.kbss.jopa.owl2java.joptsimpleparams.ParamOptionParser;
+import cz.cvut.kbss.jopa.owl2java.config.Defaults;
 import joptsimple.OptionParser;
 
-public class CommandParserProvider {
-    public static final OptionParser getCommandHelp() {
+import static cz.cvut.kbss.jopa.owl2java.cli.Option.*;
+
+public final class CommandParserProvider {
+
+    private CommandParserProvider() {
+        throw new AssertionError();
+    }
+
+    public static OptionParser getCommandHelp() {
         return new OptionParser() {
             {
                 // no options
@@ -14,32 +19,29 @@ public class CommandParserProvider {
         };
     }
 
-    public static final OptionParser getCommandList() {
+    public static OptionParser getCommandList() {
         final ParamOptionParser p = new ParamOptionParser();
-        p.accepts(Param.MAPPING_FILE).withRequiredArg().ofType(String.class);
+        p.accepts(MAPPING_FILE).withRequiredArg().ofType(String.class);
         return p;
     }
 
-    public static final OptionParser getCommandTransform() {
+    public static OptionParser getCommandTransform() {
         final ParamOptionParser p = new ParamOptionParser();
-        p.accepts(Param.MAPPING_FILE).withRequiredArg().ofType(String.class);
-        p.accepts(Param.PACKAGE).withRequiredArg().ofType(String.class)
-         .defaultsTo(Constants.DEFAULT_TARGET_PACKAGE);
-        p.accepts(Param.CONTEXT).withOptionalArg().ofType(String.class);
-        p.accepts(Param.WITH_IRIS).withRequiredArg().ofType(Boolean.class).defaultsTo(false);
-        p.accepts(Param.TARGET_DIR).withRequiredArg().ofType(String.class).defaultsTo("");
-        p.accepts(Param.WHOLE_ONTOLOGY_AS_IC).withOptionalArg().ofType(Boolean.class)
-         .defaultsTo(false);
-        p.accepts(Param.IGNORE_FAILED_IMPORTS).withOptionalArg().ofType(Boolean.class)
-         .defaultsTo(false);
-        p.accepts(Param.JAVA_CLASSNAME_ANNOTATION).withOptionalArg().ofType(String.class)
-         .defaultsTo(Constants.P_CLASS_NAME);
-        p.accepts(Param.PROPERTIES_TYPE).withRequiredArg().ofType(String.class)
-         .defaultsTo(PropertiesType.string.name());
+        p.accepts(MAPPING_FILE).withRequiredArg().ofType(String.class);
+        p.accepts(PACKAGE).withRequiredArg().ofType(String.class).defaultsTo(Defaults.PACKAGE);
+        p.accepts(CONTEXT).withRequiredArg().ofType(String.class);
+        p.accepts(WITH_IRIS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(TARGET_DIR).withRequiredArg().ofType(String.class).defaultsTo(Defaults.TARGET_DIR);
+        p.accepts(WHOLE_ONTOLOGY_AS_IC).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(IGNORE_FAILED_IMPORTS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(JAVA_CLASSNAME_ANNOTATION).withRequiredArg().ofType(String.class)
+         .defaultsTo(Defaults.JAVA_CLASSNAME_ANNOTATION);
+        p.accepts(PROPERTIES_TYPE).withRequiredArg().ofType(String.class).defaultsTo(Defaults.PROPERTIES_TYPE);
+        p.accepts(GENERATE_JAVADOC_FROM_COMMENT).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
         return p;
     }
 
-    public static final OptionParser getCommandVersion() {
+    public static OptionParser getCommandVersion() {
         return new OptionParser() {
             {
                 // no options
@@ -47,18 +49,16 @@ public class CommandParserProvider {
         };
     }
 
-    public static final OptionParser getCommandVocabulary() {
+    public static OptionParser getCommandVocabulary() {
         final ParamOptionParser p = new ParamOptionParser();
-        p.accepts(Param.MAPPING_FILE).withRequiredArg().ofType(String.class);
-        p.accepts(Param.PACKAGE).withRequiredArg().ofType(String.class)
-         .defaultsTo(Constants.DEFAULT_TARGET_PACKAGE);
-        p.accepts(Param.CONTEXT).withRequiredArg().ofType(String.class);
-        p.accepts(Param.WITH_IRIS).withRequiredArg().ofType(Boolean.class).defaultsTo(false);
-        p.accepts(Param.TARGET_DIR).withRequiredArg().ofType(String.class).defaultsTo("");
-        p.accepts(Param.WHOLE_ONTOLOGY_AS_IC).withOptionalArg().ofType(Boolean.class)
-         .defaultsTo(false);
-        p.accepts(Param.IGNORE_FAILED_IMPORTS).withOptionalArg().ofType(Boolean.class)
-         .defaultsTo(false);
+        p.accepts(MAPPING_FILE).withRequiredArg().ofType(String.class);
+        p.accepts(PACKAGE).withRequiredArg().ofType(String.class).defaultsTo(Defaults.PACKAGE);
+        p.accepts(CONTEXT).withRequiredArg().ofType(String.class);
+        p.accepts(WITH_IRIS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(TARGET_DIR).withRequiredArg().ofType(String.class).defaultsTo(Defaults.TARGET_DIR);
+        p.accepts(WHOLE_ONTOLOGY_AS_IC).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(IGNORE_FAILED_IMPORTS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(GENERATE_JAVADOC_FROM_COMMENT).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
         return p;
     }
 }

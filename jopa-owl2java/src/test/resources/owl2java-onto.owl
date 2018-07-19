@@ -37,6 +37,7 @@
 
     <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy">
         <rdfs:range rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+        <rdfs:comment xml:lang="en">Connects artifact to its author.</rdfs:comment>
     </owl:ObjectProperty>
     
 
@@ -187,6 +188,7 @@
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report">
         <rdfs:label xml:lang="en">Report</rdfs:label>
+        <rdfs:comment xml:lang="en">Represents a logical report filed by a person.</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#LogicalRecord"/>
     </owl:Class>
 </rdf:RDF>

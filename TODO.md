@@ -25,7 +25,6 @@
 - [ ] When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
     - CodeModel API does not support any such feature, it always removes files and replaces them with new ones
 - [ ] Add support for Lobs and Blobs
-- [ ] Resolve support of the `readOnly` attribute in persistent field annotations
 
 ## Research Topics
 

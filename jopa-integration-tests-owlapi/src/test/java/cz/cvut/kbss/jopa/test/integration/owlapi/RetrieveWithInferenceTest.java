@@ -6,6 +6,7 @@ import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.jopa.test.runner.RetrieveWithInferenceRunner;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Collections;
 
-import static cz.cvut.kbss.jopa.test.Vocabulary.RDFS_SUBCLASS_OF;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -34,7 +34,7 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         // We have to add the subclass assertion here, so that it is applied to the same transactional snapshot as is
         // queried next
         persistTestData(Collections.singleton(
-                new Triple(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS_SUBCLASS_OF),
+                new Triple(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
         final OWLClassW result = em.find(OWLClassW.class, entityW.getUri());
         assertNotNull(result);

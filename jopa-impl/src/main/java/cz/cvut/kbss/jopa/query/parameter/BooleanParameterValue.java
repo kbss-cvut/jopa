@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 class BooleanParameterValue implements ParameterValue {
 
@@ -31,6 +31,6 @@ class BooleanParameterValue implements ParameterValue {
 
     @Override
     public String getQueryString() {
-        return "\"" + value + "\"^^<" + CommonVocabulary.XSD_BOOLEAN + ">";
+        return "\"" + value + "\"^^<" + XSD.BOOLEAN + ">";
     }
 }
