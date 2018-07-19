@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -46,8 +44,6 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 
     private final boolean includeExplicit;
 
-    private final boolean readOnly;
-
     private final boolean nonEmpty;
 
     private ParticipationConstraint[] constraints;
@@ -64,7 +60,6 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
         this.fetchType = builder.fetchType;
         this.inferred = builder.inferred;
         this.includeExplicit = builder.includeExplicit;
-        this.readOnly = builder.readOnly;
         this.constraints = builder.constraints;
         this.nonEmpty = builder.nonEmpty;
     }
@@ -177,11 +172,6 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
         return includeExplicit;
     }
 
-    @Override
-    public boolean isReadOnly() {
-        return readOnly;
-    }
-
     public static SingularAttributeBuilder iri(IRI iri) {
         return new SingularAttributeBuilder().iri(iri);
     }
@@ -198,7 +188,6 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
         private FetchType fetchType;
         private boolean inferred;
         private boolean includeExplicit;
-        private boolean readOnly;
         private boolean nonEmpty = false;
         private ParticipationConstraint[] constraints;
 
@@ -254,11 +243,6 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 
         public SingularAttributeBuilder<X, T> includeExplicit(boolean includeExplicit) {
             this.includeExplicit = includeExplicit;
-            return this;
-        }
-
-        public SingularAttributeBuilder<X, T> readOnly(boolean readOnly) {
-            this.readOnly = readOnly;
             return this;
         }
 

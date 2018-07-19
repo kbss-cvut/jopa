@@ -72,13 +72,6 @@ public interface FieldSpecification<X, E> {
     boolean includeExplicit();
 
     /**
-     * Whether values of this field cannot be modified.
-     *
-     * @return Read only status of this field
-     */
-    boolean isReadOnly();
-
-    /**
      * Return the name of the attribute.
      *
      * @return name
