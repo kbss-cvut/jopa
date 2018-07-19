@@ -18,7 +18,7 @@
         <dependency>
             <groupId>net.sf.jopt-simple</groupId>
             <artifactId>jopt-simple</artifactId>
-            <version>3.2</version>
+            <version>4.9</version>
         </dependency>
         <dependency>
             <groupId>com.sun.codemodel</groupId>

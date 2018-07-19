@@ -1,9 +1,8 @@
 package cz.cvut.kbss.jopa.owl2java.config;
 
-import cz.cvut.kbss.jopa.owl2java.cli.CommandParserProvider;
+import cz.cvut.kbss.jopa.owl2java.cli.CliParams;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
-import joptsimple.OptionSet;
 
 public class TransformationConfiguration {
 
@@ -19,7 +18,7 @@ public class TransformationConfiguration {
 
     private final PropertiesType propertiesType;
 
-    private final OptionSet cliParams;
+    private final CliParams cliParams;
 
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
         this.context = builder.context;
@@ -28,17 +27,18 @@ public class TransformationConfiguration {
         this.generateOwlapiIris = builder.owlapiIris;
         this.generateJavadoc = builder.generateJavadoc;
         this.propertiesType = builder.propertiesType;
-        this.cliParams = CommandParserProvider.getCommandTransform().parse("");
+        this.cliParams = CliParams.empty();
     }
 
-    private TransformationConfiguration(OptionSet cliParams) {
+    private TransformationConfiguration(CliParams cliParams) {
         this.cliParams = cliParams;
-        this.context = (Boolean) cliParams.valueOf(Option.WHOLE_ONTOLOGY_AS_IC.arg) ?
-                       cliParams.valueOf(Option.CONTEXT.arg).toString() : null;
+        this.context =
+                cliParams.is(Option.WHOLE_ONTOLOGY_AS_IC.arg) ? null : cliParams.valueOf(Option.CONTEXT.arg).toString();
         this.packageName = cliParams.valueOf(Option.PACKAGE.arg).toString();
         this.targetDir = cliParams.valueOf(Option.TARGET_DIR.arg).toString();
-        this.generateOwlapiIris = (Boolean) cliParams.valueOf(Option.WITH_IRIS.arg);
-        this.generateJavadoc = (Boolean) cliParams.valueOf(Option.GENERATE_JAVADOC_FROM_COMMENT.arg);
+        this.generateOwlapiIris = cliParams.is(Option.WITH_IRIS.arg, Defaults.WITH_IRIS);
+        this.generateJavadoc = cliParams
+                .is(Option.GENERATE_JAVADOC_FROM_COMMENT.arg, Defaults.GENERATE_JAVADOC_FROM_COMMENT);
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
     }
 
@@ -70,11 +70,11 @@ public class TransformationConfiguration {
         return propertiesType;
     }
 
-    public OptionSet getCliParams() {
+    public CliParams getCliParams() {
         return cliParams;
     }
 
-    public static TransformationConfiguration config(OptionSet cliParams) {
+    public static TransformationConfiguration config(CliParams cliParams) {
         return new TransformationConfiguration(cliParams);
     }
 
