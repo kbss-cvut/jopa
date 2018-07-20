@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.10.4 - July 20, 2018
+- Fixed a critical NPX issue cased by inherited indirect collections not being removed when an entity was detached from 
+the persistence context.
+
 ## 0.10.3 - July 19, 2018
 - Reduced memory footprint.
 - Configurable generation of Javadoc from rdfs:comment annotations in OWL2Java (Enhancement #35).
