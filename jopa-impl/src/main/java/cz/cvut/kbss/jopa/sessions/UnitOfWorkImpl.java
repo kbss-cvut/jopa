@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -350,8 +348,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             return State.REMOVED;
         } else if (getNewObjectsCloneToOriginal().containsKey(entity) && isInRepository(descriptor, entity)) {
             return State.MANAGED_NEW;
-        }
-        else if (cloneMapping.contains(entity) && isInRepository(descriptor, entity)) {
+        } else if (cloneMapping.contains(entity) && isInRepository(descriptor, entity)) {
             return State.MANAGED;
         } else {
             return State.NOT_MANAGED;
@@ -490,7 +487,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
 
-        return cloneMapping.contains(entity) && !getDeletedObjects().containsKey(entity) || getNewObjectsCloneToOriginal().containsKey(entity);
+        return cloneMapping.contains(entity) && !getDeletedObjects().containsKey(entity) ||
+                getNewObjectsCloneToOriginal().containsKey(entity);
     }
 
     /**
@@ -1064,12 +1062,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param entity The entity to remove indirect collections from
      */
     private void removeIndirectCollections(Object entity) {
-        Field[] fields = entity.getClass().getDeclaredFields();
-        for (Field f : fields) {
-            final Object ob = EntityPropertiesUtils.getFieldValue(f, entity);
-            if (ob instanceof IndirectCollection) {
-                IndirectCollection<?> indCol = (IndirectCollection<?>) ob;
-                EntityPropertiesUtils.setFieldValue(f, entity, indCol.getReferencedCollection());
+        assert entity != null;
+        final EntityType<?> et = entityType(entity.getClass());
+        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
+            final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+            if (value instanceof IndirectCollection) {
+                IndirectCollection<?> indCol = (IndirectCollection<?>) value;
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indCol.getReferencedCollection());
             }
         }
     }

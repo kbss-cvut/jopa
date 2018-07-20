@@ -902,4 +902,35 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.restoreRemovedObject(a);
         verify(storageMock).persist(a.getUri(), a, descriptor);
     }
+
+    @Test
+    public void commitDetachesPersistedInstance() {
+        uow.registerNewObject(entityA, descriptor);
+        assertTrue(entityA.getTypes() instanceof IndirectSet);
+        assertTrue(uow.contains(entityA));
+        uow.commit();
+        assertFalse(uow.contains(entityA));
+    }
+
+    @Test
+    public void commitReplacesIndirectCollectionsWithRegularOnesInDetachedInstances() {
+        uow.registerNewObject(entityA, descriptor);
+        assertTrue(entityA.getTypes() instanceof IndirectSet);
+        uow.commit();
+        assertFalse(entityA.getTypes() instanceof IndirectSet);
+    }
+
+    @Test
+    public void detachReplacesInheritedIndirectCollectionWithRegularOne() {
+        final OWLClassR entityR = new OWLClassR(Generators.createIndividualIdentifier());
+        entityR.setName("test");
+        final Set<String> types = Generators.generateTypes(3);
+        entityR.setTypes(types);
+        uow.registerNewObject(entityR, descriptor);
+        assertTrue(entityR.getTypes() instanceof IndirectSet);
+        assertEquals(types, entityR.getTypes());
+        uow.commit();
+        assertFalse(entityR.getTypes() instanceof IndirectSet);
+        assertEquals(types, entityR.getTypes());
+    }
 }
