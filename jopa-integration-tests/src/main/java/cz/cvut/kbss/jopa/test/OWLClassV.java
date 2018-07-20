@@ -12,7 +12,6 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
