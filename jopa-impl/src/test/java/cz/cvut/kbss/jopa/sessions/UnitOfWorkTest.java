@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -18,13 +16,13 @@ import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -322,17 +320,15 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test(expected = NullPointerException.class)
     public void testRegisterNewObjectNull() {
         uow.registerNewObject(null, descriptor);
-        fail("This line should not have been reached.");
     }
 
     @Test(expected = NullPointerException.class)
     public void testRegisterNewObjectNullDescriptor() {
         uow.registerNewObject(entityA, null);
-        fail("This line should not have been reached.");
     }
 
-    @Test(expected = PrimaryKeyNotSetException.class)
-    public void testRegisterNewObjectNullPkNotGenerated() {
+    @Test(expected = IdentifierNotSetException.class)
+    public void registerNewObjectThrowsIdentifierNotSetExceptionWhenIdentifierIsNullAndNotGenerated() {
         final OWLClassB b = new OWLClassB();
         try {
             uow.registerNewObject(b, descriptor);
@@ -340,7 +336,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
             verify(storageMock, never()).persist(any(Object.class), any(Object.class),
                     eq(descriptor));
         }
-        fail("This line should not have been reached.");
     }
 
     @Test
@@ -413,7 +408,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     public void testCommitInactive() {
         uow.release();
         uow.commit();
-        fail("This line should not have been reached.");
     }
 
     @Test
@@ -434,7 +428,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
     public void testRollbackInactive() {
         uow.release();
         uow.rollback();
-        fail("This line should not have been reached.");
     }
 
     @Test(expected = OWLPersistenceException.class)
@@ -548,7 +541,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         } finally {
             verify(storageMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
         }
-        fail("This line should not have been reached.");
     }
 
     @Test(expected = IllegalStateException.class)
@@ -559,7 +551,6 @@ public class UnitOfWorkTest extends UnitOfWorkTestBase {
         } finally {
             verify(storageMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
         }
-        fail("This line should not have been reached.");
     }
 
     @Test

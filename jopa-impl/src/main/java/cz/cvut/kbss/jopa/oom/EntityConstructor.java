@@ -66,7 +66,7 @@ class EntityConstructor {
     private <T> T createEntityInstance(URI primaryKey, EntityType<T> et, Descriptor descriptor)
             throws InstantiationException, IllegalAccessException {
         final T instance = et.getJavaType().newInstance();
-        EntityPropertiesUtils.setPrimaryKey(primaryKey, instance, et);
+        EntityPropertiesUtils.setIdentifier(primaryKey, instance, et);
         mapper.registerInstance(primaryKey, instance, descriptor.getContext());
         return instance;
     }

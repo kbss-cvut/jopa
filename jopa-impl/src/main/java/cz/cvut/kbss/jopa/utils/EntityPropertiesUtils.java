@@ -1,26 +1,24 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.utils;
 
+import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Transient;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.exception.UnassignableIdentifierException;
 
 import java.lang.reflect.Field;
@@ -131,18 +129,18 @@ public class EntityPropertiesUtils {
     }
 
     /**
-     * Sets the specified primary key on the specified entity.
+     * Sets the specified identifier on the specified entity.
      *
-     * @param primaryKey The key to set
+     * @param identifier The identifier to set
      * @param entity     Target entity
      * @param et         Entity type
      */
-    public static <T> void setPrimaryKey(Object primaryKey, T entity, EntityType<T> et) {
+    public static <T> void setIdentifier(Object identifier, T entity, EntityType<T> et) {
         final Identifier id = et.getIdentifier();
         final Field idField = id.getJavaField();
         try {
-            final Object assignablePk = IdentifierTransformer.transformToIdentifier(primaryKey, idField.getType());
-            setFieldValue(idField, entity, assignablePk);
+            final Object assignableId = IdentifierTransformer.transformToIdentifier(identifier, idField.getType());
+            setFieldValue(idField, entity, assignableId);
         } catch (IllegalArgumentException e) {
             throw new UnassignableIdentifierException(e);
         }
@@ -184,12 +182,12 @@ public class EntityPropertiesUtils {
      *
      * @param instance   The instance to verify
      * @param entityType Entity type of the instance, as specified by metamodel
-     * @throws PrimaryKeyNotSetException If the identifier is not generated
+     * @throws cz.cvut.kbss.jopa.exception.IdentifierNotSetException If the identifier is not generated
      */
     public static void verifyIdentifierIsGenerated(Object instance, EntityType<?> entityType) {
         if (!entityType.getIdentifier().isGenerated()) {
-            throw new PrimaryKeyNotSetException("The id for entity " + instance
-                    + " is null and it is not specified as \'generated\' ");
+            throw new IdentifierNotSetException(
+                    "The id for entity " + instance + " is null and it is not specified as \'generated\' ");
         }
     }
 

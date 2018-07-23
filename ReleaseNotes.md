@@ -1,7 +1,7 @@
 # JOPA - Release Notes
 
 ## 0.10.4 - July 20, 2018
-- Fixed a critical NPX issue cased by inherited indirect collections not being removed when an entity was detached from 
+- Fixed a critical NPX issue caused by inherited indirect collections not being removed when an entity was detached from 
 the persistence context.
 
 ## 0.10.3 - July 19, 2018
