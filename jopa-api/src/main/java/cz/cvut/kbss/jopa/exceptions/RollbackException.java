@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.jopa.exceptions;
 
-public class RollbackException extends RuntimeException {
+public class RollbackException extends OWLPersistenceException {
 
     private static final long serialVersionUID = 8371285315001388603L;
 

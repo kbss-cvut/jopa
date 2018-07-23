@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.exceptions;
 /**
  * Thrown by the persistence provider when a transaction is required but is not active.
  */
-public class TransactionRequiredException extends RuntimeException {
+public class TransactionRequiredException extends OWLPersistenceException {
 
     public TransactionRequiredException(String message) {
         super(message);

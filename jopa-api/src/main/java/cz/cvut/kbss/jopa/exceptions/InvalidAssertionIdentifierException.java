@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.exceptions;
 /**
  * This exception is thrown when assertion identifier is not a valid URI.
  */
-public class InvalidAssertionIdentifierException extends RuntimeException {
+public class InvalidAssertionIdentifierException extends OWLPersistenceException {
 
     public InvalidAssertionIdentifierException(String message) {
         super(message);
