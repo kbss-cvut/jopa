@@ -41,9 +41,9 @@ public class ConnectionWrapper implements Wrapper {
         this.mapper = new ObjectOntologyMapperImpl(uow, connection);
     }
 
-    public <T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor) {
-        final URI pkUri = getPrimaryKeyAsUri(primaryKey);
-        return pkUri != null && mapper.containsEntity(cls, pkUri, descriptor);
+    public <T> boolean contains(Object identifier, Class<T> cls, Descriptor descriptor) {
+        final URI idUri = getIdentifierAsUri(identifier);
+        return idUri != null && mapper.containsEntity(cls, idUri, descriptor);
     }
 
     public <T> T find(LoadingParameters<T> loadingParameters) {
@@ -54,14 +54,14 @@ public class ConnectionWrapper implements Wrapper {
         mapper.updateFieldValue(entity, field, descriptor);
     }
 
-    public <T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
-        final URI pkUri = getPrimaryKeyAsUri(primaryKey);
-        mapper.persistEntity(pkUri, entity, descriptor);
+    public <T> void persist(Object identifier, T entity, Descriptor descriptor) {
+        final URI idUri = getIdentifierAsUri(identifier);
+        mapper.persistEntity(idUri, entity, descriptor);
     }
 
-    public <T> void remove(Object primaryKey, Class<T> cls, Descriptor descriptor) {
-        final URI pkUri = getPrimaryKeyAsUri(primaryKey);
-        mapper.removeEntity(pkUri, cls, descriptor);
+    public <T> void remove(Object identifier, Class<T> cls, Descriptor descriptor) {
+        final URI idUri = getIdentifierAsUri(identifier);
+        mapper.removeEntity(idUri, cls, descriptor);
     }
 
     public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
@@ -117,8 +117,8 @@ public class ConnectionWrapper implements Wrapper {
         }
     }
 
-    private URI getPrimaryKeyAsUri(Object primaryKey) {
-        return primaryKey == null ? null : EntityPropertiesUtils.getValueAsURI(primaryKey);
+    private URI getIdentifierAsUri(Object identifier) {
+        return identifier == null ? null : EntityPropertiesUtils.getValueAsURI(identifier);
     }
 
     @Override

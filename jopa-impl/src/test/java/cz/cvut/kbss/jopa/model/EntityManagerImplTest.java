@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -45,6 +43,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashSet;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -416,8 +415,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasTwo", cascade = {CascadeType.MERGE,
-                                                                                  CascadeType.PERSIST,
-                                                                                  CascadeType.REMOVE})
+                CascadeType.PERSIST,
+                CascadeType.REMOVE})
         private CascadeCycleTwo two;
 
         private CascadeCycleOne(URI uri) {
@@ -430,8 +429,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasOne", cascade = {CascadeType.PERSIST,
-                                                                                  CascadeType.MERGE,
-                                                                                  CascadeType.REMOVE})
+                CascadeType.MERGE,
+                CascadeType.REMOVE})
         private CascadeCycleOne one;
 
         private CascadeCycleTwo(URI uri) {
@@ -519,5 +518,24 @@ public class EntityManagerImplTest {
         em.persist(a);
         final OWLClassA result = em.merge(a);
         assertSame(a, result);
+    }
+
+    @Test
+    public void mergeDifferentInstanceWithSameIdAsManagedInstanceMergesChanges() throws Exception {
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        em.persist(a);
+        when(connectorMock.contains(eq(a.getUri()), eq(OWLClassA.class), any())).thenReturn(true);
+        when(connectorMock.find(any())).thenReturn(a);
+        final OWLClassA copyA = new OWLClassA(a.getUri());
+        final String str = "differentString";
+        copyA.setStringAttribute(str);
+        copyA.setTypes(new HashSet<>(a.getTypes()));
+        final OWLClassA result = em.merge(copyA);
+        assertEquals(str, result.getStringAttribute());
+        assertEquals(a.getTypes(), result.getTypes());
+        assertTrue(em.contains(result));
+        final ArgumentCaptor<OWLClassA> captor = ArgumentCaptor.forClass(OWLClassA.class);
+        verify(connectorMock).merge(captor.capture(), eq(OWLClassA.getStrAttField()), any());
+        assertEquals(a.getUri(), captor.getValue().getUri());
     }
 }
