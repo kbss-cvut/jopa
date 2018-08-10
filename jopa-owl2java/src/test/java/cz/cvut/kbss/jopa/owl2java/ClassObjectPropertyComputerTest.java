@@ -21,6 +21,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ClassObjectPropertyComputerTest {
 
@@ -72,12 +73,22 @@ public class ClassObjectPropertyComputerTest {
     }
 
     @Test
-    public void noCardinalityConstraintReturnsCardMultiple() {
+    public void noMaxCardinalityConstraintReturnsCardMultiple() {
         ics.addIntegrityConstraint(icFactory.ObjectPropertyRangeConstraint(cls1, op, cls2));
         ics.addIntegrityConstraint(icFactory.MinObjectParticipationConstraint(cls1, op, cls2, 0));
         final ClassObjectPropertyComputer c = new ClassObjectPropertyComputer(cls1, op, ics, o);
 
         assertEquals(1, c.getParticipationConstraints().size());
+        assertEquals(Card.MULTIPLE, c.getCard());
+        assertEquals(cls2, c.getFiller());
+    }
+
+    @Test
+    public void noCardinalityConstraintAndRangeConstraintReturnsCardMultiple() {
+        ics.addIntegrityConstraint(icFactory.ObjectPropertyRangeConstraint(cls1, op, cls2));
+        final ClassObjectPropertyComputer c = new ClassObjectPropertyComputer(cls1, op, ics, o);
+
+        assertTrue(c.getParticipationConstraints().isEmpty());
         assertEquals(Card.MULTIPLE, c.getCard());
         assertEquals(cls2, c.getFiller());
     }

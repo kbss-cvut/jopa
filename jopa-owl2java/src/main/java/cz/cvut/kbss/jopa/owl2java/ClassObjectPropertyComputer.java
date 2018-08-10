@@ -35,6 +35,7 @@ public class ClassObjectPropertyComputer {
                                        final IntegrityConstraintSet set,
                                        final OWLOntology merged
     ) {
+        boolean hasFiller = true;
         set.getClassObjectIntegrityConstraints(clazz, prop).forEach(ic -> {
             if (ic instanceof ObjectParticipationConstraint) {
                 constraints.add((ObjectParticipationConstraint) ic);
@@ -44,10 +45,11 @@ public class ClassObjectPropertyComputer {
         });
 
         if (filler == null) {
+            hasFiller = false;
             filler = merged.getOWLOntologyManager().getOWLDataFactory().getOWLThing();
         }
 
-        if (constraints.isEmpty()) {
+        if (constraints.isEmpty() && !hasFiller) {
             card = Card.NO;
         } else {
             final OWLDataFactory f = merged.getOWLOntologyManager().getOWLDataFactory();
