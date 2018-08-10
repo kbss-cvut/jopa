@@ -19,16 +19,10 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ClassObjectPropertyComputer {
-
-    private final Collection<ObjectParticipationConstraint> constraints = new HashSet<>();
-    private OWLClass filler;
-    private Card card;
+public class ClassObjectPropertyComputer extends ClassPropertyComputer<ObjectParticipationConstraint, OWLClass> {
 
     public ClassObjectPropertyComputer(final OWLClass clazz,
                                        final OWLObjectProperty prop,
@@ -78,17 +72,5 @@ public class ClassObjectPropertyComputer {
                 }
             }
         }
-    }
-
-    public Card getCard() {
-        return card;
-    }
-
-    public OWLClass getFiller() {
-        return filler;
-    }
-
-    public Collection<ObjectParticipationConstraint> getParticipationConstraints() {
-        return constraints;
     }
 }

@@ -20,14 +20,7 @@ import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLOntology;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class ClassDataPropertyComputer {
-
-    private final Set<DataParticipationConstraint> constraints = new HashSet<>();
-    private OWLDatatype filler;
-    private Card card;
+public class ClassDataPropertyComputer extends ClassPropertyComputer<DataParticipationConstraint, OWLDatatype> {
 
     public ClassDataPropertyComputer(
             final OWLClass clazz,
@@ -38,7 +31,7 @@ public class ClassDataPropertyComputer {
         boolean hasFiller = true;
         set.getClassDataIntegrityConstraints(clazz, prop).forEach(integrityConstraint -> {
             if (integrityConstraint instanceof DataParticipationConstraint) {
-                this.constraints.add((DataParticipationConstraint) integrityConstraint);
+                constraints.add((DataParticipationConstraint) integrityConstraint);
             } else if (integrityConstraint instanceof DataRangeConstraint) {
                 this.filler = ((DataRangeConstraint) integrityConstraint).getRange();
             }
@@ -53,7 +46,7 @@ public class ClassDataPropertyComputer {
             this.card = Card.NO;
         } else {
             this.card = Card.MULTIPLE;
-            for (final DataParticipationConstraint opc : getParticipationConstraints()) {
+            for (final DataParticipationConstraint opc : constraints) {
                 final OWLDatatype dt2 = opc.getObject();
                 if ((getFiller().equals(dt2) ||
                         dt2.equals(OWLManager.getOWLDataFactory().getTopDatatype())) && opc.getMax() == 1) {
@@ -63,17 +56,4 @@ public class ClassDataPropertyComputer {
             }
         }
     }
-
-    public Card getCard() {
-        return card;
-    }
-
-    public OWLDatatype getFiller() {
-        return filler;
-    }
-
-    public Set<DataParticipationConstraint> getParticipationConstraints() {
-        return constraints;
-    }
-
 }

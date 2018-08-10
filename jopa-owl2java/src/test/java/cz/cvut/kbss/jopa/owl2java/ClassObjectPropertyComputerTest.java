@@ -35,7 +35,7 @@ public class ClassObjectPropertyComputerTest {
     private IntegrityConstraintFactory icFactory;
 
     @Before
-    public void init() throws Exception {
+    public void setUp() throws Exception {
         this.o = OWLManager.createOWLOntologyManager().createOntology(IRI.create("http://examp.le/"));
         this.f = OWLManager.getOWLDataFactory();
         this.cls1 = f.getOWLClass(IRI.create("http://examp.le/c1"));

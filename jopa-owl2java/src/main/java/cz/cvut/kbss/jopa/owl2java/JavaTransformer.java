@@ -254,26 +254,19 @@ public class JavaTransformer {
             generateJavadoc(ontology, prop, fv);
 
             if (comp.getCard().equals(Card.SIMPLELIST)) {
-                fv.annotate(Sequence.class)
-                  .param("type", SequenceType.simple);
+                fv.annotate(Sequence.class).param("type", SequenceType.simple);
             }
 
 
-            fv.annotate(OWLObjectProperty.class).param("iri",
-                    entities.get(prop));
+            fv.annotate(OWLObjectProperty.class).param("iri", entities.get(prop));
 
             JAnnotationArrayMember use = null;
             for (ObjectParticipationConstraint ic : comp.getParticipationConstraints()) {
                 if (use == null) {
                     use = fv.annotate(ParticipationConstraints.class).paramArray("value");
                 }
-                JAnnotationUse u = use.annotate(
-                        ParticipationConstraint.class).param(
-                        // "owlClassIRI",
-                        // ic.getSubject().getIRI().toString()).param(
-                        // "owlPropertyIRI",
-                        // ic.getPredicate().getIRI().toString()).param(
-                        "owlObjectIRI", entities.get(ic.getObject()));
+                JAnnotationUse u = use.annotate(ParticipationConstraint.class)
+                                      .param("owlObjectIRI", entities.get(ic.getObject()));
                 setParticipationConstraintCardinality(u, ic);
             }
         }
@@ -356,8 +349,7 @@ public class JavaTransformer {
                 }
             });
 
-            for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context
-                    .objectProperties) {
+            for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
                 _generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop,
                         propertiesType);
             }
