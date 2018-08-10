@@ -35,6 +35,7 @@ public class ClassDataPropertyComputer {
             final IntegrityConstraintSet set,
             final OWLOntology ontology
     ) {
+        boolean hasFiller = true;
         set.getClassDataIntegrityConstraints(clazz, prop).forEach(integrityConstraint -> {
             if (integrityConstraint instanceof DataParticipationConstraint) {
                 this.constraints.add((DataParticipationConstraint) integrityConstraint);
@@ -44,17 +45,18 @@ public class ClassDataPropertyComputer {
         });
 
         if (filler == null) {
+            hasFiller = false;
             this.filler = ontology.getOWLOntologyManager().getOWLDataFactory().getRDFPlainLiteral();
         }
 
-        if (constraints.isEmpty()) {
+        if (constraints.isEmpty() && !hasFiller) {
             this.card = Card.NO;
         } else {
             this.card = Card.MULTIPLE;
             for (final DataParticipationConstraint opc : getParticipationConstraints()) {
                 final OWLDatatype dt2 = opc.getObject();
-                if (getFiller().equals(dt2) ||
-                        dt2.equals(OWLManager.getOWLDataFactory().getTopDatatype()) && opc.getMax() == 1) {
+                if ((getFiller().equals(dt2) ||
+                        dt2.equals(OWLManager.getOWLDataFactory().getTopDatatype())) && opc.getMax() == 1) {
                     this.card = Card.ONE;
                     return;
                 }
