@@ -234,9 +234,8 @@ public class JavaTransformer {
                 ontology
         );
 
-        if (!Card.NO.equals(comp.getCard())) {
-            JClass filler = ensureCreated(pkg, cm, comp.getFiller(), ontology,
-                    propertiesType);
+        if (Card.NO != comp.getCard()) {
+            JClass filler = ensureCreated(pkg, cm, comp.getFiller(), ontology, propertiesType);
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             switch (comp.getCard()) {

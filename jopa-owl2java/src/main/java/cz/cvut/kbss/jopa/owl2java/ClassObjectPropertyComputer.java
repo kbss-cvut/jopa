@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class ClassObjectPropertyComputer {
 
-    private Collection<ObjectParticipationConstraint> constraints = new HashSet<>();
+    private final Collection<ObjectParticipationConstraint> constraints = new HashSet<>();
     private OWLClass filler;
     private Card card;
 
@@ -58,20 +58,18 @@ public class ClassObjectPropertyComputer {
 
             if (superClasses.contains(f.getOWLClass(IRI.create(SequencesVocabulary.c_List)))) {
                 this.filler = new ClassObjectPropertyComputer(object,
-                        f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_element)),
-                        set, merged).getFiller();
+                        f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_element)), set, merged).getFiller();
                 card = Card.LIST;
             } else if (superClasses.contains(f.getOWLClass(IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
                 this.filler = new ClassObjectPropertyComputer(object,
-                        f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_hasNext)),
-                        set, merged).getFiller();
+                        f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_hasNext)), set, merged).getFiller();
                 card = Card.SIMPLELIST; // TODO referenced
             } else {
                 card = Card.MULTIPLE;
                 for (ObjectParticipationConstraint opc : constraints) {
                     OWLClass dt2 = opc.getObject();
-                    if (filler.equals(dt2) ||
-                            dt2.equals(OWLManager.getOWLDataFactory().getOWLThing()) && opc.getMax() == 1) {
+                    if ((filler.equals(dt2) || dt2.equals(OWLManager.getOWLDataFactory().getOWLThing())) &&
+                            opc.getMax() == 1) {
                         card = Card.ONE;
                         break;
                     }
