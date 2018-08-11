@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
+import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.semanticweb.owlapi.model.*;
@@ -33,8 +34,6 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -45,55 +44,55 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-            "assert",
-            "boolean",
-            "break",
-            "byte",
-            "case",
-            "catch",
-            "char",
-            "class",
-            "const",
-            "continue",
-            "default",
-            "do",
-            "double",
-            "else",
-            "enum",
-            "extends",
-            "final",
-            "finally",
-            "float",
-            "for",
-            "goto",
-            "if",
-            "implements",
-            "import",
-            "instanceof",
-            "int",
-            "interface",
-            "long",
-            "native",
-            "new",
-            "package",
-            "private",
-            "protected",
-            "public",
-            "return",
-            "short",
-            "static",
-            "strictfp",
-            "super",
-            "switch",
-            "synchronized",
-            "this",
-            "throw",
-            "throws",
-            "transient",
-            "try",
-            "void",
-            "volatile",
-            "while"};
+                                              "assert",
+                                              "boolean",
+                                              "break",
+                                              "byte",
+                                              "case",
+                                              "catch",
+                                              "char",
+                                              "class",
+                                              "const",
+                                              "continue",
+                                              "default",
+                                              "do",
+                                              "double",
+                                              "else",
+                                              "enum",
+                                              "extends",
+                                              "final",
+                                              "finally",
+                                              "float",
+                                              "for",
+                                              "goto",
+                                              "if",
+                                              "implements",
+                                              "import",
+                                              "instanceof",
+                                              "int",
+                                              "interface",
+                                              "long",
+                                              "native",
+                                              "new",
+                                              "package",
+                                              "private",
+                                              "protected",
+                                              "public",
+                                              "return",
+                                              "short",
+                                              "static",
+                                              "strictfp",
+                                              "super",
+                                              "switch",
+                                              "synchronized",
+                                              "this",
+                                              "throw",
+                                              "throws",
+                                              "transient",
+                                              "try",
+                                              "void",
+                                              "volatile",
+                                              "while"};
 
     private static final String PREFIX_STRING = "s_";
     private static final String PREFIX_CLASS = "c_";
@@ -154,18 +153,17 @@ public class JavaTransformer {
      *
      * @param ontology Ontology from which the model is generated
      * @param context  Context information
+     * @return The generated object model
      */
-    public void generateModel(final OWLOntology ontology, final ContextDefinition context) {
+    public ObjectModel generateModel(final OWLOntology ontology, final ContextDefinition context) {
         try {
             final JCodeModel cm = new JCodeModel();
             voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
             _generateModel(ontology, cm, context, modelPackageName());
-            writeOutModel(cm);
-        } catch (JClassAlreadyExistsException e1) {
-            LOG.error("Transformation FAILED.", e1);
-        } catch (IOException e) {
-            LOG.error("File generation FAILED.", e);
+            return new ObjectModel(cm);
+        } catch (JClassAlreadyExistsException e) {
+            throw new OWL2JavaException("Transformation FAILED.", e);
         }
     }
 
@@ -199,24 +197,18 @@ public class JavaTransformer {
      * @param ontology Ontology from which the vocabulary should be generated
      * @param context  Integrity constraints context, if null is supplied, the whole ontology is interpreted as
      *                 integrity constraints.
+     * @return The generated object model
      */
-    public void generateVocabulary(final OWLOntology ontology, ContextDefinition context) {
+    public ObjectModel generateVocabulary(final OWLOntology ontology, ContextDefinition context) {
         try {
             final JCodeModel cm = new JCodeModel();
             this.voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
-            writeOutModel(cm);
+            return new ObjectModel(cm);
         } catch (JClassAlreadyExistsException e) {
-            LOG.error("Vocabulary generation FAILED, because the Vocabulary class already exists.", e);
-        } catch (IOException e) {
-            LOG.error("Vocabulary file generation FAILED.", e);
+            throw new OWL2JavaException("Vocabulary generation FAILED, because the Vocabulary class already exists.",
+                    e);
         }
-    }
-
-    private void writeOutModel(JCodeModel cm) throws IOException {
-        final File file = new File(configuration.getTargetDir());
-        file.mkdirs();
-        cm.build(file);
     }
 
     private void _generateObjectProperty(final OWLOntology ontology,

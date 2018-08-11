@@ -86,7 +86,7 @@ public class OWL2JavaTransformer {
     }
 
     public void setOntology(final String owlOntologyName, final String mappingFile) {
-        ontology = getWholeOntology(owlOntologyName, mappingFile);
+        this.ontology = getWholeOntology(owlOntologyName, mappingFile);
 
         LOG.debug("Parsing integrity constraints");
 
@@ -169,7 +169,8 @@ public class OWL2JavaTransformer {
     public void transform(TransformationConfiguration transformConfig) {
         final ContextDefinition def = getValidContext(transformConfig);
         LOG.info("Transforming context ...");
-        new JavaTransformer(transformConfig).generateModel(ontology, def);
+        final ObjectModel result = new JavaTransformer(transformConfig).generateModel(ontology, def);
+        result.writeModel(transformConfig.getTargetDir());
         LOG.info("Transformation SUCCESSFUL.");
     }
 
@@ -193,7 +194,8 @@ public class OWL2JavaTransformer {
         LOG.info("Generating vocabulary ...");
 
         ContextDefinition def = getValidContext(transformConfig);
-        new JavaTransformer(transformConfig).generateVocabulary(ontology, def);
+        final ObjectModel result = new JavaTransformer(transformConfig).generateVocabulary(ontology, def);
+        result.writeModel(transformConfig.getTargetDir());
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
