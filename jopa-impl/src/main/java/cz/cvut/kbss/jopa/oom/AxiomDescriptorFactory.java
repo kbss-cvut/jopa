@@ -62,7 +62,7 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private boolean shouldLoad(FetchType fetchType, boolean forceLoad) {
+    private static boolean shouldLoad(FetchType fetchType, boolean forceLoad) {
         return fetchType != FetchType.LAZY || forceLoad;
     }
 

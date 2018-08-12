@@ -211,14 +211,14 @@ public class JavaTransformer {
         }
     }
 
-    private void _generateObjectProperty(final OWLOntology ontology,
-                                         final JCodeModel cm,
-                                         final ContextDefinition context,
-                                         final String pkg,
-                                         final OWLClass clazz,
-                                         final JDefinedClass subj,
-                                         final org.semanticweb.owlapi.model.OWLObjectProperty prop,
-                                         final PropertiesType propertiesType) {
+    private void generateObjectProperty(final OWLOntology ontology,
+                                        final JCodeModel cm,
+                                        final ContextDefinition context,
+                                        final String pkg,
+                                        final OWLClass clazz,
+                                        final JDefinedClass subj,
+                                        final org.semanticweb.owlapi.model.OWLObjectProperty prop,
+                                        final PropertiesType propertiesType) {
         final ClassObjectPropertyComputer comp = new ClassObjectPropertyComputer(
                 clazz,
                 prop,
@@ -231,14 +231,14 @@ public class JavaTransformer {
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             switch (comp.getCard()) {
-                case ONE:
-                    break;
                 case MULTIPLE:
                     filler = cm.ref(java.util.Set.class).narrow(filler);
                     break;
                 case SIMPLELIST:
                 case LIST:
                     filler = cm.ref(java.util.List.class).narrow(filler);
+                    break;
+                default:
                     break;
             }
 
@@ -274,12 +274,12 @@ public class JavaTransformer {
         }
     }
 
-    private void _generateDataProperty(final OWLOntology ontology,
-                                       final JCodeModel cm,
-                                       final ContextDefinition context,
-                                       final OWLClass clazz,
-                                       final JDefinedClass subj,
-                                       final org.semanticweb.owlapi.model.OWLDataProperty prop) {
+    private void generateDataProperty(final OWLOntology ontology,
+                                      final JCodeModel cm,
+                                      final ContextDefinition context,
+                                      final OWLClass clazz,
+                                      final JDefinedClass subj,
+                                      final org.semanticweb.owlapi.model.OWLDataProperty prop) {
         final ClassDataPropertyComputer comp = new ClassDataPropertyComputer(
                 clazz,
                 prop,
@@ -287,7 +287,7 @@ public class JavaTransformer {
                 ontology
         );
 
-        if (!Card.NO.equals(comp.getCard())) {
+        if (Card.NO != comp.getCard()) {
 
             final JType obj = cm._ref(DatatypeTransformer.transformOWLType(comp.getFiller()));
 
@@ -295,14 +295,15 @@ public class JavaTransformer {
 
             JFieldVar fv;
 
-            if (Card.MULTIPLE.equals(comp.getCard())) {
-                fv = addField(fieldName, subj, cm.ref(java.util.Set.class)
-                                                 .narrow(obj));
-            } else if (Card.ONE.equals(comp.getCard())) {
-                fv = addField(fieldName, subj, obj);
-            } else {
-                assert false : "Unknown cardinality type";
-                return;
+            switch (comp.getCard()) {
+                case MULTIPLE:
+                    fv = addField(fieldName, subj, cm.ref(java.util.Set.class).narrow(obj));
+                    break;
+                case ONE:
+                    fv = addField(fieldName, subj, obj);
+                    break;
+                default:
+                    throw new OWL2JavaException("Unsupported data property cardinality type " + comp.getCard());
             }
             generateJavadoc(ontology, prop, fv);
 
@@ -333,21 +334,19 @@ public class JavaTransformer {
             LOG.info("  Generating class '{}'.", clazz);
             final JDefinedClass subj = ensureCreated(pkg, cm, clazz, ontology, propertiesType);
 
-            context.set.getClassIntegrityConstraints(clazz).forEach((ic) -> {
-                if (ic instanceof AtomicSubClassConstraint) {
-                    final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
-                    subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
-                            propertiesType));
-                }
+            context.set.getClassIntegrityConstraints(clazz).stream()
+                       .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
+                final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
+                subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
+                        propertiesType));
             });
 
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
-                _generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop,
-                        propertiesType);
+                generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop, propertiesType);
             }
 
             for (org.semanticweb.owlapi.model.OWLDataProperty prop : context.dataProperties) {
-                _generateDataProperty(ontology, cm, context, clazz, subj, prop);
+                generateDataProperty(ontology, cm, context, clazz, subj, prop);
             }
         }
     }
@@ -388,7 +387,7 @@ public class JavaTransformer {
         }
     }
 
-    private Optional<String> resolveFieldPrefix(OWLEntity c, Set<IRI> visitedProperties) {
+    private static Optional<String> resolveFieldPrefix(OWLEntity c, Set<IRI> visitedProperties) {
         if (c.isOWLClass()) {
             return Optional.of(PREFIX_CLASS);
         } else if (c.isOWLDatatype()) {
@@ -522,11 +521,13 @@ public class JavaTransformer {
      * @param className Generated class name
      * @return Converted class name
      */
-    private String toJavaNotation(String className) {
+    private static String toJavaNotation(String className) {
         StringBuilder result = new StringBuilder();
-        for (String w : className.split("_"))
-            if (!w.isEmpty())
+        for (String w : className.split("_")) {
+            if (!w.isEmpty()) {
                 result.append(w.substring(0, 1).toUpperCase()).append(w.substring(1));
+            }
+        }
         return result.toString();
     }
 }

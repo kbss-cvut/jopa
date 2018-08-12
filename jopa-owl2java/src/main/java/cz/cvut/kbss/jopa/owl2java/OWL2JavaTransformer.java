@@ -108,7 +108,7 @@ public class OWL2JavaTransformer {
     }
 
     private void registerEntitiesInContexts() {
-        final Consumer<Stream<? extends OWLEntity>> consumer = (stream) -> stream.forEach(e -> {
+        final Consumer<Stream<? extends OWLEntity>> consumer = stream -> stream.forEach(e -> {
             defaultContext.add(e);
             for (final String context : getContexts(e)) {
                 getContextDefinition(context).add(e);
@@ -199,7 +199,8 @@ public class OWL2JavaTransformer {
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
-        private String name = null;
+
+        private String name;
 
         String getName() {
             return name;
@@ -215,7 +216,7 @@ public class OWL2JavaTransformer {
 
         @Override
         public void visit(@Nonnull OWLLiteral literal) {
-            name = literal.getLiteral();
+            this.name = literal.getLiteral();
         }
     }
 }
