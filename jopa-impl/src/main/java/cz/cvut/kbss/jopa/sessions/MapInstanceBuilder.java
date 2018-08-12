@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -108,9 +108,9 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             c.setAccessible(true);
         }
         Entry<?, ?> e = orig.entrySet().iterator().next();
-        Object key = CloneBuilderImpl.isImmutable(e.getKey().getClass()) ? e.getKey()
+        Object key = CloneBuilderImpl.isImmutable(e.getKey()) ? e.getKey()
                 : cloneObject(cloneOwner, field, e.getKey(), configuration);
-        Object value = CloneBuilderImpl.isImmutable(e.getValue().getClass()) ? e.getValue()
+        Object value = CloneBuilderImpl.isImmutable(e.getValue()) ? e.getValue()
                 : cloneObject(cloneOwner, field, e.getValue(), configuration);
         if (value instanceof Collection || value instanceof Map) {
             value = builder.createIndirectCollection(value, cloneOwner, field);
@@ -135,10 +135,11 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         if (source.isEmpty()) {
             return;
         }
-        Map<Object, Object> m = (Map<Object, Object>) target;
-        Entry<?, ?> tmp = source.entrySet().iterator().next();
-        boolean keyPrimitive = CloneBuilderImpl.isImmutable(tmp.getKey().getClass());
-        boolean valuePrimitive = CloneBuilderImpl.isImmutable(tmp.getValue().getClass());
+        final Map<Object, Object> m = (Map<Object, Object>) target;
+        final Entry<?, ?> tmp = source.entrySet().iterator().next();
+        // Note: If we encounter null -> null mapping first, the whole map will be treated as immutable type map, which can be incorrect
+        final boolean keyPrimitive = CloneBuilderImpl.isImmutable(tmp.getKey());
+        final boolean valuePrimitive = CloneBuilderImpl.isImmutable(tmp.getValue());
         for (Entry<?, ?> e : source.entrySet()) {
             Object key;
             Object value;
@@ -151,8 +152,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 value = cloneObject(cloneOwner, field, e.getValue(), configuration);
             } else {
                 key = cloneObject(cloneOwner, field, e.getKey(), configuration);
-                value = valuePrimitive ? e.getValue() : cloneObject(cloneOwner, field,
-                        e.getValue(), configuration);
+                value = valuePrimitive ? e.getValue() : cloneObject(cloneOwner, field, e.getValue(), configuration);
             }
             m.put(key, value);
         }

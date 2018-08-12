@@ -38,7 +38,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
     private static final Class<?> singletonListClass = Collections.singletonList(null).getClass();
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
-    private static final Class<?> arrayAsListClass = Arrays.asList(new Object()).getClass();
+    private static final Class<?> arrayAsListClass = Arrays.asList(null, null).getClass();
 
     private static final Class<? extends List> DEFAULT_LIST_CLASS = ArrayList.class;
     private static final Class<? extends Set> DEFAULT_SET_CLASS = HashSet.class;
@@ -58,8 +58,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
      * @return A deep clone of the specified collection
      */
     @Override
-    Object buildClone(Object cloneOwner, Field field, Object collection, CloneConfiguration configuration)
-            throws OWLPersistenceException {
+    Object buildClone(Object cloneOwner, Field field, Object collection, CloneConfiguration configuration) {
         assert collection instanceof Collection;
         Collection<?> container = (Collection<?>) collection;
         if (container instanceof IndirectCollection<?>) {
@@ -120,8 +119,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         } catch (IllegalAccessException e) {
             logConstructorAccessException(ctor, e);
             try {
-                result = (Collection<?>) AccessController
-                        .doPrivileged(new PrivilegedInstanceCreator(ctor));
+                result = (Collection<?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(ctor));
             } catch (PrivilegedActionException ex) {
                 logPrivilegedConstructorAccessException(ctor, ex);
                 // Do nothing
@@ -146,7 +144,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.add(null);
                 continue;
             }
-            if (CloneBuilderImpl.isImmutable(elem.getClass())) {
+            if (CloneBuilderImpl.isImmutable(elem)) {
                 tg.addAll(source);
                 break;
             }
@@ -168,42 +166,19 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
     private Collection<?> buildInstanceOfSpecialCollection(Object cloneOwner, Field field, Collection<?> container,
                                                            CloneConfiguration configuration) {
-        Collection<?> clone;
-        Constructor<?> c;
-        Object[] params = new Object[1];
         if (arrayAsListClass.isInstance(container)) {
             final List<?> arrayList = new ArrayList<>(container.size());
             cloneCollectionContent(cloneOwner, field, container, arrayList, configuration);
-            c = getFirstDeclaredConstructorFor(ArrayList.class);
-            params[0] = arrayList;
-        } else {
-            if (singletonListClass.isInstance(container)) {
-                c = getFirstDeclaredConstructorFor(singletonListClass);
-            } else if (singletonSetClass.isInstance(container)) {
-                c = getFirstDeclaredConstructorFor(singletonSetClass);
-            } else {
-                return null;
-            }
+            return arrayList;
+        } else if (singletonListClass.isInstance(container) || singletonSetClass.isInstance(container)) {
             final Object element = container.iterator().next();
-            params[0] = CloneBuilderImpl.isImmutable(element.getClass()) ? element :
+            final Object elementClone = CloneBuilderImpl.isImmutable(element) ? element :
                     cloneCollectionElement(cloneOwner, field, element, configuration);
+            return singletonListClass.isInstance(container) ? Collections.singletonList(elementClone) :
+                    Collections.singleton(elementClone);
+        } else {
+            return null;
         }
-        try {
-            if (!c.isAccessible()) {
-                c.setAccessible(true);
-            }
-            clone = (Collection<?>) c.newInstance(params);
-        } catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
-            throw new OWLPersistenceException(e);
-        } catch (IllegalAccessException e) {
-            logConstructorAccessException(c, e);
-            try {
-                clone = (Collection<?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
-            } catch (PrivilegedActionException ex) {
-                throw new OWLPersistenceException(ex);
-            }
-        }
-        return clone;
     }
 
     private Collection<?> buildDefaultCollectionInstance(Object cloneOwner, Field field, Collection<?> container,

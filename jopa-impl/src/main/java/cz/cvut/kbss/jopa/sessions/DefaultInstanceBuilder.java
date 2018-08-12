@@ -43,13 +43,10 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
      */
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration config) {
-        if (original == null) {
-            return null;
-        }
-        final Class<?> javaClass = original.getClass();
-        if (CloneBuilderImpl.isImmutable(javaClass)) {
+        if (CloneBuilderImpl.isImmutable(original)) {
             return original;
         }
+        final Class<?> javaClass = original.getClass();
         Object newInstance = buildNewInstanceUsingDefaultConstructor(javaClass);
         if (newInstance == null) {
             final Field[] fields = javaClass.getDeclaredFields();
