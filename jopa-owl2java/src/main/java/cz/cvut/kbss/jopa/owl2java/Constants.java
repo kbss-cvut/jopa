@@ -28,6 +28,11 @@ public class Constants {
     public static final String P_CLASS_NAME = "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#javaClassName";
 
     /**
+     * DC Terms description property, elements-based version
+     */
+    public static final String DC_DESCRIPTION = "http://purl.org/dc/elements/1.1/description";
+
+    /**
      * Name of the class containing generated vocabulary.
      */
     public static final String VOCABULARY_CLASS = "Vocabulary";
