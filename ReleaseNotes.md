@@ -1,5 +1,12 @@
 # JOPA - Release Notes
 
+## 0.10.5 - August 13, 2018
+- Removed several unused files, libraries.
+- Improved collection cloning.
+- Fixed incorrect fineld cardinality specification in OWL2Java.
+- Upgraded to OWLAPI 5.1.6.
+- Added `aop.xml` so that [load time weaving](https://github.com/kbss-cvut/jopa/wiki/Maven-setup#load-time-weaving) can be used with JOPA.
+
 ## 0.10.4 - July 20, 2018
 - Fixed a critical NPX issue caused by inherited indirect collections not being removed when an entity was detached from 
 the persistence context.
