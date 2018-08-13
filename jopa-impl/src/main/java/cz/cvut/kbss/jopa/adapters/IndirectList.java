@@ -1,27 +1,21 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.adapters;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 public class IndirectList<E> extends IndirectCollection<List<E>> implements List<E> {
 
@@ -37,23 +31,15 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
     /**
      * Create new indirect list backed by the specified referenced list.
      *
-     * @param owner
-     *            Owner of the list
-     * @param f
-     *            The field holding this list
-     * @param uow
-     *            Persistence context the owner belongs to
-     * @param referencedList
-     *            The list to reference
-     * @throws NullPointerException
-     *             If the {@code referencedList} is null
+     * @param owner          Owner of the list
+     * @param f              The field holding this list
+     * @param uow            Persistence context the owner belongs to
+     * @param referencedList The list to reference
+     * @throws NullPointerException If the {@code referencedList} is null
      */
     public IndirectList(Object owner, Field f, UnitOfWorkImpl uow, List<E> referencedList) {
         super(owner, f, uow);
-        if (referencedList == null) {
-            throw new NullPointerException("Null passed in as the referencedList.");
-        }
-        this.internalList = referencedList;
+        this.internalList = Objects.requireNonNull(referencedList);
     }
 
     @Override

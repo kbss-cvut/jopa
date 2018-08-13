@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.exceptions;
 /**
  * This exception is thrown when an exception occurs while accessing the OntoDriver.
  */
-public class StorageAccessException extends RuntimeException {
+public class StorageAccessException extends OWLPersistenceException {
 
     private static final long serialVersionUID = 4661531292404254252L;
 

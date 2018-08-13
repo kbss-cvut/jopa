@@ -329,7 +329,7 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
                 OWLManager.getOWLDataFactory().getOWLDataAllValuesFrom(property, entry.getValue()).accept(icp);
             }
         }
-        icp.getIntegrityConstraints().forEach((ic) -> integrityConstraintSet.addIntegrityConstraint(ic));
+        icp.getIntegrityConstraints().forEach(ic -> integrityConstraintSet.addIntegrityConstraint(ic));
     }
 
     public IntegrityConstraintSet getClassIntegrityConstraintSet() {

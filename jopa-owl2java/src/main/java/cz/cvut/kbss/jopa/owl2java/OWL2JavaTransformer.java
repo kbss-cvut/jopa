@@ -86,7 +86,7 @@ public class OWL2JavaTransformer {
     }
 
     public void setOntology(final String owlOntologyName, final String mappingFile) {
-        ontology = getWholeOntology(owlOntologyName, mappingFile);
+        this.ontology = getWholeOntology(owlOntologyName, mappingFile);
 
         LOG.debug("Parsing integrity constraints");
 
@@ -108,7 +108,7 @@ public class OWL2JavaTransformer {
     }
 
     private void registerEntitiesInContexts() {
-        final Consumer<Stream<? extends OWLEntity>> consumer = (stream) -> stream.forEach(e -> {
+        final Consumer<Stream<? extends OWLEntity>> consumer = stream -> stream.forEach(e -> {
             defaultContext.add(e);
             for (final String context : getContexts(e)) {
                 getContextDefinition(context).add(e);
@@ -169,7 +169,8 @@ public class OWL2JavaTransformer {
     public void transform(TransformationConfiguration transformConfig) {
         final ContextDefinition def = getValidContext(transformConfig);
         LOG.info("Transforming context ...");
-        new JavaTransformer(transformConfig).generateModel(ontology, def);
+        final ObjectModel result = new JavaTransformer(transformConfig).generateModel(ontology, def);
+        result.writeModel(transformConfig.getTargetDir());
         LOG.info("Transformation SUCCESSFUL.");
     }
 
@@ -193,11 +194,13 @@ public class OWL2JavaTransformer {
         LOG.info("Generating vocabulary ...");
 
         ContextDefinition def = getValidContext(transformConfig);
-        new JavaTransformer(transformConfig).generateVocabulary(ontology, def);
+        final ObjectModel result = new JavaTransformer(transformConfig).generateVocabulary(ontology, def);
+        result.writeModel(transformConfig.getTargetDir());
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
-        private String name = null;
+
+        private String name;
 
         String getName() {
             return name;
@@ -213,7 +216,7 @@ public class OWL2JavaTransformer {
 
         @Override
         public void visit(@Nonnull OWLLiteral literal) {
-            name = literal.getLiteral();
+            this.name = literal.getLiteral();
         }
     }
 }

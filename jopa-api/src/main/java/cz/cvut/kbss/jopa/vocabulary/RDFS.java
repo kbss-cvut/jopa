@@ -11,6 +11,11 @@ public class RDFS {
     public static final String NAMESPACE = "http://www.w3.org/2000/01/rdf-schema#";
 
     /**
+     * Typical prefix used for {@link #NAMESPACE}.
+     */
+    public static final String PREFIX = "rdfs";
+
+    /**
      * The {@code rdfs:label} property is used to provide a human-readable version of a resource's name.
      */
     public static final String LABEL = NAMESPACE + "label";

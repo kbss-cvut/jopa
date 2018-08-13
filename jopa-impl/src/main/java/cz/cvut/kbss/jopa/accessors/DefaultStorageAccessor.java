@@ -33,7 +33,7 @@ public class DefaultStorageAccessor implements StorageAccessor {
         this.open = true;
     }
 
-    private DataSource initDataSource(OntologyStorageProperties storageProperties, Map<String, String> properties) {
+    private static DataSource initDataSource(OntologyStorageProperties storageProperties, Map<String, String> properties) {
         final Class<?> dataSourceCls;
         try {
             dataSourceCls = Class.forName(storageProperties.getDriver());

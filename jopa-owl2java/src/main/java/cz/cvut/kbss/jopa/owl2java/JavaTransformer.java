@@ -13,7 +13,6 @@
 package cz.cvut.kbss.jopa.owl2java;
 
 import com.sun.codemodel.*;
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
@@ -25,6 +24,7 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
+import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.semanticweb.owlapi.model.*;
@@ -33,8 +33,6 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -154,18 +152,17 @@ public class JavaTransformer {
      *
      * @param ontology Ontology from which the model is generated
      * @param context  Context information
+     * @return The generated object model
      */
-    public void generateModel(final OWLOntology ontology, final ContextDefinition context) {
+    public ObjectModel generateModel(final OWLOntology ontology, final ContextDefinition context) {
         try {
             final JCodeModel cm = new JCodeModel();
             voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
             _generateModel(ontology, cm, context, modelPackageName());
-            writeOutModel(cm);
-        } catch (JClassAlreadyExistsException e1) {
-            LOG.error("Transformation FAILED.", e1);
-        } catch (IOException e) {
-            LOG.error("File generation FAILED.", e);
+            return new ObjectModel(cm);
+        } catch (JClassAlreadyExistsException e) {
+            throw new OWL2JavaException("Transformation FAILED.", e);
         }
     }
 
@@ -199,34 +196,28 @@ public class JavaTransformer {
      * @param ontology Ontology from which the vocabulary should be generated
      * @param context  Integrity constraints context, if null is supplied, the whole ontology is interpreted as
      *                 integrity constraints.
+     * @return The generated object model
      */
-    public void generateVocabulary(final OWLOntology ontology, ContextDefinition context) {
+    public ObjectModel generateVocabulary(final OWLOntology ontology, ContextDefinition context) {
         try {
             final JCodeModel cm = new JCodeModel();
             this.voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
-            writeOutModel(cm);
+            return new ObjectModel(cm);
         } catch (JClassAlreadyExistsException e) {
-            LOG.error("Vocabulary generation FAILED, because the Vocabulary class already exists.", e);
-        } catch (IOException e) {
-            LOG.error("Vocabulary file generation FAILED.", e);
+            throw new OWL2JavaException("Vocabulary generation FAILED, because the Vocabulary class already exists.",
+                    e);
         }
     }
 
-    private void writeOutModel(JCodeModel cm) throws IOException {
-        final File file = new File(configuration.getTargetDir());
-        file.mkdirs();
-        cm.build(file);
-    }
-
-    private void _generateObjectProperty(final OWLOntology ontology,
-                                         final JCodeModel cm,
-                                         final ContextDefinition context,
-                                         final String pkg,
-                                         final OWLClass clazz,
-                                         final JDefinedClass subj,
-                                         final org.semanticweb.owlapi.model.OWLObjectProperty prop,
-                                         final PropertiesType propertiesType) {
+    private void generateObjectProperty(final OWLOntology ontology,
+                                        final JCodeModel cm,
+                                        final ContextDefinition context,
+                                        final String pkg,
+                                        final OWLClass clazz,
+                                        final JDefinedClass subj,
+                                        final org.semanticweb.owlapi.model.OWLObjectProperty prop,
+                                        final PropertiesType propertiesType) {
         final ClassObjectPropertyComputer comp = new ClassObjectPropertyComputer(
                 clazz,
                 prop,
@@ -234,14 +225,11 @@ public class JavaTransformer {
                 ontology
         );
 
-        if (!Card.NO.equals(comp.getCard())) {
-            JClass filler = ensureCreated(pkg, cm, comp.getFiller(), ontology,
-                    propertiesType);
+        if (Card.NO != comp.getCard()) {
+            JClass filler = ensureCreated(pkg, cm, comp.getFiller(), ontology, propertiesType);
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             switch (comp.getCard()) {
-                case ONE:
-                    break;
                 case MULTIPLE:
                     filler = cm.ref(java.util.Set.class).narrow(filler);
                     break;
@@ -249,32 +237,27 @@ public class JavaTransformer {
                 case LIST:
                     filler = cm.ref(java.util.List.class).narrow(filler);
                     break;
+                default:
+                    break;
             }
 
             final JFieldVar fv = addField(fieldName, subj, filler);
             generateJavadoc(ontology, prop, fv);
 
             if (comp.getCard().equals(Card.SIMPLELIST)) {
-                fv.annotate(Sequence.class)
-                  .param("type", SequenceType.simple);
+                fv.annotate(Sequence.class).param("type", SequenceType.simple);
             }
 
 
-            fv.annotate(OWLObjectProperty.class).param("iri",
-                    entities.get(prop));
+            fv.annotate(OWLObjectProperty.class).param("iri", entities.get(prop));
 
             JAnnotationArrayMember use = null;
             for (ObjectParticipationConstraint ic : comp.getParticipationConstraints()) {
                 if (use == null) {
                     use = fv.annotate(ParticipationConstraints.class).paramArray("value");
                 }
-                JAnnotationUse u = use.annotate(
-                        ParticipationConstraint.class).param(
-                        // "owlClassIRI",
-                        // ic.getSubject().getIRI().toString()).param(
-                        // "owlPropertyIRI",
-                        // ic.getPredicate().getIRI().toString()).param(
-                        "owlObjectIRI", entities.get(ic.getObject()));
+                JAnnotationUse u = use.annotate(ParticipationConstraint.class)
+                                      .param("owlObjectIRI", entities.get(ic.getObject()));
                 setParticipationConstraintCardinality(u, ic);
             }
         }
@@ -290,12 +273,12 @@ public class JavaTransformer {
         }
     }
 
-    private void _generateDataProperty(final OWLOntology ontology,
-                                       final JCodeModel cm,
-                                       final ContextDefinition context,
-                                       final OWLClass clazz,
-                                       final JDefinedClass subj,
-                                       final org.semanticweb.owlapi.model.OWLDataProperty prop) {
+    private void generateDataProperty(final OWLOntology ontology,
+                                      final JCodeModel cm,
+                                      final ContextDefinition context,
+                                      final OWLClass clazz,
+                                      final JDefinedClass subj,
+                                      final org.semanticweb.owlapi.model.OWLDataProperty prop) {
         final ClassDataPropertyComputer comp = new ClassDataPropertyComputer(
                 clazz,
                 prop,
@@ -303,7 +286,7 @@ public class JavaTransformer {
                 ontology
         );
 
-        if (!Card.NO.equals(comp.getCard())) {
+        if (Card.NO != comp.getCard()) {
 
             final JType obj = cm._ref(DatatypeTransformer.transformOWLType(comp.getFiller()));
 
@@ -311,14 +294,15 @@ public class JavaTransformer {
 
             JFieldVar fv;
 
-            if (Card.MULTIPLE.equals(comp.getCard())) {
-                fv = addField(fieldName, subj, cm.ref(java.util.Set.class)
-                                                 .narrow(obj));
-            } else if (Card.ONE.equals(comp.getCard())) {
-                fv = addField(fieldName, subj, obj);
-            } else {
-                assert false : "Unknown cardinality type";
-                return;
+            switch (comp.getCard()) {
+                case MULTIPLE:
+                    fv = addField(fieldName, subj, cm.ref(java.util.Set.class).narrow(obj));
+                    break;
+                case ONE:
+                    fv = addField(fieldName, subj, obj);
+                    break;
+                default:
+                    throw new OWL2JavaException("Unsupported data property cardinality type " + comp.getCard());
             }
             generateJavadoc(ontology, prop, fv);
 
@@ -349,22 +333,19 @@ public class JavaTransformer {
             LOG.info("  Generating class '{}'.", clazz);
             final JDefinedClass subj = ensureCreated(pkg, cm, clazz, ontology, propertiesType);
 
-            context.set.getClassIntegrityConstraints(clazz).forEach((ic) -> {
-                if (ic instanceof AtomicSubClassConstraint) {
-                    final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
-                    subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
-                            propertiesType));
-                }
+            context.set.getClassIntegrityConstraints(clazz).stream()
+                       .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
+                final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
+                subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
+                        propertiesType));
             });
 
-            for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context
-                    .objectProperties) {
-                _generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop,
-                        propertiesType);
+            for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
+                generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop, propertiesType);
             }
 
             for (org.semanticweb.owlapi.model.OWLDataProperty prop : context.dataProperties) {
-                _generateDataProperty(ontology, cm, context, clazz, subj, prop);
+                generateDataProperty(ontology, cm, context, clazz, subj, prop);
             }
         }
     }
@@ -405,7 +386,7 @@ public class JavaTransformer {
         }
     }
 
-    private Optional<String> resolveFieldPrefix(OWLEntity c, Set<IRI> visitedProperties) {
+    private static Optional<String> resolveFieldPrefix(OWLEntity c, Set<IRI> visitedProperties) {
         if (c.isOWLClass()) {
             return Optional.of(PREFIX_CLASS);
         } else if (c.isOWLDatatype()) {
@@ -462,6 +443,12 @@ public class JavaTransformer {
 
             generateClassJavadoc(ontology, clazz, cls);
 
+            // @Id(generated = true) protected String id;
+            final JClass ftId = cm.ref(String.class);
+            final JFieldVar fvId = addField("id", cls, ftId);
+            JAnnotationUse a = fvId.annotate(Id.class);
+            a.param("generated", true);
+
             // RDFS label
             final JClass ftLabel = cm.ref(String.class);
             final JFieldVar fvLabel = addField("name", cls, ftLabel);
@@ -470,20 +457,12 @@ public class JavaTransformer {
             // DC description
             final JClass ftDescription = cm.ref(String.class);
             final JFieldVar fvDescription = addField("description", cls, ftDescription);
-            fvDescription.annotate(OWLAnnotationProperty.class)
-                         .param("iri", cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
+            fvDescription.annotate(OWLAnnotationProperty.class).param("iri", Constants.DC_DESCRIPTION);
 
             // @Types Set<String> types;
             final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
             final JFieldVar fvTypes = addField("types", cls, ftTypes);
             fvTypes.annotate(Types.class);
-
-            // @Id(generated = true) protected String id;
-            final JClass ftId = cm.ref(String.class);
-            final JFieldVar fvId = addField("id", cls, ftId);
-            JAnnotationUse a = fvId.annotate(Id.class);
-
-            a.param("generated", true);
 
             // @Properties public final Map<String,Set<String>> properties;
             final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
@@ -539,11 +518,13 @@ public class JavaTransformer {
      * @param className Generated class name
      * @return Converted class name
      */
-    private String toJavaNotation(String className) {
+    private static String toJavaNotation(String className) {
         StringBuilder result = new StringBuilder();
-        for (String w : className.split("_"))
-            if (!w.isEmpty())
+        for (String w : className.split("_")) {
+            if (!w.isEmpty()) {
                 result.append(w.substring(0, 1).toUpperCase()).append(w.substring(1));
+            }
+        }
         return result.toString();
     }
 }

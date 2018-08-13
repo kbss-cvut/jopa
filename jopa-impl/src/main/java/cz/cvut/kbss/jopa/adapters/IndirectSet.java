@@ -1,26 +1,21 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.adapters;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E> {
 
@@ -35,10 +30,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 
     public IndirectSet(Object owner, Field f, UnitOfWorkImpl uow, Set<E> referencedSet) {
         super(owner, f, uow);
-        if (referencedSet == null) {
-            throw new NullPointerException("Null passed in as the referencedSet.");
-        }
-        this.internalSet = referencedSet;
+        this.internalSet = Objects.requireNonNull(referencedSet);
     }
 
     @Override

@@ -25,8 +25,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
  * @param <V>
  *            The type of the value of the represented Map
  */
-public interface MapAttribute<X, K, V> extends
-		PluralAttribute<X, java.util.Map<K, V>, V> {
+public interface MapAttribute<X, K, V> extends PluralAttribute<X, java.util.Map<K, V>, V> {
 	/**
 	 * Return the Java type of the map key.
 	 * 

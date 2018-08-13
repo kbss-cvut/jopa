@@ -69,6 +69,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
     private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
                                   CloneConfiguration cloneConfiguration) {
+        assert original != null;
         if (isOriginalInUoW(original)) {
             return uow.getCloneForOriginal(original);
         }
@@ -87,7 +88,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             // Register visited object before populating attributes to prevent endless cloning cycles
             putVisitedEntity(descriptor, original, clone);
         }
-        if (!builder.populatesAttributes() && !isImmutable(original.getClass())) {
+        if (!builder.populatesAttributes() && !isImmutable(cls)) {
             populateAttributes(original, clone, cloneConfiguration);
         }
         return clone;
@@ -158,15 +159,30 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     /**
-     * Check if the given class is an immutable type. This is used by the {@link
-     * #populateAttributes(Object, Object, CloneConfiguration)} method. If this returns true, the populateAttributes can simply
-     * assign the value.
+     * Check if the given class is an immutable type.
+     * <p>
+     * Objects of immutable types do not have to be cloned, because they cannot be modified.
+     * <p>
+     * Note that this method does not do any sophisticated verification, it just checks if the specified class corresponds
+     * to a small set of predefined conditions, e.g. primitive class, enum, String.
      *
      * @param cls the class to check
      * @return Whether the class represents immutable objects
      */
-    static boolean isImmutable(final Class<?> cls) {
+    static boolean isImmutable(Class<?> cls) {
         return cls.isPrimitive() || cls.isEnum() || IMMUTABLE_TYPES.contains(cls);
+    }
+
+    /**
+     * Checks if the specified object is immutable.
+     * <p>
+     * {@code null} is considered immutable, otherwise, this method just calls {@link #isImmutable(Class)}.
+     *
+     * @param object The instance to check
+     * @return immutability status
+     */
+    static boolean isImmutable(Object object) {
+        return object == null || isImmutable(object.getClass());
     }
 
     @Override

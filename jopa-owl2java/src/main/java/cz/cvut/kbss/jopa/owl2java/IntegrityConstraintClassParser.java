@@ -27,11 +27,11 @@ import java.util.Set;
 
 public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor {
 
-    private static final Logger log = LoggerFactory.getLogger(IntegrityConstraintClassParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IntegrityConstraintClassParser.class);
 
     private final Set<IntegrityConstraint> integrityConstraints = new HashSet<>();
 
-    private OWLClass subjClass;
+    private final OWLClass subjClass;
 
     private IntegrityConstraintFactory integrityConstraintFactory = new IntegrityConstraintFactoryImpl();
 
@@ -40,7 +40,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
     }
 
     private static void notSupported(final OWLObject o) {
-        log.info("Ignoring Unsupported Axiom : {}", o);
+        LOG.info("Ignoring Unsupported Axiom : {}", o);
     }
 
     public Set<IntegrityConstraint> getIntegrityConstraints() {

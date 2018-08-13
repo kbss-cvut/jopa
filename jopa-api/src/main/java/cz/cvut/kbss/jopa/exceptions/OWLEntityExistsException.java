@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.exceptions;
 /**
  * Thrown when an attempt to put an entity with duplicate identifier into the persistence context is made.
  */
-public class OWLEntityExistsException extends RuntimeException {
+public class OWLEntityExistsException extends OWLPersistenceException {
 
     private static final long serialVersionUID = 453666323423782580L;
 

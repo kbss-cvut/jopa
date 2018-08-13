@@ -160,7 +160,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             if (primaryKey == null) {
                 primaryKey = generateIdentifier(et);
                 assert primaryKey != null;
-                EntityPropertiesUtils.setPrimaryKey(primaryKey, entity, et);
+                EntityPropertiesUtils.setIdentifier(primaryKey, entity, et);
             }
             entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
             final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey, entity, et, descriptor);
