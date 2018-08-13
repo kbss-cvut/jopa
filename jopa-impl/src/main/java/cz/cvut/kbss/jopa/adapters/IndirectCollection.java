@@ -50,6 +50,7 @@ public abstract class IndirectCollection<T> {
     }
 
     protected void persistChange() {
+        assert persistenceContext != null;
         if (persistenceContext.isInTransaction() && !persistenceContext.isInCommit()) {
             persistenceContext.attributeChanged(owner, field);
         }

@@ -34,9 +34,9 @@ public class NamespaceResolver {
     }
 
     private void registerDefaultPrefixes() {
-        registerNamespace("rdf", RDF.NAMESPACE);
-        registerNamespace("rdfs", RDFS.NAMESPACE);
-        registerNamespace("xsd", XSD.NAMESPACE);
+        registerNamespace(RDF.PREFIX, RDF.NAMESPACE);
+        registerNamespace(RDFS.PREFIX, RDFS.NAMESPACE);
+        registerNamespace(XSD.PREFIX, XSD.NAMESPACE);
     }
 
     /**

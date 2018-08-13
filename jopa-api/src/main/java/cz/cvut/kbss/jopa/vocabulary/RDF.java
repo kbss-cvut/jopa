@@ -11,6 +11,11 @@ public class RDF {
     public static final String NAMESPACE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
     /**
+     * Typical prefix used for {@link #NAMESPACE}.
+     */
+    public static final String PREFIX = "rdf";
+
+    /**
      * The {@code rdf:type} property indicates that a resource is a member of a class.
      */
     public static final String TYPE = NAMESPACE + "type";

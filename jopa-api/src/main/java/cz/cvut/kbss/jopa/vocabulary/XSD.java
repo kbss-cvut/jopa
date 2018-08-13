@@ -11,6 +11,11 @@ public class XSD {
     public static final String NAMESPACE = "http://www.w3.org/2001/XMLSchema#";
 
     /**
+     * Typical prefix used for {@link #NAMESPACE}.
+     */
+    public static final String PREFIX = "xsd";
+
+    /**
      * {@code boolean} XML Schema data type.
      */
     public static final String BOOLEAN = NAMESPACE + "boolean";

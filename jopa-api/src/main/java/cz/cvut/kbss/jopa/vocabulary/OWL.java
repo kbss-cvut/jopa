@@ -11,6 +11,11 @@ public class OWL {
     public static final String NAMESPACE = "http://www.w3.org/2002/07/owl#";
 
     /**
+     * Typical prefix used for {@link #NAMESPACE}.
+     */
+    public static final String PREFIX = "owl";
+
+    /**
      * {@code owl:Class} class.
      */
     public static final String CLASS = NAMESPACE + "Class";
