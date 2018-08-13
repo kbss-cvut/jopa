@@ -79,7 +79,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     /**
      * Check the class path for aspectj weaver, which is vital for using lazy loading.
      */
-    private void checkForWeaver() {
+    private static void checkForWeaver() {
         try {
             MetamodelImpl.class.getClassLoader().loadClass(ASPECTJ_CLASS);
         } catch (ClassNotFoundException e) {
