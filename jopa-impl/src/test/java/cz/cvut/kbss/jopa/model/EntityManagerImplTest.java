@@ -538,4 +538,10 @@ public class EntityManagerImplTest {
         verify(connectorMock).merge(captor.capture(), eq(OWLClassA.getStrAttField()), any());
         assertEquals(a.getUri(), captor.getValue().getUri());
     }
+
+    @Test
+    public void getTransactionOnClosedEntityManagerIsValid() {
+        em.close();
+        assertNotNull(em.getTransaction());
+    }
 }
