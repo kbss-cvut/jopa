@@ -64,8 +64,6 @@ public class AxiomBuilder {
             if (unspecifiedProperty != null) {
                 assertion = Assertion
                         .createPropertyAssertion(SesameUtils.toJavaUri(predicate), unspecifiedProperty.isInferred());
-            } else {
-                assertion = null;
             }
         } else if (assertion.getType() == Assertion.AssertionType.PROPERTY) {
             // If the property was unspecified, create assertion based on the actual property URI

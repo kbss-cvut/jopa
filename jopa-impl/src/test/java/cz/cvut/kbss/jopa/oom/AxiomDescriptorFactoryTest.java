@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -77,7 +75,7 @@ public class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    public void testCreateForEntityLoadingWithTypes() throws Exception {
+    public void testCreateForEntityLoadingWithTypes() {
         final AxiomDescriptor res = factory
                 .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor),
                         metamodelMocks.forOwlClassA().entityType());
@@ -106,7 +104,7 @@ public class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    public void testCreateForEntityLoadingWithPropertiesAndContext() throws Exception {
+    public void testCreateForEntityLoadingWithPropertiesAndContext() {
         final AxiomDescriptor res = factory
                 .createForEntityLoading(new LoadingParameters<>(OWLClassB.class, PK, descriptorInContext),
                         metamodelMocks.forOwlClassB().entityType());
@@ -135,7 +133,7 @@ public class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    public void testCreateForEntityLoadingWithAnnotationProperty() throws Exception {
+    public void testCreateForEntityLoadingWithAnnotationProperty() {
         // Artificially change the attribute type to annotation
         when(metamodelMocks.forOwlClassD().owlClassAAtt().getPersistentAttributeType()).thenReturn(
                 PersistentAttributeType.ANNOTATION);
@@ -151,7 +149,7 @@ public class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    public void createForEntityLoadingWithLazilyLoadedAttribute() throws Exception {
+    public void createForEntityLoadingWithLazilyLoadedAttribute() {
         when(metamodelMocks.forOwlClassA().stringAttribute().getFetchType()).thenReturn(FetchType.LAZY);
         final AxiomDescriptor res = factory
                 .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor),
@@ -266,8 +264,9 @@ public class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    public void createForEntityLoadingSetsLanguageTagAccordingToGlobalPUSpecification() throws Exception {
+    public void createForEntityLoadingSetsLanguageTagAccordingToGlobalPUSpecification() {
         configuration.set(JOPAPersistenceProperties.LANG, "en");
+        this.factory = new AxiomDescriptorFactory(configuration);
         final AxiomDescriptor res = factory.createForEntityLoading(loadingParameters(OWLClassA.class, descriptor),
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -300,6 +299,7 @@ public class AxiomDescriptorFactoryTest {
     @Test
     public void createForFieldLoadingSetsLanguageOfPUWhenDescriptorLanguageIsNotSpecified() throws Exception {
         configuration.set(JOPAPersistenceProperties.LANG, "cs");
+        this.factory = new AxiomDescriptorFactory(configuration);
         final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getStrAttField(), descriptor,
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -332,5 +332,28 @@ public class AxiomDescriptorFactoryTest {
         assertEquals(1, assertions.size());
         assertTrue(assertions.iterator().next().hasLanguage());
         assertNull(assertions.iterator().next().getLanguage());
+    }
+
+    @Test
+    public void createForLoadingCreatesDataPropertyAssertionWithoutLanguageWhenNoneIsSetForPUAndInDescriptor()
+            throws Exception {
+        final Descriptor descriptor = new EntityDescriptor();
+        final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getStrAttField(), descriptor,
+                metamodelMocks.forOwlClassA().entityType());
+        final Set<Assertion> assertions = res.getAssertions();
+        assertEquals(1, assertions.size());
+        assertFalse(assertions.iterator().next().hasLanguage());
+    }
+
+    @Test
+    public void createForLoadingCreatesAnnotationPropertyAssertionWithoutLanguageWhenNoneIsSetForPUAndInDescriptor()
+            throws Exception {
+        final Descriptor descriptor = new EntityDescriptor();
+        final AxiomDescriptor res = factory
+                .createForFieldLoading(PK, OWLClassN.getAnnotationPropertyField(), descriptor,
+                        metamodelMocks.forOwlClassN().entityType());
+        final Set<Assertion> assertions = res.getAssertions();
+        assertEquals(1, assertions.size());
+        assertFalse(assertions.iterator().next().hasLanguage());
     }
 }

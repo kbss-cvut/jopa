@@ -21,7 +21,8 @@ class InferredAxiomLoader extends AbstractAxiomLoader {
 
     private final InferredStorageConnector connector;
 
-    InferredAxiomLoader(InferredStorageConnector connector) {
+    InferredAxiomLoader(InferredStorageConnector connector, String language) {
+        super(language);
         this.connector = connector;
         this.inferred = true;
     }

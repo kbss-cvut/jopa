@@ -16,13 +16,16 @@ class PropertiesHandler implements Properties {
 
     private final StorageConnector connector;
 
-    PropertiesHandler(StorageConnector connector) {
+    private final String language;
+
+    PropertiesHandler(StorageConnector connector, String language) {
         this.connector = connector;
+        this.language = language;
     }
 
     @Override
     public Collection<Axiom<?>> getProperties(NamedResource individual, URI context, boolean includeInferred) {
-        return new ExplicitAxiomLoader(connector).find(individual, context);
+        return new ExplicitAxiomLoader(connector, language).find(individual, context);
     }
 
     @Override

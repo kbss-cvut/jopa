@@ -23,7 +23,8 @@ import java.util.stream.Collectors;
  * <p>
  * Implementation notes:
  * <ul>
- * <li>Datatype literal types are based on Jena's mapping, as described in a table at <a href="https://jena.apache.org/documentation/notes/typed-literals.html">https://jena.apache.org/documentation/notes/typed-literals.html</a></li>
+ * <li>Datatype literal types are based on Jena's mapping, as described in a table at <a
+ * href="https://jena.apache.org/documentation/notes/typed-literals.html">https://jena.apache.org/documentation/notes/typed-literals.html</a></li>
  * </ul>
  */
 public class JenaAdapter implements Wrapper {
@@ -33,9 +34,12 @@ public class JenaAdapter implements Wrapper {
     private final StorageConnector connector;
     private final InferredStorageConnector inferenceConnector;
 
-    JenaAdapter(StorageConnector connector, InferredStorageConnector inferenceConnector) {
+    private final String language;
+
+    JenaAdapter(StorageConnector connector, InferredStorageConnector inferenceConnector, String language) {
         this.connector = connector;
         this.inferenceConnector = inferenceConnector;
+        this.language = language;
     }
 
     void commit() throws JenaDriverException {
@@ -68,12 +72,12 @@ public class JenaAdapter implements Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         beginTransactionIfNotActive();
-        return new MainAxiomLoader(connector, inferenceConnector).find(descriptor);
+        return new MainAxiomLoader(connector, inferenceConnector, language).find(descriptor);
     }
 
     boolean contains(Axiom<?> axiom, URI context) {
         beginTransactionIfNotActive();
-        return new MainAxiomLoader(connector, inferenceConnector).contains(axiom, context);
+        return new MainAxiomLoader(connector, inferenceConnector, language).contains(axiom, context);
     }
 
     List<URI> getContext() {
@@ -109,7 +113,7 @@ public class JenaAdapter implements Wrapper {
 
     PropertiesHandler propertiesHandler() {
         beginTransactionIfNotActive();
-        return new PropertiesHandler(connector);
+        return new PropertiesHandler(connector, language);
     }
 
     public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> simpleListHandler() {
