@@ -47,8 +47,15 @@ public class TypedQueryImplTest extends QueryTestBase {
             "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
 
     @Override
-    TypedQuery<?> createQuery(String query, Class<?> resultType) {
-        return queryFactory.createNativeQuery(query, resultType);
+    TypedQueryImpl<?> createQuery(String query, Class<?> resultType) {
+        final TypedQueryImpl<?> q = queryFactory.createNativeQuery(query, resultType);
+        q.setEnsureOpenProcedure(ensureOpenProcedure);
+        return q;
+    }
+
+    @Override
+    TypedQueryImpl<?> createQuery(String query) {
+        return createQuery(query, Void.class);
     }
 
     @Before
@@ -59,14 +66,16 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void getResultListWithEntityTypeReturnsEntities() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         final List<String> uris = initDataForQuery(5);
         final List<OWLClassA> res = query.getResultList();
         verifyResults(uris, res, 5);
     }
 
-    private <T> TypedQueryImpl<T> create(Class<T> type, String query) {
-        return queryFactory.createNativeQuery(query, type);
+    private <T> TypedQueryImpl<T> create(String query, Class<T> type) {
+        final TypedQueryImpl<T> q = queryFactory.createNativeQuery(query, type);
+        q.setEnsureOpenProcedure(ensureOpenProcedure);
+        return q;
     }
 
     private List<String> initDataForQuery(int count) throws Exception {
@@ -98,7 +107,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void getSingleResultWithEntityTypeReturnsCorrectResult() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         final List<String> uris = initDataForQuery(1);
         final OWLClassA res = query.getSingleResult();
         assertNotNull(res);
@@ -107,7 +116,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void setMaxResultsReturnsSpecifiedMaxResults() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         final int count = 10;
         final int expectedCount = 5;
         final List<String> uris = initDataForQuery(count);
@@ -118,7 +127,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void setMaxResultsLargerReturnsAllResults() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         final int count = 10;
         final List<String> uris = initDataForQuery(count);
         final List<OWLClassA> res = query.setMaxResults(count + 5).getResultList();
@@ -127,7 +136,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void returnsEmptyListWhenMaxResultsIsSetToZero() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         initDataForQuery(2);
         final List<OWLClassA> res = query.setMaxResults(0).getResultList();
         assertNotNull(res);
@@ -136,19 +145,19 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWhenNegativeIsUsedForSetMaxResults() {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         query.setMaxResults(-1).getResultList();
     }
 
     @Test(expected = NoResultException.class)
     public void throwsNoResultExceptionWhenThereIsNoResultForGetSingle() {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         query.getSingleResult();
     }
 
     @Test(expected = NoUniqueResultException.class)
     public void throwsNoSingleResultExceptionWhenThereAreMultipleResultsForGetSingle() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         initDataForQuery(5);
         query.getSingleResult();
     }
@@ -157,13 +166,14 @@ public class TypedQueryImplTest extends QueryTestBase {
     public void throwsExceptionWhenLoadingEntityWithoutUoWSet() throws Exception {
         final TypedQueryImpl<OWLClassA> query = new TypedQueryImpl<>(mock(SparqlQueryHolder.class), OWLClassA.class,
                 connectionWrapperMock, uowMock);
+        query.setEnsureOpenProcedure(ensureOpenProcedure);
         initDataForQuery(5);
         query.getResultList();
     }
 
     @Test
     public void askQueryReturnsSingleBoolean() throws Exception {
-        final TypedQuery<Boolean> query = create(Boolean.class, ASK_BOOLEAN_QUERY);
+        final TypedQuery<Boolean> query = create(ASK_BOOLEAN_QUERY, Boolean.class);
         initAskQueryData(true);
         final Boolean result = query.getSingleResult();
         assertNotNull(result);
@@ -181,7 +191,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         final String update = "INSERT { ?inst ?property ?newValue . } " +
                 "DELETE { ?inst ?property ?origValue . } WHERE {" +
                 "?inst ?property ?origValue . }";
-        final TypedQuery<Void> q = queryFactory.createNativeQuery(update, Void.class);
+        final TypedQueryImpl q = createQuery(update);
         q.executeUpdate();
         verify(statementMock).executeUpdate(update);
     }
@@ -191,7 +201,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         thrown.expect(OWLPersistenceException.class);
         thrown.expectMessage("Exception caught when evaluating query " + UPDATE_QUERY);
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
-        final Query q = queryFactory.createNativeQuery(UPDATE_QUERY, Void.class);
+        final Query q = create(UPDATE_QUERY, Void.class);
         q.executeUpdate();
     }
 
@@ -205,7 +215,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
                 .thenReturn(new OWLClassA(URI.create(uris.get(0))));
 
-        final TypedQuery<OWLClassA> q = queryFactory.createNativeQuery(SELECT_QUERY, OWLClassA.class);
+        final TypedQuery<OWLClassA> q = create(SELECT_QUERY, OWLClassA.class);
         final List<OWLClassA> result = q.getResultList();
         assertEquals(1, result.size());
     }
@@ -213,7 +223,7 @@ public class TypedQueryImplTest extends QueryTestBase {
     @Test
     public void exceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
-        final TypedQueryImpl<Void> q = queryFactory.createNativeQuery(UPDATE_QUERY, Void.class);
+        final TypedQueryImpl<Void> q = create(UPDATE_QUERY, Void.class);
         runAndVerifyHandlerInvocation(q, q::executeUpdate);
     }
 
@@ -230,35 +240,35 @@ public class TypedQueryImplTest extends QueryTestBase {
     @Test
     public void runtimeExceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeUpdate(UPDATE_QUERY);
-        final TypedQueryImpl<Void> q = queryFactory.createNativeQuery(UPDATE_QUERY, Void.class);
+        final TypedQueryImpl<Void> q = create(UPDATE_QUERY, Void.class);
         runAndVerifyHandlerInvocation(q, q::executeUpdate);
     }
 
     @Test
     public void exceptionInGetResultListInvokesRollbackMarker() throws Exception {
         doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_QUERY, OWLClassA.class);
+        final TypedQueryImpl<OWLClassA> q = create(SELECT_QUERY, OWLClassA.class);
         runAndVerifyHandlerInvocation(q, q::getResultList);
     }
 
     @Test
     public void runtimeExceptionInGetResultListInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_QUERY, OWLClassA.class);
+        final TypedQueryImpl<OWLClassA> q = create(SELECT_QUERY, OWLClassA.class);
         runAndVerifyHandlerInvocation(q, q::getResultList);
     }
 
     @Test
     public void exceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
         doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_QUERY, OWLClassA.class);
+        final TypedQueryImpl<OWLClassA> q = create(SELECT_QUERY, OWLClassA.class);
         runAndVerifyHandlerInvocation(q, q::getSingleResult);
     }
 
     @Test
     public void runtimeExceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_QUERY, OWLClassA.class);
+        final TypedQueryImpl<OWLClassA> q = create(SELECT_QUERY, OWLClassA.class);
         runAndVerifyHandlerInvocation(q, q::getSingleResult);
     }
 
@@ -274,7 +284,7 @@ public class TypedQueryImplTest extends QueryTestBase {
     }
 
     private <T> TypedQueryImpl<T> queryWithRollbackMarker(String query, Class<T> cls) {
-        final TypedQueryImpl<T> q = queryFactory.createNativeQuery(query, cls);
+        final TypedQueryImpl<T> q = create(query, cls);
         q.setRollbackOnlyMarker(handler);
         return q;
     }
@@ -347,7 +357,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void setDescriptorPassesDescriptorToInstanceLoading() throws Exception {
-        final TypedQuery<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         final int count = 10;
         final List<String> uris = initDataForQuery(count);
         final Descriptor descriptor = new EntityDescriptor(URI.create("http://contextOne"));
@@ -359,7 +369,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void setFirstResultOffsetsQueryResultStartToSpecifiedPosition() throws Exception {
-        final TypedQuery<OWLClassA> q = queryFactory.createNativeQuery(SELECT_QUERY, OWLClassA.class);
+        final TypedQuery<OWLClassA> q = create(SELECT_QUERY, OWLClassA.class);
         when(resultSetMock.getColumnCount()).thenReturn(1);
         // Three results
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -379,7 +389,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void noUniqueResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() throws Exception {
-        final TypedQueryImpl<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQueryImpl<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         initDataForQuery(5);
         query.setRollbackOnlyMarker(handler);
         thrown.expect(NoUniqueResultException.class);
@@ -393,7 +403,7 @@ public class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     public void noResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() {
-        final TypedQueryImpl<OWLClassA> query = create(OWLClassA.class, SELECT_QUERY);
+        final TypedQueryImpl<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         query.setRollbackOnlyMarker(handler);
         thrown.expect(NoResultException.class);
 
