@@ -199,7 +199,10 @@ public class SelectResultSet extends AbstractResultSet {
                 objectValue = value.asResource().getId().getLabelString();
             }
         }
-        if (objectValue != null && cls.isAssignableFrom(objectValue.getClass())) {
+        if (objectValue == null) {
+            return null;
+        }
+        if (cls.isAssignableFrom(objectValue.getClass())) {
             return cls.cast(objectValue);
         } else {
             return buildUsingConstructor(cls, value, objectValue);
