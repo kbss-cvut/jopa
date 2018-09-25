@@ -52,7 +52,7 @@ public class JenaAdapterTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.adapter = new JenaAdapter(connectorMock, inferredConnectorMock);
+        this.adapter = new JenaAdapter(connectorMock, inferredConnectorMock, null);
     }
 
     @Test

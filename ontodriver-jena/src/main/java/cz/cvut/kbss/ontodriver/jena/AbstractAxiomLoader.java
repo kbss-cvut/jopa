@@ -15,7 +15,13 @@ import static cz.cvut.kbss.ontodriver.model.Assertion.createObjectPropertyAssert
 
 abstract class AbstractAxiomLoader {
 
+    private final String language;
+
     boolean inferred = false;
+
+    AbstractAxiomLoader(String language) {
+        this.language = language;
+    }
 
     /**
      * Checks whether the storage contains the specified axiom.
@@ -106,7 +112,7 @@ abstract class AbstractAxiomLoader {
         if (!(literal.getValue() instanceof String)) {
             return true;
         }
-        return !assertion.hasLanguage() || literal.getLanguage().isEmpty() ||
-                assertion.getLanguage().equals(literal.getLanguage());
+        final String expectedLang = assertion.hasLanguage() ? assertion.getLanguage() : language;
+        return Objects.equals(expectedLang, literal.getLanguage()) || literal.getLanguage().isEmpty() || expectedLang == null;
     }
 }

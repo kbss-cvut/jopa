@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -49,6 +49,7 @@ abstract class AbstractQuery implements Query {
     private boolean useBackupOntology = false;
 
     private Procedure rollbackOnlyMarker;
+    private Procedure ensureOpenProcedure;
 
     AbstractQuery(QueryHolder query, ConnectionWrapper connection) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
@@ -63,27 +64,6 @@ abstract class AbstractQuery implements Query {
      */
     public void useBackupOntology(boolean useBackupOntology) {
         this.useBackupOntology = useBackupOntology;
-    }
-
-    void executeUpdateImpl() {
-        final Statement stmt = connection.createStatement();
-        try {
-            setTargetOntology(stmt);
-            logQuery();
-            stmt.executeUpdate(query.assembleQuery());
-        } catch (OntoDriverException e) {
-            markTransactionForRollback();
-            throw queryEvaluationException(e);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after update execution.", e);
-            }
-        }
     }
 
     private void logQuery() {
@@ -111,6 +91,11 @@ abstract class AbstractQuery implements Query {
         }
     }
 
+    void ensureOpen() {
+        assert ensureOpenProcedure != null;
+        ensureOpenProcedure.execute();
+    }
+
     /**
      * Registers reference to a method which marks current transaction (if active) for rollback on exceptions.
      *
@@ -120,8 +105,42 @@ abstract class AbstractQuery implements Query {
         this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 
+    /**
+     * Registers a reference to a method which ensures that the query is called on an open persistence context.
+     * <p>
+     * This method is likely to come from an {@link EntityManager} instance which was used to create this query.
+     *
+     * @param ensureOpenProcedure The procedure to call when ensuring that persistence context is open
+     */
+    void setEnsureOpenProcedure(Procedure ensureOpenProcedure) {
+        this.ensureOpenProcedure = ensureOpenProcedure;
+    }
+
     private static IllegalStateException unboundParam(Object param) {
         return new IllegalStateException("Parameter " + param + " is not bound.");
+    }
+
+    @Override
+    public void executeUpdate() {
+        ensureOpen();
+        final Statement stmt = connection.createStatement();
+        try {
+            setTargetOntology(stmt);
+            logQuery();
+            stmt.executeUpdate(query.assembleQuery());
+        } catch (OntoDriverException e) {
+            markTransactionForRollback();
+            throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        } finally {
+            try {
+                stmt.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close statement after update execution.", e);
+            }
+        }
     }
 
     @Override

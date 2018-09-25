@@ -34,7 +34,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock);
+        this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock, null);
     }
 
     @Test
@@ -464,6 +464,34 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
                 createTypedLiteral(cal));
         when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
 
+        final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
+        assertEquals(1, result.size());
+        final Axiom<?> axiom = result.iterator().next();
+        assertEquals(value, axiom.getValue().getValue());
+    }
+
+    @Test
+    public void findUsesOntologyLanguageWhenNoneIsSpecifiedInAssertion() {
+        this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock, "cs");
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(assertion);
+        final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
+                createLangLiteral("test", "en"));
+        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
+        final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void findLoadsDataPropertyWhenAssertionLanguageTagIsExplicitlyNull() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), null, false);
+        descriptor.addAssertion(assertion);
+        final String value = "test";
+        final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
+                createLangLiteral(value, "en"));
+        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
         final Axiom<?> axiom = result.iterator().next();

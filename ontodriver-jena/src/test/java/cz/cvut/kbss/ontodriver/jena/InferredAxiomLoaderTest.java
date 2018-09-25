@@ -34,7 +34,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.descriptor = new AxiomDescriptor(SUBJECT);
-        this.axiomLoader = new InferredAxiomLoader(connectorMock);
+        this.axiomLoader = new InferredAxiomLoader(connectorMock, null);
     }
 
     @Test

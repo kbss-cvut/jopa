@@ -67,7 +67,8 @@ class JenaDriver implements Closeable, ConnectionListener {
     JenaConnection acquireConnection() {
         ensureOpen();
         final StorageConnector connector = connectorFactory.createConnector();
-        final JenaAdapter adapter = new JenaAdapter(connector, connectorFactory.createInferredConnector(connector));
+        final JenaAdapter adapter = new JenaAdapter(connector, connectorFactory.createInferredConnector(connector),
+                configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE));
         final JenaConnection connection = new JenaConnection(adapter);
         connection.registerListener(this);
         connection.setAutoCommit(autoCommit);

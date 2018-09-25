@@ -12,11 +12,7 @@ public final class CommandParserProvider {
     }
 
     public static OptionParser getCommandHelp() {
-        return new OptionParser() {
-            {
-                // no options
-            }
-        };
+        return new OptionParser();
     }
 
     public static OptionParser getCommandList() {
@@ -42,11 +38,7 @@ public final class CommandParserProvider {
     }
 
     public static OptionParser getCommandVersion() {
-        return new OptionParser() {
-            {
-                // no options
-            }
-        };
+        return new OptionParser();
     }
 
     public static OptionParser getCommandVocabulary() {

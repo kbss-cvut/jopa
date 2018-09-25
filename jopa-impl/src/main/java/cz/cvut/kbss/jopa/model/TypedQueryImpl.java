@@ -54,12 +54,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     @Override
-    public void executeUpdate() {
-        executeUpdateImpl();
-    }
-
-    @Override
     public List<X> getResultList() {
+        ensureOpen();
         if (maxResults == 0) {
             return Collections.emptyList();
         }
@@ -113,6 +109,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public X getSingleResult() {
+        ensureOpen();
         try {
             // call it with maxResults = 2 just to see whether there are
             // multiple results
@@ -137,6 +134,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setMaxResults(int maxResults) {
+        ensureOpen();
         if (maxResults < 0) {
             markTransactionForRollback();
             throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
@@ -147,6 +145,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setFirstResult(int startPosition) {
+        ensureOpen();
         checkNumericParameter(startPosition, "first result offset");
         this.firstResult = startPosition;
         return this;
@@ -154,6 +153,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setParameter(int position, Object value) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(position), value);
         } catch (RuntimeException e) {
@@ -165,6 +165,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setParameter(int position, String value, String language) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(position), value, language);
         } catch (RuntimeException e) {
@@ -176,6 +177,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setParameter(String name, Object value) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(name), value);
         } catch (RuntimeException e) {
@@ -187,6 +189,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setParameter(String name, String value, String language) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(name), value, language);
         } catch (RuntimeException e) {
@@ -198,6 +201,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public <T> TypedQuery<X> setParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
         try {
             query.setParameter(parameter, value);
         } catch (RuntimeException e) {
@@ -209,6 +213,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setParameter(Parameter<String> parameter, String value, String language) {
+        ensureOpen();
         try {
             query.setParameter(parameter, value, language);
         } catch (RuntimeException e) {
@@ -220,6 +225,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setUntypedParameter(int position, Object value) {
+        ensureOpen();
         try {
             query.setUntypedParameter(query.getParameter(position), value);
         } catch (RuntimeException e) {
@@ -231,6 +237,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setUntypedParameter(String name, Object value) {
+        ensureOpen();
         try {
             query.setUntypedParameter(query.getParameter(name), value);
         } catch (RuntimeException e) {
@@ -242,6 +249,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public <T> TypedQuery<X> setUntypedParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
         try {
             query.setUntypedParameter(parameter, value);
         } catch (RuntimeException e) {

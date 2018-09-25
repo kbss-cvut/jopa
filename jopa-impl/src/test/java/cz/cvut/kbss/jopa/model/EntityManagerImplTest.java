@@ -41,6 +41,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,6 +52,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class EntityManagerImplTest {
+
+    private static final String SELECT_QUERY = "SELECT * WHERE { ?x a <" + Vocabulary.c_OwlClassA + "> . }";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -415,8 +418,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasTwo", cascade = {CascadeType.MERGE,
-                CascadeType.PERSIST,
-                CascadeType.REMOVE})
+                                                                                  CascadeType.PERSIST,
+                                                                                  CascadeType.REMOVE})
         private CascadeCycleTwo two;
 
         private CascadeCycleOne(URI uri) {
@@ -429,8 +432,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasOne", cascade = {CascadeType.PERSIST,
-                CascadeType.MERGE,
-                CascadeType.REMOVE})
+                                                                                  CascadeType.MERGE,
+                                                                                  CascadeType.REMOVE})
         private CascadeCycleOne one;
 
         private CascadeCycleTwo(URI uri) {
@@ -537,5 +540,56 @@ public class EntityManagerImplTest {
         final ArgumentCaptor<OWLClassA> captor = ArgumentCaptor.forClass(OWLClassA.class);
         verify(connectorMock).merge(captor.capture(), eq(OWLClassA.getStrAttField()), any());
         assertEquals(a.getUri(), captor.getValue().getUri());
+    }
+
+    @Test
+    public void getTransactionOnClosedEntityManagerIsValid() {
+        em.close();
+        assertNotNull(em.getTransaction());
+    }
+
+    @Test
+    public void persistOnClosedManagerThrowsIllegalStateException() {
+        thrown.expect(IllegalStateException.class);
+        em.close();
+        em.persist(Generators.generateOwlClassAInstance());
+    }
+
+    @Test
+    public void createQueryOnClosedManagerThrowsIllegalStateException() {
+        thrown.expect(IllegalStateException.class);
+        em.close();
+        em.createNativeQuery(SELECT_QUERY);
+    }
+
+    @Test
+    public void createNativeQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+        final QueryImpl q = em.createNativeQuery("SELECT * WHERE { ?x a rdf:Resource . }");
+        verifyEnsureOpenProcedureSet(q);
+    }
+
+    private void verifyEnsureOpenProcedureSet(AbstractQuery q) throws NoSuchFieldException, IllegalAccessException {
+        final Field ensureOpenProcedureField = AbstractQuery.class.getDeclaredField("ensureOpenProcedure");
+        ensureOpenProcedureField.setAccessible(true);
+        assertNotNull(ensureOpenProcedureField.get(q));
+    }
+
+    @Test
+    public void createTypedNativeQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+        final TypedQueryImpl<OWLClassA> q =
+                em.createNativeQuery("SELECT * WHERE { ?x a rdf:Resource . }", OWLClassA.class);
+        verifyEnsureOpenProcedureSet(q);
+    }
+
+    @Test
+    public void createQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+        final QueryImpl q = em.createQuery("SELECT * WHERE { ?x a rdf:Resource . }");
+        verifyEnsureOpenProcedureSet(q);
+    }
+
+    @Test
+    public void createTypedQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+        final TypedQueryImpl<OWLClassA> q = em.createQuery("SELECT * WHERE { ?x a rdf:Resource . }", OWLClassA.class);
+        verifyEnsureOpenProcedureSet(q);
     }
 }

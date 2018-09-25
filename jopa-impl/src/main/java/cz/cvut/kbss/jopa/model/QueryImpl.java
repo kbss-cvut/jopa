@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -34,12 +34,8 @@ public class QueryImpl extends AbstractQuery implements Query {
     }
 
     @Override
-    public void executeUpdate() {
-        executeUpdateImpl();
-    }
-
-    @Override
     public List getResultList() {
+        ensureOpen();
         try {
             if (getMaxResults() == 0) {
                 return Collections.emptyList();
@@ -63,6 +59,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Object getSingleResult() {
+        ensureOpen();
         try {
             // Call it with maxResults = 2 just to see whether there are more
             final List<?> list = getResultListImpl(2);
@@ -86,6 +83,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setParameter(int position, Object value) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(position), value);
         } catch (RuntimeException e) {
@@ -97,6 +95,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setParameter(int position, String value, String language) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(position), value, language);
         } catch (RuntimeException e) {
@@ -108,6 +107,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setParameter(String name, Object value) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(name), value);
         } catch (RuntimeException e) {
@@ -119,6 +119,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setParameter(String name, String value, String language) {
+        ensureOpen();
         try {
             query.setParameter(query.getParameter(name), value, language);
         } catch (RuntimeException e) {
@@ -130,6 +131,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public <T> Query setParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
         try {
             query.setParameter(parameter, value);
         } catch (RuntimeException e) {
@@ -141,6 +143,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setParameter(Parameter<String> parameter, String value, String language) {
+        ensureOpen();
         try {
             query.setParameter(parameter, value, language);
         } catch (RuntimeException e) {
@@ -152,6 +155,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setUntypedParameter(int position, Object value) {
+        ensureOpen();
         try {
             query.setUntypedParameter(query.getParameter(position), value);
         } catch (RuntimeException e) {
@@ -163,6 +167,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setUntypedParameter(String name, Object value) {
+        ensureOpen();
         try {
             query.setUntypedParameter(query.getParameter(name), value);
         } catch (RuntimeException e) {
@@ -174,6 +179,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public <T> Query setUntypedParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
         try {
             query.setUntypedParameter(parameter, value);
         } catch (RuntimeException e) {
@@ -185,6 +191,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setMaxResults(int maxResults) {
+        ensureOpen();
         checkNumericParameter(maxResults, "max results");
         this.maxResults = maxResults;
         return this;
@@ -192,6 +199,7 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     @Override
     public Query setFirstResult(int startPosition) {
+        ensureOpen();
         checkNumericParameter(startPosition, "first result offset");
         this.firstResult = startPosition;
         return this;

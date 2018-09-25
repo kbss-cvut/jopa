@@ -610,7 +610,7 @@ public class MetamodelFactory {
 
         when(stringAtt.getJavaField()).thenReturn(OWLClassN.getStringAttributeField());
         when(stringAtt.getJavaType()).thenReturn(OWLClassN.getStringAttributeField().getType());
-        when(et.getAttribute(OWLClassN.getAnnotationPropertyField().getName())).thenReturn(stringAtt);
+        when(et.getAttribute(OWLClassN.getStringAttributeField().getName())).thenReturn(stringAtt);
         when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(stringAtt.isCollection()).thenReturn(false);
         when(stringAtt.getBindableJavaType()).thenReturn(String.class);

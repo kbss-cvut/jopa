@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,16 +31,21 @@ import static org.mockito.Mockito.*;
 
 public class QueryImplTest extends QueryTestBase {
 
-//    private static final String SELECT_QUERY = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
+    @Override
+    QueryImpl createQuery(String query, Class<?> resultType) {
+        return createQuery(query);
+    }
 
     @Override
-    Query createQuery(String query, Class<?> resultType) {
-        return queryFactory.createNativeQuery(query);
+    QueryImpl createQuery(String query) {
+        final QueryImpl q = queryFactory.createNativeQuery(query);
+        q.setEnsureOpenProcedure(ensureOpenProcedure);
+        return q;
     }
 
     @Test
     public void getSingleResultReturnsUniqueResult() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         when(resultSetMock.isBound(anyInt())).thenReturn(true);
@@ -54,7 +59,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test(expected = NoUniqueResultException.class)
     public void getSingleResultWithMultipleResultsThrowsNoUniqueResultException() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
         when(resultSetMock.getObject(anyInt())).thenReturn("str");
@@ -63,7 +68,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void setMaxResultsConstrainsNumberOfReturnedResults() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         // Three results
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -77,7 +82,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void setMaxResultsToZeroReturnsImmediatelyEmptyResult() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         q.setMaxResults(0);
         final List result = q.getResultList();
         assertNotNull(result);
@@ -87,7 +92,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void queryResultRowIsArrayOfObjectsWhenMultipleColumnsExist() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         final String res = "str";
@@ -105,7 +110,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void queryResultRowObjectWhenSingleColumnExists() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(1);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         final String res = "str";
@@ -118,7 +123,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void executeUpdateRunsUpdateOnConnection() throws Exception {
-        final Query q = queryFactory.createNativeQuery(UPDATE_QUERY);
+        final Query q = createQuery(UPDATE_QUERY);
         q.executeUpdate();
         verify(statementMock).executeUpdate(UPDATE_QUERY);
     }
@@ -128,14 +133,14 @@ public class QueryImplTest extends QueryTestBase {
         thrown.expect(OWLPersistenceException.class);
         thrown.expectMessage("Exception caught when evaluating query " + UPDATE_QUERY);
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
-        final Query q = queryFactory.createNativeQuery(UPDATE_QUERY);
+        final Query q = createQuery(UPDATE_QUERY);
         q.executeUpdate();
     }
 
     @Test
     public void exceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
-        final QueryImpl q = queryFactory.createNativeQuery(UPDATE_QUERY);
+        final QueryImpl q = createQuery(UPDATE_QUERY);
         runAndVerifyHandlerInvocation(q, q::executeUpdate);
     }
 
@@ -152,35 +157,35 @@ public class QueryImplTest extends QueryTestBase {
     @Test
     public void runtimeExceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeUpdate(UPDATE_QUERY);
-        final QueryImpl q = queryFactory.createNativeQuery(UPDATE_QUERY);
+        final QueryImpl q = createQuery(UPDATE_QUERY);
         runAndVerifyHandlerInvocation(q, q::executeUpdate);
     }
 
     @Test
     public void exceptionInGetResultListInvokesRollbackMarker() throws Exception {
         doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getResultList);
     }
 
     @Test
     public void runtimeExceptionInGetResultListInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getResultList);
     }
 
     @Test
     public void exceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
         doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getSingleResult);
     }
 
     @Test
     public void runtimeExceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
-        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getSingleResult);
     }
 
@@ -196,7 +201,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     private QueryImpl queryWithRollbackMarker(String query) {
-        final QueryImpl q = queryFactory.createNativeQuery(query);
+        final QueryImpl q = createQuery(query);
         q.setRollbackOnlyMarker(handler);
         return q;
     }
@@ -269,7 +274,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void setFirstResultOffsetsQueryResultStartToSpecifiedPosition() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(1);
         // Three results
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -284,7 +289,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void getResultListSetsValuesOfUnboundVariablesToNullInResultArrays() throws Exception {
-        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
+        final Query q = createQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         when(resultSetMock.isBound(0)).thenReturn(true);
@@ -292,8 +297,8 @@ public class QueryImplTest extends QueryTestBase {
         when(resultSetMock.getObject(0)).thenReturn("str");
         final List result = q.getResultList();
         assertEquals(1, result.size());
-        assertEquals("str", ((Object [])result.get(0))[0]);
-        assertNull(((Object [])result.get(0))[1]);
+        assertEquals("str", ((Object[]) result.get(0))[0]);
+        assertNull(((Object[]) result.get(0))[1]);
         verify(resultSetMock).isBound(0);
         verify(resultSetMock).isBound(1);
         verify(resultSetMock, never()).getObject(1);

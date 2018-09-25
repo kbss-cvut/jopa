@@ -42,7 +42,6 @@ class EntityDeconstructor {
 
         final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(identifier, descriptor);
         try {
-//            addEntityClassAssertion(valueBuilder, entity, descriptor);
             for (FieldSpecification<? super T, ?> att : et.getFieldSpecifications()) {
                 addAssertions(entity, et, att, descriptor, valueBuilder);
             }

@@ -41,7 +41,7 @@ public class MainAxiomLoaderTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.axiomLoader = new MainAxiomLoader(connectorMock, inferredConnectorMock);
+        this.axiomLoader = new MainAxiomLoader(connectorMock, inferredConnectorMock, null);
     }
 
     @Test

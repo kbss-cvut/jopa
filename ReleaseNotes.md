@@ -1,9 +1,14 @@
 # JOPA - Release Notes
 
+## 0.10.6 - September 25, 2018
+- Support unbound variables in `VariableResult` in `SparqlResultMapping`.
+- Fixed incorrect handling of language on attribute loading.
+- More consistent handling of open/close persistence context.
+
 ## 0.10.5 - August 13, 2018
 - Removed several unused files, libraries.
 - Improved collection cloning.
-- Fixed incorrect fineld cardinality specification in OWL2Java.
+- Fixed incorrect field cardinality specification in OWL2Java.
 - Upgraded to OWLAPI 5.1.6.
 - Added `aop.xml` so that [load time weaving](https://github.com/kbss-cvut/jopa/wiki/Maven-setup#load-time-weaving) can be used with JOPA.
 

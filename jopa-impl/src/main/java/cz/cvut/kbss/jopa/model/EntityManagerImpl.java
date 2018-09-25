@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -386,7 +384,6 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         ensureOpen();
         removeCurrentPersistenceContext();
         emf.entityManagerClosed(this);
-        this.transaction = null;
         this.open = false;
     }
 
@@ -426,86 +423,107 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     }
 
     @Override
-    public Query createQuery(String qlString) {
+    public QueryImpl createQuery(String qlString) {
+        ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().createQuery(qlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
     }
 
     @Override
-    public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
+        ensureOpen();
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().createQuery(query, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
     }
 
     @Override
-    public Query createNativeQuery(String sparqlString) {
+    public QueryImpl createNativeQuery(String sparqlString) {
+        ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
     }
 
     @Override
-    public <T> TypedQuery<T> createNativeQuery(String sparqlString, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createNativeQuery(String sparqlString, Class<T> resultClass) {
+        ensureOpen();
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
     }
 
     @Override
-    public Query createNativeQuery(String sparqlString, String resultSetMapping) {
+    public QueryImpl createNativeQuery(String sparqlString, String resultSetMapping) {
+        ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultSetMapping);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
     }
 
     @Override
-    public Query createNamedQuery(String name) {
+    public QueryImpl createNamedQuery(String name) {
+        ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().createNamedQuery(name);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
     }
 
     @Override
-    public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
+        ensureOpen();
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNamedQuery(name, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
     }
 
     @Override
     public boolean isConsistent(URI context) {
+        ensureOpen();
         return getCurrentPersistenceContext().isConsistent(context);
     }
 
     @Override
     public List<URI> getContexts() {
+        ensureOpen();
         return getCurrentPersistenceContext().getContexts();
     }
 
     @Override
     public void setUseTransactionalOntologyForQueryProcessing() {
+        ensureOpen();
         getCurrentPersistenceContext().setUseTransactionalOntologyForQueryProcessing();
     }
 
     @Override
     public boolean useTransactionalOntologyForQueryProcessing() {
+        ensureOpen();
         return getCurrentPersistenceContext().useTransactionalOntologyForQueryProcessing();
     }
 
     @Override
     public void setUseBackupOntologyForQueryProcessing() {
+        ensureOpen();
         getCurrentPersistenceContext().setUseBackupOntologyForQueryProcessing();
     }
 
     @Override
     public boolean useBackupOntologyForQueryProcessing() {
+        ensureOpen();
         return getCurrentPersistenceContext().useBackupOntologyForQueryProcessing();
     }
 
     @Override
     public <T> T unwrap(Class<T> cls) {
+        ensureOpen();
         if (cls.isAssignableFrom(this.getClass())) {
             return cls.cast(this);
         }
@@ -519,7 +537,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     private void ensureOpen() {
         if (!isOpen()) {
-            throw new OWLPersistenceException("The entity manager is closed !");
+            throw new IllegalStateException("The entity manager is closed !");
         }
     }
 
