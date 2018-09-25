@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.10.6 - September 25, 2018
+- Support unbound variables in `VariableResult` in `SparqlResultMapping`.
+- Fixed incorrect handling of language on attribute loading.
+- More consistent handling of open/close persistence context.
+
 ## 0.10.5 - August 13, 2018
 - Removed several unused files, libraries.
 - Improved collection cloning.
