@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -108,5 +109,19 @@ public class DatatypeTransformerTest {
         final Date value = new Date();
         final LocalDateTime result = DatatypeTransformer.transform(value, LocalDateTime.class);
         assertEquals(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), result);
+    }
+
+    @Test
+    public void transformSupportsTransformationFromInstantToJavaUtilDate() {
+        final Instant value = Instant.now();
+        final Date result = DatatypeTransformer.transform(value, Date.class);
+        assertEquals(Date.from(value), result);
+    }
+
+    @Test
+    public void transformSupportsTransformationFromJavaUtilDateToInstant() {
+        final Date value = new Date();
+        final Instant result = DatatypeTransformer.transform(value, Instant.class);
+        assertEquals(value.toInstant(), result);
     }
 }

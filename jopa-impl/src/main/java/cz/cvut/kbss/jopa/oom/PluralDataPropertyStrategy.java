@@ -65,7 +65,7 @@ public class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> 
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
-                                                                 .map(v -> new Value<>(valueResolver.toAxiomValue(v)))
+                                                                 .map(v -> new Value<>(valueResolver.toAxiom(v)))
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
         }

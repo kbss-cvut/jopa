@@ -15,7 +15,9 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.utils.DatatypeTransformer;
+import cz.cvut.kbss.jopa.oom.datatype.LocalDateResolver;
+import cz.cvut.kbss.jopa.oom.datatype.LocalDateTimeResolver;
+import cz.cvut.kbss.jopa.oom.datatype.ValueResolver;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 
 import java.time.LocalDate;
@@ -34,9 +36,9 @@ abstract class DataPropertyFieldStrategy<X> extends FieldStrategy<Attribute<? su
 
     private ValueResolver getValueResolver() {
         if (attribute.getJavaType().equals(LocalDate.class)) {
-            return new LocalDateValueResolver();
+            return new LocalDateResolver();
         } else if (attribute.getJavaType().equals(LocalDateTime.class)) {
-            return new LocalDateTimeValueResolver();
+            return new LocalDateTimeResolver();
         } else {
             return new ValueResolver();
         }
@@ -64,37 +66,5 @@ abstract class DataPropertyFieldStrategy<X> extends FieldStrategy<Attribute<? su
     @Override
     Assertion createAssertion() {
         return Assertion.createDataPropertyAssertion(attribute.getIRI().toURI(), getLanguage(), attribute.isInferred());
-    }
-
-    static class ValueResolver {
-
-        Object toAxiomValue(Object value) {
-            return value;
-        }
-
-        Object fromAxiom(Object axiomValue) {
-            return axiomValue;
-        }
-    }
-
-    static class LocalDateValueResolver extends ValueResolver {
-
-        @Override
-        Object toAxiomValue(Object value) {
-            return DatatypeTransformer.transform(value, Date.class);
-        }
-
-        @Override
-        Object fromAxiom(Object axiomValue) {
-            return DatatypeTransformer.transform(axiomValue, LocalDate.class);
-        }
-    }
-
-    static class LocalDateTimeValueResolver extends LocalDateValueResolver {
-
-        @Override
-        Object fromAxiom(Object axiomValue) {
-            return DatatypeTransformer.transform(axiomValue, LocalDateTime.class);
-        }
     }
 }

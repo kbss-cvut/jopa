@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -68,6 +69,8 @@ public class DatatypeTransformer {
         map.put(new Pair(LocalDateTime.class, Date.class), value -> java.sql.Timestamp.valueOf((LocalDateTime) value));
         map.put(new Pair(Date.class, LocalDateTime.class),
                 value -> ((Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        map.put(new Pair(Instant.class, Date.class), value -> Date.from((Instant) value));
+        map.put(new Pair(Date.class, Instant.class), value -> ((Date) value).toInstant());
         return map;
     }
 

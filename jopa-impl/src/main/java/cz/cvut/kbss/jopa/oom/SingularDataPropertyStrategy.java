@@ -55,7 +55,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        final Object extractedValue = valueResolver.toAxiomValue(extractFieldValueFromInstance(instance));
+        final Object extractedValue = valueResolver.toAxiom(extractFieldValueFromInstance(instance));
 
         final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
         valueBuilder.addValue(createAssertion(), val, getAttributeContext());
