@@ -53,7 +53,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         final Object value = extractFieldValueFromInstance(instance);
         if (value == null) {
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -27,6 +25,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.*;
@@ -950,5 +950,43 @@ public class MetamodelFactory {
         addEntityListenerCallback(manager, concreteListener, POST_UPDATE, ConcreteListener.getPostUpdate());
         addEntityListenerCallback(manager, concreteListener, PRE_REMOVE, ConcreteListener.getPreRemove());
         addEntityListenerCallback(manager, concreteListener, POST_REMOVE, ConcreteListener.getPostRemove());
+    }
+
+    static void initOwlClassTMock(EntityTypeImpl<OWLClassT> et, SingularAttribute localDateAtt,
+                                  SingularAttribute localDateTimeAtt, Identifier id) throws Exception {
+        when(et.getIdentifier()).thenReturn(id);
+        when(id.isGenerated()).thenReturn(true);
+        when(et.getJavaType()).thenReturn(OWLClassT.class);
+        when(id.getJavaField()).thenReturn(OWLClassT.getUriField());
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassT.getClassIri()));
+        when(et.getFieldSpecifications()).thenReturn(new HashSet(Arrays.asList(localDateAtt, localDateTimeAtt, id)));
+        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(localDateAtt, localDateTimeAtt)));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+
+        when(localDateAtt.getJavaField()).thenReturn(OWLClassT.getLocalDateField());
+        when(localDateAtt.getJavaType()).thenReturn(OWLClassT.getLocalDateField().getType());
+        when(localDateAtt.getName()).thenReturn(OWLClassT.getLocalDateField().getName());
+        when(et.getAttribute(OWLClassT.getLocalDateField().getName())).thenReturn(localDateAtt);
+        when(localDateAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(localDateAtt.isCollection()).thenReturn(false);
+        when(localDateAtt.getBindableJavaType()).thenReturn(LocalDate.class);
+        when(localDateAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassT.getLocalDateField().getAnnotation(OWLDataProperty.class).iri()));
+        when(localDateAtt.getDeclaringType()).thenReturn(et);
+        when(localDateAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(localDateAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+
+        when(localDateTimeAtt.getJavaField()).thenReturn(OWLClassT.getLocalDateTimeField());
+        when(localDateTimeAtt.getJavaType()).thenReturn(OWLClassT.getLocalDateTimeField().getType());
+        when(localDateTimeAtt.getName()).thenReturn(OWLClassT.getLocalDateTimeField().getName());
+        when(et.getAttribute(OWLClassT.getLocalDateTimeField().getName())).thenReturn(localDateAtt);
+        when(localDateTimeAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(localDateTimeAtt.isCollection()).thenReturn(false);
+        when(localDateTimeAtt.getBindableJavaType()).thenReturn(LocalDateTime.class);
+        when(localDateTimeAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassT.getLocalDateTimeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(localDateTimeAtt.getDeclaringType()).thenReturn(et);
+        when(localDateTimeAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(localDateTimeAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
     }
 }

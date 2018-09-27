@@ -49,6 +49,7 @@ public class PersistenceUnitClassFinderTest {
         set.add(OWLClassQ.class);
         set.add(OWLClassR.class);
         set.add(OWLClassS.class);
+        set.add(OWLClassT.class);
         return set;
     }
 

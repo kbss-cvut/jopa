@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -62,7 +60,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildFieldValueCreatesCorrectCollectionTypeForSet() throws Exception {
+    public void buildFieldValueCreatesCorrectCollectionTypeForSet() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         strategy.addValueFromAxiom(createMSetAxiom());
         final OWLClassM m = new OWLClassM();
@@ -87,7 +85,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void addValueFromAxiomAddsAllValuesToTheCollection() throws Exception {
+    public void addValueFromAxiomAddsAllValuesToTheCollection() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final Set<Integer> values = addValuesFromAxioms(strategy);
 
@@ -107,7 +105,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void addValueFromAxiomSkipsValuesWithInvalidRange() throws Exception {
+    public void addValueFromAxiomSkipsValuesWithInvalidRange() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final Set<Integer> values = addValuesFromAxioms(strategy);
         final Assertion a = assertionForMIntegerSet();
@@ -122,7 +120,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildFieldValueDoesNothingWhenNoValuesWereAdded() throws Exception {
+    public void buildFieldValueDoesNothingWhenNoValuesWereAdded() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);

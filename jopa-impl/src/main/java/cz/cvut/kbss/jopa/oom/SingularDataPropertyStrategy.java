@@ -38,7 +38,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
             return;
         }
         verifyCardinalityConstraint(ax.getSubject());
-        this.value = val.getValue();
+        this.value = transformAxiomValueIfNecessary(val.getValue());
     }
 
     void verifyCardinalityConstraint(NamedResource subject) {
@@ -56,8 +56,8 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
-        final Object extractedValue = extractFieldValueFromInstance(instance);
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
+        final Object extractedValue = transformValueIfNecessary(extractFieldValueFromInstance(instance));
 
         final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
         valueBuilder.addValue(createAssertion(), val, getAttributeContext());

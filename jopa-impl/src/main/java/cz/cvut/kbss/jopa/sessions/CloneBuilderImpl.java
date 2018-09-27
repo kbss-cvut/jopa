@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class CloneBuilderImpl implements CloneBuilder {
@@ -271,6 +273,8 @@ public class CloneBuilderImpl implements CloneBuilder {
         ret.add(String.class);
         ret.add(URI.class);
         ret.add(URL.class);
+        ret.add(LocalDate.class);
+        ret.add(LocalDateTime.class);
         return ret;
     }
 
