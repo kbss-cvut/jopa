@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -33,12 +31,12 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
 
     @Override
     void addValueFromAxiom(Axiom<?> ax) {
-        final Value<?> val = ax.getValue();
-        if (!isValidRange(val.getValue())) {
+        final Object val = ax.getValue().getValue();
+        if (!isValidRange(val)) {
             return;
         }
         verifyCardinalityConstraint(ax.getSubject());
-        this.value = transformAxiomValueIfNecessary(val.getValue());
+        this.value = valueResolver.fromAxiom(val);
     }
 
     void verifyCardinalityConstraint(NamedResource subject) {
@@ -57,7 +55,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        final Object extractedValue = transformValueIfNecessary(extractFieldValueFromInstance(instance));
+        final Object extractedValue = valueResolver.toAxiomValue(extractFieldValueFromInstance(instance));
 
         final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
         valueBuilder.addValue(createAssertion(), val, getAttributeContext());

@@ -24,9 +24,22 @@ import java.util.Date;
 
 abstract class DataPropertyFieldStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
+    final ValueResolver valueResolver;
+
     DataPropertyFieldStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor attributeDescriptor,
                               EntityMappingHelper mapper) {
         super(et, att, attributeDescriptor, mapper);
+        this.valueResolver = getValueResolver();
+    }
+
+    private ValueResolver getValueResolver() {
+        if (attribute.getJavaType().equals(LocalDate.class)) {
+            return new LocalDateValueResolver();
+        } else if (attribute.getJavaType().equals(LocalDateTime.class)) {
+            return new LocalDateTimeValueResolver();
+        } else {
+            return new ValueResolver();
+        }
     }
 
     boolean isValidRange(Object value) {
@@ -48,25 +61,40 @@ abstract class DataPropertyFieldStrategy<X> extends FieldStrategy<Attribute<? su
         return Enum.valueOf(cls, value.toString());
     }
 
-    Object transformAxiomValueIfNecessary(Object value) {
-        if (attribute.getJavaType().equals(LocalDate.class)) {
-            return DatatypeTransformer.transform(value, LocalDate.class);
-        }
-        if (attribute.getJavaType().equals(LocalDateTime.class)) {
-            return DatatypeTransformer.transform(value, LocalDateTime.class);
-        }
-        return value;
-    }
-
-    Object transformValueIfNecessary(Object value) {
-        if (value instanceof LocalDate || value instanceof LocalDateTime) {
-            return DatatypeTransformer.transform(value, Date.class);
-        }
-        return value;
-    }
-
     @Override
     Assertion createAssertion() {
         return Assertion.createDataPropertyAssertion(attribute.getIRI().toURI(), getLanguage(), attribute.isInferred());
+    }
+
+    static class ValueResolver {
+
+        Object toAxiomValue(Object value) {
+            return value;
+        }
+
+        Object fromAxiom(Object axiomValue) {
+            return axiomValue;
+        }
+    }
+
+    static class LocalDateValueResolver extends ValueResolver {
+
+        @Override
+        Object toAxiomValue(Object value) {
+            return DatatypeTransformer.transform(value, Date.class);
+        }
+
+        @Override
+        Object fromAxiom(Object axiomValue) {
+            return DatatypeTransformer.transform(axiomValue, LocalDate.class);
+        }
+    }
+
+    static class LocalDateTimeValueResolver extends LocalDateValueResolver {
+
+        @Override
+        Object fromAxiom(Object axiomValue) {
+            return DatatypeTransformer.transform(axiomValue, LocalDateTime.class);
+        }
     }
 }

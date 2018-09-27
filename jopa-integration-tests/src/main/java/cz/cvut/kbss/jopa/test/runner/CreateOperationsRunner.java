@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -634,14 +635,17 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void persistSupportsLocalDate() {
-        this.em = getEntityManager("persistSupportsLocalDate", false);
+    public void persistSupportsLocalDateTimeApi() {
+        this.em = getEntityManager("persistSupportsLocalDateTimeApi", false);
         final OWLClassX entityX = new OWLClassX();
         final LocalDate date = LocalDate.now();
         entityX.setLocalDate(date);
+        final LocalDateTime dateTime = LocalDateTime.now();
+        entityX.setLocalDateTime(dateTime);
         persist(entityX);
 
         final OWLClassX result = em.find(OWLClassX.class, entityX.getUri());
         assertEquals(date, result.getLocalDate());
+        assertEquals(dateTime, result.getLocalDateTime());
     }
 }
