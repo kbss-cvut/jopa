@@ -19,11 +19,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -31,6 +26,11 @@ public class DatatypeTransformerTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
+
+    @Test
+    public void transformReturnsNullForNullInput() {
+        assertNull(DatatypeTransformer.transform(null, String.class));
+    }
 
     @Test
     public void transformConvertsValueToTargetType() {
@@ -78,50 +78,5 @@ public class DatatypeTransformerTest {
                 String.format("Cannot transform value %s of type %s to target type %s.", value, String.class,
                         OWLClassA.class));
         DatatypeTransformer.transform(value, OWLClassA.class);
-    }
-
-    @Test
-    public void transformSupportsTransformationFromLocalDateToJavaUtilDate() {
-        final LocalDate value = LocalDate.now();
-        final Date result = DatatypeTransformer.transform(value, Date.class);
-        assertNotNull(result);
-        assertEquals(java.sql.Date.valueOf(value), result);
-    }
-
-    @Test
-    public void transformSupportsTransformationFromJavaUtilDateToLocalDate() {
-        final Date value = new Date();
-        final LocalDate result = DatatypeTransformer.transform(value, LocalDate.class);
-        assertNotNull(result);
-        assertEquals(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), result);
-    }
-
-    @Test
-    public void transformSupportsTransformationFromLocalDateTimeToJavaUtilDate() {
-        final LocalDateTime value = LocalDateTime.now();
-        final Date result = DatatypeTransformer.transform(value, Date.class);
-        assertNotNull(result);
-        assertEquals(java.sql.Timestamp.valueOf(value), result);
-    }
-
-    @Test
-    public void transformSupportsTransformationFromJavaUtilDateToLocalDateTime() {
-        final Date value = new Date();
-        final LocalDateTime result = DatatypeTransformer.transform(value, LocalDateTime.class);
-        assertEquals(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), result);
-    }
-
-    @Test
-    public void transformSupportsTransformationFromInstantToJavaUtilDate() {
-        final Instant value = Instant.now();
-        final Date result = DatatypeTransformer.transform(value, Date.class);
-        assertEquals(Date.from(value), result);
-    }
-
-    @Test
-    public void transformSupportsTransformationFromJavaUtilDateToInstant() {
-        final Date value = new Date();
-        final Instant result = DatatypeTransformer.transform(value, Instant.class);
-        assertEquals(value.toInstant(), result);
     }
 }

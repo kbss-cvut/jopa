@@ -20,11 +20,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -63,14 +61,6 @@ public class DatatypeTransformer {
                 throw new OWLPersistenceException("Unable to transform URI to URL.", e);
             }
         });
-        map.put(new Pair(LocalDate.class, Date.class), value -> java.sql.Date.valueOf((LocalDate) value));
-        map.put(new Pair(Date.class, LocalDate.class),
-                value -> ((Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        map.put(new Pair(LocalDateTime.class, Date.class), value -> java.sql.Timestamp.valueOf((LocalDateTime) value));
-        map.put(new Pair(Date.class, LocalDateTime.class),
-                value -> ((Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        map.put(new Pair(Instant.class, Date.class), value -> Date.from((Instant) value));
-        map.put(new Pair(Date.class, Instant.class), value -> ((Date) value).toInstant());
         return map;
     }
 
@@ -86,7 +76,9 @@ public class DatatypeTransformer {
      * @return Value as the target type
      */
     public static <T> T transform(Object value, Class<T> targetType) {
-        Objects.requireNonNull(value);
+        if (value == null) {
+            return null;
+        }
         if (targetType.equals(String.class)) {
             return targetType.cast(value.toString());
         }
