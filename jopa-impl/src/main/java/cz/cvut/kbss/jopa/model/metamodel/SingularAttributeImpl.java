@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -19,20 +20,20 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 
 import java.lang.reflect.Field;
 
-public class SingularAttributeImpl<X, T> extends AbstractAttribute<X, T> implements SingularAttribute<X, T> {
+public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> implements SingularAttribute<X, Y> {
 
     private final boolean id;
 
-    private final Type<T> type;
+    private final Type<Y> type;
 
-    private SingularAttributeImpl(SingularAttributeBuilder<X, T> builder) {
+    private SingularAttributeImpl(SingularAttributeBuilder<X, Y> builder) {
         super(builder);
         this.id = builder.id;
         this.type = builder.type;
     }
 
     @Override
-    public Type<T> getType() {
+    public Type<Y> getType() {
         return type;
     }
 
@@ -47,7 +48,7 @@ public class SingularAttributeImpl<X, T> extends AbstractAttribute<X, T> impleme
     }
 
     @Override
-    public Class<T> getJavaType() {
+    public Class<Y> getJavaType() {
         return type.getJavaType();
     }
 
@@ -63,7 +64,7 @@ public class SingularAttributeImpl<X, T> extends AbstractAttribute<X, T> impleme
     }
 
     @Override
-    public Class<T> getBindableJavaType() {
+    public Class<Y> getBindableJavaType() {
         return type.getJavaType();
     }
 
@@ -76,76 +77,83 @@ public class SingularAttributeImpl<X, T> extends AbstractAttribute<X, T> impleme
         return new SingularAttributeBuilder().iri(iri);
     }
 
-    public static final class SingularAttributeBuilder<X, T> extends AbstractAttributeBuilder<X, T> {
+    public static final class SingularAttributeBuilder<X, Y> extends AbstractAttributeBuilder<X, Y> {
         private boolean id;
-        private Type<T> type;
+        private Type<Y> type;
 
-        public SingularAttributeBuilder<X, T> identifier(boolean isId) {
+        public SingularAttributeBuilder<X, Y> identifier(boolean isId) {
             this.id = isId;
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> name(String name) {
+        @Override
+        public SingularAttributeBuilder<X, Y> name(String name) {
             super.name(name);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> type(Type<T> type) {
+        public SingularAttributeBuilder<X, Y> type(Type<Y> type) {
             this.type = type;
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> field(Field field) {
+        public SingularAttributeBuilder<X, Y> field(Field field) {
             super.field(field);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> declaringType(ManagedType<X> declaringType) {
+        public SingularAttributeBuilder<X, Y> declaringType(ManagedType<X> declaringType) {
             super.declaringType(declaringType);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> attributeType(PersistentAttributeType attributeType) {
+        public SingularAttributeBuilder<X, Y> attributeType(PersistentAttributeType attributeType) {
             super.attributeType(attributeType);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> iri(IRI iri) {
+        public SingularAttributeBuilder<X, Y> iri(IRI iri) {
             super.iri(iri);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> cascadeTypes(CascadeType[] cascadeTypes) {
+        public SingularAttributeBuilder<X, Y> cascadeTypes(CascadeType[] cascadeTypes) {
             super.cascadeTypes(cascadeTypes);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> fetchType(FetchType fetchType) {
+        public SingularAttributeBuilder<X, Y> fetchType(FetchType fetchType) {
             super.fetchType(fetchType);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> inferred(boolean inferred) {
+        public SingularAttributeBuilder<X, Y> inferred(boolean inferred) {
             super.inferred(inferred);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> includeExplicit(boolean includeExplicit) {
+        public SingularAttributeBuilder<X, Y> includeExplicit(boolean includeExplicit) {
             super.includeExplicit(includeExplicit);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> constraints(ParticipationConstraint[] constraints) {
+        public SingularAttributeBuilder<X, Y> constraints(ParticipationConstraint[] constraints) {
             super.constraints(constraints);
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> nonEmpty(boolean nonEmpty) {
+        public SingularAttributeBuilder<X, Y> nonEmpty(boolean nonEmpty) {
             super.nonEmpty(nonEmpty);
             return this;
         }
 
-        public SingularAttribute<X, T> build() {
+        @Override
+        public SingularAttributeBuilder<X, Y> converter(AttributeConverter<Y, ?> converter) {
+            super.converter(converter);
+            return this;
+        }
+
+        public SingularAttribute<X, Y> build() {
             return new SingularAttributeImpl<>(this);
         }
     }

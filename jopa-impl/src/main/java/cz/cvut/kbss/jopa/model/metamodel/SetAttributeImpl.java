@@ -46,5 +46,4 @@ public class SetAttributeImpl<X, V> extends PluralAttributeImpl<X, Set<V>, V>
             return new SetAttributeImpl<>(this);
         }
     }
-
 }

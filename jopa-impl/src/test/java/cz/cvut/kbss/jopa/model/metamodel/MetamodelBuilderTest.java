@@ -13,9 +13,12 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.oom.converter.DefaultConverter;
+import cz.cvut.kbss.jopa.oom.converter.LocalDateConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Before;
@@ -24,10 +27,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -127,5 +130,25 @@ public class MetamodelBuilderTest {
         assertNotNull(manager);
         assertNotNull(manager.getMapper(OWLClassA.VARIABLE_MAPPING));
         verify(finderMock).getResultSetMappings();
+    }
+
+    @Test
+    public void buildMetamodelBuildsEntityWithDefaultConverters() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassA.class));
+        builder.buildMetamodel(finderMock);
+        final EntityTypeImpl<OWLClassA> et = (EntityTypeImpl<OWLClassA>) builder.getEntityClass(OWLClassA.class);
+        final AbstractAttribute<OWLClassA, String> result = (AbstractAttribute<OWLClassA, String>) et
+                .getDeclaredAttribute(OWLClassA.getStrAttField().getName());
+        assertSame(DefaultConverter.INSTANCE, result.getConverter());
+    }
+
+    @Test
+    public void buildMetamodelBuildsEntityWithLocalDateConverter() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassT.class));
+        builder.buildMetamodel(finderMock);
+        final EntityTypeImpl<OWLClassT> et = (EntityTypeImpl<OWLClassT>) builder.getEntityClass(OWLClassT.class);
+        final AbstractAttribute<OWLClassT, LocalDate> result = (AbstractAttribute<OWLClassT, LocalDate>) et
+                .getDeclaredAttribute(OWLClassT.getLocalDateField().getName());
+        assertTrue(result.getConverter() instanceof LocalDateConverter);
     }
 }

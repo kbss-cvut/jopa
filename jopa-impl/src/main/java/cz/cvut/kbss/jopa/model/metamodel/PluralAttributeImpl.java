@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -154,6 +155,12 @@ public class PluralAttributeImpl<X, C, E> extends AbstractAttribute<X, C> implem
 
         public PluralAttributeBuilder<X, C, E> participationConstraints(ParticipationConstraint[] constraints) {
             super.constraints(constraints);
+            return this;
+        }
+
+        @Override
+        public PluralAttributeBuilder<X, C, E> converter(AttributeConverter<C, ?> converter) {
+            super.converter(converter);
             return this;
         }
 

@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -30,7 +31,9 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final boolean nonEmpty;
 
-    private ParticipationConstraint[] constraints;
+    private final ParticipationConstraint[] constraints;
+
+    private AttributeConverter<?, ?> converter;
 
     AbstractAttribute(AbstractAttributeBuilder<X, Y> builder) {
         this.name = builder.name;
@@ -44,6 +47,7 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         this.includeExplicit = builder.includeExplicit;
         this.constraints = builder.constraints;
         this.nonEmpty = builder.nonEmpty;
+        this.converter = builder.converter;
     }
 
     @Override
@@ -106,6 +110,10 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return name;
     }
 
+    public AttributeConverter<?, ?> getConverter() {
+        return converter;
+    }
+
     abstract static class AbstractAttributeBuilder<X, Y> {
         private String name;
         private Field field;
@@ -118,6 +126,7 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean includeExplicit;
         private boolean nonEmpty = false;
         private ParticipationConstraint[] constraints;
+        private AttributeConverter<?, ?> converter;
 
         public AbstractAttributeBuilder<X, Y> name(String name) {
             this.name = name;
@@ -171,6 +180,11 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
         public AbstractAttributeBuilder<X, Y> nonEmpty(boolean nonEmpty) {
             this.nonEmpty = nonEmpty;
+            return this;
+        }
+
+        public AbstractAttributeBuilder<X, Y> converter(AttributeConverter<Y, ?> converter) {
+            this.converter = converter;
             return this;
         }
     }

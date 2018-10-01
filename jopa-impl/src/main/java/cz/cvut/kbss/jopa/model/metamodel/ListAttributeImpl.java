@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -34,7 +35,7 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
 
     private final SequenceType owlSequenceType;
 
-    public ListAttributeImpl(ListAttributeBuilder<X, V> builder) {
+    private ListAttributeImpl(ListAttributeBuilder<X, V> builder) {
         super(builder);
         this.owlListClass = builder.owlListClass;
         this.owlObjectPropertyHasNext = builder.owlObjectPropertyHasNext;
@@ -163,6 +164,12 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
         @Override
         public ListAttributeBuilder<X, V> nonEmpty(boolean nonEmpty) {
             super.nonEmpty(nonEmpty);
+            return this;
+        }
+
+        @Override
+        public ListAttributeBuilder<X, V> converter(AttributeConverter<List<V>, ?> converter) {
+            super.converter(converter);
             return this;
         }
 

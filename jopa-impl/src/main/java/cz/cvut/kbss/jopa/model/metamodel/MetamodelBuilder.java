@@ -37,6 +37,8 @@ public class MetamodelBuilder {
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
+    private final Converters converters = new Converters();
+
     public MetamodelBuilder() {
         this.mappingProcessor = new ResultSetMappingProcessor(this);
     }
@@ -59,6 +61,7 @@ public class MetamodelBuilder {
         LOG.debug("Processing OWL class: {}", cls);
 
         final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls);
+        et.setConverters(converters);
 
         processManagedType(et);
     }

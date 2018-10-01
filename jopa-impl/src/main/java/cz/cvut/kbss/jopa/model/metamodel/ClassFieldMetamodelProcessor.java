@@ -147,7 +147,7 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {
-        final Attribute<X, ?> a;
+        final AbstractAttribute<X, ?> a;
         if (field.getType().isAssignableFrom(List.class)) {
             final Sequence os = field.getAnnotation(Sequence.class);
 
@@ -165,7 +165,8 @@ class ClassFieldMetamodelProcessor<X> {
                                  .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
                                  .sequenceType(os.type())
                                  .participationConstraints(propertyAttributes.getParticipationConstraints())
-                                 .nonEmpty(propertyAttributes.isNonEmpty()).build();
+                                 .nonEmpty(propertyAttributes.isNonEmpty())
+                                 .converter(context.getConverters().getConverter(field.getType())).build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
             a = SetAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName()).declaringType(et).field(field)
                                 .elementType(propertyAttributes.getType())
@@ -174,18 +175,27 @@ class ClassFieldMetamodelProcessor<X> {
                                 .cascadeTypes(propertyAttributes.getCascadeTypes()).inferred(inference.inferred)
                                 .includeExplicit(inference.includeExplicit)
                                 .participationConstraints(propertyAttributes.getParticipationConstraints())
-                                .nonEmpty(propertyAttributes.isNonEmpty()).build();
+                                .nonEmpty(propertyAttributes.isNonEmpty())
+                                .converter(context.getConverters().getConverter(field.getType())).build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            a = SingularAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName()).identifier(false)
-                                     .declaringType(et).type(propertyAttributes.getType()).field(field)
-                                     .cascadeTypes(propertyAttributes.getCascadeTypes())
-                                     .attributeType(propertyAttributes.getPersistentAttributeType())
-                                     .fetchType(propertyAttributes.getFetchType()).inferred(inference.inferred)
-                                     .includeExplicit(inference.includeExplicit)
-                                     .constraints(propertyAttributes.getParticipationConstraints())
-                                     .nonEmpty(propertyAttributes.isNonEmpty()).build();
+            a = (AbstractAttribute<X, ?>) SingularAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName())
+                                                               .identifier(false)
+                                                               .declaringType(et).type(propertyAttributes.getType())
+                                                               .field(field)
+                                                               .cascadeTypes(propertyAttributes.getCascadeTypes())
+                                                               .attributeType(
+                                                                       propertyAttributes.getPersistentAttributeType())
+                                                               .fetchType(propertyAttributes.getFetchType())
+                                                               .inferred(inference.inferred)
+                                                               .includeExplicit(inference.includeExplicit)
+                                                               .constraints(
+                                                                       propertyAttributes.getParticipationConstraints())
+                                                               .nonEmpty(propertyAttributes.isNonEmpty())
+                                                               .converter(context.getConverters()
+                                                                                 .getConverter(field.getType()))
+                                                               .build();
         }
         et.addDeclaredAttribute(field.getName(), a);
     }
