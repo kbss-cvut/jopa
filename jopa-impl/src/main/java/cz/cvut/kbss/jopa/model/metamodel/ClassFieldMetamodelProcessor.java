@@ -154,7 +154,7 @@ class ClassFieldMetamodelProcessor<X> {
             if (os == null) {
                 throw new MetamodelInitializationException("Expected Sequence annotation.");
             }
-            a = ListAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
+            a = ListAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName()).declaringType(et).field(field)
                                  .elementType(propertyAttributes.getType())
                                  .attributeType(propertyAttributes.getPersistentAttributeType())
                                  .cascadeTypes(propertyAttributes.getCascadeTypes())
@@ -167,7 +167,7 @@ class ClassFieldMetamodelProcessor<X> {
                                  .participationConstraints(propertyAttributes.getParticipationConstraints())
                                  .nonEmpty(propertyAttributes.isNonEmpty()).build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
-            a = SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
+            a = SetAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName()).declaringType(et).field(field)
                                 .elementType(propertyAttributes.getType())
                                 .attributeType(propertyAttributes.getPersistentAttributeType())
                                 .fetchType(propertyAttributes.getFetchType())

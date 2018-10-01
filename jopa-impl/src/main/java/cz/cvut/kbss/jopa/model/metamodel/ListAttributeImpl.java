@@ -83,87 +83,105 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
         private SequenceType owlSequenceType;
 
         @Override
-        public ListAttributeBuilder elementType(Type<V> elementType) {
+        public ListAttributeBuilder<X, V> elementType(Type<V> elementType) {
             super.elementType(elementType);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder collectionType(Class<List<V>> collectionType) {
+        public ListAttributeBuilder<X, V> collectionType(Class<List<V>> collectionType) {
             super.collectionType(collectionType);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder field(Field field) {
+        public ListAttributeBuilder<X, V> field(Field field) {
             super.field(field);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder declaringType(ManagedType<X> declaringType) {
+        public ListAttributeBuilder<X, V> declaringType(ManagedType<X> declaringType) {
             super.declaringType(declaringType);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder attributeType(PersistentAttributeType attributeType) {
+        public ListAttributeBuilder<X, V> attributeType(PersistentAttributeType attributeType) {
             super.attributeType(attributeType);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder iri(IRI iri) {
+        public ListAttributeBuilder<X, V> iri(IRI iri) {
             super.iri(iri);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder cascadeTypes(CascadeType[] cascadeTypes) {
+        public ListAttributeBuilder<X, V> cascadeTypes(CascadeType[] cascadeTypes) {
             super.cascadeTypes(cascadeTypes);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder fetchType(FetchType fetchType) {
+        public ListAttributeBuilder<X, V> fetchType(FetchType fetchType) {
             super.fetchType(fetchType);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder inferred(boolean inferred) {
+        public ListAttributeBuilder<X, V> inferred(boolean inferred) {
             super.inferred(inferred);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder includeExplicit(boolean includeExplicit) {
+        public ListAttributeBuilder<X, V> includeExplicit(boolean includeExplicit) {
             super.includeExplicit(includeExplicit);
             return this;
         }
 
         @Override
-        public ListAttributeBuilder participationConstraints(ParticipationConstraint[] constraints) {
+        public ListAttributeBuilder<X, V> participationConstraints(ParticipationConstraint[] constraints) {
             super.participationConstraints(constraints);
             return this;
         }
 
-        public ListAttributeBuilder owlListClass(IRI owlListClass) {
+        @Override
+        public ListAttributeBuilder<X, V> name(String name) {
+            super.name(name);
+            return this;
+        }
+
+        @Override
+        public ListAttributeBuilder<X, V> constraints(ParticipationConstraint[] constraints) {
+            super.constraints(constraints);
+            return this;
+        }
+
+        @Override
+        public ListAttributeBuilder<X, V> nonEmpty(boolean nonEmpty) {
+            super.nonEmpty(nonEmpty);
+            return this;
+        }
+
+        public ListAttributeBuilder<X, V> owlListClass(IRI owlListClass) {
             this.owlListClass = owlListClass;
             return this;
         }
 
-        public ListAttributeBuilder hasNextProperty(IRI hasNextProperty) {
+        public ListAttributeBuilder<X, V> hasNextProperty(IRI hasNextProperty) {
             this.owlObjectPropertyHasNext = hasNextProperty;
             return this;
         }
 
-        public ListAttributeBuilder hasContentsProperty(IRI hasContentsProperty) {
+        public ListAttributeBuilder<X, V> hasContentsProperty(IRI hasContentsProperty) {
             this.owlPropertyHasContents = hasContentsProperty;
             return this;
         }
 
-        public ListAttributeBuilder sequenceType(SequenceType sequenceType) {
+        public ListAttributeBuilder<X, V> sequenceType(SequenceType sequenceType) {
             this.owlSequenceType = sequenceType;
             return this;
         }
