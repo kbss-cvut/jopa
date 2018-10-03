@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -20,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -40,7 +39,7 @@ import static org.mockito.Mockito.*;
 
 public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase {
 
-    private ListAttribute<OWLClassC, OWLClassA> simpleList;
+    private ListAttributeImpl<OWLClassC, OWLClassA> simpleList;
 
     private SimpleListPropertyStrategy<OWLClassC> strategy;
 
@@ -55,7 +54,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void buildsInstanceFieldFromAxioms() throws Exception {
+    public void buildsInstanceFieldFromAxioms() {
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(PK),
                 Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(), false), new Value<>(
                 URI.create("http://someSequence.org")));
@@ -92,8 +91,8 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void buildsInstanceFieldOfPlainIdentifiersFromAxioms() throws Exception {
-        final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
+    public void buildsInstanceFieldOfPlainIdentifiersFromAxioms() {
+        final ListAttributeImpl<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(PK),
@@ -214,7 +213,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
-        final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
+        final ListAttributeImpl<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
 
@@ -230,7 +229,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         p.setSimpleList(generateListOfIdentifiers());
         setRandomListItemsToNull(p.getSimpleList());
         final List<URI> nonNulls = p.getSimpleList().stream().filter(Objects::nonNull).collect(Collectors.toList());
-        final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
+        final ListAttributeImpl<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
 
@@ -240,7 +239,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() throws Exception {
+    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() {
         final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(generateList());
         c.getSimpleList()

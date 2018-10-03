@@ -32,7 +32,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private PropertiesSpecification<X, ?, ?, ?> properties;
 
-    private final Map<String, Attribute<X, ?>> declaredAttributes = new HashMap<>();
+    private final Map<String, AbstractAttribute<X, ?>> declaredAttributes = new HashMap<>();
 
     private EntityLifecycleListenerManager lifecycleListenerManager = EntityLifecycleListenerManager.empty();
 
@@ -40,7 +40,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.javaType = javaType;
     }
 
-    void addDeclaredAttribute(final String name, final Attribute<X, ?> a) {
+    void addDeclaredAttribute(final String name, final AbstractAttribute<X, ?> a) {
         declaredAttributes.put(name, a);
     }
 
@@ -128,7 +128,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public Attribute<? super X, ?> getAttribute(String name) {
+    public AbstractAttribute<? super X, ?> getAttribute(String name) {
         Objects.requireNonNull(name);
         if (declaredAttributes.containsKey(name)) {
             return declaredAttributes.get(name);
@@ -271,7 +271,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public Attribute<X, ?> getDeclaredAttribute(String name) {
+    public AbstractAttribute<X, ?> getDeclaredAttribute(String name) {
         if (declaredAttributes.containsKey(name)) {
             return declaredAttributes.get(name);
         }

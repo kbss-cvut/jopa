@@ -13,7 +13,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -23,7 +23,7 @@ import cz.cvut.kbss.ontodriver.model.Value;
 
 class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy<X> {
 
-    SingularAnnotationPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor descriptor,
+    SingularAnnotationPropertyStrategy(EntityType<X> et, AbstractAttribute<? super X, ?> att, Descriptor descriptor,
                                        EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
@@ -36,7 +36,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
         }
         verifyCardinalityConstraint(ax.getSubject());
         if (super.isValidRange(val)) {
-            this.value = valueResolver.fromAxiom(val);
+            this.value = convertToAttribute(val);
         } else {
             this.value = IdentifierTransformer.transformToIdentifier(val, attribute.getJavaType());
         }
@@ -64,7 +64,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
                     new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))), getAttributeContext());
         } else {
             valueBuilder
-                    .addValue(createAssertion(), new Value<>(valueResolver.toAxiom(value)), getAttributeContext());
+                    .addValue(createAssertion(), new Value<>(convertToAxiomValue(value)), getAttributeContext());
         }
     }
 

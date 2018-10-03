@@ -1,22 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
@@ -28,9 +26,9 @@ import java.util.Collection;
 import java.util.List;
 
 class SimpleListPropertyStrategy<X> extends
-                                    ListPropertyStrategy<SimpleListDescriptor, SimpleListValueDescriptor, X> {
+        ListPropertyStrategy<SimpleListDescriptor, SimpleListValueDescriptor, X> {
 
-    SimpleListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att, Descriptor descriptor,
+    SimpleListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, Descriptor descriptor,
                                EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
@@ -45,10 +43,10 @@ class SimpleListPropertyStrategy<X> extends
     @Override
     SimpleListDescriptor createListDescriptor(Axiom<?> ax) {
         final NamedResource owner = ax.getSubject();
-        final Assertion listProperty = Assertion.createObjectPropertyAssertion(listAttribute
-                .getIRI().toURI(), listAttribute.isInferred());
-        final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(listAttribute
-                .getOWLObjectPropertyHasNextIRI().toURI(), listAttribute.isInferred());
+        final Assertion listProperty = Assertion.createObjectPropertyAssertion(attribute
+                .getIRI().toURI(), attribute.isInferred());
+        final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(attribute
+                .getOWLObjectPropertyHasNextIRI().toURI(), attribute.isInferred());
         final SimpleListDescriptor listDescriptor = new SimpleListDescriptorImpl(owner,
                 listProperty, nextNodeProperty);
         listDescriptor.setContext(getAttributeContext());
@@ -71,9 +69,9 @@ class SimpleListPropertyStrategy<X> extends
     SimpleListValueDescriptor createListValueDescriptor(X instance) {
         final NamedResource owner = NamedResource.create(resolveValueIdentifier(instance, et));
         final Assertion listProperty = Assertion
-                .createObjectPropertyAssertion(listAttribute.getIRI().toURI(), listAttribute.isInferred());
-        final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(listAttribute
-                .getOWLObjectPropertyHasNextIRI().toURI(), listAttribute.isInferred());
+                .createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
+        final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(attribute
+                .getOWLObjectPropertyHasNextIRI().toURI(), attribute.isInferred());
         final SimpleListValueDescriptor listDescriptor = new SimpleListValueDescriptor(owner,
                 listProperty, nextNodeProperty);
         listDescriptor.setContext(getAttributeContext());

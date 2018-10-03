@@ -66,7 +66,6 @@ public class PluralDataPropertyStrategyTest {
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);
         assertNotNull(m.getIntegerSet());
-        assertTrue(m.getIntegerSet() instanceof Set);
     }
 
     private PluralDataPropertyStrategy<OWLClassM> createStrategyForM() {

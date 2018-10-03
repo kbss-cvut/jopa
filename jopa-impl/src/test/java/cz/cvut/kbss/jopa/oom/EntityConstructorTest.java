@@ -96,14 +96,14 @@ public class EntityConstructorTest {
                 new Value<>(URI.create(type)));
     }
 
-    private Axiom<String> getStringAttAssertionAxiom(Field attField) throws Exception {
+    private Axiom<String> getStringAttAssertionAxiom(Field attField) {
         final String assertionIri = attField.getAnnotation(OWLDataProperty.class).iri();
         return new AxiomImpl<>(NamedResource.create(PK),
                 Assertion.createDataPropertyAssertion(URI.create(assertionIri), false),
                 new Value<>(STRING_ATT));
     }
 
-    private Set<Axiom<?>> getTypesAxiomsForOwlClassA() throws Exception {
+    private Set<Axiom<?>> getTypesAxiomsForOwlClassA() {
         final Set<Axiom<?>> axs = new HashSet<>();
         for (String type : TYPES) {
             final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(PK), Assertion.createClassAssertion(false),
@@ -246,12 +246,10 @@ public class EntityConstructorTest {
         axioms.add(getClassAssertionAxiomForType(OWLClassA.getClassIri()));
         axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
         axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
-        OWLClassA entityA = constructor.reconstructEntity(PK, mocks.forOwlClassA().entityType(), descriptor, axioms);
-        // This shouldn't be reached
-        assert entityA == null;
+        constructor.reconstructEntity(PK, mocks.forOwlClassA().entityType(), descriptor, axioms);
     }
 
-    private Axiom<?> createDataPropertyAxiomWithWrongRange(Field valueField) throws Exception {
+    private Axiom<?> createDataPropertyAxiomWithWrongRange(Field valueField) {
         final OWLDataProperty prop = valueField.getAnnotation(OWLDataProperty.class);
         assert prop != null;
         final Assertion assertion = Assertion.createDataPropertyAssertion(URI.create(prop.iri()), false);
@@ -413,7 +411,7 @@ public class EntityConstructorTest {
             for (OWLClassA aa : actual) {
                 if (a.getUri().equals(aa.getUri())) {
                     found = true;
-                    assertTrue(a.getStringAttribute().equals(aa.getStringAttribute()));
+                    assertEquals(a.getStringAttribute(), aa.getStringAttribute());
                     break;
                 }
             }

@@ -154,7 +154,7 @@ class ClassFieldMetamodelProcessor<X> {
             if (os == null) {
                 throw new MetamodelInitializationException("Expected Sequence annotation.");
             }
-            a = ListAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName()).declaringType(et).field(field)
+            a = ListAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
                                  .elementType(propertyAttributes.getType())
                                  .attributeType(propertyAttributes.getPersistentAttributeType())
                                  .cascadeTypes(propertyAttributes.getCascadeTypes())
@@ -168,22 +168,26 @@ class ClassFieldMetamodelProcessor<X> {
                                  .nonEmpty(propertyAttributes.isNonEmpty())
                                  .converter(context.getConverters().getConverter(field.getType())).build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
-            a = SetAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName()).declaringType(et).field(field)
-                                .elementType(propertyAttributes.getType())
-                                .attributeType(propertyAttributes.getPersistentAttributeType())
-                                .fetchType(propertyAttributes.getFetchType())
-                                .cascadeTypes(propertyAttributes.getCascadeTypes()).inferred(inference.inferred)
-                                .includeExplicit(inference.includeExplicit)
-                                .participationConstraints(propertyAttributes.getParticipationConstraints())
-                                .nonEmpty(propertyAttributes.isNonEmpty())
-                                .converter(context.getConverters().getConverter(field.getType())).build();
+            a = (AbstractAttribute<X, ?>) SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et)
+                                                          .field(field)
+                                                          .elementType(propertyAttributes.getType())
+                                                          .attributeType(
+                                                                  propertyAttributes.getPersistentAttributeType())
+                                                          .fetchType(propertyAttributes.getFetchType())
+                                                          .cascadeTypes(propertyAttributes.getCascadeTypes())
+                                                          .inferred(inference.inferred)
+                                                          .includeExplicit(inference.includeExplicit)
+                                                          .participationConstraints(
+                                                                  propertyAttributes.getParticipationConstraints())
+                                                          .nonEmpty(propertyAttributes.isNonEmpty())
+                                                          .converter(
+                                                                  context.getConverters().getConverter(field.getType()))
+                                                          .build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            a = (AbstractAttribute<X, ?>) SingularAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName())
-                                                               .identifier(false)
-                                                               .declaringType(et).type(propertyAttributes.getType())
-                                                               .field(field)
+            a = (AbstractAttribute<X, ?>) SingularAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et)
+                                                               .type(propertyAttributes.getType()).field(field)
                                                                .cascadeTypes(propertyAttributes.getCascadeTypes())
                                                                .attributeType(
                                                                        propertyAttributes.getPersistentAttributeType())

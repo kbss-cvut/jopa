@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -51,16 +49,16 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att, fieldDescriptor,
                     mapper);
         }
-        final Attribute<? super X, ?> attribute = (Attribute<? super X, ?>) att;
+        final AbstractAttribute<? super X, ?> attribute = (AbstractAttribute<? super X, ?>) att;
         if (attribute.isCollection()) {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
                     throw new NotYetImplementedException();
                 case DATA:
-                    return new PluralDataPropertyStrategy<>(et, (PluralAttribute<? super X, ?, ?>) attribute,
+                    return new PluralDataPropertyStrategy<>(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
                             fieldDescriptor, mapper);
                 case OBJECT:
-                    return createPluralObjectPropertyStrategy(et, (PluralAttribute<? super X, ?, ?>) attribute,
+                    return createPluralObjectPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
                             fieldDescriptor, mapper);
                 default:
                     break;
@@ -82,11 +80,12 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(
-            EntityType<Y> et, PluralAttribute<? super Y, ?, ?> attribute,
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
             Descriptor descriptor, EntityMappingHelper mapper) {
         switch (attribute.getCollectionType()) {
             case LIST:
-                return createOwlListPropertyStrategy(et, (ListAttribute<? super Y, ?>) attribute, descriptor, mapper);
+                return createOwlListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
+                        mapper);
             case COLLECTION:
             case SET:
                 return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
@@ -97,7 +96,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createOwlListPropertyStrategy(
-            EntityType<Y> et, ListAttribute<? super Y, ?> attribute, Descriptor descriptor,
+            EntityType<Y> et, ListAttributeImpl<? super Y, ?> attribute, Descriptor descriptor,
             EntityMappingHelper mapper) {
         switch (attribute.getSequenceType()) {
             case referenced:

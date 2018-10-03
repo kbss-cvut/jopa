@@ -101,6 +101,7 @@ public class MetamodelBuilder {
                 return (AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype);
             }
             final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
+            context.setConverters(converters);
             processManagedType(context);
             return context.getType();
         }

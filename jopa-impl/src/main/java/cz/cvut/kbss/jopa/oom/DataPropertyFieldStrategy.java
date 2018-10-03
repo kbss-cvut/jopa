@@ -12,50 +12,51 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.oom.datatype.LocalDateResolver;
-import cz.cvut.kbss.jopa.oom.datatype.LocalDateTimeResolver;
-import cz.cvut.kbss.jopa.oom.datatype.ValueResolver;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
-abstract class DataPropertyFieldStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
+abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, ?>, X> extends FieldStrategy<A, X> {
 
-    final ValueResolver valueResolver;
-
-    DataPropertyFieldStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor attributeDescriptor,
+    DataPropertyFieldStrategy(EntityType<X> et, A att, Descriptor attributeDescriptor,
                               EntityMappingHelper mapper) {
         super(et, att, attributeDescriptor, mapper);
-        this.valueResolver = getValueResolver();
-    }
-
-    private ValueResolver getValueResolver() {
-        if (attribute.getJavaType().equals(LocalDate.class)) {
-            return new LocalDateResolver();
-        } else if (attribute.getJavaType().equals(LocalDateTime.class)) {
-            return new LocalDateTimeResolver();
-        } else {
-            return new ValueResolver();
-        }
     }
 
     boolean isValidRange(Object value) {
-        return attribute.getJavaType().isAssignableFrom(value.getClass()) || isFieldEnum() || canBeTransformed(value);
+        return attribute.getJavaType().isAssignableFrom(value.getClass()) || isFieldEnum() || canBeConverted(value);
     }
 
     boolean isFieldEnum() {
-        final Class<?> cls = attribute.getJavaField().getType();
-        return cls.isEnum();
+        return attribute.getJavaField().getType().isEnum();
     }
 
-    private boolean canBeTransformed(Object value) {
-        return (attribute.getJavaType().equals(LocalDate.class) ||
-                attribute.getJavaType().equals(LocalDateTime.class)) && value instanceof Date;
+    private boolean canBeConverted(Object value) {
+        // TODO The conversible type should be resolved when the converter is instantiated
+        final Type[] interfaces = attribute.getConverter().getClass().getGenericInterfaces();
+        for (Type t : interfaces) {
+            if (t instanceof ParameterizedType &&
+                    AttributeConverter.class.isAssignableFrom((Class<?>) ((ParameterizedType) t).getRawType())) {
+                final ParameterizedType pt = (ParameterizedType) t;
+                assert pt.getActualTypeArguments().length == 2;
+                final Type supportedType = pt.getActualTypeArguments()[1];
+                return ((Class<?>) supportedType).isAssignableFrom(value.getClass());
+            }
+        }
+        return false;
+    }
+
+    Object convertToAttribute(Object value) {
+        return isFieldEnum() ? resolveEnumValue(value) : attribute.getConverter().convertToAttribute(value);
+    }
+
+    Object convertToAxiomValue(Object value) {
+        return attribute.getConverter().convertToAxiomValue(value);
     }
 
     Object resolveEnumValue(Object value) {

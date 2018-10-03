@@ -14,17 +14,16 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
-class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
+class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractAttribute<? super X, ?>, X> {
 
     Object value;
 
-    SingularDataPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
+    SingularDataPropertyStrategy(EntityType<X> et, AbstractAttribute<? super X, ?> att,
                                  Descriptor descriptor, EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
@@ -36,7 +35,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
             return;
         }
         verifyCardinalityConstraint(ax.getSubject());
-        this.value = valueResolver.fromAxiom(val);
+        this.value = convertToAttribute(val);
     }
 
     void verifyCardinalityConstraint(NamedResource subject) {
@@ -55,7 +54,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        final Object extractedValue = valueResolver.toAxiom(extractFieldValueFromInstance(instance));
+        final Object extractedValue = convertToAxiomValue(extractFieldValueFromInstance(instance));
 
         final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
         valueBuilder.addValue(createAssertion(), val, getAttributeContext());

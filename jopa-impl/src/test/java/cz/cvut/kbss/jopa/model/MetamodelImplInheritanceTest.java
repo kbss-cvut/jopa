@@ -54,7 +54,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildsEntityTypeForClassWithMappedSuperclass() throws Exception {
+    public void buildsEntityTypeForClassWithMappedSuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
         assertNotNull(et);
@@ -84,7 +84,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void entityWithMappedSuperclassSetsEntityTypeSupertype() throws Exception {
+    public void entityWithMappedSuperclassSetsEntityTypeSupertype() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
 
@@ -93,7 +93,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void entityWithAbstractEntityParentSetsEntityTypeSupertype() throws Exception {
+    public void entityWithAbstractEntityParentSetsEntityTypeSupertype() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
 
         final EntityType<OWLClassR> etR = metamodel.entity(OWLClassR.class);
@@ -119,7 +119,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsSubtypesOfMappedSuperclass() throws Exception {
+    public void buildingMetamodelSetsSubtypesOfMappedSuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final IdentifiableType<? super OWLClassQ> supertype = metamodel.entity(OWLClassQ.class).getSupertype();
         assertTrue(supertype instanceof AbstractIdentifiableType);
@@ -129,7 +129,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsSubtypesOfEntitySuperclass() throws Exception {
+    public void buildingMetamodelSetsSubtypesOfEntitySuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
         assertTrue(supertype.hasSubtypes());
@@ -137,7 +137,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void subtypesOfEntityWithoutSubtypesAreEmpty() throws Exception {
+    public void subtypesOfEntityWithoutSubtypesAreEmpty() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassA.class);
         final EntityTypeImpl<OWLClassA> et = metamodel.entity(OWLClassA.class);
         assertFalse(et.hasSubtypes());
@@ -145,7 +145,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelResolvesInheritanceStrategy() throws Exception {
+    public void buildingMetamodelResolvesInheritanceStrategy() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final Inheritance inheritance = OWLClassS.class.getDeclaredAnnotation(Inheritance.class);
         final EntityTypeImpl<OWLClassS> sEntityType = metamodel.entity(OWLClassS.class);
@@ -155,14 +155,14 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsDefaultInheritanceStrategyWhenItIsNotSpecifiedOnEntity() throws Exception {
+    public void buildingMetamodelSetsDefaultInheritanceStrategyWhenItIsNotSpecifiedOnEntity() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassA.class);
         final EntityTypeImpl<OWLClassA> et = metamodel.entity(OWLClassA.class);
         assertEquals(Constants.DEFAULT_INHERITANCE_TYPE, et.getInheritanceType());
     }
 
     @Test
-    public void buildingMetamodelThrowsExceptionWhenInheritanceStrategyIsDeclaredOnSubtype() throws Exception {
+    public void buildingMetamodelThrowsExceptionWhenInheritanceStrategyIsDeclaredOnSubtype() {
         thrown.expect(MetamodelInitializationException.class);
         thrown.expectMessage("Class " + SubclassWithInheritanceType.class +
                 " cannot declare inheritance strategy, because it already inherits it from its supertype.");
@@ -176,7 +176,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsMultipleSubtypesOnSuperType() throws Exception {
+    public void buildingMetamodelSetsMultipleSubtypesOnSuperType() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, AnotherSubclass.class, OWLClassS.class);
         final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
         assertEquals(2, supertype.getSubtypes().size());

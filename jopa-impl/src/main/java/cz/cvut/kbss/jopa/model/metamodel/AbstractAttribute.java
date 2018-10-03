@@ -9,9 +9,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 
-abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
-
-    private final String name;
+public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final Field field;
 
@@ -33,10 +31,9 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final ParticipationConstraint[] constraints;
 
-    private AttributeConverter<?, ?> converter;
+    private AttributeConverter<Y, ?> converter;
 
     AbstractAttribute(AbstractAttributeBuilder<X, Y> builder) {
-        this.name = builder.name;
         this.field = builder.field;
         this.declaringType = builder.declaringType;
         this.attributeType = builder.attributeType;
@@ -107,15 +104,14 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     @Override
     public String getName() {
-        return name;
+        return field.getName();
     }
 
-    public AttributeConverter<?, ?> getConverter() {
+    public AttributeConverter getConverter() {
         return converter;
     }
 
     abstract static class AbstractAttributeBuilder<X, Y> {
-        private String name;
         private Field field;
         private ManagedType<X> declaringType;
         private PersistentAttributeType attributeType;
@@ -126,12 +122,7 @@ abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean includeExplicit;
         private boolean nonEmpty = false;
         private ParticipationConstraint[] constraints;
-        private AttributeConverter<?, ?> converter;
-
-        public AbstractAttributeBuilder<X, Y> name(String name) {
-            this.name = name;
-            return this;
-        }
+        private AttributeConverter<Y, ?> converter;
 
         public AbstractAttributeBuilder<X, Y> field(Field field) {
             this.field = field;

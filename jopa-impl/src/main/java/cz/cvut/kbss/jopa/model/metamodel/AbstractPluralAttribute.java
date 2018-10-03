@@ -22,13 +22,13 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
-public class PluralAttributeImpl<X, C, E> extends AbstractAttribute<X, C> implements PluralAttribute<X, C, E> {
+public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute<X, C> implements PluralAttribute<X, C, E> {
 
     private final Type<E> elementType;
 
     private final Class<C> collectionType;
 
-    PluralAttributeImpl(PluralAttributeBuilder<X, C, E> builder) {
+    AbstractPluralAttribute(PluralAttributeBuilder<X, C, E> builder) {
         super(builder);
         this.elementType = builder.elementType;
         this.collectionType = builder.collectionType;
@@ -76,24 +76,12 @@ public class PluralAttributeImpl<X, C, E> extends AbstractAttribute<X, C> implem
         return collectionType;
     }
 
-
-    public static PluralAttributeBuilder iri(IRI iri) {
-        return new PluralAttributeBuilder().iri(iri);
-    }
-
-
-    public static class PluralAttributeBuilder<X, C, E> extends AbstractAttributeBuilder<X, C> {
+    public static abstract class PluralAttributeBuilder<X, C, E> extends AbstractAttributeBuilder<X, C> {
         private Type<E> elementType;
         private Class<C> collectionType;
 
         public PluralAttributeBuilder<X, C, E> elementType(Type<E> elementType) {
             this.elementType = elementType;
-            return this;
-        }
-
-        @Override
-        public PluralAttributeBuilder<X, C, E> name(String name) {
-            super.name(name);
             return this;
         }
 
@@ -164,8 +152,6 @@ public class PluralAttributeImpl<X, C, E> extends AbstractAttribute<X, C> implem
             return this;
         }
 
-        public PluralAttributeImpl<X, C, E> build() {
-            return new PluralAttributeImpl<>(this);
-        }
+        public abstract PluralAttribute<X, C, E> build();
     }
 }

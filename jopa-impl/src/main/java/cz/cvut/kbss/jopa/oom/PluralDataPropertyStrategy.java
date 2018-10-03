@@ -14,7 +14,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -23,30 +23,30 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
+class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPluralAttribute<? super X, ?, ?>, X> {
 
-    private PluralAttribute<? super X, ?, ?> pluralAtt;
+    private final Class<?> elementType;
 
     private Collection<Object> values;
 
-    PluralDataPropertyStrategy(EntityType<X> et, PluralAttribute<? super X, ?, ?> att, Descriptor attributeDescriptor,
-                               EntityMappingHelper mapper) {
+    PluralDataPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att,
+                               Descriptor attributeDescriptor, EntityMappingHelper mapper) {
         super(et, att, attributeDescriptor, mapper);
-        this.pluralAtt = att;
-        this.values = CollectionFactory.createDefaultCollection(pluralAtt.getCollectionType());
+        this.values = CollectionFactory.createDefaultCollection(att.getCollectionType());
+        this.elementType = att.getElementType().getJavaType();
     }
 
     @Override
     void addValueFromAxiom(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
         if (isValidRange(value)) {
-            this.values.add(valueResolver.fromAxiom(value));
+            this.values.add(convertToAttribute(value));
         }
     }
 
     @Override
     boolean isValidRange(Object value) {
-        return pluralAtt.getElementType().getJavaType().isAssignableFrom(value.getClass());
+        return elementType.isAssignableFrom(value.getClass());
     }
 
     @Override
@@ -65,7 +65,7 @@ public class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> 
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
-                                                                 .map(v -> new Value<>(valueResolver.toAxiom(v)))
+                                                                 .map(v -> new Value<>(convertToAxiomValue(v)))
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
         }

@@ -22,13 +22,10 @@ import java.lang.reflect.Field;
 
 public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> implements SingularAttribute<X, Y> {
 
-    private final boolean id;
-
     private final Type<Y> type;
 
     private SingularAttributeImpl(SingularAttributeBuilder<X, Y> builder) {
         super(builder);
-        this.id = builder.id;
         this.type = builder.type;
     }
 
@@ -39,7 +36,7 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
 
     @Override
     public boolean isId() {
-        return id;
+        return false;
     }
 
     @Override
@@ -54,8 +51,7 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
 
     @Override
     public boolean isAssociation() {
-        return getPersistentAttributeType().equals(
-                PersistentAttributeType.OBJECT);
+        return getPersistentAttributeType().equals(PersistentAttributeType.OBJECT);
     }
 
     @Override
@@ -69,7 +65,7 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
     }
 
     @Override
-    public cz.cvut.kbss.jopa.model.metamodel.Bindable.BindableType getBindableType() {
+    public BindableType getBindableType() {
         return BindableType.SINGULAR_ATTRIBUTE;
     }
 
@@ -78,19 +74,7 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
     }
 
     public static final class SingularAttributeBuilder<X, Y> extends AbstractAttributeBuilder<X, Y> {
-        private boolean id;
         private Type<Y> type;
-
-        public SingularAttributeBuilder<X, Y> identifier(boolean isId) {
-            this.id = isId;
-            return this;
-        }
-
-        @Override
-        public SingularAttributeBuilder<X, Y> name(String name) {
-            super.name(name);
-            return this;
-        }
 
         public SingularAttributeBuilder<X, Y> type(Type<Y> type) {
             this.type = type;

@@ -75,7 +75,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getAttributesReturnsDeclaredAttributesWhenThereIsNoSupertype() {
-        final Attribute<OWLClassA, ?> att = mock(Attribute.class);
+        final AbstractAttribute<OWLClassA, ?> att = mock(AbstractAttribute.class);
         et.addDeclaredAttribute("test", att);
         final Set<Attribute<? super OWLClassA, ?>> result = et.getAttributes();
         assertEquals(1, result.size());
@@ -87,7 +87,7 @@ public class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final String attName = "test";
-        final Attribute att = mock(Attribute.class);
+        final AbstractAttribute att = mock(AbstractAttribute.class);
         doReturn(att).when(supertype).getAttribute(attName);
         assertEquals(att, et.getAttribute(attName));
         verify(supertype).getAttribute(attName);
@@ -103,7 +103,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getCollectionThrowsIllegalArgumentWhenElementTypeDoesNotMatch() {
-        final CollectionAttribute att = mock(CollectionAttribute.class);
+        final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);
@@ -115,7 +115,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getListReturnsListAttribute() {
-        final ListAttribute att = mock(ListAttribute.class);
+        final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);
@@ -125,7 +125,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getSetThrowsIllegalArgumentWhenAttributeIsNotSet() {
-        final CollectionAttribute att = mock(CollectionAttribute.class);
+        final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);
@@ -139,7 +139,7 @@ public class AbstractIdentifiableTypeTest {
     public void getPluralAttributesGetsAlsoInheritedPluralAttributes() {
         final CollectionAttribute att = mock(CollectionAttribute.class);
         when(att.isCollection()).thenReturn(true);
-        final ListAttribute listAtt = mock(ListAttribute.class);
+        final ListAttributeImpl listAtt = mock(ListAttributeImpl.class);
         when(listAtt.isCollection()).thenReturn(true);
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
@@ -154,7 +154,7 @@ public class AbstractIdentifiableTypeTest {
     public void getSingularAttributesGetsAlsoInheritedSingularAttributes() {
         final SingularAttribute attOne = mock(SingularAttribute.class);
         when(attOne.isCollection()).thenReturn(false);
-        final SingularAttribute attTwo = mock(SingularAttribute.class);
+        final AbstractAttribute attTwo = mock(AbstractAttribute.class);
         when(attTwo.isCollection()).thenReturn(false);
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
@@ -167,7 +167,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getSingularAttributeReturnsAttributeWithMatchingNameAndType() {
-        final SingularAttribute attOne = mock(SingularAttribute.class);
+        final AbstractAttribute attOne = mock(AbstractAttribute.class);
         when(attOne.isCollection()).thenReturn(false);
         final String attName = "test";
         when(attOne.getJavaType()).thenReturn(OWLClassA.class);
@@ -177,8 +177,8 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getSingularAttributeThrowsIllegalARgumentWhenAttributeIsNotSingular() {
-        final ListAttribute att = mock(ListAttribute.class);
+    public void getSingularAttributeThrowsIllegalArgumentWhenAttributeIsNotSingular() {
+        final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.isCollection()).thenReturn(true);
@@ -192,7 +192,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getDeclaredAttributeReturnsAttributeDeclaredInType() {
-        final SingularAttribute attOne = mock(SingularAttribute.class);
+        final AbstractAttribute attOne = mock(AbstractAttribute.class);
         when(attOne.isCollection()).thenReturn(false);
         final String attName = "test";
         when(attOne.getJavaType()).thenReturn(OWLClassA.class);
@@ -203,7 +203,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getDeclaredCollectionReturnsDeclaredCollectionAttribute() {
-        final CollectionAttribute att = mock(CollectionAttribute.class);
+        final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);
@@ -213,7 +213,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getDeclaredListThrowsIllegalArgumentWhenListElementTypeDoesNotMatch() {
-        final ListAttribute att = mock(ListAttribute.class);
+        final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.isCollection()).thenReturn(true);
@@ -227,7 +227,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getDeclaredSetThrowsIllegalArgumentWhenAttributeIsNotSet() {
-        final ListAttribute att = mock(ListAttribute.class);
+        final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.isCollection()).thenReturn(true);
@@ -241,7 +241,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getDeclaredSingularAttributeReturnsDeclaredSingularAttribute() {
-        final SingularAttribute att = mock(SingularAttribute.class);
+        final AbstractAttribute att = mock(AbstractAttribute.class);
         final String attName = "test";
         when(att.isCollection()).thenReturn(false);
         when(att.getJavaType()).thenReturn(OWLClassA.class);
@@ -252,7 +252,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getDeclaredSingularAttributeThrowsIllegalArgumentForInvalidType() {
-        final SingularAttribute att = mock(SingularAttribute.class);
+        final AbstractAttribute att = mock(AbstractAttribute.class);
         final String attName = "test";
         when(att.isCollection()).thenReturn(false);
         when(att.getJavaType()).thenReturn(OWLClassA.class);
@@ -270,7 +270,7 @@ public class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         when(supertype.getAttributes()).thenReturn(Collections.singleton(supertypeAtt));
-        final ListAttribute listAtt = mock(ListAttribute.class);
+        final ListAttributeImpl listAtt = mock(ListAttributeImpl.class);
         et.addDeclaredAttribute("list", listAtt);
         final TypesSpecification types = mock(TypesSpecification.class);
         et.addDirectTypes(types);
@@ -336,7 +336,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getFieldSpecificationGetsDeclaredAttribute() {
-        final SetAttribute att = mock(SetAttribute.class);
+        final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         et.addDeclaredAttribute(attName, att);
         final FieldSpecification<? super OWLClassA, ?> result = et.getFieldSpecification(attName);
