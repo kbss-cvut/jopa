@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 class EntityCache {
@@ -33,7 +34,7 @@ class EntityCache {
 
     EntityCache() {
         repoCache = new HashMap<>();
-        this.descriptors = new HashMap<>();
+        this.descriptors = new IdentityHashMap<>(); // Need to use identity to cope with entities overriding equals/hashcode
         this.defaultContext = URI.create(DEFAULT_CONTEXT_BASE + System.currentTimeMillis());
     }
 
