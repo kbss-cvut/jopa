@@ -25,11 +25,7 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
     }
 
     boolean isValidRange(Object value) {
-        return attribute.getJavaType().isAssignableFrom(value.getClass()) || isFieldEnum() || canBeConverted(value);
-    }
-
-    boolean isFieldEnum() {
-        return attribute.getJavaField().getType().isEnum();
+        return attribute.getJavaType().isAssignableFrom(value.getClass()) || canBeConverted(value);
     }
 
     private boolean canBeConverted(Object value) {
@@ -37,17 +33,11 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
     }
 
     Object toAttributeValue(Object value) {
-        return isFieldEnum() ? resolveEnumValue(value) :
-                attribute.getConverter() != null ? attribute.getConverter().convertToAttribute(value) : value;
+        return attribute.getConverter() != null ? attribute.getConverter().convertToAttribute(value) : value;
     }
 
     Object toAxiomValue(Object value) {
         return attribute.getConverter() != null ? attribute.getConverter().convertToAxiomValue(value) : value;
-    }
-
-    Object resolveEnumValue(Object value) {
-        final Class cls = attribute.getJavaField().getType();
-        return Enum.valueOf(cls, value.toString());
     }
 
     @Override

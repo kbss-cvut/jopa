@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.EnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.InstantConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import org.junit.Test;
@@ -72,5 +73,17 @@ public class ConverterResolverTest {
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Integer.class));
         assertTrue(result.get() instanceof ToIntegerConverter);
+    }
+
+    @Test
+    public void resolveConverterReturnsBuiltInEnumConverterForEnumDataPropertyField() throws Exception {
+        final Field field = OWLClassM.getEnumAttributeField();
+        final PropertyAttributes pa = mock(PropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertTrue(result.get() instanceof EnumConverter);
+        assertTrue(result.get().supportsAxiomValueType(String.class));
     }
 }

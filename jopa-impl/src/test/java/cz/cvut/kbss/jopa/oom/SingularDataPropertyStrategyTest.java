@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
@@ -149,5 +150,20 @@ public class SingularDataPropertyStrategyTest {
         strategy.addValueFromAxiom(axiom);
         strategy.buildInstanceFieldValue(t);
         assertNotNull(t.getLocalDateTime());
+    }
+
+    @Test
+    public void buildInstanceFieldConvertsRepositoryValueToEnum() {
+        final SingularDataPropertyStrategy<OWLClassM> sut =
+                new SingularDataPropertyStrategy<>(mocks.forOwlClassM().entityType(),
+                        mocks.forOwlClassM().enumAttribute(), descriptor, mapperMock);
+        final OWLClassM m = new OWLClassM();
+        m.setKey(PK.toString());
+
+        final Axiom<String> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
+                new Value<>(OWLClassM.Severity.MEDIUM.toString()));
+        sut.addValueFromAxiom(axiom);
+        sut.buildInstanceFieldValue(m);
+        assertEquals(OWLClassM.Severity.MEDIUM, m.getEnumAttribute());
     }
 }

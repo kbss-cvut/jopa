@@ -567,6 +567,7 @@ public class MetamodelFactory {
         when(enumAtt.isCollection()).thenReturn(false);
         when(enumAtt.getDeclaringType()).thenReturn(etMock);
         when(enumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(enumAtt.getConverter()).thenReturn(new EnumConverter<>(OWLClassM.Severity.class));
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
 
         when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());

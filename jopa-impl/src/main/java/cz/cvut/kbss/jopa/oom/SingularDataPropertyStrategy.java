@@ -14,7 +14,8 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -48,8 +49,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     @Override
     void buildInstanceFieldValue(Object entity) {
-        final Object toAssign = isFieldEnum() ? resolveEnumValue(value) : value;
-        setValueOnInstance(entity, toAssign);
+        setValueOnInstance(entity, value);
     }
 
     @Override
