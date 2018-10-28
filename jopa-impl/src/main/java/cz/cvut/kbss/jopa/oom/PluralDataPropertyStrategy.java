@@ -40,7 +40,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
     void addValueFromAxiom(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
         if (isValidRange(value)) {
-            this.values.add(convertToAttribute(value));
+            this.values.add(toAttributeValue(value));
         }
     }
 
@@ -65,7 +65,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
-                                                                 .map(v -> new Value<>(convertToAxiomValue(v)))
+                                                                 .map(v -> new Value<>(toAxiomValue(v)))
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
         }

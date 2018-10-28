@@ -1,13 +1,10 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
-import cz.cvut.kbss.jopa.environment.OWLClassN;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.InstantConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
-import cz.cvut.kbss.jopa.oom.converter.ToStringConverter;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -66,24 +63,14 @@ public class ConverterResolverTest {
     }
 
     @Test
-    public void resolveConverterReturnsBuiltInStringConverterForStringDataProperty() throws Exception {
-        final Field field = OWLClassB.getStrAttField();
+    public void resolveConverterReturnsBuiltInIntegerConverterForPluralIntegerDataPropertyField() throws Exception {
+        final Field field = OWLClassM.getIntegerSetField();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
+        doReturn(BasicTypeImpl.get(Integer.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ToStringConverter);
-    }
-
-    @Test
-    public void resolveConverterReturnsBuiltInStringConverterForStringAnnotationProperty() throws Exception {
-        final Field field = OWLClassN.getAnnotationPropertyField();
-        final PropertyAttributes pa = mock(PropertyAttributes.class);
-        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
-        doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
-        assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ToStringConverter);
+        assertTrue(result.get().supportsAxiomValueType(Integer.class));
+        assertTrue(result.get() instanceof ToIntegerConverter);
     }
 }

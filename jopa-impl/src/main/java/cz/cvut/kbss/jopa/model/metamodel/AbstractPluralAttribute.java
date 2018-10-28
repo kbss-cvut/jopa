@@ -148,7 +148,7 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
         }
 
         @Override
-        public PluralAttributeBuilder<X, C, E> converter(ConverterWrapper<C, ?> converter) {
+        public PluralAttributeBuilder<X, C, E> converter(ConverterWrapper converter) {
             super.converter(converter);
             return this;
         }

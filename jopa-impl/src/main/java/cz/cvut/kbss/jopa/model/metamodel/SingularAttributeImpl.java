@@ -132,7 +132,7 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         }
 
         @Override
-        public SingularAttributeBuilder<X, Y> converter(ConverterWrapper<Y, ?> converter) {
+        public SingularAttributeBuilder<X, Y> converter(ConverterWrapper converter) {
             super.converter(converter);
             return this;
         }

@@ -12,14 +12,10 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.model.Assertion;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, ?>, X> extends FieldStrategy<A, X> {
 
@@ -37,26 +33,16 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
     }
 
     private boolean canBeConverted(Object value) {
-        // TODO The conversible type should be resolved when the converter is instantiated
-        final Type[] interfaces = attribute.getConverter().getClass().getGenericInterfaces();
-        for (Type t : interfaces) {
-            if (t instanceof ParameterizedType &&
-                    AttributeConverter.class.isAssignableFrom((Class<?>) ((ParameterizedType) t).getRawType())) {
-                final ParameterizedType pt = (ParameterizedType) t;
-                assert pt.getActualTypeArguments().length == 2;
-                final Type supportedType = pt.getActualTypeArguments()[1];
-                return ((Class<?>) supportedType).isAssignableFrom(value.getClass());
-            }
-        }
-        return false;
+        return attribute.getConverter() != null && attribute.getConverter().supportsAxiomValueType(value.getClass());
     }
 
-    Object convertToAttribute(Object value) {
-        return isFieldEnum() ? resolveEnumValue(value) : attribute.getConverter().convertToAttribute(value);
+    Object toAttributeValue(Object value) {
+        return isFieldEnum() ? resolveEnumValue(value) :
+                attribute.getConverter() != null ? attribute.getConverter().convertToAttribute(value) : value;
     }
 
-    Object convertToAxiomValue(Object value) {
-        return attribute.getConverter().convertToAxiomValue(value);
+    Object toAxiomValue(Object value) {
+        return attribute.getConverter() != null ? attribute.getConverter().convertToAxiomValue(value) : value;
     }
 
     Object resolveEnumValue(Object value) {

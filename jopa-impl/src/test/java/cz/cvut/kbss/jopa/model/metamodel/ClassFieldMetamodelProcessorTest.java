@@ -58,7 +58,7 @@ public class ClassFieldMetamodelProcessorTest {
         final EntityTypeImpl<OWLClassJ> etMock = mock(EntityTypeImpl.class);
         when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
         final TypeBuilderContext<OWLClassJ> context = new TypeBuilderContext<>(etMock, new NamespaceResolver());
-        context.setConverters(new Converters());
+        context.setConverterResolver(new ConverterResolver(new Converters()));
         final ClassFieldMetamodelProcessor<OWLClassJ> processor = new ClassFieldMetamodelProcessor<>(context,
                 metamodelBuilder);
         final Field field = OWLClassJ.getOwlClassAField();

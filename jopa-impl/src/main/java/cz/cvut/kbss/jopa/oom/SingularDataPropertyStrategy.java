@@ -35,7 +35,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
             return;
         }
         verifyCardinalityConstraint(ax.getSubject());
-        this.value = convertToAttribute(val);
+        this.value = toAttributeValue(val);
     }
 
     void verifyCardinalityConstraint(NamedResource subject) {
@@ -54,7 +54,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        final Object extractedValue = convertToAxiomValue(extractFieldValueFromInstance(instance));
+        final Object extractedValue = toAxiomValue(extractFieldValueFromInstance(instance));
 
         final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
         valueBuilder.addValue(createAssertion(), val, getAttributeContext());

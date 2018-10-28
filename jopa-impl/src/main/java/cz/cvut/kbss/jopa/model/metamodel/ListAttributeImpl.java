@@ -12,12 +12,12 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -160,7 +160,7 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         }
 
         @Override
-        public ListAttributeBuilder<X, V> converter(AttributeConverter<List<V>, ?> converter) {
+        public ListAttributeBuilder<X, V> converter(ConverterWrapper converter) {
             super.converter(converter);
             return this;
         }

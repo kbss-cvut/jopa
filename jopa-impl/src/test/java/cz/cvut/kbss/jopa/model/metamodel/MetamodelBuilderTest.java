@@ -13,12 +13,13 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.oom.converter.DefaultConverter;
 import cz.cvut.kbss.jopa.oom.converter.LocalDateConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Before;
@@ -29,6 +30,7 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
@@ -93,7 +95,7 @@ public class MetamodelBuilderTest {
     }
 
     @Namespaces({@Namespace(prefix = "dc", namespace = "http://purl.org/dc/elements/1.1/"),
-            @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
+                 @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
     private static class EntityWithNamespaceAttributes {
         @Id
@@ -133,13 +135,14 @@ public class MetamodelBuilderTest {
     }
 
     @Test
-    public void buildMetamodelBuildsEntityWithDefaultConverters() throws Exception {
-        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassA.class));
+    public void buildMetamodelBuildsEntityWithBuiltInConverters() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
-        final EntityTypeImpl<OWLClassA> et = (EntityTypeImpl<OWLClassA>) builder.getEntityClass(OWLClassA.class);
-        final AbstractAttribute<OWLClassA, String> result = (AbstractAttribute<OWLClassA, String>) et
-                .getDeclaredAttribute(OWLClassA.getStrAttField().getName());
-        assertSame(DefaultConverter.INSTANCE, result.getConverter());
+        final EntityTypeImpl<OWLClassM> et = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
+        final AbstractPluralAttribute<OWLClassM, Set, Integer> result =
+                (AbstractPluralAttribute<OWLClassM, Set, Integer>) et
+                        .getDeclaredAttribute(OWLClassM.getIntegerSetField().getName());
+        assertTrue(result.getConverter() instanceof ToIntegerConverter);
     }
 
     @Test

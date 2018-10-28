@@ -31,7 +31,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final ParticipationConstraint[] constraints;
 
-    private ConverterWrapper<Y, ?> converter;
+    private ConverterWrapper converter;
 
     AbstractAttribute(AbstractAttributeBuilder<X, Y> builder) {
         this.field = builder.field;
@@ -107,7 +107,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return field.getName();
     }
 
-    public ConverterWrapper<Y, ?> getConverter() {
+    public ConverterWrapper getConverter() {
         return converter;
     }
 
@@ -122,7 +122,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean includeExplicit;
         private boolean nonEmpty = false;
         private ParticipationConstraint[] constraints;
-        private ConverterWrapper<Y, ?> converter;
+        private ConverterWrapper converter;
 
         public AbstractAttributeBuilder<X, Y> field(Field field) {
             this.field = field;
@@ -174,7 +174,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             return this;
         }
 
-        public AbstractAttributeBuilder<X, Y> converter(ConverterWrapper<Y, ?> converter) {
+        public AbstractAttributeBuilder<X, Y> converter(ConverterWrapper converter) {
             this.converter = converter;
             return this;
         }

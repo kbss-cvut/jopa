@@ -36,7 +36,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
         }
         verifyCardinalityConstraint(ax.getSubject());
         if (super.isValidRange(val)) {
-            this.value = convertToAttribute(val);
+            this.value = toAttributeValue(val);
         } else {
             this.value = IdentifierTransformer.transformToIdentifier(val, attribute.getJavaType());
         }
@@ -64,7 +64,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
                     new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))), getAttributeContext());
         } else {
             valueBuilder
-                    .addValue(createAssertion(), new Value<>(convertToAxiomValue(value)), getAttributeContext());
+                    .addValue(createAssertion(), new Value<>(toAxiomValue(value)), getAttributeContext());
         }
     }
 

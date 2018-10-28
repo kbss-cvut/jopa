@@ -29,7 +29,6 @@ class Converters {
         converters.put(Long.class, new ToLongConverter());
         converters.put(Float.class, new ToFloatConverter());
         converters.put(Double.class, new ToDoubleConverter());
-        converters.put(String.class, new ToStringConverter());
     }
 
     Optional<ConverterWrapper<?, ?>> getConverter(Class<?> type) {

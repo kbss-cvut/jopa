@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -37,7 +37,7 @@ public class MetamodelBuilder {
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
-    private final Converters converters = new Converters();
+    private final ConverterResolver converterResolver = new ConverterResolver(new Converters());
 
     public MetamodelBuilder() {
         this.mappingProcessor = new ResultSetMappingProcessor(this);
@@ -61,7 +61,7 @@ public class MetamodelBuilder {
         LOG.debug("Processing OWL class: {}", cls);
 
         final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls);
-        et.setConverters(converters);
+        et.setConverterResolver(converterResolver);
 
         processManagedType(et);
     }
@@ -101,7 +101,7 @@ public class MetamodelBuilder {
                 return (AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype);
             }
             final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
-            context.setConverters(converters);
+            context.setConverterResolver(converterResolver);
             processManagedType(context);
             return context.getType();
         }
