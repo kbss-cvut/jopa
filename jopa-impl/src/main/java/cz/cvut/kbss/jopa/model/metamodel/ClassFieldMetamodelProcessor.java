@@ -166,7 +166,7 @@ class ClassFieldMetamodelProcessor<X> {
                                  .sequenceType(os.type())
                                  .participationConstraints(propertyAttributes.getParticipationConstraints())
                                  .nonEmpty(propertyAttributes.isNonEmpty())
-                                 .converter(context.getConverters().getConverter(field.getType())).build();
+                                 .build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
             a = (AbstractAttribute<X, ?>) SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et)
                                                           .field(field)
@@ -180,8 +180,6 @@ class ClassFieldMetamodelProcessor<X> {
                                                           .participationConstraints(
                                                                   propertyAttributes.getParticipationConstraints())
                                                           .nonEmpty(propertyAttributes.isNonEmpty())
-                                                          .converter(
-                                                                  context.getConverters().getConverter(field.getType()))
                                                           .build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
@@ -197,8 +195,6 @@ class ClassFieldMetamodelProcessor<X> {
                                                                .constraints(
                                                                        propertyAttributes.getParticipationConstraints())
                                                                .nonEmpty(propertyAttributes.isNonEmpty())
-                                                               .converter(context.getConverters()
-                                                                                 .getConverter(field.getType()))
                                                                .build();
         }
         et.addDeclaredAttribute(field.getName(), a);

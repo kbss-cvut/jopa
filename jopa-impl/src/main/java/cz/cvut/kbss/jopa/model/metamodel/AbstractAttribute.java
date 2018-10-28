@@ -1,10 +1,10 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -31,7 +31,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final ParticipationConstraint[] constraints;
 
-    private AttributeConverter<Y, ?> converter;
+    private ConverterWrapper<Y, ?> converter;
 
     AbstractAttribute(AbstractAttributeBuilder<X, Y> builder) {
         this.field = builder.field;
@@ -107,7 +107,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return field.getName();
     }
 
-    public AttributeConverter getConverter() {
+    public ConverterWrapper<Y, ?> getConverter() {
         return converter;
     }
 
@@ -122,7 +122,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean includeExplicit;
         private boolean nonEmpty = false;
         private ParticipationConstraint[] constraints;
-        private AttributeConverter<Y, ?> converter;
+        private ConverterWrapper<Y, ?> converter;
 
         public AbstractAttributeBuilder<X, Y> field(Field field) {
             this.field = field;
@@ -174,7 +174,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             return this;
         }
 
-        public AbstractAttributeBuilder<X, Y> converter(AttributeConverter<Y, ?> converter) {
+        public AbstractAttributeBuilder<X, Y> converter(ConverterWrapper<Y, ?> converter) {
             this.converter = converter;
             return this;
         }

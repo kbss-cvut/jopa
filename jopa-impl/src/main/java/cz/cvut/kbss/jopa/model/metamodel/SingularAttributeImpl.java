@@ -12,11 +12,11 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 import java.lang.reflect.Field;
 
@@ -132,7 +132,7 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         }
 
         @Override
-        public SingularAttributeBuilder<X, Y> converter(AttributeConverter<Y, ?> converter) {
+        public SingularAttributeBuilder<X, Y> converter(ConverterWrapper<Y, ?> converter) {
             super.converter(converter);
             return this;
         }

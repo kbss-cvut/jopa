@@ -12,17 +12,18 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
-public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute<X, C> implements PluralAttribute<X, C, E> {
+public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute<X, C>
+        implements PluralAttribute<X, C, E> {
 
     private final Type<E> elementType;
 
@@ -147,7 +148,7 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
         }
 
         @Override
-        public PluralAttributeBuilder<X, C, E> converter(AttributeConverter<C, ?> converter) {
+        public PluralAttributeBuilder<X, C, E> converter(ConverterWrapper<C, ?> converter) {
             super.converter(converter);
             return this;
         }

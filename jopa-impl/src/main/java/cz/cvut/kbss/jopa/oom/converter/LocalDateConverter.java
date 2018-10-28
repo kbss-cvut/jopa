@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.oom.converter;
 
-import cz.cvut.kbss.jopa.model.AttributeConverter;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -12,7 +10,7 @@ import java.util.Date;
  * <p>
  * Note that conversion to entity attribute uses the default system time zone.
  */
-public class LocalDateConverter implements AttributeConverter<LocalDate, Date> {
+public class LocalDateConverter implements ConverterWrapper<LocalDate, Date> {
 
     @Override
     public Date convertToAxiomValue(LocalDate value) {
@@ -22,5 +20,10 @@ public class LocalDateConverter implements AttributeConverter<LocalDate, Date> {
     @Override
     public LocalDate convertToAttribute(Date value) {
         return value != null ? value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null;
+    }
+
+    @Override
+    public boolean supportsAxiomValueType(Class<?> type) {
+        return Date.class.isAssignableFrom(type);
     }
 }
