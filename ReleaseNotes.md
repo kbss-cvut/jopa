@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.10.7 - November 1, 2018
+- Added support for Java 8 Date/Time API (Feature #36).
+- Fixed issue with caching instances of classes overriding `equals`/`hashCode`.
+- Upgraded to AspectJ 1.9.2, Jena 3.9.0, OWL API 5.1.7 and RDF4J 2.4.1.
+
 ## 0.10.6 - September 25, 2018
 - Support unbound variables in `VariableResult` in `SparqlResultMapping`.
 - Fixed incorrect handling of language on attribute loading.
