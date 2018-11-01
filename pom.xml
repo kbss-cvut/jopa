@@ -38,11 +38,11 @@
         <org.slf4j.version>1.7.25</org.slf4j.version>
         <junit.version>4.12</junit.version>
         <org.mockito.version>1.10.19</org.mockito.version>
-        <org.aspectj.version>1.9.1</org.aspectj.version>
+        <org.aspectj.version>1.9.2</org.aspectj.version>
         <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
 
         <!-- We use OWLAPI in multiple modules, so let's keep them in sync -->
-        <net.sourceforge.owlapi.version>5.1.6</net.sourceforge.owlapi.version>
+        <net.sourceforge.owlapi.version>5.1.7</net.sourceforge.owlapi.version>
 
         <maven.aspectj.plugin.version>1.11</maven.aspectj.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
