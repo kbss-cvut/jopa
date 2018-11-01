@@ -25,6 +25,7 @@ public class Vocabulary {
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
     public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";
     public static final String c_OwlClassS = CLASS_BASE + "OWLClassS";
+    public static final String c_OwlClassT = CLASS_BASE + "OWLClassT";
 
     public static final String p_a_stringAttribute = ATTRIBUTE_BASE + "A-stringAttribute";
     public static final String p_m_booleanAttribute = ATTRIBUTE_BASE + "m-booleanAttribute";
@@ -40,6 +41,9 @@ public class Vocabulary {
 
     public static final String P_HAS_SIMPLE_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
     public static final String P_HAS_REFERENCED_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+
+    public static final String P_T_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDate";
+    public static final String P_T_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDateTime";
 
     private Vocabulary() {
         throw new AssertionError();

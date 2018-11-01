@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -21,7 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -59,7 +57,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void addAxiomValueAddsStringAnnotationValue() throws Exception {
+    public void addAxiomValueAddsStringAnnotationValue() {
         final String str = "stringValue";
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final Axiom<String> ax = new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>(str));
@@ -70,7 +68,7 @@ public class SingularAnnotationPropertyStrategyTest {
         assertEquals(str, n.getAnnotationProperty());
     }
 
-    private SingularAnnotationPropertyStrategy<OWLClassN> forN(SingularAttribute<OWLClassN, ?> att) {
+    private SingularAnnotationPropertyStrategy<OWLClassN> forN(AbstractAttribute<OWLClassN, ?> att) {
         return new SingularAnnotationPropertyStrategy<>(
                 mocks.forOwlClassN().entityType(), att, descriptor, mapperMock);
     }
@@ -81,7 +79,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void addAxiomValueSkipsAxiomWhoseValueDoesNotMatchTargetFieldType() throws Exception {
+    public void addAxiomValueSkipsAxiomWhoseValueDoesNotMatchTargetFieldType() {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final Axiom<Integer> ax = new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>(117));
 
@@ -92,7 +90,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void addAxiomValueAddsPlainIdentifierValueOfAnnotationProperty() throws Exception {
+    public void addAxiomValueAddsPlainIdentifierValueOfAnnotationProperty() {
         final URI value = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationValue");
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(
                 mocks.forOwlClassN().annotationUriAttribute());
@@ -111,7 +109,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
-    public void addAxiomValueThrowsIntegrityConstraintsViolationWhenAnotherValueIsAlreadySet() throws Exception {
+    public void addAxiomValueThrowsIntegrityConstraintsViolationWhenAnotherValueIsAlreadySet() {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final List<Axiom<String>> axioms = new ArrayList<>();
         for (int i = 0; i < 2; i++) {

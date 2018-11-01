@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.cache;
 
@@ -299,14 +297,14 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     }
 
     @Test
-    public void cacheAddWithStringIdentifier() throws Exception {
+    public void cacheAddWithStringIdentifier() {
         final Descriptor descriptor = descriptor(CONTEXT_ONE);
         manager.add(testM.getKey(), testM, descriptor);
         assertTrue(manager.contains(OWLClassM.class, testM.getKey(), descriptor));
     }
 
     @Test
-    public void cacheEvictWithStringIdentifier() throws Exception {
+    public void cacheEvictWithStringIdentifier() {
         final Descriptor descriptor = descriptor(null);
         manager.add(testM.getKey(), testM, descriptor);
         assertTrue(manager.contains(OWLClassM.class, testM.getKey(), descriptor));
@@ -337,7 +335,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     }
 
     @Test
-    public void addReplacesInstanceTogetherWithDescriptor() throws Exception {
+    public void addReplacesInstanceTogetherWithDescriptor() {
         final Descriptor descriptorOne = new EntityDescriptor();
         descriptorOne.setLanguage("en");
         final Descriptor descriptorTwo = new EntityDescriptor();
@@ -408,5 +406,15 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         assertTrue(manager.contains(OWLClassB.class, testB.getUri(), descriptorTwo));
         assertFalse(extractDescriptors().containsKey(testA));
         assertTrue(extractDescriptors().containsKey(testB));
+    }
+
+    @Test
+    public void cacheSupportsEntitiesOverridingEqualsAndHashCode() {
+        final URI uri = Generators.createIndividualIdentifier();
+        final Descriptor descriptorOne = new EntityDescriptor(CONTEXT_ONE);
+        manager.add(uri, URI.create(uri.toString()), descriptorOne);
+        manager.add(uri, URI.create(uri.toString()), new EntityDescriptor());
+        manager.evict(URI.class, uri, CONTEXT_ONE);
+        assertTrue(manager.contains(URI.class, uri, new EntityDescriptor()));
     }
 }

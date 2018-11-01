@@ -81,7 +81,7 @@ public class OWLClassN {
         this.properties = properties;
     }
 
-    public static String getClassIri() throws Exception {
+    public static String getClassIri() {
         return OWLClassN.class.getAnnotation(OWLClass.class).iri();
     }
 

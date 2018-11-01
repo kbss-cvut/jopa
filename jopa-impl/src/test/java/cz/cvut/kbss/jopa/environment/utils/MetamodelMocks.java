@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -24,6 +22,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class MetamodelMocks {
     @Mock
     private Identifier idA;
     @Mock
-    private SingularAttribute<OWLClassA, String> aStringAtt;
+    private SingularAttributeImpl<OWLClassA, String> aStringAtt;
     @Mock
     private TypesSpecification<OWLClassA, ?> aTypes;
 
@@ -52,7 +52,7 @@ public class MetamodelMocks {
     @Mock
     private Identifier idB;
     @Mock
-    private SingularAttribute<OWLClassB, String> bStringAtt;
+    private SingularAttributeImpl<OWLClassB, String> bStringAtt;
     @Mock
     private PropertiesSpecification<OWLClassB, Map, String, String> bProperties;
 
@@ -61,105 +61,105 @@ public class MetamodelMocks {
     @Mock
     private Identifier idC;
     @Mock
-    private ListAttribute<OWLClassC, OWLClassA> cReferencedList;
+    private ListAttributeImpl<OWLClassC, OWLClassA> cReferencedList;
     @Mock
-    private ListAttribute<OWLClassC, OWLClassA> cSimpleList;
+    private ListAttributeImpl<OWLClassC, OWLClassA> cSimpleList;
 
     @Mock
     private EntityTypeImpl<OWLClassD> etD;
     @Mock
     private Identifier idD;
     @Mock
-    private SingularAttribute<OWLClassD, OWLClassA> dOwlClassAAtt;
+    private SingularAttributeImpl<OWLClassD, OWLClassA> dOwlClassAAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassE> etE;
     @Mock
     private Identifier idE;
     @Mock
-    private SingularAttribute<OWLClassE, String> eStringAtt;
+    private SingularAttributeImpl<OWLClassE, String> eStringAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassG> etG;
     @Mock
     private Identifier idG;
     @Mock
-    private SingularAttribute<OWLClassG, OWLClassH> gOwlClassHAtt;
+    private SingularAttributeImpl<OWLClassG, OWLClassH> gOwlClassHAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassF> etF;
     @Mock
     private Identifier idF;
     @Mock
-    private SingularAttribute<OWLClassF, String> fStringAtt;
+    private SingularAttributeImpl<OWLClassF, String> fStringAtt;
     @Mock
-    private PluralAttribute<OWLClassF, Set, OWLClassA> fSetAtt;
+    private AbstractPluralAttribute<OWLClassF, Set, OWLClassA> fSetAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassH> etH;
     @Mock
     private Identifier idH;
     @Mock
-    private SingularAttribute<OWLClassH, OWLClassA> hOwlClassAAtt;
+    private SingularAttributeImpl<OWLClassH, OWLClassA> hOwlClassAAtt;
     @Mock
-    private SingularAttribute<OWLClassH, OWLClassG> hOwlClassGAtt;
+    private SingularAttributeImpl<OWLClassH, OWLClassG> hOwlClassGAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassJ> etJ;
     @Mock
     private Identifier idJ;
     @Mock
-    private PluralAttribute<OWLClassJ, Set, OWLClassA> jSetAtt;
+    private AbstractPluralAttribute<OWLClassJ, Set, OWLClassA> jSetAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassK> etK;
     @Mock
     private Identifier idK;
     @Mock
-    private SingularAttribute<OWLClassK, OWLClassE> kOwlClassEAtt;
+    private SingularAttributeImpl<OWLClassK, OWLClassE> kOwlClassEAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassL> etL;
     @Mock
     private Identifier idL;
     @Mock
-    private ListAttribute<OWLClassL, OWLClassA> lSimpleList;
+    private ListAttributeImpl<OWLClassL, OWLClassA> lSimpleList;
     @Mock
-    private ListAttribute<OWLClassL, OWLClassA> lReferencedList;
+    private ListAttributeImpl<OWLClassL, OWLClassA> lReferencedList;
     @Mock
-    private PluralAttribute<OWLClassL, Set, OWLClassA> lSetAtt;
+    private AbstractPluralAttribute<OWLClassL, Set, OWLClassA> lSetAtt;
     @Mock
-    private SingularAttribute<OWLClassL, OWLClassA> lOwlClassAAtt;
+    private SingularAttributeImpl<OWLClassL, OWLClassA> lOwlClassAAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassM> etM;
     @Mock
     private Identifier idM;
     @Mock
-    private SingularAttribute<OWLClassM, Boolean> mBooleanAtt;
+    private SingularAttributeImpl<OWLClassM, Boolean> mBooleanAtt;
     @Mock
-    private SingularAttribute<OWLClassM, Integer> mIntegerAtt;
+    private SingularAttributeImpl<OWLClassM, Integer> mIntegerAtt;
     @Mock
-    private SingularAttribute<OWLClassM, Long> mLongAtt;
+    private SingularAttributeImpl<OWLClassM, Long> mLongAtt;
     @Mock
-    private SingularAttribute<OWLClassM, Double> mDoubleAtt;
+    private SingularAttributeImpl<OWLClassM, Double> mDoubleAtt;
     @Mock
-    private SingularAttribute<OWLClassM, Date> mDateAtt;
+    private SingularAttributeImpl<OWLClassM, Date> mDateAtt;
     @Mock
-    private SingularAttribute<OWLClassM, OWLClassM.Severity> mEnumAtt;
+    private SingularAttributeImpl<OWLClassM, OWLClassM.Severity> mEnumAtt;
     @Mock
-    private PluralAttribute<OWLClassM, Set, Integer> mIntegerSetAtt;
+    private AbstractPluralAttribute<OWLClassM, Set, Integer> mIntegerSetAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassN> etN;
     @Mock
     private Identifier idN;
     @Mock
-    private SingularAttribute<OWLClassN, String> nAnnotationAtt;
+    private SingularAttributeImpl<OWLClassN, String> nAnnotationAtt;
     @Mock
-    private SingularAttribute<OWLClassN, URI> nAnnotationUriAtt;
+    private SingularAttributeImpl<OWLClassN, URI> nAnnotationUriAtt;
     @Mock
-    private SingularAttribute<OWLClassN, String> nStringAtt;
+    private SingularAttributeImpl<OWLClassN, String> nStringAtt;
     @Mock
     private PropertiesSpecification<OWLClassN, Map, String, String> nProperties;
 
@@ -168,20 +168,20 @@ public class MetamodelMocks {
     @Mock
     private Identifier idO;
     @Mock
-    private SingularAttribute<OWLClassO, String> oStringAtt;
+    private SingularAttributeImpl<OWLClassO, String> oStringAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassP> etP;
     @Mock
     private Identifier idP;
     @Mock
-    private SingularAttribute<OWLClassP, URI> pUriAtt;
+    private SingularAttributeImpl<OWLClassP, URI> pUriAtt;
     @Mock
-    private PluralAttribute<OWLClassP, Set, URL> pUrlsAtt;
+    private AbstractPluralAttribute<OWLClassP, Set, URL> pUrlsAtt;
     @Mock
-    private ListAttribute<OWLClassP, URI> pSimpleList;
+    private ListAttributeImpl<OWLClassP, URI> pSimpleList;
     @Mock
-    private ListAttribute<OWLClassP, URI> pReferencedList;
+    private ListAttributeImpl<OWLClassP, URI> pReferencedList;
     @Mock
     private TypesSpecification<OWLClassP, URI> pTypes;
     @Mock
@@ -194,20 +194,20 @@ public class MetamodelMocks {
     @Mock
     private Identifier idQ;
     @Mock
-    private SingularAttribute<OWLClassQ, String> qStringAtt;
+    private SingularAttributeImpl<OWLClassQ, String> qStringAtt;
     @Mock
-    private SingularAttribute<OWLClassQ, String> qLabelAtt;
+    private SingularAttributeImpl<OWLClassQ, String> qLabelAtt;
     @Mock
-    private SingularAttribute<OWLClassQ, String> qParentStringAtt;
+    private SingularAttributeImpl<OWLClassQ, String> qParentStringAtt;
     @Mock
-    private SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt;
+    private SingularAttributeImpl<OWLClassQ, OWLClassA> qOwlClassAAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassR> etR;
     @Mock
-    private SingularAttribute<OWLClassR, String> rStringAtt;
+    private SingularAttributeImpl<OWLClassR, String> rStringAtt;
     @Mock
-    private SingularAttribute<OWLClassR, OWLClassA> rOwlClassAAtt;
+    private SingularAttributeImpl<OWLClassR, OWLClassA> rOwlClassAAtt;
     @Mock
     private ConcreteListener concreteListenerMock;
     @Mock
@@ -218,11 +218,20 @@ public class MetamodelMocks {
     @Mock
     private Identifier idS;
     @Mock
-    private SingularAttribute<OWLClassS, String> sNameAtt;
+    private SingularAttributeImpl<OWLClassS, String> sNameAtt;
     @Mock
     private TypesSpecification<OWLClassS, String> sTypes;
     @Mock
     private ParentListener parentListenerMock;
+
+    @Mock
+    private EntityTypeImpl<OWLClassT> etT;
+    @Mock
+    private Identifier idT;
+    @Mock
+    private SingularAttributeImpl<OWLClassT, LocalDate> tLocalDateAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassT, LocalDateTime> tLocalDateTimeAtt;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -249,6 +258,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassSListeners(etS, parentListenerMock);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
+        MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, idT);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -272,6 +282,7 @@ public class MetamodelMocks {
         etMap.put(OWLClassQ.class, etQ);
         etMap.put(OWLClassR.class, etR);
         etMap.put(OWLClassS.class, etS);
+        etMap.put(OWLClassT.class, etT);
         when(metamodel.entity(any())).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
@@ -347,6 +358,10 @@ public class MetamodelMocks {
         return new OWLClassSMetamodel();
     }
 
+    public OWLClassTMetamodel forOwlClassT() {
+        return new OWLClassTMetamodel();
+    }
+
     public class OWLClassAMetamodel {
         public EntityTypeImpl<OWLClassA> entityType() {
             return MetamodelMocks.this.etA;
@@ -356,7 +371,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idA;
         }
 
-        public SingularAttribute<OWLClassA, String> stringAttribute() {
+        public AbstractAttribute<OWLClassA, String> stringAttribute() {
             return MetamodelMocks.this.aStringAtt;
         }
 
@@ -374,7 +389,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idB;
         }
 
-        public SingularAttribute<OWLClassB, String> stringAttribute() {
+        public AbstractAttribute<OWLClassB, String> stringAttribute() {
             return MetamodelMocks.this.bStringAtt;
         }
 
@@ -392,11 +407,11 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idC;
         }
 
-        public ListAttribute<OWLClassC, OWLClassA> referencedListAtt() {
+        public ListAttributeImpl<OWLClassC, OWLClassA> referencedListAtt() {
             return MetamodelMocks.this.cReferencedList;
         }
 
-        public ListAttribute<OWLClassC, OWLClassA> simpleListAtt() {
+        public ListAttributeImpl<OWLClassC, OWLClassA> simpleListAtt() {
             return MetamodelMocks.this.cSimpleList;
         }
     }
@@ -410,7 +425,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idD;
         }
 
-        public SingularAttribute<OWLClassD, OWLClassA> owlClassAAtt() {
+        public AbstractAttribute<OWLClassD, OWLClassA> owlClassAAtt() {
             return MetamodelMocks.this.dOwlClassAAtt;
         }
     }
@@ -424,7 +439,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idE;
         }
 
-        public SingularAttribute<OWLClassE, String> stringAttribute() {
+        public AbstractAttribute<OWLClassE, String> stringAttribute() {
             return MetamodelMocks.this.eStringAtt;
         }
     }
@@ -438,11 +453,11 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idF;
         }
 
-        public SingularAttribute<OWLClassF, String> stringAttribute() {
+        public AbstractAttribute<OWLClassF, String> stringAttribute() {
             return MetamodelMocks.this.fStringAtt;
         }
 
-        public PluralAttribute<OWLClassF, Set, OWLClassA> setAttribute() {
+        public AbstractPluralAttribute<OWLClassF, Set, OWLClassA> setAttribute() {
             return MetamodelMocks.this.fSetAtt;
         }
     }
@@ -456,7 +471,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idG;
         }
 
-        public SingularAttribute<OWLClassG, OWLClassH> owlClassHAtt() {
+        public AbstractAttribute<OWLClassG, OWLClassH> owlClassHAtt() {
             return MetamodelMocks.this.gOwlClassHAtt;
         }
     }
@@ -470,11 +485,11 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idH;
         }
 
-        public SingularAttribute<OWLClassH, OWLClassG> owlClassGAtt() {
+        public AbstractAttribute<OWLClassH, OWLClassG> owlClassGAtt() {
             return MetamodelMocks.this.hOwlClassGAtt;
         }
 
-        public SingularAttribute<OWLClassH, OWLClassA> owlClassAAtt() {
+        public AbstractAttribute<OWLClassH, OWLClassA> owlClassAAtt() {
             return MetamodelMocks.this.hOwlClassAAtt;
         }
 
@@ -489,7 +504,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idJ;
         }
 
-        public PluralAttribute<OWLClassJ, Set, OWLClassA> setAttribute() {
+        public AbstractPluralAttribute<OWLClassJ, Set, OWLClassA> setAttribute() {
             return MetamodelMocks.this.jSetAtt;
         }
     }
@@ -503,7 +518,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idK;
         }
 
-        public SingularAttribute<OWLClassK, OWLClassE> owlClassEAtt() {
+        public AbstractAttribute<OWLClassK, OWLClassE> owlClassEAtt() {
             return MetamodelMocks.this.kOwlClassEAtt;
         }
     }
@@ -517,19 +532,19 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idL;
         }
 
-        public ListAttribute<OWLClassL, OWLClassA> referencedListAtt() {
+        public ListAttributeImpl<OWLClassL, OWLClassA> referencedListAtt() {
             return MetamodelMocks.this.lReferencedList;
         }
 
-        public ListAttribute<OWLClassL, OWLClassA> simpleListAtt() {
+        public ListAttributeImpl<OWLClassL, OWLClassA> simpleListAtt() {
             return MetamodelMocks.this.lSimpleList;
         }
 
-        public PluralAttribute<OWLClassL, Set, OWLClassA> setAttribute() {
+        public AbstractPluralAttribute<OWLClassL, Set, OWLClassA> setAttribute() {
             return MetamodelMocks.this.lSetAtt;
         }
 
-        public SingularAttribute<OWLClassL, OWLClassA> owlClassAAtt() {
+        public AbstractAttribute<OWLClassL, OWLClassA> owlClassAAtt() {
             return MetamodelMocks.this.lOwlClassAAtt;
         }
     }
@@ -543,31 +558,31 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idM;
         }
 
-        public SingularAttribute<OWLClassM, Boolean> booleanAttribute() {
+        public AbstractAttribute<OWLClassM, Boolean> booleanAttribute() {
             return MetamodelMocks.this.mBooleanAtt;
         }
 
-        public SingularAttribute<OWLClassM, Integer> integerAttribute() {
+        public AbstractAttribute<OWLClassM, Integer> integerAttribute() {
             return MetamodelMocks.this.mIntegerAtt;
         }
 
-        public SingularAttribute<OWLClassM, Long> longAttribute() {
+        public AbstractAttribute<OWLClassM, Long> longAttribute() {
             return MetamodelMocks.this.mLongAtt;
         }
 
-        public SingularAttribute<OWLClassM, Double> doubleAttribute() {
+        public AbstractAttribute<OWLClassM, Double> doubleAttribute() {
             return MetamodelMocks.this.mDoubleAtt;
         }
 
-        public SingularAttribute<OWLClassM, Date> dateAttribute() {
+        public AbstractAttribute<OWLClassM, Date> dateAttribute() {
             return MetamodelMocks.this.mDateAtt;
         }
 
-        public SingularAttribute<OWLClassM, OWLClassM.Severity> enumAttribute() {
+        public AbstractAttribute<OWLClassM, OWLClassM.Severity> enumAttribute() {
             return MetamodelMocks.this.mEnumAtt;
         }
 
-        public PluralAttribute<OWLClassM, Set, Integer> integerSetAttribute() {
+        public AbstractPluralAttribute<OWLClassM, Set, Integer> integerSetAttribute() {
             return MetamodelMocks.this.mIntegerSetAtt;
         }
     }
@@ -581,15 +596,15 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idN;
         }
 
-        public SingularAttribute<OWLClassN, String> annotationAttribute() {
+        public SingularAttributeImpl<OWLClassN, String> annotationAttribute() {
             return MetamodelMocks.this.nAnnotationAtt;
         }
 
-        public SingularAttribute<OWLClassN, URI> annotationUriAttribute() {
+        public SingularAttributeImpl<OWLClassN, URI> annotationUriAttribute() {
             return MetamodelMocks.this.nAnnotationUriAtt;
         }
 
-        public SingularAttribute<OWLClassN, String> stringAttribute() {
+        public SingularAttributeImpl<OWLClassN, String> stringAttribute() {
             return MetamodelMocks.this.nStringAtt;
         }
 
@@ -625,15 +640,15 @@ public class MetamodelMocks {
             return MetamodelMocks.this.pUriAtt;
         }
 
-        public PluralAttribute<OWLClassP, Set, URL> pUrlsAttribute() {
+        public AbstractPluralAttribute<OWLClassP, Set, URL> pUrlsAttribute() {
             return MetamodelMocks.this.pUrlsAtt;
         }
 
-        public ListAttribute<OWLClassP, URI> pSimpleListAttribute() {
+        public ListAttributeImpl<OWLClassP, URI> pSimpleListAttribute() {
             return MetamodelMocks.this.pSimpleList;
         }
 
-        public ListAttribute<OWLClassP, URI> pReferencedListAttribute() {
+        public ListAttributeImpl<OWLClassP, URI> pReferencedListAttribute() {
             return MetamodelMocks.this.pReferencedList;
         }
 
@@ -704,7 +719,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idS;
         }
 
-        public SingularAttribute<OWLClassS, String> rNameAtt() {
+        public AbstractAttribute<OWLClassS, String> rNameAtt() {
             return MetamodelMocks.this.sNameAtt;
         }
 
@@ -714,6 +729,24 @@ public class MetamodelMocks {
 
         public ParentListener parentListener() {
             return MetamodelMocks.this.parentListenerMock;
+        }
+    }
+
+    public class OWLClassTMetamodel {
+        public EntityTypeImpl<OWLClassT> entityType() {
+            return MetamodelMocks.this.etT;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idT;
+        }
+
+        public AbstractAttribute<OWLClassT, LocalDate> tLocalDateAtt() {
+            return MetamodelMocks.this.tLocalDateAtt;
+        }
+
+        public AbstractAttribute<OWLClassT, LocalDateTime> tLocalDateTimeAtt() {
+            return MetamodelMocks.this.tLocalDateTimeAtt;
         }
     }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.utils;
 
@@ -24,7 +22,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -79,17 +76,19 @@ public class DatatypeTransformer {
      * @return Value as the target type
      */
     public static <T> T transform(Object value, Class<T> targetType) {
-        Objects.requireNonNull(value);
+        if (value == null) {
+            return null;
+        }
         if (targetType.equals(String.class)) {
-            return (T) value.toString();
+            return targetType.cast(value.toString());
         }
         final Class<?> sourceType = value.getClass();
         if (targetType.isAssignableFrom(sourceType)) {
-            return (T) value;
+            return targetType.cast(value);
         }
         final Pair p = new Pair(sourceType, targetType);
         if (TRANSFORMERS.containsKey(p)) {
-            return (T) TRANSFORMERS.get(p).apply(value);
+            return targetType.cast(TRANSFORMERS.get(p).apply(value));
         }
         final Optional<T> result = tryConversionUsingConstructor(value, targetType);
         return result.orElseThrow(() -> new UnsupportedTypeTransformation(
@@ -100,7 +99,7 @@ public class DatatypeTransformer {
     private static <T> Optional<T> tryConversionUsingConstructor(Object value, Class<T> targetType) {
         try {
             final Constructor ctor = targetType.getDeclaredConstructor(value.getClass());
-            return Optional.of((T) ctor.newInstance(value));
+            return Optional.of(targetType.cast(ctor.newInstance(value)));
         } catch (NoSuchMethodException e) {
             return Optional.empty();
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {

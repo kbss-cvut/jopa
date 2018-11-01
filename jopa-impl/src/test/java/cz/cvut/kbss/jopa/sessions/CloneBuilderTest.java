@@ -37,6 +37,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -145,7 +147,7 @@ public class CloneBuilderTest {
     public void testBuildClone() {
         OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertEquals(res.getStringAttribute(), entityA.getStringAttribute());
-        assertTrue(res.getUri().equals(entityA.getUri()));
+        assertEquals(res.getUri(), entityA.getUri());
         assertEquals(entityA.getTypes(), res.getTypes());
     }
 
@@ -178,7 +180,7 @@ public class CloneBuilderTest {
     public void testBuildCloneTwice() {
         OWLClassA res = (OWLClassA) this.builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
         assertEquals(res.getStringAttribute(), entityA.getStringAttribute());
-        assertTrue(res.getUri().equals(entityA.getUri()));
+        assertEquals(res.getUri(), entityA.getUri());
         assertEquals(entityA.getTypes(), res.getTypes());
         assertNotSame(entityA, res);
         final OWLClassA resTwo = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
@@ -683,5 +685,17 @@ public class CloneBuilderTest {
 
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasA")
         private A a;
+    }
+
+    @Test
+    public void buildCloneReturnsSameInstanceForImmutableClasses() {
+        final LocalDateTime instance = LocalDateTime.now();
+        assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor)));
+    }
+
+    @Test
+    public void buildCloneReturnsSameInstanceForJava8Instant() {
+        final Instant instance = Instant.now();
+        assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor)));
     }
 }

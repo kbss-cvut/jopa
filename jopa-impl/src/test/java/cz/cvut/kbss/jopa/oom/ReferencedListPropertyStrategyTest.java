@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -18,7 +16,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -44,12 +42,12 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
     private static List<OWLClassA> list;
 
-    private ListAttribute<OWLClassC, OWLClassA> refListMock;
+    private ListAttributeImpl<OWLClassC, OWLClassA> refListMock;
 
     private ReferencedListPropertyStrategy<OWLClassC> strategy;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         list = generateList();
     }
 
@@ -139,7 +137,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
     @Test
     public void buildsInstanceFieldWithPlainIdentifiers() throws Exception {
-        final ListAttribute<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
+        final ListAttributeImpl<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), listAtt, descriptor,
                         mapperMock);
@@ -221,7 +219,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
     @Test
     public void extractsValuesIntoAxiomsFromListOfPlainIdentifiers() throws Exception {
-        final ListAttribute<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
+        final ListAttributeImpl<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), listAtt, descriptor,
                         mapperMock);
@@ -241,7 +239,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         p.setReferencedList(generateListOfIdentifiers());
         setRandomListItemsToNull(p.getReferencedList());
         final List<URI> nonNulls = p.getReferencedList().stream().filter(Objects::nonNull).collect(Collectors.toList());
-        final ListAttribute<OWLClassP, URI> refList = mocks.forOwlClassP().pReferencedListAttribute();
+        final ListAttributeImpl<OWLClassP, URI> refList = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), refList, descriptor,
                         mapperMock);
@@ -252,7 +250,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     }
 
     @Test
-    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() throws Exception {
+    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() {
         final OWLClassC c = new OWLClassC(PK);
         c.setReferencedList(generateList());
         c.getReferencedList()

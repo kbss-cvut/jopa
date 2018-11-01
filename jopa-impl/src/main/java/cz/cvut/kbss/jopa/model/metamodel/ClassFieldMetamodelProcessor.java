@@ -147,45 +147,60 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {
-        final Attribute<X, ?> a;
+        final AbstractAttribute<X, ?> a;
         if (field.getType().isAssignableFrom(List.class)) {
             final Sequence os = field.getAnnotation(Sequence.class);
 
             if (os == null) {
                 throw new MetamodelInitializationException("Expected Sequence annotation.");
             }
-            a = ListAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
-                                 .elementType(propertyAttributes.getType())
-                                 .attributeType(propertyAttributes.getPersistentAttributeType())
-                                 .cascadeTypes(propertyAttributes.getCascadeTypes())
-                                 .fetchType(propertyAttributes.getFetchType()).inferred(inference.inferred)
-                                 .includeExplicit(inference.includeExplicit)
-                                 .owlListClass(IRI.create(os.ClassOWLListIRI()))
-                                 .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
-                                 .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
-                                 .sequenceType(os.type())
-                                 .participationConstraints(propertyAttributes.getParticipationConstraints())
-                                 .nonEmpty(propertyAttributes.isNonEmpty()).build();
+            final ListAttributeImpl.ListAttributeBuilder builder =
+                    ListAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
+                                     .elementType(propertyAttributes.getType())
+                                     .attributeType(propertyAttributes.getPersistentAttributeType())
+                                     .cascadeTypes(propertyAttributes.getCascadeTypes())
+                                     .fetchType(propertyAttributes.getFetchType()).inferred(inference.inferred)
+                                     .includeExplicit(inference.includeExplicit)
+                                     .owlListClass(IRI.create(os.ClassOWLListIRI()))
+                                     .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
+                                     .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
+                                     .sequenceType(os.type())
+                                     .participationConstraints(propertyAttributes.getParticipationConstraints())
+                                     .nonEmpty(propertyAttributes.isNonEmpty());
+            context.getConverterResolver().resolveConverter(field, propertyAttributes)
+                   .ifPresent(cw -> builder.converter(cw));
+            a = builder.build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
-            a = SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
-                                .elementType(propertyAttributes.getType())
-                                .attributeType(propertyAttributes.getPersistentAttributeType())
-                                .fetchType(propertyAttributes.getFetchType())
-                                .cascadeTypes(propertyAttributes.getCascadeTypes()).inferred(inference.inferred)
-                                .includeExplicit(inference.includeExplicit)
-                                .participationConstraints(propertyAttributes.getParticipationConstraints())
-                                .nonEmpty(propertyAttributes.isNonEmpty()).build();
+            final AbstractPluralAttribute.PluralAttributeBuilder builder =
+                    SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et)
+                                    .field(field)
+                                    .elementType(propertyAttributes.getType())
+                                    .attributeType(propertyAttributes.getPersistentAttributeType())
+                                    .fetchType(propertyAttributes.getFetchType())
+                                    .cascadeTypes(propertyAttributes.getCascadeTypes())
+                                    .inferred(inference.inferred)
+                                    .includeExplicit(inference.includeExplicit)
+                                    .participationConstraints(propertyAttributes.getParticipationConstraints())
+                                    .nonEmpty(propertyAttributes.isNonEmpty());
+            context.getConverterResolver().resolveConverter(field, propertyAttributes)
+                   .ifPresent(cw -> builder.converter(cw));
+            a = (AbstractAttribute<X, ?>) builder.build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            a = SingularAttributeImpl.iri(propertyAttributes.getIri()).name(field.getName()).identifier(false)
-                                     .declaringType(et).type(propertyAttributes.getType()).field(field)
-                                     .cascadeTypes(propertyAttributes.getCascadeTypes())
-                                     .attributeType(propertyAttributes.getPersistentAttributeType())
-                                     .fetchType(propertyAttributes.getFetchType()).inferred(inference.inferred)
-                                     .includeExplicit(inference.includeExplicit)
-                                     .constraints(propertyAttributes.getParticipationConstraints())
-                                     .nonEmpty(propertyAttributes.isNonEmpty()).build();
+            final SingularAttributeImpl.SingularAttributeBuilder builder =
+                    SingularAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et)
+                                         .type(propertyAttributes.getType()).field(field)
+                                         .cascadeTypes(propertyAttributes.getCascadeTypes())
+                                         .attributeType(propertyAttributes.getPersistentAttributeType())
+                                         .fetchType(propertyAttributes.getFetchType())
+                                         .inferred(inference.inferred)
+                                         .includeExplicit(inference.includeExplicit)
+                                         .constraints(propertyAttributes.getParticipationConstraints())
+                                         .nonEmpty(propertyAttributes.isNonEmpty());
+            context.getConverterResolver().resolveConverter(field, propertyAttributes)
+                   .ifPresent(cw -> builder.converter(cw));
+            a = (AbstractAttribute<X, ?>) builder.build();
         }
         et.addDeclaredAttribute(field.getName(), a);
     }

@@ -27,6 +27,8 @@ class TypeBuilderContext<X> {
 
     private final NamespaceResolver namespaceResolver;
 
+    private ConverterResolver converterResolver;
+
     TypeBuilderContext(AbstractIdentifiableType<X> type, NamespaceResolver namespaceResolver) {
         this.type = type;
         this.namespaceResolver = namespaceResolver;
@@ -42,5 +44,13 @@ class TypeBuilderContext<X> {
 
     AbstractIdentifiableType<X> getType() {
         return type;
+    }
+
+    ConverterResolver getConverterResolver() {
+        return converterResolver;
+    }
+
+    void setConverterResolver(ConverterResolver converterResolver) {
+        this.converterResolver = converterResolver;
     }
 }
