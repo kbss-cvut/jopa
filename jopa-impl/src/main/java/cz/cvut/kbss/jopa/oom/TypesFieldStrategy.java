@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -27,12 +25,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, ?>, X> {
+class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, ?>, X> {
 
     private final Set<Object> values = new HashSet<>();
 
-    public TypesFieldStrategy(EntityType<X> et, TypesSpecification<? super X, ?> att,
-                              Descriptor descriptor, EntityMappingHelper mapper) {
+    TypesFieldStrategy(EntityType<X> et, TypesSpecification<? super X, ?> att, Descriptor descriptor,
+                       EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
 
@@ -90,7 +88,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
         valueBuilder.addTypes(toAdd, getAttributeContext());
     }
 
-    private Set<URI> typesDiff(Set<?> base, Set<?> difference) {
+    private static Set<URI> typesDiff(Set<?> base, Set<?> difference) {
         final Set<URI> addedDiff = new HashSet<>(base.size());
         addedDiff.addAll(difference.stream().filter(t -> !base.contains(t)).map(t -> URI.create(t.toString()))
                                    .collect(Collectors.toList()));
@@ -102,7 +100,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
         valueBuilder.removeTypes(toRemove, getAttributeContext());
     }
 
-    private Set<URI> prepareTypes(Set<?> types) {
+    private static Set<URI> prepareTypes(Set<?> types) {
         final Set<URI> toAdd = new HashSet<>(types.size());
         toAdd.addAll(types.stream().map(t -> URI.create(t.toString())).collect(Collectors.toList()));
         return toAdd;

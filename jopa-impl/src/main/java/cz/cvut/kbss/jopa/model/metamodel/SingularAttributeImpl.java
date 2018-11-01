@@ -81,51 +81,61 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> field(Field field) {
             super.field(field);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> declaringType(ManagedType<X> declaringType) {
             super.declaringType(declaringType);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> attributeType(PersistentAttributeType attributeType) {
             super.attributeType(attributeType);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> iri(IRI iri) {
             super.iri(iri);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> cascadeTypes(CascadeType[] cascadeTypes) {
             super.cascadeTypes(cascadeTypes);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> fetchType(FetchType fetchType) {
             super.fetchType(fetchType);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> inferred(boolean inferred) {
             super.inferred(inferred);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> includeExplicit(boolean includeExplicit) {
             super.includeExplicit(includeExplicit);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> constraints(ParticipationConstraint[] constraints) {
             super.constraints(constraints);
             return this;
         }
 
+        @Override
         public SingularAttributeBuilder<X, Y> nonEmpty(boolean nonEmpty) {
             super.nonEmpty(nonEmpty);
             return this;

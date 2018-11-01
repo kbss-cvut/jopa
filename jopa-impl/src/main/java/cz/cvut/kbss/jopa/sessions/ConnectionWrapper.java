@@ -46,6 +46,10 @@ public class ConnectionWrapper implements Wrapper {
         return idUri != null && mapper.containsEntity(cls, idUri, descriptor);
     }
 
+    private static URI getIdentifierAsUri(Object identifier) {
+        return identifier == null ? null : EntityPropertiesUtils.getValueAsURI(identifier);
+    }
+
     public <T> T find(LoadingParameters<T> loadingParameters) {
         return mapper.loadEntity(loadingParameters);
     }
@@ -115,10 +119,6 @@ public class ConnectionWrapper implements Wrapper {
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException(e);
         }
-    }
-
-    private URI getIdentifierAsUri(Object identifier) {
-        return identifier == null ? null : EntityPropertiesUtils.getValueAsURI(identifier);
     }
 
     @Override

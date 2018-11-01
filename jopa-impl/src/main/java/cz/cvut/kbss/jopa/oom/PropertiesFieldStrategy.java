@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<? super X, ?, ?, ?>, X> {
+class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<? super X, ?, ?, ?>, X> {
 
     private final PropertiesValueHolder value = new PropertiesValueHolder();
 
@@ -122,7 +122,7 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
         }
     }
 
-    private Set<Value<?>> objectsToValues(Collection<?> strValues) {
+    private static Set<Value<?>> objectsToValues(Collection<?> strValues) {
         final Set<Value<?>> ontoValues = new HashSet<>(strValues.size());
         ontoValues.addAll(strValues.stream().filter(Objects::nonNull).map(Value::new).collect(Collectors.toList()));
         return ontoValues;
