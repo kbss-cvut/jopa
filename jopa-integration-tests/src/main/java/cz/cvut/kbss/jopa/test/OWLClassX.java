@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
 import java.net.URI;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -19,6 +20,9 @@ public class OWLClassX {
 
     @OWLDataProperty(iri = Vocabulary.P_X_LOCAL_DATETIME_ATTRIBUTE)
     private LocalDateTime localDateTime;
+
+    @OWLDataProperty(iri = Vocabulary.P_X_INSTANT_ATTRIBUTE)
+    private Instant instant;
 
     public URI getUri() {
         return uri;
@@ -44,12 +48,21 @@ public class OWLClassX {
         this.localDateTime = localDateTime;
     }
 
+    public Instant getInstant() {
+        return instant;
+    }
+
+    public void setInstant(Instant instant) {
+        this.instant = instant;
+    }
+
     @Override
     public String toString() {
         return "OWLClassX{" +
                 "uri=" + uri +
                 ", localDate=" + localDate +
                 ", localDateTime=" + localDateTime +
+                ", instant=" + instant +
                 '}';
     }
 }

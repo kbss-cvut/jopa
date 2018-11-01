@@ -37,6 +37,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Map.Entry;
@@ -687,8 +688,14 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void buildCloneCopiesReturnsSameInstanceForImmutableClasses() {
+    public void buildCloneReturnsSameInstanceForImmutableClasses() {
         final LocalDateTime instance = LocalDateTime.now();
+        assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor)));
+    }
+
+    @Test
+    public void buildCloneReturnsSameInstanceForJava8Instant() {
+        final Instant instance = Instant.now();
         assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor)));
     }
 }

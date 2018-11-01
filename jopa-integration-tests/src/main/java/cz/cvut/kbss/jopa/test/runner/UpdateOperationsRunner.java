@@ -30,6 +30,7 @@ import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -1309,5 +1310,25 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
         assertEquals(1, result.getOwlClassA().size());
         assertEquals(newA.getUri(), result.getOwlClassA().iterator().next().getUri());
+    }
+
+    @Test
+    public void updateSupportsJava8Instant() {
+        this.em = getEntityManager("updateSupportsJava8Instant", true);
+        final OWLClassX entityX = new OWLClassX();
+        entityX.setInstant(Instant.now());
+        persist(entityX);
+
+        final Instant newInstant = Instant.ofEpochMilli(System.currentTimeMillis() + 10000);
+        em.getTransaction().begin();
+        final OWLClassX toUpdate = em.find(OWLClassX.class, entityX.getUri());
+        toUpdate.setInstant(newInstant);
+        em.getTransaction().commit();
+
+        final OWLClassX cachedResult = em.find(OWLClassX.class, entityX.getUri());
+        assertEquals(newInstant, cachedResult.getInstant());
+        em.getEntityManagerFactory().getCache().evict(OWLClassX.class);
+        final OWLClassX result = em.find(OWLClassX.class, entityX.getUri());
+        assertEquals(newInstant, result.getInstant());
     }
 }
