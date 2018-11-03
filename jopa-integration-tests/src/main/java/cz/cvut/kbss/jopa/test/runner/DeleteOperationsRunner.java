@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -584,5 +586,21 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         assertNotNull(result);
         assertNull(result.getSimpleList());
         assertNull(result.getReferencedList());
+    }
+
+    @Test
+    public void removeClearsPluralAnnotationPropertyValues() {
+        this.em = getEntityManager("removeClearsPluralAnnotationPropertyValues", false);
+        final Set<String> annotations = IntStream.range(0, 5).mapToObj(i -> "Source" + i).collect(Collectors.toSet());
+        entityN.setPluralAnnotationProperty(annotations);
+        persist(entityN);
+
+        em.getTransaction().begin();
+        final OWLClassN toRemove = em.find(OWLClassN.class, entityN.getId());
+        em.remove(toRemove);
+        em.getTransaction().commit();
+
+        assertTrue(em.createNativeQuery("SELECT * WHERE { ?x ?hasSource ?source . }")
+                     .setParameter("hasSource", URI.create(Vocabulary.DC_SOURCE)).getResultList().isEmpty());
     }
 }

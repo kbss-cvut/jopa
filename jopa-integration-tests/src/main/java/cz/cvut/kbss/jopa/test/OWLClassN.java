@@ -36,6 +36,9 @@ public class OWLClassN {
     @OWLDataProperty(iri = Vocabulary.P_N_STRING_ATTRIBUTE)
     private String stringAttribute;
 
+    @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+    private Set<String> pluralAnnotationProperty;
+
     @Inferred
     @Properties(fetchType = FetchType.LAZY)
     private Map<String, Set<String>> properties;
@@ -70,6 +73,14 @@ public class OWLClassN {
 
     public void setStringAttribute(String stringAttribute) {
         this.stringAttribute = stringAttribute;
+    }
+
+    public Set<String> getPluralAnnotationProperty() {
+        return pluralAnnotationProperty;
+    }
+
+    public void setPluralAnnotationProperty(Set<String> pluralAnnotationProperty) {
+        this.pluralAnnotationProperty = pluralAnnotationProperty;
     }
 
     public Map<String, Set<String>> getProperties() {

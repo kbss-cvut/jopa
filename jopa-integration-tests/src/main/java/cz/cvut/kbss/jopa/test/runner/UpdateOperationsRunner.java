@@ -1331,4 +1331,26 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassX result = em.find(OWLClassX.class, entityX.getUri());
         assertEquals(newInstant, result.getInstant());
     }
+
+    @Test
+    public void updateSupportsPluralAnnotationProperty() {
+        this.em = getEntityManager("updateSupportsPluralAnnotationProperty", true);
+        final Set<String> annotations = IntStream.range(0, 5).mapToObj(i -> "Source" + i).collect(Collectors.toSet());
+        entityN.setPluralAnnotationProperty(annotations);
+        persist(entityN);
+
+        final String added = "Added Source";
+        final String removed = annotations.iterator().next();
+        annotations.remove(removed);
+        annotations.add(added);
+        entityN.getPluralAnnotationProperty().remove(removed);
+        entityN.getPluralAnnotationProperty().add(added);
+        em.getTransaction().begin();
+        final OWLClassN merged = em.merge(entityN);
+        assertEquals(annotations, merged.getPluralAnnotationProperty());
+        em.getTransaction().commit();
+
+        final OWLClassN result = em.find(OWLClassN.class, entityN.getId());
+        assertEquals(annotations, result.getPluralAnnotationProperty());
+    }
 }
