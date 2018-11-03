@@ -50,8 +50,6 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ObjectOntologyMapperTest {
@@ -92,7 +90,7 @@ public class ObjectOntologyMapperTest {
     private ObjectOntologyMapperImpl mapper;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         entityA = new OWLClassA();
         entityA.setUri(IDENTIFIER);
         entityA.setStringAttribute("SomeStringAttribute");
@@ -191,7 +189,7 @@ public class ObjectOntologyMapperTest {
     }
 
     @Test
-    public void testPersistEntity() throws Exception {
+    public void testPersistEntity() {
         final AxiomValueGatherer madMock = mock(AxiomValueGatherer.class);
         when(entityDeconstructorMock.mapEntityToAxioms(IDENTIFIER, entityA, etAMock, aDescriptor))
                 .thenReturn(madMock);
@@ -271,7 +269,7 @@ public class ObjectOntologyMapperTest {
 
     @Test(expected = StorageAccessException.class)
     public void throwsStorageAccessWhenRemovingEntity() throws Exception {
-        doThrow(OntoDriverException.class).when(connectionMock).remove(any(AxiomDescriptor.class));
+        doThrow(OntoDriverException.class).when(connectionMock).remove(any());
         mapper.removeEntity(IDENTIFIER, OWLClassA.class, aDescriptor);
     }
 
@@ -289,7 +287,7 @@ public class ObjectOntologyMapperTest {
     }
 
     @Test
-    public void removeEntityCreatesDescriptorForRemovalOfAllEntityAttributes() throws Exception {
+    public void removeEntityCreatesDescriptorForRemovalOfAllEntityAttributes() {
         when(descriptorFactoryMock
                 .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, aDescriptor, true),
                         etAMock)).thenReturn(axiomDescriptor);

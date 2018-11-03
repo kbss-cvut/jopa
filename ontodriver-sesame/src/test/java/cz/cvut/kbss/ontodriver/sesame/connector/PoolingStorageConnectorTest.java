@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class PoolingStorageConnectorTest {
@@ -189,8 +188,8 @@ public class PoolingStorageConnectorTest {
         connector.commit();
         verify(writeLock).lock();
         verify(centralMock).begin();
-        verify(centralMock).addStatements(anyListOf(Statement.class));
-        verify(centralMock).removeStatements(anyListOf(Statement.class));
+        verify(centralMock).addStatements(anyCollection());
+        verify(centralMock).removeStatements(anyCollection());
         verify(centralMock).commit();
         verify(writeLock).unlock();
         assertFalse(transaction.isActive());
@@ -204,8 +203,8 @@ public class PoolingStorageConnectorTest {
             connector.commit();
         } finally {
             verify(centralMock).begin();
-            verify(centralMock).addStatements(anyListOf(Statement.class));
-            verify(centralMock).removeStatements(anyListOf(Statement.class));
+            verify(centralMock).addStatements(anyCollection());
+            verify(centralMock).removeStatements(anyCollection());
             verify(centralMock).commit();
             verify(writeLock).unlock();
             assertEquals(TransactionState.ABORTED, transaction.getState());
@@ -279,8 +278,8 @@ public class PoolingStorageConnectorTest {
     @Test
     public void findStatementsReusesRepositoryConnectionDuringTransaction() throws Exception {
         final RepositoryConnection conn = mock(RepositoryConnection.class);
-        when(conn.getStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
-                .thenReturn(new RepositoryResult<>(mock(CloseableIteration.class)));
+        when(conn.getStatements(any(Resource.class), any(IRI.class), any(), anyBoolean()))
+                .thenReturn(new RepositoryResult<Statement>(mock(CloseableIteration.class)));
         when(centralMock.acquireConnection()).thenReturn(conn);
         final Resource res = vf.createIRI(TestUtils.randomUri());
         final IRI property = vf.createIRI(TestUtils.randomUri());
@@ -293,7 +292,7 @@ public class PoolingStorageConnectorTest {
     @Test(expected = SesameDriverException.class)
     public void exceptionInFindStatementsCausesTransactionRollback() throws Exception {
         final RepositoryConnection conn = mock(RepositoryConnection.class);
-        when(conn.getStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
+        when(conn.getStatements(any(Resource.class), any(IRI.class), any(), anyBoolean()))
                 .thenThrow(new RepositoryException());
         when(centralMock.acquireConnection()).thenReturn(conn);
         final Resource res = vf.createIRI(TestUtils.randomUri());
@@ -301,8 +300,7 @@ public class PoolingStorageConnectorTest {
         final Connector spy = spy(connector);
         doCallRealMethod().when(spy).begin();
         spy.begin();
-        when(spy.findStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
-                .thenCallRealMethod();
+        doCallRealMethod().when(spy).findStatements(any(Resource.class), any(IRI.class), any(), anyBoolean());
         try {
             spy.findStatements(res, property, null, false);
         } finally {

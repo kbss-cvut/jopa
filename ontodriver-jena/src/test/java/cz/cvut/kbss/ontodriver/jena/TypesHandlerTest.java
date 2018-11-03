@@ -27,9 +27,6 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class TypesHandlerTest {
@@ -69,7 +66,7 @@ public class TypesHandlerTest {
 
     private Set<Statement> generateTypesStatements() {
         final Set<Statement> statements = statementsForTypes();
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
         return statements;
     }
 
@@ -147,7 +144,7 @@ public class TypesHandlerTest {
     @Test
     public void getTypesLoadsTypesWithInferenceWhenInferredSwitchIsOn() {
         final Set<Statement> statements = statementsForTypes();
-        when(inferredConnectorMock.findWithInference(any(), any(), any(), anyString())).thenReturn(statements);
+        when(inferredConnectorMock.findWithInference(any(), any(), any(), any())).thenReturn(statements);
         final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, null, true);
         verifyLoadedTypes(statements, result, true);
         verify(connectorMock, never()).find(SUBJECT_RESOURCE, RDF.type, null, null);

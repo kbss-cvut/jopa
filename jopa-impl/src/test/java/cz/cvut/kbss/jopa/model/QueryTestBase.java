@@ -68,7 +68,7 @@ public abstract class QueryTestBase {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(connectionWrapperMock.createStatement()).thenReturn(statementMock);
-        when(statementMock.executeQuery(anyString())).thenReturn(resultSetMock);
+        when(statementMock.executeQuery(any())).thenReturn(resultSetMock);
         doAnswer((invocationOnMock) -> {
             resultSetMock.close();
             return null;

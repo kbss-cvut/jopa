@@ -35,9 +35,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.*;
 
@@ -84,7 +81,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         for (int i = 0; i < count; i++) {
             final String u = "http://uri" + i;
             uris.add(u);
-            when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(u)), any(Descriptor.class)))
+            when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(u)), any()))
                     .thenReturn(new OWLClassA(URI.create(u)));
             hasNext.add(true);
         }
@@ -178,7 +175,7 @@ public class TypedQueryImplTest extends QueryTestBase {
         final Boolean result = query.getSingleResult();
         assertNotNull(result);
         assertTrue(result);
-        verify(uowMock, never()).readObject(eq(Boolean.class), anyObject(), any(Descriptor.class));
+        verify(uowMock, never()).readObject(eq(Boolean.class), any(), any(Descriptor.class));
     }
 
     private void initAskQueryData(boolean result) throws Exception {

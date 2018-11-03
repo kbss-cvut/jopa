@@ -43,7 +43,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class CloneBuilderTest {
@@ -105,7 +104,7 @@ public class CloneBuilderTest {
         this.builder = new CloneBuilderImpl(uow);
         initValues();
         final CollectionFactory cf = new CollectionFactory(uow);
-        when(uow.createIndirectCollection(any(), any(), any(Field.class))).thenAnswer(call -> {
+        when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(call -> {
             final Object[] args = call.getArguments();
             return cf.createIndirectCollection(args[0], args[1], (Field) args[2]);
         });
