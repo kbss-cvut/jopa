@@ -589,16 +589,19 @@ public class MetamodelFactory {
 
     public static void initOWLClassNMock(EntityTypeImpl<OWLClassN> et, SingularAttributeImpl annotationAtt,
                                          SingularAttributeImpl annotationUriAtt, SingularAttributeImpl stringAtt,
+                                         AbstractPluralAttribute pluralAnnotationAtt,
                                          PropertiesSpecification props, Identifier idN)
             throws Exception {
+        when(et.getJavaType()).thenReturn(OWLClassN.class);
         when(et.getIdentifier()).thenReturn(idN);
         when(idN.getJavaField()).thenReturn(OWLClassN.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassN.getClassIri()));
         when(et.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                        props, idN)));
+                        pluralAnnotationAtt, props, idN)));
         when(et.getAttributes()).thenReturn(new HashSet<>(
-                Arrays.<Attribute<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt)));
+                Arrays.<Attribute<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
+                        pluralAnnotationAtt)));
 
         when(annotationAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationPropertyField());
         when(annotationAtt.getJavaType()).thenReturn(OWLClassN.getAnnotationPropertyField().getType());
@@ -608,6 +611,7 @@ public class MetamodelFactory {
         when(annotationAtt.getBindableJavaType()).thenReturn(String.class);
         when(annotationAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassN.getAnnotationPropertyField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(annotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(annotationAtt.getDeclaringType()).thenReturn(et);
 
         when(annotationUriAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationUriField());
@@ -618,6 +622,7 @@ public class MetamodelFactory {
         when(annotationUriAtt.getBindableJavaType()).thenReturn(String.class);
         when(annotationUriAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassN.getAnnotationUriField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(annotationUriAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(annotationUriAtt.getDeclaringType()).thenReturn(et);
 
         when(stringAtt.getJavaField()).thenReturn(OWLClassN.getStringAttributeField());
@@ -628,7 +633,23 @@ public class MetamodelFactory {
         when(stringAtt.getBindableJavaType()).thenReturn(String.class);
         when(stringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassN.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(stringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(stringAtt.getDeclaringType()).thenReturn(et);
+
+        when(pluralAnnotationAtt.getJavaField()).thenReturn(OWLClassN.getPluralAnnotationField());
+        when(pluralAnnotationAtt.getJavaType()).thenReturn(OWLClassN.getPluralAnnotationField().getType());
+        when(et.getAttribute(OWLClassN.getPluralAnnotationField().getName())).thenReturn(pluralAnnotationAtt);
+        when(pluralAnnotationAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
+        when(pluralAnnotationAtt.isCollection()).thenReturn(true);
+        when(pluralAnnotationAtt.getBindableJavaType()).thenReturn(String.class);
+        when(pluralAnnotationAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        final Type elemType = mock(Type.class);
+        when(elemType.getJavaType()).thenReturn(String.class);
+        when(pluralAnnotationAtt.getElementType()).thenReturn(elemType);
+        when(pluralAnnotationAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassN.getPluralAnnotationField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(pluralAnnotationAtt.getDeclaringType()).thenReturn(et);
+        when(pluralAnnotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
 
         when(props.getJavaField()).thenReturn(OWLClassN.getPropertiesField());
         when(props.getName()).thenReturn(OWLClassN.getPropertiesField().getName());

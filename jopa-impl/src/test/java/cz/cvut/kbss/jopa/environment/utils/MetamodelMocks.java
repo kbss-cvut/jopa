@@ -29,7 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -161,6 +161,8 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassN, String> nStringAtt;
     @Mock
+    private AbstractPluralAttribute<OWLClassN, Set, String> nPluralAnnotationAtt;
+    @Mock
     private PropertiesSpecification<OWLClassN, Map, String, String> nProperties;
 
     @Mock
@@ -248,7 +250,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
                 mIntegerSetAtt, idM);
-        MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nProperties, idN);
+        MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt, nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
         MetamodelFactory
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
@@ -606,6 +608,10 @@ public class MetamodelMocks {
 
         public SingularAttributeImpl<OWLClassN, String> stringAttribute() {
             return MetamodelMocks.this.nStringAtt;
+        }
+
+        public AbstractPluralAttribute<OWLClassN, Set, String> pluralAnnotationAttribute() {
+            return MetamodelMocks.this.nPluralAnnotationAtt;
         }
 
         public PropertiesSpecification<OWLClassN, Map, String, String> properties() {

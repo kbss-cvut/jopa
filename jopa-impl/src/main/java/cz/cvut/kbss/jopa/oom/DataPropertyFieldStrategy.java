@@ -28,7 +28,7 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
         return attribute.getJavaType().isAssignableFrom(value.getClass()) || canBeConverted(value);
     }
 
-    private boolean canBeConverted(Object value) {
+    boolean canBeConverted(Object value) {
         return attribute.getConverter() != null && attribute.getConverter().supportsAxiomValueType(value.getClass());
     }
 

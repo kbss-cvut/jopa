@@ -100,8 +100,7 @@ class EntityConstructor {
     }
 
     private static <T> Map<URI, FieldSpecification<? super T, ?>> indexEntityAttributes(EntityType<T> et) {
-        final Map<URI, FieldSpecification<? super T, ?>> atts = new HashMap<>(et.getAttributes()
-                                                                                .size());
+        final Map<URI, FieldSpecification<? super T, ?>> atts = new HashMap<>(et.getAttributes().size());
         for (Attribute<? super T, ?> at : et.getAttributes()) {
             atts.put(at.getIRI().toURI(), at);
         }

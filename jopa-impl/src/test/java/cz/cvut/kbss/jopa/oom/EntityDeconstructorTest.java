@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,20 +29,22 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class EntityDeconstructorTest {
+class EntityDeconstructorTest {
 
     private static final URI CONTEXT = URI
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/contextOne");
@@ -53,7 +55,6 @@ public class EntityDeconstructorTest {
     private static OWLClassE entityE;
     private static OWLClassD entityD;
     private static URI owlClassAAttIdentifier;
-    private static OWLClassK entityK;
     private static OWLClassM entityM;
 
     private MetamodelMocks mocks;
@@ -63,8 +64,8 @@ public class EntityDeconstructorTest {
 
     private EntityDeconstructor entityBreaker;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() throws Exception {
         entityA = new OWLClassA();
         entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityA"));
         entityA.setStringAttribute("someStringAttribute");
@@ -80,16 +81,13 @@ public class EntityDeconstructorTest {
         entityD.setOwlClassA(entityA);
         owlClassAAttIdentifier = URI.create(OWLClassD.getOwlClassAField()
                                                      .getAnnotation(OWLObjectProperty.class).iri());
-        entityK = new OWLClassK();
-        entityK.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityD"));
-        entityK.setOwlClassE(entityE);
         entityM = new OWLClassM();
         entityM.initializeTestValues(true);
 
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.mocks = new MetamodelMocks();
         when(oomMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
@@ -103,7 +101,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithDataProperty() throws Exception {
+    void testMapEntityWithDataProperty() throws Exception {
         final Descriptor aDescriptor = new EntityDescriptor();
         final AxiomValueGatherer builder = entityBreaker
                 .mapEntityToAxioms(entityA.getUri(), entityA, mocks.forOwlClassA().entityType(), aDescriptor);
@@ -117,7 +115,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithDataPropertyNullValue() throws Exception {
+    void testMapEntityWithDataPropertyNullValue() throws Exception {
         final OWLClassA entity = new OWLClassA();
         entity.setUri(entityA.getUri());
         final Descriptor aDescriptor = new EntityDescriptor();
@@ -135,7 +133,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithDataPropertyAndTypes() throws Exception {
+    void testMapEntityWithDataPropertyAndTypes() throws Exception {
         final Descriptor aDescriptor = new EntityDescriptor();
         final Set<String> types = createTypes();
         entityA.setTypes(types);
@@ -171,7 +169,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithDataPropertyAndTypesPropertyInDifferentContext() throws Exception {
+    void testMapEntityWithDataPropertyAndTypesPropertyInDifferentContext() throws Exception {
         final Descriptor aDescriptor = new EntityDescriptor();
         aDescriptor.addAttributeContext(OWLClassA.getStrAttField(), CONTEXT);
         final Set<String> types = createTypes();
@@ -188,7 +186,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithObjectProperty() throws Exception {
+    void testMapEntityWithObjectProperty() throws Exception {
         final Descriptor dDescriptor = new EntityDescriptor();
         when(oomMock.isManaged(entityD.getOwlClassA())).thenReturn(true);
         final AxiomValueGatherer builder = entityBreaker
@@ -212,7 +210,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithObjectPropertyNullValue() throws Exception {
+    void testMapEntityWithObjectPropertyNullValue() throws Exception {
         final OWLClassD entity = new OWLClassD();
         entity.setUri(entityD.getUri());
         final Descriptor dDescriptor = new EntityDescriptor();
@@ -231,7 +229,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithObjectPropertyAndContext() throws Exception {
+    void testMapEntityWithObjectPropertyAndContext() throws Exception {
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT);
         final AxiomValueGatherer builder = entityBreaker.mapEntityToAxioms(entityD.getUri(),
                 entityD, mocks.forOwlClassD().entityType(), dDescriptor);
@@ -245,7 +243,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithProperties() throws Exception {
+    void testMapEntityWithProperties() throws Exception {
         final Descriptor bDescriptor = new EntityDescriptor();
         final Map<String, Set<String>> props = Generators.generateStringProperties();
         entityB.setProperties(props);
@@ -271,7 +269,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithNullProperties() throws Exception {
+    void testMapEntityWithNullProperties() throws Exception {
         final Descriptor bDescriptor = new EntityDescriptor();
         final AxiomValueGatherer builder = entityBreaker.mapEntityToAxioms(entityB.getUri(),
                 entityB, mocks.forOwlClassB().entityType(), bDescriptor);
@@ -282,7 +280,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void testMapEntityWithPropertiesMultipleValuesPerProperty() throws Exception {
+    void testMapEntityWithPropertiesMultipleValuesPerProperty() throws Exception {
         final Map<String, Set<String>> props = createProperties();
         entityB.setProperties(props);
         final Descriptor bDescriptor = new EntityDescriptor();
@@ -308,7 +306,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void mapsEntityDataPropertyFieldToAxiomDescriptor() throws Exception {
+    void mapsEntityDataPropertyFieldToAxiomDescriptor() throws Exception {
         final Descriptor aDescriptor = new EntityDescriptor();
         final AxiomValueGatherer builder = entityBreaker.mapFieldToAxioms(entityA.getUri(), entityA,
                 OWLClassA.getStrAttField(), mocks.forOwlClassA().entityType(), aDescriptor);
@@ -318,7 +316,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void mapsEntityDataPropertyWithNullValueToAxiomDescriptor() throws Exception {
+    void mapsEntityDataPropertyWithNullValueToAxiomDescriptor() throws Exception {
         final Descriptor aDescriptor = new EntityDescriptor();
         entityA.setStringAttribute(null);
         final AxiomValueGatherer builder = entityBreaker.mapFieldToAxioms(entityA.getUri(), entityA,
@@ -335,7 +333,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void mapsEntityObjectPropertyValueInContextToAxiomDescriptor() throws Exception {
+    void mapsEntityObjectPropertyValueInContextToAxiomDescriptor() throws Exception {
         final Descriptor dDescriptor = new EntityDescriptor();
         dDescriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
         when(oomMock.isManaged(entityD.getOwlClassA())).thenReturn(true);
@@ -351,7 +349,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void mapsEntityWithStringKeyAndBasicDataAttributes() throws Exception {
+    void mapsEntityWithStringKeyAndBasicDataAttributes() throws Exception {
         final Descriptor desc = new EntityDescriptor();
         final AxiomValueGatherer builder =
                 entityBreaker
@@ -397,7 +395,7 @@ public class EntityDeconstructorTest {
     }
 
     @Test
-    public void mapEntityToAxiomsIncludesAttributesInheritedFromMappedSuperclass() throws Exception {
+    void mapEntityToAxiomsIncludesAttributesInheritedFromMappedSuperclass() throws Exception {
         final Descriptor desc = new EntityDescriptor();
         final OWLClassQ q = initQ();
 
@@ -435,5 +433,29 @@ public class EntityDeconstructorTest {
     private static AxiomValueDescriptor getAxiomValueDescriptor(AxiomValueGatherer builder)
             throws Exception {
         return OOMTestUtils.getAxiomValueDescriptor(builder);
+    }
+
+    @Test
+    void mapEntityToAxiomsSupportsPluralAnnotationProperty() throws Exception {
+        final Descriptor descriptor = new EntityDescriptor();
+        final OWLClassN n = new OWLClassN();
+        n.setId(Generators.createIndividualIdentifier().toString());
+        n.setPluralAnnotation(
+                IntStream.range(0, 5).mapToObj(i -> Generators.createIndividualIdentifier().toString()).collect(
+                        Collectors.toSet()));
+        final AxiomValueGatherer builder = entityBreaker
+                .mapEntityToAxioms(URI.create(n.getId()), n, mocks.forOwlClassN().entityType(), descriptor);
+
+        final AxiomValueDescriptor valueDescriptor = getAxiomValueDescriptor(builder);
+        final Assertion assertion =
+                Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), false);
+        assertTrue(valueDescriptor.getAssertions().contains(assertion));
+        assertAll(() -> assertEquals(n.getPluralAnnotation().size(),
+                valueDescriptor.getAssertionValues(assertion).size()),
+                () -> {
+                    final List<Value<String>> values =
+                            n.getPluralAnnotation().stream().map(Value::new).collect(Collectors.toList());
+                    assertTrue(valueDescriptor.getAssertionValues(assertion).containsAll(values));
+                });
     }
 }

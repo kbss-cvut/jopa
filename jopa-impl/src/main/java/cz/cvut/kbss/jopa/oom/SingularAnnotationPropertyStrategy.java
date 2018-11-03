@@ -63,8 +63,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
             valueBuilder.addValue(createAssertion(),
                     new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))), getAttributeContext());
         } else {
-            valueBuilder
-                    .addValue(createAssertion(), new Value<>(toAxiomValue(value)), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), new Value<>(toAxiomValue(value)), getAttributeContext());
         }
     }
 
