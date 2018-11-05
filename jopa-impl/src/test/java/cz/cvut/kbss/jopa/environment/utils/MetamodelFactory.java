@@ -98,8 +98,8 @@ public class MetamodelFactory {
      */
     public static void initOWLClassBMocks(EntityTypeImpl<OWLClassB> etMock, AbstractAttribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-                                                                                                NoSuchFieldException,
-                                                                                                SecurityException {
+            NoSuchFieldException,
+            SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -682,7 +682,7 @@ public class MetamodelFactory {
                                          PropertiesSpecification props,
                                          SingularAttribute uriAtt, PluralAttribute urlsAtt,
                                          ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
-                                                                                                                Exception {
+            Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
@@ -988,7 +988,8 @@ public class MetamodelFactory {
     }
 
     static void initOwlClassTMock(EntityTypeImpl<OWLClassT> et, SingularAttributeImpl localDateAtt,
-                                  SingularAttributeImpl localDateTimeAtt, Identifier id) throws Exception {
+                                  SingularAttributeImpl localDateTimeAtt, SingularAttributeImpl owlClassSAtt,
+                                  Identifier id) throws Exception {
         when(et.getIdentifier()).thenReturn(id);
         when(id.isGenerated()).thenReturn(true);
         when(et.getJavaType()).thenReturn(OWLClassT.class);
@@ -1015,7 +1016,7 @@ public class MetamodelFactory {
         when(localDateTimeAtt.getJavaField()).thenReturn(OWLClassT.getLocalDateTimeField());
         when(localDateTimeAtt.getJavaType()).thenReturn(OWLClassT.getLocalDateTimeField().getType());
         when(localDateTimeAtt.getName()).thenReturn(OWLClassT.getLocalDateTimeField().getName());
-        when(et.getAttribute(OWLClassT.getLocalDateTimeField().getName())).thenReturn(localDateAtt);
+        when(et.getAttribute(OWLClassT.getLocalDateTimeField().getName())).thenReturn(localDateTimeAtt);
         when(localDateTimeAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(localDateTimeAtt.isCollection()).thenReturn(false);
         when(localDateTimeAtt.getBindableJavaType()).thenReturn(LocalDateTime.class);
@@ -1025,5 +1026,18 @@ public class MetamodelFactory {
         when(localDateTimeAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(localDateTimeAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(localDateTimeAtt.getConverter()).thenReturn(new LocalDateTimeConverter());
+
+        when(owlClassSAtt.getJavaField()).thenReturn(OWLClassT.getOwlClassSField());
+        when(owlClassSAtt.getJavaType()).thenReturn(OWLClassT.getOwlClassSField().getType());
+        when(owlClassSAtt.getName()).thenReturn(OWLClassT.getOwlClassSField().getName());
+        when(et.getAttribute(OWLClassT.getOwlClassSField().getName())).thenReturn(owlClassSAtt);
+        when(owlClassSAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(owlClassSAtt.isCollection()).thenReturn(false);
+        when(owlClassSAtt.getBindableJavaType()).thenReturn(OWLClassS.class);
+        when(owlClassSAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassT.getOwlClassSField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(owlClassSAtt.getDeclaringType()).thenReturn(et);
+        when(owlClassSAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(owlClassSAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
     }
 }

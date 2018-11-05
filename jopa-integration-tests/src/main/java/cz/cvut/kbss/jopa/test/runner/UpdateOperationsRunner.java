@@ -1353,4 +1353,24 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassN result = em.find(OWLClassN.class, entityN.getId());
         assertEquals(annotations, result.getPluralAnnotationProperty());
     }
+
+    @Test
+    public void updateSupportsSettingSubclassOnPolymorphicAttribute() {
+        this.em = getEntityManager("updateSupportsSettingSubclassOnPolymorphicAttribute", true);
+        final OWLClassU u = new OWLClassU();
+        final OWLClassU reference = new OWLClassU();
+        em.getTransaction().begin();
+        em.persist(reference);
+        em.getTransaction().commit();
+
+        em.getTransaction().begin();
+        final OWLClassU managedRef = em.merge(reference);
+        u.setOwlClassS(managedRef);
+        em.persist(u);
+        em.getTransaction().commit();
+
+        final OWLClassU result = em.find(OWLClassU.class, u.getUri());
+        assertNotNull(result);
+        assertEquals(reference.getUri(), result.getOwlClassS().getUri());
+    }
 }

@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.environment;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -20,6 +21,9 @@ public class OWLClassT {
 
     @OWLDataProperty(iri = Vocabulary.P_T_LOCAL_DATETIME_ATTRIBUTE)
     private LocalDateTime localDateTime;
+
+    @OWLObjectProperty(iri = Vocabulary.P_T_HAS_S)
+    private OWLClassS owlClassS;
 
     public URI getUri() {
         return uri;
@@ -45,6 +49,14 @@ public class OWLClassT {
         this.localDateTime = localDateTime;
     }
 
+    public OWLClassS getOwlClassS() {
+        return owlClassS;
+    }
+
+    public void setOwlClassS(OWLClassS owlClassS) {
+        this.owlClassS = owlClassS;
+    }
+
     @Override
     public String toString() {
         return "OWLClassT{" +
@@ -68,5 +80,9 @@ public class OWLClassT {
 
     public static Field getLocalDateTimeField() throws NoSuchFieldException {
         return OWLClassT.class.getDeclaredField("localDateTime");
+    }
+
+    public static Field getOwlClassSField() throws NoSuchFieldException {
+        return OWLClassT.class.getDeclaredField("owlClassS");
     }
 }

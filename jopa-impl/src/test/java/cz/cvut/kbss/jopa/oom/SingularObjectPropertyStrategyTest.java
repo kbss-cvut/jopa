@@ -1,22 +1,18 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassP;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -30,18 +26,17 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class SingularObjectPropertyStrategyTest {
 
@@ -61,15 +56,15 @@ public class SingularObjectPropertyStrategyTest {
 
     private AxiomValueGatherer gatherer;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.metamodelMocks = new MetamodelMocks();
         this.gatherer = spy(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), null));
     }
 
     @Test
-    public void buildInstanceFieldSupportsPlainIdentifierValues() throws Exception {
+    void buildInstanceFieldSupportsPlainIdentifierValues() throws Exception {
         final FieldStrategy<? extends FieldSpecification<? super OWLClassP, ?>, OWLClassP> strategy =
                 strategy(metamodelMocks.forOwlClassP().entityType(), metamodelMocks.forOwlClassP().pUriAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);
@@ -92,16 +87,14 @@ public class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    public void buildsAxiomFromPlainIdentifierValue() throws Exception {
+    void buildsAxiomFromPlainIdentifierValue() throws Exception {
         final OWLClassP p = new OWLClassP();
         p.setUri(IDENTIFIER);
         p.setIndividualUri(VALUE);
         final FieldStrategy<? extends FieldSpecification<? super OWLClassP, ?>, OWLClassP> strategy =
                 strategy(metamodelMocks.forOwlClassP().entityType(), metamodelMocks.forOwlClassP().pUriAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);
-        when(referenceResolverMock
-                .shouldSaveReference(URI.class, p.getIndividualUri(), null))
-                .thenReturn(true);
+        when(referenceResolverMock.shouldSaveReference(p.getIndividualUri(), null)).thenReturn(true);
         strategy.buildAxiomValuesFromInstance(p, gatherer);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
         assertEquals(1, valueDescriptor.getAssertions().size());
@@ -112,7 +105,7 @@ public class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomValuesChecksWhetherReferenceCanBeSaved() throws Exception {
+    void buildAxiomValuesChecksWhetherReferenceCanBeSaved() throws Exception {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         d.setOwlClassA(Generators.generateOwlClassAInstance());
@@ -122,13 +115,11 @@ public class SingularObjectPropertyStrategyTest {
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 
-        verify(referenceResolverMock)
-                .shouldSaveReference(OWLClassA.class, d.getOwlClassA(),
-                        descriptor.getContext());
+        verify(referenceResolverMock).shouldSaveReference(d.getOwlClassA(), descriptor.getContext());
     }
 
     @Test
-    public void buildAxiomValuesRegistersPendingChangeWhenReferenceCannotBeSavedDirectly() throws Exception {
+    void buildAxiomValuesRegistersPendingChangeWhenReferenceCannotBeSavedDirectly() throws Exception {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         d.setOwlClassA(Generators.generateOwlClassAInstance());
@@ -136,7 +127,7 @@ public class SingularObjectPropertyStrategyTest {
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
-        when(referenceResolverMock.shouldSaveReference(att.getJavaType(), d.getOwlClassA(), null)).thenReturn(false);
+        when(referenceResolverMock.shouldSaveReference(d.getOwlClassA(), null)).thenReturn(false);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 
@@ -146,14 +137,14 @@ public class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomValuesAddsNullValueToAxiomBuilderForNullAttributeValue() throws Exception {
+    void buildAxiomValuesAddsNullValueToAxiomBuilderForNullAttributeValue() throws Exception {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         final Attribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
-        when(referenceResolverMock.shouldSaveReference(att.getJavaType(), d.getOwlClassA(), null)).thenReturn(true);
+        when(referenceResolverMock.shouldSaveReference(d.getOwlClassA(), null)).thenReturn(true);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 
@@ -161,7 +152,7 @@ public class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomValueAddsNullValueToAxiomBuilderWhenRefererenceIsRegisteredAsPending() throws Exception {
+    void buildAxiomValueAddsNullValueToAxiomBuilderWhenReferenceIsRegisteredAsPending() throws Exception {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         final OWLClassA a = new OWLClassA();
@@ -171,10 +162,29 @@ public class SingularObjectPropertyStrategyTest {
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
-        when(referenceResolverMock.shouldSaveReference(att.getJavaType(), a, null)).thenReturn(false);
+        when(referenceResolverMock.shouldSaveReference(a, null)).thenReturn(false);
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 
         verify(gatherer).addValue(strategy.createAssertion(), Value.nullValue(), null);
+    }
+
+    @Test
+    void buildAxiomValueAddsReferenceForPolymorphicAttribute() throws Exception {
+        final OWLClassT instance = new OWLClassT();
+        instance.setUri(IDENTIFIER);
+        final OWLClassR r = new OWLClassR(Generators.createIndividualIdentifier());
+        instance.setOwlClassS(r);
+        when(mapperMock.getEntityType(OWLClassR.class)).thenReturn(metamodelMocks.forOwlClassR().entityType());
+        when(mapperMock.getEntityType(OWLClassS.class)).thenReturn(metamodelMocks.forOwlClassS().entityType());
+        when(referenceResolverMock.shouldSaveReference(any(), any())).thenReturn(true);
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassT, ?>, OWLClassT> sut = strategy(
+                metamodelMocks.forOwlClassT().entityType(), metamodelMocks.forOwlClassT().tOwlClassSAtt());
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        sut.buildAxiomValuesFromInstance(instance, gatherer);
+
+        verify(referenceResolverMock).shouldSaveReference(r, null);
+        verify(referenceResolverMock, never()).registerPendingReference(any(), any(), any(), any());
+        verify(gatherer).addValue(sut.createAssertion(), new Value<>(NamedResource.create(r.getUri())), null);
     }
 }

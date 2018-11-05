@@ -45,6 +45,7 @@ public class Vocabulary {
 
     public static final String P_T_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDate";
     public static final String P_T_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDateTime";
+    public static final String P_T_HAS_S = ATTRIBUTE_BASE + "tHasS";
 
     public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
 

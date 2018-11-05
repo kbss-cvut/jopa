@@ -234,6 +234,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassT, LocalDate> tLocalDateAtt;
     @Mock
     private SingularAttributeImpl<OWLClassT, LocalDateTime> tLocalDateTimeAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassT, OWLClassS> tOwlClassSAtt;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -250,7 +252,8 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
                 mIntegerSetAtt, idM);
-        MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt, nProperties, idN);
+        MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
+                nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
         MetamodelFactory
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
@@ -260,7 +263,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassSListeners(etS, parentListenerMock);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
-        MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, idT);
+        MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -753,6 +756,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassT, LocalDateTime> tLocalDateTimeAtt() {
             return MetamodelMocks.this.tLocalDateTimeAtt;
+        }
+
+        public AbstractAttribute<OWLClassT, OWLClassS> tOwlClassSAtt() {
+            return MetamodelMocks.this.tOwlClassSAtt;
         }
     }
 }
