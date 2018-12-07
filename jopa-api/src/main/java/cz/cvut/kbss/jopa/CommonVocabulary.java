@@ -14,7 +14,7 @@ package cz.cvut.kbss.jopa;
 
 /**
  * @deprecated Use {@link cz.cvut.kbss.jopa.vocabulary.OWL}, {@link cz.cvut.kbss.jopa.vocabulary.RDF}, {@link
- * cz.cvut.kbss.jopa.vocabulary.RDFS}, {@link cz.cvut.kbss.jopa.vocabulary.XSD}
+ * cz.cvut.kbss.jopa.vocabulary.RDFS}, {@link cz.cvut.kbss.jopa.vocabulary.XSD}, and {@link cz.cvut.kbss.jopa.vocabulary.DC}
  */
 @Deprecated
 public class CommonVocabulary {

@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.utils;
 
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Test;
 
@@ -23,8 +24,7 @@ public class NamespaceResolverTest {
 
     @Test
     public void resolveReturnsOriginalIriWhenItDoesNotContainPrefix() {
-        final String iri = "http://purl.org/dc/elements/1.1/description";
-        assertEquals(iri, resolver.resolveFullIri(iri));
+        assertEquals(DC.Elements.DESCRIPTION, resolver.resolveFullIri(DC.Elements.DESCRIPTION));
     }
 
     @Test
@@ -40,10 +40,9 @@ public class NamespaceResolverTest {
 
     @Test
     public void resolveReturnsIriBasedOnRegisteredNamespace() {
-        final String namespace = "http://purl.org/dc/elements/1.1/";
-        resolver.registerNamespace("dc", namespace);
+        resolver.registerNamespace("dc", DC.Elements.NAMESPACE);
         final String iri = "dc:description";
-        assertEquals(namespace + "description", resolver.resolveFullIri(iri));
+        assertEquals(DC.Elements.NAMESPACE + "description", resolver.resolveFullIri(iri));
     }
 
     @Test
