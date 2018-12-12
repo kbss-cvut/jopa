@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.10.8 - December 12, 2018
+- Support for plural annotation properties (Feature #38).
+- Fixed incorrect rdf:Property constant.
+- Added definitions of a subset of the Dublin Core vocabulary.
+- Fixed issues with support of polymorphism in entity attributes.
+
 ## 0.10.7 - November 1, 2018
 - Added support for Java 8 Date/Time API (Feature #36).
 - Fixed issue with caching instances of classes overriding `equals`/`hashCode`.
