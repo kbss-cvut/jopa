@@ -97,7 +97,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         return result.orElse(null);
     }
 
-    private Optional<Collection<?>> createNewInstance(Class<?> type, int size) {
+    private static Optional<Collection<?>> createNewInstance(Class<?> type, int size) {
         Object[] params = null;
         Class<?>[] types = {int.class};
         // Look for constructor taking initial size as parameter

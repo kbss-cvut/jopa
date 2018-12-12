@@ -15,15 +15,14 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,7 +42,7 @@ public class OwlapiPreparedStatementTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(executorFactoryMock.getStatementExecutor(any(Statement.StatementOntology.class))).thenReturn(executorMock);
+        when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
         when(executorMock.executeQuery(anyString(), any())).thenReturn(resultSetMock);
     }
 

@@ -57,6 +57,7 @@ public class Vocabulary {
     public static final String V_HAS_THING = ATTRIBUTE_IRI_BASE + "hasThing";
 
     public static final String DC_DESCRIPTION = "http://purl.org/dc/terms/description";
+    public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
 
     public static final String P_HAS_SIMPLE_LIST =
             "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";

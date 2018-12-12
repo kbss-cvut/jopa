@@ -16,19 +16,20 @@ import com.sun.codemodel.*;
 import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
-import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,55 +44,55 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-            "assert",
-            "boolean",
-            "break",
-            "byte",
-            "case",
-            "catch",
-            "char",
-            "class",
-            "const",
-            "continue",
-            "default",
-            "do",
-            "double",
-            "else",
-            "enum",
-            "extends",
-            "final",
-            "finally",
-            "float",
-            "for",
-            "goto",
-            "if",
-            "implements",
-            "import",
-            "instanceof",
-            "int",
-            "interface",
-            "long",
-            "native",
-            "new",
-            "package",
-            "private",
-            "protected",
-            "public",
-            "return",
-            "short",
-            "static",
-            "strictfp",
-            "super",
-            "switch",
-            "synchronized",
-            "this",
-            "throw",
-            "throws",
-            "transient",
-            "try",
-            "void",
-            "volatile",
-            "while"};
+                                              "assert",
+                                              "boolean",
+                                              "break",
+                                              "byte",
+                                              "case",
+                                              "catch",
+                                              "char",
+                                              "class",
+                                              "const",
+                                              "continue",
+                                              "default",
+                                              "do",
+                                              "double",
+                                              "else",
+                                              "enum",
+                                              "extends",
+                                              "final",
+                                              "finally",
+                                              "float",
+                                              "for",
+                                              "goto",
+                                              "if",
+                                              "implements",
+                                              "import",
+                                              "instanceof",
+                                              "int",
+                                              "interface",
+                                              "long",
+                                              "native",
+                                              "new",
+                                              "package",
+                                              "private",
+                                              "protected",
+                                              "public",
+                                              "return",
+                                              "short",
+                                              "static",
+                                              "strictfp",
+                                              "super",
+                                              "switch",
+                                              "synchronized",
+                                              "this",
+                                              "throw",
+                                              "throws",
+                                              "transient",
+                                              "try",
+                                              "void",
+                                              "volatile",
+                                              "while"};
 
     private static final String PREFIX_STRING = "s_";
     private static final String PREFIX_CLASS = "c_";
@@ -457,7 +458,8 @@ public class JavaTransformer {
             // DC description
             final JClass ftDescription = cm.ref(String.class);
             final JFieldVar fvDescription = addField("description", cls, ftDescription);
-            fvDescription.annotate(OWLAnnotationProperty.class).param("iri", Constants.DC_DESCRIPTION);
+            fvDescription.annotate(OWLAnnotationProperty.class)
+                         .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
 
             // @Types Set<String> types;
             final JClass ftTypes = cm.ref(Set.class).narrow(String.class);

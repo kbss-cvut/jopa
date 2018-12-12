@@ -73,8 +73,7 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
         } else {
             final Class<?> elemType = attribute.getBindableJavaType();
             return list.stream().filter(item -> item != null && !referenceSavingResolver
-                    .shouldSaveReferenceToItem(elemType, item, listDescriptor.getContext()))
-                       .collect(Collectors.toList());
+                    .shouldSaveReferenceToItem(item, listDescriptor.getContext())).collect(Collectors.toList());
         }
     }
 

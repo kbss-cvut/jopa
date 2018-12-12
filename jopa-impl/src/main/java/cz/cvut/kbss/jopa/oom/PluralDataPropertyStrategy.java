@@ -20,14 +20,15 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPluralAttribute<? super X, ?, ?>, X> {
 
-    private final Class<?> elementType;
+    final Class<?> elementType;
 
-    private Collection<Object> values;
+    Collection<Object> values;
 
     PluralDataPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att,
                                Descriptor attributeDescriptor, EntityMappingHelper mapper) {
@@ -46,7 +47,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
 
     @Override
     boolean isValidRange(Object value) {
-        return elementType.isAssignableFrom(value.getClass());
+        return elementType.isAssignableFrom(value.getClass()) || canBeConverted(value);
     }
 
     @Override
@@ -65,6 +66,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
+                                                                 .filter(Objects::nonNull)
                                                                  .map(v -> new Value<>(toAxiomValue(v)))
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());

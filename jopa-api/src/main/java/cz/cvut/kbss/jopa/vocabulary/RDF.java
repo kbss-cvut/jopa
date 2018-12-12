@@ -53,7 +53,7 @@ public class RDF {
     /**
      * {@code rdf:Property} represents those resources that are RDF properties.
      */
-    public static final String PROPERTY = NAMESPACE + "property";
+    public static final String PROPERTY = NAMESPACE + "Property";
 
     private RDF() {
         throw new AssertionError();

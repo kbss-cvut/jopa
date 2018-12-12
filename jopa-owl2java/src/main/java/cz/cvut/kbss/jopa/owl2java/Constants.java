@@ -29,7 +29,10 @@ public class Constants {
 
     /**
      * DC Terms description property, elements-based version.
+     *
+     * @deprecated Use {@link cz.cvut.kbss.jopa.vocabulary.DC.Elements#DESCRIPTION}
      */
+    @Deprecated
     public static final String DC_DESCRIPTION = "http://purl.org/dc/elements/1.1/description";
 
     /**

@@ -22,18 +22,18 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class PluralDataPropertyStrategyTest {
+class PluralDataPropertyStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
     private static final NamedResource INDIVIDUAL = NamedResource.create(PK);
@@ -47,8 +47,8 @@ public class PluralDataPropertyStrategyTest {
     private MetamodelMocks mocks;
     private Descriptor descriptor = new EntityDescriptor();
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final Configuration configuration = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
@@ -60,7 +60,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildFieldValueCreatesCorrectCollectionTypeForSet() {
+    void buildFieldValueCreatesCorrectCollectionTypeForSet() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         strategy.addValueFromAxiom(createMSetAxiom());
         final OWLClassM m = new OWLClassM();
@@ -84,7 +84,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void addValueFromAxiomAddsAllValuesToTheCollection() {
+    void addValueFromAxiomAddsAllValuesToTheCollection() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final Set<Integer> values = addValuesFromAxioms(strategy);
 
@@ -104,7 +104,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void addValueFromAxiomSkipsValuesWithInvalidRange() {
+    void addValueFromAxiomSkipsValuesWithInvalidRange() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final Set<Integer> values = addValuesFromAxioms(strategy);
         final Assertion a = assertionForMIntegerSet();
@@ -119,7 +119,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildFieldValueDoesNothingWhenNoValuesWereAdded() {
+    void buildFieldValueDoesNothingWhenNoValuesWereAdded() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);
@@ -127,7 +127,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomValuesFromInstanceAddsAllValuesIntoAxiomValueGatherer() throws Exception {
+    void buildAxiomValuesFromInstanceAddsAllValuesIntoAxiomValueGatherer() throws Exception {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final OWLClassM m = new OWLClassM();
         m.initializeTestValues(false);
@@ -141,7 +141,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomValuesFromInstancesAddsNullValueWhenAttributeValueIsNull() throws Exception {
+    void buildAxiomValuesFromInstancesAddsNullValueWhenAttributeValueIsNull() throws Exception {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final OWLClassM m = new OWLClassM();
 
@@ -156,7 +156,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomValuesFromInstanceAddsNullValueWhenAttributeValueIsEmptyCollection() throws Exception {
+    void buildAxiomValuesFromInstanceAddsNullValueWhenAttributeValueIsEmptyCollection() throws Exception {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final OWLClassM m = new OWLClassM();
         m.setIntegerSet(Collections.emptySet());
@@ -172,7 +172,7 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
+    void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
         descriptor.setLanguage("en");
         buildAxiomsAndVerifyLanguageTag();
     }
@@ -193,8 +193,18 @@ public class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
+    void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
             throws Exception {
         buildAxiomsAndVerifyLanguageTag();
+    }
+
+    @Test
+    void addValueFromAxiomUsesConverterToTransformValueToCorrectType() {
+        final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
+        final Axiom<Short> axiom = new AxiomImpl<>(INDIVIDUAL, assertionForMIntegerSet(), new Value<>((short) 117));
+        strategy.addValueFromAxiom(axiom);
+        final OWLClassM m = new OWLClassM();
+        strategy.buildInstanceFieldValue(m);
+        assertEquals(Collections.singleton(117), m.getIntegerSet());
     }
 }

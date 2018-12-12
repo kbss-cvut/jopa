@@ -25,8 +25,8 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -36,13 +36,13 @@ import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class SimpleSetPropertyStrategyTest {
+class SimpleSetPropertyStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
 
@@ -58,8 +58,8 @@ public class SimpleSetPropertyStrategyTest {
     private MetamodelMocks mocks;
     private Descriptor descriptor = new EntityDescriptor();
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
         this.gatherer = new AxiomValueGatherer(NamedResource.create(PK), null);
@@ -68,13 +68,13 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void extractsValuesFromInstance() throws Exception {
+    void extractsValuesFromInstance() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet(true));
-        when(referenceResolverMock.shouldSaveReferenceToItem(eq(OWLClassA.class), any(), eq(null))).thenReturn(true);
+        when(referenceResolverMock.shouldSaveReferenceToItem(any(), eq(null))).thenReturn(true);
         strategy.buildAxiomValuesFromInstance(j, gatherer);
         final Set<URI> expected = j.getOwlClassA().stream().map(OWLClassA::getUri).collect(Collectors.toSet());
         verifyExtractedValues(expected);
@@ -98,14 +98,14 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void extractValuesSkipsNullItem() throws Exception {
+    void extractValuesSkipsNullItem() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet(true));
         j.getOwlClassA().add(null);
-        when(referenceResolverMock.shouldSaveReferenceToItem(eq(OWLClassA.class), any(), eq(null))).thenReturn(true);
+        when(referenceResolverMock.shouldSaveReferenceToItem(any(), eq(null))).thenReturn(true);
 
         strategy.buildAxiomValuesFromInstance(j, gatherer);
         final Set<URI> expected = j.getOwlClassA().stream().filter(Objects::nonNull).map(OWLClassA::getUri)
@@ -126,7 +126,7 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void extractValuesFromInstanceWhenSetIsNullCreatesNullValueAxiom() throws Exception {
+    void extractValuesFromInstanceWhenSetIsNullCreatesNullValueAxiom() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);
@@ -152,7 +152,7 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void buildsInstanceFieldAsSetOfUrls() throws Exception {
+    void buildsInstanceFieldAsSetOfUrls() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassP> strategy =
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().pUrlsAttribute());
         final URI property =
@@ -175,7 +175,7 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void extractsValuesFromFieldWithSetOfPlainIdentifiers() throws Exception {
+    void extractsValuesFromFieldWithSetOfPlainIdentifiers() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassP> strategy =
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().pUrlsAttribute());
         final OWLClassP p = new OWLClassP();
@@ -211,7 +211,7 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void extractValuesSkipsNullPlainIdentifiers() throws Exception {
+    void extractValuesSkipsNullPlainIdentifiers() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassP> strategy =
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().pUrlsAttribute());
         final OWLClassP p = new OWLClassP();
@@ -226,7 +226,7 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void extractValuesRegistersPendingChangesForInstancesWithNullIdentifier() throws Exception {
+    void extractValuesRegistersPendingChangesForInstancesWithNullIdentifier() {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);

@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.oom.converter.LocalDateConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,10 +92,10 @@ public class MetamodelBuilderTest {
         final Attribute<? super EntityWithNamespaceAttributes, ?> labelAtt = result.getAttribute("label");
         assertEquals(RDFS.LABEL, labelAtt.getIRI().toString());
         final Attribute<? super EntityWithNamespaceAttributes, ?> descriptionAtt = result.getAttribute("description");
-        assertEquals("http://purl.org/dc/elements/1.1/description", descriptionAtt.getIRI().toString());
+        assertEquals(DC.Elements.DESCRIPTION, descriptionAtt.getIRI().toString());
     }
 
-    @Namespaces({@Namespace(prefix = "dc", namespace = "http://purl.org/dc/elements/1.1/"),
+    @Namespaces({@Namespace(prefix = "dc", namespace = DC.Elements.NAMESPACE),
                  @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
     private static class EntityWithNamespaceAttributes {

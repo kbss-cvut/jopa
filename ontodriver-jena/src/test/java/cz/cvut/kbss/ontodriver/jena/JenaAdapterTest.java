@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.*;
 
 public class JenaAdapterTest {
@@ -83,7 +81,7 @@ public class JenaAdapterTest {
         descriptor.addAssertionValue(a, new Value<>(type));
         adapter.persist(descriptor);
         adapter.commit();
-        verify(connectorMock).add(anyListOf(Statement.class), eq(null));
+        verify(connectorMock).add(anyList(), eq(null));
         verify(connectorMock).commit();
     }
 
@@ -101,7 +99,7 @@ public class JenaAdapterTest {
         descriptor.addAssertionValue(a, new Value<>(type));
         adapter.persist(descriptor);
         adapter.rollback();
-        verify(connectorMock).add(anyListOf(Statement.class), eq(null));
+        verify(connectorMock).add(anyList(), eq(null));
         verify(connectorMock).rollback();
         verify(connectorMock, never()).commit();
     }
@@ -132,7 +130,7 @@ public class JenaAdapterTest {
         final String typeUri = Generator.generateUri().toString();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
-        when(connectorMock.contains(any(), any(), any(), anyString())).thenReturn(true);
+        when(connectorMock.contains(any(), any(), any(), any())).thenReturn(true);
         assertTrue(adapter.contains(ax, null));
     }
 
@@ -166,7 +164,7 @@ public class JenaAdapterTest {
         final Statement s = ResourceFactory
                 .createStatement(SUBJECT_RESOURCE, assertionToProperty(assertion),
                         ResourceFactory.createResource(Generator.generateUri().toString()));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singletonList(s));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singletonList(s));
 
         final Collection<Axiom<?>> result = adapter.find(descriptor);
         assertEquals(1, result.size());

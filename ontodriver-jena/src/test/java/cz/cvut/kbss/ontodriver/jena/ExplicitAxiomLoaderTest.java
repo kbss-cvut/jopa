@@ -20,7 +20,9 @@ import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +44,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final String typeUri = Generator.generateUri().toString();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
-        when(connectorMock.contains(any(), any(), any(), anyString())).thenReturn(true);
+        when(connectorMock.contains(any(), any(), any(), any())).thenReturn(true);
         assertTrue(explicitAxiomLoader.contains(ax, null));
         verify(connectorMock).contains(SUBJECT_RES, createProperty(Vocabulary.RDF_TYPE), createResource(typeUri), null);
     }
@@ -62,7 +64,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     @Test
     public void findLoadsClassAssertionValues() {
         final List<Statement> statements = generateClassAssertions();
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createClassAssertion(false));
 
@@ -92,7 +94,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(Generator.generateUri(), false));
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(Generator.generateUri(), false));
         final List<Statement> statements = generateObjectPropertyAssertions(descriptor.getAssertions());
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         verifyObjectPropertyAxioms(statements, result);
@@ -128,7 +130,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
         final List<Statement> statements = generateDataPropertyAssertions(descriptor.getAssertions());
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(statements.size(), result.size());
@@ -173,7 +175,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
                 createStatement(SUBJECT_RES, createProperty(propUri.toString()), createLangLiteral("a", lang));
         final Statement notMatching =
                 createStatement(SUBJECT_RES, createProperty(propUri.toString()), createLangLiteral("b", "cs"));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Arrays.asList(matching, notMatching));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Arrays.asList(matching, notMatching));
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
@@ -189,7 +191,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, lang, false));
         final Statement statement =
                 createStatement(SUBJECT_RES, createProperty(propUri.toString()), createTypedLiteral("a"));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singletonList(statement));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singletonList(statement));
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
@@ -203,7 +205,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, false));
         final Statement statement =
                 createStatement(SUBJECT_RES, createProperty(propUri.toString()), createLangLiteral("a", "en"));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singletonList(statement));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singletonList(statement));
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
@@ -217,7 +219,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, false));
         final Statement statement =
                 createStatement(SUBJECT_RES, createProperty(propUri.toString()), createTypedLiteral("a"));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singletonList(statement));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singletonList(statement));
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
@@ -230,7 +232,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Assertion assertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
         final List<Statement> statements = generateAnnotations(descriptor.getAssertions());
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         verifyAnnotationPropertyAxioms(statements, result);
@@ -265,7 +267,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final List<Statement> statements = generateDataPropertyAssertions(Collections.singletonList(dp));
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(statements.size(), result.size());
@@ -444,7 +446,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Long value = 117L;
         final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
                 createTypedLiteral(value));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singleton(statement));
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
@@ -462,7 +464,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         cal.setTime(value);
         final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
                 createTypedLiteral(cal));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singleton(statement));
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
@@ -478,7 +480,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(assertion);
         final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
                 createLangLiteral("test", "en"));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singleton(statement));
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertTrue(result.isEmpty());
     }
@@ -491,7 +493,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final String value = "test";
         final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
                 createLangLiteral(value, "en"));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singleton(statement));
+        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singleton(statement));
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
         final Axiom<?> axiom = result.iterator().next();

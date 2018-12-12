@@ -67,7 +67,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         return result;
     }
 
-    private Map<?, ?> createNewInstance(Class<?> type, int size) {
+    private static Map<?, ?> createNewInstance(Class<?> type, int size) {
         Map<?, ?> result = null;
         final Class<?>[] types = {int.class};
         Object[] params;
@@ -182,7 +182,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         }
     }
 
-    private Map<Object, Object> createDefaultMap(int size) {
+    private static Map<Object, Object> createDefaultMap(int size) {
         return new HashMap<>(size > 1 ? size : 16);
     }
 }

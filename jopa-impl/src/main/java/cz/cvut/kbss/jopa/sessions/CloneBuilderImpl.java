@@ -148,7 +148,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         }
     }
 
-    private void cloneIdentifier(Object original, Object clone, EntityType<?> et) {
+    private static void cloneIdentifier(Object original, Object clone, EntityType<?> et) {
         final Identifier identifier = et.getIdentifier();
         final Object idValue = EntityPropertiesUtils.getFieldValue(identifier.getJavaField(), original);
         EntityPropertiesUtils.setFieldValue(identifier.getJavaField(), clone, idValue);

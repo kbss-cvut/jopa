@@ -98,8 +98,8 @@ public class MetamodelFactory {
      */
     public static void initOWLClassBMocks(EntityTypeImpl<OWLClassB> etMock, AbstractAttribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-                                                                                                NoSuchFieldException,
-                                                                                                SecurityException {
+            NoSuchFieldException,
+            SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -589,16 +589,19 @@ public class MetamodelFactory {
 
     public static void initOWLClassNMock(EntityTypeImpl<OWLClassN> et, SingularAttributeImpl annotationAtt,
                                          SingularAttributeImpl annotationUriAtt, SingularAttributeImpl stringAtt,
+                                         AbstractPluralAttribute pluralAnnotationAtt,
                                          PropertiesSpecification props, Identifier idN)
             throws Exception {
+        when(et.getJavaType()).thenReturn(OWLClassN.class);
         when(et.getIdentifier()).thenReturn(idN);
         when(idN.getJavaField()).thenReturn(OWLClassN.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassN.getClassIri()));
         when(et.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                        props, idN)));
+                        pluralAnnotationAtt, props, idN)));
         when(et.getAttributes()).thenReturn(new HashSet<>(
-                Arrays.<Attribute<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt)));
+                Arrays.<Attribute<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
+                        pluralAnnotationAtt)));
 
         when(annotationAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationPropertyField());
         when(annotationAtt.getJavaType()).thenReturn(OWLClassN.getAnnotationPropertyField().getType());
@@ -608,6 +611,7 @@ public class MetamodelFactory {
         when(annotationAtt.getBindableJavaType()).thenReturn(String.class);
         when(annotationAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassN.getAnnotationPropertyField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(annotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(annotationAtt.getDeclaringType()).thenReturn(et);
 
         when(annotationUriAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationUriField());
@@ -618,6 +622,7 @@ public class MetamodelFactory {
         when(annotationUriAtt.getBindableJavaType()).thenReturn(String.class);
         when(annotationUriAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassN.getAnnotationUriField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(annotationUriAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(annotationUriAtt.getDeclaringType()).thenReturn(et);
 
         when(stringAtt.getJavaField()).thenReturn(OWLClassN.getStringAttributeField());
@@ -628,7 +633,23 @@ public class MetamodelFactory {
         when(stringAtt.getBindableJavaType()).thenReturn(String.class);
         when(stringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassN.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(stringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(stringAtt.getDeclaringType()).thenReturn(et);
+
+        when(pluralAnnotationAtt.getJavaField()).thenReturn(OWLClassN.getPluralAnnotationField());
+        when(pluralAnnotationAtt.getJavaType()).thenReturn(OWLClassN.getPluralAnnotationField().getType());
+        when(et.getAttribute(OWLClassN.getPluralAnnotationField().getName())).thenReturn(pluralAnnotationAtt);
+        when(pluralAnnotationAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
+        when(pluralAnnotationAtt.isCollection()).thenReturn(true);
+        when(pluralAnnotationAtt.getBindableJavaType()).thenReturn(String.class);
+        when(pluralAnnotationAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        final Type elemType = mock(Type.class);
+        when(elemType.getJavaType()).thenReturn(String.class);
+        when(pluralAnnotationAtt.getElementType()).thenReturn(elemType);
+        when(pluralAnnotationAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassN.getPluralAnnotationField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(pluralAnnotationAtt.getDeclaringType()).thenReturn(et);
+        when(pluralAnnotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
 
         when(props.getJavaField()).thenReturn(OWLClassN.getPropertiesField());
         when(props.getName()).thenReturn(OWLClassN.getPropertiesField().getName());
@@ -661,7 +682,7 @@ public class MetamodelFactory {
                                          PropertiesSpecification props,
                                          SingularAttribute uriAtt, PluralAttribute urlsAtt,
                                          ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
-                                                                                                                Exception {
+            Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
@@ -967,7 +988,8 @@ public class MetamodelFactory {
     }
 
     static void initOwlClassTMock(EntityTypeImpl<OWLClassT> et, SingularAttributeImpl localDateAtt,
-                                  SingularAttributeImpl localDateTimeAtt, Identifier id) throws Exception {
+                                  SingularAttributeImpl localDateTimeAtt, SingularAttributeImpl owlClassSAtt,
+                                  Identifier id) throws Exception {
         when(et.getIdentifier()).thenReturn(id);
         when(id.isGenerated()).thenReturn(true);
         when(et.getJavaType()).thenReturn(OWLClassT.class);
@@ -994,7 +1016,7 @@ public class MetamodelFactory {
         when(localDateTimeAtt.getJavaField()).thenReturn(OWLClassT.getLocalDateTimeField());
         when(localDateTimeAtt.getJavaType()).thenReturn(OWLClassT.getLocalDateTimeField().getType());
         when(localDateTimeAtt.getName()).thenReturn(OWLClassT.getLocalDateTimeField().getName());
-        when(et.getAttribute(OWLClassT.getLocalDateTimeField().getName())).thenReturn(localDateAtt);
+        when(et.getAttribute(OWLClassT.getLocalDateTimeField().getName())).thenReturn(localDateTimeAtt);
         when(localDateTimeAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(localDateTimeAtt.isCollection()).thenReturn(false);
         when(localDateTimeAtt.getBindableJavaType()).thenReturn(LocalDateTime.class);
@@ -1004,5 +1026,18 @@ public class MetamodelFactory {
         when(localDateTimeAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(localDateTimeAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(localDateTimeAtt.getConverter()).thenReturn(new LocalDateTimeConverter());
+
+        when(owlClassSAtt.getJavaField()).thenReturn(OWLClassT.getOwlClassSField());
+        when(owlClassSAtt.getJavaType()).thenReturn(OWLClassT.getOwlClassSField().getType());
+        when(owlClassSAtt.getName()).thenReturn(OWLClassT.getOwlClassSField().getName());
+        when(et.getAttribute(OWLClassT.getOwlClassSField().getName())).thenReturn(owlClassSAtt);
+        when(owlClassSAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(owlClassSAtt.isCollection()).thenReturn(false);
+        when(owlClassSAtt.getBindableJavaType()).thenReturn(OWLClassS.class);
+        when(owlClassSAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassT.getOwlClassSField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(owlClassSAtt.getDeclaringType()).thenReturn(et);
+        when(owlClassSAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(owlClassSAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
     }
 }

@@ -648,4 +648,15 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(date, result.getLocalDate());
         assertEquals(dateTime, result.getLocalDateTime());
     }
+
+    @Test
+    public void persistSupportsPluralAnnotationProperties() {
+        this.em = getEntityManager("persistSupportsPluralAnnotationProperties", false);
+        final Set<String> annotations = IntStream.range(0, 5).mapToObj(i -> "Source" + i).collect(Collectors.toSet());
+        entityN.setPluralAnnotationProperty(annotations);
+        persist(entityN);
+
+        final OWLClassN result = em.find(OWLClassN.class, entityN.getId());
+        assertEquals(annotations, result.getPluralAnnotationProperty());
+    }
 }

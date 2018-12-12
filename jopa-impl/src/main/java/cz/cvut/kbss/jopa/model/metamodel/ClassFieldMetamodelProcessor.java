@@ -167,8 +167,7 @@ class ClassFieldMetamodelProcessor<X> {
                                      .sequenceType(os.type())
                                      .participationConstraints(propertyAttributes.getParticipationConstraints())
                                      .nonEmpty(propertyAttributes.isNonEmpty());
-            context.getConverterResolver().resolveConverter(field, propertyAttributes)
-                   .ifPresent(cw -> builder.converter(cw));
+            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = builder.build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
@@ -182,8 +181,7 @@ class ClassFieldMetamodelProcessor<X> {
                                     .includeExplicit(inference.includeExplicit)
                                     .participationConstraints(propertyAttributes.getParticipationConstraints())
                                     .nonEmpty(propertyAttributes.isNonEmpty());
-            context.getConverterResolver().resolveConverter(field, propertyAttributes)
-                   .ifPresent(cw -> builder.converter(cw));
+            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
@@ -198,8 +196,7 @@ class ClassFieldMetamodelProcessor<X> {
                                          .includeExplicit(inference.includeExplicit)
                                          .constraints(propertyAttributes.getParticipationConstraints())
                                          .nonEmpty(propertyAttributes.isNonEmpty());
-            context.getConverterResolver().resolveConverter(field, propertyAttributes)
-                   .ifPresent(cw -> builder.converter(cw));
+            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         }
         et.addDeclaredAttribute(field.getName(), a);

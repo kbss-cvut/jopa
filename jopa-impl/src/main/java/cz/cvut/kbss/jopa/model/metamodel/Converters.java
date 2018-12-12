@@ -12,26 +12,26 @@ import java.util.Optional;
 
 class Converters {
 
-    private final Map<Class<?>, ConverterWrapper<?, ?>> converters;
+    private final Map<Class<?>, ConverterWrapper<?, ?>> defaultConverters;
 
     Converters() {
-        this.converters = new HashMap<>();
+        this.defaultConverters = new HashMap<>();
         addDefaultConverters();
     }
 
     private void addDefaultConverters() {
-        converters.put(LocalDate.class, new LocalDateConverter());
-        converters.put(LocalDateTime.class, new LocalDateTimeConverter());
-        converters.put(Instant.class, new InstantConverter());
-        converters.put(ZonedDateTime.class, new ZonedDateTimeConverter());
-        converters.put(Short.class, new ToShortConverter());
-        converters.put(Integer.class, new ToIntegerConverter());
-        converters.put(Long.class, new ToLongConverter());
-        converters.put(Float.class, new ToFloatConverter());
-        converters.put(Double.class, new ToDoubleConverter());
+        defaultConverters.put(LocalDate.class, new LocalDateConverter());
+        defaultConverters.put(LocalDateTime.class, new LocalDateTimeConverter());
+        defaultConverters.put(Instant.class, new InstantConverter());
+        defaultConverters.put(ZonedDateTime.class, new ZonedDateTimeConverter());
+        defaultConverters.put(Short.class, new ToShortConverter());
+        defaultConverters.put(Integer.class, new ToIntegerConverter());
+        defaultConverters.put(Long.class, new ToLongConverter());
+        defaultConverters.put(Float.class, new ToFloatConverter());
+        defaultConverters.put(Double.class, new ToDoubleConverter());
     }
 
     Optional<ConverterWrapper<?, ?>> getConverter(Class<?> type) {
-        return Optional.ofNullable(converters.get(type));
+        return Optional.ofNullable(defaultConverters.get(type));
     }
 }

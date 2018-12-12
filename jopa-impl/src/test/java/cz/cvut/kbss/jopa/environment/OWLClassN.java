@@ -21,7 +21,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassN")
+@OWLClass(iri = Vocabulary.c_OwlClassN)
 public class OWLClassN {
 
     @Id(generated = true)
@@ -36,6 +36,9 @@ public class OWLClassN {
     @ParticipationConstraints(nonEmpty = true)
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
     private String stringAttribute;
+
+    @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+    private Set<String> pluralAnnotation;
 
     @Inferred
     @Properties(fetchType = FetchType.LAZY)
@@ -73,6 +76,14 @@ public class OWLClassN {
         this.stringAttribute = stringAttribute;
     }
 
+    public Set<String> getPluralAnnotation() {
+        return pluralAnnotation;
+    }
+
+    public void setPluralAnnotation(Set<String> pluralAnnotation) {
+        this.pluralAnnotation = pluralAnnotation;
+    }
+
     public Map<String, Set<String>> getProperties() {
         return properties;
     }
@@ -99,6 +110,10 @@ public class OWLClassN {
 
     public static Field getStringAttributeField() throws Exception {
         return OWLClassN.class.getDeclaredField("stringAttribute");
+    }
+
+    public static Field getPluralAnnotationField() throws Exception {
+        return OWLClassN.class.getDeclaredField("pluralAnnotation");
     }
 
     public static Field getPropertiesField() throws Exception {

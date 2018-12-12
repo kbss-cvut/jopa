@@ -77,7 +77,7 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
         return collectionType;
     }
 
-    public static abstract class PluralAttributeBuilder<X, C, E> extends AbstractAttributeBuilder<X, C> {
+    public abstract static class PluralAttributeBuilder<X, C, E> extends AbstractAttributeBuilder<X, C> {
         private Type<E> elementType;
         private Class<C> collectionType;
 
@@ -97,46 +97,55 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> field(Field field) {
             super.field(field);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> declaringType(ManagedType<X> declaringType) {
             super.declaringType(declaringType);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> attributeType(PersistentAttributeType attributeType) {
             super.attributeType(attributeType);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> iri(IRI iri) {
             super.iri(iri);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> cascadeTypes(CascadeType[] cascadeTypes) {
             super.cascadeTypes(cascadeTypes);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> fetchType(FetchType fetchType) {
             super.fetchType(fetchType);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> inferred(boolean inferred) {
             super.inferred(inferred);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> includeExplicit(boolean includeExplicit) {
             super.includeExplicit(includeExplicit);
             return this;
         }
 
+        @Override
         public PluralAttributeBuilder<X, C, E> nonEmpty(boolean nonEmpty) {
             super.nonEmpty(nonEmpty);
             return this;

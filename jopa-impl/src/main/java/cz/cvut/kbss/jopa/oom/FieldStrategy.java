@@ -53,7 +53,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         if (attribute.isCollection()) {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                    throw new NotYetImplementedException();
+                    return new PluralAnnotationPropertyStrategy<>(et,
+                            (AbstractPluralAttribute<? super X, ?, ?>) attribute, fieldDescriptor, mapper);
                 case DATA:
                     return new PluralDataPropertyStrategy<>(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
                             fieldDescriptor, mapper);
@@ -152,7 +153,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      */
     String getLanguage() {
         return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
-               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
+                mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**

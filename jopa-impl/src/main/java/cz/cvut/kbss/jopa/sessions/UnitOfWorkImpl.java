@@ -612,8 +612,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return registerExistingObject(original, descriptor);
     }
 
-    private ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
-                                          Descriptor descriptor) {
+    private static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
+                                                 Descriptor descriptor) {
         final ObjectChangeSet newChangeSet = ChangeSetFactory.createObjectChangeSet(original, clone, descriptor);
         changeSet.getChanges().forEach(newChangeSet::addChangeRecord);
         return newChangeSet;

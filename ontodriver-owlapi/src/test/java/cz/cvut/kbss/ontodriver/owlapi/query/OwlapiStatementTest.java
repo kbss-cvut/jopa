@@ -23,7 +23,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +48,7 @@ public class OwlapiStatementTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(executorFactoryMock.getStatementExecutor(any(Statement.StatementOntology.class))).thenReturn(executorMock);
+        when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
         this.statement = new OwlapiStatement(executorFactoryMock, connectionMock);
         when(executorMock.executeQuery(anyString(), eq(statement))).thenReturn(resultSetMock);
     }

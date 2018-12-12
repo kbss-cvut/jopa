@@ -1331,4 +1331,46 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassX result = em.find(OWLClassX.class, entityX.getUri());
         assertEquals(newInstant, result.getInstant());
     }
+
+    @Test
+    public void updateSupportsPluralAnnotationProperty() {
+        this.em = getEntityManager("updateSupportsPluralAnnotationProperty", true);
+        final Set<String> annotations = IntStream.range(0, 5).mapToObj(i -> "Source" + i).collect(Collectors.toSet());
+        entityN.setPluralAnnotationProperty(annotations);
+        persist(entityN);
+
+        final String added = "Added Source";
+        final String removed = annotations.iterator().next();
+        annotations.remove(removed);
+        annotations.add(added);
+        entityN.getPluralAnnotationProperty().remove(removed);
+        entityN.getPluralAnnotationProperty().add(added);
+        em.getTransaction().begin();
+        final OWLClassN merged = em.merge(entityN);
+        assertEquals(annotations, merged.getPluralAnnotationProperty());
+        em.getTransaction().commit();
+
+        final OWLClassN result = em.find(OWLClassN.class, entityN.getId());
+        assertEquals(annotations, result.getPluralAnnotationProperty());
+    }
+
+    @Test
+    public void updateSupportsSettingSubclassOnPolymorphicAttribute() {
+        this.em = getEntityManager("updateSupportsSettingSubclassOnPolymorphicAttribute", true);
+        final OWLClassU u = new OWLClassU();
+        final OWLClassU reference = new OWLClassU();
+        em.getTransaction().begin();
+        em.persist(reference);
+        em.getTransaction().commit();
+
+        em.getTransaction().begin();
+        final OWLClassU managedRef = em.merge(reference);
+        u.setOwlClassS(managedRef);
+        em.persist(u);
+        em.getTransaction().commit();
+
+        final OWLClassU result = em.find(OWLClassU.class, u.getUri());
+        assertNotNull(result);
+        assertEquals(reference.getUri(), result.getOwlClassS().getUri());
+    }
 }
