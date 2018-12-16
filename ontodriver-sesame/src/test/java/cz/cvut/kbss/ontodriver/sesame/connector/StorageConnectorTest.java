@@ -31,6 +31,7 @@ import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.lucene.LuceneSail;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
 import org.junit.jupiter.api.AfterEach;
@@ -43,6 +44,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -233,7 +235,8 @@ class StorageConnectorTest {
     void initializationThrowsRepositoryCreationExceptionWhenRepositoryConfigurationFileIsNotFoundOnClasspath() {
         final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
         conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs-unknown.ttl");
-        final RepositoryCreationException result = assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
+        final RepositoryCreationException result =
+                assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
         assertThat(result.getMessage(), containsString("repo-configs/memory-rdfs-unknown.ttl"));
     }
 
@@ -241,7 +244,29 @@ class StorageConnectorTest {
     void initializationThrowsRepositoryCreationExceptionWhenRepositoryConfigurationFileIsNotFound() {
         final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
         conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, "/tmp/memory-rdfs-unknown.ttl");
-        final RepositoryCreationException result = assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
+        final RepositoryCreationException result =
+                assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
         assertThat(result.getMessage(), containsString("/tmp/memory-rdfs-unknown.ttl"));
+    }
+
+    @Test
+    void initializationLoadsRepositoryConfigurationFromFileAndCreatesNativeRepo() throws Exception {
+        final Path serverDir = Files.createTempDirectory("sesame-config-test");
+        final String physicalUri = serverDir.toString() + "/repositories/native-lucene";
+        try {
+            final DriverConfiguration conf = TestUtils.createDriverConfig(physicalUri);
+            conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/native-lucene.ttl");
+            this.connector = new StorageConnector(conf);
+            final Repository repo = connector.unwrap(Repository.class);
+            assertTrue(repo instanceof SailRepository);
+            assertTrue(((SailRepository) repo).getSail() instanceof LuceneSail);
+            final File repoDir = new File(physicalUri);
+            assertTrue(repoDir.exists());
+        } finally {
+            Files.walk(serverDir)
+                 .sorted(Comparator.reverseOrder())
+                 .map(Path::toFile)
+                 .forEach(File::delete);
+        }
     }
 }

@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
+import java.util.Optional;
 import java.util.Set;
 
 class RepositoryConnectorInitializer {
@@ -97,16 +98,16 @@ class RepositoryConnectorInitializer {
         if (!isFileUri(localUri) && configuration.is(SesameConfigParam.USE_VOLATILE_STORAGE)) {
             return createInMemoryRepository();
         } else {
-            return createNativeRepository(configuration, localUri);
+            return createNativeRepository(configuration, localUri.toString());
         }
     }
 
     private Repository createRepositoryFromConfig() {
+        LOG.trace("Creating local repository from repository config file.");
         final RepositoryConfig repoConfig = loadRepositoryConfig();
-        // TODO BaseDir should be resolved from physical URI configuration
-        this.manager = new LocalRepositoryManager(null);
+        this.manager = new LocalRepositoryManager(getRepositoryManagerBaseDir().map(File::new).orElse(null));
         manager.addRepositoryConfig(repoConfig);
-        return manager.getRepository(configuration.getStorageProperties().getPhysicalURI().toString());
+        return manager.getRepository(getRepositoryId());
     }
 
     private RepositoryConfig loadRepositoryConfig() {
@@ -123,6 +124,7 @@ class RepositoryConnectorInitializer {
 
     private InputStream getConfigFileContent() {
         final String configPath = configuration.getProperty(SesameConfigParam.REPOSITORY_CONFIG);
+        LOG.trace("Loading repository configuration file content from {}.", configPath);
         if (configPath.startsWith(CLASSPATH_PREFIX)) {
             final InputStream is =
                     getClass().getClassLoader().getResourceAsStream(configPath.substring(CLASSPATH_PREFIX.length()));
@@ -139,6 +141,23 @@ class RepositoryConnectorInitializer {
                         e);
             }
         }
+    }
+
+    private Optional<String> getRepositoryManagerBaseDir() {
+        final String physicalUri = configuration.getStorageProperties().getPhysicalURI().toString();
+        final String[] tmp = physicalUri.split(LOCAL_NATIVE_REPO);
+        return tmp.length == 2 ? Optional.of(tmp[0]) : Optional.empty();
+    }
+
+    private String getRepositoryId() {
+        final String physicalUri = configuration.getStorageProperties().getPhysicalURI().toString();
+        final String[] tmp = physicalUri.split(LOCAL_NATIVE_REPO);
+        if (tmp.length != 2) {
+            return physicalUri;
+        }
+        String repoId = tmp[1];
+        // Get rid of the trailing slash if necessary
+        return repoId.charAt(repoId.length() - 1) == '/' ? repoId.substring(0, repoId.length() - 1) : repoId;
     }
 
     private static boolean isFileUri(URI uri) {
@@ -163,25 +182,24 @@ class RepositoryConnectorInitializer {
      * <p>
      * This kind of repository stores data in files and is persistent after the VM shuts down.
      */
-    private Repository createNativeRepository(DriverConfiguration configuration, final URI localUri) {
+    private Repository createNativeRepository(DriverConfiguration configuration, String localUri) {
         LOG.trace("Creating local native repository at " + localUri);
-        final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
-        if (tmp.length != 2) {
-            throw new RepositoryCreationException(
-                    "Unsupported local Sesame repository path. Expected file://path/repositories/id but got "
-                            + localUri);
-        }
-        String repoId = tmp[1];
-        if (repoId.charAt(repoId.length() - 1) == '/') {
-            repoId = repoId.substring(0, repoId.length() - 1);
-        }
+        validateNativeStorePath(localUri);
         try {
-            this.manager = RepositoryProvider.getRepositoryManagerOfRepository(localUri.toASCIIString());
+            this.manager = RepositoryProvider.getRepositoryManagerOfRepository(localUri);
+            final String repoId = getRepositoryId();
             final RepositoryConfig cfg = createLocalNativeRepositoryConfig(repoId, configuration);
             manager.addRepositoryConfig(cfg);
             return manager.getRepository(repoId);
         } catch (RepositoryConfigException | RepositoryException e) {
             throw new RepositoryCreationException("Unable to create local repository at " + localUri, e);
+        }
+    }
+
+    private void validateNativeStorePath(String path) {
+        if (path.split(LOCAL_NATIVE_REPO).length != 2) {
+            throw new RepositoryCreationException(
+                    "Unsupported local RDF4J/Sesame repository path. Expected file://path/repositories/id but got " + path);
         }
     }
 
