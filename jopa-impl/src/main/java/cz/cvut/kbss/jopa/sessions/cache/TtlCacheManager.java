@@ -148,7 +148,7 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public void clearInferredObjects() {
+    public void evictInferredObjects() {
         acquireWriteLock();
         try {
             getInferredClasses().forEach(cache::evict);

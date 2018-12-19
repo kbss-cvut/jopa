@@ -927,6 +927,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.registerExistingObject(entityA, descriptor);
         uow.registerNewObject(entityB, descriptor);
         uow.commit();
-        verify(cacheManagerMock).clearInferredObjects();
+        verify(cacheManagerMock).evictInferredObjects();
     }
 }

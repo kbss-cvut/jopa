@@ -114,7 +114,7 @@ public class LruCacheManager implements CacheManager {
     }
 
     @Override
-    public void clearInferredObjects() {
+    public void evictInferredObjects() {
         writeLock.lock();
         try {
             getInferredClasses().forEach(this::evict);

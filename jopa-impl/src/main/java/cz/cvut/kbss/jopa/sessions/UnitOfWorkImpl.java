@@ -286,7 +286,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 cacheManager.evictAll();
                 this.shouldReleaseAfterCommit = true;
             } else {
-                cacheManager.clearInferredObjects();
+                cacheManager.evictInferredObjects();
             }
         }
 
