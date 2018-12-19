@@ -66,7 +66,7 @@ abstract class UnitOfWorkTestBase {
 
     UnitOfWorkImpl uow;
 
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         this.serverSessionStub = spy(new ServerSessionStub(storageMock));

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.integration;
 
@@ -23,31 +21,24 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class DuplicateIdentifiersTest extends IntegrationTestBase {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private OWLClassA entityA;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    protected void setUp() throws Exception {
         super.setUp();
-
         initInstances();
     }
 
@@ -57,7 +48,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void persistObjectTwiceInPersistenceContextIsLegal() throws Exception {
+    void persistObjectTwiceInPersistenceContextIsLegal() throws Exception {
         em.getTransaction().begin();
         em.persist(entityA);
         entityA.setStringAttribute("UpdatedString");
@@ -76,22 +67,23 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void persistTwoInstancesOfDifferentClassesWithSameIdentifierInOnePersistenceContextIsIllegal()
-            throws Exception {
-        thrown.expect(OWLEntityExistsException.class);
-        thrown.expectMessage(
-                "An entity with URI " + entityA.getUri() + " is already present in the current persistence context.");
+    void persistTwoInstancesOfDifferentClassesWithSameIdentifierInOnePersistenceContextIsIllegal() {
         final OWLClassB entityB = new OWLClassB();
         entityB.setUri(entityA.getUri());
 
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.persist(entityB);
-        em.getTransaction().commit();
+        final OWLEntityExistsException result = assertThrows(OWLEntityExistsException.class, () -> {
+            em.getTransaction().begin();
+            em.persist(entityA);
+            em.persist(entityB);
+            em.getTransaction().commit();
+        });
+        assertEquals(
+                "An entity with URI " + entityA.getUri() + " is already present in the current persistence context.",
+                result.getMessage());
     }
 
     @Test
-    public void persistTwoInstancesOfDifferentClassesWithSameIdentifierInDifferentPersistenceContextsIsLegal()
+    void persistTwoInstancesOfDifferentClassesWithSameIdentifierInDifferentPersistenceContextsIsLegal()
             throws Exception {
         final OWLClassB entityB = new OWLClassB();
         entityB.setUri(entityA.getUri());
@@ -111,7 +103,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void mergeInstanceTwiceInTwoPersistenceContextsIsLegal() throws Exception {
+    void mergeInstanceTwiceInTwoPersistenceContextsIsLegal() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAss = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
@@ -147,7 +139,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void mergeTwoInstancesWithTheSameIdentifierInTwoPersistenceContextsIsLegal() throws Exception {
+    void mergeTwoInstancesWithTheSameIdentifierInTwoPersistenceContextsIsLegal() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
@@ -205,7 +197,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void mergeSameInstanceMultipleTimesInOnePersistenceContextIsLegal() throws Exception {
+    void mergeSameInstanceMultipleTimesInOnePersistenceContextIsLegal() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
@@ -232,11 +224,8 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void mergeTwoInstancesOfDifferentClassesWithTheSameIdentifierIntoOnePersistenceContextIsIllegal()
+    void mergeTwoInstancesOfDifferentClassesWithTheSameIdentifierIntoOnePersistenceContextIsIllegal()
             throws Exception {
-        thrown.expect(OWLEntityExistsException.class);
-        thrown.expectMessage(
-                "An entity with URI " + entityA.getUri() + " is already present in the current persistence context.");
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
@@ -248,16 +237,18 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         entityB.setStringAttribute("bStringAttribute");
         initAxiomsForOWLClassB(entityB, subject, stringAssB);
 
-        entityA.setStringAttribute("updatedStringAttribute");
-        em.getTransaction().begin();
-        em.merge(entityA);
-        em.merge(entityB);
-        em.getTransaction().commit();
-        verify(connectionMock).update(any(AxiomValueDescriptor.class));// Just for the entityA instance
+        assertThrows(OWLEntityExistsException.class, () -> {
+            entityA.setStringAttribute("updatedStringAttribute");
+            em.getTransaction().begin();
+            em.merge(entityA);
+            em.merge(entityB);
+            em.getTransaction().commit();
+            verify(connectionMock).update(any(AxiomValueDescriptor.class));// Just for the entityA instance
+        });
     }
 
     @Test
-    public void mergeTwoInstancesOfTheSameClassWithTheSameIdentifierIntoTheSamePersistenceContextIsLegal()
+    void mergeTwoInstancesOfTheSameClassWithTheSameIdentifierIntoTheSamePersistenceContextIsLegal()
             throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
@@ -286,7 +277,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void findTwiceInOnePersistenceContextWithTheSameIdentifierAndTypeReturnsTheSameInstance() throws Exception {
+    void findTwiceInOnePersistenceContextWithTheSameIdentifierAndTypeReturnsTheSameInstance() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
@@ -300,10 +291,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     }
 
     @Test
-    public void findIndividualAsDifferentTypeThanIsAlreadyLoadedInPersistenceContextIsIllegal() throws Exception {
-        thrown.expect(OWLEntityExistsException.class);
-        thrown.expectMessage(
-                "An entity with URI " + entityA.getUri() + " is already present in the current persistence context.");
+    void findIndividualAsDifferentTypeThanIsAlreadyLoadedInPersistenceContextIsIllegal() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
@@ -317,6 +305,6 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
 
         final OWLClassA aOne = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(aOne);
-        em.find(OWLClassB.class, entityB.getUri());
+        assertThrows(OWLEntityExistsException.class, () -> em.find(OWLClassB.class, entityB.getUri()));
     }
 }

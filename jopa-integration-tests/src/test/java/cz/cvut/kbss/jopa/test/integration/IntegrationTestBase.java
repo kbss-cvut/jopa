@@ -22,10 +22,8 @@ import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -37,17 +35,14 @@ import static org.mockito.Mockito.when;
 
 public class IntegrationTestBase {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     EntityManagerFactory emf;
     EntityManager em;
 
     @Mock
     Connection connectionMock;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    protected void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.emf = PersistenceFactory.initPersistence(Collections.emptyMap());
         this.em = emf.createEntityManager();
@@ -56,8 +51,8 @@ public class IntegrationTestBase {
         testDs.setConnection(connectionMock);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    protected void tearDown() {
         em.close();
         emf.close();
     }

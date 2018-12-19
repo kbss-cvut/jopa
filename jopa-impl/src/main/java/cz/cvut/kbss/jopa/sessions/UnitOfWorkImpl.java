@@ -278,12 +278,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * Clean up after the commit.
      */
     private void postCommit() {
+        final boolean changes = hasChanges();
         clear();
         this.inCommit = false;
-        if (shouldClearCacheAfterCommit) {
-            cacheManager.evictAll();
-            this.shouldReleaseAfterCommit = true;
+        if (changes) {
+            if (shouldClearCacheAfterCommit) {
+                cacheManager.evictAll();
+                this.shouldReleaseAfterCommit = true;
+            } else {
+                cacheManager.clearInferredObjects();
+            }
         }
+
     }
 
     /**
