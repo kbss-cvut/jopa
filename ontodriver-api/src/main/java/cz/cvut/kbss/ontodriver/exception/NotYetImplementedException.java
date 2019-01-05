@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.exception;
  * @author kidney
  * 
  */
-public class NotYetImplementedException extends RuntimeException {
+public class NotYetImplementedException extends OntoDriverRuntimeException {
 
 	private static final long serialVersionUID = -8127692503618130945L;
 

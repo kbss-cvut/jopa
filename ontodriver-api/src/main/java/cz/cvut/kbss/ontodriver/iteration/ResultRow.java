@@ -1,35 +1,15 @@
-/**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-package cz.cvut.kbss.ontodriver;
+package cz.cvut.kbss.ontodriver.iteration;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.iteration.ResultRow;
-import cz.cvut.kbss.ontodriver.iteration.ResultSetIterator;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Observer;
 
 /**
- * Represents a set of results of a SPARQL query.
+ * Represents a single row in a {@link cz.cvut.kbss.ontodriver.ResultSet}.
  * <p>
- * This interface declares methods for getting values from a set of results of a SPARQL query issued to an ontology.
+ * This interface replicates the value retrieval API of {@code ResultSet} and serves as a view of the current row in a result set.
  * <p>
- * While this class is iterable, it is still necessary to close it either explicitly, or by declaring it in a try-with-resource block.
+ * The main purpose of this interface is to support iteration over result sets.
  */
-public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
+public interface ResultRow {
 
     /**
      * Retrieves index of a column with the specified label.
@@ -74,14 +54,6 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @throws OntoDriverException   When unable to resolve binding status
      */
     boolean isBound(String variableName) throws OntoDriverException;
-
-    /**
-     * Move the cursor to the first row.
-     *
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If some other error occurs
-     */
-    void first() throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as a {@code boolean}.
@@ -269,17 +241,6 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
     <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException;
 
     /**
-     * Retrieves index of the current row.
-     * <p>
-     * The first row has index 0.
-     *
-     * @return the current row index, -1 if there is no current row
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If some other error occurs
-     */
-    int getRowIndex() throws OntoDriverException;
-
-    /**
      * Retrieves value of column at the specified index and returns it as {@code short}.
      *
      * @param columnIndex Column index, the first column has index 0
@@ -300,16 +261,6 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      *                               short} or there occurs some other error
      */
     short getShort(String columnLabel) throws OntoDriverException;
-
-    /**
-     * Retrieves the {@code Statement} that produced this {@code ResultSet} object. If this result set was generated
-     * some other way, this method will return {@code null}.
-     *
-     * @return The {@code Statement} that produced this {@code ResultSet} or null
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If some other error occurs
-     */
-    Statement getStatement() throws OntoDriverException;
 
     /**
      * Retrieves value of column at the specified index and returns it as {@code String}.
@@ -333,110 +284,13 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      */
     String getString(String columnLabel) throws OntoDriverException;
 
+
     /**
-     * Returns true if the cursor is at the first row of this result set.
+     * Gets the index of this row (first row has index 0).
      *
-     * @return True if the cursor is at the first row, false otherwise
+     * @return Index of this row
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If some other error occurs
      */
-    boolean isFirst() throws OntoDriverException;
-
-    /**
-     * Returns true if the cursor does not point at the last row in this result set.
-     *
-     * @return True if there is at least one next row
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If some other error occurs
-     */
-    boolean hasNext() throws OntoDriverException;
-
-    /**
-     * Move the cursor to the last row in this results set.
-     * <p>
-     * Note that since the result set may be asynchronously updated, the last row does not have to always be the same.
-     *
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If some other error occurs
-     */
-    void last() throws OntoDriverException;
-
-    /**
-     * Move the cursor one row forward.
-     *
-     * @throws NoSuchElementException If there are no more elements
-     * @throws IllegalStateException  If called on a closed result set
-     * @throws OntoDriverException    If some other error occurs
-     */
-    void next() throws OntoDriverException;
-
-    /**
-     * Move the cursor one row backwards.
-     *
-     * @throws IllegalStateException If called on a closed result set or the cursor is at the first row
-     * @throws OntoDriverException   If some other error occurs
-     */
-    void previous() throws OntoDriverException;
-
-    /**
-     * Registers the specified {@code Observer} at this result set.
-     * <p>
-     * The observer is notified whenever new results of ontology reasoning are available.
-     *
-     * @param observer The observer to register
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If or some other error occurs
-     */
-    void registerObserver(Observer observer) throws OntoDriverException;
-
-    /**
-     * Move the cursor a relative number of rows, either positive or negative.
-     *
-     * @param rows The number of rows to move the cursor of
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If the {@code rows} number is not valid or some other error occurs
-     */
-    void relative(int rows) throws OntoDriverException;
-
-    /**
-     * Move the cursor to the specified row index.
-     * <p>
-     * The first row has index 0.
-     *
-     * @param rowIndex Index to move the cursor to
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If the index is not valid row index or some other error occurs
-     */
-    void setRowIndex(int rowIndex) throws OntoDriverException;
-
-    /**
-     * Closes this result set releasing any sub-resources it holds.
-     * <p>
-     * After closing the result set is not usable any more and calling methods on it (except {@code close} and {@code
-     * isOpen}) will result in {@code OntoDriverException}.
-     * <p>
-     * Calling {@code close} on already closed resource does nothing.
-     * <p>
-     * Calling this method also results in immediate disconnection of all registered observers and cancellation of any
-     * running reasoning associated with this result set.
-     *
-     * @throws OntoDriverException If an ontology access error occurs.
-     */
-    @Override
-    void close() throws OntoDriverException;
-
-    /**
-     * Retrieves status of this result set.
-     *
-     * @return {@code true} if the resource is open, {@code false} otherwise
-     */
-    boolean isOpen();
-
-    @Override
-    default Iterator<ResultRow> iterator() {
-        if (!isOpen()) {
-            throw new IllegalStateException("The result set is closed.");
-        }
-        return new ResultSetIterator(this);
-    }
+    int getIndex() throws OntoDriverException;
 }
