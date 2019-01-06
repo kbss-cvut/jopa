@@ -2,12 +2,16 @@ package cz.cvut.kbss.ontodriver.iteration;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverRuntimeException;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
  * Iterator over a {@link ResultSet}.
+ * <p>
+ * Note that the methods wrap {@link OntoDriverException}s possibly thrown by the underlying result set in a {@link OntoDriverRuntimeException}
+ * in order to support the {@link Iterator} API.
  */
 public class ResultSetIterator implements Iterator<ResultRow> {
 
