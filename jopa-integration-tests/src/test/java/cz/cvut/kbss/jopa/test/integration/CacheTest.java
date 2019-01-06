@@ -23,6 +23,8 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
+import cz.cvut.kbss.ontodriver.iteration.ResultSetIterator;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,12 +47,18 @@ class CacheTest extends IntegrationTestBase {
     private Statement statementMock;
     @Mock
     private ResultSet resultSetMock;
+    @Mock
+    private ResultRow resultRowMock;
+    @Mock
+    private ResultSetIterator resultSetIteratorMock;
 
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         super.setUp();
         when(connectionMock.createStatement()).thenReturn(statementMock);
+        when(resultSetMock.iterator()).thenReturn(resultSetIteratorMock);
+        when(resultSetIteratorMock.next()).thenReturn(resultRowMock);
     }
 
     @Test
@@ -58,9 +66,9 @@ class CacheTest extends IntegrationTestBase {
         final URI instanceUri = Generators.generateUri();
         final String query = "SELECT ?x WHERE { ?x a <" + Vocabulary.C_OWL_CLASS_A + "> . }";
         when(statementMock.executeQuery(query)).thenReturn(resultSetMock);
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
-        when(resultSetMock.isBound(0)).thenReturn(true);
-        when(resultSetMock.getString(0)).thenReturn(instanceUri.toString());
+        when(resultSetIteratorMock.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultRowMock.isBound(0)).thenReturn(true);
+        when(resultRowMock.getString(0)).thenReturn(instanceUri.toString());
         when(connectionMock.find(any())).thenReturn(axiomsForA(instanceUri));
         final OWLClassA firstA = em.find(OWLClassA.class, instanceUri);
         assertNotNull(firstA);

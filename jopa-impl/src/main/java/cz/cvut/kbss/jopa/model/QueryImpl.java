@@ -20,8 +20,8 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -205,14 +205,14 @@ public class QueryImpl extends AbstractQuery implements Query {
         return this;
     }
 
-    Object extractRow(ResultSet resultSet) throws OntoDriverException {
-        final int columnCount = resultSet.getColumnCount();
+    Object extractRow(ResultRow resultRow) throws OntoDriverException {
+        final int columnCount = resultRow.getColumnCount();
         if (columnCount == 1) {
-            return resultSet.getObject(0);
+            return resultRow.getObject(0);
         } else {
             final Object[] row = new Object[columnCount];
             for (int i = 0; i < columnCount; i++) {
-                final Object ob = resultSet.isBound(i) ? resultSet.getObject(i) : null;
+                final Object ob = resultRow.isBound(i) ? resultRow.getObject(i) : null;
                 row[i] = ob;
             }
             return row;

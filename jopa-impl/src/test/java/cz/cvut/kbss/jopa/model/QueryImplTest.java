@@ -20,16 +20,14 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class QueryImplTest extends QueryTestBase {
+class QueryImplTest extends QueryTestBase {
 
     @Override
     QueryImpl createQuery(String query, Class<?> resultType) {
@@ -44,35 +42,35 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void getSingleResultReturnsUniqueResult() throws Exception {
+    void getSingleResultReturnsUniqueResult() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(2);
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
-        when(resultSetMock.isBound(anyInt())).thenReturn(true);
-        when(resultSetMock.getObject(anyInt())).thenReturn("str");
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultRow.isBound(anyInt())).thenReturn(true);
+        when(resultRow.getObject(anyInt())).thenReturn("str");
         final Object[] result = (Object[]) q.getSingleResult();
         assertEquals(2, result.length); // Two variables
         assertEquals("str", result[0]);
         assertEquals("str", result[1]);
-        verify(resultSetMock).next();
-    }
-
-    @Test(expected = NoUniqueResultException.class)
-    public void getSingleResultWithMultipleResultsThrowsNoUniqueResultException() throws Exception {
-        final Query q = createQuery(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(2);
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultSetMock.getObject(anyInt())).thenReturn("str");
-        q.getSingleResult();
+        verify(resultSetIterator).next();
     }
 
     @Test
-    public void setMaxResultsConstrainsNumberOfReturnedResults() throws Exception {
+    void getSingleResultWithMultipleResultsThrowsNoUniqueResultException() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultRow.getObject(anyInt())).thenReturn("str");
+        assertThrows(NoUniqueResultException.class, q::getSingleResult);
+    }
+
+    @Test
+    void setMaxResultsConstrainsNumberOfReturnedResults() throws Exception {
+        final Query q = createQuery(SELECT_QUERY);
+        when(resultRow.getColumnCount()).thenReturn(2);
         // Three results
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultSetMock.getObject(anyInt())).thenReturn("str");
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultRow.getObject(anyInt())).thenReturn("str");
         final int expectedCount = 2;
         q.setMaxResults(expectedCount);
         assertEquals(expectedCount, q.getMaxResults());
@@ -81,7 +79,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void setMaxResultsToZeroReturnsImmediatelyEmptyResult() throws Exception {
+    void setMaxResultsToZeroReturnsImmediatelyEmptyResult() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
         q.setMaxResults(0);
         final List result = q.getResultList();
@@ -91,13 +89,13 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void queryResultRowIsArrayOfObjectsWhenMultipleColumnsExist() throws Exception {
+    void queryResultRowIsArrayOfObjectsWhenMultipleColumnsExist() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(2);
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(false);
         final String res = "str";
-        when(resultSetMock.isBound(anyInt())).thenReturn(true);
-        when(resultSetMock.getObject(anyInt())).thenReturn(res);
+        when(resultRow.isBound(anyInt())).thenReturn(true);
+        when(resultRow.getObject(anyInt())).thenReturn(res);
         final List result = q.getResultList();
         for (Object row : result) {
             assertTrue(row instanceof Object[]);
@@ -109,12 +107,12 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void queryResultRowObjectWhenSingleColumnExists() throws Exception {
+    void queryResultRowObjectWhenSingleColumnExists() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(1);
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultRow.getColumnCount()).thenReturn(1);
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(false);
         final String res = "str";
-        when(resultSetMock.getObject(anyInt())).thenReturn(res);
+        when(resultRow.getObject(anyInt())).thenReturn(res);
         final List result = q.getResultList();
         for (Object o : result) {
             assertEquals(res, o);
@@ -122,23 +120,22 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void executeUpdateRunsUpdateOnConnection() throws Exception {
+    void executeUpdateRunsUpdateOnConnection() throws Exception {
         final Query q = createQuery(UPDATE_QUERY);
         q.executeUpdate();
         verify(statementMock).executeUpdate(UPDATE_QUERY);
     }
 
     @Test
-    public void executeUpdateThrowsPersistenceExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
-        thrown.expect(OWLPersistenceException.class);
-        thrown.expectMessage("Exception caught when evaluating query " + UPDATE_QUERY);
+    void executeUpdateThrowsPersistenceExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
         final Query q = createQuery(UPDATE_QUERY);
-        q.executeUpdate();
+        final OWLPersistenceException result = assertThrows(OWLPersistenceException.class, q::executeUpdate);
+        assertEquals("Exception caught when evaluating query " + UPDATE_QUERY, result.getMessage());
     }
 
     @Test
-    public void exceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
+    void exceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
         final QueryImpl q = createQuery(UPDATE_QUERY);
         runAndVerifyHandlerInvocation(q, q::executeUpdate);
@@ -155,42 +152,42 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void runtimeExceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
+    void runtimeExceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeUpdate(UPDATE_QUERY);
         final QueryImpl q = createQuery(UPDATE_QUERY);
         runAndVerifyHandlerInvocation(q, q::executeUpdate);
     }
 
     @Test
-    public void exceptionInGetResultListInvokesRollbackMarker() throws Exception {
+    void exceptionInGetResultListInvokesRollbackMarker() throws Exception {
         doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
         final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getResultList);
     }
 
     @Test
-    public void runtimeExceptionInGetResultListInvokesRollbackMarker() throws Exception {
+    void runtimeExceptionInGetResultListInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
         final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getResultList);
     }
 
     @Test
-    public void exceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
+    void exceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
         doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
         final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getSingleResult);
     }
 
     @Test
-    public void runtimeExceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
+    void runtimeExceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
         doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
         final QueryImpl q = createQuery(SELECT_QUERY);
         runAndVerifyHandlerInvocation(q, q::getSingleResult);
     }
 
     @Test
-    public void exceptionInSetMaxResultsInvokesRollbackMarker() {
+    void exceptionInSetMaxResultsInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setMaxResults(-1);
@@ -207,7 +204,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetParameterByPositionInvokesRollbackMarker() {
+    void exceptionInSetParameterByPositionInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setParameter(117, 117);
@@ -218,7 +215,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetStringParameterByPositionInvokesRollbackMarker() {
+    void exceptionInSetStringParameterByPositionInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setParameter(117, "A", "en");
@@ -229,7 +226,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetParameterByNameInvokesRollbackMarker() {
+    void exceptionInSetParameterByNameInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setParameter("a", 117);
@@ -240,7 +237,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetStringParameterByNameInvokesRollbackMarker() {
+    void exceptionInSetStringParameterByNameInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setParameter("a", "A", "en");
@@ -251,7 +248,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetParameterByParameterInvokesRollbackMarker() {
+    void exceptionInSetParameterByParameterInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setParameter(new QueryParameter<>(117), 117);
@@ -262,7 +259,7 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void exceptionInSetStringParameterByParameterInvokesRollbackMarker() {
+    void exceptionInSetStringParameterByParameterInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
             q.setParameter(new QueryParameter<>(117), "A", "en");
@@ -273,59 +270,51 @@ public class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    public void setFirstResultOffsetsQueryResultStartToSpecifiedPosition() throws Exception {
+    void setFirstResultOffsetsQueryResultStartToSpecifiedPosition() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(1);
+        when(resultRow.getColumnCount()).thenReturn(1);
         // Three results
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultSetMock.getObject(anyInt())).thenReturn("str");
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultRow.getObject(anyInt())).thenReturn("str");
         q.setFirstResult(2);
         assertEquals(2, q.getFirstResult());
         final List result = q.getResultList();
         assertEquals(1, result.size());
         assertEquals("str", result.get(0));
-        verify(resultSetMock).getObject(anyInt());
+        verify(resultRow).getObject(anyInt());
     }
 
     @Test
-    public void getResultListSetsValuesOfUnboundVariablesToNullInResultArrays() throws Exception {
+    void getResultListSetsValuesOfUnboundVariablesToNullInResultArrays() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(2);
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
-        when(resultSetMock.isBound(0)).thenReturn(true);
-        when(resultSetMock.isBound(1)).thenReturn(false);
-        when(resultSetMock.getObject(0)).thenReturn("str");
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(false);
+        when(resultRow.isBound(0)).thenReturn(true);
+        when(resultRow.isBound(1)).thenReturn(false);
+        when(resultRow.getObject(0)).thenReturn("str");
         final List result = q.getResultList();
         assertEquals(1, result.size());
         assertEquals("str", ((Object[]) result.get(0))[0]);
         assertNull(((Object[]) result.get(0))[1]);
-        verify(resultSetMock).isBound(0);
-        verify(resultSetMock).isBound(1);
-        verify(resultSetMock, never()).getObject(1);
+        verify(resultRow).isBound(0);
+        verify(resultRow).isBound(1);
+        verify(resultRow, never()).getObject(1);
     }
 
     @Test
-    public void noUniqueResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() throws Exception {
+    void noUniqueResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() throws Exception {
         final Query query = queryWithRollbackMarker(SELECT_QUERY);
-        when(resultSetMock.getColumnCount()).thenReturn(2);
-        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultSetMock.getObject(anyInt())).thenReturn("str");
-        thrown.expect(NoUniqueResultException.class);
-        try {
-            query.getSingleResult();
-        } finally {
-            verify(handler, never()).execute();
-        }
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultRow.getObject(anyInt())).thenReturn("str");
+        assertThrows(NoUniqueResultException.class, query::getSingleResult);
+        verify(handler, never()).execute();
     }
 
     @Test
-    public void noResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() {
+    void noResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() {
         final Query query = queryWithRollbackMarker(SELECT_QUERY);
-        thrown.expect(NoResultException.class);
-        try {
-            query.getSingleResult();
-        } finally {
-            verify(handler, never()).execute();
-        }
+        assertThrows(NoResultException.class, query::getSingleResult);
+        verify(handler, never()).execute();
     }
 }

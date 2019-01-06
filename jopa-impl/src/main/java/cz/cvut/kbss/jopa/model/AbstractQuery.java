@@ -27,9 +27,11 @@ import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -206,30 +208,24 @@ abstract class AbstractQuery implements Query {
      * @param consumer Called for every row in the result set
      * @throws OntoDriverException When something goes wrong during query evaluation or result set processing
      */
-    void executeQuery(ThrowingConsumer<ResultSet, OntoDriverException> consumer) throws OntoDriverException {
+    void executeQuery(ThrowingConsumer<ResultRow, OntoDriverException> consumer) throws OntoDriverException {
         assert maxResults > 0;
 
-        final Statement stmt = connection.createStatement();
-        try {
+        try (final Statement stmt = connection.createStatement()) {
             setTargetOntology(stmt);
             logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
             int cnt = 0;
             int index = 0;
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
-            while (rs.hasNext() && cnt < maxResults) {
-                rs.next();
+            final Iterator<ResultRow> it = rs.iterator();
+            while (it.hasNext() && cnt < maxResults) {
+                final ResultRow row = it.next();
                 if (index >= firstResult) {
-                    consumer.accept(rs);
+                    consumer.accept(row);
                     cnt++;
                 }
                 index++;
-            }
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after query evaluation.", e);
             }
         }
     }

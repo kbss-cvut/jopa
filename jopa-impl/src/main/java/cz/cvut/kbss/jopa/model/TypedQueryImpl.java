@@ -26,8 +26,8 @@ import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.net.URI;
 import java.util.*;
@@ -89,19 +89,19 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         return res;
     }
 
-    private Optional<X> loadEntityInstance(ResultSet resultSet, Descriptor instanceDescriptor)
+    private Optional<X> loadEntityInstance(ResultRow resultRow, Descriptor instanceDescriptor)
             throws OntoDriverException {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
-        assert resultSet.isBound(0);
-        final URI uri = URI.create(resultSet.getString(0));
+        assert resultRow.isBound(0);
+        final URI uri = URI.create(resultRow.getString(0));
         return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
     }
 
-    private X loadResultValue(ResultSet resultSet) {
+    private X loadResultValue(ResultRow resultRow) {
         try {
-            return resultSet.getObject(0, resultType);
+            return resultRow.getObject(0, resultType);
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
         }

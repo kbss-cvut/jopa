@@ -15,48 +15,43 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class VariableResultMapperTest {
+class VariableResultMapperTest {
 
     private static final String NAME = "x";
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Mock
-    private ResultSet resultSet;
+    private ResultRow resultRow;
 
     @Mock
     private UnitOfWorkImpl uowMock;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void mapReadsValueFromResultSetByVariableNameAndReturnsIt() throws OntoDriverException {
+    void mapReadsValueFromResultSetByVariableNameAndReturnsIt() throws OntoDriverException {
         final Integer value = 117;
-        when(resultSet.isBound(NAME)).thenReturn(true);
-        when(resultSet.getObject(NAME)).thenReturn(value);
+        when(resultRow.isBound(NAME)).thenReturn(true);
+        when(resultRow.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(NoType.getVariableMapping());
-        final Object result = mapper.map(resultSet, uowMock);
+        final Object result = mapper.map(resultRow, uowMock);
         assertEquals(value, result);
-        verify(resultSet).getObject(NAME);
+        verify(resultRow).getObject(NAME);
     }
 
     @SparqlResultSetMapping(name = "testMapping", variables = {
@@ -70,12 +65,12 @@ public class VariableResultMapperTest {
     }
 
     @Test
-    public void mapCastsValueToTargetTypeWhenPossible() throws OntoDriverException {
+    void mapCastsValueToTargetTypeWhenPossible() throws OntoDriverException {
         final Integer value = 117;
-        when(resultSet.isBound(NAME)).thenReturn(true);
-        when(resultSet.getObject(NAME)).thenReturn(value);
+        when(resultRow.isBound(NAME)).thenReturn(true);
+        when(resultRow.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeCast.getVariableMapping());
-        final Object result = mapper.map(resultSet, uowMock);
+        final Object result = mapper.map(resultRow, uowMock);
         assertTrue(result instanceof Number);
         assertEquals(value, result);
     }
@@ -91,12 +86,12 @@ public class VariableResultMapperTest {
     }
 
     @Test
-    public void mapTransformsValueToTargetType() throws OntoDriverException {
+    void mapTransformsValueToTargetType() throws OntoDriverException {
         final String value = "http://onto.fel.cvut.cz";
-        when(resultSet.isBound(NAME)).thenReturn(true);
-        when(resultSet.getObject(NAME)).thenReturn(value);
+        when(resultRow.isBound(NAME)).thenReturn(true);
+        when(resultRow.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
-        final Object result = mapper.map(resultSet, uowMock);
+        final Object result = mapper.map(resultRow, uowMock);
         assertTrue(result instanceof URI);
         assertEquals(URI.create(value), result);
     }
@@ -112,11 +107,11 @@ public class VariableResultMapperTest {
     }
 
     @Test
-    public void mapReturnsNullWhenVariableIsNotBoundInResultSetButIsNotRequired() throws Exception {
-        when(resultSet.isBound(NAME)).thenReturn(false);
-        when(resultSet.getObject(NAME)).thenThrow(new OntoDriverException("Error"));
+    void mapReturnsNullWhenVariableIsNotBoundInResultSetButIsNotRequired() throws Exception {
+        when(resultRow.isBound(NAME)).thenReturn(false);
+        when(resultRow.getObject(NAME)).thenThrow(new OntoDriverException("Error"));
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
-        final Object result = mapper.map(resultSet, uowMock);
+        final Object result = mapper.map(resultRow, uowMock);
         assertNull(result);
     }
 }

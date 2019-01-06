@@ -23,11 +23,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Iterator;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class NamedQueryTest extends IntegrationTestBase {
 
@@ -41,6 +42,7 @@ public class NamedQueryTest extends IntegrationTestBase {
         MockitoAnnotations.initMocks(this);
         super.setUp();
         when(connectionMock.createStatement()).thenReturn(statementMock);
+        when(resultSetMock.iterator()).thenReturn(mock(Iterator.class));
     }
 
     @Test
