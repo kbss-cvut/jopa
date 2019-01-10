@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.sparql;
 
@@ -22,6 +20,9 @@ import java.util.*;
 
 public class SparqlQueryHolder implements QueryHolder {
 
+    private static final String SPARQL_LIMIT = " LIMIT ";
+    private static final String SPARQL_OFFSET = " OFFSET ";
+
     // Original query string
     private final String query;
 
@@ -30,6 +31,10 @@ public class SparqlQueryHolder implements QueryHolder {
     // These parameters are in order matching the query parts and can appear multiple times in the list
     private final List<QueryParameter<?>> parameters;
     private final List<String> queryParts;
+
+    private int offset = 0;
+
+    private int limit = Integer.MAX_VALUE;
 
     public SparqlQueryHolder(String query, List<String> parts, List<QueryParameter<?>> parameters) {
         this.query = query;
@@ -104,6 +109,26 @@ public class SparqlQueryHolder implements QueryHolder {
     }
 
     @Override
+    public void setFirstResult(int startPosition) {
+        this.offset = startPosition;
+    }
+
+    @Override
+    public int getFirstResult() {
+        return offset;
+    }
+
+    @Override
+    public void setMaxResults(int maxResults) {
+        this.limit = maxResults;
+    }
+
+    @Override
+    public int getMaxResults() {
+        return limit;
+    }
+
+    @Override
     public void clearParameter(Parameter<?> parameter) {
         getInternalParameter(parameter).resetValue();
     }
@@ -123,6 +148,12 @@ public class SparqlQueryHolder implements QueryHolder {
         }
         if (queryParts.size() > parameters.size()) {
             sb.append(queryParts.get(parameters.size()));
+        }
+        if (limit != Integer.MAX_VALUE) {
+            sb.append(SPARQL_LIMIT).append(limit);
+        }
+        if (offset != 0) {
+            sb.append(SPARQL_OFFSET).append(offset);
         }
         return sb.toString();
     }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query;
 
@@ -101,6 +99,34 @@ public interface QueryHolder {
      * @see #setParameter(Parameter, Object)
      */
     <T> void setUntypedParameter(Parameter<T> parameter, Object value);
+
+    /**
+     * Sets the position of the first result to retrieve.
+     *
+     * @param startPosition The position to set, starting at 0
+     */
+    void setFirstResult(int startPosition);
+
+    /**
+     * Gets the currently set first result position.
+     *
+     * @return the first result position, 0 if none was set
+     */
+    int getFirstResult();
+
+    /**
+     * Sets the maximum number of results the query should retrieve.
+     *
+     * @param maxResults The maximum number of results
+     */
+    void setMaxResults(int maxResults);
+
+    /**
+     * Gets the currently set maximum number of results to retrieve
+     *
+     * @return Maximum results value, {@code Integer.MAX_VALUE} when none was set
+     */
+    int getMaxResults();
 
     /**
      * Clears any previously set value of the specified parameter.
