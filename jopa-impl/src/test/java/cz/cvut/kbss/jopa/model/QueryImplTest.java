@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -20,9 +18,12 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -316,5 +317,33 @@ class QueryImplTest extends QueryTestBase {
         final Query query = queryWithRollbackMarker(SELECT_QUERY);
         assertThrows(NoResultException.class, query::getSingleResult);
         verify(handler, never()).execute();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void getResultStreamRetrievesResultStreamFromUnderlyingResultSet() throws Exception {
+        final Query sut = createQuery(SELECT_QUERY);
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultRow.isBound(anyInt())).thenReturn(true);
+        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
+        when(resultRow.getObject(anyInt())).thenReturn("str");
+        final Stream result = sut.getResultStream();
+        assertNotNull(result);
+        final List asList = (List) result.collect(Collectors.toList());
+        assertEquals(2, asList.size());
+        final Object[] expected = new Object[]{"str", "str"};
+        asList.forEach(item -> assertArrayEquals(expected, (Object[]) item));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void getResultStreamClosesStatementWhenStreamIsProcessed() throws Exception {
+        final Query sut = createQuery(SELECT_QUERY);
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultRow.isBound(anyInt())).thenReturn(true);
+        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
+        when(resultRow.getObject(anyInt())).thenReturn("str");
+        sut.getResultStream().forEach(Assertions::assertNotNull);
+        verify(statementMock).close();
     }
 }

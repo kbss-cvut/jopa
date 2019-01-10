@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -32,7 +30,10 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -397,5 +398,36 @@ class TypedQueryImplTest extends QueryTestBase {
         query.setRollbackOnlyMarker(handler);
         assertThrows(NoResultException.class, query::getSingleResult);
         verify(handler, never()).execute();
+    }
+
+    @Test
+    void getResultStreamRetrievesResultStreamFromUnderlyingResultSet() throws Exception {
+        final List<String> uris = Arrays.asList(Generators.createIndividualIdentifier().toString(),
+                Generators.createIndividualIdentifier().toString());
+        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
+        when(resultRow.isBound(0)).thenReturn(true);
+        when(resultRow.getString(0)).thenReturn(uris.get(0), uris.get(1));
+        when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
+                .thenReturn(new OWLClassA(URI.create(uris.get(0))));
+        when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(1))), any(Descriptor.class)))
+                .thenReturn(new OWLClassA(URI.create(uris.get(1))));
+        final TypedQuery<OWLClassA> sut = create(SELECT_QUERY, OWLClassA.class);
+        final Stream<OWLClassA> result = sut.getResultStream();
+        final List<OWLClassA> asList = result.collect(Collectors.toList());
+        assertEquals(uris.size(), asList.size());
+        assertTrue(uris.containsAll(asList.stream().map(a -> a.getUri().toString()).collect(Collectors.toList())));
+    }
+
+    @Test
+    void getResultStreamClosesStatementWhenStreamIsProcessed() throws Exception {
+        final List<String> uris = Collections.singletonList(Generators.createIndividualIdentifier().toString());
+        when(resultSetIterator.hasNext()).thenReturn(true, false);
+        when(resultRow.isBound(0)).thenReturn(true);
+        when(resultRow.getString(0)).thenReturn(uris.get(0));
+        when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
+                .thenReturn(new OWLClassA(URI.create(uris.get(0))));
+        final TypedQuery<OWLClassA> sut = create(SELECT_QUERY, OWLClassA.class);
+        sut.getResultStream().forEach(a -> assertTrue(uris.contains(a.getUri().toString())));
+        verify(statementMock).close();
     }
 }
