@@ -34,19 +34,19 @@ import java.net.URI;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-abstract class UnitOfWorkTestBase {
+public abstract class UnitOfWorkTestBase {
 
     static final URI CONTEXT_URI = URI.create("http://testContext");
 
-    Descriptor descriptor;
+    protected Descriptor descriptor;
 
-    OWLClassA entityA;
+    protected OWLClassA entityA;
     OWLClassB entityB;
     OWLClassD entityD;
     OWLClassL entityL;
 
     @Mock
-    MetamodelImpl metamodelMock;
+    protected MetamodelImpl metamodelMock;
 
     @Mock
     CacheManager cacheManagerMock;
@@ -55,18 +55,18 @@ abstract class UnitOfWorkTestBase {
     ConnectionWrapper storageMock;
 
     @Mock
-    EntityManagerImpl emMock;
+    protected EntityManagerImpl emMock;
 
     @Mock
-    EntityTransaction transactionMock;
+    protected EntityTransaction transactionMock;
 
     ServerSessionStub serverSessionStub;
 
     CloneBuilder cloneBuilder;
 
-    UnitOfWorkImpl uow;
+    protected UnitOfWorkImpl uow;
 
-    void setUp() throws Exception {
+    protected void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         this.serverSessionStub = spy(new ServerSessionStub(storageMock));

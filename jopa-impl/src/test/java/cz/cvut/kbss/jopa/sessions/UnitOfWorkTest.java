@@ -42,7 +42,7 @@ import static org.mockito.Mockito.*;
 class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     @BeforeEach
-    void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
     }
 
