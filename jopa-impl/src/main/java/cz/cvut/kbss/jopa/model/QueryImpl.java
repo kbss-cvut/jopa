@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -40,7 +38,7 @@ public class QueryImpl extends AbstractQuery implements Query {
             if (getMaxResults() == 0) {
                 return Collections.emptyList();
             }
-            return getResultListImpl(maxResults);
+            return getResultListImpl();
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
@@ -50,8 +48,7 @@ public class QueryImpl extends AbstractQuery implements Query {
         }
     }
 
-    private List<?> getResultListImpl(int maxResults) throws OntoDriverException {
-        assert maxResults > 0;
+    private List<?> getResultListImpl() throws OntoDriverException {
         final List<Object> res = new ArrayList<>();
         executeQuery(rs -> res.add(extractRow(rs)));
         return res;
@@ -62,7 +59,7 @@ public class QueryImpl extends AbstractQuery implements Query {
         ensureOpen();
         try {
             // Call it with maxResults = 2 just to see whether there are more
-            final List<?> list = getResultListImpl(2);
+            final List<?> list = getResultListImpl();
             if (list.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
             }
@@ -193,7 +190,7 @@ public class QueryImpl extends AbstractQuery implements Query {
     public Query setMaxResults(int maxResults) {
         ensureOpen();
         checkNumericParameter(maxResults, "max results");
-        this.maxResults = maxResults;
+        query.setMaxResults(maxResults);
         return this;
     }
 
@@ -201,7 +198,7 @@ public class QueryImpl extends AbstractQuery implements Query {
     public Query setFirstResult(int startPosition) {
         ensureOpen();
         checkNumericParameter(startPosition, "first result offset");
-        this.firstResult = startPosition;
+        query.setFirstResult(startPosition);
         return this;
     }
 

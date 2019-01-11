@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -31,7 +29,6 @@ import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -45,8 +42,6 @@ abstract class AbstractQuery implements Query {
 
     final QueryHolder query;
     private final ConnectionWrapper connection;
-    int firstResult = 0;
-    int maxResults = Integer.MAX_VALUE;
 
     private boolean useBackupOntology = false;
 
@@ -187,12 +182,12 @@ abstract class AbstractQuery implements Query {
 
     @Override
     public int getMaxResults() {
-        return maxResults;
+        return query.getMaxResults();
     }
 
     @Override
     public int getFirstResult() {
-        return firstResult;
+        return query.getFirstResult();
     }
 
     void checkNumericParameter(int param, String name) {
@@ -209,23 +204,13 @@ abstract class AbstractQuery implements Query {
      * @throws OntoDriverException When something goes wrong during query evaluation or result set processing
      */
     void executeQuery(ThrowingConsumer<ResultRow, OntoDriverException> consumer) throws OntoDriverException {
-        assert maxResults > 0;
-
         try (final Statement stmt = connection.createStatement()) {
             setTargetOntology(stmt);
             logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            int cnt = 0;
-            int index = 0;
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
-            final Iterator<ResultRow> it = rs.iterator();
-            while (it.hasNext() && cnt < maxResults) {
-                final ResultRow row = it.next();
-                if (index >= firstResult) {
-                    consumer.accept(row);
-                    cnt++;
-                }
-                index++;
+            for (ResultRow row : rs) {
+                consumer.accept(row);
             }
         }
     }

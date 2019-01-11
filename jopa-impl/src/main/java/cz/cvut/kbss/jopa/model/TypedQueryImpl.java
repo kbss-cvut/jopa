@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -30,7 +28,10 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
@@ -56,12 +57,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public List<X> getResultList() {
         ensureOpen();
-        if (maxResults == 0) {
-            return Collections.emptyList();
-        }
-        List<X> list;
         try {
-            list = getResultListImpl(maxResults);
+            return getResultListImpl();
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
@@ -69,12 +66,9 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             markTransactionForRollback();
             throw e;
         }
-
-        return list;
     }
 
-    private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
-        assert maxResults > 0;
+    private List<X> getResultListImpl() throws OntoDriverException {
 
         final boolean isEntityType = metamodelProvider.isEntityType(resultType);
         final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
@@ -113,7 +107,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         try {
             // call it with maxResults = 2 just to see whether there are
             // multiple results
-            final List<X> res = getResultListImpl(2);
+            final List<X> res = getResultListImpl();
             if (res.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
             }
@@ -139,7 +133,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             markTransactionForRollback();
             throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
         }
-        this.maxResults = maxResults;
+        query.setMaxResults(maxResults);
         return this;
     }
 
@@ -147,7 +141,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     public TypedQuery<X> setFirstResult(int startPosition) {
         ensureOpen();
         checkNumericParameter(startPosition, "first result offset");
-        this.firstResult = startPosition;
+        query.setFirstResult(startPosition);
         return this;
     }
 

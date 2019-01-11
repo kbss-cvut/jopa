@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -112,32 +115,13 @@ class TypedQueryImplTest extends QueryTestBase {
     }
 
     @Test
-    void setMaxResultsReturnsSpecifiedMaxResults() throws Exception {
+    void setMaxResultsExecutesQueryWithSpecifiedLimit() throws Exception {
         final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
-        final int count = 10;
         final int expectedCount = 5;
-        final List<String> uris = initDataForQuery(count);
-        final List<OWLClassA> res = query.setMaxResults(expectedCount).getResultList();
-        assertEquals(expectedCount, query.getMaxResults());
-        verifyResults(uris, res, expectedCount);
-    }
-
-    @Test
-    void setMaxResultsLargerReturnsAllResults() throws Exception {
-        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
-        final int count = 10;
-        final List<String> uris = initDataForQuery(count);
-        final List<OWLClassA> res = query.setMaxResults(count + 5).getResultList();
-        verifyResults(uris, res, count);
-    }
-
-    @Test
-    void returnsEmptyListWhenMaxResultsIsSetToZero() throws Exception {
-        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
-        initDataForQuery(2);
-        final List<OWLClassA> res = query.setMaxResults(0).getResultList();
-        assertNotNull(res);
-        assertTrue(res.isEmpty());
+        query.setMaxResults(expectedCount).getResultList();
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(statementMock).executeQuery(captor.capture());
+        assertThat(captor.getValue(), containsString("LIMIT " + expectedCount));
     }
 
     @Test
@@ -364,23 +348,14 @@ class TypedQueryImplTest extends QueryTestBase {
     }
 
     @Test
-    void setFirstResultOffsetsQueryResultStartToSpecifiedPosition() throws Exception {
+    void setFirstResultExecutesQueryWithSpecifiedOffset() throws Exception {
         final TypedQuery<OWLClassA> q = create(SELECT_QUERY, OWLClassA.class);
-        when(resultRow.getColumnCount()).thenReturn(1);
-        // Three results
-        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
-        final URI uri = Generators.createIndividualIdentifier();
-        final OWLClassA a = Generators.generateOwlClassAInstance();
-        when(resultRow.isBound(0)).thenReturn(true);
-        when(resultRow.getString(anyInt())).thenReturn(uri.toString());
-        when(uowMock.readObject(eq(OWLClassA.class), eq(uri), any(Descriptor.class))).thenReturn(a);
-        q.setFirstResult(2);
-        assertEquals(2, q.getFirstResult());
-        final List<OWLClassA> result = q.getResultList();
-        assertEquals(1, result.size());
-        assertEquals(a, result.get(0));
-        verify(resultRow).getString(anyInt());
-        verify(uowMock).readObject(eq(OWLClassA.class), any(), any());
+        initDataForQuery(5);
+        final int position = 3;
+        q.setFirstResult(position).getResultList();
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(statementMock).executeQuery(captor.capture());
+        assertThat(captor.getValue(), containsString("OFFSET " + position));
     }
 
     @Test

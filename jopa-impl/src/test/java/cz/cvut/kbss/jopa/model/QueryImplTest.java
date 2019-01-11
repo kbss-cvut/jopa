@@ -20,11 +20,14 @@ import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -66,27 +69,13 @@ class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    void setMaxResultsConstrainsNumberOfReturnedResults() throws Exception {
-        final Query q = createQuery(SELECT_QUERY);
-        when(resultRow.getColumnCount()).thenReturn(2);
-        // Three results
-        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultRow.getObject(anyInt())).thenReturn("str");
-        final int expectedCount = 2;
-        q.setMaxResults(expectedCount);
-        assertEquals(expectedCount, q.getMaxResults());
-        final List result = q.getResultList();
-        assertEquals(expectedCount, result.size());
-    }
-
-    @Test
-    void setMaxResultsToZeroReturnsImmediatelyEmptyResult() throws Exception {
-        final Query q = createQuery(SELECT_QUERY);
-        q.setMaxResults(0);
-        final List result = q.getResultList();
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(statementMock, never()).executeQuery(anyString());
+    void setMaxResultsExecutesQueryWithSpecifiedLimit() throws Exception {
+        final Query sut = createQuery(SELECT_QUERY);
+        final int maxResults = 2;
+        sut.setMaxResults(maxResults).getResultList();
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(statementMock).executeQuery(captor.capture());
+        assertThat(captor.getValue(), containsString("LIMIT " + maxResults));
     }
 
     @Test
@@ -271,18 +260,13 @@ class QueryImplTest extends QueryTestBase {
     }
 
     @Test
-    void setFirstResultOffsetsQueryResultStartToSpecifiedPosition() throws Exception {
+    void setFirstResultExecutesQueryWithSpecifiedOffset() throws Exception {
         final Query q = createQuery(SELECT_QUERY);
-        when(resultRow.getColumnCount()).thenReturn(1);
-        // Three results
-        when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultRow.getObject(anyInt())).thenReturn("str");
-        q.setFirstResult(2);
-        assertEquals(2, q.getFirstResult());
-        final List result = q.getResultList();
-        assertEquals(1, result.size());
-        assertEquals("str", result.get(0));
-        verify(resultRow).getObject(anyInt());
+        final int firstResult = 2;
+        q.setFirstResult(firstResult).getResultList();
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(statementMock).executeQuery(captor.capture());
+        assertThat(captor.getValue(), containsString("OFFSET " + firstResult));
     }
 
     @Test
