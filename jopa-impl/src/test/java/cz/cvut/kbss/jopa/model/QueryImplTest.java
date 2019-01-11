@@ -330,4 +330,19 @@ class QueryImplTest extends QueryTestBase {
         sut.getResultStream().forEach(Assertions::assertNotNull);
         verify(statementMock).close();
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void getResultStreamClosesStatementWhenStreamProcessingThrowsException() throws Exception {
+        final Query sut = createQuery(SELECT_QUERY);
+        when(resultRow.getColumnCount()).thenReturn(2);
+        when(resultRow.isBound(anyInt())).thenReturn(true);
+        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
+        when(resultRow.getObject(anyInt())).thenThrow(OntoDriverException.class);
+        try {
+            assertThrows(OWLPersistenceException.class, () -> sut.getResultStream().forEach(Assertions::assertNotNull));
+        } finally {
+            verify(statementMock).close();
+        }
+    }
 }

@@ -25,12 +25,15 @@ import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverRuntimeException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Common state and behavior of both {@link cz.cvut.kbss.jopa.model.query.Query} and {@link
@@ -208,11 +211,24 @@ abstract class AbstractQuery implements Query {
             setTargetOntology(stmt);
             logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             for (ResultRow row : rs) {
                 consumer.accept(row);
             }
         }
+    }
+
+    <R> Stream<R> executeQueryForStream(Function<ResultRow, R> function) throws OntoDriverException {
+        final Statement stmt = connection.createStatement();
+        setTargetOntology(stmt);
+        logQuery();
+        final ResultSet rs = stmt.executeQuery(query.assembleQuery());
+        return rs.stream().map(function).onClose(() -> {
+            try {
+                stmt.close();
+            } catch (OntoDriverException e) {
+                throw new OntoDriverRuntimeException(e);
+            }
+        });
     }
 
     protected boolean exceptionCausesRollback(RuntimeException e) {

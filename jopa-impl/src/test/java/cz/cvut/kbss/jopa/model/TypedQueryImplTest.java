@@ -405,4 +405,21 @@ class TypedQueryImplTest extends QueryTestBase {
         sut.getResultStream().forEach(a -> assertTrue(uris.contains(a.getUri().toString())));
         verify(statementMock).close();
     }
+
+    @Test
+    void getResultStreamClosesStatementWhenStreamProcessingThrowsException() throws Exception {
+        final List<String> uris = Collections.singletonList(Generators.createIndividualIdentifier().toString());
+        when(resultSetIterator.hasNext()).thenReturn(true, false);
+        when(resultRow.isBound(0)).thenReturn(true);
+        when(resultRow.getString(0)).thenReturn(uris.get(0));
+        when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
+                .thenThrow(OWLPersistenceException.class);
+        final TypedQuery<OWLClassA> sut = create(SELECT_QUERY, OWLClassA.class);
+        try {
+            assertThrows(OWLPersistenceException.class,
+                    () -> sut.getResultStream().forEach(a -> assertTrue(uris.contains(a.getUri().toString()))));
+        } finally {
+            verify(statementMock).close();
+        }
+    }
 }

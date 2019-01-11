@@ -19,11 +19,13 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverRuntimeException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class QueryImpl extends AbstractQuery implements Query {
 
@@ -58,7 +60,6 @@ public class QueryImpl extends AbstractQuery implements Query {
     public Object getSingleResult() {
         ensureOpen();
         try {
-            // Call it with maxResults = 2 just to see whether there are more
             final List<?> list = getResultListImpl();
             if (list.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
@@ -67,6 +68,21 @@ public class QueryImpl extends AbstractQuery implements Query {
                 throw new NoUniqueResultException("Multiple results found for query " + query);
             }
             return list.get(0);
+        } catch (OntoDriverException e) {
+            markTransactionForRollback();
+            throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            if (exceptionCausesRollback(e)) {
+                markTransactionForRollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public Stream getResultStream() {
+        try {
+            return executeQueryForStream(this::extractRow);
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
@@ -202,17 +218,21 @@ public class QueryImpl extends AbstractQuery implements Query {
         return this;
     }
 
-    Object extractRow(ResultRow resultRow) throws OntoDriverException {
-        final int columnCount = resultRow.getColumnCount();
-        if (columnCount == 1) {
-            return resultRow.getObject(0);
-        } else {
-            final Object[] row = new Object[columnCount];
-            for (int i = 0; i < columnCount; i++) {
-                final Object ob = resultRow.isBound(i) ? resultRow.getObject(i) : null;
-                row[i] = ob;
+    Object extractRow(ResultRow resultRow) {
+        try {
+            final int columnCount = resultRow.getColumnCount();
+            if (columnCount == 1) {
+                return resultRow.getObject(0);
+            } else {
+                final Object[] row = new Object[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    final Object ob = resultRow.isBound(i) ? resultRow.getObject(i) : null;
+                    row[i] = ob;
+                }
+                return row;
             }
-            return row;
+        } catch (OntoDriverException e) {
+            throw new OntoDriverRuntimeException(e);
         }
     }
 }
