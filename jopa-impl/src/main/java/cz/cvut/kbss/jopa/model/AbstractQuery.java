@@ -184,6 +184,78 @@ abstract class AbstractQuery implements Query {
         return (T) query.getParameterValue(parameter);
     }
 
+     @Override
+    public Query setParameter(int position, Object value) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(int position, String value, String language) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(position), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(String name, Object value) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(String name, String value, String language) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(name), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setUntypedParameter(int position, Object value) {
+        ensureOpen();
+        try {
+            query.setUntypedParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setUntypedParameter(String name, Object value) {
+        ensureOpen();
+        try {
+            query.setUntypedParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
     @Override
     public int getMaxResults() {
         return query.getMaxResults();
@@ -235,5 +307,41 @@ abstract class AbstractQuery implements Query {
 
     boolean exceptionCausesRollback(RuntimeException e) {
         return !(e instanceof NoUniqueResultException) && !(e instanceof NoResultException);
+    }
+
+    @Override
+    public <T> Query setParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
+        try {
+            query.setParameter(parameter, value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(Parameter<String> parameter, String value, String language) {
+        ensureOpen();
+        try {
+            query.setParameter(parameter, value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public <T> Query setUntypedParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
+        try {
+            query.setUntypedParameter(parameter, value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
     }
 }

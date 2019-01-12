@@ -153,10 +153,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public TypedQuery<X> setMaxResults(int maxResults) {
         ensureOpen();
-        if (maxResults < 0) {
-            markTransactionForRollback();
-            throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
-        }
+        checkNumericParameter(maxResults, "max results");
         query.setMaxResults(maxResults);
         return this;
     }
@@ -171,109 +168,55 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setParameter(int position, Object value) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(position), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(position, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(int position, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(position), value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(position, value, language);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(String name, Object value) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(name), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(name, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(String name, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(name), value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(name, value, language);
         return this;
     }
 
     @Override
     public <T> TypedQuery<X> setParameter(Parameter<T> parameter, T value) {
-        ensureOpen();
-        try {
-            query.setParameter(parameter, value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(parameter, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(Parameter<String> parameter, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(parameter, value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(parameter, value, language);
         return this;
     }
 
     @Override
     public TypedQuery<X> setUntypedParameter(int position, Object value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(query.getParameter(position), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setUntypedParameter(position, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setUntypedParameter(String name, Object value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(query.getParameter(name), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setUntypedParameter(name, value);
         return this;
     }
 
     @Override
     public <T> TypedQuery<X> setUntypedParameter(Parameter<T> parameter, T value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(parameter, value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setUntypedParameter(parameter, value);
         return this;
     }
 
