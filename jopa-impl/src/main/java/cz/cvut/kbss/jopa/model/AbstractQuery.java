@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -27,11 +25,16 @@ import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Common state and behavior of both {@link cz.cvut.kbss.jopa.model.query.Query} and {@link
@@ -43,8 +46,6 @@ abstract class AbstractQuery implements Query {
 
     final QueryHolder query;
     private final ConnectionWrapper connection;
-    int firstResult = 0;
-    int maxResults = Integer.MAX_VALUE;
 
     private boolean useBackupOntology = false;
 
@@ -183,14 +184,86 @@ abstract class AbstractQuery implements Query {
         return (T) query.getParameterValue(parameter);
     }
 
+     @Override
+    public Query setParameter(int position, Object value) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(int position, String value, String language) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(position), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(String name, Object value) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(String name, String value, String language) {
+        ensureOpen();
+        try {
+            query.setParameter(query.getParameter(name), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setUntypedParameter(int position, Object value) {
+        ensureOpen();
+        try {
+            query.setUntypedParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setUntypedParameter(String name, Object value) {
+        ensureOpen();
+        try {
+            query.setUntypedParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
     @Override
     public int getMaxResults() {
-        return maxResults;
+        return query.getMaxResults();
     }
 
     @Override
     public int getFirstResult() {
-        return firstResult;
+        return query.getFirstResult();
     }
 
     void checkNumericParameter(int param, String name) {
@@ -206,35 +279,69 @@ abstract class AbstractQuery implements Query {
      * @param consumer Called for every row in the result set
      * @throws OntoDriverException When something goes wrong during query evaluation or result set processing
      */
-    void executeQuery(ThrowingConsumer<ResultSet, OntoDriverException> consumer) throws OntoDriverException {
-        assert maxResults > 0;
-
-        final Statement stmt = connection.createStatement();
-        try {
+    void executeQuery(ThrowingConsumer<ResultRow, OntoDriverException> consumer) throws OntoDriverException {
+        try (final Statement stmt = connection.createStatement()) {
             setTargetOntology(stmt);
             logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            int cnt = 0;
-            int index = 0;
-            // TODO register this as observer on the result set so that additional results can be loaded asynchronously
-            while (rs.hasNext() && cnt < maxResults) {
-                rs.next();
-                if (index >= firstResult) {
-                    consumer.accept(rs);
-                    cnt++;
-                }
-                index++;
-            }
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after query evaluation.", e);
+            for (ResultRow row : rs) {
+                consumer.accept(row);
             }
         }
     }
 
-    protected boolean exceptionCausesRollback(RuntimeException e) {
+    <R> Stream<R> executeQueryForStream(Function<ResultRow, Optional<R>> function) throws OntoDriverException {
+        final Statement stmt = connection.createStatement();
+        setTargetOntology(stmt);
+        logQuery();
+        final ResultSet rs = stmt.executeQuery(query.assembleQuery());
+        return StreamSupport.stream(new QueryResultSpliterator<R>(rs.spliterator(), function, () -> {
+            try {
+                stmt.close();
+            } catch (OntoDriverException e) {
+                markTransactionForRollback();
+                throw new OWLPersistenceException(e);
+            }
+        }), false);
+    }
+
+    boolean exceptionCausesRollback(RuntimeException e) {
         return !(e instanceof NoUniqueResultException) && !(e instanceof NoResultException);
+    }
+
+    @Override
+    public <T> Query setParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
+        try {
+            query.setParameter(parameter, value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public Query setParameter(Parameter<String> parameter, String value, String language) {
+        ensureOpen();
+        try {
+            query.setParameter(parameter, value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
+    }
+
+    @Override
+    public <T> Query setUntypedParameter(Parameter<T> parameter, T value) {
+        ensureOpen();
+        try {
+            query.setUntypedParameter(parameter, value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+        return this;
     }
 }

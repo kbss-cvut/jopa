@@ -17,8 +17,8 @@ import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.Optional;
 
@@ -55,23 +55,23 @@ class FieldResultMapper {
      * Maps value from the specified result set to the specified target object's field based on the mapping represented
      * by this instance.
      *
-     * @param resultSet Result set with value to map
+     * @param resultRow Result set with value to map
      * @param target    Target object on which the field will be set
      */
-    void map(ResultSet resultSet, Object target, UnitOfWork uow) {
-        final Optional<Object> value = getVariableValue(resultSet);
+    void map(ResultRow resultRow, Object target, UnitOfWork uow) {
+        final Optional<Object> value = getVariableValue(resultRow);
         value.ifPresent(val -> {
             verifyValueRange(val);
             EntityPropertiesUtils.setFieldValue(fieldSpec.getJavaField(), target, val);
         });
     }
 
-    Optional<Object> getVariableValue(ResultSet resultSet) {
+    Optional<Object> getVariableValue(ResultRow resultRow) {
         try {
-            if (!resultSet.isBound(variableName)) {
+            if (!resultRow.isBound(variableName)) {
                 return Optional.empty();
             }
-            return Optional.of(resultSet.getObject(variableName));
+            return Optional.of(resultRow.getObject(variableName));
         } catch (OntoDriverException e) {
             throw new SparqlResultMappingException(e);
         }

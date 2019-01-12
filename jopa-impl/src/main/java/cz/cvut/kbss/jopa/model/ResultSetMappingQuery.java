@@ -16,7 +16,7 @@ import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 /**
  * Implementation of query using result set mapping configuration.
@@ -34,7 +34,7 @@ public class ResultSetMappingQuery extends QueryImpl {
     }
 
     @Override
-    Object extractRow(ResultSet resultSet) {
-        return mapper.map(resultSet, uow);
+    Object extractRow(ResultRow resultRow) {
+        return mapper.map(resultRow, uow);
     }
 }

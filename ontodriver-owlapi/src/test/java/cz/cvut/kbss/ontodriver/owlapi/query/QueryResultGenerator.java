@@ -83,8 +83,8 @@ class QueryResultGenerator {
         }
 
         @Override
-        public void add(ResultBinding<OWLObject> resultBinding) {
-            bindings.add(resultBinding);
+        public boolean add(ResultBinding<OWLObject> resultBinding) {
+            return bindings.add(resultBinding);
         }
 
         @Override

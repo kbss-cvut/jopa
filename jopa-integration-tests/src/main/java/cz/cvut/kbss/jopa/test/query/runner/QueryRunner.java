@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.*;
 
 public abstract class QueryRunner extends BaseQueryRunner {
@@ -410,5 +411,18 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final String paramValue = "string\nWith\nNewlines";
         final List result = em.createNativeQuery(query).setParameter("comment", paramValue, "en").getResultList();
         assertTrue(result.isEmpty());   // The point here is that no exception is thrown and a result is returned
+    }
+
+    @Test
+    public void querySupportsProcessingResultsUsingStream() {
+        final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
+        final Set<String> types = a.getTypes();
+        types.add(a.getClass().getAnnotation(OWLClass.class).iri());
+        final String query = "SELECT ?x WHERE { ?instance a ?x . }";
+        final Query q = getEntityManager().createNativeQuery(query).setParameter("instance", a.getUri());
+
+        final Set<String> result = (Set<String>) q.getResultStream().map(Object::toString).collect(Collectors.toSet());
+        assertTrue(result.containsAll(types));
+        assertThat(result.size(), greaterThanOrEqualTo(types.size()));
     }
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,14 +55,14 @@ public class ResultRowMapper implements SparqlResultMapper {
     }
 
     @Override
-    public Object map(ResultSet resultSet, UnitOfWorkImpl uow) {
+    public Object map(ResultRow resultRow, UnitOfWorkImpl uow) {
         if (rowMappers.size() == 1) {
-            return rowMappers.get(0).map(resultSet, uow);
+            return rowMappers.get(0).map(resultRow, uow);
         }
         final Object[] result = new Object[rowMappers.size()];
         int i = 0;
         for (SparqlResultMapper m : rowMappers) {
-            result[i++] = m.map(resultSet, uow);
+            result[i++] = m.map(resultRow, uow);
         }
         return result;
     }
