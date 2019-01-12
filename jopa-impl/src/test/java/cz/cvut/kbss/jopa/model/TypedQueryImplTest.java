@@ -379,9 +379,10 @@ class TypedQueryImplTest extends QueryTestBase {
     void getResultStreamRetrievesResultStreamFromUnderlyingResultSet() throws Exception {
         final List<String> uris = Arrays.asList(Generators.createIndividualIdentifier().toString(),
                 Generators.createIndividualIdentifier().toString());
-        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
-        when(resultRow.isBound(0)).thenReturn(true);
-        when(resultRow.getString(0)).thenReturn(uris.get(0), uris.get(1));
+        when(resultSetMock.isOpen()).thenReturn(true);
+        when(resultSetMock.hasNext()).thenReturn(true, true, false);
+        when(resultSetMock.isBound(0)).thenReturn(true);
+        when(resultSetMock.getString(0)).thenReturn(uris.get(0), uris.get(1));
         when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
                 .thenReturn(new OWLClassA(URI.create(uris.get(0))));
         when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(1))), any(Descriptor.class)))
@@ -396,9 +397,10 @@ class TypedQueryImplTest extends QueryTestBase {
     @Test
     void getResultStreamClosesStatementWhenStreamIsProcessed() throws Exception {
         final List<String> uris = Collections.singletonList(Generators.createIndividualIdentifier().toString());
-        when(resultSetIterator.hasNext()).thenReturn(true, false);
-        when(resultRow.isBound(0)).thenReturn(true);
-        when(resultRow.getString(0)).thenReturn(uris.get(0));
+        when(resultSetMock.isOpen()).thenReturn(true);
+        when(resultSetMock.hasNext()).thenReturn(true, false);
+        when(resultSetMock.isBound(0)).thenReturn(true);
+        when(resultSetMock.getString(0)).thenReturn(uris.get(0));
         when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
                 .thenReturn(new OWLClassA(URI.create(uris.get(0))));
         final TypedQuery<OWLClassA> sut = create(SELECT_QUERY, OWLClassA.class);
@@ -409,9 +411,10 @@ class TypedQueryImplTest extends QueryTestBase {
     @Test
     void getResultStreamClosesStatementWhenStreamProcessingThrowsException() throws Exception {
         final List<String> uris = Collections.singletonList(Generators.createIndividualIdentifier().toString());
-        when(resultSetIterator.hasNext()).thenReturn(true, false);
-        when(resultRow.isBound(0)).thenReturn(true);
-        when(resultRow.getString(0)).thenReturn(uris.get(0));
+        when(resultSetMock.isOpen()).thenReturn(true);
+        when(resultSetMock.hasNext()).thenReturn(true, false);
+        when(resultSetMock.isBound(0)).thenReturn(true);
+        when(resultSetMock.getString(0)).thenReturn(uris.get(0));
         when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
                 .thenThrow(OWLPersistenceException.class);
         final TypedQuery<OWLClassA> sut = create(SELECT_QUERY, OWLClassA.class);

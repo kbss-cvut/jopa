@@ -77,6 +77,7 @@ abstract class QueryTestBase {
         }).when(statementMock).close();
         when(resultSetMock.iterator()).thenReturn(resultSetIterator);
         when(resultSetIterator.next()).thenReturn(resultRow);
+        when(resultSetMock.stream()).thenCallRealMethod();
         when(resultSetMock.spliterator()).thenCallRealMethod();
         this.queryFactory = new SparqlQueryFactory(uowMock, connectionWrapperMock);
     }

@@ -14,17 +14,18 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverRuntimeException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class QueryImpl extends AbstractQuery implements Query {
@@ -82,7 +83,7 @@ public class QueryImpl extends AbstractQuery implements Query {
     @Override
     public Stream getResultStream() {
         try {
-            return executeQueryForStream(this::extractRow);
+            return executeQueryForStream(this::extractRowAsOptional);
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
@@ -218,6 +219,10 @@ public class QueryImpl extends AbstractQuery implements Query {
         return this;
     }
 
+    Optional<Object> extractRowAsOptional(ResultRow row) {
+        return Optional.of(extractRow(row));
+    }
+
     Object extractRow(ResultRow resultRow) {
         try {
             final int columnCount = resultRow.getColumnCount();
@@ -232,7 +237,7 @@ public class QueryImpl extends AbstractQuery implements Query {
                 return row;
             }
         } catch (OntoDriverException e) {
-            throw new OntoDriverRuntimeException(e);
+            throw new OWLPersistenceException(e);
         }
     }
 }

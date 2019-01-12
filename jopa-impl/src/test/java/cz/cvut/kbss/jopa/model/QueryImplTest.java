@@ -307,10 +307,11 @@ class QueryImplTest extends QueryTestBase {
     @Test
     void getResultStreamRetrievesResultStreamFromUnderlyingResultSet() throws Exception {
         final Query sut = createQuery(SELECT_QUERY);
-        when(resultRow.getColumnCount()).thenReturn(2);
-        when(resultRow.isBound(anyInt())).thenReturn(true);
-        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
-        when(resultRow.getObject(anyInt())).thenReturn("str");
+        when(resultSetMock.isOpen()).thenReturn(true);
+        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultSetMock.isBound(anyInt())).thenReturn(true);
+        when(resultSetMock.hasNext()).thenReturn(true, true, false);
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
         final Stream result = sut.getResultStream();
         assertNotNull(result);
         final List asList = (List) result.collect(Collectors.toList());
@@ -323,10 +324,11 @@ class QueryImplTest extends QueryTestBase {
     @Test
     void getResultStreamClosesStatementWhenStreamIsProcessed() throws Exception {
         final Query sut = createQuery(SELECT_QUERY);
-        when(resultRow.getColumnCount()).thenReturn(2);
-        when(resultRow.isBound(anyInt())).thenReturn(true);
-        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
-        when(resultRow.getObject(anyInt())).thenReturn("str");
+        when(resultSetMock.isOpen()).thenReturn(true);
+        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultSetMock.isBound(anyInt())).thenReturn(true);
+        when(resultSetMock.hasNext()).thenReturn(true, true, false);
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
         sut.getResultStream().forEach(Assertions::assertNotNull);
         verify(statementMock).close();
     }
@@ -335,10 +337,11 @@ class QueryImplTest extends QueryTestBase {
     @Test
     void getResultStreamClosesStatementWhenStreamProcessingThrowsException() throws Exception {
         final Query sut = createQuery(SELECT_QUERY);
-        when(resultRow.getColumnCount()).thenReturn(2);
-        when(resultRow.isBound(anyInt())).thenReturn(true);
-        when(resultSetIterator.hasNext()).thenReturn(true, true, false);
-        when(resultRow.getObject(anyInt())).thenThrow(OntoDriverException.class);
+        when(resultSetMock.isOpen()).thenReturn(true);
+        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultSetMock.isBound(anyInt())).thenReturn(true);
+        when(resultSetMock.hasNext()).thenReturn(true, true, false);
+        when(resultSetMock.getObject(anyInt())).thenThrow(OntoDriverException.class);
         try {
             assertThrows(OWLPersistenceException.class, () -> sut.getResultStream().forEach(Assertions::assertNotNull));
         } finally {

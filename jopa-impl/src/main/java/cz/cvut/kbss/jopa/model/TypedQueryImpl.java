@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
@@ -69,7 +70,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     private List<X> getResultListImpl() throws OntoDriverException {
-
         final boolean isEntityType = metamodelProvider.isEntityType(resultType);
         final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
         final List<X> res = new ArrayList<>();
@@ -77,25 +77,28 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             if (isEntityType) {
                 loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
             } else {
-                res.add(loadResultValue(rs));
+                loadResultValue(rs).ifPresent(res::add);
             }
         });
         return res;
     }
 
-    private Optional<X> loadEntityInstance(ResultRow resultRow, Descriptor instanceDescriptor)
-            throws OntoDriverException {
+    private Optional<X> loadEntityInstance(ResultRow resultRow, Descriptor instanceDescriptor) {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
-        assert resultRow.isBound(0);
-        final URI uri = URI.create(resultRow.getString(0));
-        return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
+        try {
+            assert resultRow.isBound(0);
+            final URI uri = URI.create(resultRow.getString(0));
+            return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
+        } catch (OntoDriverException e) {
+            throw new OWLPersistenceException("Unable to load query result as entity of type " + resultType, e);
+        }
     }
 
-    private X loadResultValue(ResultRow resultRow) {
+    private Optional<X> loadResultValue(ResultRow resultRow) {
         try {
-            return resultRow.getObject(0, resultType);
+            return Optional.of(resultRow.getObject(0, resultType));
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
         }
@@ -105,8 +108,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     public X getSingleResult() {
         ensureOpen();
         try {
-            // call it with maxResults = 2 just to see whether there are
-            // multiple results
             final List<X> res = getResultListImpl();
             if (res.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
@@ -115,6 +116,29 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
                 throw new NoUniqueResultException("Multiple results found for query " + query);
             }
             return res.get(0);
+        } catch (OntoDriverException e) {
+            markTransactionForRollback();
+            throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            if (exceptionCausesRollback(e)) {
+                markTransactionForRollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public Stream<X> getResultStream() {
+        final boolean isEntityType = metamodelProvider.isEntityType(resultType);
+        final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
+        try {
+            return executeQueryForStream(row -> {
+                if (isEntityType) {
+                    return loadEntityInstance(row, instDescriptor);
+                } else {
+                    return loadResultValue(row);
+                }
+            });
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
