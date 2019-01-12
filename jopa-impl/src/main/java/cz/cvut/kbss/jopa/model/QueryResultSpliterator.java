@@ -9,6 +9,16 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * Spliterator for processing {@link cz.cvut.kbss.ontodriver.ResultSet} from {@link cz.cvut.kbss.jopa.model.query.Query} or
+ * {@link cz.cvut.kbss.jopa.model.query.TypedQuery} stream support.
+ * <p>
+ * The main responsibilities of this spliterator are extracting result rows using the specified mapper,
+ * passing the extraction result to the specified consumer and invoking the {@code onClose} handler once the iteration is finished.
+ * This handler releases the underlying statement and result set.
+ *
+ * @param <X> The type of the extracted item
+ */
 class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
 
     private final Spliterator<ResultRow> resultSetSpliterator;
@@ -29,7 +39,16 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
 
     @Override
     public boolean tryAdvance(Consumer<? super X> action) {
-        return resultSetSpliterator.tryAdvance((row) -> mapAndApply(row, action));
+        try {
+            final boolean result = resultSetSpliterator.tryAdvance((row) -> mapAndApply(row, action));
+            if (!result) {
+                onClose.execute();
+            }
+            return result;
+        } catch (RuntimeException e) {
+            onClose.execute();
+            throw e;
+        }
     }
 
     @Override

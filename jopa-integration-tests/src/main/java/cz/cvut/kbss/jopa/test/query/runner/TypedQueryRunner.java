@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -287,5 +288,18 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         for (int i = 0; i < result.size(); i++) {
             assertEquals(expected.get(i + offset).getUri(), result.get(i).getUri());
         }
+    }
+
+    @Test
+    public void querySupportsProcessingResultsUsingStream() {
+        final String query = "SELECT ?x WHERE { ?x a ?type .}";
+        final TypedQuery<OWLClassD> q =
+                getEntityManager().createNativeQuery(query, OWLClassD.class).setParameter("type", URI.create(
+                        Vocabulary.C_OWL_CLASS_D));
+        final List<OWLClassD> dList = QueryTestEnvironment.getData(OWLClassD.class);
+        final Set<URI> expected = dList.stream().map(OWLClassD::getUri).collect(Collectors.toSet());
+
+        q.getResultStream().map(OWLClassD::getUri).forEach(rUri -> assertTrue(expected.contains(rUri)));
+        assertEquals(dList.size(), (int) q.getResultStream().count());
     }
 }
