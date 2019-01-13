@@ -44,7 +44,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         connector.add(toAdd, context != null ? context.toString() : null);
     }
 
-    private Resource appendNode(Resource previous, Property property, NamedResource value, List<Statement> statements) {
+    private static Resource appendNode(Resource previous, Property property, NamedResource value,
+                                       List<Statement> statements) {
         final Resource node = createResource(value.getIdentifier().toString());
         statements.add(ResourceFactory.createStatement(previous, property, node));
         return node;

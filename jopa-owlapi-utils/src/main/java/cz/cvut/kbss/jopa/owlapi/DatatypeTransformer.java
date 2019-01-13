@@ -68,7 +68,7 @@ public class DatatypeTransformer {
     public static Object transform(final OWLLiteral l) {
         if (l.isRDFPlainLiteral()) {
             return l.getLiteral();
-        } else if (l.getDatatype().isBuiltIn())
+        } else if (l.getDatatype().isBuiltIn()) {
             switch (l.getDatatype().getBuiltInDatatype()) {
                 case XSD_SHORT:
                     return Short.parseShort(l.getLiteral());
@@ -99,9 +99,8 @@ public class DatatypeTransformer {
                                 + l.getLiteral() + "' cannot be parsed");
                     }
             }
-
-        throw new IllegalArgumentException("Unsupported datatype: "
-                + l.getDatatype());
+        }
+        throw new IllegalArgumentException("Unsupported datatype: " + l.getDatatype());
     }
 
     public static boolean isSupportedJavaType(Class<?> dt) {

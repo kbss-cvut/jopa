@@ -36,6 +36,9 @@ import static org.junit.Assert.*;
 
 public abstract class QueryRunner extends BaseQueryRunner {
 
+    private static final String SELECT_E_BY_TYPE =
+            "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+
     protected QueryRunner(Logger logger) {
         super(logger);
     }
@@ -125,9 +128,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void testSetMaxResults() {
         logger.debug("Test: set maximum number of results.");
-        final String query =
-                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final Query q = getEntityManager().createNativeQuery(query);
+        final Query q = getEntityManager().createNativeQuery(SELECT_E_BY_TYPE);
         final int max = 5;
         assertTrue(max < QueryTestEnvironment.getData(OWLClassE.class).size());
         assertEquals(Integer.MAX_VALUE, q.getMaxResults());
@@ -143,18 +144,14 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test(expected = IllegalArgumentException.class)
     public void testSetMaxResultsNegative() {
         logger.debug("Test: set maximum number of results. Negative argument.");
-        final String query =
-                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final Query q = getEntityManager().createNativeQuery(query);
+        final Query q = getEntityManager().createNativeQuery(SELECT_E_BY_TYPE);
         q.setMaxResults(-1);
     }
 
     @Test
     public void testSetMaxResultsZero() {
         logger.debug("Test: set maximum number of results. Zero argument.");
-        final String query =
-                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final Query q = getEntityManager().createNativeQuery(query);
+        final Query q = getEntityManager().createNativeQuery(SELECT_E_BY_TYPE);
         q.setMaxResults(0);
 
         final List res = q.getResultList();
@@ -179,9 +176,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test(expected = NoUniqueResultException.class)
     public void testGetSingleResultMultiples() {
         logger.debug("Test: get single result. No unique result.");
-        final String query =
-                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final Query q = getEntityManager().createNativeQuery(query);
+        final Query q = getEntityManager().createNativeQuery(SELECT_E_BY_TYPE);
         q.getSingleResult();
     }
 

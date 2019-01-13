@@ -51,8 +51,8 @@ class MainAxiomLoader {
         return result;
     }
 
-    private void mapAssertions(AxiomDescriptor descriptor, Map<String, Assertion> asserted,
-                               Map<String, Assertion> inferred) {
+    private static void mapAssertions(AxiomDescriptor descriptor, Map<String, Assertion> asserted,
+                                      Map<String, Assertion> inferred) {
         for (Assertion a : descriptor.getAssertions()) {
             if (a.isInferred()) {
                 inferred.put(a.getIdentifier().toString(), a);

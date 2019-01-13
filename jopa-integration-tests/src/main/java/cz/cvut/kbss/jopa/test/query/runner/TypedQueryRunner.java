@@ -38,6 +38,8 @@ import static org.junit.Assert.*;
 
 public abstract class TypedQueryRunner extends BaseQueryRunner {
 
+    private static final String SELECT_BY_TYPE = "SELECT ?x WHERE { ?x a ?type .}";
+
     protected TypedQueryRunner(Logger logger) {
         super(logger);
     }
@@ -45,9 +47,8 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void testFindAll() {
         logger.debug("Test: select all entities of a certain type.");
-        final String query = "SELECT ?x WHERE { ?x a ?type .}";
         final TypedQuery<OWLClassD> q =
-                getEntityManager().createNativeQuery(query, OWLClassD.class).setParameter("type", URI.create(
+                getEntityManager().createNativeQuery(SELECT_BY_TYPE, OWLClassD.class).setParameter("type", URI.create(
                         Vocabulary.C_OWL_CLASS_D));
         final List<OWLClassD> ds = new ArrayList<>(QueryTestEnvironment.getDataByContext(null, OWLClassD.class));
         final List<OWLClassD> res = q.getResultList();
@@ -107,9 +108,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void testSetMaxResults() {
         logger.debug("Test: set maximum number of results.");
-        final String query =
-                "SELECT ?x WHERE { ?x a ?type . }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(SELECT_BY_TYPE, OWLClassE.class)
                                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         final int max = 5;
         assertTrue(max < QueryTestEnvironment.getData(OWLClassE.class).size());
@@ -125,9 +124,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test(expected = IllegalArgumentException.class)
     public void testSetMaxResultsNegative() {
         logger.debug("Test: set maximum number of results. Negative argument.");
-        final String query =
-                "SELECT ?x WHERE { ?x a ?type . }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(SELECT_BY_TYPE, OWLClassE.class)
                                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         q.setMaxResults(-1);
     }
@@ -135,9 +132,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void testSetMaxResultsZero() {
         logger.debug("Test: set maximum number of results. Zero argument.");
-        final String query =
-                "SELECT ?x WHERE { ?x a ?type. }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(SELECT_BY_TYPE, OWLClassE.class)
                                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         q.setMaxResults(0);
         final List<OWLClassE> res = q.getResultList();
@@ -162,9 +157,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test(expected = NoUniqueResultException.class)
     public void testGetSingleResultMultiples() {
         logger.debug("Test: get single result. No unique result.");
-        final String query =
-                "SELECT ?x WHERE { ?x a ?type . }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(SELECT_BY_TYPE, OWLClassE.class)
                                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         q.getSingleResult();
     }
@@ -292,9 +285,8 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void querySupportsProcessingResultsUsingStream() {
-        final String query = "SELECT ?x WHERE { ?x a ?type .}";
         final TypedQuery<OWLClassD> q =
-                getEntityManager().createNativeQuery(query, OWLClassD.class).setParameter("type", URI.create(
+                getEntityManager().createNativeQuery(SELECT_BY_TYPE, OWLClassD.class).setParameter("type", URI.create(
                         Vocabulary.C_OWL_CLASS_D));
         final List<OWLClassD> dList = QueryTestEnvironment.getData(OWLClassD.class);
         final Set<URI> expected = dList.stream().map(OWLClassD::getUri).collect(Collectors.toSet());

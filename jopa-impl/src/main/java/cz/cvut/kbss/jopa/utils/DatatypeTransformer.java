@@ -32,6 +32,10 @@ public class DatatypeTransformer {
 
     private static final Map<Pair, Function<Object, ?>> TRANSFORMERS = initTransformers();
 
+    private DatatypeTransformer() {
+        throw new AssertionError();
+    }
+
     private static Map<Pair, Function<Object, ?>> initTransformers() {
         final Map<Pair, Function<Object, ?>> map = new HashMap<>();
         map.put(new Pair(Short.class, Integer.class), value -> ((Short) value).intValue());
@@ -62,10 +66,6 @@ public class DatatypeTransformer {
             }
         });
         return map;
-    }
-
-    private DatatypeTransformer() {
-        throw new AssertionError();
     }
 
     /**

@@ -24,7 +24,7 @@ class SimpleListIterator extends AbstractListIterator {
     Axiom<NamedResource> nextAxiom() {
         final NamedResource subject = NamedResource.create(currentNode.getURI());
         final Assertion assertion = Assertion
-                .createObjectPropertyAssertion(URI.create(first() ? hasList.getURI() : hasNext.getURI()), false);
+                .createObjectPropertyAssertion(URI.create(first() ? hasListProperty.getURI() : hasNextProperty.getURI()), false);
         final NamedResource value = nextValue();
         return new AxiomImpl<>(subject, assertion, new Value<>(value));
     }
@@ -45,13 +45,13 @@ class SimpleListIterator extends AbstractListIterator {
     void replace(Resource replacement) {
         removeWithoutReconnect();
         final List<Statement> toAdd = new ArrayList<>(2);
-        toAdd.add(createStatement(previousNode, index == 0 ? hasList : hasNext, replacement));
+        toAdd.add(createStatement(previousNode, index == 0 ? hasListProperty : hasNextProperty, replacement));
         if (hasNext()) {
             verifySuccessorCount();
             final RDFNode nextNode = cursor.iterator().next().getObject();
-            remove(currentNode, hasNext, nextNode);
+            remove(currentNode, hasNextProperty, nextNode);
             if (!nextNode.equals(replacement)) {
-                final Statement linkToNext = createStatement(replacement, hasNext, nextNode);
+                final Statement linkToNext = createStatement(replacement, hasNextProperty, nextNode);
                 toAdd.add(linkToNext);
                 this.cursor = Collections.singleton(linkToNext);
             } else {
