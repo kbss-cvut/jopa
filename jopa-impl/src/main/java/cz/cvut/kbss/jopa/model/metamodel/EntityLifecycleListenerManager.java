@@ -36,6 +36,8 @@ public class EntityLifecycleListenerManager {
 
     private Map<Object, Map<LifecycleEvent, Method>> entityListenerCallbacks;
 
+    private Map<Object, Object> instancesBeingProcessed = new IdentityHashMap<>();
+
     /**
      * Gets default instance of this manager, which contains no listeners and does nothing on invocation.
      *
@@ -61,8 +63,21 @@ public class EntityLifecycleListenerManager {
     }
 
     private void invokeCallbacks(Object instance, LifecycleEvent lifecycleEvent) {
-        invokeEntityListenerCallbacks(instance, lifecycleEvent);
-        invokeInternalCallbacks(instance, lifecycleEvent);
+        // The manager may be invoked from multiple threads (as each entity type has its listener and entity types are global for PU)
+        synchronized (this) {
+            if (instancesBeingProcessed.containsKey(instance)) {
+                return;
+            }
+            instancesBeingProcessed.put(instance, EMPTY);
+        }
+        try {
+            invokeEntityListenerCallbacks(instance, lifecycleEvent);
+            invokeInternalCallbacks(instance, lifecycleEvent);
+        } finally {
+            synchronized (this) {
+                instancesBeingProcessed.remove(instance);
+            }
+        }
     }
 
     private void invokeEntityListenerCallbacks(Object instance, LifecycleEvent lifecycleEvent) {

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -35,8 +34,7 @@ class PropertiesHandler {
         this.snapshot = snapshot;
     }
 
-    public Collection<Axiom<?>> getProperties(NamedResource subject, boolean includeInferred)
-            throws OntoDriverException {
+    public Collection<Axiom<?>> getProperties(NamedResource subject, boolean includeInferred) {
         if (includeInferred) {
             return getPropertiesIncludingInferred(subject);
         } else {
@@ -52,13 +50,11 @@ class PropertiesHandler {
         return new ExplicitAxiomLoader(adapter, snapshot).loadPropertyAxioms(subject);
     }
 
-    public void addProperties(NamedResource subject, Map<Assertion, Set<Value<?>>> properties)
-            throws OntoDriverException {
+    public void addProperties(NamedResource subject, Map<Assertion, Set<Value<?>>> properties) {
         new AxiomSaver(adapter, snapshot).persistAxioms(subject, properties);
     }
 
-    public void removeProperties(NamedResource subject, Map<Assertion, Set<Value<?>>> properties)
-            throws OntoDriverException {
+    public void removeProperties(NamedResource subject, Map<Assertion, Set<Value<?>>> properties) {
         new EpistemicAxiomRemover(adapter, snapshot).removeAxioms(subject, properties);
     }
 }

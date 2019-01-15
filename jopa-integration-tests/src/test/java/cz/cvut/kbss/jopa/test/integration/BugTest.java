@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,23 +30,23 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
  * Test for discovered bugs and their fixes.
  */
-public class BugTest extends IntegrationTestBase {
+class BugTest extends IntegrationTestBase {
 
     /* Bug: using an attribute in hashCode/equals caused an infinite loop, because the BeanListenerAspect tried
      to check whether it was necessary to load the field, which caused instance lookup to use hashCode again
      */
     @Test
-    public void hashCodeWithAttributeDoesNotCauseInfiniteLoop() throws Exception {
+    void hashCodeWithAttributeDoesNotCauseInfiniteLoop() throws Exception {
         final URI uri = Generators.generateUri();
         final String name = "Instance1";
-        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(initAxiomsForR(uri, name));
+        when(connectionMock.find(any())).thenReturn(initAxiomsForR(uri, name));
 
         final OWLClassR r = em.find(OWLClassR.class, uri);
         assertNotEquals(0, r.hashCode());
@@ -66,7 +66,7 @@ public class BugTest extends IntegrationTestBase {
      * Bug #2.
      */
     @Test
-    public void mergeDoesNotOverwriteCacheWithNonMergeInstance() throws OntoDriverException {
+    void mergeDoesNotOverwriteCacheWithNonMergeInstance() throws OntoDriverException {
         final OWLClassD d = new OWLClassD(Generators.generateUri());
         final OWLClassA a = new OWLClassA(Generators.generateUri());
         d.setOwlClassA(a);

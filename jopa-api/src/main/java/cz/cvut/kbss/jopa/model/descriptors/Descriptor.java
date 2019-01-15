@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,10 +18,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Defines base descriptor, which is used to specify context information for entities and their fields.
@@ -173,14 +170,19 @@ public abstract class Descriptor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Descriptor)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Descriptor)) {
+            return false;
+        }
 
         Descriptor that = (Descriptor) o;
 
-        if (hasLanguage != that.hasLanguage) return false;
-        if (context != null ? !context.equals(that.context) : that.context != null) return false;
-        return language != null ? language.equals(that.language) : that.language == null;
+        if (hasLanguage != that.hasLanguage) {
+            return false;
+        }
+        return Objects.equals(context, that.context) && Objects.equals(language, that.language);
     }
 
     @Override

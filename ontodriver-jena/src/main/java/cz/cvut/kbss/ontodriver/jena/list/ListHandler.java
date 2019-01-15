@@ -61,7 +61,7 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
         }
     }
 
-    private void removeObsoleteNodes(AbstractListIterator it) {
+    private static void removeObsoleteNodes(AbstractListIterator it) {
         while (it.hasNext()) {
             it.nextValue();
             it.removeWithoutReconnect();

@@ -261,7 +261,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         manager.add(testB.getUri(), testB, descriptorTwo);
         final Set<Class<?>> inferred = Collections.singleton(testA.getClass());
         manager.setInferredClasses(inferred);
-        manager.clearInferredObjects();
+        manager.evictInferredObjects();
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
     }

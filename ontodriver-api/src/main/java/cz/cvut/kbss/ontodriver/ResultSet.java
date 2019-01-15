@@ -15,16 +15,25 @@
 package cz.cvut.kbss.ontodriver;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
+import cz.cvut.kbss.ontodriver.iteration.ResultSetIterator;
+import cz.cvut.kbss.ontodriver.iteration.ResultSetSpliterator;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Observer;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Represents a set of results of a SPARQL query.
  * <p>
  * This interface declares methods for getting values from a set of results of a SPARQL query issued to an ontology.
+ * <p>
+ * While this class is iterable, it is still necessary to close it either explicitly, or by declaring it within a try-with-resource block.
  */
-public interface ResultSet extends AutoCloseable {
+public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
 
     /**
      * Retrieves index of a column with the specified label.
@@ -426,4 +435,47 @@ public interface ResultSet extends AutoCloseable {
      * @return {@code true} if the resource is open, {@code false} otherwise
      */
     boolean isOpen();
+
+    /**
+     * Creates a {@link Iterator} over this result set.
+     * <p>
+     * Note that the iterator does not close this result set after finishing its iteration. The result has to be closed by the caller.
+     *
+     * @return Iterator over this result set
+     */
+    @Override
+    default Iterator<ResultRow> iterator() {
+        if (!isOpen()) {
+            throw new IllegalStateException("The result set is closed.");
+        }
+        return new ResultSetIterator(this);
+    }
+
+    /**
+     * Creates a {@link Spliterator} over this result set.
+     * <p>
+     * Note that the spliterator does not close this result set after finishing its iteration. The result has to be closed by the caller.
+     *
+     * @return Spliterator over this result set
+     */
+    @Override
+    default Spliterator<ResultRow> spliterator() {
+        if (!isOpen()) {
+            throw new IllegalStateException("The result set is closed.");
+        }
+        return new ResultSetSpliterator(this);
+    }
+
+    /**
+     * Creates a sequential {@link Stream} over this result set.
+     * <p>
+     * The default implementation creates a stream using the default {@link #spliterator()}.
+     * <p>
+     * Note that the stream does not close this result set after finishing its iteration. The result set has to be closed by the caller.
+     *
+     * @return A {@code Stream} over this result set.
+     */
+    default Stream<ResultRow> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -26,11 +24,15 @@ import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
@@ -56,12 +58,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public List<X> getResultList() {
         ensureOpen();
-        if (maxResults == 0) {
-            return Collections.emptyList();
-        }
-        List<X> list;
         try {
-            list = getResultListImpl(maxResults);
+            return getResultListImpl();
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
@@ -69,13 +67,9 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             markTransactionForRollback();
             throw e;
         }
-
-        return list;
     }
 
-    private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
-        assert maxResults > 0;
-
+    private List<X> getResultListImpl() throws OntoDriverException {
         final boolean isEntityType = metamodelProvider.isEntityType(resultType);
         final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
         final List<X> res = new ArrayList<>();
@@ -83,25 +77,28 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
             if (isEntityType) {
                 loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
             } else {
-                res.add(loadResultValue(rs));
+                loadResultValue(rs).ifPresent(res::add);
             }
         });
         return res;
     }
 
-    private Optional<X> loadEntityInstance(ResultSet resultSet, Descriptor instanceDescriptor)
-            throws OntoDriverException {
+    private Optional<X> loadEntityInstance(ResultRow resultRow, Descriptor instanceDescriptor) {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
-        assert resultSet.isBound(0);
-        final URI uri = URI.create(resultSet.getString(0));
-        return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
+        try {
+            assert resultRow.isBound(0);
+            final URI uri = URI.create(resultRow.getString(0));
+            return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
+        } catch (OntoDriverException e) {
+            throw new OWLPersistenceException("Unable to load query result as entity of type " + resultType, e);
+        }
     }
 
-    private X loadResultValue(ResultSet resultSet) {
+    private Optional<X> loadResultValue(ResultRow resultRow) {
         try {
-            return resultSet.getObject(0, resultType);
+            return Optional.of(resultRow.getObject(0, resultType));
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
         }
@@ -111,9 +108,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     public X getSingleResult() {
         ensureOpen();
         try {
-            // call it with maxResults = 2 just to see whether there are
-            // multiple results
-            final List<X> res = getResultListImpl(2);
+            final List<X> res = getResultListImpl();
             if (res.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
             }
@@ -133,13 +128,33 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     @Override
+    public Stream<X> getResultStream() {
+        final boolean isEntityType = metamodelProvider.isEntityType(resultType);
+        final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
+        try {
+            return executeQueryForStream(row -> {
+                if (isEntityType) {
+                    return loadEntityInstance(row, instDescriptor);
+                } else {
+                    return loadResultValue(row);
+                }
+            });
+        } catch (OntoDriverException e) {
+            markTransactionForRollback();
+            throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            if (exceptionCausesRollback(e)) {
+                markTransactionForRollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
     public TypedQuery<X> setMaxResults(int maxResults) {
         ensureOpen();
-        if (maxResults < 0) {
-            markTransactionForRollback();
-            throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
-        }
-        this.maxResults = maxResults;
+        checkNumericParameter(maxResults, "max results");
+        query.setMaxResults(maxResults);
         return this;
     }
 
@@ -147,115 +162,61 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     public TypedQuery<X> setFirstResult(int startPosition) {
         ensureOpen();
         checkNumericParameter(startPosition, "first result offset");
-        this.firstResult = startPosition;
+        query.setFirstResult(startPosition);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(int position, Object value) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(position), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(position, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(int position, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(position), value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(position, value, language);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(String name, Object value) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(name), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(name, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(String name, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(name), value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(name, value, language);
         return this;
     }
 
     @Override
     public <T> TypedQuery<X> setParameter(Parameter<T> parameter, T value) {
-        ensureOpen();
-        try {
-            query.setParameter(parameter, value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(parameter, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(Parameter<String> parameter, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(parameter, value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setParameter(parameter, value, language);
         return this;
     }
 
     @Override
     public TypedQuery<X> setUntypedParameter(int position, Object value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(query.getParameter(position), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setUntypedParameter(position, value);
         return this;
     }
 
     @Override
     public TypedQuery<X> setUntypedParameter(String name, Object value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(query.getParameter(name), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setUntypedParameter(name, value);
         return this;
     }
 
     @Override
     public <T> TypedQuery<X> setUntypedParameter(Parameter<T> parameter, T value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(parameter, value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
+        super.setUntypedParameter(parameter, value);
         return this;
     }
 

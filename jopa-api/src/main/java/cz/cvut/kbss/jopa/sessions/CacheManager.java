@@ -49,10 +49,11 @@ public interface CacheManager extends Cache {
     <T> T get(Class<T> cls, Object identifier, Descriptor descriptor);
 
     /**
-     * Remove objects with inferred attributes from the cache, since there are changes in the ontology that might
-     * influence the inferred attributes.
+     * Removes objects with (possibly) inferred attributes from the cache.
+     *
+     * This should be called when changes in the ontology may influence inference results.
      */
-    void clearInferredObjects();
+    void evictInferredObjects();
 
     /**
      * Set the inferred classes for this cache manager.

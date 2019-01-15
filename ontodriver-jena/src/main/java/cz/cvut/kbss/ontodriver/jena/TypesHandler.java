@@ -55,7 +55,7 @@ public class TypesHandler implements Types {
         connector.add(statements, context != null ? context.toString() : null);
     }
 
-    private List<Statement> generateStatementsForTypes(NamedResource individual, Set<URI> types) {
+    private static List<Statement> generateStatementsForTypes(NamedResource individual, Set<URI> types) {
         final Resource subject = ResourceFactory.createResource(individual.getIdentifier().toString());
         final Property property = ResourceFactory.createProperty(Vocabulary.RDF_TYPE);
         return types.stream().map(t -> ResourceFactory

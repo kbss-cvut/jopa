@@ -71,14 +71,14 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         }
     }
 
-    private int extractValueCount(Object value) {
+    private static int extractValueCount(Object value) {
         if (value == null) {
             return 0;
         }
         return value instanceof Collection ? ((Collection<?>) value).size() : 1;
     }
 
-    private void validateParticipationConstraint(Object id, Field field, int valueCount, ParticipationConstraint pc) {
+    private static void validateParticipationConstraint(Object id, Field field, int valueCount, ParticipationConstraint pc) {
         if (valueCount < pc.min()) {
             throw new CardinalityConstraintViolatedException("At least " + pc.min() +
                     " values of attribute " + field.getDeclaringClass().getSimpleName() + "." + field.getName() +
@@ -91,19 +91,19 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         }
     }
 
-    private void validateNonEmpty(Object id, Field field, int valueCount, ParticipationConstraints constraints) {
+    private  static void validateNonEmpty(Object id, Field field, int valueCount, ParticipationConstraints constraints) {
         if (valueCount == 0 && constraints.nonEmpty()) {
             throw nonEmptyError(id, field.getDeclaringClass().getSimpleName(), field.getName());
         }
     }
 
-    private CardinalityConstraintViolatedException nonEmptyError(Object id, String className, String fieldName) {
+    private static CardinalityConstraintViolatedException nonEmptyError(Object id, String className, String fieldName) {
         return new CardinalityConstraintViolatedException(
                 "Attribute " + className + "." + fieldName + " of instance " + id +
                         " was marked as nonEmpty, but contains no value.");
     }
 
-    private void validateNonEmpty(Object id, Attribute<?, ?> attribute, int valueCount) {
+    private static void validateNonEmpty(Object id, Attribute<?, ?> attribute, int valueCount) {
         if (valueCount == 0 && attribute.isNonEmpty()) {
             throw nonEmptyError(id, attribute.getDeclaringType().getJavaType().getSimpleName(), attribute.getName());
         }

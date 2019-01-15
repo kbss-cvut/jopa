@@ -47,7 +47,7 @@ class LocalModel {
         return defaultAsUnion ? removed.getUnionModel().union(removed.getDefaultModel()) : removed.getDefaultModel();
     }
 
-    private Collection<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
+    private static Collection<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
                                                     Property property, RDFNode value, Model addedModel,
                                                     Model removedModel) {
         final Set<Statement> statements = new HashSet<>(toEnhance);

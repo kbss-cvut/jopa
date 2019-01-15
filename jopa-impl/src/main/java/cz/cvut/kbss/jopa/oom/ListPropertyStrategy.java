@@ -71,7 +71,6 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
         if (IdentifierTransformer.isValidIdentifierType(attribute.getBindableJavaType())) {
             return Collections.emptyList();
         } else {
-            final Class<?> elemType = attribute.getBindableJavaType();
             return list.stream().filter(item -> item != null && !referenceSavingResolver
                     .shouldSaveReferenceToItem(item, listDescriptor.getContext())).collect(Collectors.toList());
         }

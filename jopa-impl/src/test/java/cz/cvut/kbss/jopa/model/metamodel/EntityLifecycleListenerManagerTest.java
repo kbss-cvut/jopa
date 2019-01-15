@@ -1,36 +1,31 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.Vocabulary;
-import cz.cvut.kbss.jopa.model.annotations.EntityListeners;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.PostLoad;
-import cz.cvut.kbss.jopa.model.annotations.PrePersist;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import static org.mockito.Mockito.*;
 
-public class EntityLifecycleListenerManagerTest {
+class EntityLifecycleListenerManagerTest {
 
     private EntityLifecycleListenerManager manager = new EntityLifecycleListenerManager();
 
     @Test
-    public void listenerInvocationInvokesCorrectCallback() throws Exception {
+    void listenerInvocationInvokesCorrectCallback() throws Exception {
         manager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Child.class.getDeclaredMethod("prePersistChild"));
         final Child instance = spy(new Child());
         manager.invokePrePersistCallbacks(instance);
@@ -38,7 +33,7 @@ public class EntityLifecycleListenerManagerTest {
     }
 
     @Test
-    public void listenerInvocationDoesNothingWhenNoMatchingListenerExists() throws Exception {
+    void listenerInvocationDoesNothingWhenNoMatchingListenerExists() {
         // The callback is not registered
         final Child instance = spy(new Child());
         manager.invokePrePersistCallbacks(instance);
@@ -46,7 +41,7 @@ public class EntityLifecycleListenerManagerTest {
     }
 
     @Test
-    public void listenerInvocationInvokesListenersTopDown() throws Exception {
+    void listenerInvocationInvokesListenersTopDown() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         parentManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Parent.class.getDeclaredMethod("prePersist"));
         manager.setParent(parentManager);
@@ -59,7 +54,7 @@ public class EntityLifecycleListenerManagerTest {
     }
 
     @Test
-    public void listenerInvocationInvokesAncestorListenersWhenNoneAreDeclaredDirectlyOnEntity() throws Exception {
+    void listenerInvocationInvokesAncestorListenersWhenNoneAreDeclaredDirectlyOnEntity() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         parentManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Parent.class.getDeclaredMethod("prePersist"));
         manager.setParent(parentManager);
@@ -117,7 +112,7 @@ public class EntityLifecycleListenerManagerTest {
     }
 
     @Test
-    public void listenerInvocationInvokesEntityListenerCallbacks() throws Exception {
+    void listenerInvocationInvokesEntityListenerCallbacks() throws Exception {
         final ParentListener listener = spy(new ParentListener());
         manager.addEntityListener(listener);
         manager.addEntityListenerCallback(listener, LifecycleEvent.POST_LOAD,
@@ -128,7 +123,7 @@ public class EntityLifecycleListenerManagerTest {
     }
 
     @Test
-    public void listenerInvocationInvokesEntityListenerCallbacksTopDown() throws Exception {
+    void listenerInvocationInvokesEntityListenerCallbacksTopDown() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         final ParentListener parentListener = spy(new ParentListener());
         parentManager.addEntityListener(parentListener);
@@ -147,7 +142,7 @@ public class EntityLifecycleListenerManagerTest {
     }
 
     @Test
-    public void listenerInvocationInvokesEntityListenersInOrderOfDeclarationOnEntity() throws Exception {
+    void listenerInvocationInvokesEntityListenersInOrderOfDeclarationOnEntity() throws Exception {
         final ChildListener childListener = spy(new ChildListener());
         manager.addEntityListener(childListener);
         manager.addEntityListenerCallback(childListener, LifecycleEvent.POST_LOAD,
@@ -165,7 +160,7 @@ public class EntityLifecycleListenerManagerTest {
     }
 
     @Test
-    public void listenerInvocationInvokesEntityListenerCallbacksBeforeInternalLifecycleCallbacks() throws Exception {
+    void listenerInvocationInvokesEntityListenerCallbacksBeforeInternalLifecycleCallbacks() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         final ParentListener parentListener = spy(new ParentListener());
         parentManager.addEntityListener(parentListener);
@@ -187,5 +182,25 @@ public class EntityLifecycleListenerManagerTest {
         inOrder.verify(childListener).postLoad(instance);
         inOrder.verify(instance).postLoad();
         inOrder.verify(instance).postLoadChild();
+    }
+
+    @Test
+    void listenerInvocationPreventsEndlessLoopWhenListenerImplementationWouldCauseAnotherListenerToFire()
+            throws Exception {
+        manager.addLifecycleCallback(LifecycleEvent.PRE_UPDATE,
+                EntityWithLoopingListener.class.getDeclaredMethod("preUpdate"));
+        final EntityWithLoopingListener instance = spy(new EntityWithLoopingListener());
+        manager.invokePreUpdateCallbacks(instance);
+        verify(instance).preUpdate();   // Exactly once
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithLoopingListener")
+    private class EntityWithLoopingListener {
+
+        @PreUpdate
+        void preUpdate() {
+            // This simulates the listener being called from UOW after an entity lifecycle event (e.g. setting an attribute)
+            EntityLifecycleListenerManagerTest.this.manager.invokePreUpdateCallbacks(this);
+        }
     }
 }

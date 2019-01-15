@@ -26,6 +26,10 @@ public class IdentifierTransformer {
 
     private static final Map<Class<?>, Function<Object, ?>> TRANSFORMERS = initTransformers();
 
+    private IdentifierTransformer() {
+        throw new AssertionError();
+    }
+
     private static Map<Class<?>, Function<Object, ?>> initTransformers() {
         final Map<Class<?>, Function<Object, ?>> m = new HashMap<>(ID_CLASSES.size());
         m.put(URI.class, val -> {
@@ -52,10 +56,6 @@ public class IdentifierTransformer {
             return val.toString();
         });
         return m;
-    }
-
-    private IdentifierTransformer() {
-        throw new AssertionError();
     }
 
     /**

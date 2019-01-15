@@ -33,7 +33,7 @@ public class DisabledCacheManager implements CacheManager {
     }
 
     @Override
-    public void clearInferredObjects() {
+    public void evictInferredObjects() {
         // Do nothing
     }
 

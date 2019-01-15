@@ -16,8 +16,8 @@ import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.DatatypeTransformer;
-import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 /**
  * Maps SPARQL query result to target value based on a {@link VariableResult} configuration.
@@ -44,17 +44,17 @@ class VariableResultMapper implements SparqlResultMapper {
      * Maps value from the current line of the specified result set according to the {@link VariableResult}
      * configuration represented by this instance.
      *
-     * @param resultSet Query result set to read
+     * @param resultRow Query result set to read
      * @param uow       UnitOfWork instance
      * @return The mapped value
      */
     @Override
-    public Object map(ResultSet resultSet, UnitOfWorkImpl uow) {
+    public Object map(ResultRow resultRow, UnitOfWorkImpl uow) {
         try {
-            if (!resultSet.isBound(name)) {
+            if (!resultRow.isBound(name)) {
                 return null;
             }
-            final Object value = resultSet.getObject(name);
+            final Object value = resultRow.getObject(name);
             if (!void.class.equals(targetType)) {
                 return DatatypeTransformer.transform(value, targetType);
             }

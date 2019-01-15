@@ -30,31 +30,35 @@ import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
+import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.lucene.LuceneSail;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class StorageConnectorTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class StorageConnectorTest {
 
     private File repositoryFolder;
 
     private StorageConnector connector;
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (connector != null && connector.isOpen()) {
             connector.close();
         }
@@ -75,7 +79,7 @@ public class StorageConnectorTest {
     }
 
     @Test
-    public void nonExistingParentFoldersAreCreatedWhenStorageIsInitialized() throws Exception {
+    void nonExistingParentFoldersAreCreatedWhenStorageIsInitialized() throws Exception {
         final String projectRootPath = getProjectRootPath();
         final URI fileUri = URI
                 .create("file://" + projectRootPath + File.separator + "internal" + File.separator + "folder" +
@@ -96,18 +100,19 @@ public class StorageConnectorTest {
         return projectRootPath;
     }
 
-    @Test(expected = RepositoryCreationException.class)
-    public void invalidLocalRepositoryPathThrowsRepositoryCreationException() throws Exception {
+    @Test
+    void invalidLocalRepositoryPathThrowsRepositoryCreationException() {
         final URI invalidUri = URI
                 .create("file://" + getProjectRootPath() + File.separator + "reps" + File.separator + "repositoryTest");
         final File parentDir = new File(getProjectRootPath() + File.separator + "reps");
         assertFalse(parentDir.exists());
         this.repositoryFolder = parentDir;
-        new StorageConnector(TestUtils.createDriverConfig(invalidUri.toString()));
+        assertThrows(RepositoryCreationException.class,
+                () -> new StorageConnector(TestUtils.createDriverConfig(invalidUri.toString())));
     }
 
     @Test
-    public void connectorIsAbleToConnectToAlreadyInitializedLocalNativeStorage() throws Exception {
+    void connectorIsAbleToConnectToAlreadyInitializedLocalNativeStorage() throws Exception {
         final String repoId = "repositoryTest";
         final URI repoUri = URI
                 .create("file://" + getProjectRootPath() + File.separator + "repositories" + File.separator + repoId);
@@ -126,13 +131,13 @@ public class StorageConnectorTest {
     }
 
     @Test
-    public void unwrapReturnsItselfWhenClassMatches() throws Exception {
+    void unwrapReturnsItselfWhenClassMatches() throws Exception {
         createInMemoryConnector();
         assertSame(connector, connector.unwrap(StorageConnector.class));
     }
 
     @Test
-    public void unwrapReturnsSesameRepository() throws Exception {
+    void unwrapReturnsSesameRepository() throws Exception {
         createInMemoryConnector();
         final Repository repo = connector.unwrap(Repository.class);
         assertNotNull(repo);
@@ -145,14 +150,14 @@ public class StorageConnectorTest {
         this.connector = new StorageConnector(conf);
     }
 
-    @Test(expected = SesameDriverException.class)
-    public void unwrapOfUnsupportedClassThrowsException() throws Exception {
+    @Test
+    void unwrapOfUnsupportedClassThrowsException() throws Exception {
         createInMemoryConnector();
-        connector.unwrap(Boolean.class);
+        assertThrows(SesameDriverException.class, () -> connector.unwrap(Boolean.class));
     }
 
     @Test
-    public void setRepositoryReplacesOriginalInMemoryRepositoryWithSpecifiedOne() throws Exception {
+    void setRepositoryReplacesOriginalInMemoryRepositoryWithSpecifiedOne() throws Exception {
         createInMemoryConnector();
         final Repository newRepository = new SailRepository(new MemoryStore());
         newRepository.initialize();
@@ -165,7 +170,7 @@ public class StorageConnectorTest {
     }
 
     @Test
-    public void setRepositoryThrowsUnsupportedOperationWhenOriginalRepositoryIsNotInMemory() throws Exception {
+    void setRepositoryThrowsUnsupportedOperationWhenOriginalRepositoryIsNotInMemory() throws Exception {
         this.repositoryFolder = Files.createTempDirectory("sesame-storage-connector-test").toFile();
         connector = new StorageConnector(TestUtils.createDriverConfig(repositoryFolder
                 .getAbsolutePath() + File.separator + "repositories" + File.separator + "test"));
@@ -173,28 +178,95 @@ public class StorageConnectorTest {
         final Repository newRepository = new SailRepository(new MemoryStore());
         newRepository.initialize();
         try {
-            thrown.expect(UnsupportedOperationException.class);
-            thrown.expectMessage("Cannot replace repository which is not in-memory.");
-            connector.setRepository(newRepository);
+            final UnsupportedOperationException result =
+                    assertThrows(UnsupportedOperationException.class, () -> connector.setRepository(newRepository));
+            assertEquals("Cannot replace repository which is not in-memory.", result.getMessage());
         } finally {
             newRepository.shutDown();
         }
     }
 
     @Test
-    public void setRepositoryThrowsIllegalStateExceptionWhenConnectorIsInTransaction() throws Exception {
+    void setRepositoryThrowsIllegalStateExceptionWhenConnectorIsInTransaction() throws Exception {
         createInMemoryConnector();
         connector.begin();
         final Repository newRepository = new SailRepository(new MemoryStore());
         newRepository.initialize();
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Cannot replace repository in transaction.");
 
         try {
-            connector.setRepository(newRepository);
+            final IllegalStateException result =
+                    assertThrows(IllegalStateException.class, () -> connector.setRepository(newRepository));
+            assertEquals("Cannot replace repository in transaction.", result.getMessage());
         } finally {
             newRepository.shutDown();
             connector.rollback();
+        }
+    }
+
+    @Test
+    void initializationLoadsRepositoryConfigurationFromFileOnClasspathAndCreatesRepo() throws Exception {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs.ttl");
+        this.connector = new StorageConnector(conf);
+        final Repository repo = connector.unwrap(Repository.class);
+        assertTrue(repo instanceof SailRepository);
+        assertTrue(((SailRepository) repo).getSail() instanceof ForwardChainingRDFSInferencer);
+    }
+
+    @Test
+    void initializationLoadsRepositoryConfigurationFromFileWithAbsolutePathAndCreatesRepo() throws Exception {
+        final Path file = Files.createTempFile("memory-rdfs", ".ttl");
+        try (final BufferedReader in = new BufferedReader(
+                new InputStreamReader(
+                        getClass().getClassLoader().getResourceAsStream("repo-configs/memory-rdfs.ttl")))) {
+            final String content = in.lines().collect(Collectors.joining("\n"));
+            Files.write(file, content.getBytes());
+        }
+        file.toFile().deleteOnExit();
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, file.toString());
+        this.connector = new StorageConnector(conf);
+        final Repository repo = connector.unwrap(Repository.class);
+        assertTrue(repo instanceof SailRepository);
+        assertTrue(((SailRepository) repo).getSail() instanceof ForwardChainingRDFSInferencer);
+    }
+
+    @Test
+    void initializationThrowsRepositoryCreationExceptionWhenRepositoryConfigurationFileIsNotFoundOnClasspath() {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs-unknown.ttl");
+        final RepositoryCreationException result =
+                assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
+        assertThat(result.getMessage(), containsString("repo-configs/memory-rdfs-unknown.ttl"));
+    }
+
+    @Test
+    void initializationThrowsRepositoryCreationExceptionWhenRepositoryConfigurationFileIsNotFound() {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, "/tmp/memory-rdfs-unknown.ttl");
+        final RepositoryCreationException result =
+                assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
+        assertThat(result.getMessage(), containsString("/tmp/memory-rdfs-unknown.ttl"));
+    }
+
+    @Test
+    void initializationLoadsRepositoryConfigurationFromFileAndCreatesNativeRepo() throws Exception {
+        final Path serverDir = Files.createTempDirectory("sesame-config-test");
+        final String physicalUri = serverDir.toString() + "/repositories/native-lucene";
+        try {
+            final DriverConfiguration conf = TestUtils.createDriverConfig(physicalUri);
+            conf.setProperty(SesameConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/native-lucene.ttl");
+            this.connector = new StorageConnector(conf);
+            final Repository repo = connector.unwrap(Repository.class);
+            assertTrue(repo instanceof SailRepository);
+            assertTrue(((SailRepository) repo).getSail() instanceof LuceneSail);
+            final File repoDir = new File(physicalUri);
+            assertTrue(repoDir.exists());
+        } finally {
+            Files.walk(serverDir)
+                 .sorted(Comparator.reverseOrder())
+                 .map(Path::toFile)
+                 .forEach(File::delete);
         }
     }
 }

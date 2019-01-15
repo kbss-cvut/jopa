@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.exception;
 
-public class IntegrityConstraintViolatedException extends RuntimeException {
+public class IntegrityConstraintViolatedException extends OntoDriverRuntimeException {
 
 	private static final long serialVersionUID = 8125380134315804076L;
 

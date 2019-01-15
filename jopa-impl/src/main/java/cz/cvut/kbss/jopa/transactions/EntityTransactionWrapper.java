@@ -35,9 +35,7 @@ public class EntityTransactionWrapper extends TransactionWrapperImpl {
 
     @Override
     public void registerUOWWithTransaction(UnitOfWork uow) {
-        // throw new
-        // OWLPeristenceTransactionException("Calling JTA method in not-JTA environment");
-
+        // Do nothing
     }
 
     @Override

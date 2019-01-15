@@ -21,8 +21,8 @@ abstract class AbstractListIterator {
 
     final StorageConnector connector;
 
-    final Property hasList;
-    final Property hasNext;
+    final Property hasListProperty;
+    final Property hasNextProperty;
 
     final String context;
 
@@ -34,8 +34,8 @@ abstract class AbstractListIterator {
     Collection<Statement> cursor;
 
     AbstractListIterator(ListDescriptor descriptor, StorageConnector connector) {
-        this.hasList = createProperty(descriptor.getListProperty().getIdentifier().toString());
-        this.hasNext = createProperty(descriptor.getNextNode().getIdentifier().toString());
+        this.hasListProperty = createProperty(descriptor.getListProperty().getIdentifier().toString());
+        this.hasNextProperty = createProperty(descriptor.getNextNode().getIdentifier().toString());
         this.context = descriptor.getContext() != null ? descriptor.getContext().toString() : null;
         this.connector = connector;
         this.index = -1;
@@ -44,7 +44,7 @@ abstract class AbstractListIterator {
     }
 
     void moveCursor(Resource from) {
-        this.cursor = connector.find(from, first() ? hasList : hasNext, null, context);
+        this.cursor = connector.find(from, first() ? hasListProperty : hasNextProperty, null, context);
     }
 
     void resolveNextListNode() {
@@ -110,7 +110,7 @@ abstract class AbstractListIterator {
         }
         assert previousNode != null;
         assert currentNode != null;
-        remove(previousNode, index == 0 ? hasList : hasNext, currentNode);
+        remove(previousNode, index == 0 ? hasListProperty : hasNextProperty, currentNode);
         this.removed = true;
     }
 

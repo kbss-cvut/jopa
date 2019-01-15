@@ -1,31 +1,32 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class QueryImpl extends AbstractQuery implements Query {
 
@@ -40,7 +41,7 @@ public class QueryImpl extends AbstractQuery implements Query {
             if (getMaxResults() == 0) {
                 return Collections.emptyList();
             }
-            return getResultListImpl(maxResults);
+            return getResultListImpl();
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
@@ -50,8 +51,7 @@ public class QueryImpl extends AbstractQuery implements Query {
         }
     }
 
-    private List<?> getResultListImpl(int maxResults) throws OntoDriverException {
-        assert maxResults > 0;
+    private List<?> getResultListImpl() throws OntoDriverException {
         final List<Object> res = new ArrayList<>();
         executeQuery(rs -> res.add(extractRow(rs)));
         return res;
@@ -61,8 +61,7 @@ public class QueryImpl extends AbstractQuery implements Query {
     public Object getSingleResult() {
         ensureOpen();
         try {
-            // Call it with maxResults = 2 just to see whether there are more
-            final List<?> list = getResultListImpl(2);
+            final List<?> list = getResultListImpl();
             if (list.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
             }
@@ -82,118 +81,25 @@ public class QueryImpl extends AbstractQuery implements Query {
     }
 
     @Override
-    public Query setParameter(int position, Object value) {
-        ensureOpen();
+    public Stream getResultStream() {
         try {
-            query.setParameter(query.getParameter(position), value);
-        } catch (RuntimeException e) {
+            return executeQueryForStream(this::extractRowAsOptional);
+        } catch (OntoDriverException e) {
             markTransactionForRollback();
+            throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            if (exceptionCausesRollback(e)) {
+                markTransactionForRollback();
+            }
             throw e;
         }
-        return this;
-    }
-
-    @Override
-    public Query setParameter(int position, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(position), value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
-    }
-
-    @Override
-    public Query setParameter(String name, Object value) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(name), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
-    }
-
-    @Override
-    public Query setParameter(String name, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(query.getParameter(name), value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
-    }
-
-    @Override
-    public <T> Query setParameter(Parameter<T> parameter, T value) {
-        ensureOpen();
-        try {
-            query.setParameter(parameter, value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
-    }
-
-    @Override
-    public Query setParameter(Parameter<String> parameter, String value, String language) {
-        ensureOpen();
-        try {
-            query.setParameter(parameter, value, language);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
-    }
-
-    @Override
-    public Query setUntypedParameter(int position, Object value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(query.getParameter(position), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
-    }
-
-    @Override
-    public Query setUntypedParameter(String name, Object value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(query.getParameter(name), value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
-    }
-
-    @Override
-    public <T> Query setUntypedParameter(Parameter<T> parameter, T value) {
-        ensureOpen();
-        try {
-            query.setUntypedParameter(parameter, value);
-        } catch (RuntimeException e) {
-            markTransactionForRollback();
-            throw e;
-        }
-        return this;
     }
 
     @Override
     public Query setMaxResults(int maxResults) {
         ensureOpen();
         checkNumericParameter(maxResults, "max results");
-        this.maxResults = maxResults;
+        query.setMaxResults(maxResults);
         return this;
     }
 
@@ -201,21 +107,29 @@ public class QueryImpl extends AbstractQuery implements Query {
     public Query setFirstResult(int startPosition) {
         ensureOpen();
         checkNumericParameter(startPosition, "first result offset");
-        this.firstResult = startPosition;
+        query.setFirstResult(startPosition);
         return this;
     }
 
-    Object extractRow(ResultSet resultSet) throws OntoDriverException {
-        final int columnCount = resultSet.getColumnCount();
-        if (columnCount == 1) {
-            return resultSet.getObject(0);
-        } else {
-            final Object[] row = new Object[columnCount];
-            for (int i = 0; i < columnCount; i++) {
-                final Object ob = resultSet.isBound(i) ? resultSet.getObject(i) : null;
-                row[i] = ob;
+    Optional<Object> extractRowAsOptional(ResultRow row) {
+        return Optional.of(extractRow(row));
+    }
+
+    Object extractRow(ResultRow resultRow) {
+        try {
+            final int columnCount = resultRow.getColumnCount();
+            if (columnCount == 1) {
+                return resultRow.getObject(0);
+            } else {
+                final Object[] row = new Object[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    final Object ob = resultRow.isBound(i) ? resultRow.getObject(i) : null;
+                    row[i] = ob;
+                }
+                return row;
             }
-            return row;
+        } catch (OntoDriverException e) {
+            throw new OWLPersistenceException(e);
         }
     }
 }

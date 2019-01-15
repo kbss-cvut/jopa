@@ -124,6 +124,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         try {
             QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset());
             final org.apache.jena.query.ResultSet rs = exec.execSelect();
+            // The QueryExecution is closed by the SelectResultSet (so that it has access to the results)
             return new SelectResultSet(exec, rs);
         } catch (RuntimeException e) {
             throw new JenaDriverException("Execution of query " + query + " failed.", e);

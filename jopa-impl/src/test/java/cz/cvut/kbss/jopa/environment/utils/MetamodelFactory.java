@@ -774,6 +774,7 @@ public class MetamodelFactory {
         when(et.getIdentifier()).thenReturn(idQ);
         when(et.getJavaType()).thenReturn(OWLClassQ.class);
         when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
+        when(idQ.isGenerated()).thenReturn(true);
         when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
         when(et.getSupertype()).thenReturn((AbstractIdentifiableType) superclassType);
         when(superclassType.getSubtypes()).thenReturn(Collections.singleton(et));

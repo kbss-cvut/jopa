@@ -37,7 +37,7 @@ class AxiomSaver {
         statements.forEach((ctx, toAdd) -> connector.add(toAdd, ctx));
     }
 
-    private List<Statement> transformToStatements(Assertion assertion, Collection<Value<?>> values, Resource subject) {
+    private static List<Statement> transformToStatements(Assertion assertion, Collection<Value<?>> values, Resource subject) {
         final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
         switch (assertion.getType()) {
             // Intentional fall-through
@@ -57,7 +57,7 @@ class AxiomSaver {
         }
     }
 
-    private List<Statement> dataPropertyValuesToStatements(Collection<Value<?>> values, Resource subject, Assertion a,
+    private static List<Statement> dataPropertyValuesToStatements(Collection<Value<?>> values, Resource subject, Assertion a,
                                                            Property property) {
         return values.stream().filter(v -> v != Value.nullValue()).map(v -> {
             final Literal value;

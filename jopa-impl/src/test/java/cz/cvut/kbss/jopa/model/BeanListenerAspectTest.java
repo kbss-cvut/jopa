@@ -1,0 +1,86 @@
+package cz.cvut.kbss.jopa.model;
+
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkTestBase;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.*;
+
+class BeanListenerAspectTest extends UnitOfWorkTestBase {
+
+    private UnitOfWorkImpl sut;
+
+    @BeforeEach
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.sut = spy(uow);
+    }
+
+    @Test
+    void setterAspectIsCalledForFieldsInOWLClass() throws Exception {
+        when(transactionMock.isActive()).thenReturn(true);
+        sut.registerNewObject(entityA, descriptor);
+        entityA.setStringAttribute("test");
+        verify(sut).attributeChanged(entityA, OWLClassA.getStrAttField());
+    }
+
+    @Test
+    void setterAspectIsCalledForFieldsInMappedSuperclass() throws Exception {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassQ entityQ = new OWLClassQ();
+        entityQ.setUri(Generators.createIndividualIdentifier());
+        sut.registerNewObject(entityQ, descriptor);
+        entityQ.setLabel("test");
+        verify(sut).attributeChanged(entityQ, OWLClassQ.getLabelField());
+    }
+
+    @Test
+    void getterAspectIsCalledForFieldsInMappedSuperclass() throws Exception {
+        final OWLClassQ entityQ = new OWLClassQ();
+        entityQ.setUri(Generators.createIndividualIdentifier());
+        final FieldSpecification aSpec = metamodelMock.entity(OWLClassQ.class).getFieldSpecification("owlClassA");
+        when(aSpec.getFetchType()).thenReturn(FetchType.LAZY);
+        final OWLClassQ clone = (OWLClassQ) sut.registerExistingObject(entityQ, descriptor);
+        clone.getOwlClassA();
+        verify(sut).loadEntityField(clone, OWLClassQ.getOwlClassAField());
+    }
+
+    @Test
+    void setterAspectHandlesInstanceOfMappedSuperclassOutsideOfPersistenceContext() {
+        final WithMappedSuperclass instance = new WithMappedSuperclass();
+        final String value = "test";
+        // Just invoke setter and see if the aspect is able to handle it
+        instance.setLabel(value);
+    }
+
+    @Test
+    void getterAspectHandlesInstanceOfMappedSuperclassOutsideOfPersistenceContext() {
+        final WithMappedSuperclass instance = new WithMappedSuperclass();
+        // Just invoke getter and see if the aspect is able to handle it
+        assertNull(instance.getLabel());
+    }
+
+    @MappedSuperclass
+    public static class WithMappedSuperclass {
+        @OWLAnnotationProperty(iri = RDFS.LABEL)
+        private String label;
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+    }
+}

@@ -62,7 +62,7 @@ public class BeanListenerAspect {
                       "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
                       "|| cz.cvut.kbss.jopa.model.annotations.Types " +
                       "|| cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
-                      "&& within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
+                      "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
     void getter() {
     }
 
@@ -70,7 +70,7 @@ public class BeanListenerAspect {
                       "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
                       "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
                       "|| cz.cvut.kbss.jopa.model.annotations.Types || cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
-                      "&& within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
+                      "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
     void setter() {
     }
 
@@ -98,6 +98,9 @@ public class BeanListenerAspect {
     public void afterSetter(JoinPoint thisJoinPoint) {
         // Persist changes done during transaction and check for inferred attribute modification
         final Object entity = thisJoinPoint.getTarget();
+        if (!(entity instanceof Manageable)) {
+            return;
+        }
         final UnitOfWorkImpl persistenceContext = ((Manageable) entity).getPersistenceContext();
         if (persistenceContext == null || !persistenceContext.isInTransaction()) {
             return;
@@ -126,17 +129,20 @@ public class BeanListenerAspect {
     @Before("getter()")
     public void beforeGetter(JoinPoint thisJoinPoint) {
         // Load lazy loaded entity field
-        final Object object = thisJoinPoint.getTarget();
-        final UnitOfWorkImpl persistenceContext = ((Manageable) object).getPersistenceContext();
+        final Object entity = thisJoinPoint.getTarget();
+        if (!(entity instanceof Manageable)) {
+            return;
+        }
+        final UnitOfWorkImpl persistenceContext = ((Manageable) entity).getPersistenceContext();
         if (persistenceContext == null) {
             return;
         }
-        final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(object, thisJoinPoint.getSignature().getName(), persistenceContext);
+        final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(), persistenceContext);
         final Field field = fieldSpec.getJavaField();
         if (EntityPropertiesUtils.isFieldTransient(field) || fieldSpec.getFetchType() == FetchType.EAGER) {
             return;
         }
-        loadReference(object, field, persistenceContext);
+        loadReference(entity, field, persistenceContext);
     }
 
     private void loadReference(Object entity, Field field, UnitOfWorkImpl persistenceContext) {
