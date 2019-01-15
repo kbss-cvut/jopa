@@ -1,5 +1,12 @@
 # JOPA - Release Notes
 
+## 0.11.0 - January 15, 2019
+- Added support for specifying repository config when creating embedded in-memory and native RDF4J repositories (Feature #41).
+- Added supports for Java 8 Streams in the Query API (Feature #45).
+- Fixed issues where aspects were not invoked for fields inherited from mapped superclasses.
+- Fixed possible infinite loop caused by entity lifecycle callbacks/listeners modifying the entity itself.
+- Upgraded to RDF4J 2.4.2.
+
 ## 0.10.8 - December 12, 2018
 - Support for plural annotation properties (Feature #38).
 - Fixed incorrect rdf:Property constant.
