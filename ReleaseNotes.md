@@ -6,6 +6,7 @@
 - Fixed issues where aspects were not invoked for fields inherited from mapped superclasses.
 - Fixed possible infinite loop caused by entity lifecycle callbacks/listeners modifying the entity itself.
 - Upgraded to RDF4J 2.4.2.
+- Removed several deprecated parts of the API.
 
 ## 0.10.8 - December 12, 2018
 - Support for plural annotation properties (Feature #38).

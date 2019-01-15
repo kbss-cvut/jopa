@@ -420,7 +420,7 @@ public interface EntityManager {
      */
     Metamodel getMetamodel();
 
-    // TODO Remove the following methods
+    // TODO Remove the following methods and replace them with implementation of JPA flush modes
     /**
      * Sets the transactional ontology as the one which will be used when processing SPARQL queries.
      * <p>

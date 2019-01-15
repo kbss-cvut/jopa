@@ -36,7 +36,6 @@ public interface Type<X> {
         /**
          * Mapped superclasses help building entities with common state definition. They are not entities.
          */
-        @UnusedJPA
         MAPPED_SUPERCLASS,
 
         BASIC,
