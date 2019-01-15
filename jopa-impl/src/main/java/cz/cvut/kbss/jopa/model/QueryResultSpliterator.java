@@ -40,7 +40,7 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
     @Override
     public boolean tryAdvance(Consumer<? super X> action) {
         try {
-            final boolean result = resultSetSpliterator.tryAdvance((row) -> mapAndApply(row, action));
+            final boolean result = resultSetSpliterator.tryAdvance(row -> mapAndApply(row, action));
             if (!result) {
                 onClose.execute();
             }
@@ -54,7 +54,7 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
     @Override
     public void forEachRemaining(Consumer<? super X> action) {
         try {
-            resultSetSpliterator.forEachRemaining((row) -> mapAndApply(row, action));
+            resultSetSpliterator.forEachRemaining(row -> mapAndApply(row, action));
         } finally {
             onClose.execute();
         }

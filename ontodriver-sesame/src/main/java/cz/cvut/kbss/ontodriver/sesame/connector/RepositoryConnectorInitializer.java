@@ -196,7 +196,7 @@ class RepositoryConnectorInitializer {
         }
     }
 
-    private void validateNativeStorePath(String path) {
+    private static void validateNativeStorePath(String path) {
         if (path.split(LOCAL_NATIVE_REPO).length != 2) {
             throw new RepositoryCreationException(
                     "Unsupported local RDF4J/Sesame repository path. Expected file://path/repositories/id but got " + path);
