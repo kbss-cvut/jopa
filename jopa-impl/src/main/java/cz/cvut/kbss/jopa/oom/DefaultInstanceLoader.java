@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.sessions.LoadingParameters;
  */
 class DefaultInstanceLoader extends EntityInstanceLoader {
 
-    DefaultInstanceLoader(DefaultInstanceLoaderBuilder builder) {
+    private DefaultInstanceLoader(DefaultInstanceLoaderBuilder builder) {
         super(builder);
     }
 

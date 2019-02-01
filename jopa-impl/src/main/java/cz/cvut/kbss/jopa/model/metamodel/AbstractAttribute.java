@@ -111,6 +111,11 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return converter;
     }
 
+    @Override
+    public String toString() {
+        return declaringType.getJavaType().getSimpleName() + "." + getName();
+    }
+
     abstract static class AbstractAttributeBuilder<X, Y> {
         private Field field;
         private ManagedType<X> declaringType;

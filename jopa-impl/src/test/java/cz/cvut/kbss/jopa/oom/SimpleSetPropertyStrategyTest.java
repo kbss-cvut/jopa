@@ -46,7 +46,6 @@ class SimpleSetPropertyStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
 
-
     @Mock
     private EntityMappingHelper mapperMock;
 

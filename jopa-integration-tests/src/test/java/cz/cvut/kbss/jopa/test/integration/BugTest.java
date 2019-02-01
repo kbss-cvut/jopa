@@ -13,10 +13,7 @@
 package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassR;
-import cz.cvut.kbss.jopa.test.Vocabulary;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -25,11 +22,10 @@ import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -105,5 +101,39 @@ class BugTest extends IntegrationTestBase {
         desc.addAssertion(opAssertion);
         when(connectionMock.find(desc)).thenReturn(axioms);
         when(connectionMock.contains(classAssertion, null)).thenReturn(true);
+    }
+
+    /**
+     * When a property value (instance reference) points to an individual which cannot be loaded as the target type
+     * entity, nothing should be added into a plural attribute collection. The bug caused {@code null} to be added.
+     */
+    @Test
+    void readingInstanceReferenceWithoutCorrectTypeResultsInNullAddedToPluralAttribute() throws OntoDriverException {
+        final URI owner = Generators.generateUri();
+        initAxiomsForNullReferenceLoad(owner);
+        final OWLClassJ result = em.find(OWLClassJ.class, owner);
+        assertNotNull(result);
+        assertThat(result.getOwlClassA(), anyOf(nullValue(), empty()));
+    }
+
+    private void initAxiomsForNullReferenceLoad(URI owner) throws OntoDriverException {
+        final NamedResource ownerResource = NamedResource.create(owner);
+        final Assertion classAssertion = Assertion.createClassAssertion(false);
+        final NamedResource reference = NamedResource.create(Generators.generateUri());
+        final Assertion opAssertion = Assertion
+                .createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false);
+        final AxiomDescriptor fDesc = new AxiomDescriptor(ownerResource);
+        fDesc.addAssertion(classAssertion);
+        when(connectionMock.find(fDesc))
+                .thenReturn(Collections.singletonList(new AxiomImpl<>(ownerResource, classAssertion,
+                        new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_J)))));
+        final AxiomDescriptor refDescriptor = new AxiomDescriptor(ownerResource);
+        refDescriptor.addAssertion(opAssertion);
+        when(connectionMock.find(refDescriptor)).thenReturn(
+                Collections.singletonList(new AxiomImpl<>(ownerResource, opAssertion, new Value<>(reference))));
+        final AxiomDescriptor aDesc = new AxiomDescriptor(reference);
+        aDesc.addAssertion(classAssertion);
+        aDesc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false));
+        when(connectionMock.find(aDesc)).thenReturn(Collections.emptyList());
     }
 }
