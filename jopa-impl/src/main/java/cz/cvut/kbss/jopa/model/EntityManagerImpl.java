@@ -269,24 +269,51 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     }
 
     @Override
-    public <T> T find(Class<T> cls, Object primaryKey) {
+    public <T> T find(Class<T> cls, Object identifier) {
         final EntityDescriptor d = new EntityDescriptor();
-        return find(cls, primaryKey, d);
+        return find(cls, identifier, d);
     }
 
     @Override
-    public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+    public <T> T find(Class<T> cls, Object identifier, Descriptor descriptor) {
         try {
             Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-            Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+            Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
             Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
             ensureOpen();
             checkClassIsValidEntity(cls);
 
-            LOG.trace("Finding instance of {} with identifier {} in context ", cls, primaryKey, descriptor);
-            final URI uri = (primaryKey instanceof URI) ? (URI) primaryKey : URI.create(primaryKey.toString());
+            LOG.trace("Finding instance of {} with identifier {} in context ", cls, identifier, descriptor);
+            final URI uri = (identifier instanceof URI) ? (URI) identifier : URI.create(identifier.toString());
 
             return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public <T> T getReference(Class<T> entityClass, Object identifier) {
+        try {
+            Objects.requireNonNull(entityClass);
+            Objects.requireNonNull(identifier);
+
+            return find(entityClass, identifier);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public <T> T getReference(Class<T> entityClass, Object identifier, Descriptor descriptor) {
+        try {
+            Objects.requireNonNull(entityClass);
+            Objects.requireNonNull(identifier);
+            Objects.requireNonNull(descriptor);
+
+            return find(entityClass, identifier, descriptor);
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
