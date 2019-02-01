@@ -309,7 +309,8 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         newOne.setUri(pk);
         newOne.setStringAttribute("stringAttributeOne");
         uow.registerNewObject(newOne, descriptor);
-        assertTrue(uow.getNewObjectsCloneToOriginal().containsKey(newOne));
+        assertTrue(uow.contains(newOne));
+        assertEquals(State.MANAGED_NEW, uow.getState(newOne));
         verify(storageMock).persist(pk, newOne, descriptor);
     }
 
@@ -343,11 +344,11 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testRemoveObject() {
+    void removeObjectPutsExistingObjectIntoDeletedCacheAndRemovesItFromRepository() {
         final OWLClassB toRemove = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         uow.removeObject(toRemove);
-        assertTrue(uow.getDeletedObjects().containsKey(toRemove));
         assertFalse(uow.contains(toRemove));
+        assertEquals(State.REMOVED, uow.getState(toRemove));
         verify(storageMock).remove(entityB.getUri(), entityB.getClass(), descriptor);
     }
 
@@ -644,7 +645,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertTrue(getMap("keysToClones") == null || getMap("keysToClones").isEmpty());
         assertTrue(getMap("deletedObjects") == null || getMap("deletedObjects").isEmpty());
         assertTrue(getMap("newObjectsCloneToOriginal") == null || getMap("newObjectsCloneToOriginal").isEmpty());
-        assertTrue(getMap("newObjectsOriginalToClone") == null || getMap("newObjectsOriginalToClone").isEmpty());
         assertTrue(getMap("newObjectsKeyToClone") == null || getMap("newObjectsKeyToClone").isEmpty());
         assertFalse(getBoolean("hasChanges"));
         assertFalse(getBoolean("hasNew"));
