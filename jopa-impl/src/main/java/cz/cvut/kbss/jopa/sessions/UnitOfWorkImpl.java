@@ -44,7 +44,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
-public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory, ConfigurationHolder, Wrapper {
+public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
 
     private final Set<Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
@@ -959,39 +959,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return !useTransactionalOntology;
     }
 
-    @Override
-    public QueryImpl createNativeQuery(String sparql) {
-        return queryFactory.createNativeQuery(sparql);
-    }
-
-    @Override
-    public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        return queryFactory.createNativeQuery(sparql, resultClass);
-    }
-
-    @Override
-    public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
-        return queryFactory.createNativeQuery(sparql, resultSetMapping);
-    }
-
-    @Override
-    public QueryImpl createQuery(String query) {
-        return queryFactory.createQuery(query);
-    }
-
-    @Override
-    public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
-        return queryFactory.createQuery(query, resultClass);
-    }
-
-    @Override
-    public QueryImpl createNamedQuery(String name) {
-        return queryFactory.createNamedQuery(name);
-    }
-
-    @Override
-    public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
-        return queryFactory.createNamedQuery(name, resultClass);
+    public SparqlQueryFactory sparqlQueryFactory() {
+        return queryFactory;
     }
 
     /**

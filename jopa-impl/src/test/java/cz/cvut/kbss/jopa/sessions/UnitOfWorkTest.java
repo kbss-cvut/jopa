@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -945,6 +946,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
+    @Disabled
     void isLoadedReturnsLoadedForRegisteredExistingObject() {
         final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(a));

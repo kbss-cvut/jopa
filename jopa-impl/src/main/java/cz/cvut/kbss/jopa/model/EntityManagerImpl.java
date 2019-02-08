@@ -455,7 +455,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public QueryImpl createQuery(String qlString) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createQuery(qlString);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(qlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -464,7 +464,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         ensureOpen();
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createQuery(query, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -473,7 +473,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public QueryImpl createNativeQuery(String sparqlString) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createNativeQuery(sparqlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -482,7 +482,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> TypedQueryImpl<T> createNativeQuery(String sparqlString, Class<T> resultClass) {
         ensureOpen();
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
+                                                                  .createNativeQuery(sparqlString, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -491,7 +492,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public QueryImpl createNativeQuery(String sparqlString, String resultSetMapping) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultSetMapping);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory()
+                                                          .createNativeQuery(sparqlString, resultSetMapping);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -500,7 +502,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public QueryImpl createNamedQuery(String name) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createNamedQuery(name);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createNamedQuery(name);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -509,7 +511,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
         ensureOpen();
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNamedQuery(name, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
+                                                                  .createNamedQuery(name, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;

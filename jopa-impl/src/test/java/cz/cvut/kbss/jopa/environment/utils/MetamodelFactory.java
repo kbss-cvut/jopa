@@ -786,6 +786,7 @@ public class MetamodelFactory {
         when(et.getJavaType()).thenReturn(OWLClassQ.class);
         when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
         when(idQ.isGenerated()).thenReturn(true);
+        when(idQ.getDeclaringType()).thenReturn(et);
         when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
         when(et.getSupertype()).thenReturn((AbstractIdentifiableType) superclassType);
         when(superclassType.getSubtypes()).thenReturn(Collections.singleton(et));
@@ -1007,6 +1008,7 @@ public class MetamodelFactory {
         when(id.isGenerated()).thenReturn(true);
         when(et.getJavaType()).thenReturn(OWLClassT.class);
         when(id.getJavaField()).thenReturn(OWLClassT.getUriField());
+        when(id.getDeclaringType()).thenReturn(et);
         when(et.getIRI()).thenReturn(IRI.create(OWLClassT.getClassIri()));
         when(et.getFieldSpecifications()).thenReturn(new HashSet(Arrays.asList(localDateAtt, localDateTimeAtt, id)));
         when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(localDateAtt, localDateTimeAtt)));
