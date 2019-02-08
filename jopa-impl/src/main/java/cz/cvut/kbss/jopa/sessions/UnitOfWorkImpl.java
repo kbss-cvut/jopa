@@ -151,12 +151,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             }
         }
         final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
-        result = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
-
-        if (result == null) {
+        final FindResult<? extends T> res = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
+        if (!res.getInstance().isPresent()) {
             return null;
         }
-        final Object clone = registerExistingObject(result, descriptor,
+        final Object clone = registerExistingObject(res.getInstance().get(), descriptor,
                 Collections.singletonList(new PostLoadInvoker(getMetamodel())));
         checkForCollections(clone);
         return cls.cast(clone);
@@ -589,8 +588,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return keysToClones.get(identifier);
         }
         final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
-        T original = storage.find(params);
-        assert original != null;
+        T original = storage.find(params).getInstance().orElseThrow(() -> new OWLPersistenceException(
+                "Merge could not find any instance with identifier " + identifier +
+                        " to merge into in the repository."));
 
         return registerExistingObject(original, descriptor);
     }
@@ -679,10 +679,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final ConnectionWrapper connection = acquireConnection();
         try {
             uowChangeSet.cancelObjectChanges(getOriginal(object));
-            T original = connection.find(params);
-            if (original == null) {
-                throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
-            }
+            T original = connection.find(params).getInstance().orElseThrow(
+                    () -> new EntityNotFoundException("Entity " + object + " no longer exists in the repository."));
             T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor));
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
             changeManager.calculateChanges(chSet);

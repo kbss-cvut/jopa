@@ -17,6 +17,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.FindResult;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -40,18 +41,19 @@ class EntityConstructor {
         this.mapper = mapper;
     }
 
-    <T> T reconstructEntity(URI primaryKey, EntityType<T> et, Descriptor descriptor,
-                            Collection<Axiom<?>> axioms) throws InstantiationException, IllegalAccessException {
+    <T> FindResult<T> reconstructEntity(URI primaryKey, EntityType<T> et, Descriptor descriptor,
+                                        Collection<Axiom<?>> axioms)
+            throws InstantiationException, IllegalAccessException {
         assert !axioms.isEmpty();
 
         if (!axiomsContainEntityClassAssertion(axioms, et)) {
-            return null;
+            return FindResult.empty();
         }
         final T instance = createEntityInstance(primaryKey, et, descriptor);
         populateAttributes(instance, et, descriptor, axioms);
         validateIntegrityConstraints(instance, et);
 
-        return instance;
+        return new FindResult<>(instance, null);
     }
 
     private static boolean axiomsContainEntityClassAssertion(Collection<Axiom<?>> axioms, EntityType<?> et) {

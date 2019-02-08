@@ -19,6 +19,7 @@ import java.net.URI;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.sessions.FindResult;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 
 public interface ObjectOntologyMapper {
@@ -39,7 +40,7 @@ public interface ObjectOntologyMapper {
      * @param loadingParameters Entity loading parameters
      * @return Reconstructed entity or {@code null} if there is none such
      */
-    <T> T loadEntity(LoadingParameters<T> loadingParameters);
+    <T> FindResult<? extends T> loadEntity(LoadingParameters<T> loadingParameters);
 
     /**
      * Loads entity field value and sets it on the specified entity.

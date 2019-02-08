@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -26,6 +24,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.sessions.FindResult;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -241,7 +240,7 @@ public class ObjectOntologyMapperTest {
         EntityInstanceLoader loader = (EntityInstanceLoader) instanceLoaderField.get(mapper);
         loader = spy(loader);
         instanceLoaderField.set(mapper, loader);
-        doReturn(entityA).when(loader).loadEntity(loadingParameters);
+        doReturn(new FindResult<>(entityA, null)).when(loader).loadEntity(loadingParameters);
         final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, aDescriptor);
         assertSame(entityA, res);
         verify(loader).loadEntity(loadingParameters);
@@ -350,10 +349,10 @@ public class ObjectOntologyMapperTest {
         final OWLClassS entity = new OWLClassR();
         final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER,
                 aDescriptor);
-        doReturn(entity).when(twoStepLoader).loadEntity(loadingParameters);
+        doReturn(new FindResult<>(entity, null)).when(twoStepLoader).loadEntity(loadingParameters);
 
-        final OWLClassS result = mapper.loadEntity(loadingParameters);
-        assertSame(entity, result);
+        final FindResult<? extends OWLClassS> result = mapper.loadEntity(loadingParameters);
+        assertSame(entity, result.getInstance().get());
         verify(twoStepLoader).loadEntity(loadingParameters);
     }
 
@@ -362,8 +361,8 @@ public class ObjectOntologyMapperTest {
         when(cacheMock.contains(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor())).thenReturn(true);
         when(cacheMock.get(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor())).thenReturn(entityA);
 
-        final OWLClassA result = mapper.loadEntity(loadingParameters);
-        assertSame(entityA, result);
+        final FindResult<? extends OWLClassA> result = mapper.loadEntity(loadingParameters);
+        assertSame(entityA, result.getInstance().get());
         verify(cacheMock).get(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor());
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
@@ -383,8 +382,8 @@ public class ObjectOntologyMapperTest {
 
         final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER,
                 aDescriptor);
-        final OWLClassS result = mapper.loadEntity(loadingParameters);
-        assertSame(entity, result);
+        final FindResult<? extends OWLClassS> result = mapper.loadEntity(loadingParameters);
+        assertSame(entity, result.getInstance().get());
         verify(cacheMock).get(OWLClassR.class, IDENTIFIER, aDescriptor);
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
@@ -393,9 +392,9 @@ public class ObjectOntologyMapperTest {
     public void loadEntityPutsItIntoSecondLevelCache() throws Exception {
         final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
-        final OWLClassA result = mapper.loadEntity(loadingParameters);
+        final FindResult<? extends OWLClassA> result = mapper.loadEntity(loadingParameters);
         assertNotNull(result);
-        verify(cacheMock).add(IDENTIFIER, result, loadingParameters.getDescriptor());
+        verify(cacheMock).add(IDENTIFIER, result.getInstance().get(), loadingParameters.getDescriptor());
     }
 
     @Test
@@ -411,10 +410,13 @@ public class ObjectOntologyMapperTest {
                 return axiomsForA;
             }
         });
-        final OWLClassD result = mapper.loadEntity(new LoadingParameters<>(OWLClassD.class, identifier, aDescriptor));
+        final FindResult<? extends OWLClassD> result = mapper
+                .loadEntity(new LoadingParameters<>(OWLClassD.class, identifier, aDescriptor));
         assertNotNull(result);
-        verify(cacheMock).add(identifier, result, aDescriptor);
-        verify(cacheMock).add(IDENTIFIER, result.getOwlClassA(), aDescriptor);
+        assertTrue(result.getInstance().isPresent());
+        final OWLClassD dResult = result.getInstance().get();
+        verify(cacheMock).add(identifier, dResult, aDescriptor);
+        verify(cacheMock).add(IDENTIFIER, dResult.getOwlClassA(), aDescriptor);
     }
 
     private Collection<Axiom<?>> axiomsForD(URI identifier) {
@@ -430,8 +432,9 @@ public class ObjectOntologyMapperTest {
     @Test
     public void loadEntitySkipsCacheWhenNothingIsFound() throws Exception {
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(Collections.emptyList());
-        final OWLClassA result = mapper.loadEntity(loadingParameters);
-        assertNull(result);
+        final FindResult<? extends OWLClassA> result = mapper.loadEntity(loadingParameters);
+        assertNotNull(result);
+        assertFalse(result.getInstance().isPresent());
         verify(cacheMock, never()).add(any(), any(), any());
     }
 

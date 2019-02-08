@@ -78,7 +78,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void testReadObjectFromOntology() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor)))
-                .thenReturn(entityA);
+                .thenReturn(new FindResult(entityA, null));
         OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(res);
         assertEquals(entityA.getUri(), res.getUri());
@@ -207,7 +207,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void testGetOriginal() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
-                entityA);
+                new FindResult(entityA, null));
         OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(tO);
         OWLClassA origOne = (OWLClassA) uow.getOriginal(tO);
@@ -224,7 +224,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void getManagedOriginalReturnsManagedOriginalInstance() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
-                entityA);
+                new FindResult(entityA, null));
         uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 
         final OWLClassA res = uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor);
@@ -235,7 +235,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void getManagedOriginalForDifferentContextReturnsNull() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
-                entityA);
+                new FindResult(entityA, null));
         uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 
         final EntityDescriptor differentContext = new EntityDescriptor(URI.create("http://differentContext"));
@@ -678,7 +678,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void releaseRemovesIndirectCollectionsFromManagedEntities() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
-                .thenReturn(entityA);
+                .thenReturn(new FindResult(entityA, null));
         final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(result);
         assertTrue(result.getTypes() instanceof IndirectSet);
@@ -689,7 +689,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void rollbackDetachesAllManagedEntities() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
-                .thenReturn(entityA);
+                .thenReturn(new FindResult(entityA, null));
         final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         entityB.setProperties(new HashMap<>());
         uow.registerNewObject(entityB, descriptor);
@@ -707,7 +707,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassR entityR = new OWLClassR(Generators.createIndividualIdentifier());
         entityR.setTypes(Generators.generateTypes(5));
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, entityR.getUri(), descriptor)))
-                .thenReturn(entityR);
+                .thenReturn(new FindResult(entityR, null));
         final OWLClassR clone = uow.readObject(OWLClassR.class, entityR.getUri(), descriptor);
         assertTrue(clone.getTypes() instanceof IndirectSet);
     }
@@ -717,7 +717,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassA original = new OWLClassA(entityA.getUri());
         original.setStringAttribute("originalStringAttribute");
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
-        when(storageMock.find(any())).thenReturn(original);
+        when(storageMock.find(any())).thenReturn(new FindResult(original, null));
 
         final OWLClassA merged = uow.mergeDetached(entityA, descriptor);
         assertNotNull(merged);
@@ -774,7 +774,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassA original = new OWLClassA(entityA.getUri());
         original.setStringAttribute(entityA.getStringAttribute());
         original.setTypes(new HashSet<>(entityA.getTypes()));
-        when(storageMock.find(any())).thenReturn(original);
+        when(storageMock.find(any())).thenReturn(new FindResult(original, null));
         uow.refreshObject(a);
         // First invocation is when UoW is instantiated
         verify(serverSessionStub, times(2)).acquireConnection();
@@ -790,7 +790,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final LoadingParameters<OWLClassA> loadingParams =
                 new LoadingParameters<>(OWLClassA.class, a.getUri(), descriptor, true);
         loadingParams.bypassCache();
-        when(storageMock.find(loadingParams)).thenReturn(original);
+        when(storageMock.find(loadingParams)).thenReturn(new FindResult(original, null));
         uow.refreshObject(a);
         assertEquals(entityA.getStringAttribute(), a.getStringAttribute());
         verify(storageMock).find(loadingParams);
@@ -808,7 +808,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final LoadingParameters<OWLClassD> loadingParams =
                 new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
         loadingParams.bypassCache();
-        when(storageMock.find(loadingParams)).thenReturn(original);
+        when(storageMock.find(loadingParams)).thenReturn(new FindResult(original, null));
 
         uow.refreshObject(d);
         assertNotEquals(diffAClone, d.getOwlClassA());
@@ -826,7 +826,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final LoadingParameters<OWLClassD> loadingParams =
                 new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
         loadingParams.bypassCache();
-        when(storageMock.find(loadingParams)).thenReturn(original);
+        when(storageMock.find(loadingParams)).thenReturn(new FindResult(original, null));
         uow.refreshObject(d);
 
         assertEquals(original, uow.getOriginal(d));
@@ -838,7 +838,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final LoadingParameters<OWLClassD> loadingParams =
                 new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
         loadingParams.bypassCache();
-        when(storageMock.find(loadingParams)).thenReturn(null);
+        when(storageMock.find(loadingParams)).thenReturn(FindResult.empty());
 
         final EntityNotFoundException result = assertThrows(EntityNotFoundException.class, () -> uow.refreshObject(d));
         assertThat(result.getMessage(), containsString(d + " no longer exists in the repository"));
@@ -853,7 +853,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassA original = new OWLClassA(entityA.getUri());
         original.setStringAttribute(entityA.getStringAttribute());
         original.setTypes(new HashSet<>(entityA.getTypes()));
-        when(storageMock.find(any())).thenReturn(original);
+        when(storageMock.find(any())).thenReturn(new FindResult(original, null));
         final UnitOfWorkChangeSet uowChangeSet = uow.getUowChangeSet();
         assertNotNull(uowChangeSet.getExistingObjectChanges(entityA));
         uow.refreshObject(a);
@@ -870,7 +870,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         original.setStringAttribute(entityA.getStringAttribute());
         original.setTypes(new HashSet<>(entityA.getTypes()));
         Mockito.reset(storageMock);
-        when(storageMock.find(any())).thenReturn(original);
+        when(storageMock.find(any())).thenReturn(new FindResult(original, null));
         uow.refreshObject(a);
         verify(storageMock).merge(eq(a), eq(OWLClassA.getStrAttField()), any(Descriptor.class));
     }

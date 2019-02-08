@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.sessions.FindResult;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 
 /**
@@ -27,7 +28,7 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
     }
 
     @Override
-    <T> T loadEntity(LoadingParameters<T> loadingParameters) {
+    <T> FindResult<? extends T> loadEntity(LoadingParameters<T> loadingParameters) {
         final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
         return loadInstance(loadingParameters, et);
     }
