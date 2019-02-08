@@ -1,20 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.lang.reflect.Field;
@@ -48,9 +47,8 @@ public interface UnitOfWork extends Session {
     void rollback();
 
     /**
-     * Returns true if the specified entity is managed in the current
-     * persistence context. This method is used by the EntityManager's contains
-     * method.
+     * Returns true if the specified entity is managed in the current persistence context. This method is used by the
+     * EntityManager's contains method.
      *
      * @param entity Object
      * @return {@literal true} if entity is managed, {@literal false} otherwise
@@ -65,16 +63,15 @@ public interface UnitOfWork extends Session {
     boolean isActive();
 
     /**
-     * Returns true if this {@code UnitOfWork} represents persistence context of
-     * a currently running transaction.
+     * Returns true if this {@code UnitOfWork} represents persistence context of a currently running transaction.
      *
      * @return True if in an active transaction
      */
     boolean isInTransaction();
 
     /**
-     * Return true if the given entity is managed. This means it is either in
-     * the shared session cache or it is a new object ready for persist.
+     * Return true if the given entity is managed. This means it is either in the shared session cache or it is a new
+     * object ready for persist.
      *
      * @param entity Object
      * @return boolean
@@ -84,8 +81,7 @@ public interface UnitOfWork extends Session {
     /**
      * Checks whether context specified by {@code context} is consistent.
      * <p>
-     * Can be {@code null}, indicating that consistency of the whole repository
-     * should be checked.
+     * Can be {@code null}, indicating that consistency of the whole repository should be checked.
      *
      * @param context Context URI
      * @return {@code true} if the context is consistent, {@code false} otherwise
@@ -107,11 +103,10 @@ public interface UnitOfWork extends Session {
     <T> void loadEntityField(T entity, Field field);
 
     /**
-     * Merges the state of the given entity into the current persistence
-     * context.
+     * Merges the state of the given entity into the current persistence context.
      * <p>
-     * The {@code descriptor} argument specified the ontology contexts into
-     * which the detached entity and its fields belong and should be merged.
+     * The {@code descriptor} argument specified the ontology contexts into which the detached entity and its fields
+     * belong and should be merged.
      *
      * @param entity     entity instance
      * @param descriptor Entity descriptor, specifies repository context
@@ -123,8 +118,8 @@ public interface UnitOfWork extends Session {
     /**
      * Retrieves object with the specified primary key.
      * <p>
-     * The object as well as its fields are looked for in contexts specified by
-     * the descriptor. The result is then cast to the specified type.
+     * The object as well as its fields are looked for in contexts specified by the descriptor. The result is then cast
+     * to the specified type.
      *
      * @param cls        The type of the returned object
      * @param primaryKey Primary key
@@ -139,8 +134,7 @@ public interface UnitOfWork extends Session {
     /**
      * Register an existing object in this Unit of Work.
      * <p>
-     * This method creates a working clone of this object and puts the given object into this Unit of Work
-     * cache.
+     * This method creates a working clone of this object and puts the given object into this Unit of Work cache.
      *
      * @param object     Object
      * @param descriptor Entity descriptor identifying repository contexts
@@ -151,7 +145,8 @@ public interface UnitOfWork extends Session {
     /**
      * Registers an existing object in this Unit of Work.
      * <p>
-     * Invokes the specified postClone procedures after the cloning takes place, passing the newly created clone as argument.
+     * Invokes the specified postClone procedures after the cloning takes place, passing the newly created clone as
+     * argument.
      *
      * @param object     The object to register
      * @param descriptor Descriptor identifying repository contexts
@@ -164,8 +159,7 @@ public interface UnitOfWork extends Session {
     /**
      * Registers the specified new object in this Unit of Work.
      * <p>
-     * The object will be persisted into the context specified by
-     * {@code descriptor}.
+     * The object will be persisted into the context specified by {@code descriptor}.
      *
      * @param object     The object to register
      * @param descriptor Entity descriptor
@@ -176,9 +170,8 @@ public interface UnitOfWork extends Session {
     void registerNewObject(Object object, Descriptor descriptor);
 
     /**
-     * Remove the given object. Calling this method causes the entity to be
-     * removed from the shared cache and a delete query is initiated on the
-     * ontology.
+     * Remove the given object. Calling this method causes the entity to be removed from the shared cache and a delete
+     * query is initiated on the ontology.
      *
      * @param object Object
      */
@@ -194,8 +187,7 @@ public interface UnitOfWork extends Session {
     void restoreRemovedObject(Object entity);
 
     /**
-     * Release the current unit of work. Calling this method disregards any
-     * changes made to clones.
+     * Release the current unit of work. Calling this method disregards any changes made to clones.
      */
     @Override
     void release();
@@ -210,18 +202,16 @@ public interface UnitOfWork extends Session {
     <T> void refreshObject(T object);
 
     /**
-     * This method returns true, if the UnitOfWork should be released after the
-     * commit call. This is done for inferred attributes, which cause the whole
-     * session cache to be invalidated.
+     * This method returns true, if the UnitOfWork should be released after the commit call. This is done for inferred
+     * attributes, which cause the whole session cache to be invalidated.
      *
      * @return True if the UnitOfWork should be released after commit.
      */
     boolean shouldReleaseAfterCommit();
 
     /**
-     * Writes any uncommitted changes into the ontology. This method may be
-     * useful when flushing entity manager or closing sessions, because we don't
-     * want to let the changes to get lost.
+     * Writes any uncommitted changes into the ontology. This method may be useful when flushing entity manager or
+     * closing sessions, because we don't want to let the changes to get lost.
      */
     void writeUncommittedChanges();
 
@@ -233,28 +223,43 @@ public interface UnitOfWork extends Session {
     List<URI> getContexts();
 
     /**
-     * Sets the transactional ontology as the one used for SPARQL query
-     * processing.
+     * Gets the load status of the specified attribute on the specified entity.
+     *
+     * @param entity        Entity instance
+     * @param attributeName Attribute whose load status is to be determined
+     * @return Attribute load status
+     * @see cz.cvut.kbss.jopa.model.ProviderUtil#isLoadedWithoutReference(Object, String)
+     */
+    LoadState isLoaded(Object entity, String attributeName);
+
+    /**
+     * Gets the load status of the specified entity.
+     *
+     * @param entity Entity whose load status is to be determined.
+     * @return Entity load status
+     * @see cz.cvut.kbss.jopa.model.ProviderUtil#isLoaded(Object)
+     */
+    LoadState isLoaded(Object entity);
+
+    /**
+     * Sets the transactional ontology as the one used for SPARQL query processing.
      */
     void setUseTransactionalOntologyForQueryProcessing();
 
     /**
-     * Returns true if the transactional ontology is set as the one processing
-     * SPARQL queries.
+     * Returns true if the transactional ontology is set as the one processing SPARQL queries.
      *
      * @return boolean
      */
     boolean useTransactionalOntologyForQueryProcessing();
 
     /**
-     * Sets the backup (central) ontology as the one used for SPARQL query
-     * processing.
+     * Sets the backup (central) ontology as the one used for SPARQL query processing.
      */
     void setUseBackupOntologyForQueryProcessing();
 
     /**
-     * Returns true if the backup (central) ontology is set as the one
-     * processing SPARQL queries.
+     * Returns true if the backup (central) ontology is set as the one processing SPARQL queries.
      *
      * @return boolean
      */

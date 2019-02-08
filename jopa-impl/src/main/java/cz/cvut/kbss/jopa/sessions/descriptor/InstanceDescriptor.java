@@ -52,7 +52,7 @@ public class InstanceDescriptor<T> {
         return unknownFound ? LoadState.UNKNOWN : LoadState.LOADED;
     }
 
-    public LoadState isLoaded(FieldSpecification<? super T, ?> attribute) {
+    public LoadState isLoaded(FieldSpecification<?, ?> attribute) {
         return loadState.getOrDefault(Objects.requireNonNull(attribute), LoadState.UNKNOWN);
     }
 

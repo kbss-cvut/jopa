@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import org.junit.jupiter.api.BeforeEach;
@@ -928,5 +929,24 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.registerNewObject(entityB, descriptor);
         uow.commit();
         verify(cacheManagerMock).evictInferredObjects();
+    }
+
+    @Test
+    void isLoadedReturnsLoadedForNewlyRegisteredInstance() {
+        uow.registerNewObject(entityA, descriptor);
+        assertEquals(LoadState.LOADED, uow.isLoaded(entityA));
+    }
+
+    @Test
+    void isLoadedByAttributeReturnsLoadedForAttributesOfNewlyRegisteredInstance() throws Exception {
+        uow.registerNewObject(entityA, descriptor);
+        assertEquals(LoadState.LOADED, uow.isLoaded(entityA, OWLClassA.getStrAttField().getName()));
+        assertEquals(LoadState.LOADED, uow.isLoaded(entityA, OWLClassA.getTypesField().getName()));
+    }
+
+    @Test
+    void isLoadedReturnsLoadedForRegisteredExistingObject() {
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        assertEquals(LoadState.LOADED, uow.isLoaded(a));
     }
 }

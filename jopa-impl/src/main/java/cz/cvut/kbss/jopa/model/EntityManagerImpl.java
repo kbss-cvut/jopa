@@ -448,6 +448,11 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     }
 
     @Override
+    public boolean isLoaded(Object object) {
+        return contains(object);
+    }
+
+    @Override
     public QueryImpl createQuery(String qlString) {
         ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().createQuery(qlString);

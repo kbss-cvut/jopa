@@ -129,6 +129,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(propsMock.getName())).thenReturn(propsMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
+        when(idMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
@@ -249,6 +250,7 @@ public class MetamodelFactory {
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassD.getUriField());
         when(idMock.getName()).thenReturn(OWLClassD.getUriField().getName());
+        when(idMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getFieldSpecification(OWLClassD.getUriField().getName())).thenReturn(idMock);
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
@@ -419,6 +421,7 @@ public class MetamodelFactory {
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassL.getClassIri()));
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassL.class.getDeclaredField("uri"));
+        when(idMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getDeclaredAttributes()).thenReturn(new HashSet<>(
                 Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
         when(etMock.getAttributes()).thenReturn(new HashSet<>(
@@ -856,6 +859,7 @@ public class MetamodelFactory {
         when(idS.isGenerated()).thenReturn(true);
         when(et.getJavaType()).thenReturn(OWLClassS.class);
         when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
+        when(idS.getDeclaringType()).thenReturn(et);
         when(et.getIRI()).thenReturn(IRI.create(OWLClassS.getClassIri()));
         when(et.getFieldSpecifications()).thenReturn(new HashSet(Arrays.asList(sNameAtt, sTypes, idS)));
         when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
