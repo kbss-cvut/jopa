@@ -27,7 +27,6 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.FindResult;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
@@ -419,8 +418,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasTwo", cascade = {CascadeType.MERGE,
-                CascadeType.PERSIST,
-                CascadeType.REMOVE})
+                                                                                  CascadeType.PERSIST,
+                                                                                  CascadeType.REMOVE})
         private CascadeCycleTwo two;
 
         private CascadeCycleOne(URI uri) {
@@ -433,8 +432,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasOne", cascade = {CascadeType.PERSIST,
-                CascadeType.MERGE,
-                CascadeType.REMOVE})
+                                                                                  CascadeType.MERGE,
+                                                                                  CascadeType.REMOVE})
         private CascadeCycleOne one;
 
         private CascadeCycleTwo(URI uri) {
@@ -529,7 +528,7 @@ public class EntityManagerImplTest {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         em.persist(a);
         when(connectorMock.contains(eq(a.getUri()), eq(OWLClassA.class), any())).thenReturn(true);
-        when(connectorMock.find(any())).thenReturn(new FindResult(a, null));
+        when(connectorMock.find(any())).thenReturn(a);
         final OWLClassA copyA = new OWLClassA(a.getUri());
         final String str = "differentString";
         copyA.setStringAttribute(str);

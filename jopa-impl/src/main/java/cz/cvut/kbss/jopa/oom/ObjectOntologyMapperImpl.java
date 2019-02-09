@@ -1,14 +1,16 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -23,7 +25,6 @@ import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.sessions.FindResult;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -97,23 +98,24 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> FindResult<? extends T> loadEntity(LoadingParameters<T> loadingParameters) {
+    public <T> T loadEntity(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
         instanceRegistry.reset();
         return loadEntityInternal(loadingParameters);
     }
 
-    private <T> FindResult<? extends T> loadEntityInternal(LoadingParameters<T> loadingParameters) {
+    private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
         final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
-        final FindResult<? extends T> result;
+        final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntity(loadingParameters);
         } else {
             result = defaultInstanceLoader.loadEntity(loadingParameters);
         }
-        result.getInstance()
-              .ifPresent(inst -> cache.add(loadingParameters.getIdentifier(), inst, loadingParameters.getDescriptor()));
+        if (result != null) {
+            cache.add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor());
+        }
         return result;
     }
 
@@ -217,7 +219,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             // This prevents endless cycles in bidirectional relationships
             return cls.cast(instanceRegistry.getInstance(primaryKey, descriptor.getContext()));
         } else {
-            return loadEntityInternal(new LoadingParameters<>(cls, primaryKey, descriptor)).getInstance().orElse(null);
+            return loadEntityInternal(new LoadingParameters<>(cls, primaryKey, descriptor));
         }
     }
 

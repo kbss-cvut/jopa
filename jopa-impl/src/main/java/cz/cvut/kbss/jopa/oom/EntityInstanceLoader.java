@@ -18,7 +18,6 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.sessions.FindResult;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -59,20 +58,20 @@ abstract class EntityInstanceLoader {
      * Loads entity based on the specified loading parameters.
      *
      * @param loadingParameters Instance loading parameters
-     * @return Result of the loading
+     * @return The loaded instance (possibly {@code null})
      */
-    abstract <T> FindResult<? extends T> loadEntity(LoadingParameters<T> loadingParameters);
+    abstract <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
-    <T> FindResult<? extends T> loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
+    <T> T loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
         if (isCached(loadingParameters, et, descriptor)) {
-            return new FindResult<>(cache.get(et.getJavaType(), identifier, descriptor), null);
+            return cache.get(et.getJavaType(), identifier, descriptor);
         }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            return axioms.isEmpty() ? FindResult.empty() : entityBuilder.reconstructEntity(identifier, et, descriptor, axioms);
+            return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(identifier, et, descriptor, axioms);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (InstantiationException | IllegalAccessException e) {
