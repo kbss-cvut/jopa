@@ -872,7 +872,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     public <T> void loadEntityField(T entity, Field field) {
         Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
         Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
-        assert field.getDeclaringClass().equals(entity.getClass());
+        assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
         if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
             return;

@@ -47,8 +47,6 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class EntityManagerImplTest {
@@ -491,7 +489,7 @@ public class EntityManagerImplTest {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         doAnswer((invocationOnMock) -> a).when(uow)
                                          .readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
-        when(uow.contains(a)).thenReturn(true);
+        doReturn(LoadState.LOADED).when(uow).isLoaded(a, OWLClassA.getStrAttField().getName());
         final OWLClassA found = em.find(OWLClassA.class, a.getUri());
         assertTrue(em.isLoaded(found, OWLClassA.getStrAttField().getName()));
     }
@@ -499,7 +497,7 @@ public class EntityManagerImplTest {
     @Test
     public void isLoadedReturnsFalseForNonManagedInstance() throws Exception {
         final OWLClassA a = Generators.generateOwlClassAInstance();
-        when(uow.contains(a)).thenReturn(false);
+        doReturn(LoadState.UNKNOWN).when(uow).isLoaded(eq(a), anyString());
         assertFalse(em.isLoaded(a, OWLClassA.getStrAttField().getName()));
     }
 
@@ -508,9 +506,9 @@ public class EntityManagerImplTest {
         final OWLClassK inst = new OWLClassK();
         inst.setUri(Generators.createIndividualIdentifier());
         inst.setOwlClassE(new OWLClassE());
-        when(uow.contains(inst)).thenReturn(true);
         doAnswer((invocationOnMock) -> inst).when(uow)
                                             .readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
+        doReturn(LoadState.LOADED).when(uow).isLoaded(inst, OWLClassK.getOwlClassEField().getName());
         final OWLClassK found = em.find(OWLClassK.class, inst.getUri());
         assertTrue(em.isLoaded(found, OWLClassK.getOwlClassEField().getName()));
     }
