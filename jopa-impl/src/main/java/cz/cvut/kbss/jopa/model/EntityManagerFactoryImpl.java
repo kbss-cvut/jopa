@@ -175,11 +175,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         Objects.requireNonNull(entity);
         Objects.requireNonNull(attributeName);
         for (final AbstractEntityManager emi : em) {
-            if (emi.contains(entity) && emi.isLoaded(entity, attributeName)) {
+            if (emi.isLoaded(entity, attributeName)) {
                 return true;
             }
         }
-
         return false;
     }
 

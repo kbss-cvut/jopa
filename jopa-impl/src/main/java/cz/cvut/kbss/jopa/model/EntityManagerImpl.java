@@ -15,11 +15,9 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -436,20 +434,12 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     public boolean isLoaded(final Object object, final String attributeName) {
         Objects.requireNonNull(object);
         Objects.requireNonNull(attributeName);
-        if (!contains(object)) {
-            return false;
-        }
-        final FieldSpecification<?, ?> fieldSpec = getMetamodel().entity(object.getClass())
-                                                                 .getFieldSpecification(attributeName);
-        // This is not correct, as lazily loaded fields can be set to null, but as long as we do not have any representation
-        // of the loaded state of an entity, this will have to do
-        return fieldSpec.getFetchType() == FetchType.EAGER ||
-                EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), object) != null;
+        return getCurrentPersistenceContext().isLoaded(object, attributeName) == LoadState.LOADED;
     }
 
     @Override
     public boolean isLoaded(Object object) {
-        return contains(object);
+        return getCurrentPersistenceContext().isLoaded(object) == LoadState.LOADED;
     }
 
     @Override
