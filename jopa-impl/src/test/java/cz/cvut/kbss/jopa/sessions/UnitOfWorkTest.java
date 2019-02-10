@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -946,9 +945,73 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    @Disabled
     void isLoadedReturnsLoadedForRegisteredExistingObject() {
         final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(a));
+    }
+
+    @Test
+    void isLoadedByAttributeReturnsLoadedForAttributesOfRegisteredExistingObject() throws Exception {
+        final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        assertEquals(LoadState.LOADED, uow.isLoaded(a, OWLClassA.getStrAttField().getName()));
+        assertEquals(LoadState.LOADED, uow.isLoaded(a, OWLClassA.getTypesField().getName()));
+    }
+
+    @Test
+    void isLoadedReturnsUnknownForUnregisteredObject() {
+        assertEquals(LoadState.UNKNOWN, uow.isLoaded(entityA));
+    }
+
+    @Test
+    void isLoadedByAttributeReturnsUnknownForAttributeOfUnregisteredObject() throws Exception {
+        assertEquals(LoadState.UNKNOWN, uow.isLoaded(entityA, OWLClassA.getStrAttField().getName()));
+    }
+
+    @Test
+    void isLoadedByAttributeReturnsUnknownForNullValuedLazilyLoadedAttribute() throws Exception {
+        final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+    }
+
+    @Test
+    void isLoadedByAttributeReturnsLoadedForNonNullValuedLazilyLoadedAttribute() throws Exception {
+        entityL.setSet(Collections.singleton(entityA));
+        final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+    }
+
+    @Test
+    void loadEntityFieldCausesLoadStateOfLazilyLoadedAttributeToBeSetToLoaded() throws Exception {
+        final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        doAnswer(inv -> {
+            final OWLClassL inst = inv.getArgument(0);
+            inst.setSet(Collections.singleton(entityA));
+            return null;
+        }).when(storageMock).loadFieldValue(eq(instance), eq(OWLClassL.getSetField()), any());
+        uow.loadEntityField(instance, OWLClassL.getSetField());
+
+        assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+    }
+
+    @Test
+    void loadEntityFieldCausesLoadStateOfLazilyLoadedAttributeToBeSetToLoadedEvenIfValueIsNull() throws Exception {
+        final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        // Do nothing when load field is triggered
+        uow.loadEntityField(instance, OWLClassL.getSetField());
+
+        assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+    }
+
+    @Test
+    void attributeChangedSetsAttributeLoadStatusToLoaded() throws Exception {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        instance.setSet(Collections.singleton(entityA));
+        uow.attributeChanged(instance, OWLClassL.getSetField());
+
+        assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
     }
 }

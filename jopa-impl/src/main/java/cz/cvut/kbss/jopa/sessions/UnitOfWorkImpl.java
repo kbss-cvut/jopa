@@ -16,8 +16,11 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.*;
+import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -490,13 +493,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new OWLPersistenceException("Unable to find repository for entity " + entity
                     + ". Is it registered in this UoW?");
         }
-        final EntityTypeImpl<?> et = entityType(entity.getClass());
+        final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
         storage.merge(entity, f, descriptor);
         createChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
         setHasChanges();
         setIndirectCollectionIfPresent(entity, f);
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
+        instanceDescriptors.get(entity).setLoaded(et.getFieldSpecification(f.getName()), LoadState.LOADED);
     }
 
     private void createChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec, Descriptor descriptor) {
@@ -646,6 +650,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
+        instanceDescriptors
+                .put(clone, InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass())));
         registerEntityWithPersistenceContext(clone);
         registerEntityWithOntologyContext(descriptor, clone);
     }
@@ -866,6 +872,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     public <T> void loadEntityField(T entity, Field field) {
         Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
         Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
+        assert field.getDeclaringClass().equals(entity.getClass());
 
         if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
             return;
@@ -884,6 +891,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
         final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
         EntityPropertiesUtils.setFieldValue(field, entity, clone);
+        instanceDescriptors.get(entity).setLoaded(
+                entityType((Class<Object>) entity.getClass()).getFieldSpecification(field.getName()), LoadState.LOADED);
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
@@ -930,7 +939,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-               LoadState.UNKNOWN;
+                LoadState.UNKNOWN;
     }
 
     @Override

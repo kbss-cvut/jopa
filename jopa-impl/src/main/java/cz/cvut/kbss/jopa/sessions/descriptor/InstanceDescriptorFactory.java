@@ -52,9 +52,9 @@ public class InstanceDescriptorFactory {
     public static <T> InstanceDescriptor<T> create(T instance, EntityType<T> et) {
         final InstanceDescriptor<T> descriptor = createNotLoaded(instance, et);
         et.getFieldSpecifications().forEach(fs -> {
-            final Object value = EntityPropertiesUtils.getAttributeValue(fs, instance);
-            descriptor.setLoaded(fs, value != null ? LoadState.LOADED :
-                                     fs.getFetchType() == FetchType.EAGER ? LoadState.LOADED : LoadState.UNKNOWN);
+            descriptor.setLoaded(fs, fs.getFetchType() == FetchType.EAGER ? LoadState.LOADED :
+                    EntityPropertiesUtils.getAttributeValue(fs, instance) != null ? LoadState.LOADED :
+                            LoadState.UNKNOWN);
         });
         return descriptor;
     }
