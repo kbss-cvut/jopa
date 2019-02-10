@@ -19,8 +19,7 @@ import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -116,8 +115,22 @@ class AxiomDescriptorFactory {
         return descriptor.hasLanguage() ? descriptor.getLanguage() : puLanguage;
     }
 
-    AxiomDescriptor createForFieldLoading(URI primaryKey, Field field, Descriptor entityDescriptor, EntityType<?> et) {
-        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(primaryKey));
+    /**
+     * Creates an axiom representing a class assertion.
+     * <p>
+     * This axiom can be used to load a reference to an individual with the correct type, without any other attributes.
+     *
+     * @param identifier Individual identifier
+     * @param et         Entity type. Type IRI is extracted from it
+     * @return {@code Axiom}
+     */
+    Axiom<NamedResource> createForReferenceLoading(URI identifier, EntityType<?> et) {
+        return new AxiomImpl<>(NamedResource.create(identifier), Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(et.getIRI().toString())));
+    }
+
+    AxiomDescriptor createForFieldLoading(URI identifier, Field field, Descriptor entityDescriptor, EntityType<?> et) {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));
         FieldSpecification<?, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {

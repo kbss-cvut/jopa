@@ -40,14 +40,27 @@ class EntityConstructor {
         this.mapper = mapper;
     }
 
-    <T> T reconstructEntity(URI primaryKey, EntityType<T> et, Descriptor descriptor,
+    /**
+     * Creates an instance of the specified {@link EntityType} with the specified identifier and populates its attributes from the specified axioms.
+     *
+     * @param identifier Entity identifier
+     * @param et         Entity type
+     * @param descriptor Entity descriptor with context info
+     * @param axioms     Axioms from which the instance attribute values should be reconstructed
+     * @param <T>        Entity type
+     * @return New instance with populated attributes
+     * @throws InstantiationException If instance cannot be created
+     * @throws IllegalAccessException If the default constructor is not public
+     */
+    <T> T reconstructEntity(URI identifier, EntityType<T> et, Descriptor descriptor,
                             Collection<Axiom<?>> axioms) throws InstantiationException, IllegalAccessException {
         assert !axioms.isEmpty();
 
         if (!axiomsContainEntityClassAssertion(axioms, et)) {
             return null;
         }
-        final T instance = createEntityInstance(primaryKey, et, descriptor);
+        final T instance = createEntityInstance(identifier, et);
+        mapper.registerInstance(identifier, instance, descriptor.getContext());
         populateAttributes(instance, et, descriptor, axioms);
         validateIntegrityConstraints(instance, et);
 
@@ -63,11 +76,20 @@ class EntityConstructor {
         return false;
     }
 
-    private <T> T createEntityInstance(URI primaryKey, EntityType<T> et, Descriptor descriptor)
+    /**
+     * Instantiates an entity of the specified {@link EntityType} with the specified identifier.
+     *
+     * @param identifier Entity identifier
+     * @param et         Entity type
+     * @param <T>        Entity type
+     * @return Newly created instance with identifier set
+     * @throws InstantiationException If instance cannot be created
+     * @throws IllegalAccessException If the default constructor is not public
+     */
+    <T> T createEntityInstance(URI identifier, EntityType<T> et)
             throws InstantiationException, IllegalAccessException {
         final T instance = et.getJavaType().newInstance();
-        EntityPropertiesUtils.setIdentifier(primaryKey, instance, et);
-        mapper.registerInstance(primaryKey, instance, descriptor.getContext());
+        EntityPropertiesUtils.setIdentifier(identifier, instance, et);
         return instance;
     }
 

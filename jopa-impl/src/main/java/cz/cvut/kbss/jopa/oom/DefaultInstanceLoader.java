@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,6 +30,12 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
         final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
         return loadInstance(loadingParameters, et);
+    }
+
+    @Override
+    <T> T loadReference(LoadingParameters<T> loadingParameters) {
+        final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
+        return loadReferenceInstance(loadingParameters, et);
     }
 
     static DefaultInstanceLoaderBuilder builder() {

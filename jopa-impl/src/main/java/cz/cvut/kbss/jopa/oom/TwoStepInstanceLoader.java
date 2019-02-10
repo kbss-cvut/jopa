@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.metamodel.PolymorphicEntityTypeResolver;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -28,19 +29,15 @@ import java.util.Set;
 
 class TwoStepInstanceLoader extends EntityInstanceLoader {
 
-    TwoStepInstanceLoader(TwoStepInstanceLoaderBuilder builder) {
+    private TwoStepInstanceLoader(TwoStepInstanceLoaderBuilder builder) {
         super(builder);
     }
 
     @Override
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
-        final NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
         final EntityTypeImpl<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
         try {
-            final Set<Axiom<URI>> types = storageConnection.types().getTypes(individual,
-                    loadingParameters.getDescriptor().getContext(), false);
-            final EntityType<? extends T> et =
-                    new PolymorphicEntityTypeResolver<>(individual, rootEt, types).determineActualEntityType();
+            final EntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
             if (et == null) {
                 return null;
             }
@@ -48,6 +45,34 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }
+    }
+
+    @Override
+    <T> T loadReference(LoadingParameters<T> loadingParameters) {
+        final EntityTypeImpl<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
+        try {
+            final EntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
+            if (et == null) {
+                return null;
+            }
+            if (isCached(loadingParameters, et)) {
+                return cache
+                        .get(et.getJavaType(), loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
+            }
+            return entityBuilder.createEntityInstance(loadingParameters.getIdentifier(), et);
+        } catch (OntoDriverException e) {
+            throw new StorageAccessException(e);
+        } catch (IllegalAccessException | InstantiationException e) {
+            throw new EntityReconstructionException(e);
+        }
+    }
+
+    private <T> EntityType<? extends T> resolveEntityType(LoadingParameters<T> loadingParameters,
+                                                          EntityTypeImpl<T> rootEt) throws OntoDriverException {
+        NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
+        final Set<Axiom<URI>> types = storageConnection.types().getTypes(individual,
+                loadingParameters.getDescriptor().getContext(), false);
+        return new PolymorphicEntityTypeResolver<>(individual, rootEt, types).determineActualEntityType();
     }
 
     static TwoStepInstanceLoaderBuilder builder() {

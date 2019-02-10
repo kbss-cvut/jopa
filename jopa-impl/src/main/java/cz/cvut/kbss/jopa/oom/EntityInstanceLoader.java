@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.util.Collection;
@@ -36,9 +37,9 @@ abstract class EntityInstanceLoader {
     final Connection storageConnection;
     final MetamodelImpl metamodel;
 
-    private final CacheManager cache;
+    final CacheManager cache;
     private final AxiomDescriptorFactory descriptorFactory;
-    private final EntityConstructor entityBuilder;
+    final EntityConstructor entityBuilder;
 
     EntityInstanceLoader(EntityInstanceLoaderBuilder builder) {
         assert builder.storageConnection != null;
@@ -62,10 +63,22 @@ abstract class EntityInstanceLoader {
      */
     abstract <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
+    /**
+     * Loads entity reference.
+     * <p>
+     * I.e., the object may contain only the identifier, other attributes could be loaded lazily. However, if a corresponding
+     * entity is already cached, it can be returned instead.
+     *
+     * @param loadingParameters Reference loading parameters. Note that cache bypassing and forced eager loading configuration is ignored
+     * @param <T>               Entity type
+     * @return Loaded entity reference, possibly {@code null}
+     */
+    abstract <T> T loadReference(LoadingParameters<T> loadingParameters);
+
     <T> T loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
-        if (isCached(loadingParameters, et, descriptor)) {
+        if (isCached(loadingParameters, et)) {
             return cache.get(et.getJavaType(), identifier, descriptor);
         }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
@@ -79,10 +92,26 @@ abstract class EntityInstanceLoader {
         }
     }
 
-    private <T> boolean isCached(LoadingParameters<T> loadingParameters, EntityType<? extends T> et,
-                                 Descriptor descriptor) {
+    <T> boolean isCached(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
         return !loadingParameters.shouldBypassCache() &&
-                cache.contains(et.getJavaType(), loadingParameters.getIdentifier(), descriptor);
+                cache.contains(et.getJavaType(), loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
+    }
+
+    <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
+        final URI identifier = loadingParameters.getIdentifier();
+        if (isCached(loadingParameters, et)) {
+            return cache.get(et.getJavaType(), identifier, loadingParameters.getDescriptor());
+        }
+        final Axiom<NamedResource> typeAxiom = descriptorFactory.createForReferenceLoading(identifier, et);
+        try {
+            final boolean contains =
+                    storageConnection.contains(typeAxiom, loadingParameters.getDescriptor().getContext());
+            return contains ? entityBuilder.createEntityInstance(identifier, et) : null;
+        } catch (OntoDriverException e) {
+            throw new StorageAccessException(e);
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new EntityReconstructionException(e);
+        }
     }
 
     abstract static class EntityInstanceLoaderBuilder {
