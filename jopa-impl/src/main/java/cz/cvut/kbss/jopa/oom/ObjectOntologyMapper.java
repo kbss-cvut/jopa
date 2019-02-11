@@ -1,25 +1,23 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
-
-import java.lang.reflect.Field;
-import java.net.URI;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+
+import java.lang.reflect.Field;
+import java.net.URI;
 
 public interface ObjectOntologyMapper {
 
@@ -34,12 +32,24 @@ public interface ObjectOntologyMapper {
     <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor);
 
     /**
-     * Loads and reconstructs the entity from the ontology.
+     * Loads and reconstructs an entity from the ontology.
      *
      * @param loadingParameters Entity loading parameters
      * @return Reconstructed entity or {@code null} if there is none such
      */
     <T> T loadEntity(LoadingParameters<T> loadingParameters);
+
+    /**
+     * Loads a reference to an entity corresponding to the specified parameters.
+     * <p>
+     * The reference is usually an empty object will attributes being loaded lazily. However, it may be also be
+     * retrieved from the cache, in which case its attributes will be loaded.
+     *
+     * @param loadingParameters Reference loading parameters
+     * @param <T>               Entity type
+     * @return Loaded entity reference or {@code null} if there is none such
+     */
+    <T> T loadReference(LoadingParameters<T> loadingParameters);
 
     /**
      * Loads entity field value and sets it on the specified entity.
