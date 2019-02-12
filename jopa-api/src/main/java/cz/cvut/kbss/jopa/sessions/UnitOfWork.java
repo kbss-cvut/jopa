@@ -140,10 +140,8 @@ public interface UnitOfWork extends Session {
      * @param identifier Instance identifier
      * @param descriptor Entity descriptor
      * @param <T>        Entity type
-     * @return The retrieved object
-     * @throws cz.cvut.kbss.jopa.exceptions.EntityNotFoundException If no matching object with the specified identifier
-     *                                                              can be found
-     * @throws OWLPersistenceException                              If an error occurs during object loading
+     * @return The retrieved object or {@code null} if none can be found
+     * @throws OWLPersistenceException If an error occurs during object loading
      */
     <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor);
 

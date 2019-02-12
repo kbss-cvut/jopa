@@ -47,6 +47,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
+
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
 
     private final Set<Object> cloneMapping;
@@ -54,7 +56,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final Map<Object, Object> keysToClones = new HashMap<>();
     private final Map<Object, Object> deletedObjects;
     private final Map<Object, Object> newObjectsCloneToOriginal;
+    // TODO Consider merging with keysToClones
     private final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
+    private final Map<Object, Object> references;
     private final Map<Object, InstanceDescriptor> instanceDescriptors;
     private RepositoryMap repoMap;
 
@@ -91,6 +95,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.cloneMapping = cloneToOriginals.keySet();
         this.deletedObjects = createMap();
         this.newObjectsCloneToOriginal = createMap();
+        this.references = createMap();
         this.instanceDescriptors = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
@@ -137,6 +142,22 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         assert cls != null;
         assert identifier != null;
         assert descriptor != null;
+        T result = readManagedObject(cls, identifier, descriptor);
+        if (result != null) {
+            return result;
+        }
+        result = storage.find(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
+
+        if (result == null) {
+            return null;
+        }
+        final Object clone = registerExistingObject(result, descriptor,
+                Collections.singletonList(new PostLoadInvoker(getMetamodel())));
+        checkForCollections(clone);
+        return cls.cast(clone);
+    }
+
+    private <T> T readManagedObject(Class<T> cls, Object identifier, Descriptor descriptor) {
         // First try to find the object among new uncommitted objects
         Object result = newObjectsKeyToClone.get(identifier);
         if (result != null && (isInRepository(descriptor, result))) {
@@ -153,16 +174,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                 return cls.cast(result);
             }
         }
-        final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
-        result = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
-
-        if (result == null) {
-            return null;
-        }
-        final Object clone = registerExistingObject(result, descriptor,
-                Collections.singletonList(new PostLoadInvoker(getMetamodel())));
-        checkForCollections(clone);
-        return cls.cast(clone);
+        return null;
     }
 
     private static OWLEntityExistsException individualAlreadyManaged(Object identifier) {
@@ -175,8 +187,21 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(cls);
         Objects.requireNonNull(identifier);
         Objects.requireNonNull(descriptor);
+
+        final T managedResult = readManagedObject(cls, identifier, descriptor);
+        if (managedResult != null) {
+            return managedResult;
+        }
+        final T result = storage.getReference(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
+        if (result == null) {
+            return null;
+        }
+        references.put(result, result);
+        instanceDescriptors.put(result, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
+        registerEntityWithPersistenceContext(result);
+        registerEntityWithOntologyContext(result, descriptor);
         // TODO
-        return null;
+        return result;
     }
 
     /**
@@ -231,6 +256,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         deletedObjects.clear();
         newObjectsCloneToOriginal.clear();
         newObjectsKeyToClone.clear();
+        references.clear();
         instanceDescriptors.clear();
         this.hasChanges = false;
         this.hasDeleted = false;
@@ -505,14 +531,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
         storage.merge(entity, f, descriptor);
-        createChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
+        createAndRegisterChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
         setHasChanges();
         setIndirectCollectionIfPresent(entity, f);
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
         instanceDescriptors.get(entity).setLoaded(et.getFieldSpecification(f.getName()), LoadState.LOADED);
     }
 
-    private void createChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec, Descriptor descriptor) {
+    private void createAndRegisterChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec,
+                                               Descriptor descriptor) {
         final Object orig = getOriginal(clone);
         if (orig == null) {
             return;
@@ -662,7 +689,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         instanceDescriptors
                 .put(clone, InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass())));
         registerEntityWithPersistenceContext(clone);
-        registerEntityWithOntologyContext(descriptor, clone);
+        registerEntityWithOntologyContext(clone, descriptor);
     }
 
     /**
@@ -748,7 +775,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         // Original is null until commit
         newObjectsCloneToOriginal.put(entity, null);
         registerEntityWithPersistenceContext(entity);
-        registerEntityWithOntologyContext(descriptor, entity);
+        registerEntityWithOntologyContext(entity, descriptor);
         instanceDescriptors.put(entity, InstanceDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
         newObjectsKeyToClone.put(id, entity);
         checkForCollections(entity);
@@ -767,7 +794,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     private boolean isIndividualManaged(Object identifier, Object entity) {
-        // Allows persisting the same individual into different contexts
         return keysToClones.containsKey(identifier) ||
                 newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.contains(entity);
     }
@@ -1071,12 +1097,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         repoMap.removeEntityToRepository(entity);
     }
 
-    private void registerEntityWithOntologyContext(Descriptor repository, Object entity) {
-        assert repository != null;
+    private void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
+        assert descriptor != null;
         assert entity != null;
 
-        repoMap.add(repository, entity, null);
-        repoMap.addEntityToRepository(entity, repository);
+        repoMap.add(descriptor, entity, null);
+        repoMap.addEntityToRepository(entity, descriptor);
     }
 
     private boolean isInRepository(Descriptor descriptor, Object entity) {

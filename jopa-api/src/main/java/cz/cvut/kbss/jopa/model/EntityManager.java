@@ -13,7 +13,6 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.NonJPA;
-import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
@@ -144,29 +143,26 @@ public interface EntityManager {
     /**
      * Get an instance, whose state may be lazily fetched.
      * <p>
-     * If the requested instance does not exist in the database, the {@code EntityNotFoundException} is thrown when the
-     * instance state is first accessed. (The persistence provider runtime is permitted to throw the {@code
-     * EntityNotFoundException} when {@code getReference} is called.) The application should not expect that the
-     * instance state will be available upon detachment, unless it was accessed by the application while the entity
-     * manager was open.
+     * If the requested instance does not exist in the database, {@code null} is returned.
+     * <p>
+     * The application should not expect that the instance state will be available upon detachment, unless it was
+     * accessed by the application while the entity manager was open.
      *
      * @param entityClass entity class
      * @param identifier  identifier of the instance
      * @return the found entity instance
      * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
      *                                  not a valid type for that entity’s identifier
-     * @throws EntityNotFoundException  if the entity state cannot be accessed
      */
     <T> T getReference(final Class<T> entityClass, final Object identifier);
 
     /**
      * Get an instance, whose state may be lazily fetched.
      * <p>
-     * If the requested instance does not exist in the database, the {@code EntityNotFoundException} is thrown when the
-     * instance state is first accessed. (The persistence provider runtime is permitted to throw the {@code
-     * EntityNotFoundException} when {@code getReference} is called.) The application should not expect that the
-     * instance state will be available upon detachment, unless it was accessed by the application while the entity
-     * manager was open.
+     * If the requested instance does not exist in the database, {@code null} is returned.
+     * <p>
+     * The application should not expect that the instance state will be available upon detachment, unless it was
+     * accessed by the application while the entity manager was open.
      * <p>
      * The {@code descriptor} parameter represents configuration of the entity loading (e.g., repository context).
      *
@@ -176,7 +172,6 @@ public interface EntityManager {
      * @return the found entity instance
      * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
      *                                  not a valid type for that entity’s identifier
-     * @throws EntityNotFoundException  if the entity state cannot be accessed
      */
     <T> T getReference(final Class<T> entityClass, final Object identifier, final Descriptor descriptor);
 
