@@ -51,12 +51,12 @@ import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
 
+    // Read-only!!! It is just the keyset of cloneToOriginals
     private final Set<Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
     private final Map<Object, Object> keysToClones = new HashMap<>();
     private final Map<Object, Object> deletedObjects;
     private final Map<Object, Object> newObjectsCloneToOriginal;
-    // TODO Consider merging with keysToClones
     private final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
     private final Map<Object, Object> references;
     private final Map<Object, InstanceDescriptor> instanceDescriptors;
@@ -200,6 +200,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         instanceDescriptors.put(result, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
         registerEntityWithPersistenceContext(result);
         registerEntityWithOntologyContext(result, descriptor);
+        cloneToOriginals.put(result, null);
+        keysToClones.put(identifier, result);
         // TODO
         return result;
     }
@@ -239,12 +241,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private void calculateDeletedObjects(final UnitOfWorkChangeSet changeSet) {
         for (Object clone : deletedObjects.keySet()) {
-            Object original = cloneToOriginals.get(clone);
-            if (original == null) {
-                throw new OWLPersistenceException("Cannot find an original for clone a " + clone + "!");
-            }
             Descriptor descriptor = getDescriptor(clone);
-            changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone, descriptor));
+            changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChangeSet(clone, descriptor));
         }
     }
 

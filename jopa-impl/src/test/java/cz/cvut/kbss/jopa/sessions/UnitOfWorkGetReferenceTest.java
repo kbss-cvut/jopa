@@ -4,7 +4,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,7 +44,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
     @Test
     void getReferenceThrowsEntityExistsExceptionWhenIndividualIsAlreadyManagedAsDifferentIncompatibleType() {
         uow.registerExistingObject(entityA, descriptor);
-        assertThrows(OWLEntityExistsException.class, () -> uow.getReference(OWLClassD.class, entityA.getUri(), descriptor));
+        assertThrows(OWLEntityExistsException.class,
+                () -> uow.getReference(OWLClassD.class, entityA.getUri(), descriptor));
     }
 
     @Test
@@ -58,7 +58,6 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    @Disabled
     void containsReturnsTrueForInstanceRetrievedUsingGetReference() {
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
