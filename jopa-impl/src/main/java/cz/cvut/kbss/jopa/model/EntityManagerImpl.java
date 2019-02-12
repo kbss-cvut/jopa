@@ -281,7 +281,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             ensureOpen();
             checkClassIsValidEntity(cls);
 
-            LOG.trace("Finding instance of {} with identifier {} in context ", cls, identifier, descriptor);
+            LOG.trace("Finding instance of {} with identifier {} in context {}.", cls, identifier, descriptor);
             final URI uri = (identifier instanceof URI) ? (URI) identifier : URI.create(identifier.toString());
 
             return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
@@ -297,7 +297,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             Objects.requireNonNull(entityClass);
             Objects.requireNonNull(identifier);
 
-            return find(entityClass, identifier);
+            return getReference(entityClass, identifier, new EntityDescriptor());
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
@@ -310,8 +310,11 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             Objects.requireNonNull(entityClass);
             Objects.requireNonNull(identifier);
             Objects.requireNonNull(descriptor);
+            ensureOpen();
+            checkClassIsValidEntity(entityClass);
 
-            return find(entityClass, identifier, descriptor);
+            LOG.trace("Getting reference of type {} with identifier {} in context {}.", entityClass, identifier, descriptor);
+            return getCurrentPersistenceContext().getReference(entityClass, identifier, descriptor);
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
