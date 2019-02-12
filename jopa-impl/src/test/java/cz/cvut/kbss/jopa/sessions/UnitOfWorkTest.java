@@ -452,62 +452,63 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testLoadFieldValue() throws Exception {
+    void loadFieldLoadsLiteralValueAttribute() throws Exception {
         final OWLClassB b = new OWLClassB();
         b.setUri(URI.create("http://bUri"));
-        final String stringAtt = "string";
+        final Map<String, Set<String>> props = Collections
+                .singletonMap(Vocabulary.p_m_IntegerSet, Collections.singleton("12345"));
         final OWLClassB clone = (OWLClassB) uow.registerExistingObject(b, descriptor);
-        final Field strField = OWLClassB.getStrAttField();
-        strField.setAccessible(true);
+        final Field propsField = OWLClassB.getPropertiesField();
         doAnswer(invocation -> {
             final Field f = (Field) invocation.getArguments()[1];
-            f.set(invocation.getArguments()[0], stringAtt);
+            f.setAccessible(true);
+            f.set(invocation.getArguments()[0], props);
             return null;
-        }).when(storageMock).loadFieldValue(clone, strField, descriptor);
+        }).when(storageMock).loadFieldValue(clone, propsField, descriptor);
 
-        uow.loadEntityField(clone, strField);
-        assertNotNull(clone.getStringAttribute());
-        verify(storageMock).loadFieldValue(clone, strField, descriptor);
+        uow.loadEntityField(clone, propsField);
+        assertNotNull(clone.getProperties());
+        verify(storageMock).loadFieldValue(clone, propsField, descriptor);
     }
 
     @Test
-    void testLoadFieldValueManagedType() throws Exception {
-        final OWLClassD d = new OWLClassD();
-        d.setUri(URI.create("http://dUri"));
-        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
-        final Field toLoad = OWLClassD.getOwlClassAField();
+    void loadFieldLoadsManagedTypeAttribute() throws Exception {
+        final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
+        final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
+        final Field toLoad = OWLClassL.getSetField();
         doAnswer(invocation -> {
             final Field f = (Field) invocation.getArguments()[1];
-            f.set(invocation.getArguments()[0], entityA);
+            f.setAccessible(true);
+            f.set(invocation.getArguments()[0], Collections.singleton(entityA));
             return null;
-        }).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
+        }).when(storageMock).loadFieldValue(eq(clone), eq(toLoad), eq(descriptor));
 
         uow.loadEntityField(clone, toLoad);
         verify(storageMock).loadFieldValue(clone, toLoad, descriptor);
-        assertNotNull(clone.getOwlClassA());
+        assertNotNull(clone.getSet());
+        assertEquals(1, clone.getSet().size());
         // Verify that the loaded value was cloned
-        assertNotSame(entityA, clone.getOwlClassA());
-        assertTrue(uow.contains(clone.getOwlClassA()));
+        assertNotSame(entityA, clone.getSet().iterator().next());
+        assertTrue(uow.contains(clone.getSet().iterator().next()));
     }
 
     @Test
     void findOfObjectAlreadyManagedAsLazilyLoadedValueReturnSameObject() throws Exception {
-        final OWLClassD d = new OWLClassD();
-        d.setUri(URI.create("http://dUri"));
-        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
-        assertNull(clone.getOwlClassA());
-        final Field toLoad = OWLClassD.getOwlClassAField();
+        final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
+        final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
+        final Field toLoad = OWLClassL.getSetField();
         doAnswer(invocation -> {
             final Field f = (Field) invocation.getArguments()[1];
-            f.set(invocation.getArguments()[0], entityA);
+            f.setAccessible(true);
+            f.set(invocation.getArguments()[0], Collections.singleton(entityA));
             return null;
         }).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
         uow.loadEntityField(clone, toLoad);
-        assertNotNull(clone.getOwlClassA());
+        assertNotNull(clone.getSet());
 
         final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(res);
-        assertSame(clone.getOwlClassA(), res);
+        assertSame(clone.getSet().iterator().next(), res);
     }
 
     @Test
@@ -1013,5 +1014,16 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.attributeChanged(instance, OWLClassL.getSetField());
 
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+    }
+
+    @Test
+    void loadEntityFieldDoesNotInvokeLoadFromRepositoryForNullAttributeWhenItsStateIsLoaded() throws Exception {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        uow.attributeChanged(instance, OWLClassL.getSetField());
+        assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        uow.loadEntityField(instance, OWLClassL.getSetField());
+        verify(storageMock, never()).loadFieldValue(eq(instance), eq(OWLClassL.getSetField()), any(Descriptor.class));
     }
 }

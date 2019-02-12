@@ -55,7 +55,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final Map<Object, Object> deletedObjects;
     private final Map<Object, Object> newObjectsCloneToOriginal;
     private final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
-    private final Map<Object, InstanceDescriptor<?>> instanceDescriptors;
+    private final Map<Object, InstanceDescriptor> instanceDescriptors;
     private RepositoryMap repoMap;
 
     private boolean hasChanges;
@@ -125,12 +125,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     @Override
-    public <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+    public <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor) {
         Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
         Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
-        return readObjectInternal(cls, primaryKey, descriptor);
+        return readObjectInternal(cls, identifier, descriptor);
     }
 
     private <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
@@ -168,6 +168,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private static OWLEntityExistsException individualAlreadyManaged(Object identifier) {
         return new OWLEntityExistsException(
                 "An entity with URI " + identifier + " is already present in the current persistence context.");
+    }
+
+    @Override
+    public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(descriptor);
+        // TODO
+        return null;
     }
 
     /**
@@ -874,14 +883,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
         assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
-        if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
-            return;
-        }
         final Descriptor entityDescriptor = getDescriptor(entity);
-        if (entityDescriptor == null) {
+        if (!instanceDescriptors.containsKey(entity) || entityDescriptor == null) {
             throw new OWLPersistenceException(
                     "Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
+        final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
+        final FieldSpecification<?, ?> fieldSpec = entityType((Class<Object>) entity.getClass())
+                .getFieldSpecification(field.getName());
+        if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
+            return;
+        }
+
         storage.loadFieldValue(entity, field, entityDescriptor);
         final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
         final Object entityOriginal = getOriginal(entity);
@@ -891,8 +904,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
         final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
         EntityPropertiesUtils.setFieldValue(field, entity, clone);
-        instanceDescriptors.get(entity).setLoaded(
-                entityType((Class<Object>) entity.getClass()).getFieldSpecification(field.getName()), LoadState.LOADED);
+        instanceDescriptors.get(entity).setLoaded(fieldSpec, LoadState.LOADED);
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
@@ -939,7 +951,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-                LoadState.UNKNOWN;
+               LoadState.UNKNOWN;
     }
 
     @Override

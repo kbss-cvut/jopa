@@ -116,20 +116,36 @@ public interface UnitOfWork extends Session {
     <T> T mergeDetached(T entity, Descriptor descriptor);
 
     /**
-     * Retrieves object with the specified primary key.
+     * Retrieves object with the specified identifier.
      * <p>
      * The object as well as its fields are looked for in contexts specified by the descriptor. The result is then cast
      * to the specified type.
      *
      * @param cls        The type of the returned object
-     * @param primaryKey Primary key
+     * @param identifier Instance identifier
      * @param descriptor Entity descriptor
-     * @return The retrieved object or {@code null} if there is no object with the specified primary key in the
-     * specified repository
-     * @throws NullPointerException    If {@code cls}, {@code primaryKey} or {@code repository} is {@code null}
-     * @throws OWLPersistenceException If {@code repository} is not valid or if an error during object loading occurs
+     * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
+     * repository
+     * @throws NullPointerException    If {@code cls}, {@code identifier} or {@code repository} is {@code null}
+     * @throws OWLPersistenceException If an error occurs during object loading
      */
-    <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor);
+    <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor);
+
+    /**
+     * Retrieves a reference to an object with the specified identifier.
+     * <p>
+     * A reference is permitted to have its state fetched lazily.
+     *
+     * @param cls        The type of the returned object
+     * @param identifier Instance identifier
+     * @param descriptor Entity descriptor
+     * @param <T>        Entity type
+     * @return The retrieved object
+     * @throws cz.cvut.kbss.jopa.exceptions.EntityNotFoundException If no matching object with the specified identifier
+     *                                                              can be found
+     * @throws OWLPersistenceException                              If an error occurs during object loading
+     */
+    <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor);
 
     /**
      * Register an existing object in this Unit of Work.

@@ -56,7 +56,8 @@ public class CloneBuilderImpl implements CloneBuilder {
     public Object buildClone(Object original, CloneConfiguration cloneConfiguration) {
         Objects.requireNonNull(original);
         Objects.requireNonNull(cloneConfiguration);
-        LOG.trace("Cloning object {}.", original);
+        // TODO Replace with a lambda after migration to new SLF4J
+        LOG.trace("Cloning object {}.", stringify(original));
         return buildCloneImpl(null, null, original, cloneConfiguration);
     }
 
@@ -65,7 +66,8 @@ public class CloneBuilderImpl implements CloneBuilder {
         if (cloneOwner == null || original == null || descriptor == null) {
             throw new NullPointerException();
         }
-        LOG.trace("Cloning object {} with owner {}", original, cloneOwner);
+        // TODO Replace with a lambda after migration to new SLF4J
+        LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
         return buildCloneImpl(cloneOwner, clonedField, original, new CloneConfiguration(descriptor));
     }
 
@@ -165,8 +167,8 @@ public class CloneBuilderImpl implements CloneBuilder {
      * <p>
      * Objects of immutable types do not have to be cloned, because they cannot be modified.
      * <p>
-     * Note that this method does not do any sophisticated verification, it just checks if the specified class corresponds
-     * to a small set of predefined conditions, e.g. primitive class, enum, String.
+     * Note that this method does not do any sophisticated verification, it just checks if the specified class
+     * corresponds to a small set of predefined conditions, e.g. primitive class, enum, String.
      *
      * @param cls the class to check
      * @return Whether the class represents immutable objects
@@ -253,6 +255,22 @@ public class CloneBuilderImpl implements CloneBuilder {
 
     IndirectCollection<?> createIndirectCollection(Object c, Object owner, Field f) {
         return uow.createIndirectCollection(c, owner, f);
+    }
+
+    /**
+     * Gets basic object info for logging.
+     * <p>
+     * This works around using {@link Object#toString()} for entities, which could inadvertently trigger lazy field
+     * fetching.
+     *
+     * @param object Object to stringify
+     * @return String info about the specified object
+     */
+    private String stringify(Object object) {
+        assert object != null;
+        return isTypeManaged(object.getClass()) ?
+               object.getClass().getSimpleName() + "<" + EntityPropertiesUtils.getIdentifier(object, getMetamodel()) +
+                       ">" : object.toString();
     }
 
     public static synchronized boolean isFieldInferred(final Field f) {
