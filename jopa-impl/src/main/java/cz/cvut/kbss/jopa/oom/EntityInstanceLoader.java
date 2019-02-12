@@ -66,10 +66,11 @@ abstract class EntityInstanceLoader {
     /**
      * Loads entity reference.
      * <p>
-     * I.e., the object may contain only the identifier, other attributes could be loaded lazily. However, if a corresponding
-     * entity is already cached, it can be returned instead.
+     * I.e., the object may contain only the identifier, other attributes could be loaded lazily. However, if a
+     * corresponding entity is already cached, it can be returned instead.
      *
-     * @param loadingParameters Reference loading parameters. Note that cache bypassing and forced eager loading configuration is ignored
+     * @param loadingParameters Reference loading parameters. Note that cache bypassing and forced eager loading
+     *                          configuration is ignored
      * @param <T>               Entity type
      * @return Loaded entity reference, possibly {@code null}
      */
@@ -99,9 +100,6 @@ abstract class EntityInstanceLoader {
 
     <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
         final URI identifier = loadingParameters.getIdentifier();
-        if (isCached(loadingParameters, et)) {
-            return cache.get(et.getJavaType(), identifier, loadingParameters.getDescriptor());
-        }
         final Axiom<NamedResource> typeAxiom = descriptorFactory.createForReferenceLoading(identifier, et);
         try {
             final boolean contains =
