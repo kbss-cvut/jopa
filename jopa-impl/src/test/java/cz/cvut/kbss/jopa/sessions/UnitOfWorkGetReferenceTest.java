@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
@@ -110,5 +109,48 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         uow.loadEntityField(result, OWLClassL.getSetField());
         verify(storageMock).loadFieldValue(result, OWLClassL.getSetField(), descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(result, OWLClassL.getSetField().getName()));
+    }
+
+    @Test
+    void attributeChangedPropagatesChangeOfInstanceRetrievedUsingGetReferenceIntoRepository() throws Exception {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        uow.attributeChanged(result, OWLClassA.getStrAttField());
+        verify(storageMock).merge(result, OWLClassA.getStrAttField(), descriptor);
+    }
+
+    @Test
+    void attributeChangedDoesNotRegisterChangeForInstanceRetrievedUsingGetReference() throws Exception {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        uow.attributeChanged(result, OWLClassA.getStrAttField());
+        assertFalse(uow.getUowChangeSet().hasChanges());
+    }
+
+    @Test
+    void removeRemovesInstanceRetrievedUsingGetReferenceFromRepository() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        assertTrue(uow.contains(result));
+        uow.removeObject(result);
+        assertFalse(uow.contains(result));
+        verify(storageMock).remove(reference.getUri(), OWLClassA.class, descriptor);
+    }
+
+    @Test
+    void removeCreatesRemoveChangeOnCommitForInstanceRetrievedUsingGetReference() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        uow.removeObject(result);
+        uow.commit();
+        verify(cacheManagerMock).evict(OWLClassA.class, reference.getUri(), descriptor.getContext());
     }
 }

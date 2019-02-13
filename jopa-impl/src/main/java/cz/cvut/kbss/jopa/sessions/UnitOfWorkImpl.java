@@ -202,7 +202,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         registerEntityWithOntologyContext(result, descriptor);
         cloneToOriginals.put(result, null);
         keysToClones.put(identifier, result);
-        // TODO
         return result;
     }
 
@@ -522,10 +521,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalStateException("This unit of work is not in a transaction.");
         }
         final Descriptor descriptor = getDescriptor(entity);
-        if (descriptor == null) {
-            throw new OWLPersistenceException("Unable to find repository for entity " + entity
-                    + ". Is it registered in this UoW?");
-        }
         final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
         storage.merge(entity, f, descriptor);
@@ -712,7 +707,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final EntityTypeImpl<T> et = entityType((Class<T>) object.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
         final Descriptor descriptor = getDescriptor(object);
-        assert descriptor != null;
 
         final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
         params.bypassCache();
@@ -826,7 +820,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         deletedObjects.remove(entity);
         final Object id = getIdentifier(entity);
         storage.persist(id, entity, getDescriptor(entity));
-
     }
 
     /**
@@ -908,7 +901,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
         final Descriptor entityDescriptor = getDescriptor(entity);
-        if (!instanceDescriptors.containsKey(entity) || entityDescriptor == null) {
+        if (!instanceDescriptors.containsKey(entity)) {
             throw new OWLPersistenceException(
                     "Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
@@ -975,7 +968,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-               LoadState.UNKNOWN;
+                LoadState.UNKNOWN;
     }
 
     @Override
@@ -1113,7 +1106,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private Descriptor getDescriptor(Object entity) {
         assert entity != null;
 
-        return repoMap.getEntityDescriptor(entity);
+        final Descriptor descriptor = repoMap.getEntityDescriptor(entity);
+        if (descriptor == null) {
+            throw new OWLPersistenceException("Unable to find descriptor of entity " + entity + " in this UoW!");
+        }
+        return descriptor;
     }
 
     private void storageCommit() {
