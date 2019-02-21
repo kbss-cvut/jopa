@@ -46,7 +46,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     private ServerSession serverSession;
     private final Configuration configuration;
 
-    private final Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
+    private Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
 
     EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration, ServerSession serverSession) {
         this.emf = emf;
@@ -313,7 +313,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             ensureOpen();
             checkClassIsValidEntity(entityClass);
 
-            LOG.trace("Getting reference of type {} with identifier {} in context {}.", entityClass, identifier, descriptor);
+            LOG.trace("Getting reference of type {} with identifier {} in context {}.", entityClass, identifier,
+                    descriptor);
             return getCurrentPersistenceContext().getReference(entityClass, identifier, descriptor);
         } catch (RuntimeException e) {
             markTransactionForRollback();
@@ -409,6 +410,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     public void close() {
         ensureOpen();
         removeCurrentPersistenceContext();
+        this.cascadingRegistry = null;
         emf.entityManagerClosed(this);
         this.open = false;
     }
@@ -577,7 +579,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     protected void finalize() throws Throwable {
-        if (isOpen()) {
+        if (open) {
             close();
         }
         super.finalize();
