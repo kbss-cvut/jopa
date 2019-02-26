@@ -151,7 +151,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     @Override
     public void addNamedQuery(String name, Query query) {
         ensureOpen();
-        throw new NotYetImplementedException();
+        throw new UnsupportedOperationException("Not supported, yet.");
     }
 
     @Override

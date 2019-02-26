@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.*;
 
-public class EntityManagerImpl extends AbstractEntityManager implements Wrapper {
+public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityManagerImpl.class);
 

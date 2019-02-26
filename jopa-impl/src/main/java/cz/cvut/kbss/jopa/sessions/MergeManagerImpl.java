@@ -61,6 +61,7 @@ public class MergeManagerImpl implements MergeManager {
 
     @Override
     public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
+        Objects.requireNonNull(changeSet);
         for (ObjectChangeSet objectChangeSet : changeSet.getExistingObjectsChanges()) {
             mergeChangesOnObject(objectChangeSet);
         }
@@ -71,9 +72,7 @@ public class MergeManagerImpl implements MergeManager {
 
     @Override
     public void mergeNewObject(ObjectChangeSet changeSet) {
-        if (changeSet == null) {
-            return;
-        }
+        Objects.requireNonNull(changeSet);
         if (!changeSet.isNew()) {
             mergeChangesOnObject(changeSet);
             return;

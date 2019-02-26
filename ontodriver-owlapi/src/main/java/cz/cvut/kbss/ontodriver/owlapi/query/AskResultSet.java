@@ -227,10 +227,7 @@ class AskResultSet extends AbstractResultSet {
         // Do nothing
     }
 
-    @Override
-    public void registerObserver(Observer observer) {
 
-    }
 
     @Override
     public void relative(int rows) {

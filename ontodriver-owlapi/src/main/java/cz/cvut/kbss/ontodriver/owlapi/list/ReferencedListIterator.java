@@ -43,7 +43,7 @@ class ReferencedListIterator extends OwlapiListIterator {
     OWLIndividual currentNode;
     OWLObjectProperty previousNextNodeProperty;
     OWLObjectProperty currentNextNodeProperty;
-    Collection<? extends OWLIndividual> next;
+    Collection<? extends OWLIndividual> nextItem;
 
     final ReferencedListDescriptor descriptor;
 
@@ -74,7 +74,7 @@ class ReferencedListIterator extends OwlapiListIterator {
                 EntitySearcher.getObjectPropertyValues(currentNode, currentNextNodeProperty, ontology)
                               .collect(Collectors.toSet());
         if (nextNodes.isEmpty()) {
-            this.next = Collections.emptyList();
+            this.nextItem = Collections.emptyList();
             return;
         }
         checkMaxSuccessors(currentNextNodeProperty, nextNodes);
@@ -84,7 +84,7 @@ class ReferencedListIterator extends OwlapiListIterator {
         checkIsNamed(node);
         this.previousNode = currentNode;
         this.currentNode = node;
-        this.next =
+        this.nextItem =
                 EntitySearcher.getObjectPropertyValues(node, hasContentProperty, ontology).collect(Collectors.toSet());
     }
 
@@ -99,11 +99,11 @@ class ReferencedListIterator extends OwlapiListIterator {
     @Override
     NamedResource nextValue() {
         doStep();
-        if (next.isEmpty()) {
+        if (nextItem.isEmpty()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(hasContentProperty, next);
-        final OWLIndividual value = next.iterator().next();
+        checkMaxSuccessors(hasContentProperty, nextItem);
+        final OWLIndividual value = nextItem.iterator().next();
         checkIsNamed(value);
         return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
     }
@@ -135,8 +135,8 @@ class ReferencedListIterator extends OwlapiListIterator {
 
     @Override
     List<OWLOntologyChange> replaceNode(NamedResource newValue) {
-        // We know there is exactly one, because next has to have been called before this method
-        final OWLIndividual originalContent = next.iterator().next();
+        // We know there is exactly one, because nextItem has to have been called before this method
+        final OWLIndividual originalContent = nextItem.iterator().next();
         final OWLNamedIndividual newContent = OwlapiUtils.getIndividual(newValue, dataFactory);
         final List<OWLOntologyChange> changes = new ArrayList<>(2);
         changes.add(new MutableRemoveAxiom(ontology,

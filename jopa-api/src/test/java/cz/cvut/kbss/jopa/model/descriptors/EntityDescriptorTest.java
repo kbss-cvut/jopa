@@ -186,4 +186,12 @@ class EntityDescriptorTest {
         assertTrue(descriptor.hasLanguage());
         assertNull(descriptor.getLanguage());
     }
+
+    @Test
+    void addAttributeDescriptorProvidesCorrectContextOnRetrieval() throws Exception {
+        final EntityDescriptor dOne = new EntityDescriptor(CONTEXT_ONE);
+        dOne.addAttributeDescriptor(TestClass.intAttField(), new FieldDescriptor(CONTEXT_TWO, TestClass.intAttField()));
+        assertFalse(dOne.getAttributeDescriptors().isEmpty());
+        assertEquals(CONTEXT_TWO, dOne.getAttributeDescriptors().iterator().next().getContext());
+    }
 }

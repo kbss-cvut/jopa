@@ -138,8 +138,7 @@ public class EntityDescriptor extends Descriptor {
 
         EntityDescriptor that = (EntityDescriptor) o;
 
-        return fieldDescriptors != null ? fieldDescriptors.equals(that.fieldDescriptors) :
-               that.fieldDescriptors == null;
+        return Objects.equals(fieldDescriptors, that.fieldDescriptors);
     }
 
     @Override

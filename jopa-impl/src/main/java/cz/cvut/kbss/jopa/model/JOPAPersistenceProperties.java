@@ -32,11 +32,6 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     public static final String DATA_SOURCE_CLASS = "cz.cvut.jopa.dataSource.class";
 
     /**
-     * Factory class for OWLAPI-based reasoner.
-     */
-    public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
-
-    /**
      * Ontology language.
      */
     public static final String LANG = "cz.cvut.jopa.lang";

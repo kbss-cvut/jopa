@@ -58,6 +58,8 @@ class EpistemicAxiomRemover {
                     break;
                 case ANNOTATION_PROPERTY:
                     changes.addAll(removeAnnotationAssertions(individual, a));
+                default:
+                    break;
             }
         }
         if (!changes.isEmpty()) {

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 /**
  * This class differs from the way basic SimpleListIterator iterates over the list. Here, we do step before even calling
- * next in order to avoid consulting the reasoner twice for values of the current node's successors.
+ * nextItem in order to avoid consulting the reasoner twice for values of the current node's successors.
  * <p>
  * We can do this because we need not worry about remove operations, they're not supported on inferred iterator.
  * <p>
@@ -55,16 +55,16 @@ class InferredSimpleListIterator extends SimpleListIterator {
 
     @Override
     public boolean hasNext() {
-        if (next == null) {
+        if (nextItem == null) {
             doStep();
         }
-        return !next.isEmpty();
+        return !nextItem.isEmpty();
     }
 
     @Override
     void doStep() {
         final NodeSet<OWLNamedIndividual> nodeSet = reasoner.getObjectPropertyValues(currentNode, currentProperty);
-        this.next = nodeSet.isEmpty() ? Collections.emptySet() : nodeSet.entities().collect(Collectors.toSet());
+        this.nextItem = nodeSet.isEmpty() ? Collections.emptySet() : nodeSet.entities().collect(Collectors.toSet());
         this.previousProperty = currentProperty;
         this.currentProperty = hasNextProperty;
         this.previousNode = this.currentNode;
@@ -75,8 +75,8 @@ class InferredSimpleListIterator extends SimpleListIterator {
         if (!hasNext()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(previousProperty, next);
-        final OWLIndividual item = next.iterator().next();  // We know the individual is named
+        checkMaxSuccessors(previousProperty, nextItem);
+        final OWLIndividual item = nextItem.iterator().next();  // We know the individual is named
         this.currentNode = item.asOWLNamedIndividual();
         final NamedResource subject = NamedResource.create(previousNode.getIRI().toURI());
         final NamedResource value = NamedResource.create(currentNode.getIRI().toURI());

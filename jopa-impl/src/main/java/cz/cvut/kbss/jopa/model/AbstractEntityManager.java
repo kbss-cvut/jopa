@@ -17,40 +17,37 @@ import cz.cvut.kbss.jopa.sessions.ConfigurationHolder;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
-public abstract class AbstractEntityManager implements EntityManager, ConfigurationHolder {
+public interface AbstractEntityManager extends EntityManager, ConfigurationHolder {
 
-    public abstract boolean isLoaded(final Object object, final String attributeName);
+    boolean isLoaded(final Object object, final String attributeName);
 
-    public abstract boolean isLoaded(final Object object);
+    boolean isLoaded(final Object object);
 
     /**
      * Return the UnitOfWork that holds the current persistence context.
      *
      * @return UnitOfWork
      */
-    public abstract UnitOfWork getCurrentPersistenceContext();
+    UnitOfWork getCurrentPersistenceContext();
 
     /**
      * Remove the current persistence context UnitOfWork.
      */
-    public abstract void removeCurrentPersistenceContext();
+    void removeCurrentPersistenceContext();
 
     /**
      * Let the managing server session know that a transaction has been started.
      *
-     * @param t
-     *            The entity transaction that was started.
+     * @param t The entity transaction that was started.
      */
     @NonJPA
-    public abstract void transactionStarted(EntityTransaction t);
+    void transactionStarted(EntityTransaction t);
 
     /**
-     * Let the managing server session know that a transaction has finished
-     * successfully.
+     * Let the managing server session know that a transaction has finished successfully.
      *
-     * @param t
-     *            The committed entity transaction.
+     * @param t The committed entity transaction.
      */
     @NonJPA
-    public abstract void transactionFinished(EntityTransaction t);
+    void transactionFinished(EntityTransaction t);
 }
