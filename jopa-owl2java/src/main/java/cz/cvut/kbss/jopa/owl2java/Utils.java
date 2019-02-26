@@ -23,7 +23,7 @@ public class Utils {
         throw new AssertionError();
     }
 
-    static OWLDatatype ensureDatatype(final OWLDataRange r) throws UnsupportedICException {
+    static OWLDatatype ensureDatatype(final OWLDataRange r) {
         if (!r.isOWLDatatype()) {
             throw new UnsupportedICException("Data ranges not supported: " + r);
         }
@@ -48,7 +48,7 @@ public class Utils {
         return e.asOWLDataProperty();
     }
 
-    static OWLObjectProperty ensureObjectProperty(final OWLObjectPropertyExpression e) throws UnsupportedICException {
+    static OWLObjectProperty ensureObjectProperty(final OWLObjectPropertyExpression e) {
         if (e.isAnonymous()) {
             throw new UnsupportedICException("Object property expressions not supported: " + e);
         }

@@ -14,6 +14,8 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -29,6 +31,8 @@ import java.util.List;
  * restrictions as well.
  */
 class DefaultInstanceBuilder extends AbstractInstanceBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultInstanceBuilder.class);
 
     DefaultInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
         super(builder, uow);

@@ -28,9 +28,6 @@ final class RepositoryMap {
 	private final Map<URI, Map<Object, Object>> origsToClones = new HashMap<>();
 	private Map<Object, Descriptor> entityDescriptors;
 
-	RepositoryMap() {
-	}
-
 	void initDescriptors() {
 		this.entityDescriptors = new IdentityHashMap<>();
 	}

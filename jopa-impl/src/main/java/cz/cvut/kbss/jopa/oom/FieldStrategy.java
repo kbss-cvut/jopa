@@ -16,7 +16,6 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.exception.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
@@ -91,7 +90,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             case SET:
                 return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
             default:
-                throw new NotYetImplementedException(
+                throw new UnsupportedOperationException(
                         "Unsupported plural attribute collection type " + attribute.getCollectionType());
         }
     }
@@ -105,7 +104,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             case simple:
                 return new SimpleListPropertyStrategy<>(et, attribute, descriptor, mapper);
             default:
-                throw new NotYetImplementedException(
+                throw new UnsupportedOperationException(
                         "Unsupported list attribute sequence type " + attribute.getSequenceType());
         }
     }
@@ -153,7 +152,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      */
     String getLanguage() {
         return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
-                mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
+               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**

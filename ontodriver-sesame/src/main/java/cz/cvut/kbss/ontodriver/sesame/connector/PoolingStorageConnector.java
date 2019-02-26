@@ -30,8 +30,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 class PoolingStorageConnector extends AbstractConnector {
 
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
-    private static Lock READ = LOCK.readLock();
-    private static Lock WRITE = LOCK.writeLock();
+    private static final Lock READ = LOCK.readLock();
+    private static final Lock WRITE = LOCK.writeLock();
 
     private final StorageConnector centralConnector;
 

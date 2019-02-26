@@ -114,18 +114,26 @@ class SelectResultSet extends AbstractResultSet {
 
     private <T> T getPrimitiveValue(Class<T> cls, int columnIndex) throws OntoDriverException {
         final Object val = OwlapiUtils.owlLiteralToValue(getLiteral(columnIndex));
+        ensureValueIsAssignableToClass(val, cls);
+        return cls.cast(val);
+    }
+
+    private static <T> void ensureValueIsAssignableToClass(Object val, Class<T> cls) {
         if (!cls.isAssignableFrom(val.getClass())) {
             throw new BindingValueMismatchException("Value " + val + " cannot be returned as " + cls.getSimpleName());
         }
-        return cls.cast(val);
     }
 
     private OWLLiteral getLiteral(int columnIndex) throws OntoDriverException {
         final OWLObject currentValue = getCurrentValue(columnIndex);
+        ensureValueIsLiteral(currentValue);
+        return (OWLLiteral) currentValue;
+    }
+
+    private static void ensureValueIsLiteral(OWLObject currentValue) {
         if (!(currentValue instanceof OWLLiteral)) {
             throw new BindingValueMismatchException("Value " + currentValue + " is not an OWLLiteral.");
         }
-        return (OWLLiteral) currentValue;
     }
 
     private OWLObject getCurrentValue(int columnIndex) throws OwlapiDriverException {
@@ -156,17 +164,13 @@ class SelectResultSet extends AbstractResultSet {
 
     private <T> T getPrimitiveValue(Class<T> cls, String columnLabel) throws OwlapiDriverException {
         final Object val = OwlapiUtils.owlLiteralToValue(getLiteral(columnLabel));
-        if (!cls.isAssignableFrom(val.getClass())) {
-            throw new BindingValueMismatchException("Value " + val + " cannot be returned as " + cls.getSimpleName());
-        }
+        ensureValueIsAssignableToClass(val, cls);
         return cls.cast(val);
     }
 
     private OWLLiteral getLiteral(String columnLabel) throws OwlapiDriverException {
         final OWLObject currentValue = getCurrentValue(columnLabel);
-        if (!(currentValue instanceof OWLLiteral)) {
-            throw new BindingValueMismatchException("Value " + currentValue + " is not an OWLLiteral.");
-        }
+        ensureValueIsLiteral(currentValue);
         return (OWLLiteral) currentValue;
     }
 

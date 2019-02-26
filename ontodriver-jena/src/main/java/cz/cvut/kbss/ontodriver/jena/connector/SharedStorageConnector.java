@@ -127,8 +127,12 @@ public class SharedStorageConnector extends AbstractStorageConnector {
             // The QueryExecution is closed by the SelectResultSet (so that it has access to the results)
             return new SelectResultSet(exec, rs);
         } catch (RuntimeException e) {
-            throw new JenaDriverException("Execution of query " + query + " failed.", e);
+            throw queryFailed(query, e);
         }
+    }
+
+    private static JenaDriverException queryFailed(Object query, RuntimeException e) {
+        return new JenaDriverException("Execution of query " + query + " failed.", e);
     }
 
     @Override
@@ -137,7 +141,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         try (final QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset())) {
             return new AskResultSet(exec.execAsk());
         } catch (RuntimeException e) {
-            throw new JenaDriverException("Execution of query " + query + " failed.", e);
+            throw queryFailed(query, e);
         }
     }
 
@@ -147,7 +151,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
         try {
             UpdateAction.parseExecute(query, storage.getDataset());
         } catch (RuntimeException e) {
-            throw new JenaDriverException("Execution of update " + query + " failed.", e);
+            throw queryFailed(query, e);
         }
     }
 

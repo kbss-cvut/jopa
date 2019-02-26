@@ -1,37 +1,29 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
+
+import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
+import org.eclipse.rdf4j.model.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-
-import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import org.eclipse.rdf4j.model.*;
 
 /**
  * Base class for list handlers.
@@ -142,8 +134,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
         }
     }
 
-    Resource extractListNode(Collection<Statement> stmts, IRI nodeAssertion)
-            throws SesameDriverException {
+    Resource extractListNode(Collection<Statement> stmts, IRI nodeAssertion) {
         if (stmts.size() > 1) {
             throw new IntegrityConstraintViolatedException(
                     "Invalid number of values found for assertion " + nodeAssertion + ". Expected 1, got " +

@@ -387,7 +387,7 @@ public class SharedStorageConnectorTest {
         // Malformed query
         final String update = "INSERT DATA {" + SUBJECT + "> a <" + newType + "> . }";
         thrown.expect(JenaDriverException.class);
-        thrown.expectMessage(containsString("Execution of update " + update + " failed"));
+        thrown.expectMessage(containsString("Execution of query " + update + " failed"));
         connector.executeUpdate(update, StatementOntology.CENTRAL);
     }
 

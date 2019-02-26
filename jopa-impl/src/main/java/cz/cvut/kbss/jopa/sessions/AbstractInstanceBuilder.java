@@ -23,7 +23,7 @@ import java.security.PrivilegedActionException;
 
 abstract class AbstractInstanceBuilder {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractInstanceBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractInstanceBuilder.class);
 
     protected boolean populates;
     protected final CloneBuilderImpl builder;
