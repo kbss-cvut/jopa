@@ -58,7 +58,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final Map<Object, Object> deletedObjects;
     private final Map<Object, Object> newObjectsCloneToOriginal;
     private final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
-    private final Map<Object, Object> references;
     private final Map<Object, InstanceDescriptor> instanceDescriptors;
     private RepositoryMap repoMap;
 
@@ -95,7 +94,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.cloneMapping = cloneToOriginals.keySet();
         this.deletedObjects = createMap();
         this.newObjectsCloneToOriginal = createMap();
-        this.references = createMap();
         this.instanceDescriptors = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
@@ -196,11 +194,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (result == null) {
             return null;
         }
-        references.put(result, result);
         instanceDescriptors.put(result, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
         registerEntityWithPersistenceContext(result);
         registerEntityWithOntologyContext(result, descriptor);
-        cloneToOriginals.put(result, null);
+        if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
+            cloneToOriginals.put(result, getLiveObjectCache().get(cls, identifier, descriptor));
+        } else {
+            cloneToOriginals.put(result, null);
+        }
         keysToClones.put(identifier, result);
         return result;
     }
@@ -253,7 +254,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         deletedObjects.clear();
         newObjectsCloneToOriginal.clear();
         newObjectsKeyToClone.clear();
-        references.clear();
         instanceDescriptors.clear();
         this.hasChanges = false;
         this.hasDeleted = false;
@@ -558,6 +558,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (hasChanges()) {
             mergeManager.mergeChangesFromChangeSet(uowChangeSet);
         }
+        evictPossiblyUpdatedReferencesFromCache();
+    }
+
+    private void evictPossiblyUpdatedReferencesFromCache() {
+        cloneToOriginals.forEach((clone, orig) -> {
+            if (orig == null && !deletedObjects.containsKey(clone)) {
+                removeObjectFromCache(clone, getDescriptor(clone).getContext());
+            }
+        });
     }
 
     @Override
@@ -968,7 +977,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-                LoadState.UNKNOWN;
+               LoadState.UNKNOWN;
     }
 
     @Override

@@ -153,4 +153,41 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         uow.commit();
         verify(cacheManagerMock).evict(OWLClassA.class, reference.getUri(), descriptor.getContext());
     }
+
+    @Test
+    void getReferenceLoadsOriginalFromSecondLevelCacheWhenPresent() {
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
+        when(cacheManagerMock.get(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        assertEquals(entityA, uow.getOriginal(result));
+    }
+
+    @Test
+    void changesToGetReferenceResultAreMergedIntoOriginalInCache() {
+        when(transactionMock.isActive()).thenReturn(true);
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
+        when(cacheManagerMock.get(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA a = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        final String strValue = "string value";
+        a.setStringAttribute(strValue);
+        uow.commit();
+        assertEquals(strValue, entityA.getStringAttribute());
+    }
+
+    @Test
+    void uowCommitEvictsInstanceRetrievedUsingGetReferenceFromCacheWhenItWasNotPresentThereOnRetrieval() {
+        when(transactionMock.isActive()).thenReturn(true);
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(false);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA a = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        final String strValue = "string value";
+        a.setStringAttribute(strValue);
+        uow.commit();
+        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getContext());
+    }
 }

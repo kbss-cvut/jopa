@@ -379,4 +379,15 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertEquals(entityA.getUri(), gResult.getOwlClassH().getOwlClassA().getUri());
         assertEquals(entityA.getStringAttribute(), gResult.getOwlClassH().getOwlClassA().getStringAttribute());
     }
+
+    @Test
+    public void getReferenceRetrievesReferenceToInstanceWhenCacheIsEnabled() {
+        this.em = getEntityManager("getReferenceRetrievesReferenceToInstanceWhenCacheIsEnabled", true);
+        persist(entityA);
+
+        final OWLClassA result = em.getReference(OWLClassA.class, entityA.getUri());
+        assertNotNull(result);
+        assertEquals(entityA.getUri(), result.getUri());
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
 }
