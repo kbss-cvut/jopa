@@ -1,20 +1,23 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -22,10 +25,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -34,11 +34,11 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class SingularObjectPropertyStrategyTest {
+class SingularObjectPropertyStrategyTest {
 
     private static final URI IDENTIFIER = Generators.createIndividualIdentifier();
     private static final URI VALUE = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individualAAA");
@@ -186,5 +186,41 @@ public class SingularObjectPropertyStrategyTest {
         verify(referenceResolverMock).shouldSaveReference(r, null);
         verify(referenceResolverMock, never()).registerPendingReference(any(), any(), any(), any());
         verify(gatherer).addValue(sut.createAssertion(), new Value<>(NamedResource.create(r.getUri())), null);
+    }
+
+    @Test
+    void addValueThrowsCardinalityViolationWhenValueIsAlreadyPresent() {
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        final OWLClassA existing = Generators.generateOwlClassAInstance();
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), any())).thenReturn(existing);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+        sut.addValueFromAxiom(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
+        final OWLClassA another = Generators.generateOwlClassAInstance();
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another.getUri()), any()))
+                .thenReturn(another);
+        final Axiom<NamedResource> violationAxiom = new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion,
+                new Value<>(NamedResource.create(another.getUri())));
+        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(violationAxiom));
+    }
+
+    @Test
+    void addValueDoesNothingWhenReferenceInstanceCannotBeLoaded() throws Exception {
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        final OWLClassA existing = Generators.generateOwlClassAInstance();
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), any())).thenReturn(existing);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+        sut.addValueFromAxiom(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
+        final URI another = Generators.createIndividualIdentifier();
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another), any())).thenReturn(null);
+        sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion,
+                new Value<>(NamedResource.create(another))));
+        final OWLClassD instance = new OWLClassD();
+        sut.buildInstanceFieldValue(instance);
+        assertSame(existing, instance.getOwlClassA());
+        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another), any());
     }
 }

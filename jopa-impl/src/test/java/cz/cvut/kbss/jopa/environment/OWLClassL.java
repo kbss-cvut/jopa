@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -53,6 +53,13 @@ public class OWLClassL {
     @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra", fetch = FetchType.EAGER)
     private OWLClassA singleA;
+
+    public OWLClassL() {
+    }
+
+    public OWLClassL(URI uri) {
+        this.uri = uri;
+    }
 
     public URI getUri() {
         return uri;

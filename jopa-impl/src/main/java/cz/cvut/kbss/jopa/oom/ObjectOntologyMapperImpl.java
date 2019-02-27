@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -117,6 +117,18 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             cache.add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor());
         }
         return result;
+    }
+
+    @Override
+    public <T> T loadReference(LoadingParameters<T> loadingParameters) {
+        assert loadingParameters != null;
+
+        final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
+        if (et.hasSubtypes()) {
+            return twoStepInstanceLoader.loadReference(loadingParameters);
+        } else {
+            return defaultInstanceLoader.loadReference(loadingParameters);
+        }
     }
 
     @Override

@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -48,10 +48,10 @@ class InferredReferencedListIterator extends ReferencedListIterator {
 
     @Override
     public boolean hasNext() {
-        if (next == null) {
+        if (nextItem == null) {
             doStep();
         }
-        return next != null && !next.isEmpty();
+        return nextItem != null && !nextItem.isEmpty();
     }
 
     @Override
@@ -60,14 +60,14 @@ class InferredReferencedListIterator extends ReferencedListIterator {
                 reasoner.getObjectPropertyValues(currentNode, currentNextNodeProperty).entities()
                         .collect(Collectors.toSet());
         if (nextNodes.isEmpty()) {
-            this.next = Collections.emptyList();
+            this.nextItem = Collections.emptyList();
             return;
         }
         checkMaxSuccessors(currentNextNodeProperty, nextNodes);
         this.currentNextNodeProperty = hasNextProperty;
         this.currentNode = nextNodes.iterator().next();
-        this.next = reasoner.getObjectPropertyValues(currentNode, hasContentProperty).entities()
-                            .collect(Collectors.toSet());
+        this.nextItem = reasoner.getObjectPropertyValues(currentNode, hasContentProperty).entities()
+                                .collect(Collectors.toSet());
     }
 
     @Override
@@ -75,8 +75,8 @@ class InferredReferencedListIterator extends ReferencedListIterator {
         if (!hasNext()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(hasContentProperty, next);
-        final OWLIndividual value = next.iterator().next();
+        checkMaxSuccessors(hasContentProperty, nextItem);
+        final OWLIndividual value = nextItem.iterator().next();
         checkIsNamed(value);
         doStep();
         return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());

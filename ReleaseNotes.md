@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.12.0 - February 27, 2019
+- Implemented support for `EntityManager.getReference` (Feature #46).
+- Prevent adding `null` into plural attribute collection when value cannot be loaded (Fix).
+- Upgraded to RDF4J 2.4.5.
+
 ## 0.11.0 - January 15, 2019
 - Added support for specifying repository config when creating embedded in-memory and native RDF4J repositories (Feature #41).
 - Added supports for Java 8 Streams in the Query API (Feature #45).

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -30,11 +30,6 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
      * Class name of the OntoDriver implementation.
      */
     public static final String DATA_SOURCE_CLASS = "cz.cvut.jopa.dataSource.class";
-
-    /**
-     * Factory class for OWLAPI-based reasoner.
-     */
-    public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
 
     /**
      * Ontology language.

@@ -8,6 +8,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 Notable changes:
 
+* **0.12.0** Support for `EntityManager.getReference`
 * **0.11.0** - Support for Java 8 Streams in Query API and RDF4J repository configuration file
 * **0.10.0** - Jena OntoDriver implementation
 * **0.9.0** - Single class inheritance support
@@ -168,6 +169,8 @@ JOPA build status and code metrics can be found at:
 
 A performance comparison of JOPA and other object-triple mapping libraries can be found at [https://kbss.felk.cvut.cz/web/kbss/otm-benchmark](https://kbss.felk.cvut.cz/web/kbss/otm-benchmark).
 
+A comprehensive comparison - feature and performance - of object-triple mapping libraries is presented in [8].
+
 ## Related
 
 Some related libraries:
@@ -185,3 +188,4 @@ Some related libraries:
 * [5] M. Ledvinka and P. Křemen: JOPA: Accessing Ontologies in an Object-oriented Way. In Proceedings of the 17th International Conference on Enterprise Information Systems. Porto: SciTePress - Science and Technology Publications, 2015, p. 212-222. ISBN 978-989-758-096-0. [http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1](http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1)
 * [6] Ledvinka, M.; Křemen, P.; Kostov, B. JOPA: Efficient Ontology-based Information System Design In: The Semantic Web: ESWC 2016 Satellite Events. Cham: Springer International Publishing AG, 2016. pp. 156-160. 9989. ISSN 0302-9743. ISBN 978-3-319-47601-8. [ESWC 2016 Demo](http://2016.eswc-conferences.org/sites/default/files/papers/Accepted%20Posters%20and%20Demos/ESWC2016_DEMO_JOPA.pdf)
 * [7] Ledvinka, M.; Křemen, P.; Kostov, B.; Blaško, M. SISel: Aviation Safety Powered by Semantic Technologies In: Data a znalosti 2017. Plzeň: Západočeská univerzita v Plzni, 2017. pp. 77-82. ISBN 978-80-261-0720-0. [https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf](https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf)
+* [8] M. Ledvinka and  P. Křemen: A comparison of object-triple mapping libraries Semantic Web, 2019, doi: [10.3233/SW-190345](http://dx.doi.org/10.3233/SW-190345)

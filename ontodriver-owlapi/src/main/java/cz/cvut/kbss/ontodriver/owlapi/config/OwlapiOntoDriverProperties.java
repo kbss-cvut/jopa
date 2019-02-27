@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,10 +15,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.config;
 
 public abstract class OwlapiOntoDriverProperties {
-
-    private OwlapiOntoDriverProperties() {
-        throw new AssertionError();
-    }
 
     /**
      * Represents location of a OWLAPI mapping file.
@@ -46,4 +42,8 @@ public abstract class OwlapiOntoDriverProperties {
      * @see #IRI_MAPPING_DELIMITER
      */
     public static final String DEFAULT_IRI_MAPPING_DELIMITER = ">";
+
+    private OwlapiOntoDriverProperties() {
+        throw new AssertionError();
+    }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,9 +24,6 @@ import java.util.*;
 
 public class ObjectChangeSetImpl implements ObjectChangeSet {
 
-    // Type of the object represented by this change set
-    private final Class<?> objectClass;
-
     // The object the changes are bound to
     private final Object changedObject;
 
@@ -39,19 +36,17 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
     // Does this change set represent a new object
     private boolean isNew;
 
-    private Descriptor descriptor;
+    private final Descriptor descriptor;
 
     public ObjectChangeSetImpl(Object changedObject, Object cloneObject, Descriptor descriptor) {
         this.changedObject = Objects.requireNonNull(changedObject);
         this.cloneObject = Objects.requireNonNull(cloneObject);
-        this.objectClass = cloneObject.getClass();
         this.descriptor = Objects.requireNonNull(descriptor);
     }
 
     @Override
     public void addChangeRecord(ChangeRecord record) {
-        if (record == null)
-            return;
+        Objects.requireNonNull(record);
         attributesToChange.put(record.getAttribute(), record);
     }
 
@@ -67,7 +62,7 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
 
     @Override
     public Class<?> getObjectClass() {
-        return objectClass;
+        return cloneObject.getClass();
     }
 
     @Override

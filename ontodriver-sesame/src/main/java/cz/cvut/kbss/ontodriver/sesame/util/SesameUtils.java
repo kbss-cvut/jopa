@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -50,13 +50,7 @@ public final class SesameUtils {
         if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
                 datatype.equals(RDF.LANGSTRING)) {
             return literal.stringValue();
-        } else if (datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT)) {
-            return literal.intValue();
-        } else if (datatype.equals(XMLSchema.INTEGER)
-                || datatype.equals(XMLSchema.POSITIVE_INTEGER)
-                || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
-                || datatype.equals(XMLSchema.NEGATIVE_INTEGER)
-                || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)) {
+        } else if (isInteger(datatype)) {
             return literal.intValue();
         } else if (datatype.equals(XMLSchema.BOOLEAN)) {
             return literal.booleanValue();
@@ -75,6 +69,15 @@ public final class SesameUtils {
         } else {
             throw new IllegalArgumentException("Unsupported datatype " + datatype);
         }
+    }
+
+    private static boolean isInteger(IRI datatype) {
+        return datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT) ||
+                datatype.equals(XMLSchema.INTEGER)
+                || datatype.equals(XMLSchema.POSITIVE_INTEGER)
+                || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
+                || datatype.equals(XMLSchema.NEGATIVE_INTEGER)
+                || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER);
     }
 
     /**

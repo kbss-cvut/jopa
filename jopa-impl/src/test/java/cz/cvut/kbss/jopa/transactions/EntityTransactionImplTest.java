@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -136,12 +136,5 @@ public class EntityTransactionImplTest {
     @Test(expected = IllegalStateException.class)
     public void testGetRollbackOnlyNotActive() {
         transaction.isRollbackOnly();
-    }
-
-    @Test
-    public void testFinalize() throws Throwable {
-        transaction.begin();
-        transaction.finalize();
-        verify(uowMock).rollback();
     }
 }

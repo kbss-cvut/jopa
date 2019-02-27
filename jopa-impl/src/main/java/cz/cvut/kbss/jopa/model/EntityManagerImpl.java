@@ -1,25 +1,25 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.*;
 
-public class EntityManagerImpl extends AbstractEntityManager implements Wrapper {
+public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityManagerImpl.class);
 
@@ -48,7 +48,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     private ServerSession serverSession;
     private final Configuration configuration;
 
-    private final Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
+    private Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
 
     EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration, ServerSession serverSession) {
         this.emf = emf;
@@ -269,24 +269,55 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     }
 
     @Override
-    public <T> T find(Class<T> cls, Object primaryKey) {
+    public <T> T find(Class<T> cls, Object identifier) {
         final EntityDescriptor d = new EntityDescriptor();
-        return find(cls, primaryKey, d);
+        return find(cls, identifier, d);
     }
 
     @Override
-    public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+    public <T> T find(Class<T> cls, Object identifier, Descriptor descriptor) {
         try {
             Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-            Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+            Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
             Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
             ensureOpen();
             checkClassIsValidEntity(cls);
 
-            LOG.trace("Finding instance of {} with identifier {} in context ", cls, primaryKey, descriptor);
-            final URI uri = (primaryKey instanceof URI) ? (URI) primaryKey : URI.create(primaryKey.toString());
+            LOG.trace("Finding instance of {} with identifier {} in context {}.", cls, identifier, descriptor);
+            final URI uri = (identifier instanceof URI) ? (URI) identifier : URI.create(identifier.toString());
 
             return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public <T> T getReference(Class<T> entityClass, Object identifier) {
+        try {
+            Objects.requireNonNull(entityClass);
+            Objects.requireNonNull(identifier);
+
+            return getReference(entityClass, identifier, new EntityDescriptor());
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public <T> T getReference(Class<T> entityClass, Object identifier, Descriptor descriptor) {
+        try {
+            Objects.requireNonNull(entityClass);
+            Objects.requireNonNull(identifier);
+            Objects.requireNonNull(descriptor);
+            ensureOpen();
+            checkClassIsValidEntity(entityClass);
+
+            LOG.trace("Getting reference of type {} with identifier {} in context {}.", entityClass, identifier,
+                    descriptor);
+            return getCurrentPersistenceContext().getReference(entityClass, identifier, descriptor);
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
@@ -381,6 +412,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     public void close() {
         ensureOpen();
         removeCurrentPersistenceContext();
+        this.cascadingRegistry = null;
         emf.entityManagerClosed(this);
         this.open = false;
     }
@@ -409,21 +441,18 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     public boolean isLoaded(final Object object, final String attributeName) {
         Objects.requireNonNull(object);
         Objects.requireNonNull(attributeName);
-        if (!contains(object)) {
-            return false;
-        }
-        final FieldSpecification<?, ?> fieldSpec = getMetamodel().entity(object.getClass())
-                                                                 .getFieldSpecification(attributeName);
-        // This is not correct, as lazily loaded fields can be set to null, but as long as we do not have any representation
-        // of the loaded state of an entity, this will have to do
-        return fieldSpec.getFetchType() == FetchType.EAGER ||
-                EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), object) != null;
+        return getCurrentPersistenceContext().isLoaded(object, attributeName) == LoadState.LOADED;
+    }
+
+    @Override
+    public boolean isLoaded(Object object) {
+        return getCurrentPersistenceContext().isLoaded(object) == LoadState.LOADED;
     }
 
     @Override
     public QueryImpl createQuery(String qlString) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createQuery(qlString);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(qlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -432,7 +461,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         ensureOpen();
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createQuery(query, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -441,7 +470,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public QueryImpl createNativeQuery(String sparqlString) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createNativeQuery(sparqlString);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -450,7 +479,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> TypedQueryImpl<T> createNativeQuery(String sparqlString, Class<T> resultClass) {
         ensureOpen();
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
+                                                                  .createNativeQuery(sparqlString, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -459,7 +489,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public QueryImpl createNativeQuery(String sparqlString, String resultSetMapping) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparqlString, resultSetMapping);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory()
+                                                          .createNativeQuery(sparqlString, resultSetMapping);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -468,7 +499,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public QueryImpl createNamedQuery(String name) {
         ensureOpen();
-        final QueryImpl q = getCurrentPersistenceContext().createNamedQuery(name);
+        final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createNamedQuery(name);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -477,7 +508,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
         ensureOpen();
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNamedQuery(name, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
+                                                                  .createNamedQuery(name, resultClass);
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;
@@ -549,7 +581,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     protected void finalize() throws Throwable {
-        if (isOpen()) {
+        if (open) {
             close();
         }
         super.finalize();

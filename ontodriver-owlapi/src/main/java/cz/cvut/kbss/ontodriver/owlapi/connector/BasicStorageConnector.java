@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -53,8 +53,8 @@ public class BasicStorageConnector extends AbstractConnector {
     private static final Logger LOG = LoggerFactory.getLogger(BasicStorageConnector.class);
 
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
-    private static Lock READ = LOCK.readLock();
-    private static Lock WRITE = LOCK.writeLock();
+    private static final Lock READ = LOCK.readLock();
+    private static final Lock WRITE = LOCK.writeLock();
 
     private OWLOntologyManager ontologyManager;
     private OWLOntology ontology;
@@ -119,7 +119,7 @@ public class BasicStorageConnector extends AbstractConnector {
         LOG.trace("Creating new ontology in {}.", configuration.getStorageProperties().getPhysicalURI());
         try {
             this.ontology = ontologyIri.isPresent() ? ontologyManager.createOntology(ontologyIri.get()) :
-                    ontologyManager.createOntology();
+                            ontologyManager.createOntology();
             ontology.saveOntology(IRI.create(configuration.getStorageProperties().getPhysicalURI()));
         } catch (OWLOntologyCreationException | OWLOntologyStorageException e) {
             throw new OwlapiDriverException(

@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -40,14 +42,27 @@ class EntityConstructor {
         this.mapper = mapper;
     }
 
-    <T> T reconstructEntity(URI primaryKey, EntityType<T> et, Descriptor descriptor,
+    /**
+     * Creates an instance of the specified {@link EntityType} with the specified identifier and populates its attributes from the specified axioms.
+     *
+     * @param identifier Entity identifier
+     * @param et         Entity type
+     * @param descriptor Entity descriptor with context info
+     * @param axioms     Axioms from which the instance attribute values should be reconstructed
+     * @param <T>        Entity type
+     * @return New instance with populated attributes
+     * @throws InstantiationException If instance cannot be created
+     * @throws IllegalAccessException If the default constructor is not public
+     */
+    <T> T reconstructEntity(URI identifier, EntityType<T> et, Descriptor descriptor,
                             Collection<Axiom<?>> axioms) throws InstantiationException, IllegalAccessException {
         assert !axioms.isEmpty();
 
         if (!axiomsContainEntityClassAssertion(axioms, et)) {
             return null;
         }
-        final T instance = createEntityInstance(primaryKey, et, descriptor);
+        final T instance = createEntityInstance(identifier, et);
+        mapper.registerInstance(identifier, instance, descriptor.getContext());
         populateAttributes(instance, et, descriptor, axioms);
         validateIntegrityConstraints(instance, et);
 
@@ -63,11 +78,20 @@ class EntityConstructor {
         return false;
     }
 
-    private <T> T createEntityInstance(URI primaryKey, EntityType<T> et, Descriptor descriptor)
+    /**
+     * Instantiates an entity of the specified {@link EntityType} with the specified identifier.
+     *
+     * @param identifier Entity identifier
+     * @param et         Entity type
+     * @param <T>        Entity type
+     * @return Newly created instance with identifier set
+     * @throws InstantiationException If instance cannot be created
+     * @throws IllegalAccessException If the default constructor is not public
+     */
+    <T> T createEntityInstance(URI identifier, EntityType<T> et)
             throws InstantiationException, IllegalAccessException {
         final T instance = et.getJavaType().newInstance();
-        EntityPropertiesUtils.setIdentifier(primaryKey, instance, et);
-        mapper.registerInstance(primaryKey, instance, descriptor.getContext());
+        EntityPropertiesUtils.setIdentifier(identifier, instance, et);
         return instance;
     }
 

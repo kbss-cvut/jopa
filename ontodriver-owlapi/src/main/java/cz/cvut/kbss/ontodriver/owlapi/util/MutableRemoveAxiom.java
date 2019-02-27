@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,6 +19,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
  * Remove axiom wrapper which allows us to set ontology to which it is applied.
@@ -45,5 +46,19 @@ public class MutableRemoveAxiom extends RemoveAxiom implements MutableAxiomChang
     @Override
     public OWLOntology getOntology() {
         return ontology;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MutableRemoveAxiom)) return false;
+        if (!super.equals(o)) return false;
+        MutableRemoveAxiom that = (MutableRemoveAxiom) o;
+        return Objects.equals(ontology, that.ontology) && Objects.equals(getAxiom(), that.getAxiom());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), ontology);
     }
 }

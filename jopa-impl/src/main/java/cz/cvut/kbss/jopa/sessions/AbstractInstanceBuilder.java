@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,7 +23,7 @@ import java.security.PrivilegedActionException;
 
 abstract class AbstractInstanceBuilder {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractInstanceBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractInstanceBuilder.class);
 
     protected boolean populates;
     protected final CloneBuilderImpl builder;

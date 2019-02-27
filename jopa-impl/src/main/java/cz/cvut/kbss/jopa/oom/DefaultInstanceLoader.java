@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.sessions.LoadingParameters;
  */
 class DefaultInstanceLoader extends EntityInstanceLoader {
 
-    DefaultInstanceLoader(DefaultInstanceLoaderBuilder builder) {
+    private DefaultInstanceLoader(DefaultInstanceLoaderBuilder builder) {
         super(builder);
     }
 
@@ -30,6 +30,12 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
         final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
         return loadInstance(loadingParameters, et);
+    }
+
+    @Override
+    <T> T loadReference(LoadingParameters<T> loadingParameters) {
+        final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
+        return loadReferenceInstance(loadingParameters, et);
     }
 
     static DefaultInstanceLoaderBuilder builder() {

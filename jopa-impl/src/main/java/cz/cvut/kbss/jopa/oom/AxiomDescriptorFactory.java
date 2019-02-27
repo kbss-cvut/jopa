@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -19,8 +21,7 @@ import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -91,7 +92,6 @@ class AxiomDescriptorFactory {
                     return Assertion
                             .createDataPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
-
             case ANNOTATION:
                 if (withLanguage(descriptor)) {
                     return Assertion
@@ -101,7 +101,6 @@ class AxiomDescriptorFactory {
                     return Assertion
                             .createAnnotationPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
-
             default:
                 throw new IllegalArgumentException(
                         "Illegal persistent attribute type " + att.getPersistentAttributeType());
@@ -116,8 +115,22 @@ class AxiomDescriptorFactory {
         return descriptor.hasLanguage() ? descriptor.getLanguage() : puLanguage;
     }
 
-    AxiomDescriptor createForFieldLoading(URI primaryKey, Field field, Descriptor entityDescriptor, EntityType<?> et) {
-        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(primaryKey));
+    /**
+     * Creates an axiom representing a class assertion.
+     * <p>
+     * This axiom can be used to load a reference to an individual with the correct type, without any other attributes.
+     *
+     * @param identifier Individual identifier
+     * @param et         Entity type. Type IRI is extracted from it
+     * @return {@code Axiom}
+     */
+    Axiom<NamedResource> createForReferenceLoading(URI identifier, EntityType<?> et) {
+        return new AxiomImpl<>(NamedResource.create(identifier), Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(et.getIRI().toString())));
+    }
+
+    AxiomDescriptor createForFieldLoading(URI identifier, Field field, Descriptor entityDescriptor, EntityType<?> et) {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));
         FieldSpecification<?, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {

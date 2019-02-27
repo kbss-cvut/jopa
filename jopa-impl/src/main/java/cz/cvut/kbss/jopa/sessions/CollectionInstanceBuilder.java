@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,6 +21,8 @@ import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -35,6 +37,8 @@ import java.util.*;
  * database mappings and copy policies) is introduced.
  */
 class CollectionInstanceBuilder extends AbstractInstanceBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CollectionInstanceBuilder.class);
 
     private static final Class<?> singletonListClass = Collections.singletonList(null).getClass();
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
@@ -173,9 +177,9 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         } else if (singletonListClass.isInstance(container) || singletonSetClass.isInstance(container)) {
             final Object element = container.iterator().next();
             final Object elementClone = CloneBuilderImpl.isImmutable(element) ? element :
-                    cloneCollectionElement(cloneOwner, field, element, configuration);
+                                        cloneCollectionElement(cloneOwner, field, element, configuration);
             return singletonListClass.isInstance(container) ? Collections.singletonList(elementClone) :
-                    Collections.singleton(elementClone);
+                   Collections.singleton(elementClone);
         } else {
             return null;
         }

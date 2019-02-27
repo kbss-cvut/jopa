@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,18 +16,18 @@ package cz.cvut.kbss.jopa.model;
 
 public enum LoadState {
 
-	/**
-	 * The state of the element is known to have been loaded.
-	 */
-	LOADED,
+    /**
+     * The state of the element is known to have been loaded.
+     */
+    LOADED,
 
-	/**
-	 * The state of the element is known not to have been loaded.
-	 */
-	NOT_LOADED,
+    /**
+     * The state of the element is known not to have been loaded.
+     */
+    NOT_LOADED,
 
-	/**
-	 * The state of the element cannot be determined.
-	 */
-	UNKNOWN
+    /**
+     * The state of the element cannot be determined.
+     */
+    UNKNOWN
 }

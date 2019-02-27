@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,22 +22,17 @@ import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
 import java.net.URI;
 
-public abstract class InstanceLoaderTestBase {
+abstract class InstanceLoaderTestBase {
 
     static final URI IDENTIFIER = Generators.createIndividualIdentifier();
     static final NamedResource INDIVIDUAL = NamedResource.create(IDENTIFIER);
 
     static Descriptor descriptor;
     static AxiomDescriptor axiomDescriptor;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     Connection connectionMock;

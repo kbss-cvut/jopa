@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -116,18 +116,26 @@ class SelectResultSet extends AbstractResultSet {
 
     private <T> T getPrimitiveValue(Class<T> cls, int columnIndex) throws OntoDriverException {
         final Object val = OwlapiUtils.owlLiteralToValue(getLiteral(columnIndex));
+        ensureValueIsAssignableToClass(val, cls);
+        return cls.cast(val);
+    }
+
+    private static <T> void ensureValueIsAssignableToClass(Object val, Class<T> cls) {
         if (!cls.isAssignableFrom(val.getClass())) {
             throw new BindingValueMismatchException("Value " + val + " cannot be returned as " + cls.getSimpleName());
         }
-        return cls.cast(val);
     }
 
     private OWLLiteral getLiteral(int columnIndex) throws OntoDriverException {
         final OWLObject currentValue = getCurrentValue(columnIndex);
+        ensureValueIsLiteral(currentValue);
+        return (OWLLiteral) currentValue;
+    }
+
+    private static void ensureValueIsLiteral(OWLObject currentValue) {
         if (!(currentValue instanceof OWLLiteral)) {
             throw new BindingValueMismatchException("Value " + currentValue + " is not an OWLLiteral.");
         }
-        return (OWLLiteral) currentValue;
     }
 
     private OWLObject getCurrentValue(int columnIndex) throws OwlapiDriverException {
@@ -158,17 +166,13 @@ class SelectResultSet extends AbstractResultSet {
 
     private <T> T getPrimitiveValue(Class<T> cls, String columnLabel) throws OwlapiDriverException {
         final Object val = OwlapiUtils.owlLiteralToValue(getLiteral(columnLabel));
-        if (!cls.isAssignableFrom(val.getClass())) {
-            throw new BindingValueMismatchException("Value " + val + " cannot be returned as " + cls.getSimpleName());
-        }
+        ensureValueIsAssignableToClass(val, cls);
         return cls.cast(val);
     }
 
     private OWLLiteral getLiteral(String columnLabel) throws OwlapiDriverException {
         final OWLObject currentValue = getCurrentValue(columnLabel);
-        if (!(currentValue instanceof OWLLiteral)) {
-            throw new BindingValueMismatchException("Value " + currentValue + " is not an OWLLiteral.");
-        }
+        ensureValueIsLiteral(currentValue);
         return (OWLLiteral) currentValue;
     }
 
@@ -395,11 +399,6 @@ class SelectResultSet extends AbstractResultSet {
     public void previous() {
         ensureOpen();
         relative(-1);
-    }
-
-    @Override
-    public void registerObserver(Observer observer) {
-        // Not implemented yet
     }
 
     @Override

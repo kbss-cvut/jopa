@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -30,7 +30,7 @@ public class EntityTransactionImpl implements EntityTransaction {
 
     private final EntityTransactionWrapper wrapper;
 
-    public EntityTransactionImpl(EntityTransactionWrapper wrapper) {
+    EntityTransactionImpl(EntityTransactionWrapper wrapper) {
         this.wrapper = Objects.requireNonNull(wrapper);
     }
 
@@ -106,16 +106,5 @@ public class EntityTransactionImpl implements EntityTransaction {
     @Override
     public boolean isActive() {
         return active;
-    }
-
-    /**
-     * Roll back any changes if we forgot to commit or roll it back manually
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        if (isActive()) {
-            rollback();
-        }
-        super.finalize();
     }
 }

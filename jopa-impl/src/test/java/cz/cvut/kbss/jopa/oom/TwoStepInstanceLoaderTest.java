@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,9 +26,9 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.Value;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -38,24 +38,25 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
+class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
 
     @Mock
     private Types typesMock;
 
     private LoadingParameters<OWLClassS> loadingParameters;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() {
         staticSetup();
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER, descriptor);
         final MetamodelMocks mocks = new MetamodelMocks();
@@ -69,7 +70,7 @@ public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     }
 
     @Test
-    public void loadEntityLoadsTypesAndDeterminesEntityTypeBeforeLoadingInstance() throws Exception {
+    void loadEntityLoadsTypesAndDeterminesEntityTypeBeforeLoadingInstance() throws Exception {
         final Set<Axiom<URI>> types = Collections.singleton(
                 new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
                         new Value<>(URI.create(OWLClassR.getClassIri()))));
@@ -81,7 +82,7 @@ public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     }
 
     @Test
-    public void loadEntityLoadsEntityFromStorageWhenEntityTypeIsDetermined() throws Exception {
+    void loadEntityLoadsEntityFromStorageWhenEntityTypeIsDetermined() throws Exception {
         final Set<Axiom<URI>> types = Collections.singleton(
                 new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
                         new Value<>(URI.create(OWLClassR.getClassIri()))));
@@ -99,14 +100,14 @@ public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     }
 
     @Test
-    public void loadEntityReturnsNullWhenNoTypesForIndividualAreFound() throws Exception {
+    void loadEntityReturnsNullWhenNoTypesForIndividualAreFound() throws Exception {
         when(typesMock.getTypes(INDIVIDUAL, null, false)).thenReturn(Collections.emptySet());
 
         assertNull(instanceLoader.loadEntity(loadingParameters));
     }
 
     @Test
-    public void loadEntityReturnsNullWhenNoMatchingEntityTypeIsFound() throws Exception {
+    void loadEntityReturnsNullWhenNoMatchingEntityTypeIsFound() throws Exception {
         final Set<Axiom<URI>> types = Collections.singleton(
                 new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
                         new Value<>(URI.create(OWLClassA.getClassIri()))));
@@ -116,12 +117,49 @@ public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     }
 
     @Test
-    public void loadEntityThrowsStorageAccessExceptionWhenOntoDriverThrowsException() throws Exception {
+    void loadEntityThrowsStorageAccessExceptionWhenOntoDriverThrowsException() throws Exception {
         final String msg = "Exception message.";
         when(typesMock.getTypes(INDIVIDUAL, null, false)).thenThrow(new OntoDriverException(msg));
-        thrown.expect(StorageAccessException.class);
-        thrown.expectMessage(msg);
 
-        instanceLoader.loadEntity(loadingParameters);
+        final StorageAccessException ex =
+                assertThrows(StorageAccessException.class, () -> instanceLoader.loadEntity(loadingParameters));
+        assertThat(ex.getMessage(), containsString(msg));
+    }
+
+    @Test
+    void loadReferenceLoadsReferenceFromStorageWhenEntityTypeIsDetermined() throws Exception {
+        final Axiom<URI> type = new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
+                new Value<>(URI.create(OWLClassA.getClassIri())));
+        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenReturn(Collections.singleton(type));
+        when(entityConstructorMock.createEntityInstance(IDENTIFIER, metamodelMock.entity(OWLClassA.class)))
+                .thenReturn(new OWLClassA(IDENTIFIER));
+
+        final OWLClassA result =
+                instanceLoader.loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
+        assertNotNull(result);
+        verify(typesMock).getTypes(INDIVIDUAL, null, false);
+    }
+
+    @Test
+    void loadReferenceReturnsNullWhenTypeCannotBeResolved() throws Exception {
+        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenReturn(Collections.emptySet());
+        when(entityConstructorMock.createEntityInstance(IDENTIFIER, metamodelMock.entity(OWLClassA.class)))
+                .thenReturn(new OWLClassA(IDENTIFIER));
+
+        final OWLClassA result =
+                instanceLoader.loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
+        assertNull(result);
+        verify(entityConstructorMock, never()).createEntityInstance(any(), any());
+    }
+
+    @Test
+    void loadReferenceThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
+        final String msg = "Exception message.";
+        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenThrow(new OntoDriverException(msg));
+
+        final StorageAccessException ex =
+                assertThrows(StorageAccessException.class, () -> instanceLoader.loadReference(loadingParameters));
+        assertThat(ex.getMessage(), containsString(msg));
+        verify(entityConstructorMock, never()).createEntityInstance(any(), any());
     }
 }

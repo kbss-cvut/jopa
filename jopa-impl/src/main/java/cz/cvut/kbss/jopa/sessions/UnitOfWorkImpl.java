@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -16,8 +18,11 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.*;
+import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -29,6 +34,8 @@ import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
+import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -42,15 +49,18 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
-public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory, ConfigurationHolder, Wrapper {
+import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
+public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
+
+    // Read-only!!! It is just the keyset of cloneToOriginals
     private final Set<Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
     private final Map<Object, Object> keysToClones = new HashMap<>();
-    private Map<Object, Object> deletedObjects;
-    private Map<Object, Object> newObjectsCloneToOriginal;
-    private Map<Object, Object> newObjectsOriginalToClone;
+    private final Map<Object, Object> deletedObjects;
+    private final Map<Object, Object> newObjectsCloneToOriginal;
     private final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
+    private final Map<Object, InstanceDescriptor> instanceDescriptors;
     private RepositoryMap repoMap;
 
     private boolean hasChanges;
@@ -61,7 +71,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private boolean useTransactionalOntology;
 
     private boolean isActive;
-    private boolean inCommit = false;
+    private boolean inCommit;
 
     private UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
@@ -84,6 +94,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.parent = Objects.requireNonNull(parent);
         this.cloneToOriginals = createMap();
         this.cloneMapping = cloneToOriginals.keySet();
+        this.deletedObjects = createMap();
+        this.newObjectsCloneToOriginal = createMap();
+        this.instanceDescriptors = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.cloneBuilder = new CloneBuilderImpl(this);
@@ -117,18 +130,34 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+    public <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor) {
         Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
         Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
-        return readObjectInternal(cls, primaryKey, descriptor);
+        return readObjectInternal(cls, identifier, descriptor);
     }
 
     private <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
         assert cls != null;
         assert identifier != null;
         assert descriptor != null;
+        T result = readManagedObject(cls, identifier, descriptor);
+        if (result != null) {
+            return result;
+        }
+        result = storage.find(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
+
+        if (result == null) {
+            return null;
+        }
+        final Object clone = registerExistingObject(result, descriptor,
+                Collections.singletonList(new PostLoadInvoker(getMetamodel())));
+        checkForCollections(clone);
+        return cls.cast(clone);
+    }
+
+    private <T> T readManagedObject(Class<T> cls, Object identifier, Descriptor descriptor) {
         // First try to find the object among new uncommitted objects
         Object result = newObjectsKeyToClone.get(identifier);
         if (result != null && (isInRepository(descriptor, result))) {
@@ -141,25 +170,42 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             if (!cls.isAssignableFrom(result.getClass())) {
                 throw individualAlreadyManaged(identifier);
             }
-            if (isInRepository(descriptor, result) && !getDeletedObjects().containsKey(result)) {
+            if (isInRepository(descriptor, result) && !deletedObjects.containsKey(result)) {
                 return cls.cast(result);
             }
         }
-        final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
-        result = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
-
-        if (result == null) {
-            return null;
-        }
-        final Object clone = registerExistingObject(result, descriptor,
-                Collections.singletonList(new PostLoadInvoker(getMetamodel())));
-        checkForCollections(clone);
-        return cls.cast(clone);
+        return null;
     }
 
     private static OWLEntityExistsException individualAlreadyManaged(Object identifier) {
         return new OWLEntityExistsException(
                 "An entity with URI " + identifier + " is already present in the current persistence context.");
+    }
+
+    @Override
+    public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(descriptor);
+
+        final T managedResult = readManagedObject(cls, identifier, descriptor);
+        if (managedResult != null) {
+            return managedResult;
+        }
+        final T result = storage.getReference(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
+        if (result == null) {
+            return null;
+        }
+        instanceDescriptors.put(result, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
+        registerEntityWithPersistenceContext(result);
+        registerEntityWithOntologyContext(result, descriptor);
+        if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
+            cloneToOriginals.put(result, getLiveObjectCache().get(cls, identifier, descriptor));
+        } else {
+            cloneToOriginals.put(result, null);
+        }
+        keysToClones.put(identifier, result);
+        return result;
     }
 
     /**
@@ -181,30 +227,24 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param changeSet UnitOfWorkChangeSet
      */
     private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
-        for (Object clone : getNewObjectsCloneToOriginal().keySet()) {
+        for (Object clone : newObjectsCloneToOriginal.keySet()) {
             final Descriptor c = getDescriptor(clone);
-            Object original = getNewObjectsCloneToOriginal()
+            Object original = newObjectsCloneToOriginal
                     .computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, new CloneConfiguration(c)));
             if (original == null) {
                 throw new OWLPersistenceException(
                         "Error while calculating changes for new objects. Original not found.");
             }
-            getNewObjectsCloneToOriginal().put(clone, original);
-            getNewObjectsOriginalToClone().put(original, clone);
+            newObjectsCloneToOriginal.put(clone, original);
             changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone,
                     c));
         }
     }
 
     private void calculateDeletedObjects(final UnitOfWorkChangeSet changeSet) {
-        for (Object clone : getDeletedObjects().keySet()) {
-            Object original = cloneToOriginals.get(clone);
-            if (original == null) {
-                throw new OWLPersistenceException("Cannot find an original for clone!");
-            }
+        for (Object clone : deletedObjects.keySet()) {
             Descriptor descriptor = getDescriptor(clone);
-            changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone,
-                    descriptor));
+            changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChangeSet(clone, descriptor));
         }
     }
 
@@ -213,10 +253,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         detachAllManagedInstances();
         cloneToOriginals.clear();
         keysToClones.clear();
-        this.deletedObjects = null;
-        this.newObjectsCloneToOriginal = null;
-        this.newObjectsOriginalToClone = null;
-        this.newObjectsKeyToClone.clear();
+        deletedObjects.clear();
+        newObjectsCloneToOriginal.clear();
+        newObjectsKeyToClone.clear();
+        instanceDescriptors.clear();
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
@@ -231,7 +271,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             removeIndirectCollections(instance);
             deregisterEntityFromPersistenceContext(instance);
         });
-        getNewObjectsCloneToOriginal().keySet().forEach(instance -> {
+        newObjectsCloneToOriginal.keySet().forEach(instance -> {
             removeIndirectCollections(instance);
             deregisterEntityFromPersistenceContext(instance);
         });
@@ -240,7 +280,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     @Override
     public boolean contains(Object entity) {
         Objects.requireNonNull(entity);
-
         return isObjectManaged(entity);
     }
 
@@ -328,9 +367,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public State getState(Object entity) {
         Objects.requireNonNull(entity);
 
-        if (getDeletedObjects().containsKey(entity)) {
+        if (deletedObjects.containsKey(entity)) {
             return State.REMOVED;
-        } else if (getNewObjectsCloneToOriginal().containsKey(entity)) {
+        } else if (newObjectsCloneToOriginal.containsKey(entity)) {
             return State.MANAGED_NEW;
         } else if (cloneMapping.contains(entity)) {
             return State.MANAGED;
@@ -350,9 +389,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
         Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
-        if (getDeletedObjects().containsKey(entity)) {
+        if (deletedObjects.containsKey(entity)) {
             return State.REMOVED;
-        } else if (getNewObjectsCloneToOriginal().containsKey(entity) && isInRepository(descriptor, entity)) {
+        } else if (newObjectsCloneToOriginal.containsKey(entity) && isInRepository(descriptor, entity)) {
             return State.MANAGED_NEW;
         } else if (cloneMapping.contains(entity) && isInRepository(descriptor, entity)) {
             return State.MANAGED;
@@ -372,11 +411,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (clone == null) {
             return null;
         }
-        Object original = cloneToOriginals.get(clone);
-        if (original == null) {
-            original = getNewObjectsCloneToOriginal().get(clone);
-        }
-        return original;
+        return cloneToOriginals.containsKey(clone) ? cloneToOriginals.get(clone) : newObjectsCloneToOriginal.get(clone);
     }
 
     /**
@@ -438,27 +473,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.hasChanges = true;
     }
 
-    Map<Object, Object> getDeletedObjects() {
-        if (deletedObjects == null) {
-            this.deletedObjects = createMap();
-        }
-        return deletedObjects;
-    }
-
-    Map<Object, Object> getNewObjectsCloneToOriginal() {
-        if (newObjectsCloneToOriginal == null) {
-            this.newObjectsCloneToOriginal = createMap();
-        }
-        return newObjectsCloneToOriginal;
-    }
-
-    private Map<Object, Object> getNewObjectsOriginalToClone() {
-        if (newObjectsOriginalToClone == null) {
-            this.newObjectsOriginalToClone = createMap();
-        }
-        return newObjectsOriginalToClone;
-    }
-
     @Override
     public CacheManager getLiveObjectCache() {
         return parent.getLiveObjectCache();
@@ -480,7 +494,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @return boolean
      */
     public boolean isObjectNew(Object clone) {
-        return clone != null && getNewObjectsCloneToOriginal().containsKey(clone);
+        return clone != null && newObjectsCloneToOriginal.containsKey(clone);
     }
 
     /**
@@ -493,8 +507,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
 
-        return cloneMapping.contains(entity) && !getDeletedObjects().containsKey(entity) ||
-                getNewObjectsCloneToOriginal().containsKey(entity);
+        return cloneMapping.contains(entity) && !deletedObjects.containsKey(entity) ||
+                newObjectsCloneToOriginal.containsKey(entity);
     }
 
     /**
@@ -509,20 +523,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             throw new IllegalStateException("This unit of work is not in a transaction.");
         }
         final Descriptor descriptor = getDescriptor(entity);
-        if (descriptor == null) {
-            throw new OWLPersistenceException("Unable to find repository for entity " + entity
-                    + ". Is it registered in this UoW?");
-        }
-        final EntityTypeImpl<?> et = entityType(entity.getClass());
+        final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
         storage.merge(entity, f, descriptor);
-        createChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
+        createAndRegisterChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
         setHasChanges();
         setIndirectCollectionIfPresent(entity, f);
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
+        instanceDescriptors.get(entity).setLoaded(et.getFieldSpecification(f.getName()), LoadState.LOADED);
     }
 
-    private void createChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec, Descriptor descriptor) {
+    private void createAndRegisterChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec,
+                                               Descriptor descriptor) {
         final Object orig = getOriginal(clone);
         if (orig == null) {
             return;
@@ -548,6 +560,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (hasChanges()) {
             mergeManager.mergeChangesFromChangeSet(uowChangeSet);
         }
+        evictPossiblyUpdatedReferencesFromCache();
+    }
+
+    private void evictPossiblyUpdatedReferencesFromCache() {
+        cloneToOriginals.forEach((clone, orig) -> {
+            if (orig == null && !deletedObjects.containsKey(clone)) {
+                removeObjectFromCache(clone, getDescriptor(clone).getContext());
+            }
+        });
     }
 
     @Override
@@ -669,8 +690,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
+        instanceDescriptors
+                .put(clone, InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass())));
         registerEntityWithPersistenceContext(clone);
-        registerEntityWithOntologyContext(descriptor, clone);
+        registerEntityWithOntologyContext(clone, descriptor);
     }
 
     /**
@@ -695,7 +718,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final EntityTypeImpl<T> et = entityType((Class<T>) object.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
         final Descriptor descriptor = getDescriptor(object);
-        assert descriptor != null;
 
         final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
         params.bypassCache();
@@ -754,9 +776,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         assert id != null;
         // Original is null until commit
-        getNewObjectsCloneToOriginal().put(entity, null);
+        newObjectsCloneToOriginal.put(entity, null);
         registerEntityWithPersistenceContext(entity);
-        registerEntityWithOntologyContext(descriptor, entity);
+        registerEntityWithOntologyContext(entity, descriptor);
+        instanceDescriptors.put(entity, InstanceDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
         newObjectsKeyToClone.put(id, entity);
         checkForCollections(entity);
         this.hasNew = true;
@@ -774,7 +797,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private boolean isIndividualManaged(Object identifier, Object entity) {
-        // Allows persisting the same individual into different contexts
         return keysToClones.containsKey(identifier) ||
                 newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.contains(entity);
     }
@@ -791,11 +813,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final Object primaryKey = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
 
-        if (hasNew && getNewObjectsCloneToOriginal().containsKey(entity)) {
+        if (hasNew && newObjectsCloneToOriginal.containsKey(entity)) {
             unregisterObject(entity);
             newObjectsKeyToClone.remove(primaryKey);
         } else {
-            getDeletedObjects().put(entity, entity);
+            deletedObjects.put(entity, entity);
             this.hasDeleted = true;
         }
         storage.remove(primaryKey, et.getJavaType(), descriptor);
@@ -809,7 +831,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         deletedObjects.remove(entity);
         final Object id = getIdentifier(entity);
         storage.persist(id, entity, getDescriptor(entity));
-
     }
 
     /**
@@ -824,20 +845,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final Object original = cloneToOriginals.remove(object);
         keysToClones.remove(EntityPropertiesUtils.getIdentifier(object, getMetamodel()));
 
-        getDeletedObjects().remove(object);
+        deletedObjects.remove(object);
         if (hasNew) {
-            Object newOriginal = getNewObjectsCloneToOriginal().remove(object);
-            if (newOriginal != null) {
-                getNewObjectsOriginalToClone().remove(newOriginal);
-            }
+            newObjectsCloneToOriginal.remove(object);
         }
         if (original != null) {
             cloneBuilder.removeVisited(original, repoMap.getEntityDescriptor(object));
         }
-        unregisterObjectFromPersistenceContext(object);
-    }
-
-    private void unregisterObjectFromPersistenceContext(Object object) {
         removeIndirectCollections(object);
         deregisterEntityFromPersistenceContext(object);
         unregisterEntityFromOntologyContext(object);
@@ -858,10 +872,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public void writeUncommittedChanges() {
-        if (!hasChanges()) {
-            return;
+        if (hasChanges()) {
+            commitUnitOfWork();
         }
-        commitUnitOfWork();
     }
 
     @Override
@@ -896,15 +909,20 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public <T> void loadEntityField(T entity, Field field) {
         Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
         Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
+        assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
-        if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
-            return;
-        }
         final Descriptor entityDescriptor = getDescriptor(entity);
-        if (entityDescriptor == null) {
+        if (!instanceDescriptors.containsKey(entity)) {
             throw new OWLPersistenceException(
                     "Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
+        final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
+        final FieldSpecification<?, ?> fieldSpec = entityType((Class<Object>) entity.getClass())
+                .getFieldSpecification(field.getName());
+        if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
+            return;
+        }
+
         storage.loadFieldValue(entity, field, entityDescriptor);
         final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
         final Object entityOriginal = getOriginal(entity);
@@ -914,12 +932,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
         final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
         EntityPropertiesUtils.setFieldValue(field, entity, clone);
+        instanceDescriptors.get(entity).setLoaded(fieldSpec, LoadState.LOADED);
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
         final EntityType<?> et = entityType(entity.getClass());
-        final FieldSpecification<?, ?> fieldSpec = et
-                .getFieldSpecification(field.getName());
+        final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
         return entityDescriptor.getAttributeDescriptor(fieldSpec);
     }
 
@@ -943,8 +961,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public void removeObjectFromCache(Object toRemove, URI context) {
         Objects.requireNonNull(toRemove, ErrorUtils.getNPXMessageSupplier("toRemove"));
 
-        final Object primaryKey = getIdentifier(toRemove);
-        cacheManager.evict(toRemove.getClass(), primaryKey, context);
+        cacheManager.evict(toRemove.getClass(), getIdentifier(toRemove), context);
     }
 
     @Override
@@ -955,6 +972,20 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     @Override
     public List<URI> getContexts() {
         return storage.getContexts();
+    }
+
+    @Override
+    public LoadState isLoaded(Object entity, String attributeName) {
+        Objects.requireNonNull(entity);
+        final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
+        return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
+               LoadState.UNKNOWN;
+    }
+
+    @Override
+    public LoadState isLoaded(Object entity) {
+        Objects.requireNonNull(entity);
+        return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded() : LoadState.UNKNOWN;
     }
 
     @Override
@@ -977,39 +1008,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return !useTransactionalOntology;
     }
 
-    @Override
-    public QueryImpl createNativeQuery(String sparql) {
-        return queryFactory.createNativeQuery(sparql);
-    }
-
-    @Override
-    public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        return queryFactory.createNativeQuery(sparql, resultClass);
-    }
-
-    @Override
-    public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
-        return queryFactory.createNativeQuery(sparql, resultSetMapping);
-    }
-
-    @Override
-    public QueryImpl createQuery(String query) {
-        return queryFactory.createQuery(query);
-    }
-
-    @Override
-    public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
-        return queryFactory.createQuery(query, resultClass);
-    }
-
-    @Override
-    public QueryImpl createNamedQuery(String name) {
-        return queryFactory.createNamedQuery(name);
-    }
-
-    @Override
-    public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
-        return queryFactory.createNamedQuery(name, resultClass);
+    public SparqlQueryFactory sparqlQueryFactory() {
+        return queryFactory;
     }
 
     /**
@@ -1084,7 +1084,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private Object getIdentifier(Object entity) {
-        assert entity != null;
         return EntityPropertiesUtils.getIdentifier(entity, getMetamodel());
     }
 
@@ -1100,12 +1099,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         repoMap.removeEntityToRepository(entity);
     }
 
-    private void registerEntityWithOntologyContext(Descriptor repository, Object entity) {
-        assert repository != null;
+    private void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
+        assert descriptor != null;
         assert entity != null;
 
-        repoMap.add(repository, entity, null);
-        repoMap.addEntityToRepository(entity, repository);
+        repoMap.add(descriptor, entity, null);
+        repoMap.addEntityToRepository(entity, descriptor);
     }
 
     private boolean isInRepository(Descriptor descriptor, Object entity) {
@@ -1118,7 +1117,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private Descriptor getDescriptor(Object entity) {
         assert entity != null;
 
-        return repoMap.getEntityDescriptor(entity);
+        final Descriptor descriptor = repoMap.getEntityDescriptor(entity);
+        if (descriptor == null) {
+            throw new OWLPersistenceException("Unable to find descriptor of entity " + entity + " in this UoW!");
+        }
+        return descriptor;
     }
 
     private void storageCommit() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,6 +18,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Pending assertion represents reference to an instance which has not been persisted, yet.
@@ -53,8 +54,7 @@ class PendingAssertion {
 
         PendingAssertion that = (PendingAssertion) o;
 
-        return owner.equals(that.owner) && assertion.equals(that.assertion) && (context != null ?
-                context.equals(that.context) : that.context == null);
+        return owner.equals(that.owner) && assertion.equals(that.assertion) && (Objects.equals(context, that.context));
     }
 
     @Override

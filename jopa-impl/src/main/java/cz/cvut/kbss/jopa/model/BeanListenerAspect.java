@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -58,19 +57,19 @@ public class BeanListenerAspect {
     }
 
     @Pointcut("get( @(cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty " +
-                      "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
-                      "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
-                      "|| cz.cvut.kbss.jopa.model.annotations.Types " +
-                      "|| cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
-                      "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
+            "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
+            "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
+            "|| cz.cvut.kbss.jopa.model.annotations.Types " +
+            "|| cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
+            "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
     void getter() {
     }
 
     @Pointcut("set( @(cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty " +
-                      "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
-                      "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
-                      "|| cz.cvut.kbss.jopa.model.annotations.Types || cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
-                      "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
+            "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
+            "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
+            "|| cz.cvut.kbss.jopa.model.annotations.Types || cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
+            "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
     void setter() {
     }
 
@@ -108,7 +107,8 @@ public class BeanListenerAspect {
 
         final Field field;
         try {
-            field = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(), persistenceContext).getJavaField();
+            field = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(), persistenceContext)
+                    .getJavaField();
             if (EntityPropertiesUtils.isFieldTransient(field)) {
                 return;
             }
@@ -120,7 +120,8 @@ public class BeanListenerAspect {
         }
     }
 
-    private FieldSpecification<?, ?> getFieldSpecification(Object entity, String fieldName, UnitOfWorkImpl persistenceContext) {
+    private FieldSpecification<?, ?> getFieldSpecification(Object entity, String fieldName,
+                                                           UnitOfWorkImpl persistenceContext) {
         final EntityType<?> et = persistenceContext.getMetamodel().entity(entity.getClass());
         assert et != null;
         return et.getFieldSpecification(fieldName);
@@ -134,24 +135,13 @@ public class BeanListenerAspect {
             return;
         }
         final UnitOfWorkImpl persistenceContext = ((Manageable) entity).getPersistenceContext();
-        if (persistenceContext == null) {
+        if (persistenceContext == null || !persistenceContext.contains(entity)) {
             return;
         }
-        final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(), persistenceContext);
+        final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(),
+                persistenceContext);
         final Field field = fieldSpec.getJavaField();
-        if (EntityPropertiesUtils.isFieldTransient(field) || fieldSpec.getFetchType() == FetchType.EAGER) {
-            return;
-        }
-        loadReference(entity, field, persistenceContext);
-    }
-
-    private void loadReference(Object entity, Field field, UnitOfWorkImpl persistenceContext) {
-        Object managedOrig = persistenceContext.getOriginal(entity);
-        if (managedOrig == null) {
-            return;
-        }
-        Object val = EntityPropertiesUtils.getFieldValue(field, managedOrig);
-        if (val != null) {
+        if (EntityPropertiesUtils.isFieldTransient(field)) {
             return;
         }
         persistenceContext.loadEntityField(entity, field);

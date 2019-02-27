@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -602,5 +602,20 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         assertTrue(em.createNativeQuery("SELECT * WHERE { ?x ?hasSource ?source . }")
                      .setParameter("hasSource", URI.create(Vocabulary.DC_SOURCE)).getResultList().isEmpty());
+    }
+
+    @Test
+    public void removeWorksForInstanceRetrievedUsingGetReference() {
+        this.em = getEntityManager("removeWorksForInstanceRetrievedUsingGetReference", false);
+        persist(entityM);
+        em.getTransaction().begin();
+        final OWLClassM toRemove = em.getReference(OWLClassM.class, entityM.getKey());
+        em.remove(toRemove);
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassM.class, entityM.getKey()));
+        assertFalse(
+                em.createNativeQuery("ASK { ?x ?y ?z .}", Boolean.class).setParameter("x", URI.create(entityM.getKey()))
+                  .getSingleResult());
     }
 }

@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -347,4 +347,49 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     protected abstract void addFileStorageProperties(Map<String, String> properties);
+
+    @Test
+    public void getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily()
+            throws Exception {
+        this.em = getEntityManager(
+                "getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily", false);
+        persist(entityM);
+        final OWLClassM result = em.getReference(OWLClassM.class, entityM.getKey());
+        assertNotNull(result);
+        assertTrue(em.contains(result));
+        final Field intAttField = OWLClassM.class.getDeclaredField("intAttribute");
+        intAttField.setAccessible(true);
+        assertNull(intAttField.get(result));
+        assertNotNull(result.getIntAttribute());
+        assertEquals(entityM.getBooleanAttribute(), result.getBooleanAttribute());
+        assertEquals(entityM.getIntAttribute(), result.getIntAttribute());
+        assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
+        assertEquals(entityM.getDateAttribute(), result.getDateAttribute());
+        assertEquals(entityM.getEnumAttribute(), result.getEnumAttribute());
+    }
+
+    @Test
+    public void getReferenceRetrievesReferenceToInstanceWithObjectPropertiesWhoseAttributesAreLoadedLazily() {
+        this.em = getEntityManager(
+                "getReferenceRetrievesReferenceToInstanceWithObjectPropertiesWhoseAttributesAreLoadedLazily", false);
+        persist(entityG);
+        final OWLClassG gResult = em.getReference(OWLClassG.class, entityG.getUri());
+        assertNotNull(gResult);
+        assertNotNull(gResult.getOwlClassH());
+        assertEquals(entityH.getUri(), gResult.getOwlClassH().getUri());
+        assertNotNull(gResult.getOwlClassH().getOwlClassA());
+        assertEquals(entityA.getUri(), gResult.getOwlClassH().getOwlClassA().getUri());
+        assertEquals(entityA.getStringAttribute(), gResult.getOwlClassH().getOwlClassA().getStringAttribute());
+    }
+
+    @Test
+    public void getReferenceRetrievesReferenceToInstanceWhenCacheIsEnabled() {
+        this.em = getEntityManager("getReferenceRetrievesReferenceToInstanceWhenCacheIsEnabled", true);
+        persist(entityA);
+
+        final OWLClassA result = em.getReference(OWLClassA.class, entityA.getUri());
+        assertNotNull(result);
+        assertEquals(entityA.getUri(), result.getUri());
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
 }

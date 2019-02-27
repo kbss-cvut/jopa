@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -37,7 +37,7 @@ class SimpleListIterator extends OwlapiListIterator {
     OWLObjectProperty currentProperty;
     OWLNamedIndividual previousNode;
     OWLNamedIndividual currentNode;
-    Collection<? extends OWLIndividual> next;
+    Collection<? extends OWLIndividual> nextItem;
 
     private final OWLOntology ontology;
     private final OWLDataFactory dataFactory;
@@ -62,8 +62,8 @@ class SimpleListIterator extends OwlapiListIterator {
     }
 
     void doStep() {
-        this.next = EntitySearcher.getObjectPropertyValues(currentNode, currentProperty, ontology)
-                                  .collect(Collectors.toSet());
+        this.nextItem = EntitySearcher.getObjectPropertyValues(currentNode, currentProperty, ontology)
+                                      .collect(Collectors.toSet());
         this.previousProperty = currentProperty;
         this.currentProperty = hasNextProperty;
         this.previousNode = this.currentNode;
@@ -80,11 +80,11 @@ class SimpleListIterator extends OwlapiListIterator {
     @Override
     NamedResource nextValue() {
         doStep();
-        if (next.isEmpty()) {
+        if (nextItem.isEmpty()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(previousProperty, next);
-        final OWLIndividual item = next.iterator().next();
+        checkMaxSuccessors(previousProperty, nextItem);
+        final OWLIndividual item = nextItem.iterator().next();
         checkIsNamed(item);
         this.currentNode = item.asOWLNamedIndividual();
         return getCurrentNode();

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -153,7 +153,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     @Override
     public void addNamedQuery(String name, Query query) {
         ensureOpen();
-        throw new NotYetImplementedException();
+        throw new UnsupportedOperationException("Not supported, yet.");
     }
 
     @Override
@@ -177,24 +177,19 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         Objects.requireNonNull(entity);
         Objects.requireNonNull(attributeName);
         for (final AbstractEntityManager emi : em) {
-            if (emi.contains(entity) && emi.isLoaded(entity, attributeName)) {
+            if (emi.isLoaded(entity, attributeName)) {
                 return true;
             }
         }
-
         return false;
     }
+
 
     @Override
     public boolean isLoaded(Object entity) {
         Objects.requireNonNull(entity);
         // Since we do not support getReference yet, all EAGER attributes are always loaded for managed instances
-        for (AbstractEntityManager emi : em) {
-            if (emi.contains(entity)) {
-                return true;
-            }
-        }
-        return false;
+        return em.stream().anyMatch(emi -> emi.isLoaded(entity));
     }
 
     @Override

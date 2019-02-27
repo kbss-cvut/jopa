@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -32,10 +34,8 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -46,17 +46,15 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class EntityManagerImplTest {
+class EntityManagerImplTest {
 
     private static final String SELECT_QUERY = "SELECT * WHERE { ?x a <" + Vocabulary.c_OwlClassA + "> . }";
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    private static final String NON_ENTITY_CLASS_EXCEPTION_MESSAGE =
+            "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.";
 
     @Mock
     private EntityManagerFactoryImpl emfMock;
@@ -73,8 +71,8 @@ public class EntityManagerImplTest {
 
     private EntityManagerImpl em;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final ServerSessionStub serverSessionMock = spy(new ServerSessionStub(connectorMock));
         when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
@@ -88,7 +86,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void testCascadeMergeOnNullCollection() {
+    void testCascadeMergeOnNullCollection() {
         final OWLClassJ j = new OWLClassJ();
         j.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityJ"));
         mocks.forOwlClassJ().setAttribute().getJavaField().setAccessible(true);
@@ -103,7 +101,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void mergeDetachedWithSingletonSet() {
+    void mergeDetachedWithSingletonSet() {
         final OWLClassJ j = new OWLClassJ();
         j.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityF"));
         final OWLClassA a = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
@@ -116,7 +114,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void mergeDetachedWithSingletonList() {
+    void mergeDetachedWithSingletonList() {
         final OWLClassC c = new OWLClassC(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityF"));
         final OWLClassA a = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
         c.setSimpleList(Collections.singletonList(a));
@@ -130,57 +128,51 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void unwrapReturnsItselfWhenClassMatches() {
+    void unwrapReturnsItselfWhenClassMatches() {
         assertSame(em, em.unwrap(EntityManagerImpl.class));
     }
 
     @Test
-    public void containsThrowsIllegalArgumentForNonEntity() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
+    void containsThrowsIllegalArgumentForNonEntity() {
         final UnknownEntity obj = new UnknownEntity();
-        em.contains(obj);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> em.contains(obj));
+        assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
+    }
+
+
+    @Test
+    void findThrowsIllegalArgumentForNonEntity() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> em.find(UnknownEntity.class, "primaryKey", new EntityDescriptor()));
+        assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void findThrowsIllegalArgumentForNonEntity() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
-        em.find(UnknownEntity.class, "primaryKey", new EntityDescriptor());
+    void persistThrowsIllegalArgumentForNonEntity() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> em.persist(new UnknownEntity(), new EntityDescriptor()));
+        assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void persistThrowsIllegalArgumentForNonEntity() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
-        em.persist(new UnknownEntity(), new EntityDescriptor());
+    void mergeThrowsIllegalArgumentForNonEntity() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> em.merge(new UnknownEntity(), new EntityDescriptor()));
+        assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void mergeThrowsIllegalArgumentForNonEntity() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
-        em.merge(new UnknownEntity(), new EntityDescriptor());
+    void removeThrowsIllegalArgumentForNonEntity() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> em.remove(new UnknownEntity()));
+        assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void removeThrowsIllegalArgumentForNonEntity() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
-        em.remove(new UnknownEntity());
-    }
-
-    @Test
-    public void refreshThrowsIllegalArgumentForNonEntity() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
-        em.refresh(new UnknownEntity());
+    void refreshThrowsIllegalArgumentForNonEntity() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> em.refresh(new UnknownEntity()));
+        assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#UnknownEntity")
@@ -198,7 +190,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void closeNotifiesEntityManagerFactoryOfClosing() {
+    void closeNotifiesEntityManagerFactoryOfClosing() {
         assertTrue(em.isOpen());
         em.close();
         assertFalse(em.isOpen());
@@ -206,7 +198,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInPersistMarksTransactionForRollbackOnly() {
+    void exceptionInPersistMarksTransactionForRollbackOnly() {
         final EntityTransaction tx = em.getTransaction();
         doThrow(OWLPersistenceException.class).when(uow).registerNewObject(any(), any());
         try {
@@ -219,7 +211,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInCascadePersistMarksTransactionForRollbackOnly() {
+    void exceptionInCascadePersistMarksTransactionForRollbackOnly() {
         final OWLClassH h = new OWLClassH(Generators.createIndividualIdentifier());
         h.setOwlClassA(Generators.generateOwlClassAInstance());
         final EntityTransaction tx = em.getTransaction();
@@ -234,7 +226,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInFindMarksTransactionForRollbackOnly() {
+    void exceptionInFindMarksTransactionForRollbackOnly() {
         final EntityTransaction tx = em.getTransaction();
         doThrow(OWLPersistenceException.class).when(uow).readObject(any(), any(), any());
         try {
@@ -247,7 +239,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInMergeMarksTransactionForRollbackOnly() {
+    void exceptionInMergeMarksTransactionForRollbackOnly() {
         final EntityTransaction tx = em.getTransaction();
         doThrow(OWLPersistenceException.class).when(uow).mergeDetached(any(), any());
         try {
@@ -260,7 +252,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInMergeCascadingMarksTransactionForRollbackOnly() {
+    void exceptionInMergeCascadingMarksTransactionForRollbackOnly() {
         final OWLClassH h = new OWLClassH(Generators.createIndividualIdentifier());
         h.setOwlClassA(Generators.generateOwlClassAInstance());
         final EntityTransaction tx = em.getTransaction();
@@ -276,7 +268,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInRemoveMarksTransactionForRollbackOnly() {
+    void exceptionInRemoveMarksTransactionForRollbackOnly() {
         doThrow(OWLPersistenceException.class).when(uow).removeObject(any());
         final EntityTransaction tx = em.getTransaction();
         try {
@@ -290,7 +282,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInFlushMarksTransactionForRollbackOnly() {
+    void exceptionInFlushMarksTransactionForRollbackOnly() {
         doThrow(OWLPersistenceException.class).when(uow).writeUncommittedChanges();
         final EntityTransaction tx = em.getTransaction();
         try {
@@ -303,7 +295,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInRefreshMarksTransactionForRollbackOnly() {
+    void exceptionInRefreshMarksTransactionForRollbackOnly() {
         doThrow(OWLPersistenceException.class).when(uow).refreshObject(any());
         final EntityTransaction tx = em.getTransaction();
         try {
@@ -316,7 +308,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInDetachMarksTransactionForRollbackOnly() {
+    void exceptionInDetachMarksTransactionForRollbackOnly() {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(a);
         doThrow(OWLPersistenceException.class).when(uow).unregisterObject(a);
@@ -331,7 +323,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInContainsMarksTransactionForRollbackOnly() {
+    void exceptionInContainsMarksTransactionForRollbackOnly() {
         doThrow(OWLPersistenceException.class).when(uow).contains(any());
         final EntityTransaction tx = em.getTransaction();
         try {
@@ -344,7 +336,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void exceptionInClearMarksTransactionForRollbackOnly() {
+    void exceptionInClearMarksTransactionForRollbackOnly() {
         doThrow(OWLPersistenceException.class).when(uow).clear();
         final EntityTransaction tx = em.getTransaction();
         try {
@@ -360,7 +352,7 @@ public class EntityManagerImplTest {
      * Bug #4
      */
     @Test
-    public void mergeIsAbleToBreakCascadingCycle() throws Exception {
+    void mergeIsAbleToBreakCascadingCycle() throws Exception {
         Mockito.reset(metamodelMock);
         final CascadeCycleOne cOne = new CascadeCycleOne(Generators.createIndividualIdentifier());
         final CascadeCycleTwo cTwo = new CascadeCycleTwo(Generators.createIndividualIdentifier());
@@ -418,8 +410,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasTwo", cascade = {CascadeType.MERGE,
-                                                                                  CascadeType.PERSIST,
-                                                                                  CascadeType.REMOVE})
+                CascadeType.PERSIST,
+                CascadeType.REMOVE})
         private CascadeCycleTwo two;
 
         private CascadeCycleOne(URI uri) {
@@ -432,8 +424,8 @@ public class EntityManagerImplTest {
         @Id
         private URI uri;
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasOne", cascade = {CascadeType.PERSIST,
-                                                                                  CascadeType.MERGE,
-                                                                                  CascadeType.REMOVE})
+                CascadeType.MERGE,
+                CascadeType.REMOVE})
         private CascadeCycleOne one;
 
         private CascadeCycleTwo(URI uri) {
@@ -442,7 +434,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void mergeOfNewInstancesIsAbleToBreakCascadingCycle() throws Exception {
+    void mergeOfNewInstancesIsAbleToBreakCascadingCycle() throws Exception {
         Mockito.reset(metamodelMock);
         final CascadeCycleOne cOne = new CascadeCycleOne(Generators.createIndividualIdentifier());
         final CascadeCycleTwo cTwo = new CascadeCycleTwo(Generators.createIndividualIdentifier());
@@ -463,7 +455,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void removeIsAbleToBreakCascadingCycle() throws Exception {
+    void removeIsAbleToBreakCascadingCycle() throws Exception {
         Mockito.reset(metamodelMock);
         final CascadeCycleOne cOne = new CascadeCycleOne(Generators.createIndividualIdentifier());
         final CascadeCycleTwo cTwo = new CascadeCycleTwo(Generators.createIndividualIdentifier());
@@ -487,36 +479,36 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void isLoadedReturnsTrueForEagerlyLoadedAttributeOfManagedInstance() throws Exception {
+    void isLoadedReturnsTrueForEagerlyLoadedAttributeOfManagedInstance() throws Exception {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         doAnswer((invocationOnMock) -> a).when(uow)
                                          .readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
-        when(uow.contains(a)).thenReturn(true);
+        doReturn(LoadState.LOADED).when(uow).isLoaded(a, OWLClassA.getStrAttField().getName());
         final OWLClassA found = em.find(OWLClassA.class, a.getUri());
         assertTrue(em.isLoaded(found, OWLClassA.getStrAttField().getName()));
     }
 
     @Test
-    public void isLoadedReturnsFalseForNonManagedInstance() throws Exception {
+    void isLoadedReturnsFalseForNonManagedInstance() throws Exception {
         final OWLClassA a = Generators.generateOwlClassAInstance();
-        when(uow.contains(a)).thenReturn(false);
+        doReturn(LoadState.UNKNOWN).when(uow).isLoaded(eq(a), anyString());
         assertFalse(em.isLoaded(a, OWLClassA.getStrAttField().getName()));
     }
 
     @Test
-    public void isLoadedReturnsTrueForNonNullLazilyLoadedAttribute() throws Exception {
+    void isLoadedReturnsTrueForNonNullLazilyLoadedAttribute() throws Exception {
         final OWLClassK inst = new OWLClassK();
         inst.setUri(Generators.createIndividualIdentifier());
         inst.setOwlClassE(new OWLClassE());
-        when(uow.contains(inst)).thenReturn(true);
         doAnswer((invocationOnMock) -> inst).when(uow)
                                             .readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
+        doReturn(LoadState.LOADED).when(uow).isLoaded(inst, OWLClassK.getOwlClassEField().getName());
         final OWLClassK found = em.find(OWLClassK.class, inst.getUri());
         assertTrue(em.isLoaded(found, OWLClassK.getOwlClassEField().getName()));
     }
 
     @Test
-    public void mergeOfAlreadyPersistedReturnsSameInstance() {
+    void mergeOfAlreadyPersistedReturnsSameInstance() {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         em.persist(a);
         final OWLClassA result = em.merge(a);
@@ -524,7 +516,7 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void mergeDifferentInstanceWithSameIdAsManagedInstanceMergesChanges() throws Exception {
+    void mergeDifferentInstanceWithSameIdAsManagedInstanceMergesChanges() throws Exception {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         em.persist(a);
         when(connectorMock.contains(eq(a.getUri()), eq(OWLClassA.class), any())).thenReturn(true);
@@ -543,27 +535,25 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void getTransactionOnClosedEntityManagerIsValid() {
+    void getTransactionOnClosedEntityManagerIsValid() {
         em.close();
         assertNotNull(em.getTransaction());
     }
 
     @Test
-    public void persistOnClosedManagerThrowsIllegalStateException() {
-        thrown.expect(IllegalStateException.class);
+    void persistOnClosedManagerThrowsIllegalStateException() {
         em.close();
-        em.persist(Generators.generateOwlClassAInstance());
+        assertThrows(IllegalStateException.class, () -> em.persist(Generators.generateOwlClassAInstance()));
     }
 
     @Test
-    public void createQueryOnClosedManagerThrowsIllegalStateException() {
-        thrown.expect(IllegalStateException.class);
+    void createQueryOnClosedManagerThrowsIllegalStateException() {
         em.close();
-        em.createNativeQuery(SELECT_QUERY);
+        assertThrows(IllegalStateException.class, () -> em.createNativeQuery(SELECT_QUERY));
     }
 
     @Test
-    public void createNativeQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+    void createNativeQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
         final QueryImpl q = em.createNativeQuery("SELECT * WHERE { ?x a rdf:Resource . }");
         verifyEnsureOpenProcedureSet(q);
     }
@@ -575,21 +565,56 @@ public class EntityManagerImplTest {
     }
 
     @Test
-    public void createTypedNativeQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+    void createTypedNativeQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
         final TypedQueryImpl<OWLClassA> q =
                 em.createNativeQuery("SELECT * WHERE { ?x a rdf:Resource . }", OWLClassA.class);
         verifyEnsureOpenProcedureSet(q);
     }
 
     @Test
-    public void createQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+    void createQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
         final QueryImpl q = em.createQuery("SELECT * WHERE { ?x a rdf:Resource . }");
         verifyEnsureOpenProcedureSet(q);
     }
 
     @Test
-    public void createTypedQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
+    void createTypedQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
         final TypedQueryImpl<OWLClassA> q = em.createQuery("SELECT * WHERE { ?x a rdf:Resource . }", OWLClassA.class);
         verifyEnsureOpenProcedureSet(q);
+    }
+
+    @Test
+    void getReferenceRetrievesInstanceReferenceFromUnitOfWork() {
+        final OWLClassA instance = new OWLClassA(Generators.createIndividualIdentifier());
+        doReturn(instance).when(uow).getReference(eq(OWLClassA.class), eq(instance.getUri()), any());
+        final OWLClassA result = em.getReference(OWLClassA.class, instance.getUri());
+        assertSame(instance, result);
+        verify(uow).getReference(OWLClassA.class, instance.getUri(), new EntityDescriptor());
+    }
+
+    @Test
+    void getReferenceWithDescriptorRetrievesInstanceReferenceFromUnitOfWork() {
+        final OWLClassA instance = new OWLClassA(Generators.createIndividualIdentifier());
+        final Descriptor descriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
+        doReturn(instance).when(uow).getReference(OWLClassA.class, instance.getUri(), descriptor);
+        final OWLClassA result = em.getReference(OWLClassA.class, instance.getUri(), descriptor);
+        assertSame(instance, result);
+        verify(uow).getReference(OWLClassA.class, instance.getUri(), descriptor);
+    }
+
+    @Test
+    void getReferenceThrowsIllegalArgumentExceptionWhenTargetClassIsNotEntity() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> em.getReference(UnknownEntity.class, Generators.createIndividualIdentifier()));
+        assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
+        verify(uow, never()).getReference(any(), any(), any());
+    }
+
+    @Test
+    void getReferenceThrowsIllegalStateWhenInvokedOnClosedEntityManager() {
+        em.close();
+        assertThrows(IllegalStateException.class,
+                () -> em.getReference(OWLClassA.class, Generators.createIndividualIdentifier()));
+        verify(uow, never()).getReference(any(), any(), any());
     }
 }

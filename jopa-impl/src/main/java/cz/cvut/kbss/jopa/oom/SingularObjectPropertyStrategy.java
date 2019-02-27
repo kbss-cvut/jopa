@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,10 +24,14 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
 class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SingularObjectPropertyStrategy.class);
 
     private Object value;
 
@@ -48,6 +52,10 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
             newValue = mapper
                     .getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
                             attributeDescriptor);
+            if (newValue == null) {
+                LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
+                return;
+            }
         }
         verifyCardinality(ax.getSubject());
         this.value = newValue;

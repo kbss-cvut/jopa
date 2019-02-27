@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -79,8 +81,8 @@ class StorageConnector extends AbstractConnector {
 
     @Override
     public TupleQueryResult executeSelectQuery(String query) throws SesameDriverException {
-        final RepositoryConnection connection = acquireConnection();
-        return new ConnectionStatementExecutor(connection).executeSelectQuery(query);
+        final RepositoryConnection conn = acquireConnection();
+        return new ConnectionStatementExecutor(conn).executeSelectQuery(query);
         // The connection is released by the result set once it is closed
     }
 
@@ -97,11 +99,11 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    void releaseConnection(RepositoryConnection connection) throws SesameDriverException {
+    void releaseConnection(RepositoryConnection conn) throws SesameDriverException {
         try {
-            if (connection != null) {
+            if (conn != null) {
                 LOG.trace("Releasing repository connection.");
-                connection.close();
+                conn.close();
             }
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);
@@ -110,22 +112,22 @@ class StorageConnector extends AbstractConnector {
 
     @Override
     public boolean executeBooleanQuery(String query) throws SesameDriverException {
-        try (final RepositoryConnection connection = acquireConnection()) {
-            return new ConnectionStatementExecutor(connection).executeBooleanQuery(query);
+        try (final RepositoryConnection conn = acquireConnection()) {
+            return new ConnectionStatementExecutor(conn).executeBooleanQuery(query);
         }
     }
 
     @Override
     public void executeUpdate(String query) throws SesameDriverException {
-        try (final RepositoryConnection connection = acquireConnection()) {
-            new ConnectionStatementExecutor(connection).executeUpdate(query);
+        try (final RepositoryConnection conn = acquireConnection()) {
+            new ConnectionStatementExecutor(conn).executeUpdate(query);
         }
     }
 
     @Override
     public List<Resource> getContexts() throws SesameDriverException {
-        try (final RepositoryConnection connection = acquireConnection()) {
-            final RepositoryResult<Resource> res = connection.getContextIDs();
+        try (final RepositoryConnection conn = acquireConnection()) {
+            final RepositoryResult<Resource> res = conn.getContextIDs();
             return Iterations.asList(res);
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);
@@ -214,12 +216,12 @@ class StorageConnector extends AbstractConnector {
     public Collection<Statement> findStatements(Resource subject, org.eclipse.rdf4j.model.IRI property,
                                                 Value value, boolean includeInferred, IRI context)
             throws SesameDriverException {
-        try (final RepositoryConnection connection = acquireConnection()) {
+        try (final RepositoryConnection conn = acquireConnection()) {
             final RepositoryResult<Statement> m;
             if (context != null) {
-                m = connection.getStatements(subject, property, null, includeInferred, context);
+                m = conn.getStatements(subject, property, null, includeInferred, context);
             } else {
-                m = connection.getStatements(subject, property, null, includeInferred);
+                m = conn.getStatements(subject, property, null, includeInferred);
             }
             return Iterations.asList(m);
         } catch (RepositoryException e) {
@@ -236,11 +238,11 @@ class StorageConnector extends AbstractConnector {
     @Override
     public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred, IRI context)
             throws SesameDriverException {
-        try (final RepositoryConnection connection = acquireConnection()) {
+        try (final RepositoryConnection conn = acquireConnection()) {
             if (context != null) {
-                return connection.hasStatement(subject, property, null, includeInferred, context);
+                return conn.hasStatement(subject, property, null, includeInferred, context);
             } else {
-                return connection.hasStatement(subject, property, null, includeInferred);
+                return conn.hasStatement(subject, property, null, includeInferred);
             }
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);

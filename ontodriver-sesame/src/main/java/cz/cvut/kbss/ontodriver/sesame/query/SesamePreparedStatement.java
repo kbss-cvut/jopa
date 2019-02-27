@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -28,8 +28,7 @@ public class SesamePreparedStatement extends SesameStatement implements Prepared
 
     private StatementHolder statementHolder;
 
-    public SesamePreparedStatement(StatementExecutor executor, String statement)
-            throws OntoDriverException {
+    public SesamePreparedStatement(StatementExecutor executor, String statement) {
         super(executor);
         this.statementHolder = new StatementHolder(statement);
         if (statementHolder.getStatement().isEmpty()) {
@@ -39,7 +38,7 @@ public class SesamePreparedStatement extends SesameStatement implements Prepared
     }
 
     @Override
-    public void setObject(String binding, Object value) throws OntoDriverException {
+    public void setObject(String binding, Object value) {
         ensureOpen();
         Objects.requireNonNull(value, getNPXMessageSupplier("value"));
         statementHolder.setParameter(binding, value.toString());
@@ -58,7 +57,7 @@ public class SesamePreparedStatement extends SesameStatement implements Prepared
     }
 
     @Override
-    public void clearParameters() throws OntoDriverException {
+    public void clearParameters() {
         statementHolder.clearParameters();
     }
 }

@@ -14,6 +14,11 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
+    <!-- Logger for Jena -->
+    <logger name="org.apache.jena" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
     <!-- By default, the level of the root level is set to DEBUG -->
     <root level="DEBUG">
         <appender-ref ref="STDOUT"/>

@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2019 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,41 +14,37 @@
  */
 package cz.cvut.kbss.ontodriver.util;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TransactionTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class TransactionTest {
 
     private Transaction transaction;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
         this.transaction = new Transaction();
     }
 
     @Test
-    public void testBegin() {
+    void testBegin() {
         transaction.begin();
         assertTrue(transaction.isActive());
         assertEquals(TransactionState.ACTIVE, transaction.getState());
     }
 
     @Test
-    public void testCommit() {
+    void testCommit() {
         transaction.begin();
         transaction.commit();
         assertEquals(TransactionState.PARTIALLY_COMMITTED, transaction.getState());
     }
 
     @Test
-    public void testAfterCommit() {
+    void testAfterCommit() {
         transaction.begin();
         transaction.commit();
         assertEquals(TransactionState.PARTIALLY_COMMITTED, transaction.getState());
@@ -58,7 +54,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void testFailDuringCommit() {
+    void testFailDuringCommit() {
         transaction.begin();
         transaction.commit();
         assertEquals(TransactionState.PARTIALLY_COMMITTED, transaction.getState());
@@ -67,7 +63,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void testRollback() {
+    void testRollback() {
         transaction.begin();
         transaction.rollback();
         assertEquals(TransactionState.FAILED, transaction.getState());
@@ -75,7 +71,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void testAfterRollback() {
+    void testAfterRollback() {
         transaction.begin();
         transaction.rollback();
         assertEquals(TransactionState.FAILED, transaction.getState());
@@ -85,64 +81,81 @@ public class TransactionTest {
     }
 
     @Test
-    public void beginAlreadyActiveIsIllegal() {
-        thrown.expect(IllegalStateException.class);
+    void beginAlreadyActiveIsIllegal() {
         transaction.begin();
         assertTrue(transaction.isActive());
-        transaction.begin();
+        assertThrows(IllegalStateException.class, () -> transaction.begin());
     }
 
     @Test
-    public void commitInactiveIsIllegal() {
-        thrown.expect(IllegalStateException.class);
+    void beginPartiallyCommittedIsIllegal() {
+        transaction.begin();
+        transaction.commit();
+        assertThrows(IllegalStateException.class, () -> transaction.begin());
+    }
+
+    @Test
+    void commitInactiveIsIllegal() {
         transaction.begin();
         transaction.commit();
         transaction.afterCommit();
         // Now comes the second commit
-        transaction.commit();
+        assertThrows(IllegalStateException.class, () -> transaction.commit());
     }
 
     @Test
-    public void rollbackCommittedIsIllegal() {
-        thrown.expect(IllegalStateException.class);
+    void rollbackInactiveIsIllegal() {
+        assertFalse(transaction.isActive());
+        assertThrows(IllegalStateException.class, () -> transaction.rollback());
+    }
+
+    @Test
+    void rollbackCommittedIsIllegal() {
         transaction.begin();
         transaction.commit();
         transaction.afterCommit();
         // Now comes the rollback
-        transaction.rollback();
+        assertThrows(IllegalStateException.class, () -> transaction.rollback());
     }
 
     @Test
-    public void afterRollbackWithoutProperRollbackIsIllegal() {
-        thrown.expect(IllegalStateException.class);
+    void afterRollbackWithoutProperRollbackIsIllegal() {
         transaction.begin();
-        transaction.afterRollback();
+        assertThrows(IllegalStateException.class, () -> transaction.afterRollback());
     }
 
     @Test
-    public void afterCommitWithoutProperCommitIsIllegal() {
-        thrown.expect(IllegalStateException.class);
+    void afterCommitWithoutProperCommitIsIllegal() {
         transaction.begin();
-        transaction.afterCommit();
+        assertThrows(IllegalStateException.class, () -> transaction.afterCommit());
     }
 
     @Test
-    public void commitUninitializedIsIllegal() {
-        thrown.expect(IllegalStateException.class);
-        transaction.commit();
+    void commitUninitializedIsIllegal() {
+        assertThrows(IllegalStateException.class, () -> transaction.commit());
     }
 
     @Test
-    public void commitRolledBackIsIllegal() {
-        thrown.expect(IllegalStateException.class);
+    void commitRolledBackIsIllegal() {
         transaction.begin();
         transaction.rollback();
-        transaction.commit();
+        assertThrows(IllegalStateException.class, () -> transaction.commit());
     }
 
     @Test
-    public void verifyActiveThrowsIllegalStateForInactiveTransaction() {
-        thrown.expect(IllegalStateException.class);
-        transaction.verifyActive();
+    void verifyActiveThrowsIllegalStateForInactiveTransaction() {
+        assertThrows(IllegalStateException.class, () -> transaction.verifyActive());
+    }
+
+    @Test
+    void instancesAreEqualWhenTheyHaveSameState() {
+        transaction.begin();
+        final Transaction other = new Transaction();
+        other.begin();
+        assertEquals(transaction, other);
+        assertEquals(transaction.hashCode(), other.hashCode());
+        transaction.commit();
+        assertNotEquals(transaction, other);
+        assertNotEquals(transaction.hashCode(), other.hashCode());
     }
 }

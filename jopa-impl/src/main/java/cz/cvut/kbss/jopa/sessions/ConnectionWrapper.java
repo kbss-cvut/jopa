@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -52,6 +52,10 @@ public class ConnectionWrapper implements Wrapper {
 
     public <T> T find(LoadingParameters<T> loadingParameters) {
         return mapper.loadEntity(loadingParameters);
+    }
+
+    public <T> T getReference(LoadingParameters<T> loadingParameters) {
+        return mapper.loadReference(loadingParameters);
     }
 
     public <T> void merge(T entity, Field field, Descriptor descriptor) {

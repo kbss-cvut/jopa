@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -31,10 +31,9 @@ public class MergeManagerImpl implements MergeManager {
     }
 
     private void deleteObjectFromCache(ObjectChangeSet changeSet) {
-        Object original = changeSet.getChangedObject();
-        if (original != null) {
-            uow.removeObjectFromCache(original, changeSet.getEntityContext());
-        }
+        Object toDelete = changeSet.getChangedObject();
+        assert toDelete != null;
+        uow.removeObjectFromCache(toDelete, changeSet.getEntityContext());
     }
 
     @Override
@@ -64,6 +63,7 @@ public class MergeManagerImpl implements MergeManager {
 
     @Override
     public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
+        Objects.requireNonNull(changeSet);
         for (ObjectChangeSet objectChangeSet : changeSet.getExistingObjectsChanges()) {
             mergeChangesOnObject(objectChangeSet);
         }
@@ -74,9 +74,7 @@ public class MergeManagerImpl implements MergeManager {
 
     @Override
     public void mergeNewObject(ObjectChangeSet changeSet) {
-        if (changeSet == null) {
-            return;
-        }
+        Objects.requireNonNull(changeSet);
         if (!changeSet.isNew()) {
             mergeChangesOnObject(changeSet);
             return;

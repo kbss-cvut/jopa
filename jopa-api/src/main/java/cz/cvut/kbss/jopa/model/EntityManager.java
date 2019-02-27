@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Czech Technical University in Prague
+ * Copyright (C) 2019 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -121,19 +121,19 @@ public interface EntityManager {
      * Search for an entity of the specified class and primary key. If the entity instance is contained in the
      * persistence context, it is returned from there.
      * <p>
-     * The {@code repository} parameter represents repository and context in which the entity should be looked for.
+     * The {@code descriptor} parameter represents repository and context in which the entity should be looked for.
      *
      * @param entityClass Entity class
-     * @param primaryKey  Primary key
+     * @param identifier  Entity identifier
      * @param descriptor  Entity descriptor
      * @return the found entity instance or {@code null} if the entity does not exist in the given ontology context
      * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
      *                                  not a valid type for that entity’s primary key
-     * @throws NullPointerException     If {@code entityClass}, {@code primaryKey} or {@code contextUri} is {@code
+     * @throws NullPointerException     If {@code entityClass}, {@code identifier} or {@code contextUri} is {@code
      *                                  null}
      * @see #getContexts()
      */
-    <T> T find(final Class<T> entityClass, final Object primaryKey,
+    <T> T find(final Class<T> entityClass, final Object identifier,
                final Descriptor descriptor);
 
     // TODO JPA 2.0 find with properties
@@ -142,28 +142,40 @@ public interface EntityManager {
 
     // TODO JPA 2.0 find with lock mode and properties
 
-    // /**
-    // * Get an instance, whose state may be lazily fetched. If the requested
-    // * instance does not exist in the database, the EntityNotFoundException is
-    // * thrown when the instance state is first accessed. (The persistence
-    // * provider runtime is permitted to throw the EntityNotFoundException when
-    // * getReference is called.) The application should not expect that the
-    // * instance state will be available upon detachment, unless it was
-    // accessed
-    // * by the application while the entity manager was open.
-    // *
-    // * @param entityClass
-    // * @param primaryKey
-    // * @return the found entity instance
-    // * @throws IllegalArgumentException
-    // * if the first argument does not denote an entity type or the
-    // * second argument is not a valid type for that entity’s primary
-    // * key
-    // * @throws EntityNotFoundException
-    // * if the entity state cannot be accessed
-    // */
-    // public <T> T getReference(final Class<T> entityClass,
-    // final Object primaryKey);
+    /**
+     * Get an instance, whose state may be lazily fetched.
+     * <p>
+     * If the requested instance does not exist in the database, {@code null} is returned.
+     * <p>
+     * The application should not expect that the instance state will be available upon detachment, unless it was
+     * accessed by the application while the entity manager was open.
+     *
+     * @param entityClass entity class
+     * @param identifier  identifier of the instance
+     * @return the found entity instance
+     * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
+     *                                  not a valid type for that entity’s identifier
+     */
+    <T> T getReference(final Class<T> entityClass, final Object identifier);
+
+    /**
+     * Get an instance, whose state may be lazily fetched.
+     * <p>
+     * If the requested instance does not exist in the database, {@code null} is returned.
+     * <p>
+     * The application should not expect that the instance state will be available upon detachment, unless it was
+     * accessed by the application while the entity manager was open.
+     * <p>
+     * The {@code descriptor} parameter represents configuration of the entity loading (e.g., repository context).
+     *
+     * @param entityClass entity class
+     * @param identifier  identifier of the instance
+     * @param descriptor  Entity descriptor
+     * @return the found entity instance
+     * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
+     *                                  not a valid type for that entity’s identifier
+     */
+    <T> T getReference(final Class<T> entityClass, final Object identifier, final Descriptor descriptor);
 
     /**
      * Synchronize the persistence context to the underlying database.
@@ -313,8 +325,8 @@ public interface EntityManager {
     /**
      * Create an instance of Query for executing a native SPARQL(-DL) query returning only specific object type.
      *
-     * @param sparqlString   a native SQL query string
-     * @param resultClass the class of the resulting instance(s)
+     * @param sparqlString a native SQL query string
+     * @param resultClass  the class of the resulting instance(s)
      * @return the new query instance
      */
     <T> TypedQuery<T> createNativeQuery(String sparqlString, Class<T> resultClass);
@@ -322,7 +334,7 @@ public interface EntityManager {
     /**
      * Create an instance of Query for executing a native SPARQL query.
      *
-     * @param sparqlString a native SQL query string
+     * @param sparqlString     a native SQL query string
      * @param resultSetMapping the name of the result set mapping
      * @return the new query instance
      */
@@ -421,6 +433,7 @@ public interface EntityManager {
     Metamodel getMetamodel();
 
     // TODO Remove the following methods and replace them with implementation of JPA flush modes
+
     /**
      * Sets the transactional ontology as the one which will be used when processing SPARQL queries.
      * <p>
