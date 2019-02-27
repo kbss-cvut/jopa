@@ -8,6 +8,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 Notable changes:
 
+* **0.12.0** Support for `EntityManager.getReference`
 * **0.11.0** - Support for Java 8 Streams in Query API and RDF4J repository configuration file
 * **0.10.0** - Jena OntoDriver implementation
 * **0.9.0** - Single class inheritance support
