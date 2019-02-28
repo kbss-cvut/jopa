@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.descriptor;
 
@@ -24,6 +22,10 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
  */
 public class InstanceDescriptorFactory {
 
+    private InstanceDescriptorFactory() {
+        throw new AssertionError();
+    }
+
     /**
      * Creates an instance descriptor which marks all attributes except the identifier as not loaded.
      *
@@ -33,7 +35,7 @@ public class InstanceDescriptorFactory {
      * @return Fresh instance descriptor
      */
     public static <T> InstanceDescriptor<T> createNotLoaded(T instance, EntityType<T> et) {
-        return new InstanceDescriptor<T>(instance, et);
+        return new InstanceDescriptor<>(instance, et);
     }
 
     /**
@@ -65,11 +67,11 @@ public class InstanceDescriptorFactory {
      */
     public static <T> InstanceDescriptor<T> create(T instance, EntityType<T> et) {
         final InstanceDescriptor<T> descriptor = createNotLoaded(instance, et);
-        et.getFieldSpecifications().forEach(fs -> {
-            descriptor.setLoaded(fs, fs.getFetchType() == FetchType.EAGER ? LoadState.LOADED :
-                    EntityPropertiesUtils.getAttributeValue(fs, instance) != null ? LoadState.LOADED :
-                            LoadState.UNKNOWN);
-        });
+        et.getFieldSpecifications()
+          .forEach(fs -> descriptor.setLoaded(fs, fs.getFetchType() == FetchType.EAGER ? LoadState.LOADED :
+                                                  EntityPropertiesUtils.getAttributeValue(fs, instance) != null ?
+                                                  LoadState.LOADED :
+                                                  LoadState.UNKNOWN));
         return descriptor;
     }
 
@@ -82,6 +84,6 @@ public class InstanceDescriptorFactory {
      * @return Fresh instance descriptor with state copied from the specified one
      */
     public static <T> InstanceDescriptor<T> createCopy(T instance, InstanceDescriptor<T> original) {
-        return new InstanceDescriptor<T>(instance, original);
+        return new InstanceDescriptor<>(instance, original);
     }
 }
