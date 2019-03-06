@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -37,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.text.Normalizer;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.owl2java.Constants.*;
@@ -46,55 +45,55 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-                                              "assert",
-                                              "boolean",
-                                              "break",
-                                              "byte",
-                                              "case",
-                                              "catch",
-                                              "char",
-                                              "class",
-                                              "const",
-                                              "continue",
-                                              "default",
-                                              "do",
-                                              "double",
-                                              "else",
-                                              "enum",
-                                              "extends",
-                                              "final",
-                                              "finally",
-                                              "float",
-                                              "for",
-                                              "goto",
-                                              "if",
-                                              "implements",
-                                              "import",
-                                              "instanceof",
-                                              "int",
-                                              "interface",
-                                              "long",
-                                              "native",
-                                              "new",
-                                              "package",
-                                              "private",
-                                              "protected",
-                                              "public",
-                                              "return",
-                                              "short",
-                                              "static",
-                                              "strictfp",
-                                              "super",
-                                              "switch",
-                                              "synchronized",
-                                              "this",
-                                              "throw",
-                                              "throws",
-                                              "transient",
-                                              "try",
-                                              "void",
-                                              "volatile",
-                                              "while"};
+            "assert",
+            "boolean",
+            "break",
+            "byte",
+            "case",
+            "catch",
+            "char",
+            "class",
+            "const",
+            "continue",
+            "default",
+            "do",
+            "double",
+            "else",
+            "enum",
+            "extends",
+            "final",
+            "finally",
+            "float",
+            "for",
+            "goto",
+            "if",
+            "implements",
+            "import",
+            "instanceof",
+            "int",
+            "interface",
+            "long",
+            "native",
+            "new",
+            "package",
+            "private",
+            "protected",
+            "public",
+            "return",
+            "short",
+            "static",
+            "strictfp",
+            "super",
+            "switch",
+            "synchronized",
+            "this",
+            "throw",
+            "throws",
+            "transient",
+            "try",
+            "void",
+            "volatile",
+            "while"};
 
     private static final String PREFIX_STRING = "s_";
     private static final String PREFIX_CLASS = "c_";
@@ -124,6 +123,8 @@ public class JavaTransformer {
 
     private static String validJavaID(final String s) {
         String res = s.trim().replace("-", "_").replace("'", "_quote_").replace(".", "_dot_").replace(',', '_');
+        // Replace non-ASCII characters with ASCII ones
+        res = Normalizer.normalize(res, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
         if (Arrays.binarySearch(KEYWORDS, res) >= 0) {
             res = "_" + res;
         }
