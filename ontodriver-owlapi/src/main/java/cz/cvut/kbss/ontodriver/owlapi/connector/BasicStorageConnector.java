@@ -243,6 +243,7 @@ public class BasicStorageConnector extends AbstractConnector {
     void reloadData() throws OwlapiDriverException {
         WRITE.lock();
         try {
+            ontologyManager.clearOntologies();
             loadOntology(configuration.getStorageProperties());
             this.reasoner = getReasoner(ontology);
         } finally {
