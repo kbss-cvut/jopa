@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -541,7 +539,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         }
         final ChangeRecord record = new ChangeRecordImpl(fieldSpec,
                 EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), clone));
+        preventCachingIfReferenceIsNotLoaded(record);
         registerChangeRecord(clone, orig, descriptor, record);
+    }
+
+    private void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) {
+        final Object newValue = changeRecord.getNewValue();
+        if (newValue != null && contains(newValue) && isLoaded(newValue) != LoadState.LOADED) {
+            changeRecord.preventCaching();
+        }
     }
 
     private void registerChangeRecord(Object clone, Object orig, Descriptor descriptor, ChangeRecord record) {
@@ -603,13 +609,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         try {
             // Merge only the changed attributes
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
-            LOG.debug("Clone: " + clone + ", merged entity: " + entity);
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
                 final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
                 merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
                 for (ChangeRecord record : chSet.getChanges()) {
+                    preventCachingIfReferenceIsNotLoaded(record);
                     final Field field = record.getAttribute().getJavaField();
                     storage.merge(clone, field, descriptor);
                 }

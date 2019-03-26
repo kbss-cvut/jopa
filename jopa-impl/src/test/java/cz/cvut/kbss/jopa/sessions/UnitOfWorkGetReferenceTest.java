@@ -17,11 +17,14 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl;
 import cz.cvut.kbss.jopa.model.LoadState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -203,5 +206,46 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         a.setStringAttribute(strValue);
         uow.commit();
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getContext());
+    }
+
+    @Test
+    void attributeChangeSetsChangeRecordToPreventCachingWhenNewValueWasRetrievedUsingGetReference() throws Exception {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        final OWLClassD owner = new OWLClassD(Generators.createIndividualIdentifier());
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(owner);
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassD changed = uow.readObject(OWLClassD.class, owner.getUri(), descriptor);
+        final OWLClassA ref = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        changed.setOwlClassA(ref);
+
+        uow.attributeChanged(changed, OWLClassD.getOwlClassAField());
+
+        final ObjectChangeSet changeSet = uow.getUowChangeSet().getExistingObjectChanges(owner);
+        assertFalse(changeSet.getChanges().isEmpty());
+        final Optional<ChangeRecord> changeRecord = changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
+        assertTrue(changeRecord.isPresent());
+        assertTrue(changeRecord.get().doesPreventCaching());
+    }
+
+    @Test
+    void mergeDetachedMarksChangeRecordForAttributeWithGetReferenceResultAsPreventingCaching() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA reference = new OWLClassA(entityA.getUri());
+        when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
+        final OWLClassA ref = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
+        final OWLClassD owner = new OWLClassD(Generators.createIndividualIdentifier());
+        final OWLClassD toMerge = new OWLClassD(owner.getUri());
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(owner);
+        when(storageMock.contains(owner.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
+        toMerge.setOwlClassA(ref);
+
+        final OWLClassD result = uow.mergeDetached(toMerge, descriptor);
+
+        final ObjectChangeSet changeSet = uow.getUowChangeSet().getExistingObjectChanges(owner);
+        assertFalse(changeSet.getChanges().isEmpty());
+        final Optional<ChangeRecord> changeRecord = changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
+        assertTrue(changeRecord.isPresent());
+        assertTrue(changeRecord.get().doesPreventCaching());
     }
 }
