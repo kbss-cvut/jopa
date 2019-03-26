@@ -138,4 +138,42 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
         assertTrue(result.getReferencedList().stream().anyMatch(a -> a.getUri().equals(newE.getUri())));
         assertTrue(result.getSimpleList().stream().anyMatch(a -> a.getUri().equals(newE.getUri())));
     }
+
+    @Test
+    public void assigningGetReferenceResultToInstanceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval() {
+        this.em = getEntityManager("assigningGetReferenceResultToInstanceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval",true);
+        entityD.setOwlClassA(null);
+        persist(entityD, entityA);
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        em.getTransaction().begin();
+        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassA a = em.getReference(OWLClassA.class, entityA.getUri());
+        d.setOwlClassA(a);
+        em.getTransaction().commit();
+
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        em.detach(result);
+        assertNotNull(result.getOwlClassA());
+        assertNotNull(result.getOwlClassA().getStringAttribute());
+    }
+
+    @Test
+    public void mergeWithFieldValueBeingResultOfGetReferenceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval() {
+        this.em = getEntityManager("mergeWithFieldValueBeingResultOfGetReferenceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval", true);
+        entityD.setOwlClassA(null);
+        persist(entityD, entityA);
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        em.getTransaction().begin();
+        final OWLClassA a = em.getReference(OWLClassA.class, entityA.getUri());
+        entityD.setOwlClassA(a);
+        em.merge(entityD);
+        em.getTransaction().commit();
+
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        em.detach(result);
+        assertNotNull(result.getOwlClassA());
+        assertNotNull(result.getOwlClassA().getStringAttribute());
+    }
 }

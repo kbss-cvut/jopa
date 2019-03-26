@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -43,9 +41,7 @@ public class MergeManagerImpl implements MergeManager {
         if (clone == null) {
             return null;
         }
-
-        final Object original = changeSet.getChangedObject();
-        if (original == null) {
+        if (changeSet.getChangedObject() == null) {
             // If the original is null, then we may have a new object
             // but this should not happen since new objects are handled separately
             if (uow.isObjectNew(clone)) {
@@ -55,10 +51,24 @@ public class MergeManagerImpl implements MergeManager {
             }
         } else {
             builder.mergeChanges(changeSet);
-            final Object identifier = EntityPropertiesUtils.getIdentifier(original, uow.getMetamodel());
-            uow.putObjectIntoCache(identifier, original, changeSet.getEntityDescriptor());
+            updateCache(changeSet);
         }
         return clone;
+    }
+
+    private void updateCache(ObjectChangeSet changeSet) {
+        final Object changedObject = changeSet.getChangedObject();
+        final Object identifier = EntityPropertiesUtils.getIdentifier(changedObject, uow.getMetamodel());
+        if (changeSet.isNew()) {
+            uow.putObjectIntoCache(identifier, changedObject, changeSet.getEntityDescriptor());
+        } else {
+            boolean preventCaching = changeSet.getChanges().stream().anyMatch(ChangeRecord::doesPreventCaching);
+            if (preventCaching) {
+                uow.removeObjectFromCache(changedObject, changeSet.getEntityContext());
+            } else {
+                uow.putObjectIntoCache(identifier, changedObject, changeSet.getEntityDescriptor());
+            }
+        }
     }
 
     @Override
@@ -80,8 +90,6 @@ public class MergeManagerImpl implements MergeManager {
             return;
         }
         // Put the original object into the shared session cache
-        Object newObject = changeSet.getChangedObject();
-        final Object identifier = EntityPropertiesUtils.getIdentifier(newObject, uow.getMetamodel());
-        uow.putObjectIntoCache(identifier, newObject, changeSet.getEntityDescriptor());
+        updateCache(changeSet);
     }
 }

@@ -72,7 +72,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     @Override
     public void persist(final Object entity, final Descriptor descriptor) {
-        LOG.trace("Persisting {}", entity);
+        LOG.trace("Persisting instance of type {}.", entity.getClass());
         try {
             Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
             Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
@@ -181,7 +181,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     private <T> T mergeInternal(final T entity, final Descriptor descriptor) {
         assert entity != null;
         assert descriptor != null;
-        LOG.trace("Merging {}.", entity);
+        LOG.trace("Merging instance of type {}.", entity.getClass());
         if (isCascadingCycle(entity)) {
             LOG.warn("Merge cascading cycle detected in entity {}.", entity);
             return (T) getCurrentPersistenceContext().getCloneForOriginal(entity);

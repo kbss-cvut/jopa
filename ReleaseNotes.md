@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.12.1 - March 26, 2019
+- Generate ASCII-only identifier names (OWL2Java).
+- Fixed issues with caching instances referencing partially loaded getReference results.
+- Upgraded to Jena 3.10.0, OWLAPI 5.1.10 and RDF4J 2.5.0.
+
 ## 0.12.0 - February 27, 2019
 - Implemented support for `EntityManager.getReference` (Feature #46).
 - Prevent adding `null` into plural attribute collection when value cannot be loaded (Fix).
