@@ -47,7 +47,7 @@ class ObjectModel {
         try {
             final File file = new File(targetDir);
             final boolean result = file.mkdirs();
-            if (!result) {
+            if (!result && !file.exists()) {
                 LOG.error("Unable to create target directory structure.");
             }
             codeModel.build(file);
