@@ -243,6 +243,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         for (Object clone : deletedObjects.keySet()) {
             Descriptor descriptor = getDescriptor(clone);
             changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChangeSet(clone, descriptor));
+            changeSet.cancelObjectChanges(getOriginal(clone));
         }
     }
 
