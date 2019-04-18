@@ -39,7 +39,7 @@
         <junit.version>4.12</junit.version>
         <org.junit.jupiter.version>5.3.1</org.junit.jupiter.version>
         <org.mockito.version>2.23.0</org.mockito.version>
-        <org.aspectj.version>1.9.2</org.aspectj.version>
+        <org.aspectj.version>1.9.3</org.aspectj.version>
         <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
 
         <!-- We use OWLAPI in multiple modules, so let's keep them in sync -->
