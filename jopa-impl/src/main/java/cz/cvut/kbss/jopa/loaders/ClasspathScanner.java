@@ -43,6 +43,8 @@ class ClasspathScanner {
 
     private final List<Consumer<Class<?>>> listeners = new ArrayList<>();
 
+    private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
     void addListener(Consumer<Class<?>> listener) {
         listeners.add(listener);
     }
@@ -51,9 +53,8 @@ class ClasspathScanner {
      * Inspired by https://github.com/ddopson/java-class-enumerator
      */
     void processClasses(String scanPath) {
-        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try {
-            Enumeration<URL> urls = loader.getResources(scanPath.replace('.', '/'));
+            Enumeration<URL> urls = classLoader.getResources(scanPath.replace('.', '/'));
             while (urls.hasMoreElements()) {
                 final URL url = urls.nextElement();
                 if (isJar(url.toString())) {
@@ -63,7 +64,7 @@ class ClasspathScanner {
                 }
             }
             // Scan jar files on classpath
-            Enumeration<URL> resources = loader.getResources(".");
+            Enumeration<URL> resources = classLoader.getResources(".");
             while (resources.hasMoreElements()) {
                 URL resourceURL = resources.nextElement();
                 if (isJar(resourceURL.toString()))
@@ -115,7 +116,7 @@ class ClasspathScanner {
 
     private void processClass(String className) {
         try {
-            final Class<?> cls = Class.forName(className);
+            final Class<?> cls = Class.forName(className, true, classLoader);
             listeners.forEach(listener -> listener.accept(cls));
         } catch (ClassNotFoundException e) {
             throw new OWLPersistenceException("Unexpected ClassNotFoundException when scanning for entities.", e);
