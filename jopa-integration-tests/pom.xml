@@ -78,12 +78,17 @@
                 </dependencies>
                 <executions>
                     <execution>
+                        <id>sources</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>compile</goal>
-                            <!-- use this goal to weave all your main classes -->
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>tests</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
                             <goal>test-compile</goal>
-                            <!-- use this goal to weave all your test classes -->
                         </goals>
                     </execution>
                 </executions>

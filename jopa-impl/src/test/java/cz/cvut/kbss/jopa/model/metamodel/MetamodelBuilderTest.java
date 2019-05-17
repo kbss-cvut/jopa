@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -20,13 +18,14 @@ import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.oom.converter.LocalDateConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -35,7 +34,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,13 +46,13 @@ public class MetamodelBuilderTest {
 
     private final MetamodelBuilder builder = new MetamodelBuilder();
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void buildsMetamodelOfEntityWithSingleNamespaceDeclaredOnClass() {
+    void buildsMetamodelOfEntityWithSingleNamespaceDeclaredOnClass() {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespace.class));
         builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespace> result =
@@ -69,7 +68,7 @@ public class MetamodelBuilderTest {
     }
 
     @Test
-    public void buildsMetamodelOfEntityWithNamespacesDeclaredOnClass() {
+    void buildsMetamodelOfEntityWithNamespacesDeclaredOnClass() {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespace.class));
         builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespaces> result =
@@ -85,7 +84,7 @@ public class MetamodelBuilderTest {
     }
 
     @Test
-    public void buildsMetamodelOfEntityWithNamespaceUsedOnAttribute() {
+    void buildsMetamodelOfEntityWithNamespaceUsedOnAttribute() {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespace.class));
         builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespaceAttributes> result =
@@ -98,7 +97,7 @@ public class MetamodelBuilderTest {
     }
 
     @Namespaces({@Namespace(prefix = "dc", namespace = DC.Elements.NAMESPACE),
-                 @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
+            @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
     private static class EntityWithNamespaceAttributes {
         @Id
@@ -112,7 +111,7 @@ public class MetamodelBuilderTest {
     }
 
     @Test
-    public void buildsMetamodelOfEntityWhichUsesPackageLevelNamespace() {
+    void buildsMetamodelOfEntityWhichUsesPackageLevelNamespace() {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(EntityWithNamespaceFromPackage.class));
         builder.buildMetamodel(finderMock);
         final EntityType<EntityWithNamespaceFromPackage> result = (EntityType<EntityWithNamespaceFromPackage>) builder
@@ -127,7 +126,7 @@ public class MetamodelBuilderTest {
     }
 
     @Test
-    public void buildMetamodelBuildsResultSetMappersFromMappingConfigurations() {
+    void buildMetamodelBuildsResultSetMappersFromMappingConfigurations() {
         when(finderMock.getResultSetMappings())
                 .thenReturn(Collections.singleton(OWLClassA.class.getDeclaredAnnotation(SparqlResultSetMapping.class)));
         builder.buildMetamodel(finderMock);
@@ -138,7 +137,7 @@ public class MetamodelBuilderTest {
     }
 
     @Test
-    public void buildMetamodelBuildsEntityWithBuiltInConverters() throws Exception {
+    void buildMetamodelBuildsEntityWithBuiltInConverters() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
         final EntityTypeImpl<OWLClassM> et = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
@@ -149,12 +148,47 @@ public class MetamodelBuilderTest {
     }
 
     @Test
-    public void buildMetamodelBuildsEntityWithLocalDateConverter() throws Exception {
+    void buildMetamodelBuildsEntityWithLocalDateConverter() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassT.class));
         builder.buildMetamodel(finderMock);
         final EntityTypeImpl<OWLClassT> et = (EntityTypeImpl<OWLClassT>) builder.getEntityClass(OWLClassT.class);
         final AbstractAttribute<OWLClassT, LocalDate> result = (AbstractAttribute<OWLClassT, LocalDate>) et
                 .getDeclaredAttribute(OWLClassT.getLocalDateField().getName());
         assertTrue(result.getConverter() instanceof LocalDateConverter);
+    }
+
+    @Test
+    void buildMetamodelBuildsEntityWithParentLifecycleCallbacks() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(ChildWithCallback.class));
+        builder.buildMetamodel(finderMock);
+        final EntityTypeImpl<ChildWithCallback> result = (EntityTypeImpl<ChildWithCallback>) builder
+                .getEntityClass(ChildWithCallback.class);
+        final EntityLifecycleListenerManager childLifecycleManager = result.getLifecycleListenerManager();
+        assertFalse(childLifecycleManager.getLifecycleCallbacks().isEmpty());
+        assertTrue(childLifecycleManager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
+        assertNotNull(childLifecycleManager.getParent());
+        assertTrue(childLifecycleManager.getParent().hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
+    }
+
+    @MappedSuperclass
+    public static class ParentWithCallback {
+
+        @Id
+        URI uri;
+
+        @PrePersist
+        void prePersistParent() {
+        }
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildWithCallback")
+    public static class ChildWithCallback extends ParentWithCallback {
+
+        @OWLAnnotationProperty(iri = RDFS.LABEL)
+        private String label;
+
+        @PrePersist
+        void prePersistChild() {
+        }
     }
 }

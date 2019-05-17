@@ -43,8 +43,6 @@ class ManagedClassProcessor {
         } else {
             throw new MetamodelInitializationException("Type " + cls + " is not a managed type.");
         }
-        final EntityLifecycleListenerManager callbackManager = new EntityLifecycleCallbackResolver(type).resolve();
-        type.setLifecycleListenerManager(callbackManager);
         return new TypeBuilderContext<>(type, resolver);
     }
 
