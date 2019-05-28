@@ -13,7 +13,7 @@
     </parent>
 
     <properties>
-        <rdf4j.version>2.5.0</rdf4j.version>
+        <rdf4j.version>2.5.2</rdf4j.version>
     </properties>
 
     <dependencies>
