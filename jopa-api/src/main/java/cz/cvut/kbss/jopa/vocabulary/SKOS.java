@@ -149,7 +149,7 @@ public class SKOS {
     public static final String MAPPING_RELATION = NAMESPACE + "mappingRelation";
 
     /**
-     * SKOS <a href="https://www.w3.org/2009/08/skos-reference/skos.html#member>has member</a> property.
+     * SKOS <a href="https://www.w3.org/2009/08/skos-reference/skos.html#member">has member</a> property.
      *
      * @see <a href="http://www.w3.org/TR/skos-reference/#collections">http://www.w3.org/TR/skos-reference/#collections</a>
      */
