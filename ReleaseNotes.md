@@ -1,5 +1,12 @@
 # JOPA - Release Notes
 
+## 0.12.2 - May 28, 2019
+- Do not generate error message when directory structure for OWL2Java already exists.
+- Fixed issue with parent entity listeners/lifecycle callbacks not being called (Bug #49).
+- Fixed problems with using Spring Boot Devtools with JOPA (classloader issues, Task #26).
+- Added [SKOS](http://www.w3.org/TR/skos-reference) vocabulary constants.
+- Upgraded to AspectJ 1.9.4, Jena 3.11.0 and RDF4J 2.5.2.
+
 ## 0.12.1 - March 26, 2019
 - Generate ASCII-only identifier names (OWL2Java).
 - Fixed issues with caching instances referencing partially loaded getReference results.

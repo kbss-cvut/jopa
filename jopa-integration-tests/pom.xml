@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.12.1</version>
+        <version>0.12.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -78,12 +78,17 @@
                 </dependencies>
                 <executions>
                     <execution>
+                        <id>sources</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>compile</goal>
-                            <!-- use this goal to weave all your main classes -->
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>tests</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
                             <goal>test-compile</goal>
-                            <!-- use this goal to weave all your test classes -->
                         </goals>
                     </execution>
                 </executions>

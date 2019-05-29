@@ -178,6 +178,7 @@ Some related libraries:
 * [JB4JSON-LD](https://github.com/kbss-cvut/jb4jsonld) - Serialization and deserialization of POJOs into JSON-LD,
 * [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA,
 * [Reporting Tool](https://github.com/kbss-cvut/reporting-tool) - Real-live use case of JOPA.
+* [TermIt](https://github.com/kbss-cvut/termit) - A more complex and up-to-date use case of JOPA.
 
 ## References
   

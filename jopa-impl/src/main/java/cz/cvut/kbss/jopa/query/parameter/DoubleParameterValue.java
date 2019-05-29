@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,12 +16,14 @@ package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 
-class DoubleParameterValue implements ParameterValue {
+import java.util.Objects;
+
+public class DoubleParameterValue extends AbstractParameterValue {
 
     private final double value;
 
     DoubleParameterValue(Double value) {
-        this.value = value;
+        this.value = Objects.requireNonNull(value);
     }
 
     @Override

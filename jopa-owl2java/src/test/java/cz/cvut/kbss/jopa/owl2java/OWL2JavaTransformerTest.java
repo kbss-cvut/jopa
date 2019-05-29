@@ -329,11 +329,12 @@ public class OWL2JavaTransformerTest {
     @Test
     public void generateVocabularyDoesNotDuplicateRdfProperties() throws Exception {
         this.targetDir = getTempDirectory();
-        transformer.setOntology("http://spinrdf.org/sp", mappingFilePath);
+        transformer.setOntology("http://purl.org/dc/terms", mappingFilePath);
         transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
-        final String property = "http://spinrdf.org/sp#predicate";
+        // Using the elements/1.1 version of identifier, because the terms version is declared also as an individual
+        final String property = "http://purl.org/dc/elements/1.1/identifier";
         verifyIriOccursOnce(fileContents, property);
     }
 

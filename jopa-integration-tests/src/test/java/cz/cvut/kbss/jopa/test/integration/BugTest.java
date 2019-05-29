@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.jopa.test.integration;
 
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
@@ -43,21 +43,20 @@ class BugTest extends IntegrationTestBase {
     @Test
     void hashCodeWithAttributeDoesNotCauseInfiniteLoop() throws Exception {
         final URI uri = Generators.generateUri();
-        final String name = "Instance1";
-        when(connectionMock.find(any())).thenReturn(initAxiomsForR(uri, name));
+        when(connectionMock.find(any())).thenReturn(initAxiomsForR(uri));
 
         final OWLClassR r = em.find(OWLClassR.class, uri);
         assertNotEquals(0, r.hashCode());
     }
 
-    private Collection<Axiom<?>> initAxiomsForR(URI uri, String name) {
+    private Collection<Axiom<?>> initAxiomsForR(URI uri) {
         final NamedResource nr = NamedResource.create(uri);
         final String typeIri = OWLClassR.class.getDeclaredAnnotation(OWLClass.class).iri();
         return Arrays.asList(new AxiomImpl<>(nr, Assertion.createClassAssertion(false),
                         new Value<>(NamedResource.create(typeIri))),
                 new AxiomImpl<>(nr,
                         Assertion.createAnnotationPropertyAssertion(URI.create(RDFS.LABEL), false),
-                        new Value<>(name)));
+                        new Value<>("Instance1")));
     }
 
     /**
@@ -137,5 +136,46 @@ class BugTest extends IntegrationTestBase {
         aDesc.addAssertion(classAssertion);
         aDesc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false));
         when(connectionMock.find(aDesc)).thenReturn(Collections.emptyList());
+    }
+
+    /**
+     * Bug #49
+     */
+    @Test
+    void parentLifecycleCallbacksAreInvokedForEntity() {
+        em.getTransaction().begin();
+        final ChildWithCallback instance = new ChildWithCallback();
+        instance.uri = Generators.generateUri();
+        instance.label = "Test";
+        em.persist(instance);
+        assertTrue(instance.callbackInvoked);
+        assertTrue(instance.childCallbackInvoked);
+    }
+
+    @MappedSuperclass
+    public static class ParentWithCallback {
+        transient boolean callbackInvoked;
+
+        @Id
+        URI uri;
+
+        @PrePersist
+        void prePersistParent() {
+            this.callbackInvoked = true;
+        }
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_IRI_BASE + "ChildWithCallback")
+    public static class ChildWithCallback extends ParentWithCallback {
+
+        private transient boolean childCallbackInvoked;
+
+        @OWLAnnotationProperty(iri = RDFS.LABEL)
+        private String label;
+
+        @PrePersist
+        void prePersistChild() {
+            this.childCallbackInvoked = true;
+        }
     }
 }

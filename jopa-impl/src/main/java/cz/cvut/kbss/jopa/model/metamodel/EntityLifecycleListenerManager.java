@@ -217,6 +217,10 @@ public class EntityLifecycleListenerManager {
         this.parent = parent;
     }
 
+    EntityLifecycleListenerManager getParent() {
+        return parent;
+    }
+
     void addEntityListener(Object entityListener) {
         assert entityListener != null;
 
