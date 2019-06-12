@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -502,7 +500,7 @@ public class MetamodelFactory {
                                          AbstractAttribute intAtt, SingularAttributeImpl longAtt,
                                          AbstractAttribute doubleAtt, AbstractAttribute dateAtt,
                                          AbstractAttribute enumAtt, AbstractPluralAttribute intSetAtt,
-                                         Identifier idMock)
+                                         SingularAttributeImpl lexicalFormAtt, Identifier idMock)
             throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassM.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassM.getClassIri()));
@@ -513,10 +511,10 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                        dateAtt, enumAtt, intSetAtt)));
+                        dateAtt, enumAtt, intSetAtt, lexicalFormAtt)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                        enumAtt, intSetAtt, idMock)));
+                        enumAtt, intSetAtt, lexicalFormAtt, idMock)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(booleanAtt.getName()).thenReturn(OWLClassM.getBooleanAttributeField().getName());
@@ -597,6 +595,18 @@ public class MetamodelFactory {
         when(intSetAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(typeMock.getJavaType()).thenReturn(Integer.class);
         when(etMock.getFieldSpecification(OWLClassM.getIntegerSetField().getName())).thenReturn(intSetAtt);
+
+        when(lexicalFormAtt.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
+        when(lexicalFormAtt.getName()).thenReturn(OWLClassM.getLexicalFormField().getName());
+        when(lexicalFormAtt.getJavaType()).thenReturn(OWLClassM.getLexicalFormField().getType());
+        when(lexicalFormAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
+        when(lexicalFormAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(lexicalFormAtt.isCollection()).thenReturn(false);
+        when(lexicalFormAtt.getDeclaringType()).thenReturn(etMock);
+        when(lexicalFormAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(lexicalFormAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
+        when(etMock.getFieldSpecification(OWLClassM.getLexicalFormField().getName())).thenReturn(lexicalFormAtt);
+
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 

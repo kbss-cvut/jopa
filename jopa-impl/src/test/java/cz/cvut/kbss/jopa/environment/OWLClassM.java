@@ -1,21 +1,20 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.LexicalForm;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
@@ -55,6 +54,10 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_IntegerSet)
     private Set<Integer> integerSet;
+
+    @LexicalForm
+    @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm)
+    private String lexicalForm;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -134,6 +137,7 @@ public class OWLClassM {
                 ", doubleAttribute=" + doubleAttribute +
                 ", enumAttribute=" + enumAttribute +
                 ", integerSet=" + integerSet +
+                ", lexicalForm=" + lexicalForm +
                 '}';
     }
 
@@ -148,6 +152,7 @@ public class OWLClassM {
         this.dateAttribute = new Date();
         this.enumAttribute = Severity.MEDIUM;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
+        this.lexicalForm = "test";
     }
 
     public static String getClassIri() throws Exception {
@@ -184,5 +189,9 @@ public class OWLClassM {
 
     public static Field getIntegerSetField() throws Exception {
         return OWLClassM.class.getDeclaredField("integerSet");
+    }
+
+    public static Field getLexicalFormField() throws Exception {
+        return OWLClassM.class.getDeclaredField("lexicalForm");
     }
 }
