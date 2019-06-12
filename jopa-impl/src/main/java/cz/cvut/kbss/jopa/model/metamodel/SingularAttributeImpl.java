@@ -1,23 +1,17 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 import java.lang.reflect.Field;
@@ -71,12 +65,19 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         return BindableType.SINGULAR_ATTRIBUTE;
     }
 
-    public static SingularAttributeBuilder iri(IRI iri) {
-        return new SingularAttributeBuilder().iri(iri);
+    public static SingularAttributeBuilder builder(PropertyAttributes config) {
+        return new SingularAttributeBuilder().config(config);
     }
 
     public static final class SingularAttributeBuilder<X, Y> extends AbstractAttributeBuilder<X, Y> {
         private Type<Y> type;
+
+        @Override
+        public SingularAttributeBuilder<X, Y> config(PropertyAttributes config) {
+            super.config(config);
+            type((Type<Y>) config.getType());
+            return this;
+        }
 
         public SingularAttributeBuilder<X, Y> type(Type<Y> type) {
             this.type = type;
@@ -96,30 +97,6 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         }
 
         @Override
-        public SingularAttributeBuilder<X, Y> attributeType(PersistentAttributeType attributeType) {
-            super.attributeType(attributeType);
-            return this;
-        }
-
-        @Override
-        public SingularAttributeBuilder<X, Y> iri(IRI iri) {
-            super.iri(iri);
-            return this;
-        }
-
-        @Override
-        public SingularAttributeBuilder<X, Y> cascadeTypes(CascadeType[] cascadeTypes) {
-            super.cascadeTypes(cascadeTypes);
-            return this;
-        }
-
-        @Override
-        public SingularAttributeBuilder<X, Y> fetchType(FetchType fetchType) {
-            super.fetchType(fetchType);
-            return this;
-        }
-
-        @Override
         public SingularAttributeBuilder<X, Y> inferred(boolean inferred) {
             super.inferred(inferred);
             return this;
@@ -128,18 +105,6 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         @Override
         public SingularAttributeBuilder<X, Y> includeExplicit(boolean includeExplicit) {
             super.includeExplicit(includeExplicit);
-            return this;
-        }
-
-        @Override
-        public SingularAttributeBuilder<X, Y> constraints(ParticipationConstraint[] constraints) {
-            super.constraints(constraints);
-            return this;
-        }
-
-        @Override
-        public SingularAttributeBuilder<X, Y> nonEmpty(boolean nonEmpty) {
-            super.nonEmpty(nonEmpty);
             return this;
         }
 
