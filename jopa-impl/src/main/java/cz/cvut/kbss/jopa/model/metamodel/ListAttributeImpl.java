@@ -1,23 +1,18 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
@@ -73,8 +68,8 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         return "ListAttribute[" + getName() + "]";
     }
 
-    public static ListAttributeBuilder iri(IRI iri) {
-        return new ListAttributeBuilder().collectionType(List.class).iri(iri);
+    public static ListAttributeBuilder builder(PropertyAttributes config) {
+        return new ListAttributeBuilder().collectionType(List.class).config(config);
     }
 
     public static class ListAttributeBuilder<X, V> extends PluralAttributeBuilder<X, List<V>, V> {
@@ -84,8 +79,8 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         private SequenceType owlSequenceType;
 
         @Override
-        public ListAttributeBuilder<X, V> elementType(Type<V> elementType) {
-            super.elementType(elementType);
+        public ListAttributeBuilder<X, V> config(PropertyAttributes config) {
+            super.config(config);
             return this;
         }
 
@@ -108,30 +103,6 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         }
 
         @Override
-        public ListAttributeBuilder<X, V> attributeType(PersistentAttributeType attributeType) {
-            super.attributeType(attributeType);
-            return this;
-        }
-
-        @Override
-        public ListAttributeBuilder<X, V> iri(IRI iri) {
-            super.iri(iri);
-            return this;
-        }
-
-        @Override
-        public ListAttributeBuilder<X, V> cascadeTypes(CascadeType[] cascadeTypes) {
-            super.cascadeTypes(cascadeTypes);
-            return this;
-        }
-
-        @Override
-        public ListAttributeBuilder<X, V> fetchType(FetchType fetchType) {
-            super.fetchType(fetchType);
-            return this;
-        }
-
-        @Override
         public ListAttributeBuilder<X, V> inferred(boolean inferred) {
             super.inferred(inferred);
             return this;
@@ -140,24 +111,6 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         @Override
         public ListAttributeBuilder<X, V> includeExplicit(boolean includeExplicit) {
             super.includeExplicit(includeExplicit);
-            return this;
-        }
-
-        @Override
-        public ListAttributeBuilder<X, V> participationConstraints(ParticipationConstraint[] constraints) {
-            super.participationConstraints(constraints);
-            return this;
-        }
-
-        @Override
-        public ListAttributeBuilder<X, V> constraints(ParticipationConstraint[] constraints) {
-            super.constraints(constraints);
-            return this;
-        }
-
-        @Override
-        public ListAttributeBuilder<X, V> nonEmpty(boolean nonEmpty) {
-            super.nonEmpty(nonEmpty);
             return this;
         }
 
