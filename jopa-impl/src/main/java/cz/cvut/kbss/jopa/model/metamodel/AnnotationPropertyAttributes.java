@@ -27,6 +27,7 @@ class AnnotationPropertyAttributes extends PropertyAttributes {
 
     @Override
     void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        validator.validateAnnotationPropertyField(field);
         super.resolve(field, metamodelBuilder, fieldValueCls);
         final OWLAnnotationProperty oap = field.getAnnotation(OWLAnnotationProperty.class);
         assert oap != null;
