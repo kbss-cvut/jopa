@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -25,7 +23,9 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,7 +115,8 @@ class PluralAnnotationPropertyStrategyTest {
 
     @Test
     void addValueFromAxiomAddsStringToUriValues() throws Exception {
-        final PluralAnnotationPropertyStrategy<WithPluralUriAnnotations> sut = createStrategyWithUriAnnotations();
+        final PluralAnnotationPropertyStrategy<WithPluralUriAnnotations> sut = createStrategyWithPluralAnnotations(
+                WithPluralUriAnnotations.class, URI.class);
         final NamedResource value = NamedResource.create(Generators.createIndividualIdentifier());
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(INDIVIDUAL, createAnnotationAssertionForN(), new Value<>(value));
@@ -126,14 +127,15 @@ class PluralAnnotationPropertyStrategyTest {
         assertEquals(Collections.singleton(value.getIdentifier()), instance.sources);
     }
 
-    private PluralAnnotationPropertyStrategy<WithPluralUriAnnotations> createStrategyWithUriAnnotations() throws
-                                                                                                          Exception {
-        final EntityTypeImpl<WithPluralUriAnnotations> et = mock(EntityTypeImpl.class);
-        final AbstractPluralAttribute<WithPluralUriAnnotations, Set, URI> att = mock(AbstractPluralAttribute.class);
-        when(att.getElementType()).thenReturn(BasicTypeImpl.get(URI.class));
+    private <T, X> PluralAnnotationPropertyStrategy<T> createStrategyWithPluralAnnotations(Class<T> entity,
+                                                                                           Class<X> elementType) throws
+            Exception {
+        final EntityTypeImpl<T> et = mock(EntityTypeImpl.class);
+        final AbstractPluralAttribute<T, Set, X> att = mock(AbstractPluralAttribute.class);
+        when(att.getElementType()).thenReturn(BasicTypeImpl.get(elementType));
         when(att.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
-        when(att.getBindableJavaType()).thenReturn(URI.class);
-        when(att.getJavaField()).thenReturn(WithPluralUriAnnotations.class.getDeclaredField("sources"));
+        when(att.getBindableJavaType()).thenReturn(elementType);
+        when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.DC_SOURCE));
         return new PluralAnnotationPropertyStrategy<>(et, att, descriptor, mapperMock);
     }
@@ -184,7 +186,8 @@ class PluralAnnotationPropertyStrategyTest {
 
     @Test
     void buildAxiomValuesFromInstanceAddsUrisAsNamedResources() throws Exception {
-        final PluralAnnotationPropertyStrategy<WithPluralUriAnnotations> sut = createStrategyWithUriAnnotations();
+        final PluralAnnotationPropertyStrategy<WithPluralUriAnnotations> sut = createStrategyWithPluralAnnotations(
+                WithPluralUriAnnotations.class, URI.class);
         final Set<URI> values = IntStream.range(0, 5).mapToObj(i -> Generators.createIndividualIdentifier()).collect(
                 Collectors.toSet());
         final WithPluralUriAnnotations instance = new WithPluralUriAnnotations();
@@ -193,5 +196,41 @@ class PluralAnnotationPropertyStrategyTest {
 
         verifyValuesForNPluralAnnotation(
                 values.stream().map(v -> new Value<>(NamedResource.create(v))).collect(Collectors.toSet()));
+    }
+
+    @Test
+    void addValueFromAxiomTransformsValueToLexicalForm() throws Exception {
+        final PluralAnnotationPropertyStrategy<WithPluralStringAnnotations> sut = createStrategyWithPluralAnnotations(
+                WithPluralStringAnnotations.class, String.class);
+        when(sut.attribute.getConverter()).thenReturn(new ToLexicalFormConverter());
+        final Integer value = 117;
+        final Axiom<Integer> axiom = new AxiomImpl<>(INDIVIDUAL, Assertion.createAnnotationPropertyAssertion(URI.create(
+                DC.Terms.SOURCE), false), new Value<>(value));
+        sut.addValueFromAxiom(axiom);
+        final WithPluralStringAnnotations instance = new WithPluralStringAnnotations();
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(Collections.singleton(value.toString()), instance.sources);
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE)
+    private static class WithPluralStringAnnotations {
+
+        @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+        private Set<String> sources;
+    }
+
+    @Test
+    void addValueFromAxiomAcceptsIdentifiersForLexicalFormAttribute() throws Exception {
+        final PluralAnnotationPropertyStrategy<WithPluralStringAnnotations> sut = createStrategyWithPluralAnnotations(
+                WithPluralStringAnnotations.class, String.class);
+        when(sut.attribute.getConverter()).thenReturn(new ToLexicalFormConverter());
+        final URI value = Generators.createIndividualIdentifier();
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(INDIVIDUAL,
+                Assertion.createAnnotationPropertyAssertion(URI.create(
+                        DC.Terms.SOURCE), false), new Value<>(NamedResource.create(value)));
+        sut.addValueFromAxiom(axiom);
+        final WithPluralStringAnnotations instance = new WithPluralStringAnnotations();
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(Collections.singleton(value.toString()), instance.sources);
     }
 }
