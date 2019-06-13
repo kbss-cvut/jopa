@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.oom.converter;
 
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+
 /**
  * Converts literal lexical form to Java {@code String}.
  * <p>
@@ -9,7 +11,8 @@ public class ToLexicalFormConverter implements ConverterWrapper<String, Object> 
 
     @Override
     public boolean supportsAxiomValueType(Class<?> type) {
-        return true;
+        // Anything but a NamedResource (i.e., a literal since anonymous individuals are not supported) can be transformed to lexical form
+        return !NamedResource.class.isAssignableFrom(type);
     }
 
     @Override

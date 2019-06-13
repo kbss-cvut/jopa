@@ -37,10 +37,10 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
             return;
         }
         verifyCardinalityConstraint(ax.getSubject());
-        if (super.isValidRange(val)) {
-            this.value = toAttributeValue(val);
-        } else {
+        if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
             this.value = IdentifierTransformer.transformToIdentifier(val, attribute.getJavaType());
+        } else {
+            this.value = toAttributeValue(val);
         }
     }
 
@@ -48,8 +48,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
     boolean isValidRange(Object value) {
         assert value != null;
 
-        return attribute.getJavaType().isAssignableFrom(value.getClass()) ||
-                value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(attribute.getJavaType());
+        return value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(attribute.getJavaType()) || super.isValidRange(value);
     }
 
     @Override

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -25,8 +23,8 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -37,10 +35,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class SingularDataPropertyStrategyTest {
+class SingularDataPropertyStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
 
@@ -51,8 +49,8 @@ public class SingularDataPropertyStrategyTest {
 
     private Descriptor descriptor = new EntityDescriptor();
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final Configuration configuration = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
@@ -61,7 +59,7 @@ public class SingularDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
+    void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
         descriptor.setLanguage("en");
         buildAxiomsAndVerifyLanguageTag();
     }
@@ -83,13 +81,13 @@ public class SingularDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
+    void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
             throws Exception {
         buildAxiomsAndVerifyLanguageTag();
     }
 
     @Test
-    public void buildAxiomsTransformsLocalDateToJavaUtilDate() throws Exception {
+    void buildAxiomsTransformsLocalDateToJavaUtilDate() throws Exception {
         final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
                 mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateAtt(), descriptor, mapperMock);
         final OWLClassT t = new OWLClassT();
@@ -108,7 +106,7 @@ public class SingularDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsTransformsLocalDateTimeToJavaUtilDate() throws Exception {
+    void buildAxiomsTransformsLocalDateTimeToJavaUtilDate() throws Exception {
         final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
                 mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateTimeAtt(), descriptor, mapperMock);
         final OWLClassT t = new OWLClassT();
@@ -127,7 +125,7 @@ public class SingularDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildInstanceFieldValueTransformsJavaUtilDateToLocalDate() {
+    void buildInstanceFieldValueTransformsJavaUtilDateToLocalDate() {
         final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
                 mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateAtt(), descriptor, mapperMock);
         final OWLClassT t = new OWLClassT();
@@ -141,7 +139,7 @@ public class SingularDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildInstanceFieldValueTransformsJavaUtilDateToLocalDateTime() {
+    void buildInstanceFieldValueTransformsJavaUtilDateToLocalDateTime() {
         final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
                 mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateTimeAtt(), descriptor, mapperMock);
         final OWLClassT t = new OWLClassT();
@@ -155,7 +153,7 @@ public class SingularDataPropertyStrategyTest {
     }
 
     @Test
-    public void buildInstanceFieldConvertsRepositoryValueToEnum() {
+    void buildInstanceFieldConvertsRepositoryValueToEnum() {
         final SingularDataPropertyStrategy<OWLClassM> sut =
                 new SingularDataPropertyStrategy<>(mocks.forOwlClassM().entityType(),
                         mocks.forOwlClassM().enumAttribute(), descriptor, mapperMock);
@@ -167,5 +165,21 @@ public class SingularDataPropertyStrategyTest {
         sut.addValueFromAxiom(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(OWLClassM.Severity.MEDIUM, m.getEnumAttribute());
+    }
+
+    @Test
+    void buildInstanceFieldTransformsValueToLexicalForm() {
+        final SingularDataPropertyStrategy<OWLClassM> sut = new SingularDataPropertyStrategy<>(
+                mocks.forOwlClassM().entityType(),
+                mocks.forOwlClassM().lexicalFormAttribute(), descriptor, mapperMock);
+        final OWLClassM m = new OWLClassM();
+        m.setKey(PK.toString());
+
+        final Integer value = 117;
+        final Axiom<Integer> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
+                new Value<>(value));
+        sut.addValueFromAxiom(axiom);
+        sut.buildInstanceFieldValue(m);
+        assertEquals(value.toString(), m.getLexicalForm());
     }
 }

@@ -127,6 +127,14 @@ public class OWLClassM {
         this.integerSet = integerSet;
     }
 
+    public String getLexicalForm() {
+        return lexicalForm;
+    }
+
+    public void setLexicalForm(String lexicalForm) {
+        this.lexicalForm = lexicalForm;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +

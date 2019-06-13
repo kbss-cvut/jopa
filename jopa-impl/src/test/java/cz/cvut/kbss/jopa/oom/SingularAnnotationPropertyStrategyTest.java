@@ -1,20 +1,20 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassN;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
@@ -25,8 +25,8 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -35,10 +35,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class SingularAnnotationPropertyStrategyTest {
+class SingularAnnotationPropertyStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
 
@@ -49,8 +49,8 @@ public class SingularAnnotationPropertyStrategyTest {
 
     private Descriptor descriptor = new EntityDescriptor();
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final Configuration configuration = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
@@ -59,7 +59,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void addAxiomValueAddsStringAnnotationValue() {
+    void addAxiomValueAddsStringAnnotationValue() {
         final String str = "stringValue";
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final Axiom<String> ax = new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>(str));
@@ -81,7 +81,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void addAxiomValueSkipsAxiomWhoseValueDoesNotMatchTargetFieldType() {
+    void addAxiomValueSkipsAxiomWhoseValueDoesNotMatchTargetFieldType() {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final Axiom<Integer> ax = new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>(117));
 
@@ -92,7 +92,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void addAxiomValueAddsPlainIdentifierValueOfAnnotationProperty() {
+    void addAxiomValueAddsPlainIdentifierValueOfAnnotationProperty() {
         final URI value = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationValue");
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(
                 mocks.forOwlClassN().annotationUriAttribute());
@@ -110,19 +110,19 @@ public class SingularAnnotationPropertyStrategyTest {
         return Assertion.createAnnotationPropertyAssertion(uri, false);
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
-    public void addAxiomValueThrowsIntegrityConstraintsViolationWhenAnotherValueIsAlreadySet() {
+    @Test
+    void addAxiomValueThrowsIntegrityConstraintsViolationWhenAnotherValueIsAlreadySet() {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final List<Axiom<String>> axioms = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             axioms.add(new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>("String" + i)));
         }
 
-        axioms.forEach(strategy::addValueFromAxiom);
+        assertThrows(IntegrityConstraintViolatedException.class, () -> axioms.forEach(strategy::addValueFromAxiom));
     }
 
     @Test
-    public void buildAxiomsExtractsStringValueOfAnnotationPropertyField() throws Exception {
+    void buildAxiomsExtractsStringValueOfAnnotationPropertyField() throws Exception {
         final String str = "stringValue";
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final OWLClassN n = new OWLClassN();
@@ -143,7 +143,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsExtractsPlainIdentifiersAttributeValuesAsNamedResources() throws Exception {
+    void buildAxiomsExtractsPlainIdentifiersAttributeValuesAsNamedResources() throws Exception {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationValue");
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(
                 mocks.forOwlClassN().annotationUriAttribute());
@@ -159,7 +159,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsUsesNullValueWhenExtractedFieldValueIsNull() throws Exception {
+    void buildAxiomsUsesNullValueWhenExtractedFieldValueIsNull() throws Exception {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(
                 mocks.forOwlClassN().annotationUriAttribute());
         final OWLClassN n = new OWLClassN();
@@ -172,7 +172,7 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
+    void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
         descriptor.setLanguage("en");
         buildAxiomsAndVerifyLanguageTag();
     }
@@ -193,8 +193,44 @@ public class SingularAnnotationPropertyStrategyTest {
     }
 
     @Test
-    public void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
+    void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
             throws Exception {
         buildAxiomsAndVerifyLanguageTag();
+    }
+
+    @Test
+    void addAxiomValueTransformsValueToLexicalForm() {
+        // We are using datatype property field as annotation property field to spare test code
+        final SingularAnnotationPropertyStrategy<OWLClassM> sut = new SingularAnnotationPropertyStrategy<>(
+                mocks.forOwlClassM().entityType(), mocks.forOwlClassM().lexicalFormAttribute(), descriptor, mapperMock);
+        final Integer value = 117;
+        final Axiom<Integer> axiom = new AxiomImpl<>(NamedResource.create(PK), lexicalFormAssertion(),
+                new Value<>(value));
+        sut.addValueFromAxiom(axiom);
+        final OWLClassM result = new OWLClassM();
+        result.setKey(PK.toString());
+        sut.buildInstanceFieldValue(result);
+        assertEquals(value.toString(), result.getLexicalForm());
+    }
+
+    private Assertion lexicalFormAssertion() {
+        return Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.p_m_lexicalForm), false);
+    }
+
+    @Test
+    void addAxiomValueAcceptsNamedResourceForLexicalFormAttribute() {
+        // Since annotation properties may reference individuals and String is a valid identifier mapping type, we let JOPA
+        // load the value even though it is not a lexical form. Lexical form would apply only to literal values.
+        // We are using datatype property field as annotation property field to spare test code
+        final SingularAnnotationPropertyStrategy<OWLClassM> sut = new SingularAnnotationPropertyStrategy<>(
+                mocks.forOwlClassM().entityType(), mocks.forOwlClassM().lexicalFormAttribute(), descriptor, mapperMock);
+        final URI identifier = Generators.createIndividualIdentifier();
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(PK), lexicalFormAssertion(),
+                new Value<>(NamedResource.create(identifier)));
+        sut.addValueFromAxiom(axiom);
+        final OWLClassM result = new OWLClassM();
+        result.setKey(PK.toString());
+        sut.buildInstanceFieldValue(result);
+        assertEquals(identifier.toString(), result.getLexicalForm());
     }
 }
