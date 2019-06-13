@@ -30,6 +30,7 @@ abstract class PropertyAttributes {
     IRI iri = null;
     CascadeType[] cascadeTypes = new CascadeType[]{};
     FetchType fetchType = FetchType.EAGER;
+    boolean lexicalForm = false;
     private boolean nonEmpty = false;
     private ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
 
@@ -63,6 +64,10 @@ abstract class PropertyAttributes {
 
     boolean isNonEmpty() {
         return nonEmpty;
+    }
+
+    boolean isLexicalForm() {
+        return lexicalForm;
     }
 
     ParticipationConstraint[] getParticipationConstraints() {

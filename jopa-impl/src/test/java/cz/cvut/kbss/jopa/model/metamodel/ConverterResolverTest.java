@@ -99,8 +99,9 @@ class ConverterResolverTest {
     @Test
     void resolveConverterReturnsToLexicalFormConverterForFieldWithLexicalForm() throws Exception {
         final Field field = OWLClassM.getLexicalFormField();
-        final PropertyAttributes pa = mock(PropertyAttributes.class);
+        final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(pa.isLexicalForm()).thenReturn(true);
         doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());

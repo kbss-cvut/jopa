@@ -25,7 +25,6 @@ class DataPropertyAttributes extends PropertyAttributes {
 
     @Override
     void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        validator.validateDataPropertyField(field);
         super.resolve(field, metamodelBuilder, fieldValueCls);
         final OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
         assert odp != null;
@@ -34,5 +33,7 @@ class DataPropertyAttributes extends PropertyAttributes {
         this.iri = IRI.create(typeBuilderContext.resolveNamespace(odp.iri()));
         this.fetchType = odp.fetch();
         this.type = BasicTypeImpl.get(fieldValueCls);
+        this.lexicalForm = odp.lexicalForm();
+        validator.validateDataPropertyField(field, odp);
     }
 }

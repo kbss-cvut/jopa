@@ -12,8 +12,10 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
-import cz.cvut.kbss.jopa.model.annotations.LexicalForm;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import org.junit.jupiter.api.Test;
@@ -107,25 +109,22 @@ class FieldMappingValidatorTest {
 
     @Test
     void lexicalFormAnnotationIsValidOnStringField() throws Exception {
-        validator.validateLexicalFormField(getField("validLexicalForm"));
-    }
-
-    @Test
-    void lexicalFormAnnotationIsInvalidOnNonStringField() {
-        assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateLexicalFormField(getField("invalidLexicalForm")));
+        validator.validateDataPropertyField(getField("validLexicalForm"),
+                getField("validLexicalForm").getAnnotation(OWLDataProperty.class));
     }
 
     @Test
     void validateDataPropertyFieldInvokesLexicalFormValidation() {
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateDataPropertyField(getField("invalidLexicalForm")));
+                () -> validator.validateDataPropertyField(getField("invalidLexicalForm"),
+                        getField("invalidLexicalForm").getAnnotation(OWLDataProperty.class)));
     }
 
     @Test
     void validateAnnotationPropertyFieldInvokesLexicalFormValidation() {
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateAnnotationPropertyField(getField("invalidLexicalForm")));
+                () -> validator.validateAnnotationPropertyField(getField("invalidLexicalFormAnnotation"),
+                        getField("invalidLexicalFormAnnotation").getAnnotation(OWLAnnotationProperty.class)));
     }
 
     @SuppressWarnings("unused")
@@ -170,10 +169,13 @@ class FieldMappingValidatorTest {
 
         Integer invalidIdentifier;
 
-        @LexicalForm
+        @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
         private String validLexicalForm;
 
-        @LexicalForm
+        @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
         private Integer invalidLexicalForm;
+
+        @OWLAnnotationProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
+        private Integer invalidLexicalFormAnnotation;
     }
 }
