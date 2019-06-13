@@ -14,7 +14,6 @@ package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.LexicalForm;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
@@ -25,8 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Contains a generated string URI and data property attributes of primitive wrapper types
- * - boolean, int, long, double. Plus an enum attribute and a plural datatype property attribute.
+ * Contains a generated string URI and data property attributes of primitive wrapper types - boolean, int, long, double.
+ * Plus an enum attribute and a plural datatype property attribute.
  */
 @OWLClass(iri = Vocabulary.c_OwlClassM)
 public class OWLClassM {
@@ -55,8 +54,7 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_IntegerSet)
     private Set<Integer> integerSet;
 
-    @LexicalForm
-    @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm)
+    @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
     private String lexicalForm;
 
     public enum Severity {

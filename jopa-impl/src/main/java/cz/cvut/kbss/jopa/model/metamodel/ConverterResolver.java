@@ -12,7 +12,6 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.annotations.LexicalForm;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.EnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
@@ -37,13 +36,13 @@ class ConverterResolver {
     /**
      * Determines converter which should be used for transformation of values to and from the specified field.
      * <p>
-     * Besides custom converters, the system supports a number of built-in converters, which ensure that e.g. widening conversion
-     * or mapping to Java 8 Date/Time API is supported.
+     * Besides custom converters, the system supports a number of built-in converters, which ensure that e.g. widening
+     * conversion or mapping to Java 8 Date/Time API is supported.
      *
      * @param field  The field for which converter should be determined
      * @param config Mapping configuration extracted during metamodel building
-     * @return Possible converter instance to be used for transformation of values of the specified field.
-     * Returns empty {@code Optional} if no suitable converter is found (or needed)
+     * @return Possible converter instance to be used for transformation of values of the specified field. Returns empty
+     * {@code Optional} if no suitable converter is found (or needed)
      */
     public Optional<ConverterWrapper<?, ?>> resolveConverter(Field field, PropertyAttributes config) {
         if (config.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
@@ -53,16 +52,9 @@ class ConverterResolver {
         if (attValueType.isEnum()) {
             return Optional.of(new EnumConverter(attValueType));
         }
-        if (isLexicalFormField(field, config)) {
+        if (config.isLexicalForm()) {
             return Optional.of(new ToLexicalFormConverter());
         }
         return converters.getConverter(attValueType);
-    }
-
-    private boolean isLexicalFormField(Field field, PropertyAttributes config) {
-        return (config.getPersistentAttributeType() == Attribute.PersistentAttributeType.DATA ||
-                config.getPersistentAttributeType() == Attribute.PersistentAttributeType.ANNOTATION) &&
-                field.getAnnotation(
-                        LexicalForm.class) != null;
     }
 }

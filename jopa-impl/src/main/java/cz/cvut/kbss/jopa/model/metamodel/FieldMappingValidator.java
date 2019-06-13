@@ -13,7 +13,8 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
-import cz.cvut.kbss.jopa.model.annotations.LexicalForm;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.lang.reflect.Field;
@@ -85,19 +86,21 @@ class FieldMappingValidator {
         return type instanceof Class && IdentifierTransformer.isValidIdentifierType((Class<?>) type);
     }
 
-    void validateAnnotationPropertyField(Field field) {
+    void validateAnnotationPropertyField(Field field, OWLAnnotationProperty config) {
         assert field != null;
-        validateLexicalFormField(field);
+        assert config != null;
+        validateLexicalFormField(field, config.lexicalForm());
     }
 
-    void validateDataPropertyField(Field field) {
+    void validateDataPropertyField(Field field, OWLDataProperty config) {
         assert field != null;
-        validateLexicalFormField(field);
+        assert config != null;
+        validateLexicalFormField(field, config.lexicalForm());
     }
 
-    void validateLexicalFormField(Field field) {
+    private void validateLexicalFormField(Field field, boolean lexicalForm) {
         assert field != null;
-        if (field.getAnnotation(LexicalForm.class) != null && !String.class.isAssignableFrom(field.getType())) {
+        if (lexicalForm && !String.class.isAssignableFrom(field.getType())) {
             throw new InvalidFieldMappingException("@LexicalForm can be used only on fields of type String.");
         }
     }
