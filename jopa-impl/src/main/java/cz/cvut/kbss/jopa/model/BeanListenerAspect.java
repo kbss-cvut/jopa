@@ -12,13 +12,11 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
-import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -109,7 +107,7 @@ public class BeanListenerAspect {
         try {
             final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(entity,
                     thisJoinPoint.getSignature().getName(), persistenceContext);
-            verifyCanModify(fieldSpec);
+            AttributeModificationValidator.verifyCanModify(fieldSpec);
             persistenceContext.attributeChanged(entity, fieldSpec.getJavaField());
         } catch (SecurityException e) {
             LOG.error(e.getMessage(), e);
@@ -122,18 +120,6 @@ public class BeanListenerAspect {
         final EntityType<?> et = persistenceContext.getMetamodel().entity(entity.getClass());
         assert et != null;
         return et.getFieldSpecification(fieldName);
-    }
-
-    private void verifyCanModify(FieldSpecification<?, ?> fieldSpec) {
-        if (fieldSpec.isInferred()) {
-            throw new InferredAttributeModifiedException(
-                    String.format("Field %s may contain inferences and cannot be modified.", fieldSpec));
-        }
-        if (fieldSpec instanceof AbstractAttribute && ((AbstractAttribute) fieldSpec).isLexicalForm()) {
-            throw new AttributeModificationForbiddenException(
-                    String.format("Field %s is configured to contain lexical form of literals and cannot be modified.",
-                            fieldSpec));
-        }
     }
 
     @Before("getter()")

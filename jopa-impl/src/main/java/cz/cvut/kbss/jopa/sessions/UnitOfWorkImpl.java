@@ -34,6 +34,7 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -616,6 +617,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                 final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
                 merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
                 for (ChangeRecord record : chSet.getChanges()) {
+                    AttributeModificationValidator.verifyCanModify(record.getAttribute());
                     preventCachingIfReferenceIsNotLoaded(record);
                     final Field field = record.getAttribute().getJavaField();
                     storage.merge(clone, field, descriptor);
