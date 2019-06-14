@@ -109,9 +109,6 @@ public class BeanListenerAspect {
         try {
             field = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(), persistenceContext)
                     .getJavaField();
-            if (EntityPropertiesUtils.isFieldTransient(field)) {
-                return;
-            }
             JOPAPersistenceProvider.verifyInferredAttributeNotModified(entity, field);
             persistenceContext.attributeChanged(entity, field);
         } catch (SecurityException e) {
