@@ -290,9 +290,12 @@ public class MetamodelFactory {
         when(strAttMock.getName()).thenReturn(OWLClassF.getStrAttField().getName());
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(strAttMock.isInferred()).thenReturn(true);
+        when(etMock.getFieldSpecification(OWLClassF.getStrAttField().getName())).thenReturn(strAttMock);
 
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassF.class.getDeclaredField("uri"));
+        when(idMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 

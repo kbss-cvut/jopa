@@ -18,17 +18,17 @@ package cz.cvut.kbss.jopa.exceptions;
  * This exception is raised when the user modifies an inferred attribute, which
  * is forbidden.
  */
-public class OWLInferredAttributeModifiedException extends OWLPersistenceException {
+public class InferredAttributeModifiedException extends OWLPersistenceException {
 
-    public OWLInferredAttributeModifiedException(String message, Throwable cause) {
+    public InferredAttributeModifiedException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public OWLInferredAttributeModifiedException(String message) {
+    public InferredAttributeModifiedException(String message) {
         super(message);
     }
 
-    public OWLInferredAttributeModifiedException(Throwable cause) {
+    public InferredAttributeModifiedException(Throwable cause) {
         super(cause);
     }
 
