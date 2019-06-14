@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -39,7 +39,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public abstract class RetrieveOperationsRunner extends BaseRunner {
 
@@ -48,7 +49,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveSimple() {
+    void testRetrieveSimple() {
         this.em = getEntityManager("RetrieveSimple", false);
         persist(entityA);
 
@@ -61,14 +62,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertTrue(em.contains(res));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void findWithNullIdentifierThrowsNPX() {
-        this.em = getEntityManager("RetrieveNull", false);
-        em.find(OWLClassA.class, null);
-    }
-
     @Test
-    public void testRetrieveWithLazyAttribute() throws Exception {
+    void testRetrieveWithLazyAttribute() throws Exception {
         this.em = getEntityManager("RetrieveLazy", false);
         persist(entityI);
 
@@ -86,7 +81,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveWithGeneratedId() {
+    void testRetrieveWithGeneratedId() {
         this.em = getEntityManager("RetrieveGenerated", false);
         em.getTransaction().begin();
         final int size = 10;
@@ -110,14 +105,14 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void findByUnknownIdReturnsNull() {
+    void findByUnknownIdReturnsNull() {
         this.em = getEntityManager("RetrieveNotExisting", false);
         final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
         assertNull(res);
     }
 
     @Test
-    public void testRefreshInstance() {
+    void testRefreshInstance() {
         this.em = getEntityManager("Refresh", false);
         persist(entityD, entityA);
 
@@ -132,8 +127,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertEquals(a.getUri(), d.getOwlClassA().getUri());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void refreshingNotManagedIsIllegal() {
+    @Test
+    void refreshingNotManagedIsIllegal() {
         this.em = getEntityManager("RefreshNotManaged", false);
         persist(entityA);
 
@@ -142,11 +137,11 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
         newA.setStringAttribute("newA");
-        em.refresh(newA);
+        assertThrows(IllegalArgumentException.class, () -> em.refresh(newA));
     }
 
     @Test
-    public void findOfEntityWithExistingIdButDifferentTypeReturnsNull() {
+    void findOfEntityWithExistingIdButDifferentTypeReturnsNull() {
         this.em = getEntityManager("RetrieveDifferentType", false);
         persist(entityA);
 
@@ -155,7 +150,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRefreshInstanceWithUnmappedProperties() {
+    void testRefreshInstanceWithUnmappedProperties() {
         this.em = getEntityManager("RefreshEntityWithProperties", false);
         final Map<URI, Set<Object>> properties = Generators.createTypedProperties();
         entityP.setProperties(properties);
@@ -171,7 +166,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void plainIdentifierAttributeIsAlwaysLoadedEagerly() throws Exception {
+    void plainIdentifierAttributeIsAlwaysLoadedEagerly() throws Exception {
         this.em = getEntityManager("PlainIdentifiersAreLoadedEagerly", false);
         entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#plainIdentifier"));
         entityP.setIndividuals(Collections.singleton(new URL("http://krizik.felk.cvut.cz/ontologies/jopa#url")));
@@ -187,7 +182,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void readingIndividualWithStringIdTwiceInPersistenceContextReturnsSameInstance() {
+    void readingIndividualWithStringIdTwiceInPersistenceContextReturnsSameInstance() {
         this.em = getEntityManager("readingIndividualWithStringIdTwiceInPersistenceContextReturnsSameInstance", true);
         persist(entityN);
 
@@ -199,7 +194,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void retrieveLoadsUnmappedPropertiesTogetherWithObjectPropertyValues() {
+    void retrieveLoadsUnmappedPropertiesTogetherWithObjectPropertyValues() {
         this.em = getEntityManager("retrieveLoadsUnmappedPropertiesTogetherWithObjectPropertyValues", false);
         final OWLClassV v = new OWLClassV();
         v.setProperties(Generators.createProperties());
@@ -226,7 +221,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor() throws Exception {
+    void retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor() throws Exception {
         this.em = getEntityManager("retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor",
                 false);
         persist(entityA);
@@ -245,7 +240,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void retrieveGetsStringAttributesWithDifferentLanguageTagsSpecifiedInDescriptor() throws Exception {
+    void retrieveGetsStringAttributesWithDifferentLanguageTagsSpecifiedInDescriptor() throws Exception {
         this.em = getEntityManager("retrieveGetsStringAttributesWithDifferentLanguageTagsSpecifiedInDescriptor", false);
         entityN.setAnnotationProperty("english annotation");
         entityN.setStringAttribute("english string");
@@ -268,7 +263,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void retrieveAllowsToOverridePULevelLanguageSpecification() throws Exception {
+    void retrieveAllowsToOverridePULevelLanguageSpecification() throws Exception {
         this.em = getEntityManager("retrieveAllowsToOverridePULevelLanguageSpecification", false);
         entityA.setStringAttribute(null);
         // PU-level language is en
@@ -288,7 +283,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void retrieveLoadsStringLiteralWithCorrectLanguageTagWhenCachedValueHasDifferentLanguageTag()
+    void retrieveLoadsStringLiteralWithCorrectLanguageTagWhenCachedValueHasDifferentLanguageTag()
             throws Exception {
         this.em = getEntityManager(
                 "retrieveLoadsStringLiteralWithCorrectLanguageTagWhenCachedValueHasDifferentLanguageTag", true);
@@ -349,7 +344,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     protected abstract void addFileStorageProperties(Map<String, String> properties);
 
     @Test
-    public void getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily()
+    void getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily()
             throws Exception {
         this.em = getEntityManager(
                 "getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily", false);
@@ -369,7 +364,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void getReferenceRetrievesReferenceToInstanceWithObjectPropertiesWhoseAttributesAreLoadedLazily() {
+    void getReferenceRetrievesReferenceToInstanceWithObjectPropertiesWhoseAttributesAreLoadedLazily() {
         this.em = getEntityManager(
                 "getReferenceRetrievesReferenceToInstanceWithObjectPropertiesWhoseAttributesAreLoadedLazily", false);
         persist(entityG);
@@ -383,7 +378,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void getReferenceRetrievesReferenceToInstanceWhenCacheIsEnabled() {
+    void getReferenceRetrievesReferenceToInstanceWhenCacheIsEnabled() {
         this.em = getEntityManager("getReferenceRetrievesReferenceToInstanceWhenCacheIsEnabled", true);
         persist(entityA);
 
@@ -391,5 +386,16 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertNotNull(result);
         assertEquals(entityA.getUri(), result.getUri());
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
+
+    @Test
+    void loadingEntityWithLexicalFormAttributeLoadsLexicalFormOfLiteral() throws Exception {
+        this.em = getEntityManager("loadingEntityWithLexicalFormAttributeLoadsLexicalFormOfLiteral", false);
+        persist(entityM);
+        final Integer value = 117;
+        persistTestData(Collections.singleton(new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_lexicalForm), value)), em);
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertNotNull(result);
+        assertEquals(value.toString(), result.getLexicalForm());
     }
 }

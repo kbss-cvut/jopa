@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test;
 
@@ -54,6 +52,9 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_IntegerSet)
     private Set<Integer> integerSet;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
+    private String lexicalForm;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -123,6 +124,14 @@ public class OWLClassM {
         this.integerSet = integerSet;
     }
 
+    public String getLexicalForm() {
+        return lexicalForm;
+    }
+
+    public void setLexicalForm(String lexicalForm) {
+        this.lexicalForm = lexicalForm;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -133,6 +142,7 @@ public class OWLClassM {
                 ", doubleAttribute=" + doubleAttribute +
                 ", enumAttribute=" + enumAttribute +
                 ", integerSet=" + integerSet +
+                ", lexicalForm=" + lexicalForm +
                 '}';
     }
 
