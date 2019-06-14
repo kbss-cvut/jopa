@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -605,7 +605,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    @Test(expected = OWLInferredAttributeModifiedException.class)
+    @Test(expected = InferredAttributeModifiedException.class)
     public void testModifyInferredAttribute() {
         logger.debug("Test: modify an inferred attribute.");
         this.em = getEntityManager("ModifyInferredAttribute", false);

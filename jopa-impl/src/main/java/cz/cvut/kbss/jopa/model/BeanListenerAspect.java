@@ -1,19 +1,18 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -105,12 +104,11 @@ public class BeanListenerAspect {
             return;
         }
 
-        final Field field;
         try {
-            field = getFieldSpecification(entity, thisJoinPoint.getSignature().getName(), persistenceContext)
-                    .getJavaField();
-            JOPAPersistenceProvider.verifyInferredAttributeNotModified(entity, field);
-            persistenceContext.attributeChanged(entity, field);
+            final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(entity,
+                    thisJoinPoint.getSignature().getName(), persistenceContext);
+            verifyCanModify(fieldSpec, entity);
+            persistenceContext.attributeChanged(entity, fieldSpec.getJavaField());
         } catch (SecurityException e) {
             LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException(e.getMessage());
@@ -122,6 +120,14 @@ public class BeanListenerAspect {
         final EntityType<?> et = persistenceContext.getMetamodel().entity(entity.getClass());
         assert et != null;
         return et.getFieldSpecification(fieldName);
+    }
+
+    private void verifyCanModify(FieldSpecification<?, ?> fieldSpec, Object entity) {
+        if (fieldSpec.isInferred()) {
+            throw new InferredAttributeModifiedException(
+                    String.format("Field %s of instance %s may contain inferences and cannot be modified.",
+                            fieldSpec.getName(), entity));
+        }
     }
 
     @Before("getter()")

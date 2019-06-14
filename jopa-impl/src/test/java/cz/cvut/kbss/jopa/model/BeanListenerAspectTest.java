@@ -15,8 +15,10 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class BeanListenerAspectTest extends UnitOfWorkTestBase {
@@ -96,5 +99,13 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
         public void setLabel(String label) {
             this.label = label;
         }
+    }
+
+    @Test
+    void setterAspectThrowsInferredAttributeModifiedExceptionWhenInferredAttributeIsModified() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassF entityF = new OWLClassF(Generators.createIndividualIdentifier());
+        final OWLClassF clone = (OWLClassF) sut.registerExistingObject(entityF, descriptor);
+        assertThrows(InferredAttributeModifiedException.class, () -> clone.setSecondStringAttribute("value"));
     }
 }
