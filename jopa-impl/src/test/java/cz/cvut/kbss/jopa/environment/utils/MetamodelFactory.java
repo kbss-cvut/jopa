@@ -283,6 +283,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
 
         when(strAttMock.getJavaField()).thenReturn(OWLClassF.getStrAttField());
+        when(strAttMock.getJavaType()).thenReturn(OWLClassF.getStrAttField().getType());
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
         final String stringAttIri = OWLClassF.getStrAttField().getAnnotation(OWLDataProperty.class)
                                              .iri();
