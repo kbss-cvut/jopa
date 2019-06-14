@@ -16,8 +16,10 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
@@ -107,5 +109,14 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
         final OWLClassF entityF = new OWLClassF(Generators.createIndividualIdentifier());
         final OWLClassF clone = (OWLClassF) sut.registerExistingObject(entityF, descriptor);
         assertThrows(InferredAttributeModifiedException.class, () -> clone.setSecondStringAttribute("value"));
+    }
+
+    @Test
+    void setterAspectThrowsAttributeModificationForbiddenWhenLexicalFormAttributeValueIsModified() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassM entityM = new OWLClassM();
+        entityM.initializeTestValues(true);
+        final OWLClassM clone = (OWLClassM) sut.registerExistingObject(entityM, descriptor);
+        assertThrows(AttributeModificationForbiddenException.class, () -> clone.setLexicalForm("value"));
     }
 }

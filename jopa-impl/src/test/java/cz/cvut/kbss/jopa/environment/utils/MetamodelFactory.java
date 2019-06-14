@@ -608,6 +608,7 @@ public class MetamodelFactory {
         when(lexicalFormAtt.getDeclaringType()).thenReturn(etMock);
         when(lexicalFormAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(lexicalFormAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
+        when(lexicalFormAtt.isLexicalForm()).thenReturn(true);
         when(etMock.getFieldSpecification(OWLClassM.getLexicalFormField().getName())).thenReturn(lexicalFormAtt);
 
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
