@@ -191,4 +191,14 @@ public class MetamodelBuilderTest {
         void prePersistChild() {
         }
     }
+
+    @Test
+    void buildMetamodelSetsLexicalFormConfigOnAttributeMappingBasedOnAnnotation() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
+        builder.buildMetamodel(finderMock);
+        final EntityTypeImpl<OWLClassM> result = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
+        final AbstractAttribute<OWLClassM, String> att = (AbstractAttribute<OWLClassM, String>) result
+                .getAttribute(OWLClassM.getLexicalFormField().getName());
+        assertTrue(att.isLexicalForm());
+    }
 }

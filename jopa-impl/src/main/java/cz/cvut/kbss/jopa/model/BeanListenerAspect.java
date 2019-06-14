@@ -12,8 +12,10 @@
  */
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -107,7 +109,7 @@ public class BeanListenerAspect {
         try {
             final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(entity,
                     thisJoinPoint.getSignature().getName(), persistenceContext);
-            verifyCanModify(fieldSpec, entity);
+            verifyCanModify(fieldSpec);
             persistenceContext.attributeChanged(entity, fieldSpec.getJavaField());
         } catch (SecurityException e) {
             LOG.error(e.getMessage(), e);
@@ -122,11 +124,15 @@ public class BeanListenerAspect {
         return et.getFieldSpecification(fieldName);
     }
 
-    private void verifyCanModify(FieldSpecification<?, ?> fieldSpec, Object entity) {
+    private void verifyCanModify(FieldSpecification<?, ?> fieldSpec) {
         if (fieldSpec.isInferred()) {
             throw new InferredAttributeModifiedException(
-                    String.format("Field %s of instance %s may contain inferences and cannot be modified.",
-                            fieldSpec.getName(), entity));
+                    String.format("Field %s may contain inferences and cannot be modified.", fieldSpec));
+        }
+        if (fieldSpec instanceof AbstractAttribute && ((AbstractAttribute) fieldSpec).isLexicalForm()) {
+            throw new AttributeModificationForbiddenException(
+                    String.format("Field %s is configured to contain lexical form of literals and cannot be modified.",
+                            fieldSpec));
         }
     }
 
