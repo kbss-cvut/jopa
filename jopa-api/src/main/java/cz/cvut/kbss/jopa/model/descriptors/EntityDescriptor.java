@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
@@ -138,13 +136,34 @@ public class EntityDescriptor extends Descriptor {
 
         EntityDescriptor that = (EntityDescriptor) o;
 
-        return Objects.equals(fieldDescriptors, that.fieldDescriptors);
+        if (fieldDescriptors.size() != that.fieldDescriptors.size()) {
+            return false;
+        }
+        for (Entry<Field, Descriptor> e : fieldDescriptors.entrySet()) {
+            if (e.getValue() == null) {
+                if (that.fieldDescriptors.containsKey(e.getKey()) && that.fieldDescriptors.get(e.getKey()) != null) {
+                    return false;
+                }
+            } else {
+                if (e.getValue() == this && that.fieldDescriptors.get(e.getKey()) == that) {
+                    continue;
+                }
+                if (!e.getValue().equals(that.fieldDescriptors.get(e.getKey()))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (fieldDescriptors != null ? fieldDescriptors.hashCode() : 0);
+        result = 31 * result + (fieldDescriptors != null ? fieldDescriptors.entrySet().stream()
+                                                                           .map(e -> e.getKey().hashCode() ^
+                                                                                   (e.getValue() == this ? 0 :
+                                                                                    e.getValue().hashCode())).reduce(0,
+                        Integer::sum) : 0);
         return result;
     }
 }
