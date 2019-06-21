@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
@@ -195,5 +193,55 @@ class EntityDescriptorTest {
         dOne.addAttributeDescriptor(TestClass.intAttField(), new FieldDescriptor(CONTEXT_TWO, TestClass.intAttField()));
         assertFalse(dOne.getAttributeDescriptors().isEmpty());
         assertEquals(CONTEXT_TWO, dOne.getAttributeDescriptors().iterator().next().getContext());
+    }
+
+    @Test
+    void equalsHandlesRecursiveDescriptors() throws Exception {
+        final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
+        descriptor.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptor);
+
+        final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
+        descriptorTwo.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptorTwo);
+        assertEquals(descriptor, descriptorTwo);
+    }
+
+    @SuppressWarnings("unused")
+    private static class RecursiveClass {
+
+        private RecursiveClass parent;
+    }
+
+    @Test
+    void equalsHandlesOneRecursiveDescriptorAndOtherNormal() throws Exception {
+        final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
+        descriptor.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptor);
+
+        final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
+        descriptorTwo.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"),
+                new EntityDescriptor(CONTEXT_ONE));
+        // The first descriptor is recursive, while the second isn't, so it has only two levels
+        assertNotEquals(descriptor, descriptorTwo);
+    }
+
+    @Test
+    void equalsReturnsFalseWhenFieldDescriptorCountDiffers() throws Exception {
+        final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
+        descriptor.setLanguage("en");
+        descriptor.setAttributeLanguage(TestClass.stringAttField(), "cs");
+
+        final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
+        descriptor.setLanguage("en");
+        assertNotEquals(descriptor, descriptorTwo);
+    }
+
+    @Test
+    void hashCodeHandlesRecursiveDescriptors() throws Exception {
+        final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
+        descriptor.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptor);
+
+        final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
+        descriptorTwo.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptorTwo);
+
+        assertEquals(descriptor.hashCode(), descriptorTwo.hashCode());
     }
 }
