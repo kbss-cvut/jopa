@@ -13,12 +13,14 @@
 package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class EntityDescriptorTest {
@@ -27,62 +29,61 @@ class EntityDescriptorTest {
     private static final URI CONTEXT_TWO = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/contextTwo");
     private static final String LANG = "en";
 
+    @Mock
+    private Attribute<TestClass, String> stringAtt;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+    }
+
     @Test
-    void fieldDescriptorByDefaultInheritsEntityContext() throws Exception {
+    void fieldDescriptorByDefaultInheritsEntityContext() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
-        final Attribute att = mock(Attribute.class);
-        when(att.getJavaField()).thenReturn(TestClass.stringAttField());
-        final Descriptor result = descriptor.getAttributeDescriptor(att);
+        final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
         assertEquals(CONTEXT_ONE, result.getContext());
     }
 
     @Test
-    void fieldDescriptorHasItsOwnContextWhenItIsSetForIt() throws Exception {
+    void fieldDescriptorHasItsOwnContextWhenItIsSetForIt() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
-        final Attribute att = mock(Attribute.class);
-        when(att.getJavaField()).thenReturn(TestClass.stringAttField());
-        descriptor.addAttributeContext(att.getJavaField(), CONTEXT_TWO);
+        descriptor.addAttributeContext(stringAtt.getJavaField(), CONTEXT_TWO);
 
-        final Descriptor result = descriptor.getAttributeDescriptor(att);
+        final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
         assertEquals(CONTEXT_TWO, result.getContext());
     }
 
     @Test
-    void fieldDescriptorByDefaultInheritsEntityLanguageTag() throws Exception {
+    void fieldDescriptorByDefaultInheritsEntityLanguageTag() {
         final EntityDescriptor descriptor = new EntityDescriptor();
-        final Attribute att = mock(Attribute.class);
-        when(att.getJavaField()).thenReturn(TestClass.stringAttField());
         descriptor.setLanguage(LANG);
         assertTrue(descriptor.hasLanguage());
 
-        final Descriptor result = descriptor.getAttributeDescriptor(att);
+        final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
         assertTrue(result.hasLanguage());
         assertEquals(LANG, result.getLanguage());
     }
 
     @Test
-    void fieldDescriptorInheritsChangeOfLanguageTagFromEntityDescriptor() throws Exception {
+    void fieldDescriptorInheritsChangeOfLanguageTagFromEntityDescriptor() {
         final EntityDescriptor descriptor = new EntityDescriptor();
-        final Attribute att = mock(Attribute.class);
-        when(att.getJavaField()).thenReturn(TestClass.stringAttField());
         descriptor.setLanguage(LANG);
         final String newLang = "cs";
         descriptor.setLanguage(newLang);
-        final Descriptor result = descriptor.getAttributeDescriptor(att);
+        final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
         assertTrue(result.hasLanguage());
         assertEquals(newLang, result.getLanguage());
     }
 
     @Test
-    void fieldDescriptorHasLanguageSetToItThroughEntityDescriptor() throws Exception {
+    void fieldDescriptorHasLanguageSetToItThroughEntityDescriptor() {
         final EntityDescriptor descriptor = new EntityDescriptor();
-        final Attribute att = mock(Attribute.class);
-        when(att.getJavaField()).thenReturn(TestClass.stringAttField());
         descriptor.setLanguage(LANG);
         final String newLang = "cs";
-        descriptor.setAttributeLanguage(att.getJavaField(), newLang);
+        descriptor.setAttributeLanguage(stringAtt.getJavaField(), newLang);
 
-        final Descriptor result = descriptor.getAttributeDescriptor(att);
+        final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
         assertTrue(result.hasLanguage());
         assertEquals(newLang, result.getLanguage());
     }
@@ -122,11 +123,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void gettingFieldDescriptorFromEntityDescriptorLeavesItsHasLanguageStatusEmpty() throws Exception {
+    void gettingFieldDescriptorFromEntityDescriptorLeavesItsHasLanguageStatusEmpty() {
         final Descriptor descriptor = new EntityDescriptor();
-        final Attribute att = mock(Attribute.class);
-        when(att.getJavaField()).thenReturn(TestClass.stringAttField());
-        final Descriptor fieldDescriptor = descriptor.getAttributeDescriptor(att);
+        final Descriptor fieldDescriptor = descriptor.getAttributeDescriptor(stringAtt);
         assertFalse(fieldDescriptor.hasLanguage());
     }
 
@@ -243,5 +242,29 @@ class EntityDescriptorTest {
         descriptorTwo.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptorTwo);
 
         assertEquals(descriptor.hashCode(), descriptorTwo.hashCode());
+    }
+
+    @Test
+    void getAttributeContextReturnsSubjectContextWhenAssertionsInSubjectContextIsTrue() throws Exception {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addAttributeDescriptor(TestClass.stringAttField(), new EntityDescriptor(CONTEXT_TWO));
+
+        assertEquals(CONTEXT_ONE, sut.getAttributeContext(stringAtt));
+    }
+
+    @Test
+    void getAttributeContextReturnsAttributeContextWhenAssertionsInSubjectContextIsFalse() throws Exception {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE, false);
+        sut.addAttributeDescriptor(TestClass.stringAttField(), new EntityDescriptor(CONTEXT_TWO));
+
+        assertEquals(CONTEXT_TWO, sut.getAttributeContext(stringAtt));
+    }
+
+    @Test
+    void getAttributeContextReturnsAttributeContextWhenItOverridesSubjectContext() throws Exception {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE, true);
+        sut.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+
+        assertEquals(CONTEXT_TWO, sut.getAttributeContext(stringAtt));
     }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
@@ -29,6 +27,8 @@ public abstract class Descriptor {
 
     protected final URI context;
 
+    protected final boolean assertionsInSubjectContext;
+
     private String language;
     private boolean hasLanguage;
 
@@ -38,6 +38,12 @@ public abstract class Descriptor {
 
     protected Descriptor(URI context) {
         this.context = context;
+        this.assertionsInSubjectContext = true;
+    }
+
+    protected Descriptor(URI context, boolean assertionsInSubjectContext) {
+        this.context = context;
+        this.assertionsInSubjectContext = assertionsInSubjectContext;
     }
 
     /**
@@ -64,8 +70,8 @@ public abstract class Descriptor {
     /**
      * Gets information about whether language tag has been set on this descriptor.
      * <p>
-     * The language tag can be explicitly set to {@code null}, meaning any language is supported. This can be used
-     * to override PU-level language setting.
+     * The language tag can be explicitly set to {@code null}, meaning any language is supported. This can be used to
+     * override PU-level language setting.
      *
      * @return {@code true} if a language tag has been set on this descriptor, {@code false} otherwise
      */
@@ -115,6 +121,14 @@ public abstract class Descriptor {
     public abstract Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute);
 
     /**
+     * Gets context in which the property assertion(s) of the specified attribute should be stored.
+     *
+     * @param attribute Entity attribute, as specified by the application model
+     * @return Context identifier
+     */
+    public abstract URI getAttributeContext(FieldSpecification<?, ?> attribute);
+
+    /**
      * Adds descriptor for the specified attribute.
      *
      * @param attribute  The attribute to set descriptor for
@@ -136,8 +150,8 @@ public abstract class Descriptor {
     /**
      * Sets language to be used when working (retrieving, persisting) with values of the specified attribute.
      * <p>
-     * Note that setting language in this manner will not have any effect on descriptors of the
-     * specified attribute previously retrieved from this descriptor.
+     * Note that setting language in this manner will not have any effect on descriptors of the specified attribute
+     * previously retrieved from this descriptor.
      *
      * @param attribute   The attribute concerned
      * @param languageTag Language tag to use, possibly {@code null}
@@ -168,6 +182,13 @@ public abstract class Descriptor {
      */
     protected abstract Set<URI> getContextsInternal(Set<URI> contexts, Set<Descriptor> visited);
 
+    /**
+     * Whether this descriptor can override parent descriptor's assertionsInSubjectContext setting.
+     */
+    protected boolean overridesAssertionsInSubjectContext() {
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -182,6 +203,9 @@ public abstract class Descriptor {
         if (hasLanguage != that.hasLanguage) {
             return false;
         }
+        if (assertionsInSubjectContext != that.assertionsInSubjectContext) {
+            return false;
+        }
         return Objects.equals(context, that.context) && Objects.equals(language, that.language);
     }
 
@@ -190,6 +214,7 @@ public abstract class Descriptor {
         int result = context != null ? context.hashCode() : 0;
         result = 31 * result + (language != null ? language.hashCode() : 0);
         result = 31 * result + (hasLanguage ? 1 : 0);
+        result = 31 * result + (assertionsInSubjectContext ? 1 : 0);
         return result;
     }
 

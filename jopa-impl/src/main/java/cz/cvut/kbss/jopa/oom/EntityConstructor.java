@@ -149,8 +149,7 @@ class EntityConstructor {
             }
         }
         if (!loaders.containsKey(att)) {
-            loaders.put(att, FieldStrategy.createFieldStrategy(et, att,
-                    desc.getAttributeDescriptor(att), mapper));
+            loaders.put(att, FieldStrategy.createFieldStrategy(et, att, desc.getAttributeDescriptor(att), mapper));
         }
         return loaders.get(att);
     }
@@ -180,8 +179,7 @@ class EntityConstructor {
                            Descriptor entityDescriptor) throws IllegalAccessException {
         final FieldSpecification<? super T, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
-                .createFieldStrategy(et, fieldSpec,
-                        entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
+                .createFieldStrategy(et, fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
         axioms.forEach(fs::addValueFromAxiom);
         fs.buildInstanceFieldValue(entity);
         validateIntegrityConstraints(entity, fieldSpec, et);
