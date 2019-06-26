@@ -40,7 +40,7 @@ class IdentifierFieldStrategy<X> extends FieldStrategy<Identifier<? super X, ?>,
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        valueBuilder.addValue(createAssertion(), new Value<>(et.getIRI().toURI()), attributeDescriptor.getContext());
+        valueBuilder.addValue(createAssertion(), new Value<>(et.getIRI().toURI()), getAttributeContext());
     }
 
     @Override

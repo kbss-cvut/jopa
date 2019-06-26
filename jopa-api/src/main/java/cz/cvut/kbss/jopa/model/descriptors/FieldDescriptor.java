@@ -50,6 +50,11 @@ public class FieldDescriptor extends Descriptor {
     }
 
     @Override
+    public URI getAttributeContext(FieldSpecification<?, ?> attribute) {
+        return context;
+    }
+
+    @Override
     public void addAttributeDescriptor(Field attribute, Descriptor descriptor) {
         // Do nothing
     }
@@ -86,6 +91,11 @@ public class FieldDescriptor extends Descriptor {
 
     Field getField() {
         return field;
+    }
+
+    @Override
+    protected boolean overridesAssertionsInSubjectContext() {
+        return true;
     }
 
     @Override

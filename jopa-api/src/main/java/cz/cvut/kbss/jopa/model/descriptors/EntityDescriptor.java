@@ -40,6 +40,11 @@ public class EntityDescriptor extends Descriptor {
         this.fieldDescriptors = new HashMap<>();
     }
 
+    public EntityDescriptor(URI context, boolean assertionsInSubjectContext) {
+        super(context, assertionsInSubjectContext);
+        this.fieldDescriptors = new HashMap<>();
+    }
+
     @Override
     public void addAttributeDescriptor(Field attribute, Descriptor descriptor) {
         Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
@@ -71,6 +76,7 @@ public class EntityDescriptor extends Descriptor {
 
     @Override
     public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
+        Objects.requireNonNull(attribute);
         Descriptor d = getFieldDescriptor(attribute.getJavaField());
         if (d == null) {
             d = createDescriptor(attribute, context);
@@ -79,6 +85,14 @@ public class EntityDescriptor extends Descriptor {
             }
         }
         return d;
+    }
+
+    @Override
+    public URI getAttributeContext(FieldSpecification<?, ?> attribute) {
+        Objects.requireNonNull(attribute);
+        final Descriptor attDescriptor = getAttributeDescriptor(attribute);
+        return attDescriptor.overridesAssertionsInSubjectContext() || !assertionsInSubjectContext ?
+               attDescriptor.getContext() : getContext();
     }
 
     @Override
@@ -130,9 +144,15 @@ public class EntityDescriptor extends Descriptor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof EntityDescriptor)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof EntityDescriptor)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
 
         EntityDescriptor that = (EntityDescriptor) o;
 
