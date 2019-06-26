@@ -46,32 +46,36 @@ public class EntityDescriptor extends Descriptor {
     }
 
     @Override
-    public void addAttributeDescriptor(Field attribute, Descriptor descriptor) {
+    public EntityDescriptor addAttributeDescriptor(Field attribute, Descriptor descriptor) {
         Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
         Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         fieldDescriptors.put(attribute, descriptor);
+        return this;
     }
 
     @Override
-    public void addAttributeContext(Field attribute, URI context) {
+    public EntityDescriptor addAttributeContext(Field attribute, URI context) {
         Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
 
         fieldDescriptors.put(attribute, new FieldDescriptor(context, attribute));
+        return this;
     }
 
     @Override
-    public void setLanguage(String languageTag) {
+    public EntityDescriptor setLanguage(String languageTag) {
         super.setLanguage(languageTag);
         fieldDescriptors.values().forEach(d -> d.setLanguage(languageTag));
+        return this;
     }
 
     @Override
-    public void setAttributeLanguage(Field attribute, String languageTag) {
+    public EntityDescriptor setAttributeLanguage(Field attribute, String languageTag) {
         Objects.requireNonNull(attribute);
 
         fieldDescriptors.putIfAbsent(attribute, new FieldDescriptor(null, attribute));
         fieldDescriptors.get(attribute).setLanguage(languageTag);
+        return this;
     }
 
     @Override
