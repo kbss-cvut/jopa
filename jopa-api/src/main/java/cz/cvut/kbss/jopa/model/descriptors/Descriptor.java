@@ -87,9 +87,10 @@ public abstract class Descriptor {
      * @param languageTag The language tag to use, possibly {@code null}, meaning no language preference should be used
      * @see #anyLanguage()
      */
-    public void setLanguage(String languageTag) {
+    public Descriptor setLanguage(String languageTag) {
         this.language = languageTag;
         this.hasLanguage = true;
+        return this;
     }
 
     /**
@@ -100,8 +101,8 @@ public abstract class Descriptor {
      * <p>
      * This does the same as calling {@link #setLanguage(String)} with {@code null} argument, but is more explicit.
      */
-    public void anyLanguage() {
-        setLanguage(null);
+    public Descriptor anyLanguage() {
+        return setLanguage(null);
     }
 
     /**
@@ -134,7 +135,7 @@ public abstract class Descriptor {
      * @param attribute  The attribute to set descriptor for
      * @param descriptor The descriptor to use
      */
-    public abstract void addAttributeDescriptor(Field attribute, Descriptor descriptor);
+    public abstract Descriptor addAttributeDescriptor(Field attribute, Descriptor descriptor);
 
     /**
      * Adds repository context for the specified attribute.
@@ -145,7 +146,7 @@ public abstract class Descriptor {
      * @param context   The context to set
      * @see #addAttributeDescriptor(Field, Descriptor)
      */
-    public abstract void addAttributeContext(Field attribute, URI context);
+    public abstract Descriptor addAttributeContext(Field attribute, URI context);
 
     /**
      * Sets language to be used when working (retrieving, persisting) with values of the specified attribute.
@@ -156,7 +157,7 @@ public abstract class Descriptor {
      * @param attribute   The attribute concerned
      * @param languageTag Language tag to use, possibly {@code null}
      */
-    public abstract void setAttributeLanguage(Field attribute, String languageTag);
+    public abstract Descriptor setAttributeLanguage(Field attribute, String languageTag);
 
     /**
      * Gets all contexts present in this descriptor.
