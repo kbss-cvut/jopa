@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -24,8 +22,8 @@ import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 
@@ -34,9 +32,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase {
@@ -45,7 +41,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
 
     private SimpleListPropertyStrategy<OWLClassC> strategy;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         super.setUp();
@@ -56,7 +52,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void buildsInstanceFieldFromAxioms() {
+    void buildsInstanceFieldFromAxioms() {
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(PK),
                 Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(), false), new Value<>(
                 URI.create("http://someSequence.org")));
@@ -84,16 +80,15 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
                     Assertion.createObjectPropertyAssertion(la.getOWLObjectPropertyHasNextIRI().toURI(), false),
                     new Value<>(NamedResource.create(item.getUri())));
             axioms.add(a);
-            when(
-                    mapperMock.getEntityFromCacheOrOntology(OWLClassA.class,
-                            item.getUri(), descriptor)).thenReturn(item);
+            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, item.getUri(),
+                    descriptor.getAttributeDescriptor(simpleList))).thenReturn(item);
             previous = item.getUri();
         }
         return axioms;
     }
 
     @Test
-    public void buildsInstanceFieldOfPlainIdentifiersFromAxioms() {
+    void buildsInstanceFieldOfPlainIdentifiersFromAxioms() {
         final ListAttributeImpl<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
@@ -115,7 +110,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void addsValueFromAxiomAndVerifiesCorrectDescriptorWasCreated() {
+    void addsValueFromAxiomAndVerifiesCorrectDescriptorWasCreated() {
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(PK),
                 Assertion.createObjectPropertyAssertion(simpleList.getIRI()
                                                                   .toURI(), false), new Value<>(
@@ -138,7 +133,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractsListValuesForSave() throws Exception {
+    void extractsListValuesForSave() throws Exception {
         final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(generateList());
         strategy.buildAxiomValuesFromInstance(c, builder);
@@ -164,7 +159,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractsListValuesForSaveListIsEmpty() throws Exception {
+    void extractsListValuesForSaveListIsEmpty() throws Exception {
         final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(new ArrayList<>());
         strategy.buildAxiomValuesFromInstance(c, builder);
@@ -181,7 +176,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractsListValuesForSaveListIsNull() throws Exception {
+    void extractsListValuesForSaveListIsNull() throws Exception {
         final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(null);
         strategy.buildAxiomValuesFromInstance(c, builder);
@@ -197,7 +192,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractListValuesSkipsNullItems() throws Exception {
+    void extractListValuesSkipsNullItems() throws Exception {
         final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(generateList());
         setRandomListItemsToNull(c.getSimpleList());
@@ -211,7 +206,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractValuesFromListOfPlainIdentifiersForPersist() throws Exception {
+    void extractValuesFromListOfPlainIdentifiersForPersist() throws Exception {
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
@@ -225,7 +220,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractValuesFromListSkipsNullItemsInListOfPlainIdentifiers() throws Exception {
+    void extractValuesFromListSkipsNullItemsInListOfPlainIdentifiers() throws Exception {
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
@@ -241,7 +236,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     }
 
     @Test
-    public void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() {
+    void extractValuesRegistersPendingListItemsWhenListContainsUnpersistedItems() {
         final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(generateList());
         c.getSimpleList()

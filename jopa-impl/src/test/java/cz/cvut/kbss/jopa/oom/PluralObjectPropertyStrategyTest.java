@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -21,8 +19,6 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,7 +52,7 @@ class PluralObjectPropertyStrategyTest {
 
     @Test
     void addValueFromAxiomLoadsInstanceAndAddsItIntoAttributeCollection() {
-        final Impl<OWLClassJ> sut = strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
+        final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
         final OWLClassJ instance = new OWLClassJ(ID);
         final URI aReference = Generators.createIndividualIdentifier();
         final OWLClassA aInstance = new OWLClassA(aReference);
@@ -75,13 +70,14 @@ class PluralObjectPropertyStrategyTest {
         verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class));
     }
 
-    private <T> Impl<T> strategy(EntityType<T> et, AbstractPluralAttribute<T, Set, ?> att) {
-        return new Impl<>(et, att, descriptor, mapperMock);
+    private PluralObjectPropertyStrategy<?, OWLClassJ> strategy() {
+        return new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute(),
+                descriptor, mapperMock);
     }
 
     @Test
     void addValueFromAxiomDoesNothingWhenInstanceCannotBeLoaded() {
-        final Impl<OWLClassJ> sut = strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
+        final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
         final OWLClassJ instance = new OWLClassJ(ID);
         final URI aReference = Generators.createIndividualIdentifier();
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
@@ -96,16 +92,19 @@ class PluralObjectPropertyStrategyTest {
         verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class));
     }
 
-    private static class Impl<X> extends PluralObjectPropertyStrategy<AbstractPluralAttribute<? super X, ?, ?>, X> {
+    @Test
+    void addValueFromAxiomGetsAttributeDescriptorFromEntityDescriptorForLoading() throws Exception {
+        final EntityDescriptor aDescriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
+        descriptor.addAttributeDescriptor(OWLClassJ.getOwlClassAField(), aDescriptor);
+        final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
+        final URI aReference = Generators.createIndividualIdentifier();
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
+                .thenReturn(null);
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                NamedResource.create(aReference)));
 
-        Impl(EntityType<X> et, AbstractPluralAttribute<? super X, Set, ?> att, Descriptor descriptor,
-             EntityMappingHelper mapper) {
-            super(et, att, descriptor, mapper);
-        }
-
-        @Override
-        void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
-            // Do nothing
-        }
+        sut.addValueFromAxiom(axiom);
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, aReference, aDescriptor);
     }
 }
