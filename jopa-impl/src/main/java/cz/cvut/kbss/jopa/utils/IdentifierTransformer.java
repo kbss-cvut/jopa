@@ -1,28 +1,28 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.utils;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
-public class IdentifierTransformer {
+import static cz.cvut.kbss.jopa.utils.Constants.SUPPORTED_IDENTIFIER_TYPES;
 
-    private static final Set<Class<?>> ID_CLASSES = new HashSet<>(Arrays.asList(URI.class, URL.class, String.class));
+public class IdentifierTransformer {
 
     private static final Map<Class<?>, Function<Object, ?>> TRANSFORMERS = initTransformers();
 
@@ -31,7 +31,7 @@ public class IdentifierTransformer {
     }
 
     private static Map<Class<?>, Function<Object, ?>> initTransformers() {
-        final Map<Class<?>, Function<Object, ?>> m = new HashMap<>(ID_CLASSES.size());
+        final Map<Class<?>, Function<Object, ?>> m = new HashMap<>(SUPPORTED_IDENTIFIER_TYPES.size());
         m.put(URI.class, val -> {
             Objects.requireNonNull(val);
             if (val instanceof URI) {
@@ -85,15 +85,6 @@ public class IdentifierTransformer {
      * @return {@code true} if type is supported identifier type, {@code false} otherwise
      */
     public static boolean isValidIdentifierType(Class<?> type) {
-        return type != null && ID_CLASSES.contains(type);
-    }
-
-    /**
-     * Gets supported identifier types.
-     *
-     * @return Unmodifiable set of supported id types
-     */
-    public static Set<Class<?>> getValidIdentifierTypes() {
-        return Collections.unmodifiableSet(ID_CLASSES);
+        return type != null && SUPPORTED_IDENTIFIER_TYPES.contains(type);
     }
 }

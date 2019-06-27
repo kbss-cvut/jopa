@@ -14,6 +14,11 @@ package cz.cvut.kbss.jopa.model.annotations;
 
 import java.lang.annotation.*;
 
+/**
+ * Marks an attribute mapped to an OWL annotation property.
+ *
+ * This means that the attribute can contain a literal or a reference to another object.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
