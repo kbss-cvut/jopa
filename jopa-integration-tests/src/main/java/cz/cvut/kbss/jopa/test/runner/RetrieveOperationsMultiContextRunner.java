@@ -20,12 +20,13 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
@@ -35,7 +36,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveSimilarFromTwoContexts() {
+    void testRetrieveSimilarFromTwoContexts() {
         this.em = getEntityManager("MultiRetrieveSimilarFromTwoContexts", false);
         final OWLClassA entityATwo = new OWLClassA();
         entityATwo.setUri(entityA.getUri());
@@ -58,7 +59,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveSimpleListFromContext() throws Exception {
+    void testRetrieveSimpleListFromContext() throws Exception {
         this.em = getEntityManager("MultiRetrieveSimpleListFromContext", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         final Descriptor cDescriptor = new EntityDescriptor();
@@ -85,7 +86,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveReferencedListFromContext() throws Exception {
+    void testRetrieveReferencedListFromContext() throws Exception {
         this.em = getEntityManager("MultiRetrieveReferencedListFromContext", false);
         entityC.setReferencedList(Generators.createReferencedList(15));
         final Descriptor cDescriptor = new EntityDescriptor();
@@ -112,7 +113,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveLazyReferenceFromContext() throws Exception {
+    void testRetrieveLazyReferenceFromContext() throws Exception {
         this.em = getEntityManager("MultiRetrieveLazyReferenceFromContext", false);
         final Descriptor iDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
@@ -136,7 +137,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrievePropertiesFromContext() throws Exception {
+    void testRetrievePropertiesFromContext() throws Exception {
         this.em = getEntityManager("MultiRetrievePropertiesFromContext", false);
         entityB.setProperties(Generators.createProperties(50));
         final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -153,7 +154,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext() throws Exception {
+    void retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext() throws Exception {
         this.em = getEntityManager("retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext",
                 false);
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE);

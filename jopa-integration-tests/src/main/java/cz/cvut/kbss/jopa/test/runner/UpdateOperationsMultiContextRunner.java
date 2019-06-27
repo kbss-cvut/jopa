@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -22,7 +20,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -31,7 +29,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
@@ -41,8 +40,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateDataPropertyInContext() throws Exception {
-        logger.debug("Test: update data property value which is stored in a different context that the owner.");
+    void testUpdateDataPropertyInContext() throws Exception {
         this.em = getEntityManager("MultiUpdateDataPropertyInContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_TWO);
@@ -64,12 +62,11 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateObjectPropertyToDifferentContext() throws Exception {
-        logger.debug("Test: update object property with value from different context than the previous.");
+    void testUpdateObjectPropertyToDifferentContext() throws Exception {
         this.em = getEntityManager("MultiUpdateObjectPropertyToDifferent", false);
         final Descriptor dDescriptor = new EntityDescriptor();
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        dDescriptor.addAttributeDescriptor(OWLClassD.class.getDeclaredField("owlClassA"), aDescriptor);
+        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
         em.getTransaction().begin();
         em.persist(entityD, dDescriptor);
         em.persist(entityA, aDescriptor);
@@ -84,7 +81,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         newA.setStringAttribute("newAStringAttribute");
         final Descriptor newADescriptor = new EntityDescriptor(CONTEXT_TWO);
         em.persist(newA, newADescriptor);
-        dDescriptor.addAttributeDescriptor(OWLClassD.class.getDeclaredField("owlClassA"), newADescriptor);
+        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), newADescriptor);
         d.setOwlClassA(newA);
         em.getTransaction().commit();
 
@@ -98,8 +95,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateAddToPropertiesInContext() throws Exception {
-        logger.debug("Test: add new property value, properties are stored in a different context.");
+    void testUpdateAddToPropertiesInContext() throws Exception {
         this.em = getEntityManager("MultiUpdateAddToPropertiesInContext", false);
         entityB.setProperties(Generators.createProperties());
         final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -126,8 +122,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateAddToSimpleListInContext() throws Exception {
-        logger.debug("Test: add new element into a simple list stored in different context than its owner.");
+    void testUpdateAddToSimpleListInContext() throws Exception {
         this.em = getEntityManager("MultiUpdateAddToSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -163,8 +158,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateAddToReferencedListInContext() throws Exception {
-        logger.debug("Test: add new element into a referenced list stored in different context than its owner.");
+    void testUpdateAddToReferencedListInContext() throws Exception {
         this.em = getEntityManager("MultiUpdateAddToReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -200,7 +194,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateRemoveFromSimpleListInContext() throws Exception {
+    void testUpdateRemoveFromSimpleListInContext() throws Exception {
         this.em = getEntityManager("MultiUpdateRemoveFromSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -228,8 +222,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateRemoveFromReferencedListInContext() throws Exception {
-        logger.debug("Test: remove elements from referenced list stored in a different context than its owner.");
+    void testUpdateRemoveFromReferencedListInContext() throws Exception {
         this.em = getEntityManager("MultiUpdateRemoveFromReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -270,7 +263,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdatePlainIdentifierObjectPropertyValueInContext() {
+    void testUpdatePlainIdentifierObjectPropertyValueInContext() {
         final Descriptor pDescriptor = new EntityDescriptor(CONTEXT_ONE);
         entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/originalIndividual"));
         this.em = getEntityManager("UpdatePlainIdentifierObjectPropertyValueInContext", true);
@@ -292,7 +285,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateFieldInMappedSuperclassInContext() throws Exception {
+    void testUpdateFieldInMappedSuperclassInContext() throws Exception {
         final Descriptor qDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
         qDescriptor.addAttributeDescriptor(OWLClassQ.getOWlClassAField(), aDescriptor);
@@ -322,5 +315,33 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertEquals(newA.getUri(), res.getOwlClassA().getUri());
         assertNotNull(em.find(OWLClassA.class, newA.getUri()));
         assertNotNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
+    }
+
+    @Test
+    void testUpdateObjectPropertyInContextWithAssertionInContext() throws Exception {
+        final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
+        final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
+        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        this.em = getEntityManager("testUpdateObjectPropertyInContextWithAssertionInContext", true);
+        transactional(() -> {
+            em.persist(entityA, aDescriptor);
+            em.persist(entityD, dDescriptor);
+        });
+
+        final OWLClassA newA = new OWLClassA(Generators.generateUri());
+        newA.setStringAttribute("newString");
+        transactional(() -> {
+            final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+            d.setOwlClassA(newA);
+            em.persist(newA, aDescriptor);
+        });
+
+        assertTrue(em.createNativeQuery("ASK { GRAPH ?g { ?s ?p ?o. }}", Boolean.class).setParameter("g", CONTEXT_TWO)
+                     .setParameter("s", entityD.getUri()).setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                     .setParameter("o", newA.getUri()).getSingleResult());
+        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+        assertNotNull(result);
+        assertNotNull(result.getOwlClassA());
+        assertEquals(newA.getUri(), result.getOwlClassA().getUri());
     }
 }
