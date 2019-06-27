@@ -14,6 +14,13 @@ package cz.cvut.kbss.jopa.model.annotations;
 
 import java.lang.annotation.*;
 
+/**
+ * Marks an attribute mapped to an OWL datatype property.
+ *
+ * This means that literal values are expected for such attributes.
+ *
+ * Note that for use with RDF(S), attributes annotated with this annotation are expected to reference literals.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
