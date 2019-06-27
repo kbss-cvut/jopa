@@ -1,41 +1,38 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassG;
-import cz.cvut.kbss.jopa.test.OWLClassH;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-import static org.junit.Assert.*;
+import java.net.URI;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
 
-    public DeleteOperationsMultiContextRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+    public DeleteOperationsMultiContextRunner(Logger logger, PersistenceFactory persistenceFactory,
+                                              DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test
-    public void testRemoveFromContext() {
-        logger.debug("Test: remove entity from a context.");
+    void testRemoveFromContext() {
         this.em = getEntityManager("MultiRemoveFromContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         em.getTransaction().begin();
@@ -54,8 +51,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveFromOneKeepInTheOther() {
-        logger.debug("Test: persist an entity into two contexts and then remove it from one of them.");
+    void testRemoveFromOneKeepInTheOther() {
         this.em = getEntityManager("MultiRemoveFromOneContextAndKeepInTheOther", false);
         final Descriptor aDescriptorOne = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptorTwo = new EntityDescriptor(CONTEXT_TWO);
@@ -81,12 +77,11 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveObjectPropertyFromContext() throws Exception {
-        logger.debug("Test: remove object property value from a context.");
+    void testRemoveObjectPropertyFromContext() throws Exception {
         this.em = getEntityManager("MultiRemoveObjectPropertyFromContext", false);
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        dDescriptor.addAttributeDescriptor(OWLClassD.class.getDeclaredField("owlClassA"), aDescriptor);
+        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
         em.getTransaction().begin();
         em.persist(entityD, dDescriptor);
         em.persist(entityA, aDescriptor);
@@ -109,8 +104,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveCascadeOverContexts() throws Exception {
-        logger.debug("Test: remove entities through cascade, each in a different context.");
+    void testRemoveCascadeOverContexts() throws Exception {
         this.em = getEntityManager("MultiRemoveCascadeOverContexts", false);
         final Descriptor gDescriptor = new EntityDescriptor();
         final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -136,5 +130,29 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         assertNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
         assertNull(em.find(OWLClassH.class, entityH.getUri(), hDescriptor));
         assertNull(em.find(OWLClassG.class, entityG.getUri(), gDescriptor));
+    }
+
+    @Test
+    void removeRemovesObjectPropertyAssertionFromTargetContext() throws Exception {
+        this.em = getEntityManager("removeRemovesObjectPropertyAssertionFromTargetContext", false);
+        final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
+        final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
+        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        transactional(() -> {
+            em.persist(entityD, dDescriptor);
+            em.persist(entityA, aDescriptor);
+        });
+
+        transactional(() -> {
+            final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+            d.setOwlClassA(null);
+        });
+
+        assertFalse(em.createNativeQuery("ASK { ?s ?p ?o . }", Boolean.class)
+                      .setParameter("p", entityD.getUri())
+                      .setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                      .setParameter("o", entityA.getUri())
+                      .getSingleResult());
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
     }
 }
