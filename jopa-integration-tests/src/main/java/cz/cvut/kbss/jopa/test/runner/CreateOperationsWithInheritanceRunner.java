@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -19,19 +17,20 @@ import cz.cvut.kbss.jopa.test.OWLClassS;
 import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class CreateOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
-    protected CreateOperationsWithInheritanceRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+    protected CreateOperationsWithInheritanceRunner(Logger logger, PersistenceFactory persistenceFactory,
+                                                    DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
     }
 
     @Test
-    public void testPersistEntityWithMappedSuperclass() {
+    void testPersistEntityWithMappedSuperclass() {
         this.em = getEntityManager("PersistEntityWithMappedSuperclass", false);
         em.getTransaction().begin();
         em.persist(entityA);
@@ -52,7 +51,7 @@ public abstract class CreateOperationsWithInheritanceRunner extends BaseInherita
     }
 
     @Test
-    public void testPersistEntityWithEntitySuperclass() {
+    void testPersistEntityWithEntitySuperclass() {
         this.em = getEntityManager("PersistEntityWithEntitySuperclass", false);
         em.getTransaction().begin();
         em.persist(entityA);
@@ -73,7 +72,7 @@ public abstract class CreateOperationsWithInheritanceRunner extends BaseInherita
     }
 
     @Test
-    public void testPersistEntityExtendedBySubEntity() {
+    void testPersistEntityExtendedBySubEntity() {
         this.em = getEntityManager("PersistEntityExtendedBySubEntity", false);
         final OWLClassS entityS = new OWLClassS();
         entityS.setName("Supertype");

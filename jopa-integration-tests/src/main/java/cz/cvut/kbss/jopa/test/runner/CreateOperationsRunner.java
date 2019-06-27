@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -34,7 +34,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class CreateOperationsRunner extends BaseRunner {
 
@@ -43,34 +43,33 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistWithGeneratedId() {
+    void testPersistWithGeneratedId() {
         this.em = getEntityManager("PersistWithGenerated", false);
         assertNull(entityE.getUri());
         persist(entityE);
 
         assertNotNull(entityE.getUri());
-        final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri());
-        assertNotNull(resE);
+        final OWLClassE resE = findRequired(OWLClassE.class, entityE.getUri());
         assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
     }
 
-    @Test(expected = IdentifierNotSetException.class)
-    public void persistingEntityWithoutIdAndWithoutGeneratedIdThrowsException() {
+    @Test
+    void persistingEntityWithoutIdAndWithoutGeneratedIdThrowsException() {
         this.em = getEntityManager("PersistWithoutId", false);
         final OWLClassB b = new OWLClassB();
         b.setStringAttribute("someValue");
-        persist(b);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void persistNullThrowsNPX() {
-        this.em = getEntityManager("PersistNull", false);
-        em.getTransaction().begin();
-        em.persist(null);
+        assertThrows(IdentifierNotSetException.class, () -> persist(b));
     }
 
     @Test
-    public void testPersistAndRollbackChanges() {
+    void persistNullThrowsNPX() {
+        this.em = getEntityManager("PersistNull", false);
+        em.getTransaction().begin();
+        assertThrows(NullPointerException.class, () -> em.persist(null));
+    }
+
+    @Test
+    void testPersistAndRollbackChanges() {
         this.em = getEntityManager("PersistRollback", false);
         em.getTransaction().begin();
         em.persist(entityE);
@@ -81,78 +80,68 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNull(em.find(entityE.getClass(), entityE.getUri()));
     }
 
-    @Test(expected = RollbackException.class)
-    public void persistingInRollbackOnlyThrowsExceptionOnCommit() {
+    @Test
+    void persistingInRollbackOnlyThrowsExceptionOnCommit() {
         this.em = getEntityManager("PersistRollbackOnly", false);
         em.getTransaction().begin();
         em.getTransaction().setRollbackOnly();
         em.persist(entityE);
-        em.getTransaction().commit();
+        assertThrows(RollbackException.class, () -> em.getTransaction().commit());
     }
 
     @Test
-    public void testPersistWithCascade() {
+    void testPersistWithCascade() {
         this.em = getEntityManager("PersistWithCascade", false);
         persist(entityG);
 
-        final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(resA2);
-        final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri());
-        assertNotNull(resH);
+        final OWLClassA resA2 = findRequired(OWLClassA.class, entityA.getUri());
+        final OWLClassH resH = findRequired(OWLClassH.class, entityH.getUri());
         assertEquals(resH.getOwlClassA(), resA2);
-        final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri());
-        assertNotNull(resG);
+        final OWLClassG resG = findRequired(OWLClassG.class, entityG.getUri());
         assertEquals(resG.getOwlClassH(), resH);
         assertEquals(resG.getOwlClassH().getOwlClassA(), resA2);
     }
 
-    @Test(expected = RollbackException.class)
-    public void persistingOnlyOnePartOfRelationWithoutCascadeThrowsRollbackException() {
+    @Test
+    void persistingOnlyOnePartOfRelationWithoutCascadeThrowsRollbackException() {
         this.em = getEntityManager("PersistWithoutCascade", false);
-        persist(entityD);
-    }
-
-    @Test(expected = OWLEntityExistsException.class)
-    public void persistingDetachedEntityIsIllegal() {
-        this.em = getEntityManager("PersistDetached", false);
-        persist(entityA);
-
-        final OWLClassA det = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(det);
-        em.getTransaction().begin();
-        em.detach(det);
-        em.persist(det);
-        em.getTransaction().commit();
+        assertThrows(RollbackException.class, () -> persist(entityD));
     }
 
     @Test
-    public void testPersistWithSimpleList() {
+    void persistingDetachedEntityIsIllegal() {
+        this.em = getEntityManager("PersistDetached", false);
+        persist(entityA);
+
+        final OWLClassA det = findRequired(OWLClassA.class, entityA.getUri());
+        em.getTransaction().begin();
+        em.detach(det);
+        assertThrows(OWLEntityExistsException.class, () -> em.persist(det));
+    }
+
+    @Test
+    void testPersistWithSimpleList() {
         this.em = getEntityManager("PersistSimpleList", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
-        em.getTransaction().begin();
-        em.persist(entityC);
-        entityC.getSimpleList().forEach(em::persist);
-        em.getTransaction().commit();
+        persistCWithLists(entityC);
 
-        final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(1).getUri());
-        assertNotNull(a);
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassA a = findRequired(OWLClassA.class, entityC.getSimpleList().get(1).getUri());
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         assertNotNull(c.getSimpleList());
         assertFalse(c.getSimpleList().isEmpty());
         assertEquals(entityC.getSimpleList().size(), c.getSimpleList().size());
         assertTrue(c.getSimpleList().contains(a));
     }
 
-    @Test(expected = RollbackException.class)
-    public void persistingEntityWithSimpleListWithoutCascadeIsIllegal() {
+    @Test
+    void persistingEntityWithSimpleListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistSimpleListNoCascade", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
-        persist(entityC);
+        assertThrows(RollbackException.class, () -> persist(entityC));
     }
 
     @Test
-    public void persistWithSimpleListSavesListReferenceWhenAllItemsArePersisted() {
+    void persistWithSimpleListSavesListReferenceWhenAllItemsArePersisted() {
         this.em = getEntityManager("persistWithSimpleListSavesListReferenceWhenAllItemsArePersisted", false);
         final OWLClassK entityK = new OWLClassK();
         entityK.setSimpleList(IntStream.range(0, 5).mapToObj(i -> {
@@ -167,8 +156,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         entityK.getSimpleList().forEach(item -> assertNotNull(item.getUri()));
         em.getTransaction().commit();
 
-        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
-        assertNotNull(result);
+        final OWLClassK result = findRequired(OWLClassK.class, entityK.getUri());
         verifyLists(entityK.getSimpleList(), result.getSimpleList());
     }
 
@@ -181,7 +169,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistWithReferencedList() {
+    void testPersistWithReferencedList() {
         this.em = getEntityManager("PersistReferencedList", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         em.getTransaction().begin();
@@ -191,8 +179,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertTrue(em.contains(entityC.getReferencedList().get(0)));
         em.getTransaction().commit();
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         assertNotNull(c.getReferencedList());
         assertFalse(c.getReferencedList().isEmpty());
         assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
@@ -205,15 +192,15 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
 
-    @Test(expected = RollbackException.class)
-    public void persistingEntityWithReferencedListWithoutCascadeIsIllegal() {
+    @Test
+    void persistingEntityWithReferencedListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistReferencedListNoCascade", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
-        persist(entityC);
+        assertThrows(RollbackException.class, () -> persist(entityC));
     }
 
     @Test
-    public void persistWithReferencedListSavesListReferenceWhenAllItemsArePersisted() {
+    void persistWithReferencedListSavesListReferenceWhenAllItemsArePersisted() {
         this.em = getEntityManager("persistWithReferencedListSavesListReferenceWhenAllItemsArePersisted", false);
         final OWLClassK entityK = new OWLClassK();
         entityK.setReferencedList(IntStream.range(0, 5).mapToObj(i -> {
@@ -228,42 +215,34 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         entityK.getReferencedList().forEach(item -> assertNotNull(item.getUri()));
         em.getTransaction().commit();
 
-        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
-        assertNotNull(result);
+        final OWLClassK result = findRequired(OWLClassK.class, entityK.getUri());
         verifyLists(entityK.getReferencedList(), result.getReferencedList());
     }
 
     @Test
-    public void testPersistSimpleAndReferencedList() {
+    void testPersistSimpleAndReferencedList() {
         this.em = getEntityManager("PersistSimpleAndReferencedList", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         entityC.setSimpleList(Generators.createSimpleList(5));
-        em.getTransaction().begin();
-        em.persist(entityC);
-        entityC.getSimpleList().forEach(em::persist);
-        entityC.getReferencedList().forEach(em::persist);
-        em.getTransaction().commit();
+        persistCWithLists(entityC);
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         assertNotNull(c.getSimpleList());
         assertEquals(entityC.getSimpleList().size(), c.getSimpleList().size());
         assertNotNull(c.getReferencedList());
         assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
         for (OWLClassA a : entityC.getSimpleList()) {
-            final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
-            assertNotNull(resA);
+            final OWLClassA resA = findRequired(OWLClassA.class, a.getUri());
             assertTrue(c.getSimpleList().contains(resA));
         }
         for (OWLClassA a : entityC.getReferencedList()) {
-            final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
-            assertNotNull(resA);
+            final OWLClassA resA = findRequired(OWLClassA.class, a.getUri());
             assertTrue(c.getReferencedList().contains(resA));
         }
     }
 
     @Test
-    public void testPersistWithProperties() {
+    void testPersistWithProperties() {
         this.em = getEntityManager("PersistWithProperties", false);
         final Map<String, Set<String>> props = new HashMap<>(3);
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne", Collections
@@ -278,8 +257,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         persist(entityB);
         em.clear();
 
-        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
-        assertNotNull(res);
+        final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri());
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
         assertNotNull(res.getProperties());
         assertFalse(res.getProperties().isEmpty());
@@ -295,7 +273,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistWithEmptyProperties() {
+    void testPersistWithEmptyProperties() {
         this.em = getEntityManager("PersistWithPropertiesEmpty", false);
         entityB.setProperties(Collections.emptyMap());
         em.getTransaction().begin();
@@ -304,15 +282,14 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
-        assertNotNull(b);
+        final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri());
         assertEquals(entityB.getUri(), b.getUri());
         assertEquals(entityB.getStringAttribute(), b.getStringAttribute());
         assertNull(b.getProperties());
     }
 
-    @Test(expected = OWLEntityExistsException.class)
-    public void persistTwoInstancesOfDifferentClassesWithSameUriIntoTheSamePersistenceContextIsIllegal() {
+    @Test
+    void persistTwoInstancesOfDifferentClassesWithSameUriIntoTheSamePersistenceContextIsIllegal() {
         this.em = getEntityManager("PersistURITwiceInDifferentClassesSamePC", false);
         final URI pk = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
         final OWLClassA a = new OWLClassA();
@@ -321,12 +298,11 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         b.setUri(pk);
         em.getTransaction().begin();
         em.persist(a);
-        em.persist(b);
-        em.getTransaction().commit();
+        assertThrows(OWLEntityExistsException.class, () -> em.persist(b));
     }
 
     @Test
-    public void persistTwoInstancesOfDifferentClassesWithSameUriIntoDifferentPersistenceContextsIsLegal() {
+    void persistTwoInstancesOfDifferentClassesWithSameUriIntoDifferentPersistenceContextsIsLegal() {
         this.em = getEntityManager("PersistURITwiceInDifferentClassesDifferentPCs", false);
         final URI uri = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
         entityA.setUri(uri);
@@ -348,13 +324,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistEntityWithBasicTypeAttributes() {
+    void testPersistEntityWithBasicTypeAttributes() {
         this.em = getEntityManager("PersistEntityWithBasicTypeAttributes", false);
         persist(entityM);
         em.clear();
 
-        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
-        assertNotNull(res);
+        final OWLClassM res = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getKey(), res.getKey());
         assertEquals(entityM.getBooleanAttribute(), res.getBooleanAttribute());
         assertEquals(entityM.getIntAttribute(), res.getIntAttribute());
@@ -364,7 +339,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistAndUpdateAttributeBeforeCommit() {
+    void testPersistAndUpdateAttributeBeforeCommit() {
         this.em = getEntityManager("PersistAndUpdateBeforeCommit", false);
         final String updatedValue = "updatedStringAttributeValue";
         em.getTransaction().begin();
@@ -373,23 +348,21 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(res);
+        final OWLClassA res = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(updatedValue, res.getStringAttribute());
     }
 
     @Test
-    public void testPersistEntityWithEnumAttribute() {
+    void testPersistEntityWithEnumAttribute() {
         this.em = getEntityManager("PersistEntityWithEnum", false);
         persist(entityM);
 
-        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
-        assertNotNull(res);
+        final OWLClassM res = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getEnumAttribute(), res.getEnumAttribute());
     }
 
     @Test
-    public void testPersistTypedProperties() {
+    void testPersistTypedProperties() {
         this.em = getEntityManager("PersistTypedProperties", false);
         entityP.setProperties(Generators.createTypedProperties());
         em.getTransaction().begin();
@@ -397,13 +370,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(entityP.getProperties(), res.getProperties());
     }
 
     @Test
-    public void testPersistInstanceWithPlainIdentifierObjectPropertyValue() {
+    void testPersistInstanceWithPlainIdentifierObjectPropertyValue() {
         this.em = getEntityManager("PersistInstanceWithIdentifierObjectPropertyValue", false);
         final URI value = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#individualAAA");
         entityP.setIndividualUri(value);
@@ -412,13 +384,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(value, res.getIndividualUri());
     }
 
     @Test
-    public void testPersistInstanceWithPluralObjectPropertyAttributeRepresentedByUrls() {
+    void testPersistInstanceWithPluralObjectPropertyAttributeRepresentedByUrls() {
         this.em = getEntityManager("PersistInstanceWithPluralIdentifierObjectPropertyValue", false);
         final Set<URL> urls = Generators.createUrls();
         entityP.setIndividuals(urls);
@@ -427,13 +398,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(urls, res.getIndividuals());
     }
 
     @Test
-    public void testPersistInstanceWithSimpleListOfIdentifiers() {
+    void testPersistInstanceWithSimpleListOfIdentifiers() {
         this.em = getEntityManager("PersistInstanceWithSimpleListOfIdentifiers", false);
         entityP.setSimpleList(Generators.createListOfIdentifiers());
         em.getTransaction().begin();
@@ -441,13 +411,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(entityP.getSimpleList(), res.getSimpleList());
     }
 
     @Test
-    public void testPersistInstanceWithReferencedListOfIdentifiers() {
+    void testPersistInstanceWithReferencedListOfIdentifiers() {
         this.em = getEntityManager("PersistInstanceWithReferencedListOfIdentifiers", false);
         entityP.setReferencedList(Generators.createListOfIdentifiers());
         em.getTransaction().begin();
@@ -455,13 +424,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(entityP.getReferencedList(), res.getReferencedList());
     }
 
     @Test
-    public void testPersistInstanceWithAnnotationProperties() {
+    void testPersistInstanceWithAnnotationProperties() {
         this.em = getEntityManager("PersistInstanceWithAnnotationPropertyValues", false);
         final String apValue = "annotationPropertyValue";
         final URI apUriValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue");
@@ -473,13 +441,13 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.clear();
         assertNotNull(entityN.getId());
 
-        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN res = findRequired(OWLClassN.class, entityN.getId());
         assertEquals(apValue, res.getAnnotationProperty());
         assertEquals(apUriValue, res.getAnnotationUri());
     }
 
     @Test
-    public void persistEntityWithNonNullGeneratedIdentifierDoesNotRewriteIdentifier() {
+    void persistEntityWithNonNullGeneratedIdentifierDoesNotRewriteIdentifier() {
         this.em = getEntityManager("PersistEntityWithNonNullGeneratedIdentifiersDoesNotRewriteIdentifier", false);
         final URI u = URI.create("http://krizik.felk.cvut.cz/ontolgoies/jopa#EntityELives");
         entityE.setUri(u);
@@ -488,14 +456,13 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertEquals(u, entityE.getUri());
-        final OWLClassE res = em.find(OWLClassE.class, u);
-        assertNotNull(res);
+        final OWLClassE res = findRequired(OWLClassE.class, u);
         assertEquals(u, res.getUri());
         assertEquals(entityE.getStringAttribute(), res.getStringAttribute());
     }
 
     @Test
-    public void persistEntityAndReferenceWithNonNullGeneratedIdentifiersDoesNotRewriteThem() {
+    void persistEntityAndReferenceWithNonNullGeneratedIdentifiersDoesNotRewriteThem() {
         this.em = getEntityManager("PersistEntityAndReferenceWithNonNullGeneratedIdentifiersDoesNotRewriteThem", false);
         final URI uK = URI.create("http://krizik.felk.cvut.cz/ontolgoies/jopa#EntityKLives");
         final URI uE = URI.create("http://krizik.felk.cvut.cz/ontolgoies/jopa#EntityELives");
@@ -510,16 +477,14 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         assertEquals(uK, entityK.getUri());
         assertEquals(uE, entityE.getUri());
-        final OWLClassK resK = em.find(OWLClassK.class, uK);
-        assertNotNull(resK);
+        final OWLClassK resK = findRequired(OWLClassK.class, uK);
         assertEquals(uE, resK.getOwlClassE().getUri());
-        final OWLClassE resE = em.find(OWLClassE.class, uE);
-        assertNotNull(resE);
+        final OWLClassE resE = findRequired(OWLClassE.class, uE);
         assertEquals(uE, resE.getUri());
     }
 
     @Test
-    public void testPersistEntityWithUriTypes() {
+    void testPersistEntityWithUriTypes() {
         this.em = getEntityManager("PersistEntityWithUriTypes", false);
         entityP.setTypes(Generators.createUriTypes());
         em.getTransaction().begin();
@@ -527,13 +492,13 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP result = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(entityP.getTypes().size(), result.getTypes().size());
         assertTrue(entityP.getTypes().containsAll(result.getTypes()));
     }
 
     @Test
-    public void persistEntityWithDatatypePropertyCollectionPersistsAllValues() {
+    void persistEntityWithDatatypePropertyCollectionPersistsAllValues() {
         assertFalse(entityM.getIntegerSet().isEmpty());
         this.em = getEntityManager("PersistEntityWithDatatypePropertyCollection", false);
         em.getTransaction().begin();
@@ -541,13 +506,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertNotNull(entityM.getKey());
-        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
-        assertNotNull(result);
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
     }
 
     @Test
-    public void persistSetsStringLiteralLanguageTagAccordingToDescriptor() throws Exception {
+    void persistSetsStringLiteralLanguageTagAccordingToDescriptor() throws Exception {
         this.em = getEntityManager("persistSetsStringLiteralLanguageTagAccordingToDescriptor", false);
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
@@ -562,7 +526,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt()
+    void persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt()
             throws Exception {
         this.em = getEntityManager(
                 "persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt", false);
@@ -577,7 +541,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void persistAllowsOverridingGlobalLanguageWithLocalEmptyTag() throws Exception {
+    void persistAllowsOverridingGlobalLanguageWithLocalEmptyTag() throws Exception {
         this.em = getEntityManager("persistAllowsOverridingGlobalLanguageWithLocalEmptyTag", false);
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
@@ -588,14 +552,13 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         verifyStatementsPresent(Collections.singleton(
                 new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
                         null)), em);
-        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(result);
+        final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri());
         // The string attribute should be loaded even though PU language is set to en, because the persisted value has no lang tag
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
     }
 
     @Test
-    public void persistAllowsToSpecifyLanguageTagPerEntityAndOverrideItOnAttributeLevel() throws Exception {
+    void persistAllowsToSpecifyLanguageTagPerEntityAndOverrideItOnAttributeLevel() throws Exception {
         this.em = getEntityManager("persistAllowsToSpecifyLanguageTagPerEntityAndOverrideItOnAttributeLevel", false);
         entityN.setStringAttribute("retezec v cestine");
         entityN.setAnnotationProperty("entity descriptor ist in Deutsch");
@@ -620,7 +583,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void persistSavesInstanceWithReferenceToExistingInstance() {
+    void persistSavesInstanceWithReferenceToExistingInstance() {
         this.em = getEntityManager("persistSavesInstanceWithReferenceToExistingInstance", false);
         persist(entityA);
 
@@ -629,13 +592,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.persist(entityD);
         em.getTransaction().commit();
 
-        final OWLClassD resultD = em.find(OWLClassD.class, entityD.getUri());
-        assertNotNull(resultD);
+        final OWLClassD resultD = findRequired(OWLClassD.class, entityD.getUri());
         assertNotNull(resultD.getOwlClassA());
     }
 
     @Test
-    public void persistSupportsLocalDateTimeApi() {
+    void persistSupportsLocalDateTimeApi() {
         this.em = getEntityManager("persistSupportsLocalDateTimeApi", false);
         final OWLClassX entityX = new OWLClassX();
         final LocalDate date = LocalDate.now();
@@ -644,19 +606,19 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         entityX.setLocalDateTime(dateTime);
         persist(entityX);
 
-        final OWLClassX result = em.find(OWLClassX.class, entityX.getUri());
+        final OWLClassX result = findRequired(OWLClassX.class, entityX.getUri());
         assertEquals(date, result.getLocalDate());
         assertEquals(dateTime, result.getLocalDateTime());
     }
 
     @Test
-    public void persistSupportsPluralAnnotationProperties() {
+    void persistSupportsPluralAnnotationProperties() {
         this.em = getEntityManager("persistSupportsPluralAnnotationProperties", false);
         final Set<String> annotations = IntStream.range(0, 5).mapToObj(i -> "Source" + i).collect(Collectors.toSet());
         entityN.setPluralAnnotationProperty(annotations);
         persist(entityN);
 
-        final OWLClassN result = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN result = findRequired(OWLClassN.class, entityN.getId());
         assertEquals(annotations, result.getPluralAnnotationProperty());
     }
 }

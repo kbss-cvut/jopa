@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.sesame;
 
@@ -19,7 +17,7 @@ import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +29,12 @@ public class TypedQueryTest extends TypedQueryRunner {
 
     private static EntityManager em;
 
-    public TypedQueryTest() {
+    TypedQueryTest() {
         super(LOG);
     }
 
-    @BeforeClass
-    public static void setUpBeforeClass() {
+    @BeforeAll
+    static void setUpBeforeClass() {
         final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
         em = persistenceFactory.getEntityManager("SPARQLTypedQueryTests", false,
                 Collections.singletonMap(SesameOntoDriverProperties.SESAME_USE_INFERENCE, "true"));
@@ -45,13 +43,13 @@ public class TypedQueryTest extends TypedQueryRunner {
         em.getEntityManagerFactory().getCache().evictAll();
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         em.clear();
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() {
+    @AfterAll
+    static void tearDownAfterClass() {
         em.close();
         em.getEntityManagerFactory().close();
     }
@@ -61,7 +59,7 @@ public class TypedQueryTest extends TypedQueryRunner {
         return em;
     }
 
-    @Ignore
+    @Disabled
     @Test
     @Override
     public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() {

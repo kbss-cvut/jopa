@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -18,7 +16,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.util.Collections;
@@ -26,7 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
 
@@ -36,23 +34,23 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
     }
 
     @Test
-    public void getReferenceResultCanBeUsedAsAttributeValueInUpdate() {
+    void getReferenceResultCanBeUsedAsAttributeValueInUpdate() {
         this.em = getEntityManager("getReferenceResultCanBeUsedAsAttributeValueInUpdate", true);
         entityD.setOwlClassA(null);
         persist(entityD, entityA);
 
         em.getTransaction().begin();
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
         d.setOwlClassA(em.getReference(OWLClassA.class, entityA.getUri()));
         em.getTransaction().commit();
 
-        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         assertNotNull(result.getOwlClassA());
         assertEquals(entityA.getUri(), result.getOwlClassA().getUri());
     }
 
     @Test
-    public void getReferenceResultDataAttributesCanBeAssignedNewValuesInUpdate() {
+    void getReferenceResultDataAttributesCanBeAssignedNewValuesInUpdate() {
         this.em = getEntityManager("getReferenceResultDataAttributesCanBeAssignedNewValuesInUpdate", true);
         persist(entityM);
 
@@ -68,7 +66,7 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
         m.setIntegerSet(intSet);
         em.getTransaction().commit();
 
-        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(iVal, result.getIntAttribute().intValue());
         assertEquals(lVal, result.getLongAttribute().longValue());
         assertEquals(intSet, result.getIntegerSet());
@@ -80,7 +78,7 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
     }
 
     @Test
-    public void getReferenceResultObjectAttributesCanBeAssignedNewValuesInUpdate() {
+    void getReferenceResultObjectAttributesCanBeAssignedNewValuesInUpdate() {
         this.em = getEntityManager("getReferenceResultObjectAttributesCanBeAssignedNewValuesInUpdate", true);
         entityD.setOwlClassA(null);
         persist(entityD, entityA);
@@ -96,7 +94,7 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
     }
 
     @Test
-    public void getReferenceResultPluralObjectAttributeCanBeUpdated() {
+    void getReferenceResultPluralObjectAttributeCanBeUpdated() {
         this.em = getEntityManager("getReferenceResultPluralObjectAttributeCanBeUpdated", true);
         final OWLClassJ entityJ = new OWLClassJ(Generators.generateUri());
         entityJ.setOwlClassA(Collections.singleton(entityA));
@@ -110,14 +108,14 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
         em.persist(newA);
         em.getTransaction().commit();
 
-        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        final OWLClassJ result = findRequired(OWLClassJ.class, entityJ.getUri());
         assertEquals(j.getOwlClassA().size(), result.getOwlClassA().size());
         assertTrue(j.getOwlClassA().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
         assertTrue(j.getOwlClassA().stream().anyMatch(a -> a.getUri().equals(newA.getUri())));
     }
 
     @Test
-    public void getReferenceResultListAttributeCanBeUpdated() {
+    void getReferenceResultListAttributeCanBeUpdated() {
         this.em = getEntityManager("getReferenceResultListAttributeCanBeUpdated", true);
         final OWLClassK entityK = new OWLClassK();
         entityK.setReferencedList(Collections.singletonList(entityE));
@@ -132,7 +130,7 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
         em.persist(newE);
         em.getTransaction().commit();
 
-        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        final OWLClassK result = findRequired(OWLClassK.class, entityK.getUri());
         assertEquals(upd.getReferencedList().size(), result.getReferencedList().size());
         assertEquals(upd.getSimpleList().size(), result.getSimpleList().size());
         assertTrue(result.getReferencedList().stream().anyMatch(a -> a.getUri().equals(newE.getUri())));
@@ -140,8 +138,10 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
     }
 
     @Test
-    public void assigningGetReferenceResultToInstanceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval() {
-        this.em = getEntityManager("assigningGetReferenceResultToInstanceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval",true);
+    void assigningGetReferenceResultToInstanceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval() {
+        this.em = getEntityManager(
+                "assigningGetReferenceResultToInstanceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval",
+                true);
         entityD.setOwlClassA(null);
         persist(entityD, entityA);
 
@@ -152,15 +152,17 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
         d.setOwlClassA(a);
         em.getTransaction().commit();
 
-        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         em.detach(result);
         assertNotNull(result.getOwlClassA());
         assertNotNull(result.getOwlClassA().getStringAttribute());
     }
 
     @Test
-    public void mergeWithFieldValueBeingResultOfGetReferenceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval() {
-        this.em = getEntityManager("mergeWithFieldValueBeingResultOfGetReferenceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval", true);
+    void mergeWithFieldValueBeingResultOfGetReferenceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval() {
+        this.em = getEntityManager(
+                "mergeWithFieldValueBeingResultOfGetReferenceRemovesItFromCacheToPreventSubsequentIncompleteDataRetrieval",
+                true);
         entityD.setOwlClassA(null);
         persist(entityD, entityA);
 
@@ -171,7 +173,7 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
         em.merge(entityD);
         em.getTransaction().commit();
 
-        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         em.detach(result);
         assertNotNull(result.getOwlClassA());
         assertNotNull(result.getOwlClassA().getStringAttribute());
