@@ -24,6 +24,8 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_D = CLASS_IRI_BASE + "OWLClassD";
     public static final String C_OWL_CLASS_E = CLASS_IRI_BASE + "OWLClassE";
     public static final String C_OWL_CLASS_F = CLASS_IRI_BASE + "OWLClassF";
+    public static final String C_OWL_CLASS_G = CLASS_IRI_BASE + "OWLClassG";
+    public static final String C_OWL_CLASS_H = CLASS_IRI_BASE + "OWLClassH";
     public static final String C_OWL_CLASS_J = CLASS_IRI_BASE + "OWLClassJ";
     public static final String C_OWL_CLASS_L = CLASS_IRI_BASE + "OWLClassL";
     public static final String C_OWL_CLASS_M = CLASS_IRI_BASE + "OWLClassM";
@@ -73,6 +75,8 @@ public class Vocabulary {
     public static final String P_X_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDate";
     public static final String P_X_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDateTime";
     public static final String P_X_INSTANT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xInstant";
+
+    public static final String P_HAS_H = ATTRIBUTE_IRI_BASE + "hasH";
 
     private Vocabulary() {
         throw new AssertionError();

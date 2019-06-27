@@ -1,26 +1,21 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassC;
-import cz.cvut.kbss.jopa.test.OWLClassI;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
@@ -41,8 +36,6 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveSimilarFromTwoContexts() {
-        logger.debug(
-                "Test: persist entities with the same URI but different attributes into two contexts and then retrieve them.");
         this.em = getEntityManager("MultiRetrieveSimilarFromTwoContexts", false);
         final OWLClassA entityATwo = new OWLClassA();
         entityATwo.setUri(entityA.getUri());
@@ -66,17 +59,16 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveSimpleListFromContext() throws Exception {
-        logger.debug("Test: retrieve simple list and its values from a different context.");
         this.em = getEntityManager("MultiRetrieveSimpleListFromContext", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         final Descriptor cDescriptor = new EntityDescriptor();
-        final Descriptor listDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
-                OWLClassC.class.getDeclaredField("simpleList"));
-        cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("simpleList"), listDescriptor);
+        final ObjectPropertyCollectionDescriptor listDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
+                OWLClassC.getSimpleListField(), false);
+        cDescriptor.addAttributeDescriptor(OWLClassC.getSimpleListField(), listDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, listDescriptor);
+            em.persist(a, listDescriptor.getElementDescriptor());
         }
         em.getTransaction().commit();
 
@@ -94,17 +86,16 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveReferencedListFromContext() throws Exception {
-        logger.debug("Test: retrieve referenced list and its values from a different context.");
         this.em = getEntityManager("MultiRetrieveReferencedListFromContext", false);
         entityC.setReferencedList(Generators.createReferencedList(15));
         final Descriptor cDescriptor = new EntityDescriptor();
-        final Descriptor listDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
-                OWLClassC.class.getDeclaredField("referencedList"));
-        cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("referencedList"), listDescriptor);
+        final ObjectPropertyCollectionDescriptor listDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
+                OWLClassC.getReferencedListField(), false);
+        cDescriptor.addAttributeDescriptor(OWLClassC.getReferencedListField(), listDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, listDescriptor);
+            em.persist(a, listDescriptor.getElementDescriptor());
         }
         em.getTransaction().commit();
 
@@ -122,9 +113,8 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveLazyReferenceFromContext() throws Exception {
-        logger.debug("Test: retrieve entity with lazy loaded reference in another context.");
         this.em = getEntityManager("MultiRetrieveLazyReferenceFromContext", false);
-        final Descriptor iDescriptor = new EntityDescriptor(CONTEXT_ONE);
+        final Descriptor iDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
         aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_ONE);
         iDescriptor.addAttributeDescriptor(OWLClassI.class.getDeclaredField("owlClassA"), aDescriptor);
@@ -147,7 +137,6 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrievePropertiesFromContext() throws Exception {
-        logger.debug("Test: retrieve entity properties from a context.");
         this.em = getEntityManager("MultiRetrievePropertiesFromContext", false);
         entityB.setProperties(Generators.createProperties(50));
         final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -161,5 +150,23 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         assertNotNull(res);
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
         assertTrue(TestEnvironmentUtils.arePropertiesEqual(entityB.getProperties(), res.getProperties()));
+    }
+
+    @Test
+    public void retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext() throws Exception {
+        this.em = getEntityManager("retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext",
+                false);
+        final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE);
+        final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
+        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        em.getTransaction().begin();
+        em.persist(entityA, aDescriptor);
+        em.persist(entityD, dDescriptor);
+        em.getTransaction().commit();
+
+        final OWLClassD res = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+        assertNotNull(res);
+        assertNotNull(res.getOwlClassA());
+        assertEquals(entityA.getStringAttribute(), res.getOwlClassA().getStringAttribute());
     }
 }

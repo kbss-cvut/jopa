@@ -35,6 +35,11 @@ public class EntityDescriptor extends Descriptor {
         this.fieldDescriptors = new HashMap<>();
     }
 
+    public EntityDescriptor(boolean assertionsInSubjectContext) {
+        super(assertionsInSubjectContext);
+        this.fieldDescriptors = new HashMap<>();
+    }
+
     public EntityDescriptor(URI context) {
         super(context);
         this.fieldDescriptors = new HashMap<>();

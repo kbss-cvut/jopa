@@ -36,8 +36,7 @@ class EntityDeconstructor {
         this.referenceSavingResolver = referenceSavingResolver;
     }
 
-    <T> AxiomValueGatherer mapEntityToAxioms(URI identifier, T entity, EntityType<T> et,
-                                             Descriptor descriptor) {
+    <T> AxiomValueGatherer mapEntityToAxioms(URI identifier, T entity, EntityType<T> et, Descriptor descriptor) {
         assert identifier != null;
 
         final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(identifier, descriptor);

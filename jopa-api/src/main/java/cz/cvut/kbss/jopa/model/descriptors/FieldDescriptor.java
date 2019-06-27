@@ -44,12 +44,14 @@ public class FieldDescriptor extends Descriptor {
 
     @Override
     public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
+        Objects.requireNonNull(attribute);
         return getFieldDescriptor(attribute.getJavaField());
     }
 
     @Override
     public URI getAttributeContext(FieldSpecification<?, ?> attribute) {
-        return context;
+        Objects.requireNonNull(attribute);
+        return getFieldDescriptor(attribute.getJavaField()).getContext();
     }
 
     @Override

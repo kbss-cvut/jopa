@@ -81,14 +81,14 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor) {
+    public <T> boolean containsEntity(Class<T> cls, URI identifier, Descriptor descriptor) {
         assert cls != null;
-        assert primaryKey != null;
+        assert identifier != null;
         assert descriptor != null;
 
         final EntityType<T> et = getEntityType(cls);
         final NamedResource classUri = NamedResource.create(et.getIRI().toURI());
-        final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(primaryKey),
+        final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(identifier),
                 Assertion.createClassAssertion(false), new Value<>(classUri));
         try {
             return storageConnection.contains(ax, descriptor.getContext());
@@ -163,19 +163,19 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void persistEntity(URI primaryKey, T entity, Descriptor descriptor) {
+    public <T> void persistEntity(URI identifier, T entity, Descriptor descriptor) {
         assert entity != null;
         assert descriptor != null;
 
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         try {
-            if (primaryKey == null) {
-                primaryKey = generateIdentifier(et);
-                assert primaryKey != null;
-                EntityPropertiesUtils.setIdentifier(primaryKey, entity, et);
+            if (identifier == null) {
+                identifier = generateIdentifier(et);
+                assert identifier != null;
+                EntityPropertiesUtils.setIdentifier(identifier, entity, et);
             }
             entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
-            final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey, entity, et, descriptor);
+            final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(identifier, entity, et, descriptor);
             axiomBuilder.persist(storageConnection);
             persistPendingReferences(entity, axiomBuilder.getSubjectIdentifier());
         } catch (IllegalArgumentException e) {
@@ -220,18 +220,18 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor) {
-        final T orig = uow.getManagedOriginal(cls, primaryKey, descriptor);
+    public <T> T getEntityFromCacheOrOntology(Class<T> cls, URI identifier, Descriptor descriptor) {
+        final T orig = uow.getManagedOriginal(cls, identifier, descriptor);
         if (orig != null) {
             return orig;
         }
-        if (cache.contains(cls, primaryKey, descriptor)) {
-            return cache.get(cls, primaryKey, descriptor);
-        } else if (instanceRegistry.containsInstance(primaryKey, descriptor.getContext())) {
+        if (cache.contains(cls, identifier, descriptor)) {
+            return cache.get(cls, identifier, descriptor);
+        } else if (instanceRegistry.containsInstance(identifier, descriptor.getContext())) {
             // This prevents endless cycles in bidirectional relationships
-            return cls.cast(instanceRegistry.getInstance(primaryKey, descriptor.getContext()));
+            return cls.cast(instanceRegistry.getInstance(identifier, descriptor.getContext()));
         } else {
-            return loadEntityInternal(new LoadingParameters<>(cls, primaryKey, descriptor));
+            return loadEntityInternal(new LoadingParameters<>(cls, identifier, descriptor));
         }
     }
 
@@ -267,10 +267,10 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor) {
+    public <T> void removeEntity(URI identifier, Class<T> cls, Descriptor descriptor) {
         final EntityType<T> et = getEntityType(cls);
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
-                new LoadingParameters<>(cls, primaryKey, descriptor, true), et);
+                new LoadingParameters<>(cls, identifier, descriptor, true), et);
         try {
             storageConnection.remove(axiomDescriptor);
             pendingReferences.removePendingReferences(axiomDescriptor.getSubject());
@@ -280,15 +280,14 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void updateFieldValue(T entity, Field field, Descriptor descriptor) {
+    public <T> void updateFieldValue(T entity, Field field, Descriptor entityDescriptor) {
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         // It is OK to do it like this, because if necessary, the mapping will re-register a pending assertion
         removePendingAssertions(et, field, pkUri);
-        final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field,
-                et, descriptor);
+        final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field, et, entityDescriptor);
         axiomBuilder.update(storageConnection);
     }
 
