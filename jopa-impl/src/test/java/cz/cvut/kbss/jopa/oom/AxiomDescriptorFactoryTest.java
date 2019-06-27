@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -180,7 +178,7 @@ class AxiomDescriptorFactoryTest {
 
     @Test
     void testCreateForFieldLoadingObjectPropertyInEntityContext() throws Exception {
-        final Descriptor desc = new EntityDescriptor();
+        final Descriptor desc = new EntityDescriptor(false);
         desc.addAttributeDescriptor(OWLClassD.getOwlClassAField(), new EntityDescriptor(CONTEXT));
         final AxiomDescriptor res = factory.createForFieldLoading(PK,
                 OWLClassD.getOwlClassAField(), desc, metamodelMocks.forOwlClassD().entityType());
@@ -369,5 +367,25 @@ class AxiomDescriptorFactoryTest {
         assertEquals(Assertion.createClassAssertion(false), result.getAssertion());
         assertEquals(PK, result.getSubject().getIdentifier());
         assertEquals(Vocabulary.c_OwlClassA, result.getValue().stringValue());
+    }
+
+    @Test
+    void createForEntityLoadingUsesSubjectContextForAssertionWhenAssertionsInSubjectContextIsConfiguredInDescriptor()
+            throws Exception {
+        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), descriptorInContext);
+        final LoadingParameters<OWLClassD> params = new LoadingParameters<>(OWLClassD.class, PK, descriptor);
+        final AxiomDescriptor desc = factory.createForEntityLoading(params, metamodelMocks.forOwlClassD().entityType());
+        assertEquals(descriptor.getContext(), desc.getAssertionContext(
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false)));
+    }
+
+    @Test
+    void createForFieldLoadingUsesSubjectContextForAssertionWhenAssertionsInSubjectContextIsConfiguredInDescriptor()
+            throws Exception {
+        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), descriptorInContext);
+        final AxiomDescriptor desc = factory.createForFieldLoading(PK, OWLClassD.getOwlClassAField(), descriptor,
+                metamodelMocks.forOwlClassD().entityType());
+        assertEquals(descriptor.getContext(), desc.getAssertionContext(
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false)));
     }
 }

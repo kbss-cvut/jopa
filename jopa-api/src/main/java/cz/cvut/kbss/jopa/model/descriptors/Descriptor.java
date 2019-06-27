@@ -36,6 +36,10 @@ public abstract class Descriptor {
         this(null);
     }
 
+    protected Descriptor(boolean assertionsInSubjectContext) {
+        this(null, assertionsInSubjectContext);
+    }
+
     protected Descriptor(URI context) {
         this.context = context;
         this.assertionsInSubjectContext = true;

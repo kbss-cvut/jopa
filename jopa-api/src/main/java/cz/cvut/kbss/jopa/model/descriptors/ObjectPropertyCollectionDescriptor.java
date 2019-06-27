@@ -16,6 +16,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Objects;
 import java.util.Set;
 
 public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
@@ -32,12 +33,27 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
         this.elementDescriptor = new EntityDescriptor(context);
     }
 
+    public ObjectPropertyCollectionDescriptor(URI context, Field attribute, boolean assertionsInSubjectContext) {
+        super(context, attribute);
+        this.elementDescriptor = new EntityDescriptor(context, assertionsInSubjectContext);
+    }
+
     @Override
     public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
+        Objects.requireNonNull(attribute);
         if (getField().equals(attribute.getJavaField())) {
             return this;
         }
         return elementDescriptor.getAttributeDescriptor(attribute);
+    }
+
+    @Override
+    public URI getAttributeContext(FieldSpecification<?, ?> attribute) {
+        Objects.requireNonNull(attribute);
+        if (getField().equals(attribute.getJavaField())) {
+            return getContext();
+        }
+        return elementDescriptor.getAttributeContext(attribute);
     }
 
     @Override
@@ -63,6 +79,10 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
         visited.add(this);
         contexts.add(context);
         return elementDescriptor.getContextsInternal(contexts, visited);
+    }
+
+    public EntityDescriptor getElementDescriptor() {
+        return elementDescriptor;
     }
 
     @Override
