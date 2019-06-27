@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -24,14 +22,14 @@ import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
@@ -41,7 +39,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findReadsAttributesOfMappedSuperclass() throws Exception {
+    void findReadsAttributesOfMappedSuperclass() throws Exception {
         final Collection<Triple> data = new ArrayList<>();
         entityQ.setUri(Generators.generateUri());
         data.add(
@@ -77,7 +75,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findReadsAttributesOfEntitySuperclass() throws Exception {
+    void findReadsAttributesOfEntitySuperclass() throws Exception {
         final Collection<Triple> data = triplesForEntityT();
         final EntityManager em = getEntityManager("findReadsAttributesOfEntitySuperclass", false);
         persistTestData(data, em);
@@ -104,7 +102,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent() throws Exception {
+    void findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent() throws Exception {
         final EntityManager em = getEntityManager("findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent",
                 false);
         final Collection<Triple> data = triplesForEntityT();
@@ -119,7 +117,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass() throws Exception {
+    void findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass() throws Exception {
         final Collection<Triple> data = triplesForEntityT();
 
         final EntityManager em = getEntityManager(
@@ -141,7 +139,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findLoadsSubclassOfAbstractParent() throws Exception {
+    void findLoadsSubclassOfAbstractParent() throws Exception {
         final Collection<Triple> data = new ArrayList<>();
         entityT.setUri(Generators.generateUri());
         data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
@@ -160,7 +158,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findLoadsMostConcreteSubclassOfAbstractAncestor() throws Exception {
+    void findLoadsMostConcreteSubclassOfAbstractAncestor() throws Exception {
         final Collection<Triple> data = triplesForEntityT();
         data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
 
@@ -174,7 +172,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findReturnsNullWhenMatchingClassIsAbstract() throws Exception {
+    void findReturnsNullWhenMatchingClassIsAbstract() throws Exception {
         final Collection<Triple> data = triplesForEntityT();
         data.remove(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_T)));
         data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
@@ -186,7 +184,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor() throws Exception {
+    void findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor() throws Exception {
         final Collection<Triple> data = triplesForEntityT();
         data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
         data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
@@ -202,7 +200,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findLoadsMostSpecificSubclassFromCache() {
+    void findLoadsMostSpecificSubclassFromCache() {
         this.em = getEntityManager("findLoadsMostSpecificSubclassFromCache", true);
         persist(entityT, entityA);
 
@@ -213,7 +211,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findLoadsInstanceOfSuperclassFromCacheWhenTypeMatchesAndIsSpecifiedAsReturnType() {
+    void findLoadsInstanceOfSuperclassFromCacheWhenTypeMatchesAndIsSpecifiedAsReturnType() {
         this.em = getEntityManager("findLoadsInstanceOfSuperclassWhenTypeMatchesAndIsSpecifiedAsReturnType", true);
         persist(entityT, entityA);
 
@@ -224,18 +222,17 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypes() throws Exception {
+    void findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypes() throws Exception {
         final Collection<Triple> data = triplesForEntityT();
         data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_U)));
         this.em = getEntityManager("findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypes", false);
         persistTestData(data, em);
-        thrown.expect(AmbiguousEntityTypeException.class);
 
-        em.find(OWLClassS.class, entityT.getUri());
+        assertThrows(AmbiguousEntityTypeException.class, () -> em.find(OWLClassS.class, entityT.getUri()));
     }
 
     @Test
-    public void findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypesInCache() throws Exception {
+    void findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypesInCache() {
         this.em = getEntityManager("findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypesInCache",
                 true);
         persist(entityT, entityA);
@@ -248,13 +245,12 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
                      .contains(OWLClassT.class, entityT.getUri(), new EntityDescriptor()));
         assertTrue(em.getEntityManagerFactory().getCache()
                      .contains(OWLClassU.class, sameIndividual.getUri(), new EntityDescriptor()));
-        thrown.expect(AmbiguousEntityTypeException.class);
 
-        em.find(OWLClassS.class, entityT.getUri());
+        assertThrows(AmbiguousEntityTypeException.class, () -> em.find(OWLClassS.class, entityT.getUri()));
     }
 
     @Test
-    public void loadingEntityLoadsExactMatchOfPolymorphicAttribute() {
+    void loadingEntityLoadsExactMatchOfPolymorphicAttribute() {
         this.em = getEntityManager("loadingEntityLoadsExactMatchOfPolymorphicAttribute", false);
         final OWLClassS s = new OWLClassS();
         s.setName("s");
@@ -271,7 +267,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    public void loadingEntityLoadsCorrectSubtypeInPolymorphicAttribute() {
+    void loadingEntityLoadsCorrectSubtypeInPolymorphicAttribute() {
         this.em = getEntityManager("loadingEntityLoadsCorrectSubtypeInPolymorphicAttribute", false);
         persist(entityU, entityT, entityA);
 

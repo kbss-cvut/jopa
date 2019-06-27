@@ -13,19 +13,20 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 public abstract class BaseRunner {
 
@@ -53,9 +54,6 @@ public abstract class BaseRunner {
     protected OWLClassP entityP;
     // Mapped superclass
     protected OWLClassQ entityQ;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     protected final DataAccessor dataAccessor;
     protected final PersistenceFactory persistenceFactory;
@@ -123,7 +121,7 @@ public abstract class BaseRunner {
         entityQ.setOwlClassA(entityA);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (em != null && em.isOpen()) {
             if (em.getTransaction().isActive()) {
@@ -149,6 +147,7 @@ public abstract class BaseRunner {
 
     /**
      * Runs the specified action in a transaction on the current entity manager.
+     *
      * @param action The code to run
      */
     protected void transactional(Runnable action) {
@@ -185,5 +184,50 @@ public abstract class BaseRunner {
 
     protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
         dataAccessor.verifyDataPresence(expected, em);
+    }
+
+    // Utility methods to reduce duplication
+
+    /**
+     * Persists the specified instance of {@link OWLClassC} together will all items in the lists (if specified).
+     *
+     * @param instance Instace to persist
+     */
+    void persistCWithLists(OWLClassC instance) {
+        transactional(() -> {
+            em.persist(instance);
+            if (instance.getSimpleList() != null) {
+                instance.getSimpleList().forEach(em::persist);
+            }
+            if (instance.getReferencedList() != null) {
+                instance.getReferencedList().forEach(em::persist);
+            }
+        });
+    }
+
+    /**
+     * Finds instance and checks for it not being {@code null}.
+     *
+     * @return The found instance
+     */
+    <T> T findRequired(Class<T> type, Object identifier) {
+        final T result = em.find(type, identifier);
+        assertNotNull(result);
+        return result;
+    }
+
+    /**
+     * Finds instance and checks for it not being {@code null}.
+     *
+     * @return The found instance
+     */
+    <T> T findRequired(Class<T> type, Object identifier, Descriptor descriptor) {
+        final T result = em.find(type, identifier, descriptor);
+        assertNotNull(result);
+        return result;
+    }
+
+    <T> void verifyExists(Class<T> type, Object identifier) {
+        assertNotNull(em.find(type, identifier));
     }
 }

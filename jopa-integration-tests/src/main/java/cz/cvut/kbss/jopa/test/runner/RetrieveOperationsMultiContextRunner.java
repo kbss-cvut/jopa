@@ -50,11 +50,9 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityATwo, aTwoDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
-        assertNotNull(resOne);
+        final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         assertEquals(entityA.getStringAttribute(), resOne.getStringAttribute());
-        final OWLClassA resTwo = em.find(OWLClassA.class, entityATwo.getUri(), aTwoDescriptor);
-        assertNotNull(resTwo);
+        final OWLClassA resTwo = findRequired(OWLClassA.class, entityATwo.getUri(), aTwoDescriptor);
         assertEquals(entityATwo.getStringAttribute(), resTwo.getStringAttribute());
     }
 
@@ -73,13 +71,11 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         }
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
-        assertNotNull(resC);
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri(), cDescriptor);
         assertNotNull(resC.getSimpleList());
         assertEquals(entityC.getSimpleList().size(), resC.getSimpleList().size());
         for (OWLClassA a : entityC.getSimpleList()) {
-            final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), listDescriptor);
-            assertNotNull(resA);
+            final OWLClassA resA = findRequired(OWLClassA.class, a.getUri(), listDescriptor);
             assertEquals(a.getUri(), resA.getUri());
             assertEquals(a.getStringAttribute(), resA.getStringAttribute());
         }
@@ -100,13 +96,11 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         }
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
-        assertNotNull(resC);
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri(), cDescriptor);
         assertNotNull(resC.getReferencedList());
         assertEquals(entityC.getReferencedList().size(), resC.getReferencedList().size());
         for (OWLClassA a : entityC.getReferencedList()) {
-            final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), listDescriptor);
-            assertNotNull(resA);
+            final OWLClassA resA = findRequired(OWLClassA.class, a.getUri(), listDescriptor);
             assertEquals(a.getUri(), resA.getUri());
             assertEquals(a.getStringAttribute(), resA.getStringAttribute());
         }
@@ -124,14 +118,12 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityI, iDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri(), iDescriptor);
-        assertNotNull(resI);
+        final OWLClassI resI = findRequired(OWLClassI.class, entityI.getUri(), iDescriptor);
         final Field refAField = OWLClassI.class.getDeclaredField("owlClassA");
         refAField.setAccessible(true);
         assertNull(refAField.get(resI));
         assertNotNull(resI.getOwlClassA());
-        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
-        assertNotNull(resA);
+        final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         // If we were using cache, ref.getOwlClassA() and resA would be the same
         assertEquals(resI.getOwlClassA().getStringAttribute(), resA.getStringAttribute());
     }
@@ -147,8 +139,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityB, bDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
-        assertNotNull(res);
+        final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri(), bDescriptor);
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
         assertTrue(TestEnvironmentUtils.arePropertiesEqual(entityB.getProperties(), res.getProperties()));
     }
@@ -165,8 +156,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityD, dDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassD res = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
-        assertNotNull(res);
+        final OWLClassD res = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(res.getOwlClassA());
         assertEquals(entityA.getStringAttribute(), res.getOwlClassA().getStringAttribute());
     }

@@ -39,8 +39,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityA, aDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
-        assertNotNull(a);
+        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         em.getTransaction().begin();
         em.remove(a);
         assertFalse(em.contains(a));
@@ -62,16 +61,13 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityA, aDescriptorTwo);
         em.getTransaction().commit();
 
-        final OWLClassA aOne = em.find(OWLClassA.class, entityA.getUri(), aDescriptorOne);
-        assertNotNull(aOne);
-        final OWLClassA aTwo = em.find(OWLClassA.class, entityA.getUri(), aDescriptorTwo);
-        assertNotNull(aTwo);
+        findRequired(OWLClassA.class, entityA.getUri(), aDescriptorOne);
+        final OWLClassA aTwo = findRequired(OWLClassA.class, entityA.getUri(), aDescriptorTwo);
         em.getTransaction().begin();
         em.remove(aTwo);
         em.getTransaction().commit();
 
-        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri(), aDescriptorOne);
-        assertNotNull(resOne);
+        findRequired(OWLClassA.class, entityA.getUri(), aDescriptorOne);
         final OWLClassA resTwo = em.find(OWLClassA.class, entityA.getUri(), aDescriptorTwo);
         assertNull(resTwo);
     }
@@ -87,8 +83,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityA, aDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
-        assertNotNull(d);
+        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         final OWLClassA a = d.getOwlClassA();
         assertNotNull(a);
         d.setOwlClassA(null);
@@ -96,8 +91,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         em.remove(a);
         em.getTransaction().commit();
 
-        final OWLClassD resD = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
-        assertNotNull(resD);
+        final OWLClassD resD = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNull(resD.getOwlClassA());
         final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
         assertNull(resA);
@@ -115,13 +109,10 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         em.persist(entityG, gDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
-        assertNotNull(a);
-        final OWLClassH h = em.find(OWLClassH.class, entityH.getUri(), hDescriptor);
-        assertNotNull(h);
+        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
+        final OWLClassH h = findRequired(OWLClassH.class, entityH.getUri(), hDescriptor);
         assertSame(a, h.getOwlClassA());
-        final OWLClassG g = em.find(OWLClassG.class, entityG.getUri(), gDescriptor);
-        assertNotNull(g);
+        final OWLClassG g = findRequired(OWLClassG.class, entityG.getUri(), gDescriptor);
         assertSame(h, g.getOwlClassH());
         em.getTransaction().begin();
         em.remove(g);
@@ -144,7 +135,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         });
 
         transactional(() -> {
-            final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+            final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
             d.setOwlClassA(null);
         });
 

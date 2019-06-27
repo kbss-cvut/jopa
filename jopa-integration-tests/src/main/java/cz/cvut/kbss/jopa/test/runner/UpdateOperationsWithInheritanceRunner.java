@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -20,11 +18,12 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class UpdateOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
@@ -34,7 +33,7 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
     }
 
     @Test
-    public void testUpdateFieldsOfEntityWithMappedSuperclass() {
+    void testUpdateFieldsOfEntityWithMappedSuperclass() {
         this.em = getEntityManager("UpdateEntityWithMappedSuperclass", true);
         persist(entityQ, entityA);
 
@@ -45,14 +44,14 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
         em.merge(entityQ);
         em.getTransaction().commit();
 
-        final OWLClassQ res = em.find(OWLClassQ.class, entityQ.getUri());
+        final OWLClassQ res = findRequired(OWLClassQ.class, entityQ.getUri());
         assertEquals(entityQ.getStringAttribute(), res.getStringAttribute());
         assertEquals(entityQ.getParentString(), res.getParentString());
         assertEquals(entityQ.getLabel(), res.getLabel());
     }
 
     @Test
-    public void testUpdateObjectPropertyInMappedSuperclass() {
+    void testUpdateObjectPropertyInMappedSuperclass() {
         this.em = getEntityManager("UpdateObjectPropertyInMappedSuperclass", true);
         persist(entityQ, entityA);
         final OWLClassA entityA2 = new OWLClassA(Generators.generateUri());
@@ -64,7 +63,7 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
         em.persist(entityA2);
         em.getTransaction().commit();
 
-        final OWLClassQ res = em.find(OWLClassQ.class, entityQ.getUri());
+        final OWLClassQ res = findRequired(OWLClassQ.class, entityQ.getUri());
         assertNotNull(res.getOwlClassA());
         assertEquals(entityA2.getUri(), res.getOwlClassA().getUri());
         assertEquals(entityA2.getStringAttribute(), res.getOwlClassA().getStringAttribute());
@@ -72,21 +71,22 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
     }
 
     @Test
-    public void settingNonEmptyFieldInMappedSuperclassThrowsICViolationOnMerge() {
+    void settingNonEmptyFieldInMappedSuperclassThrowsICViolationOnMerge() {
         this.em = getEntityManager("SettingNonEmptyFieldInMappedSuperclassThrowsICViolation", true);
         persist(entityQ, entityA);
 
-        thrown.expect(RollbackException.class);
-        thrown.expectCause(isA(IntegrityConstraintViolatedException.class));
+        final RollbackException ex = assertThrows(RollbackException.class, () -> {
+            entityQ.setOwlClassA(null);
+            em.getTransaction().begin();
+            em.merge(entityQ);
+            em.getTransaction().commit();
+        });
+        assertThat(ex.getCause(), instanceOf(IntegrityConstraintViolatedException.class));
 
-        entityQ.setOwlClassA(null);
-        em.getTransaction().begin();
-        em.merge(entityQ);
-        em.getTransaction().commit();
     }
 
     @Test
-    public void testUpdateDataPropertyInEntitySuperclass() {
+    void testUpdateDataPropertyInEntitySuperclass() {
         this.em = getEntityManager("updateDataPropertyInEntitySuperclass", true);
         persist(entityT, entityA);
 
@@ -100,14 +100,14 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
         merged.setDescription(newDescription);
         em.getTransaction().commit();
 
-        final OWLClassT result = em.find(OWLClassT.class, entityT.getUri());
+        final OWLClassT result = findRequired(OWLClassT.class, entityT.getUri());
         assertEquals(newName, result.getName());
         assertEquals(newDescription, result.getDescription());
         assertEquals(newInt, result.getIntAttribute().intValue());
     }
 
     @Test
-    public void updateAllowsSettingValueOfPolymorphicAttributeToInstanceOfDifferentSubtype() {
+    void updateAllowsSettingValueOfPolymorphicAttributeToInstanceOfDifferentSubtype() {
         this.em = getEntityManager("updateAllowsSettingValueOfPolymorphicAttributeToInstanceOfDifferentSubtype", true);
         persist(entityU, entityT, entityA);
 
@@ -117,12 +117,11 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
 
         em.getTransaction().begin();
         em.persist(newReference);
-        final OWLClassU toUpdate = em.find(OWLClassU.class, entityU.getUri());
+        final OWLClassU toUpdate = findRequired(OWLClassU.class, entityU.getUri());
         toUpdate.setOwlClassS(newReference);
         em.getTransaction().commit();
 
-        final OWLClassU result = em.find(OWLClassU.class, entityU.getUri());
-        assertNotNull(result);
+        final OWLClassU result = findRequired(OWLClassU.class, entityU.getUri());
         assertTrue(result.getOwlClassS() instanceof OWLClassU);
         assertEquals(newReference.getUri(), result.getOwlClassS().getUri());
         assertNotNull(em.find(OWLClassS.class, entityT.getUri()));

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -54,8 +52,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityA);
 
         em.getEntityManagerFactory().getCache().evictAll();
-        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(res);
+        final OWLClassA res = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(entityA.getUri(), res.getUri());
         assertEquals(entityA.getStringAttribute(), res.getStringAttribute());
         assertTrue(entityA.getTypes().containsAll(res.getTypes()));
@@ -67,8 +64,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("RetrieveLazy", false);
         persist(entityI);
 
-        final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri());
-        assertNotNull(resI);
+        final OWLClassI resI = findRequired(OWLClassI.class, entityI.getUri());
         final Field f = OWLClassI.class.getDeclaredField("owlClassA");
         f.setAccessible(true);
         Object value = f.get(resI);
@@ -98,8 +94,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
         em.clear();
         for (OWLClassE e : lst) {
-            final OWLClassE res = em.find(OWLClassE.class, e.getUri());
-            assertNotNull(res);
+            final OWLClassE res = findRequired(OWLClassE.class, e.getUri());
             assertEquals(e.getStringAttribute(), res.getStringAttribute());
         }
     }
@@ -119,8 +114,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
         newA.setStringAttribute("newA");
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
+        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(d.getOwlClassA(), a);
         d.setOwlClassA(newA);
         em.refresh(d);
@@ -132,8 +127,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("RefreshNotManaged", false);
         persist(entityA);
 
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(a);
+        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri());
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
         newA.setStringAttribute("newA");
@@ -156,8 +150,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         entityP.setProperties(properties);
         persist(entityP);
 
-        final OWLClassP p = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(p);
+        final OWLClassP p = findRequired(OWLClassP.class, entityP.getUri());
         p.getProperties().put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#addedProperty"),
                 Collections.singleton("Test"));
         assertNotEquals(properties, p.getProperties());
@@ -172,7 +165,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         entityP.setIndividuals(Collections.singleton(new URL("http://krizik.felk.cvut.cz/ontologies/jopa#url")));
         persist(entityP);
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         final Field singularField = OWLClassP.class.getDeclaredField("individualUri");
         singularField.setAccessible(true);
         assertNotNull(singularField.get(res));
@@ -186,10 +179,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("readingIndividualWithStringIdTwiceInPersistenceContextReturnsSameInstance", true);
         persist(entityN);
 
-        final OWLClassN resultOne = em.find(OWLClassN.class, entityN.getId());
-        final OWLClassN resultTwo = em.find(OWLClassN.class, entityN.getId());
-        assertNotNull(resultOne);
-        assertNotNull(resultTwo);
+        final OWLClassN resultOne = findRequired(OWLClassN.class, entityN.getId());
+        final OWLClassN resultTwo = findRequired(OWLClassN.class, entityN.getId());
         assertSame(resultOne, resultTwo);
     }
 
@@ -212,8 +203,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassV result = em.find(OWLClassV.class, v.getUri());
-        assertNotNull(result);
+        final OWLClassV result = findRequired(OWLClassV.class, v.getUri());
         assertEquals(v.getProperties(), result.getProperties());
         final Set<String> expectedUris = v.getThings().stream().map(Thing::getUri).collect(Collectors.toSet());
         assertEquals(v.getThings().size(), result.getThings().size());
@@ -272,7 +262,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persistTestData(Collections
                 .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
 
-        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri());
         assertNull(resOne.getStringAttribute());
         em.clear();
 
@@ -292,7 +282,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persistTestData(Collections
                 .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
 
-        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(entityA.getStringAttribute(), resOne.getStringAttribute());
         em.clear();
 
@@ -393,9 +383,10 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("loadingEntityWithLexicalFormAttributeLoadsLexicalFormOfLiteral", false);
         persist(entityM);
         final Integer value = 117;
-        persistTestData(Collections.singleton(new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_lexicalForm), value)), em);
-        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
-        assertNotNull(result);
+        persistTestData(Collections
+                        .singleton(new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_lexicalForm), value)),
+                em);
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value.toString(), result.getLexicalForm());
     }
 }

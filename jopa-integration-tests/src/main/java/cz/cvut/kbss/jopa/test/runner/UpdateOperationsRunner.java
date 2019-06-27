@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -25,7 +23,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
@@ -38,8 +36,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class UpdateOperationsRunner extends BaseRunner {
 
@@ -75,16 +74,13 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateDataLeaveLazy() throws Exception {
-        logger.debug(
-                "Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
+    void testUpdateDataLeaveLazy() throws Exception {
         this.em = getEntityManager("UpdateDataProperty", false);
         entityB.setProperties(Generators.createProperties());
         persist(entityB);
 
         em.getTransaction().begin();
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
-        assertNotNull(b);
+        final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri());
         final Field propsField = OWLClassB.class.getDeclaredField("properties");
         propsField.setAccessible(true);
         assertNull(propsField.get(b));
@@ -92,35 +88,30 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         b.setStringAttribute(newString);
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
-        assertNotNull(res);
+        final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri());
         assertEquals(newString, res.getStringAttribute());
         assertNotNull(res.getProperties());
         assertEquals(entityB.getProperties(), res.getProperties());
     }
 
     @Test
-    public void testUpdateDataPropertySetNull() {
-        logger.debug("Test: update data property. Set it to null.");
+    void testUpdateDataPropertySetNull() {
         this.em = getEntityManager("UpdateDataPropertyToNull", true);
         persist(entityA);
 
         em.getTransaction().begin();
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(a);
+        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri());
         assertNotNull(a.getStringAttribute());
         a.setStringAttribute(null);
         em.getTransaction().commit();
 
-        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(res);
+        final OWLClassA res = findRequired(OWLClassA.class, entityA.getUri());
         assertNull(res.getStringAttribute());
         assertEquals(entityA.getTypes(), res.getTypes());
     }
 
     @Test
-    public void testUpdateReference() {
-        logger.debug("Test: update reference to entity.");
+    void testUpdateReference() {
         this.em = getEntityManager("UpdateReference", true);
         persist(entityD, entityI);
         // em.persist(entityA, ctx);
@@ -129,30 +120,29 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
         newA.setStringAttribute("newA");
         em.getTransaction().begin();
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
         assertNotNull(d.getOwlClassA());
         d.setOwlClassA(newA);
-        final OWLClassI i = em.find(OWLClassI.class, entityI.getUri());
+        final OWLClassI i = findRequired(OWLClassI.class, entityI.getUri());
         assertNotNull(i.getOwlClassA());
         i.setOwlClassA(newA);
         em.persist(newA);
         em.getTransaction().commit();
 
-        final OWLClassA resA1 = em.find(OWLClassA.class, newA.getUri());
-        assertNotNull(resA1);
-        final OWLClassD resD = em.find(OWLClassD.class, d.getUri());
+        final OWLClassA resA1 = findRequired(OWLClassA.class, newA.getUri());
+        final OWLClassD resD = findRequired(OWLClassD.class, d.getUri());
         assertEquals(resA1.getUri(), resD.getOwlClassA().getUri());
 //		assertSame(resD.getOwlClassA(), resA1);
-        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
-        final OWLClassI resI = em.find(OWLClassI.class, i.getUri());
+        verifyExists(OWLClassA.class, entityA.getUri());
+        final OWLClassI resI = findRequired(OWLClassI.class, i.getUri());
         assertEquals(newA.getUri(), resI.getOwlClassA().getUri());
-        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+        verifyExists(OWLClassA.class, entityA.getUri());
         assertEquals(resA1.getUri(), resI.getOwlClassA().getUri());
 //		assertEquals(resA1, resI.getOwlClassA());
     }
 
     @Test
-    public void mergedInstanceWithChangesInCascadedPluralReferenceAttributeContainsUpdatedValues() {
+    void mergedInstanceWithChangesInCascadedPluralReferenceAttributeContainsUpdatedValues() {
         this.em = getEntityManager("MergeSet", false);
         persist(entityJ);
         em.clear();
@@ -169,12 +159,11 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testMergeDetachedWithChanges() {
-        logger.debug("Test: merge detached entity with changes.");
+    void testMergeDetachedWithChanges() {
         this.em = getEntityManager("UpdateDetached", true);
         persist(entityA);
 
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri());
         assertTrue(em.contains(a));
         em.detach(a);
         assertFalse(em.contains(a));
@@ -185,14 +174,13 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertTrue(merged.getTypes().contains(newType));
         em.getTransaction().commit();
 
-        final OWLClassA res = em.find(OWLClassA.class, a.getUri());
+        final OWLClassA res = findRequired(OWLClassA.class, a.getUri());
         assertEquals(a.getTypes().size(), res.getTypes().size());
         assertTrue(res.getTypes().containsAll(a.getTypes()));
     }
 
     @Test
-    public void testMergeDetachedCascade() {
-        logger.debug("Test: merge detached with cascade.");
+    void testMergeDetachedCascade() {
         this.em = getEntityManager("UpdateCascade", true);
         em.getTransaction().begin();
         em.persist(entityH);
@@ -200,7 +188,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassH h = em.find(OWLClassH.class, entityH.getUri());
+        final OWLClassH h = findRequired(OWLClassH.class, entityH.getUri());
         assertNotNull(h.getOwlClassA());
         em.detach(h);
         assertFalse(em.contains(h));
@@ -211,18 +199,16 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(newStr, merged.getOwlClassA().getStringAttribute());
         em.getTransaction().commit();
 
-        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(res);
+        final OWLClassA res = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(newStr, res.getStringAttribute());
     }
 
     @Test
-    public void testMergeDetachedWithObjectPropertyChange() {
-        logger.debug("Test: merge detached with object property change.");
+    void testMergeDetachedWithObjectPropertyChange() {
         this.em = getEntityManager("UpdateDetachedWithOPChange", true);
         persist(entityD, entityA);
 
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
         em.detach(d);
         d.setOwlClassA(entityA2);
         em.getTransaction().begin();
@@ -230,33 +216,28 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.persist(entityA2);
         em.getTransaction().commit();
 
-        final OWLClassD res = em.find(OWLClassD.class, entityD.getUri());
-        assertNotNull(res);
+        final OWLClassD res = findRequired(OWLClassD.class, entityD.getUri());
         assertEquals(entityA2.getUri(), res.getOwlClassA().getUri());
         assertEquals(entityA2.getStringAttribute(), res.getOwlClassA().getStringAttribute());
-        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(resA);
+        final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
         assertEquals(entityA.getTypes(), resA.getTypes());
     }
 
     @Test
-    public void testRemoveFromSimpleList() {
-        logger.debug("Test: remove entity from simple list. (But keep it in the ontology.)");
+    void testRemoveFromSimpleList() {
         this.em = getEntityManager("UpdateRemoveFromSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
-        persistEntityWithList();
+        persistCWithLists(entityC);
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         em.getTransaction().begin();
         final OWLClassA a = c.getSimpleList().get(1);
         c.getSimpleList().remove(a);
         em.getTransaction().commit();
 
-        final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
-        assertNotNull(resA);
-        final OWLClassC resC = em.find(OWLClassC.class, c.getUri());
+        final OWLClassA resA = findRequired(OWLClassA.class, a.getUri());
+        final OWLClassC resC = findRequired(OWLClassC.class, c.getUri());
         assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
         assertEquals(entityC.getSimpleList().size() - 1, resC.getSimpleList().size());
         for (OWLClassA aa : resC.getSimpleList()) {
@@ -264,21 +245,8 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    private void persistEntityWithList() {
-        em.getTransaction().begin();
-        em.persist(entityC);
-        if (entityC.getSimpleList() != null) {
-            entityC.getSimpleList().forEach(em::persist);
-        }
-        if (entityC.getReferencedList() != null) {
-            entityC.getReferencedList().forEach(em::persist);
-        }
-        em.getTransaction().commit();
-    }
-
     @Test
-    public void testAddToSimpleList() {
-        logger.debug("Test: add entity to simple list.");
+    void testAddToSimpleList() {
         this.em = getEntityManager("UpdateAddToSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         em.getTransaction().begin();
@@ -288,52 +256,45 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(a);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
+        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri());
         assertFalse(c.getSimpleList().contains(a));
         c.getSimpleList().add(a);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
         assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
         assertEquals(entityC.getSimpleList().size() + 1, resC.getSimpleList().size());
-        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(resA);
+        final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri());
         assertTrue(resC.getSimpleList().contains(resA));
     }
 
     @Test
-    public void testClearSimpleList() {
-        logger.debug("Test: clear a simple list (but keep the entities in ontology).");
+    void testClearSimpleList() {
         this.em = getEntityManager("UpdateClearSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
-        persistEntityWithList();
+        persistCWithLists(entityC);
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         assertFalse(c.getSimpleList().isEmpty());
         em.getTransaction().begin();
         c.getSimpleList().clear();
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(resC);
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
         assertTrue(resC.getSimpleList() == null || resC.getSimpleList().isEmpty());
         for (OWLClassA a : entityC.getSimpleList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri()));
+            verifyExists(OWLClassA.class, a.getUri());
         }
     }
 
     @Test
-    public void testReplaceSimpleList() {
-        logger.debug("Test: replace simple list with a new one.");
+    void testReplaceSimpleList() {
         this.em = getEntityManager("UpdateReplaceSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
-        persistEntityWithList();
+        persistCWithLists(entityC);
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         final List<OWLClassA> newList = new ArrayList<>(1);
         newList.add(entityA);
         em.getTransaction().begin();
@@ -341,8 +302,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         c.setSimpleList(newList);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(resC);
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
         assertEquals(newList.size(), resC.getSimpleList().size());
         boolean found;
         for (OWLClassA a : newList) {
@@ -361,22 +321,19 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveFromReferencedList() {
-        logger.debug("Test: remove entity from referenced list. (But keep it in the ontology.");
+    void testRemoveFromReferencedList() {
         this.em = getEntityManager("UpdateRemoveFromReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
-        persistEntityWithList();
+        persistCWithLists(entityC);
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         em.getTransaction().begin();
         final OWLClassA a = c.getReferencedList().get(Generators.randomInt(c.getReferencedList().size()));
         c.getReferencedList().remove(a);
         em.getTransaction().commit();
 
-        final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
-        assertNotNull(resA);
-        final OWLClassC resC = em.find(OWLClassC.class, c.getUri());
+        final OWLClassA resA = findRequired(OWLClassA.class, a.getUri());
+        final OWLClassC resC = findRequired(OWLClassC.class, c.getUri());
         assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
         assertEquals(entityC.getReferencedList().size() - 1, resC.getReferencedList().size());
         for (OWLClassA aa : resC.getReferencedList()) {
@@ -385,57 +342,50 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testAddToReferencedList() {
-        logger.debug("Test: add entity to Referenced list.");
+    void testAddToReferencedList() {
         this.em = getEntityManager("UpdateAddToReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
-        persistEntityWithList();
+        persistCWithLists(entityC);
 
         em.getTransaction().begin();
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         em.persist(entityA);
         c.getReferencedList().add(entityA);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
         assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
         assertEquals(entityC.getReferencedList().size() + 1, resC.getReferencedList().size());
-        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri());
-        assertNotNull(resA);
+        final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri());
         assertTrue(resC.getReferencedList().contains(resA));
     }
 
     @Test
-    public void testClearReferencedList() {
-        logger.debug("Test: clear referenced list (but keep the entities in ontology).");
+    void testClearReferencedList() {
         this.em = getEntityManager("UpdateClearReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
-        persistEntityWithList();
+        persistCWithLists(entityC);
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(c);
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         assertFalse(c.getReferencedList().isEmpty());
         em.getTransaction().begin();
         c.setReferencedList(null);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(resC);
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
         assertNull(resC.getReferencedList());
         for (OWLClassA a : entityC.getReferencedList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri()));
+            verifyExists(OWLClassA.class, a.getUri());
         }
     }
 
     @Test
-    public void testReplaceReferencedList() {
-        logger.debug("Test: replace referenced list with a new one.");
+    void testReplaceReferencedList() {
         this.em = getEntityManager("UpdateReplaceReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
-        persistEntityWithList();
+        persistCWithLists(entityC);
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
+        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
         final List<OWLClassA> newList = new ArrayList<>(1);
         newList.add(entityA);
         em.getTransaction().begin();
@@ -443,8 +393,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         c.setReferencedList(newList);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(resC);
+        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
         assertEquals(newList.size(), resC.getReferencedList().size());
         boolean found;
         for (OWLClassA a : newList) {
@@ -458,13 +407,12 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
             assertTrue(found);
         }
         for (OWLClassA a : entityC.getReferencedList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri()));
+            verifyExists(OWLClassA.class, a.getUri());
         }
     }
 
     @Test
-    public void testAddNewToProperties() {
-        logger.debug("Test: add a new property value to entity's properties.");
+    void testAddNewToProperties() {
         this.em = getEntityManager("UpdateAddNewToProperties", false);
         entityB.setProperties(Generators.createProperties());
         final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
@@ -472,8 +420,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         persist(entityB);
         em.clear();
 
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
-        assertNotNull(b);
+        final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri());
         assertEquals(expected.size(), b.getProperties().size());
         em.getTransaction().begin();
         b.getProperties().put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyFour",
@@ -481,8 +428,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         expected.putAll(b.getProperties());
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, b.getUri());
-        assertNotNull(res);
+        final OWLClassB res = findRequired(OWLClassB.class, b.getUri());
         assertEquals(expected.size(), res.getProperties().size());
         for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
             assertTrue(res.getProperties().containsKey(e.getKey()));
@@ -494,8 +440,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testAddPropertyValue() {
-        logger.debug("Test: add another value to an existing property.");
+    void testAddPropertyValue() {
         this.em = getEntityManager("UpdateAddPropertyValue", false);
         entityB.setProperties(Generators.createProperties());
         final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
@@ -504,16 +449,14 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         persist(entityB);
         em.clear();
 
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
-        assertNotNull(b);
+        final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri());
         assertEquals(expected.size(), b.getProperties().size());
         em.getTransaction().begin();
         b.getProperties().get(prop).add("http://krizik.felk.cvut.cz/ontologies/jopa/Stroustrup");
         expected.putAll(b.getProperties());
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, b.getUri());
-        assertNotNull(res);
+        final OWLClassB res = findRequired(OWLClassB.class, b.getUri());
         assertEquals(expected.size(), res.getProperties().size());
         for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
             assertTrue(res.getProperties().containsKey(e.getKey()));
@@ -532,8 +475,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testAddPropertyValueDetached() {
-        logger.debug("Test: add another value to an existing property.");
+    void testAddPropertyValueDetached() {
         this.em = getEntityManager("UpdateAddPropertyValueDetached", false);
         entityB.setProperties(Generators.createProperties());
         final String prop = entityB.getProperties().keySet().iterator().next();
@@ -541,27 +483,25 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         persist(entityB);
         em.clear();
 
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
+        final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri());
         b.getProperties().get(prop).add(newPropertyValue);
         em.detach(b);
         em.getTransaction().begin();
         em.merge(b);
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
-        assertNotNull(res);
+        final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri());
         assertTrue(res.getProperties().get(prop).contains(newPropertyValue));
     }
 
     @Test
-    public void testAddNewTypedPropertyWithValues() {
-        logger.debug("Test: add a new property with values. Typed.");
+    void testAddNewTypedPropertyWithValues() {
         this.em = getEntityManager("UpdateAddNewToPropertiesTyped", false);
         entityP.setProperties(Generators.createTypedProperties());
         persist(entityP);
         em.clear();
 
-        final OWLClassP p = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP p = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         final URI property = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty");
         p.getProperties().put(property, new HashSet<>(Arrays.asList(1, "Two", new Date())));
@@ -569,28 +509,26 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         em.clear();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertTrue(res.getProperties().containsKey(property));
         assertEquals(p.getProperties(), res.getProperties());
     }
 
     @Test
-    public void testAddTypedPropertyValue() {
-        logger.debug("Test: add an existing property value. Typed.");
+    void testAddTypedPropertyValue() {
         this.em = getEntityManager("UpdateAddPropertyValueTyped", false);
         entityP.setProperties(Generators.createTypedProperties());
         persist(entityP);
         em.clear();
 
-        final OWLClassP p = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP p = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         final URI property = p.getProperties().keySet().iterator().next();
         final Object value = generateValueForProperty(p, property);
         p.getProperties().get(property).add(value);
         em.getTransaction().commit();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertTrue(res.getProperties().get(property).contains(value));
         assertEquals(p.getProperties(), res.getProperties());
     }
@@ -605,34 +543,30 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    @Test(expected = InferredAttributeModifiedException.class)
-    public void testModifyInferredAttribute() {
-        logger.debug("Test: modify an inferred attribute.");
+    @Test
+    void testModifyInferredAttribute() {
         this.em = getEntityManager("ModifyInferredAttribute", false);
         persist(entityF);
 
         em.getTransaction().begin();
-        final OWLClassF f = em.find(OWLClassF.class, entityF.getUri());
-        assertNotNull(f);
-        f.setSecondStringAttribute("otherValue");
-        em.getTransaction().commit();
+        final OWLClassF f = findRequired(OWLClassF.class, entityF.getUri());
+        assertThrows(InferredAttributeModifiedException.class, () -> f.setSecondStringAttribute("otherValue"));
     }
 
     @Test
-    public void testModifyAttributesOfBasicTypes() {
-        logger.debug("Test: modify attributes of basic Java types (Integer, Boolean etc.).");
+    void testModifyAttributesOfBasicTypes() {
         this.em = getEntityManager("ModifyBasicTypeAttributes", false);
         persist(entityM);
 
         em.getTransaction().begin();
-        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey());
+        final OWLClassM m = findRequired(OWLClassM.class, entityM.getKey());
         m.setBooleanAttribute(!entityM.getBooleanAttribute());
         m.setDoubleAttribute(m.getDoubleAttribute() - 100.0);
         m.setLongAttribute(m.getLongAttribute() + 100L);
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000));
         em.getTransaction().commit();
 
-        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
+        final OWLClassM res = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(m.getBooleanAttribute(), res.getBooleanAttribute());
         assertEquals(m.getLongAttribute(), res.getLongAttribute());
         assertEquals(m.getDoubleAttribute(), res.getDoubleAttribute());
@@ -640,26 +574,23 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testModifyEnumAttribute() {
-        logger.debug("Test: modify enum attribute.");
+    void testModifyEnumAttribute() {
         this.em = getEntityManager("ModifyEnumAttribute", false);
         assertNotNull(entityM.getEnumAttribute());
         persist(entityM);
 
         final OWLClassM.Severity updated = OWLClassM.Severity.LOW;
         em.getTransaction().begin();
-        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey());
+        final OWLClassM m = findRequired(OWLClassM.class, entityM.getKey());
         m.setEnumAttribute(updated);
         em.getTransaction().commit();
 
-        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
-        assertNotNull(res);
+        final OWLClassM res = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(updated, res.getEnumAttribute());
     }
 
     @Test
-    public void testCascadeOfNewlyPersistedOnMerge() {
-        logger.debug("Test: cascade merging of an object that has been just persisted.");
+    void testCascadeOfNewlyPersistedOnMerge() {
         this.em = getEntityManager("CascadeMergeWithNewlyPersisted", true);
         em.getTransaction().begin();
         em.persist(entityO);
@@ -678,16 +609,13 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertTrue(merged.getOwlClassESet().contains(newE));
         em.getTransaction().commit();
 
-        final OWLClassE resE = em.find(OWLClassE.class, newE.getUri());
-        assertNotNull(resE);
-        final OWLClassO resO = em.find(OWLClassO.class, entityO.getUri());
+        verifyExists(OWLClassE.class, newE.getUri());
+        final OWLClassO resO = findRequired(OWLClassO.class, entityO.getUri());
         assertEquals(entityO.getOwlClassESet().size() + 1, resO.getOwlClassESet().size());
     }
 
     @Test
-    public void modificationsOfCollectionAfterCascadeMergeAreWrittenOnCommit() {
-        logger.debug(
-                "Test: modify collection after cascade merge and check that the changes have been propagated on commit.");
+    void modificationsOfCollectionAfterCascadeMergeAreWrittenOnCommit() {
         this.em = getEntityManager("ModifyCollectionAfterCascadeMerge", true);
         em.getTransaction().begin();
         em.persist(entityJ);
@@ -700,7 +628,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.persist(newA);
         em.getTransaction().commit();
 
-        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        final OWLClassJ result = findRequired(OWLClassJ.class, entityJ.getUri());
         assertEquals(merged.getOwlClassA().size(), result.getOwlClassA().size());
         boolean found = false;
         for (OWLClassA a : result.getOwlClassA()) {
@@ -713,15 +641,14 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testAddPropertiesWhenTheyWereNullOriginally() {
-        logger.debug("Test: add properties on update when the field was originally null.");
+    void testAddPropertiesWhenTheyWereNullOriginally() {
         this.em = getEntityManager("AddPropertiesToNullOriginals", true);
         em.getTransaction().begin();
         assertNull(entityB.getProperties());
         em.persist(entityB);
         em.getTransaction().commit();
 
-        final OWLClassB update = em.find(OWLClassB.class, entityB.getUri());
+        final OWLClassB update = findRequired(OWLClassB.class, entityB.getUri());
         em.detach(update);
         final Map<String, Set<String>> properties = Generators.createProperties(2);
         update.setProperties(properties);
@@ -729,57 +656,54 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.merge(update);
         em.getTransaction().commit();
 
-        final OWLClassB result = em.find(OWLClassB.class, entityB.getUri());
+        final OWLClassB result = findRequired(OWLClassB.class, entityB.getUri());
         assertNotNull(result.getProperties());
         assertEquals(properties, result.getProperties());
     }
 
     @Test
-    public void testUpdatePlainLiteralObjectPropertyValueToAnotherIndividual() {
-        logger.debug("Test: update plain literal object property value to a different individual.");
+    void testUpdatePlainLiteralObjectPropertyValueToAnotherIndividual() {
         this.em = getEntityManager("UpdatePlainLiteralObjectPropertyValue", true);
         em.getTransaction().begin();
         entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#oldIndividual"));
         em.persist(entityP);
         em.getTransaction().commit();
 
-        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         final URI newValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newIndividual");
         em.getTransaction().begin();
         update.setIndividualUri(newValue);
         em.getTransaction().commit();
 
-        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP result = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(newValue, result.getIndividualUri());
     }
 
     @Test
-    public void testUpdatePlainLiteralObjectPropertyValueToNull() {
-        logger.debug("Test: update plain literal object property value to null.");
+    void testUpdatePlainLiteralObjectPropertyValueToNull() {
         this.em = getEntityManager("UpdatePlainLiteralObjectPropertyValueToNull", true);
         em.getTransaction().begin();
         entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#SomeIndividual"));
         em.persist(entityP);
         em.getTransaction().commit();
 
-        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         assertNotNull(update.getIndividualUri());
         em.getTransaction().begin();
         update.setIndividualUri(null);
         em.getTransaction().commit();
 
-        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP result = findRequired(OWLClassP.class, entityP.getUri());
         assertNull(result.getIndividualUri());
     }
 
     @Test
-    public void testUpdatePluralPlainLiteralObjectPropertyAttribute() throws MalformedURLException {
-        logger.debug("Test: update plural plain literal object property attribute.");
+    void testUpdatePluralPlainLiteralObjectPropertyAttribute() throws MalformedURLException {
         this.em = getEntityManager("UpdatePluralPlainLiteralObjectPropertyValue", true);
         entityP.setIndividuals(Generators.createUrls());
         persist(entityP);
 
-        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         final URL added = new URL("http://krizik.felk.cvut.cz/ontologies/jopa#added");
         final URL removed = entityP.getIndividuals().iterator().next();
@@ -787,18 +711,17 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         update.getIndividuals().remove(removed);
         em.getTransaction().commit();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(update.getIndividuals(), res.getIndividuals());
     }
 
     @Test
-    public void testUpdateSimpleListOfIdentifiersByAddingNewItems() {
+    void testUpdateSimpleListOfIdentifiersByAddingNewItems() {
         this.em = getEntityManager("UpdateSimpleListOfIdentifiersByAddingItems", true);
         entityP.setSimpleList(Generators.createListOfIdentifiers());
         persist(entityP);
 
-        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
             final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
@@ -807,18 +730,17 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         }
         em.getTransaction().commit();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(update.getSimpleList(), res.getSimpleList());
     }
 
     @Test
-    public void testUpdateReferencedListByRemovingAndAddingItems() {
+    void testUpdateReferencedListByRemovingAndAddingItems() {
         this.em = getEntityManager("UpdateReferencedListByRemovingAndAddingItems", true);
         entityP.setReferencedList(Generators.createListOfIdentifiers());
         persist(entityP);
 
-        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
             final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
@@ -827,53 +749,52 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         }
         em.getTransaction().commit();
 
-        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
-        assertNotNull(res);
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(update.getReferencedList(), res.getReferencedList());
     }
 
     @Test
-    public void testUpdateStringAnnotationPropertyValue() {
+    void testUpdateStringAnnotationPropertyValue() {
         this.em = getEntityManager("UpdateStringAnnotationPropertyValue", true);
         entityN.setAnnotationProperty("PropertyValue");
         persist(entityN);
 
         final String newValue = "newValue";
-        final OWLClassN update = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN update = findRequired(OWLClassN.class, entityN.getId());
         assertNotNull(update);
         em.getTransaction().begin();
         update.setAnnotationProperty(newValue);
         em.getTransaction().commit();
 
-        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN res = findRequired(OWLClassN.class, entityN.getId());
         assertEquals(newValue, res.getAnnotationProperty());
     }
 
     @Test
-    public void testUpdateAnnotationPropertyWithUriValueToDifferentValue() {
+    void testUpdateAnnotationPropertyWithUriValueToDifferentValue() {
         this.em = getEntityManager("UpdateAnnotationPropertyWithUriValueToDifferentValue", true);
         entityN.setAnnotationUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#value"));
         persist(entityN);
 
-        final OWLClassN update = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN update = findRequired(OWLClassN.class, entityN.getId());
         assertNotNull(update);
         em.getTransaction().begin();
         final URI newUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newValue");
         update.setAnnotationUri(newUri);
         em.getTransaction().commit();
 
-        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN res = findRequired(OWLClassN.class, entityN.getId());
         assertEquals(newUri, res.getAnnotationUri());
     }
 
     @Test
-    public void testUpdateUriTypes() {
+    void testUpdateUriTypes() {
         this.em = getEntityManager("UpdateUriTypes", true);
         entityP.setTypes(Generators.createUriTypes());
         persist(entityP);
 
         em.getTransaction().begin();
-        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         final Iterator<URI> it = update.getTypes().iterator();
         while (it.hasNext()) {
             it.next();
@@ -884,27 +805,27 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         update.getTypes().addAll(Generators.createUriTypes());
         em.getTransaction().commit();
 
-        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        final OWLClassP result = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(update.getTypes().size(), result.getTypes().size());
         assertTrue(update.getTypes().containsAll(result.getTypes()));
     }
 
     @Test
-    public void updateWithInvalidInstanceThrowsIntegrityConstraintsViolation() {
-        thrown.expect(RollbackException.class);
-        thrown.expectCause(isA(IntegrityConstraintViolatedException.class));
-
+    void updateWithInvalidInstanceThrowsIntegrityConstraintsViolation() {
         this.em = getEntityManager("UpdateWithInvalidInstanceThrowsICViolation", true);
         persist(entityN);
 
         entityN.setStringAttribute(null);
         em.getTransaction().begin();
-        em.merge(entityN);
-        em.getTransaction().commit();
+        final RollbackException ex = assertThrows(RollbackException.class, () -> {
+            em.merge(entityN);
+            em.getTransaction().commit();
+        });
+        assertThat(ex.getCause(), instanceOf(IntegrityConstraintViolatedException.class));
     }
 
     @Test
-    public void addingValuesToDatatypePropertyCollectionAddsThemIntoRepository() {
+    void addingValuesToDatatypePropertyCollectionAddsThemIntoRepository() {
         this.em = getEntityManager("addingValuesToDatatypePropertyCollectionAddsThemIntoRepository", false);
         persist(entityM);
 
@@ -913,12 +834,12 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.merge(entityM);
         em.getTransaction().commit();
 
-        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
     }
 
     @Test
-    public void removingValuesFromDatatypePropertyCollectionRemovesThemFromRepository() {
+    void removingValuesFromDatatypePropertyCollectionRemovesThemFromRepository() {
         this.em = getEntityManager("removingValuesFromDatatypePropertyCollectionRemovesThemFromRepository", false);
         persist(entityM);
 
@@ -936,12 +857,12 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.merge(entityM);
         em.getTransaction().commit();
 
-        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
     }
 
     @Test
-    public void mergeReplacesReferenceWithInstanceFromRepository() {
+    void mergeReplacesReferenceWithInstanceFromRepository() {
         this.em = getEntityManager("mergeReplacesReferenceWithInstanceFromRepository", true);
         persist(entityD, entityA);
 
@@ -952,12 +873,12 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(originalString, merged.getOwlClassA().getStringAttribute());
         em.getTransaction().commit();
 
-        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(originalString, result.getStringAttribute());
     }
 
     @Test
-    public void mergeMergesUpdatedDataPropertyFields() {
+    void mergeMergesUpdatedDataPropertyFields() {
         this.em = getEntityManager("mergeMergesUpdatedDataPropertyFields", true);
         persist(entityA);
         final Set<String> newTypes =
@@ -972,13 +893,13 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertTrue(TestEnvironmentUtils.typesEqual(newTypes, merged.getTypes()));
         em.getTransaction().commit();
 
-        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(newStringAtt, result.getStringAttribute());
         assertTrue(TestEnvironmentUtils.typesEqual(newTypes, result.getTypes()));
     }
 
     @Test
-    public void mergeMergesUpdateToObjectPropertyField() {
+    void mergeMergesUpdateToObjectPropertyField() {
         this.em = getEntityManager("mergeMergesUpdateToObjectPropertyField", true);
         persist(entityD, entityA, entityA2);
 
@@ -988,15 +909,15 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(entityA2.getUri(), merged.getOwlClassA().getUri());
         em.getTransaction().commit();
 
-        final OWLClassD dResult = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD dResult = findRequired(OWLClassD.class, entityD.getUri());
         assertEquals(entityA2.getUri(), dResult.getOwlClassA().getUri());
-        final OWLClassA aReference = em.find(OWLClassA.class, entityA2.getUri());
+        final OWLClassA aReference = findRequired(OWLClassA.class, entityA2.getUri());
         assertSame(dResult.getOwlClassA(), aReference);
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 
     @Test
-    public void updateSupportsSavingStringLiteralWithDifferentLanguageTag() throws Exception {
+    void updateSupportsSavingStringLiteralWithDifferentLanguageTag() throws Exception {
         this.em = getEntityManager("updateSupportsSavingStringLiteralWithDifferentLanguageTag", false);
         persist(entityA);
 
@@ -1007,7 +928,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.merge(entityA, descriptor);
         em.getTransaction().commit();
 
-        final OWLClassA resultOne = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA resultOne = findRequired(OWLClassA.class, entityA.getUri());
         assertNull(resultOne.getStringAttribute());
         em.clear();
         final OWLClassA resultTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
@@ -1015,7 +936,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void mergeDetachedRemovesObsoleteDescriptorInSecondLevelCache() {
+    void mergeDetachedRemovesObsoleteDescriptorInSecondLevelCache() {
         this.em = getEntityManager("mergeDetachedReplacesObsoleteDescriptorInSecondLevelCache", true);
         final Descriptor descriptorOne = new EntityDescriptor();
         descriptorOne.setLanguage("en");
@@ -1039,7 +960,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting() throws Exception {
+    void mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting() throws Exception {
         this.em = getEntityManager("mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting", true);
         persist(entityA);
 
@@ -1056,25 +977,25 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue() {
+    void updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue() {
         this.em = getEntityManager("updateRemovesPendingAssertionWhenItIsReplacedByAnotherValue", true);
         entityD.setOwlClassA(null);
         persist(entityD, entityA2);
 
         em.getTransaction().begin();
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
         d.setOwlClassA(entityA);
-        d.setOwlClassA(em.find(OWLClassA.class, entityA2.getUri()));
+        d.setOwlClassA(findRequired(OWLClassA.class, entityA2.getUri()));
         em.getTransaction().commit();
 
-        final OWLClassD dResult = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD dResult = findRequired(OWLClassD.class, entityD.getUri());
         assertNotNull(dResult.getOwlClassA());
         assertEquals(entityA2.getUri(), dResult.getOwlClassA().getUri());
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 
     @Test
-    public void updatesKeepsPendingAssertionPluralAttribute() {
+    void updatesKeepsPendingAssertionPluralAttribute() {
         this.em = getEntityManager("updatesKeepsPendingAssertionPluralAttribute", true);
         final OWLClassL entityL = new OWLClassL(Generators.generateUri());
         entityL.setSet(new HashSet<>());
@@ -1085,16 +1006,15 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         persist(entityL, entityA2);
 
         em.getTransaction().begin();
-        final OWLClassL inst = em.find(OWLClassL.class, entityL.getUri());
+        final OWLClassL inst = findRequired(OWLClassL.class, entityL.getUri());
         inst.getSet().add(entityA);
-        thrown.expect(RollbackException.class);
-        thrown.expectCause(isA(UnpersistedChangeException.class));
-        thrown.expectMessage(containsString(entityA.toString()));
-        em.getTransaction().commit();
+        final RollbackException ex = assertThrows(RollbackException.class, () -> em.getTransaction().commit());
+        assertThat(ex.getCause(), instanceOf(UnpersistedChangeException.class));
+        assertThat(ex.getMessage(), containsString(entityA.toString()));
     }
 
     @Test
-    public void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributePreviouslyMerged() {
+    void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributePreviouslyMerged() {
         this.em = getEntityManager("mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributePreviouslyMerged",
                 true);
         persist(entityD, entityA);
@@ -1107,18 +1027,18 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         dUpdate.setOwlClassA(aUpdate);
         em.clear();
         em.getTransaction().begin();
-        final OWLClassD orig = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD orig = findRequired(OWLClassD.class, entityD.getUri());
         em.detach(orig);
         em.find(OWLClassA.class, entityA.getUri());
         em.merge(aUpdate);
         em.merge(dUpdate);
         em.getTransaction().commit();
-        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         assertEquals(newString, result.getOwlClassA().getStringAttribute());
     }
 
     @Test
-    public void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributeMergedLater() {
+    void mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributeMergedLater() {
         this.em = getEntityManager("mergeCorrectlyUpdatesCacheInCaseOfChangeInReferencedAttributeMergedLater",
                 true);
         persist(entityD, entityA);
@@ -1131,17 +1051,17 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         dUpdate.setOwlClassA(aUpdate);
         em.clear();
         em.getTransaction().begin();
-        final OWLClassD orig = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD orig = findRequired(OWLClassD.class, entityD.getUri());
         em.detach(orig);
         em.merge(dUpdate);
         em.merge(aUpdate);
         em.getTransaction().commit();
-        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         assertEquals(newString, result.getOwlClassA().getStringAttribute());
     }
 
     @Test
-    public void mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache() {
+    void mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache() {
         this.em = getEntityManager("mergeCorrectlyMergesChangesOnPluralObjectPropertyIntoCache", true);
         final OWLClassL entityL = new OWLClassL(Generators.generateUri());
         entityL.setSet(new HashSet<>());
@@ -1157,7 +1077,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         toUpdate.setSimpleList(Collections.singletonList(entityA2));
         toUpdate.setSingleA(entityA2);
         em.getTransaction().begin();
-        final OWLClassL original = em.find(OWLClassL.class, entityL.getUri());
+        final OWLClassL original = findRequired(OWLClassL.class, entityL.getUri());
         assertEquals(2, original.getSet().size());
         for (OWLClassA a : original.getSet()) {
             if (a.getUri().equals(entityA2.getUri())) {
@@ -1169,12 +1089,12 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.merge(toUpdate);
         em.getTransaction().commit();
 
-        final OWLClassL result = em.find(OWLClassL.class, entityL.getUri());
+        final OWLClassL result = findRequired(OWLClassL.class, entityL.getUri());
         assertEquals(1, result.getSet().size());
     }
 
     @Test
-    public void updateKeepsPendingListReferenceWhenItemIsAddedToIt() {
+    void updateKeepsPendingListReferenceWhenItemIsAddedToIt() {
         this.em = getEntityManager("updateKeepsPendingListReferenceWhenItemIsAddedToIt", true);
         final OWLClassK entityK = new OWLClassK();
         entityK.setSimpleList(generateEInstances(5));
@@ -1205,7 +1125,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.persist(addedReferenced);
         em.getTransaction().commit();
 
-        final OWLClassK result = em.find(OWLClassK.class, entityK.getUri());
+        final OWLClassK result = findRequired(OWLClassK.class, entityK.getUri());
         assertEquals(addedSimple.getUri(), result.getSimpleList().get(result.getSimpleList().size() - 1).getUri());
         assertEquals(addedReferenced.getUri(),
                 result.getReferencedList().get(result.getReferencedList().size() - 1).getUri());
@@ -1220,25 +1140,24 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void mergeRemovedThrowsIllegalArgumentException() {
+    void mergeRemovedThrowsIllegalArgumentException() {
         this.em = getEntityManager("mergeRemovedThrowsIllegalArgument", true);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(containsString("removed"));
         persist(entityA);
 
         em.getTransaction().begin();
-        final OWLClassA toRemove = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA toRemove = findRequired(OWLClassA.class, entityA.getUri());
         em.remove(toRemove);
-        em.merge(toRemove);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> em.merge(toRemove));
+        assertThat(ex.getMessage(), containsString("removed"));
     }
 
     @Test
-    public void changesDoneAfterInstanceRefreshAreCommittedToRepository() {
+    void changesDoneAfterInstanceRefreshAreCommittedToRepository() {
         this.em = getEntityManager("changesDoneAfterInstanceRefreshAreCommittedToRepository", true);
         persist(entityD, entityA, entityA2);
 
         em.getTransaction().begin();
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
         final OWLClassA origA = d.getOwlClassA();
         final OWLClassA newA = new OWLClassA(Generators.generateUri());
         newA.setStringAttribute("newAWithStringAttribute");
@@ -1249,19 +1168,19 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.persist(newA);
         em.getTransaction().commit();
 
-        final OWLClassD result = em.find(OWLClassD.class, entityD.getUri());
+        final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         assertEquals(newA.getUri(), result.getOwlClassA().getUri());
         assertEquals(newA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
     }
 
     @Test
-    public void refreshOfPluralObjectPropertyReplacesCollectionWithOriginalAndAllowsFurtherChanges() {
+    void refreshOfPluralObjectPropertyReplacesCollectionWithOriginalAndAllowsFurtherChanges() {
         this.em = getEntityManager("refreshOfPluralObjectPropertyReplacesCollectionWithOriginalAndAllowsFurtherChanges",
                 true);
         persist(entityJ);
 
         em.getTransaction().begin();
-        final OWLClassJ j = em.find(OWLClassJ.class, entityJ.getUri());
+        final OWLClassJ j = findRequired(OWLClassJ.class, entityJ.getUri());
         j.getOwlClassA().clear();
         em.refresh(j);
         final OWLClassA newA = new OWLClassA(Generators.generateUri());
@@ -1270,7 +1189,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.persist(newA);
         em.getTransaction().commit();
 
-        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        final OWLClassJ result = findRequired(OWLClassJ.class, entityJ.getUri());
         assertEquals(entityJ.getOwlClassA().size() + 1, result.getOwlClassA().size());
         final Set<URI> aUris = new HashSet<>(Arrays.asList(entityA.getUri(), entityA2.getUri(), newA.getUri()));
         result.getOwlClassA().forEach(a -> assertTrue(aUris.contains(a.getUri())));
@@ -1280,7 +1199,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
      * Bug #33
      */
     @Test
-    public void mergeWithUpdatedPropertyValueRemovesOriginalAssertion() {
+    void mergeWithUpdatedPropertyValueRemovesOriginalAssertion() {
         this.em = getEntityManager("mergeWithUpdatedPropertyValueRemovesOriginalAssertion", false);
         persist(entityH, entityA);
 
@@ -1289,7 +1208,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.merge(entityH);
         em.getTransaction().commit();
 
-        final OWLClassH result = em.find(OWLClassH.class, entityH.getUri());
+        final OWLClassH result = findRequired(OWLClassH.class, entityH.getUri());
         assertEquals(entityA2.getUri(), result.getOwlClassA().getUri());
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
@@ -1298,7 +1217,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
      * Bug #33, but for plural attributes
      */
     @Test
-    public void mergeWithUpdatedPropertyValueRemovesOriginalAssertionsFromPluralAttribute() {
+    void mergeWithUpdatedPropertyValueRemovesOriginalAssertionsFromPluralAttribute() {
         this.em = getEntityManager("mergeWithUpdatedPropertyValueRemovesOriginalAssertionsFromPluralAttribute", false);
         persist(entityJ);
 
@@ -1309,13 +1228,13 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.merge(entityJ);
         em.getTransaction().commit();
 
-        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        final OWLClassJ result = findRequired(OWLClassJ.class, entityJ.getUri());
         assertEquals(1, result.getOwlClassA().size());
         assertEquals(newA.getUri(), result.getOwlClassA().iterator().next().getUri());
     }
 
     @Test
-    public void updateSupportsJava8Instant() {
+    void updateSupportsJava8Instant() {
         this.em = getEntityManager("updateSupportsJava8Instant", true);
         final OWLClassX entityX = new OWLClassX();
         entityX.setInstant(Instant.now());
@@ -1323,19 +1242,19 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final Instant newInstant = Instant.ofEpochMilli(System.currentTimeMillis() + 10000);
         em.getTransaction().begin();
-        final OWLClassX toUpdate = em.find(OWLClassX.class, entityX.getUri());
+        final OWLClassX toUpdate = findRequired(OWLClassX.class, entityX.getUri());
         toUpdate.setInstant(newInstant);
         em.getTransaction().commit();
 
-        final OWLClassX cachedResult = em.find(OWLClassX.class, entityX.getUri());
+        final OWLClassX cachedResult = findRequired(OWLClassX.class, entityX.getUri());
         assertEquals(newInstant, cachedResult.getInstant());
         em.getEntityManagerFactory().getCache().evict(OWLClassX.class);
-        final OWLClassX result = em.find(OWLClassX.class, entityX.getUri());
+        final OWLClassX result = findRequired(OWLClassX.class, entityX.getUri());
         assertEquals(newInstant, result.getInstant());
     }
 
     @Test
-    public void updateSupportsPluralAnnotationProperty() {
+    void updateSupportsPluralAnnotationProperty() {
         this.em = getEntityManager("updateSupportsPluralAnnotationProperty", true);
         final Set<String> annotations = IntStream.range(0, 5).mapToObj(i -> "Source" + i).collect(Collectors.toSet());
         entityN.setPluralAnnotationProperty(annotations);
@@ -1352,12 +1271,12 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(annotations, merged.getPluralAnnotationProperty());
         em.getTransaction().commit();
 
-        final OWLClassN result = em.find(OWLClassN.class, entityN.getId());
+        final OWLClassN result = findRequired(OWLClassN.class, entityN.getId());
         assertEquals(annotations, result.getPluralAnnotationProperty());
     }
 
     @Test
-    public void updateSupportsSettingSubclassOnPolymorphicAttribute() {
+    void updateSupportsSettingSubclassOnPolymorphicAttribute() {
         this.em = getEntityManager("updateSupportsSettingSubclassOnPolymorphicAttribute", true);
         final OWLClassU u = new OWLClassU();
         final OWLClassU reference = new OWLClassU();
@@ -1371,8 +1290,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.persist(u);
         em.getTransaction().commit();
 
-        final OWLClassU result = em.find(OWLClassU.class, u.getUri());
-        assertNotNull(result);
+        final OWLClassU result = findRequired(OWLClassU.class, u.getUri());
         assertEquals(reference.getUri(), result.getOwlClassS().getUri());
     }
 }
