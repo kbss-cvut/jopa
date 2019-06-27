@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -52,7 +50,7 @@ class SingularObjectPropertyStrategyTest {
 
     private MetamodelMocks metamodelMocks;
 
-    private Descriptor descriptor = new EntityDescriptor();
+    private Descriptor descriptor;
 
     private AxiomValueGatherer gatherer;
 
@@ -61,6 +59,7 @@ class SingularObjectPropertyStrategyTest {
         MockitoAnnotations.initMocks(this);
         this.metamodelMocks = new MetamodelMocks();
         this.gatherer = spy(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), null));
+        this.descriptor = spy(new EntityDescriptor());
     }
 
     @Test
@@ -222,5 +221,19 @@ class SingularObjectPropertyStrategyTest {
         sut.buildInstanceFieldValue(instance);
         assertSame(existing, instance.getOwlClassA());
         verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another), any());
+    }
+
+    @Test
+    void addValueGetsAttributeDescriptorFromEntityDescriptorForLoading() throws Exception {
+        final EntityDescriptor aDescriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
+        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        final OWLClassA existing = Generators.generateOwlClassAInstance();
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), any())).thenReturn(existing);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
+        sut.addValueFromAxiom(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, VALUE, aDescriptor);
     }
 }

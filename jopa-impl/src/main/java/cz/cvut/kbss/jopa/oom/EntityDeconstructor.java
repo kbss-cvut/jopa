@@ -60,7 +60,7 @@ class EntityDeconstructor {
                                    FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor,
                                    final AxiomValueGatherer valueBuilder) throws IllegalAccessException {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
-                .createFieldStrategy(et, fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
+                .createFieldStrategy(et, fieldSpec, entityDescriptor, mapper);
         fs.setReferenceSavingResolver(referenceSavingResolver);
         fs.buildAxiomValuesFromInstance(entity, valueBuilder);
     }
