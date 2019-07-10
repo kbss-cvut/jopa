@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -19,6 +17,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -57,14 +56,16 @@ public class SesamePropertiesTest {
     private Properties properties;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.vf = SimpleValueFactory.getInstance();
         this.subject = vf.createIRI(SUBJECT.getIdentifier().toString());
         final SesameAdapter adapterMock = mock(SesameAdapter.class);
         when(adapterMock.getConnector()).thenReturn(connectorMock);
         when(adapterMock.getValueFactory()).thenReturn(vf);
-        when(adapterMock.getLanguage()).thenReturn(LANG);
+        final RuntimeConfiguration configMock = mock(RuntimeConfiguration.class);
+        when(configMock.getLanguage()).thenReturn(LANG);
+        when(adapterMock.getConfig()).thenReturn(configMock);
         this.properties = new SesameProperties(adapterMock, () -> {
         }, () -> {
         });

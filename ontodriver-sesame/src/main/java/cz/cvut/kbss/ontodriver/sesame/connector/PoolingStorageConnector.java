@@ -176,8 +176,7 @@ class PoolingStorageConnector extends AbstractConnector {
                 statements = Iterations
                         .asList(connection.getStatements(subject, property, value, includeInferred, context));
             } else {
-                statements = Iterations
-                        .asList(connection.getStatements(subject, property, value, includeInferred));
+                statements = Iterations.asList(connection.getStatements(subject, property, value, includeInferred));
             }
             localModel.enhanceStatements(statements, subject, property, value, context);
             return statements;

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -20,6 +18,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -33,7 +32,7 @@ class SesameProperties implements Properties {
 
     private final Connector connector;
     private final ValueFactory valueFactory;
-    private final String language;
+    private final RuntimeConfiguration config;
 
     private final Procedure beforeCallback;
     private final Procedure afterChangeCallback;
@@ -41,7 +40,7 @@ class SesameProperties implements Properties {
     public SesameProperties(SesameAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
         this.connector = adapter.getConnector();
         this.valueFactory = adapter.getValueFactory();
-        this.language = adapter.getLanguage();
+        this.config = adapter.getConfig();
         this.beforeCallback = beforeCallback;
         this.afterChangeCallback = afterChangeCallback;
     }
@@ -50,21 +49,22 @@ class SesameProperties implements Properties {
     public Collection<Axiom<?>> getProperties(NamedResource individual, URI context, boolean includeInferred)
             throws SesameDriverException {
         beforeCallback.execute();
-        return new AxiomLoader(connector, valueFactory, language).loadAxioms(individual, includeInferred, context);
+        return new AxiomLoader(connector, valueFactory, config).loadAxioms(individual, includeInferred, context);
     }
 
     @Override
     public void addProperties(NamedResource individual, URI context, Map<Assertion, Set<Value<?>>> properties)
             throws OntoDriverException {
         beforeCallback.execute();
-        new AxiomSaver(connector, valueFactory, language).persistAxioms(individual, properties, context);
+        new AxiomSaver(connector, valueFactory, config.getLanguage()).persistAxioms(individual, properties, context);
         afterChangeCallback.execute();
     }
 
     @Override
     public void removeProperties(NamedResource individual, URI context, Map<Assertion, Set<Value<?>>> properties)
             throws OntoDriverException {
-        new EpistemicAxiomRemover(connector, valueFactory, language).remove(individual, properties, context);
+        new EpistemicAxiomRemover(connector, valueFactory, config.getLanguage())
+                .remove(individual, properties, context);
         afterChangeCallback.execute();
     }
 }
