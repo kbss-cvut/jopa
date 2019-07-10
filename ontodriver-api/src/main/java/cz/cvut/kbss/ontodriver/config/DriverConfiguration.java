@@ -30,8 +30,7 @@ public final class DriverConfiguration {
     private final OntologyStorageProperties storageProperties;
 
     public DriverConfiguration(OntologyStorageProperties storageProperties) {
-        Objects.requireNonNull(storageProperties);
-        this.storageProperties = storageProperties;
+        this.storageProperties = Objects.requireNonNull(storageProperties);
     }
 
     /**

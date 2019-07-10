@@ -1,27 +1,25 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
@@ -47,7 +45,7 @@ class SesameAdapter implements Closeable, Wrapper {
 
     private final Connector connector;
     private final ValueFactory valueFactory;
-    private final String language;
+    private final RuntimeConfiguration config;
     private boolean open;
     private final Transaction transaction;
 
@@ -56,7 +54,7 @@ class SesameAdapter implements Closeable, Wrapper {
 
         this.connector = connector;
         this.valueFactory = connector.getValueFactory();
-        this.language = configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE);
+        this.config = new RuntimeConfiguration(configuration);
         this.open = true;
         this.transaction = new Transaction();
     }
@@ -69,8 +67,8 @@ class SesameAdapter implements Closeable, Wrapper {
         return valueFactory;
     }
 
-    String getLanguage() {
-        return language;
+    RuntimeConfiguration getConfig() {
+        return config;
     }
 
     @Override
@@ -160,7 +158,7 @@ class SesameAdapter implements Closeable, Wrapper {
         if (SesameUtils.isResourceIdentifier(axiom.getValue().getValue())) {
             value = valueFactory.createIRI(axiom.getValue().stringValue());
         } else {
-            value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), language,
+            value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), config.getLanguage(),
                     valueFactory);
         }
         final org.eclipse.rdf4j.model.IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
@@ -173,23 +171,23 @@ class SesameAdapter implements Closeable, Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        return new AxiomLoader(connector, valueFactory, language).loadAxioms(axiomDescriptor);
+        return new AxiomLoader(connector, valueFactory, config).loadAxioms(axiomDescriptor);
     }
 
     void persist(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        new AxiomSaver(connector, valueFactory, language).persistAxioms(axiomDescriptor);
+        new AxiomSaver(connector, valueFactory, config.getLanguage()).persistAxioms(axiomDescriptor);
     }
 
     void update(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        new EpistemicAxiomRemover(connector, valueFactory, language).remove(axiomDescriptor);
-        new AxiomSaver(connector, valueFactory, language).persistAxioms(axiomDescriptor);
+        new EpistemicAxiomRemover(connector, valueFactory, config.getLanguage()).remove(axiomDescriptor);
+        new AxiomSaver(connector, valueFactory, config.getLanguage()).persistAxioms(axiomDescriptor);
     }
 
     void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        new EpistemicAxiomRemover(connector, valueFactory, language).remove(axiomDescriptor);
+        new EpistemicAxiomRemover(connector, valueFactory, config.getLanguage()).remove(axiomDescriptor);
     }
 
     StatementExecutor getQueryExecutor() {

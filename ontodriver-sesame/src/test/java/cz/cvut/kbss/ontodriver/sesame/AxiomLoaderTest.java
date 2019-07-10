@@ -1,71 +1,77 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.config.Constants;
+import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.environment.TestRepositoryProvider;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
-public class AxiomLoaderTest {
+class AxiomLoaderTest {
 
     private TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
     private Generator.GeneratedData generatedData;
-    private ValueFactory vf;
+    private ValueFactory vf = SimpleValueFactory.getInstance();
 
     private Connector connector;
 
     private AxiomLoader axiomLoader;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         this.connector = repositoryProvider.createConnector(false);
         final Repository repository = connector.unwrap(Repository.class);
-        this.axiomLoader = new AxiomLoader(connector, repository.getValueFactory(), "en");
+        final DriverConfiguration driverConfig = new DriverConfiguration(TestRepositoryProvider.storageProperties());
+        driverConfig.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, "en");
+
+        this.axiomLoader = new AxiomLoader(connector, vf, new RuntimeConfiguration(driverConfig));
         this.generatedData = Generator.initTestData(repository);
-        this.vf = connector.unwrap(Repository.class).getValueFactory();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         connector.close();
         repositoryProvider.close();
     }
 
     @Test
-    public void loadAxiomsForSingleAssertionFindsMatchingValues() throws Exception {
+    void loadAxiomsForSingleAssertionFindsMatchingValues() throws Exception {
         connector.begin();
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final Assertion property = generatedData.values.get(individual).keySet().iterator().next();
@@ -83,7 +89,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsReturnsEmptyCollectionForUnknownIndividual() throws Exception {
+    void loadAxiomsReturnsEmptyCollectionForUnknownIndividual() throws Exception {
         connector.begin();
         final String individual = "http://krizik.felk.cvut.cz/ontologies/sesame/individuals#Unknown";
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
@@ -93,7 +99,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsLoadsAxiomsBasedOnSpecifiedAssertions() throws Exception {
+    void loadAxiomsLoadsAxiomsBasedOnSpecifiedAssertions() throws Exception {
         connector.begin();
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
@@ -104,7 +110,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsSkipsValuesOfNonSelectedAssertions() throws Exception {
+    void loadAxiomsSkipsValuesOfNonSelectedAssertions() throws Exception {
         connector.begin();
         final String individual = selectIndividualWithEnoughProperties();
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
@@ -129,12 +135,12 @@ public class AxiomLoaderTest {
                 return individual;
             }
         }
-        Assert.fail("Individual with sufficient number of assertions not found.");
+        fail("Individual with sufficient number of assertions not found.");
         return null;
     }
 
     @Test
-    public void loadsAllAxiomsWhenUnspecifiedPropertyIsUsedInDescriptor() throws Exception {
+    void loadsAllAxiomsWhenUnspecifiedPropertyIsUsedInDescriptor() throws Exception {
         connector.begin();
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
@@ -148,7 +154,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsSearchesInContextWhenItIsSpecifiedForAssertion() throws Exception {
+    void loadAxiomsSearchesInContextWhenItIsSpecifiedForAssertion() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final Assertion property = generatedData.values.get(individual).keySet().iterator().next();
         final String context = "http://krizik.felk.cvut.cz/contextOne";
@@ -185,7 +191,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsLoadsValuesFromContextAndNotFromDefaultWhenContextIsSpecifiedForAssertion() throws Exception {
+    void loadAxiomsLoadsValuesFromContextAndNotFromDefaultWhenContextIsSpecifiedForAssertion() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final Assertion property = generatedData.values.get(individual).keySet().iterator().next();
         final String context = "http://krizik.felk.cvut.cz/contextOne";
@@ -214,7 +220,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsCombinesUnspecifiedPropertyInDefaultWithPropertyInContext() throws Exception {
+    void loadAxiomsCombinesUnspecifiedPropertyInDefaultWithPropertyInContext() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final Assertion property = generatedData.values.get(individual).keySet().iterator().next();
         final String context = "http://krizik.felk.cvut.cz/contextOne";
@@ -234,7 +240,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsCombinesPropertiesInDefaultAndUnspecifiedPropertyInContext() throws Exception {
+    void loadAxiomsCombinesPropertiesInDefaultAndUnspecifiedPropertyInContext() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final Assertion property = generatedData.values.get(individual).keySet().iterator().next();
         final Assertion propertyInCtx = Assertion
@@ -265,7 +271,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsSkipsPropertyValueOfInvalidType_OP() throws Exception {
+    void loadAxiomsSkipsPropertyValueOfInvalidType_OP() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final Assertion a = Assertion
                 .createObjectPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/objectProperty"), false);
@@ -285,7 +291,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsSkipsPropertyValueOfInvalidType_DP() throws Exception {
+    void loadAxiomsSkipsPropertyValueOfInvalidType_DP() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         final Assertion a = Assertion
                 .createDataPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/dataProperty"), false);
@@ -306,7 +312,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsLoadsStringLiteralWithCorrectLanguage() throws Exception {
+    void loadAxiomsLoadsStringLiteralWithCorrectLanguage() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         persistLanguageTaggedStrings(individual);
 
@@ -331,7 +337,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadAxiomsLoadsStringLiteralWithCorrectLanguageForUnspecifiedPropertyType() throws Exception {
+    void loadAxiomsLoadsStringLiteralWithCorrectLanguageForUnspecifiedPropertyType() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         persistLanguageTaggedStrings(individual);
 
@@ -346,7 +352,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInAssertion() throws Exception {
+    void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInAssertion() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         persistLanguageTaggedStrings(individual);
 
@@ -362,8 +368,8 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInAssertionOfUnspecifiedProperty() throws
-                                                                                                            Exception {
+    void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInAssertionOfUnspecifiedProperty() throws
+            Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         persistLanguageTaggedStrings(individual);
 
@@ -379,7 +385,7 @@ public class AxiomLoaderTest {
     }
 
     @Test
-    public void loadsStringLiteralWithAllLanguagesWhenLanguageTagIsExplicitlySetToNull() throws Exception {
+    void loadsStringLiteralWithAllLanguagesWhenLanguageTagIsExplicitlySetToNull() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         persistLanguageTaggedStrings(individual);
 
@@ -393,5 +399,27 @@ public class AxiomLoaderTest {
         final Set<String> values = axioms.stream().map(ax -> ax.getValue().stringValue()).collect(Collectors.toSet());
         assertTrue(values.contains("a"));
         assertTrue(values.contains("b"));
+    }
+
+    @Test
+    void loadAxiomsUsesSingleCallWhenLoadAllThresholdIsSetToLessThanAssertionCount() throws Exception {
+        final DriverConfiguration driverConfig = new DriverConfiguration(TestRepositoryProvider.storageProperties());
+        driverConfig.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, "en");
+        driverConfig.setProperty(SesameConfigParam.LOAD_ALL_THRESHOLD, Integer.toString(1));
+        final Connector spiedConnector = spy(connector);
+
+        this.axiomLoader = new AxiomLoader(spiedConnector, vf, new RuntimeConfiguration(driverConfig));
+        spiedConnector.begin();
+        try {
+            final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+            final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
+            final Iterator<Assertion> it = generatedData.values.get(individual).keySet().iterator();
+            descriptor.addAssertion(it.next());
+            descriptor.addAssertion(it.next());
+            axiomLoader.loadAxioms(descriptor);
+            verify(spiedConnector).findStatements(vf.createIRI(individual), null, null, false);
+        } finally {
+            spiedConnector.close();
+        }
     }
 }

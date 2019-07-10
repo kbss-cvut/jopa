@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
@@ -43,10 +44,6 @@ import java.net.URI;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyCollectionOf;
 import static org.mockito.Mockito.*;
 
 public class SesameAdapterTest {
@@ -85,10 +82,10 @@ public class SesameAdapterTest {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
         this.adapter = new SesameAdapter(connectorMock, new DriverConfiguration(sp));
-        final Field langField = SesameAdapter.class.getDeclaredField("language");
-        langField.setAccessible(true);
-        final String lang = (String) langField.get(adapter);
-        assertNull(lang);
+        final Field configField = SesameAdapter.class.getDeclaredField("config");
+        configField.setAccessible(true);
+        final RuntimeConfiguration config = (RuntimeConfiguration) configField.get(adapter);
+        assertNull(config.getLanguage());
     }
 
     @Test
