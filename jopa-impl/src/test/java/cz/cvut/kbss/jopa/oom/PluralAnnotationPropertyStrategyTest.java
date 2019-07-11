@@ -22,7 +22,10 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.BasicTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
@@ -46,9 +49,9 @@ import static org.mockito.Mockito.when;
 
 class PluralAnnotationPropertyStrategyTest {
 
+    private static final String LANG = "en";
     private static final URI PK = Generators.createIndividualIdentifier();
     private static final NamedResource INDIVIDUAL = NamedResource.create(PK);
-
 
     @Mock
     private EntityMappingHelper mapperMock;
@@ -62,7 +65,7 @@ class PluralAnnotationPropertyStrategyTest {
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final Configuration configuration = new Configuration(
-                Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
+                Collections.singletonMap(JOPAPersistenceProperties.LANG, LANG));
         when(mapperMock.getConfiguration()).thenReturn(configuration);
 
         this.gatherer = new AxiomValueGatherer(INDIVIDUAL, null);
@@ -97,7 +100,7 @@ class PluralAnnotationPropertyStrategyTest {
     }
 
     private Assertion createAnnotationAssertionForN() {
-        return Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), false);
+        return Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), LANG, false);
     }
 
     @Test
@@ -212,6 +215,7 @@ class PluralAnnotationPropertyStrategyTest {
         assertEquals(Collections.singleton(value.toString()), instance.sources);
     }
 
+    @SuppressWarnings("unused")
     @OWLClass(iri = Vocabulary.CLASS_BASE)
     private static class WithPluralStringAnnotations {
 

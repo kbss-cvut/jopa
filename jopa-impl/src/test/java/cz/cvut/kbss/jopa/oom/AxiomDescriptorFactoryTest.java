@@ -317,7 +317,7 @@ class AxiomDescriptorFactoryTest {
         final Set<Assertion> assertions = res.getAssertions();
         assertions.stream().filter(a -> a.getType() != Assertion.AssertionType.CLASS && a.getType() !=
                 Assertion.AssertionType.OBJECT_PROPERTY).forEach(a -> {
-            assertTrue(a.hasLanguage());
+            assertFalse(a.hasLanguage());
             assertNull(a.getLanguage());
         });
     }
@@ -331,7 +331,7 @@ class AxiomDescriptorFactoryTest {
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
         assertEquals(1, assertions.size());
-        assertTrue(assertions.iterator().next().hasLanguage());
+        assertFalse(assertions.iterator().next().hasLanguage());
         assertNull(assertions.iterator().next().getLanguage());
     }
 
