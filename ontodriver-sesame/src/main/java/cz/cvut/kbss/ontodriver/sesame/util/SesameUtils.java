@@ -1,19 +1,18 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.util;
 
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -99,6 +98,21 @@ public final class SesameUtils {
                     literal.getLanguage().get().equals(language);
         }
         return true;
+    }
+
+    /**
+     * Checks whether the language of the specified literal matches the specified assertion language.
+     * <p>
+     * If the assertion does not specified a language, any string literal will match.
+     *
+     * @param literal   Literal to check
+     * @param assertion Assertion
+     * @return Whether literal matches the assertion's language
+     * @see #doesLanguageMatch(Literal, String)
+     */
+    public static boolean doesLanguageMatch(Literal literal, Assertion assertion) {
+        assert assertion != null;
+        return !assertion.hasLanguage() || doesLanguageMatch(literal, assertion.getLanguage());
     }
 
     /**

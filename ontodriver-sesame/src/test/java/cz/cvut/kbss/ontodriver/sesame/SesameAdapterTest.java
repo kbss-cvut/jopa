@@ -1,27 +1,25 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
@@ -31,9 +29,9 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -43,12 +41,11 @@ import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class SesameAdapterTest {
+class SesameAdapterTest {
 
-    private static final String LANGUAGE = "en";
     private static final NamedResource SUBJECT = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entityX");
 
@@ -60,36 +57,37 @@ public class SesameAdapterTest {
 
     private SesameAdapter adapter;
 
-    @BeforeClass
-    public static void setUpBeforeClass() {
+    @BeforeAll
+    static void setUpBeforeClass() {
         subjectIri = vf.createIRI(SUBJECT.getIdentifier().toString());
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         when(connectorMock.getValueFactory()).thenReturn(vf);
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
-        configuration.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
         this.adapter = new SesameAdapter(connectorMock, configuration);
 
     }
 
     @Test
-    public void testSesameAdapter() throws Exception {
+    void testSesameAdapter() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
-        this.adapter = new SesameAdapter(connectorMock, new DriverConfiguration(sp));
+        final DriverConfiguration dc = new DriverConfiguration(sp);
+        dc.setProperty(SesameConfigParam.LOAD_ALL_THRESHOLD, "1");
+        this.adapter = new SesameAdapter(connectorMock, dc);
         final Field configField = SesameAdapter.class.getDeclaredField("config");
         configField.setAccessible(true);
         final RuntimeConfiguration config = (RuntimeConfiguration) configField.get(adapter);
-        assertNull(config.getLanguage());
+        assertEquals(1, config.getLoadAllThreshold());
     }
 
     @Test
-    public void testGetContexts() throws Exception {
+    void testGetContexts() throws Exception {
         final List<Resource> contexts = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             contexts.add(vf.createIRI("http://krizik.felk.cvut.cz/ontologies/context" + i));
@@ -103,7 +101,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testGetContextsWithBNodes() throws Exception {
+    void testGetContextsWithBNodes() throws Exception {
         final List<Resource> contexts = new ArrayList<>();
         int bnodes = 0;
         for (int i = 0; i < 5; i++) {
@@ -120,7 +118,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testClose() throws Exception {
+    void testClose() throws Exception {
         assertTrue(adapter.isOpen());
         adapter.close();
         verify(connectorMock).close();
@@ -128,7 +126,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testPersistDataPropertiesNoContext() throws Exception {
+    void testPersistDataPropertiesNoContext() throws Exception {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
@@ -175,7 +173,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testPersistEntityWithTypesDataPropertyInContext() throws Exception {
+    void testPersistEntityWithTypesDataPropertyInContext() throws Exception {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
@@ -204,7 +202,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testPersistEntityWithObjectPropertyMultipleValues() throws Exception {
+    void testPersistEntityWithObjectPropertyMultipleValues() throws Exception {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
@@ -229,7 +227,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testPersistEntityWithProperties() throws Exception {
+    void testPersistEntityWithProperties() throws Exception {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
@@ -253,7 +251,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testPersistEntityWithAnnotationPropertyAndDifferentSubjectAndPropertyContexts()
+    void testPersistEntityWithAnnotationPropertyAndDifferentSubjectAndPropertyContexts()
             throws Exception {
         final URI subjectCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
         final URI propertyCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextTwo");
@@ -286,7 +284,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityWithDataProperty() throws Exception {
+    void testFindEntityWithDataProperty() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         desc.addAssertion(Assertion.createClassAssertion(false));
         final String property = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute";
@@ -345,7 +343,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityWithObjectPropertyAndInferredAnnotationProperty() throws Exception {
+    void testFindEntityWithObjectPropertyAndInferredAnnotationProperty() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         desc.addAssertion(Assertion.createClassAssertion(false));
         final String anProperty = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-annotationAttribute";
@@ -374,7 +372,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityWithTypesAndSubjectContext() throws Exception {
+    void testFindEntityWithTypesAndSubjectContext() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final URI subjectCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
         desc.addAssertion(Assertion.createClassAssertion(false));
@@ -401,7 +399,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityWithProperties() throws Exception {
+    void testFindEntityWithProperties() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
@@ -463,7 +461,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityWithPropertiesAndInferredDataProperty() throws Exception {
+    void testFindEntityWithPropertiesAndInferredDataProperty() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
@@ -499,7 +497,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityReturnDataPropertyValueForObjectProperty() throws Exception {
+    void testFindEntityReturnDataPropertyValueForObjectProperty() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
         final List<Statement> statements = new ArrayList<>();
@@ -521,7 +519,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityReturnObjectPropertyValueForDataProperty() throws Exception {
+    void testFindEntityReturnObjectPropertyValueForDataProperty() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#dataProperty";
         final List<Statement> statements = new ArrayList<>();
@@ -539,7 +537,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void findWithObjectPropertyAndPropertiesReturnsAxiomForObjectProperty() throws Exception {
+    void findWithObjectPropertyAndPropertiesReturnsAxiomForObjectProperty() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
         final List<Statement> statements = new ArrayList<>();
@@ -573,7 +571,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testFindEntityWithBlankNodeInTypes() throws Exception {
+    void testFindEntityWithBlankNodeInTypes() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final List<Statement> statements = new ArrayList<>();
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
@@ -590,7 +588,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testGenerateIdentifier_ClassWithHash() throws Exception {
+    void testGenerateIdentifier_ClassWithHash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
@@ -603,7 +601,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testGenerateIdentifier_ClassWithoutHash() throws Exception {
+    void testGenerateIdentifier_ClassWithoutHash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz/class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
@@ -617,7 +615,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testGenerateIdentifier_ClassEndsWithSlash() throws Exception {
+    void testGenerateIdentifier_ClassEndsWithSlash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz/class/");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
@@ -629,18 +627,17 @@ public class SesameAdapterTest {
                 vf.createIRI(clsUri.toString()), true);
     }
 
-    @Test(expected = IdentifierGenerationException.class)
-    public void testGenerateIdentifierNeverUnique() throws Exception {
+    @Test
+    void testGenerateIdentifierNeverUnique() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
                         eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(true);
-        final URI res = adapter.generateIdentifier(clsUri);
-        assert res == null;
+        assertThrows(IdentifierGenerationException.class, () -> adapter.generateIdentifier(clsUri));
     }
 
     @Test
-    public void testRemove() throws Exception {
+    void testRemove() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         desc.addAssertion(Assertion.createClassAssertion(false));
         desc.addAssertion(Assertion.createDataPropertyAssertion(
@@ -660,7 +657,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testContainsClassAssertion() throws Exception {
+    void testContainsClassAssertion() throws Exception {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         when(connectorMock
@@ -673,7 +670,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testContainsClassAssertionInContext() throws Exception {
+    void testContainsClassAssertionInContext() throws Exception {
         final URI context = URI.create("http://context");
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI
@@ -690,7 +687,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void testContainsDataPropertyValue() throws Exception {
+    void testContainsDataPropertyValue() throws Exception {
         final URI context = URI.create("http://context");
         final int val = 10;
         final Axiom<Integer> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
@@ -707,12 +704,12 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void updatesDataPropertyToNewValue() throws Exception {
+    void updatesDataPropertyToNewValue() throws Exception {
         final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
         final URI property = URI.create("http://krizik.felk.cvut.cz/dataProperty");
         final org.eclipse.rdf4j.model.IRI sesameProperty = vf.createIRI(property.toString());
         final boolean inferred = false;
-        final Assertion assertion = Assertion.createDataPropertyAssertion(property, inferred);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(property, "en", inferred);
         final String oldValue = "oldValue";
         final String newValue = "newValue";
         desc.addAssertion(assertion);
@@ -731,7 +728,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void updatesObjectPropertyToNewValue() throws Exception {
+    void updatesObjectPropertyToNewValue() throws Exception {
         final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
         final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
         final org.eclipse.rdf4j.model.IRI sesameProperty = vf.createIRI(property.toString());
@@ -755,7 +752,7 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void updatesObjectPropertyToEmptyValue() throws Exception {
+    void updatesObjectPropertyToEmptyValue() throws Exception {
         final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
         final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
         final org.eclipse.rdf4j.model.IRI sesameProperty = vf.createIRI(property.toString());
@@ -776,14 +773,14 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void updatesTypesInContext() throws Exception {
+    void updatesTypesInContext() throws Exception {
         final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
         final boolean inferred = false;
         final Assertion assertion = Assertion.createClassAssertion(inferred);
         final String[] newTypes = {"http://krizik.felk.cvut.cz/ontologies/types#tOne",
-                                   "http://krizik.felk.cvut.cz/ontologies/types#tTwo",
-                                   "http://krizik.felk.cvut.cz/ontologies/types#tFour",
-                                   "http://krizik.felk.cvut.cz/ontologies/types#tFive"};
+                "http://krizik.felk.cvut.cz/ontologies/types#tTwo",
+                "http://krizik.felk.cvut.cz/ontologies/types#tFour",
+                "http://krizik.felk.cvut.cz/ontologies/types#tFive"};
         desc.addAssertion(assertion);
         final URI context = Generator.generateUri();
         final IRI iriContext = vf.createIRI(context.toString());
@@ -822,29 +819,29 @@ public class SesameAdapterTest {
     }
 
     @Test
-    public void unwrapReturnsItselfWhenClassMatches() throws Exception {
+    void unwrapReturnsItselfWhenClassMatches() throws Exception {
         assertSame(adapter, adapter.unwrap(SesameAdapter.class));
     }
 
     @Test
-    public void unwrapReturnValueFactoryWhenItMatches() throws Exception {
+    void unwrapReturnValueFactoryWhenItMatches() throws Exception {
         assertSame(vf, adapter.unwrap(ValueFactory.class));
     }
 
     @Test
-    public void getTypesHandlerStartsTransaction() throws SesameDriverException {
+    void getTypesHandlerStartsTransaction() throws SesameDriverException {
         adapter.getTypesHandler();
         verify(connectorMock).begin();
     }
 
     @Test
-    public void getSimpleListHandlerStartsTransaction() throws SesameDriverException {
+    void getSimpleListHandlerStartsTransaction() throws SesameDriverException {
         adapter.getSimpleListHandler();
         verify(connectorMock).begin();
     }
 
     @Test
-    public void getReferencedListHandlerStartsTransaction() throws Exception {
+    void getReferencedListHandlerStartsTransaction() throws Exception {
         adapter.getReferencedListHandler();
         verify(connectorMock).begin();
     }

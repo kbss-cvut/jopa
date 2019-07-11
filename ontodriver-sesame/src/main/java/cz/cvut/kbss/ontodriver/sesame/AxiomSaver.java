@@ -34,10 +34,10 @@ class AxiomSaver {
     private final ValueFactory valueFactory;
     private final SesameValueConverter valueConverter;
 
-    AxiomSaver(Connector connector, ValueFactory valueFactory, String language) {
+    AxiomSaver(Connector connector, ValueFactory valueFactory) {
         this.connector = connector;
         this.valueFactory = valueFactory;
-        this.valueConverter = new SesameValueConverter(valueFactory, language);
+        this.valueConverter = new SesameValueConverter(valueFactory);
     }
 
     void persistAxioms(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {

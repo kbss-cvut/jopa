@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.sesame.config;
 
-import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 
 /**
@@ -8,12 +7,9 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
  */
 public class RuntimeConfiguration {
 
-    private final String language;
-
     private final int loadAllThreshold;
 
     public RuntimeConfiguration(DriverConfiguration config) {
-        this.language = config.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE);
         if (config.isSet(SesameConfigParam.LOAD_ALL_THRESHOLD)) {
             try {
                 this.loadAllThreshold = Integer.parseInt(config.getProperty(SesameConfigParam.LOAD_ALL_THRESHOLD));
@@ -25,10 +21,6 @@ public class RuntimeConfiguration {
         } else {
             this.loadAllThreshold = Constants.DEFAULT_LOAD_ALL_THRESHOLD;
         }
-    }
-
-    public String getLanguage() {
-        return language;
     }
 
     public int getLoadAllThreshold() {

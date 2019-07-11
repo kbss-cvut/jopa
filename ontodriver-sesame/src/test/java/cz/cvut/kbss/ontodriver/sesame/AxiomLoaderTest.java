@@ -12,7 +12,6 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -58,7 +57,6 @@ class AxiomLoaderTest {
         this.connector = repositoryProvider.createConnector(false);
         final Repository repository = connector.unwrap(Repository.class);
         final DriverConfiguration driverConfig = new DriverConfiguration(TestRepositoryProvider.storageProperties());
-        driverConfig.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, "en");
 
         this.axiomLoader = new AxiomLoader(connector, vf, new RuntimeConfiguration(driverConfig));
         this.generatedData = Generator.initTestData(repository);
@@ -316,11 +314,12 @@ class AxiomLoaderTest {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         persistLanguageTaggedStrings(individual);
 
-        // Language is en
         connector.begin();
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
+        // Language is en
         descriptor
-                .addAssertion(Assertion.createAnnotationPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), false));
+                .addAssertion(
+                        Assertion.createAnnotationPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), "en", false));
         final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
@@ -341,10 +340,10 @@ class AxiomLoaderTest {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
         persistLanguageTaggedStrings(individual);
 
-        // Language is en
         connector.begin();
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
-        descriptor.addAssertion(Assertion.createPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), false));
+        // Language is en
+        descriptor.addAssertion(Assertion.createPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), "en", false));
         final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
@@ -404,7 +403,6 @@ class AxiomLoaderTest {
     @Test
     void loadAxiomsUsesSingleCallWhenLoadAllThresholdIsSetToLessThanAssertionCount() throws Exception {
         final DriverConfiguration driverConfig = new DriverConfiguration(TestRepositoryProvider.storageProperties());
-        driverConfig.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, "en");
         driverConfig.setProperty(SesameConfigParam.LOAD_ALL_THRESHOLD, Integer.toString(1));
         final Connector spiedConnector = spy(connector);
 

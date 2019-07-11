@@ -17,6 +17,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.sesame.config.Constants;
 import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
@@ -24,8 +25,8 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -33,11 +34,11 @@ import org.mockito.MockitoAnnotations;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class SesamePropertiesTest {
+class SesamePropertiesTest {
 
     private static final NamedResource SUBJECT = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa#Entity");
@@ -55,8 +56,8 @@ public class SesamePropertiesTest {
 
     private Properties properties;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         this.vf = SimpleValueFactory.getInstance();
         this.subject = vf.createIRI(SUBJECT.getIdentifier().toString());
@@ -64,7 +65,7 @@ public class SesamePropertiesTest {
         when(adapterMock.getConnector()).thenReturn(connectorMock);
         when(adapterMock.getValueFactory()).thenReturn(vf);
         final RuntimeConfiguration configMock = mock(RuntimeConfiguration.class);
-        when(configMock.getLanguage()).thenReturn(LANG);
+        when(configMock.getLoadAllThreshold()).thenReturn(Constants.DEFAULT_LOAD_ALL_THRESHOLD);
         when(adapterMock.getConfig()).thenReturn(configMock);
         this.properties = new SesameProperties(adapterMock, () -> {
         }, () -> {
@@ -72,7 +73,7 @@ public class SesamePropertiesTest {
     }
 
     @Test
-    public void testGetProperties() throws Exception {
+    void testGetProperties() throws Exception {
         final Collection<Statement> statements = statementsForProperties(initProperties());
         when(connectorMock.findStatements(subject, null, null, false, null)).thenReturn(statements);
 
@@ -82,13 +83,14 @@ public class SesamePropertiesTest {
             assertEquals(SUBJECT, ax.getSubject());
             final Statement stmt = vf
                     .createStatement(subject, vf.createIRI(ax.getAssertion().getIdentifier().toString()),
-                            SesameUtils.createDataPropertyLiteral(ax.getValue().getValue(), LANG, vf));
+                            SesameUtils
+                                    .createDataPropertyLiteral(ax.getValue().getValue(), Constants.DEFAULT_LANG, vf));
             assertTrue(statements.contains(stmt));
         }
     }
 
     @Test
-    public void testAddProperties() throws Exception {
+    void testAddProperties() throws Exception {
         final Map<Assertion, Set<Value<?>>> toAdd = initProperties();
         final Collection<Statement> statements = statementsForProperties(toAdd);
 
@@ -116,14 +118,15 @@ public class SesamePropertiesTest {
         for (Assertion a : properties.keySet()) {
             final IRI property = vf.createIRI(a.getIdentifier().toString());
             stmts.addAll(properties.get(a).stream().map(v -> vf
-                    .createStatement(subject, property, SesameUtils.createDataPropertyLiteral(v.getValue(), LANG, vf)))
+                    .createStatement(subject, property,
+                            SesameUtils.createDataPropertyLiteral(v.getValue(), Constants.DEFAULT_LANG, vf)))
                                    .collect(Collectors.toList()));
         }
         return stmts;
     }
 
     @Test
-    public void testRemoveProperties() throws Exception {
+    void testRemoveProperties() throws Exception {
         final Map<Assertion, Set<Value<?>>> toRemove = initProperties();
         final Collection<Statement> statements = statementsForProperties(toRemove);
 
