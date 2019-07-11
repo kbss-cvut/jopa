@@ -31,11 +31,11 @@ class MainAxiomLoader {
     private final AbstractAxiomLoader inferredLoader;
     private final ExplicitAxiomLoader explicitLoader;
 
-    MainAxiomLoader(StorageConnector connector, InferredStorageConnector inferredConnector, String language) {
-        this.explicitLoader = new ExplicitAxiomLoader(connector, language);
+    MainAxiomLoader(StorageConnector connector, InferredStorageConnector inferredConnector) {
+        this.explicitLoader = new ExplicitAxiomLoader(connector);
         // It is possible that the inferred connector is null - if we are using the read_committed strategy or only snapshot,
         // without inference
-        this.inferredLoader = new InferredAxiomLoader(inferredConnector, language);
+        this.inferredLoader = new InferredAxiomLoader(inferredConnector);
     }
 
     /**

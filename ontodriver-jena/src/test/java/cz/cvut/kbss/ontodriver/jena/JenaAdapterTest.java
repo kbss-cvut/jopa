@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -26,10 +24,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -42,16 +38,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class JenaAdapterTest {
+class JenaAdapterTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
     private static final Resource SUBJECT_RESOURCE = ResourceFactory.createResource(SUBJECT.getIdentifier().toString());
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private StorageConnector connectorMock;
@@ -61,21 +54,21 @@ public class JenaAdapterTest {
 
     private JenaAdapter adapter;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.adapter = new JenaAdapter(connectorMock, inferredConnectorMock, null);
+        this.adapter = new JenaAdapter(connectorMock, inferredConnectorMock);
     }
 
     @Test
-    public void persistBeginsTransaction() {
+    void persistBeginsTransaction() {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         adapter.persist(descriptor);
         verify(connectorMock).begin();
     }
 
     @Test
-    public void persistGeneratesStatementsAndPassesThemToConnectorForPersist() {
+    void persistGeneratesStatementsAndPassesThemToConnectorForPersist() {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         final Assertion a = Assertion.createClassAssertion(false);
         final NamedResource type = NamedResource.create(Generator.generateUri());
@@ -88,7 +81,7 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void commitDataToStorage() throws Exception {
+    void commitDataToStorage() throws Exception {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         final Assertion a = Assertion.createClassAssertion(false);
         final NamedResource type = NamedResource.create(Generator.generateUri());
@@ -100,13 +93,13 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void commitDoesNothingWhenTransactionIsNotActive() throws Exception {
+    void commitDoesNothingWhenTransactionIsNotActive() throws Exception {
         adapter.commit();
         verify(connectorMock, never()).commit();
     }
 
     @Test
-    public void rollbackRollsBackChanges() throws Exception {
+    void rollbackRollsBackChanges() throws Exception {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         final Assertion a = Assertion.createClassAssertion(false);
         final NamedResource type = NamedResource.create(Generator.generateUri());
@@ -119,19 +112,19 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void rollbackDoesNothingWhenTransactionIsNotActive() {
+    void rollbackDoesNothingWhenTransactionIsNotActive() {
         adapter.rollback();
         verify(connectorMock, never()).rollback();
     }
 
     @Test
-    public void closeClosesConnector() throws Exception {
+    void closeClosesConnector() throws Exception {
         adapter.close();
         verify(connectorMock).close();
     }
 
     @Test
-    public void containsStartsTransactionWhenItIsNotActive() {
+    void containsStartsTransactionWhenItIsNotActive() {
         final String typeUri = Generator.generateUri().toString();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
@@ -140,7 +133,7 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void containsChecksForStatementExistence() {
+    void containsChecksForStatementExistence() {
         final String typeUri = Generator.generateUri().toString();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
@@ -149,7 +142,7 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void getContextsListsContextsFromConnectorAndTransformsThemToUris() {
+    void getContextsListsContextsFromConnectorAndTransformsThemToUris() {
         final List<String> contexts = IntStream.range(0, 5).mapToObj(i -> Generator.generateUri().toString()).collect(
                 Collectors.toList());
         when(connectorMock.getContexts()).thenReturn(contexts);
@@ -159,19 +152,19 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void unwrapReturnsAdapterInstanceWhenTargetClassMatches() throws Exception {
+    void unwrapReturnsAdapterInstanceWhenTargetClassMatches() throws Exception {
         final JenaAdapter result = adapter.unwrap(JenaAdapter.class);
         assertSame(adapter, result);
     }
 
     @Test
-    public void unwrapPassesCallToStorageConnectorWhenTargetClassDoesNotMatch() throws Exception {
+    void unwrapPassesCallToStorageConnectorWhenTargetClassDoesNotMatch() throws Exception {
         adapter.unwrap(StorageConnector.class);
         verify(connectorMock).unwrap(StorageConnector.class);
     }
 
     @Test
-    public void findLoadsAxiomsFromStorage() {
+    void findLoadsAxiomsFromStorage() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -194,7 +187,7 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void removeRemovesStatementsFromStorage() {
+    void removeRemovesStatementsFromStorage() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -204,7 +197,7 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void updateRemovesOldStatementsAndInsertsNewOnes() {
+    void updateRemovesOldStatementsAndInsertsNewOnes() {
         final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
         final Statement s = ResourceFactory
                 .createStatement(SUBJECT_RESOURCE, assertionToProperty(assertion),
@@ -226,7 +219,7 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void createStatementReturnsNewJenaStatement() throws Exception {
+    void createStatementReturnsNewJenaStatement() throws Exception {
         final JenaStatement result = adapter.createStatement();
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
@@ -235,13 +228,13 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void createStatementStartsTransactionIfNotAlreadyActive() {
+    void createStatementStartsTransactionIfNotAlreadyActive() {
         adapter.createStatement();
         verify(connectorMock).begin();
     }
 
     @Test
-    public void prepareStatementReturnsNewPreparedStatement() throws Exception {
+    void prepareStatementReturnsNewPreparedStatement() throws Exception {
         final JenaPreparedStatement result = adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }");
         assertNotNull(result);
         final Field execField = JenaStatement.class.getDeclaredField("executor");
@@ -250,19 +243,19 @@ public class JenaAdapterTest {
     }
 
     @Test
-    public void prepareStatementStartsTransactionIfNotAlreadyActive() {
+    void prepareStatementStartsTransactionIfNotAlreadyActive() {
         adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }");
         verify(connectorMock).begin();
     }
 
     @Test
-    public void isConsistentChecksForConsistencyOnInferredConnector() {
+    void isConsistentChecksForConsistencyOnInferredConnector() {
         adapter.isConsistent(null);
         verify(inferredConnectorMock).isConsistent(null);
     }
 
     @Test
-    public void isConsistentStartsTransactionIfNotAlreadyActive() {
+    void isConsistentStartsTransactionIfNotAlreadyActive() {
         final URI context = Generator.generateUri();
         adapter.isConsistent(context);
         verify(connectorMock).begin();

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -29,13 +27,7 @@ import static cz.cvut.kbss.ontodriver.model.Assertion.createObjectPropertyAssert
 
 abstract class AbstractAxiomLoader {
 
-    private final String language;
-
     boolean inferred = false;
-
-    AbstractAxiomLoader(String language) {
-        this.language = language;
-    }
 
     /**
      * Checks whether the storage contains the specified axiom.
@@ -123,10 +115,9 @@ abstract class AbstractAxiomLoader {
     }
 
     private boolean doesLanguageMatch(Assertion assertion, Literal literal) {
-        if (!(literal.getValue() instanceof String)) {
+        if (!(literal.getValue() instanceof String) || !assertion.hasLanguage()) {
             return true;
         }
-        final String expectedLang = assertion.hasLanguage() ? assertion.getLanguage() : language;
-        return Objects.equals(expectedLang, literal.getLanguage()) || literal.getLanguage().isEmpty() || expectedLang == null;
+        return Objects.equals(assertion.getLanguage(), literal.getLanguage()) || literal.getLanguage().isEmpty();
     }
 }

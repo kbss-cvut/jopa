@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -22,8 +20,8 @@ import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -33,28 +31,26 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
+class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
 
     @Mock
     private StorageConnector connectorMock;
 
     private ExplicitAxiomLoader explicitAxiomLoader;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock, null);
+        this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock);
     }
 
     @Test
-    public void containsChecksForStatementExistenceInStorage() {
+    void containsChecksForStatementExistenceInStorage() {
         final String typeUri = Generator.generateUri().toString();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
@@ -64,7 +60,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void containsChecksForStatementExistenceInStorageContext() {
+    void containsChecksForStatementExistenceInStorageContext() {
         final String typeUri = Generator.generateUri().toString();
         final URI contextUri = Generator.generateUri();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
@@ -76,7 +72,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsClassAssertionValues() {
+    void findLoadsClassAssertionValues() {
         final List<Statement> statements = generateClassAssertions();
         when(connectorMock.find(any(), any(), any(), any())).thenReturn(statements);
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
@@ -103,7 +99,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsObjectPropertyAxioms() {
+    void findLoadsObjectPropertyAxioms() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(Generator.generateUri(), false));
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(Generator.generateUri(), false));
@@ -139,7 +135,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsDataPropertyAxioms() {
+    void findLoadsDataPropertyAxioms() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
@@ -168,7 +164,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsAnonymousPropertyValues() {
+    void findSkipsAnonymousPropertyValues() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI propUri = Generator.generateUri();
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(propUri, false));
@@ -180,7 +176,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsStringValuesWithIncorrectLanguageTag() {
+    void findSkipsStringValuesWithIncorrectLanguageTag() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI propUri = Generator.generateUri();
         final String lang = "en";
@@ -198,7 +194,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsStringWhenAssertionHasLanguageTagButValuesDoesNot() {
+    void findLoadsStringWhenAssertionHasLanguageTagButValuesDoesNot() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI propUri = Generator.generateUri();
         final String lang = "en";
@@ -213,7 +209,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsStringWhenAssertionDoesNotHaveLanguageTagAndValueDoes() {
+    void findLoadsStringWhenAssertionDoesNotHaveLanguageTagAndValueDoes() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI propUri = Generator.generateUri();
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, false));
@@ -227,7 +223,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsStringWhenNeitherAssertionNorValueHaveLanguageTag() {
+    void findLoadsStringWhenNeitherAssertionNorValueHaveLanguageTag() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI propUri = Generator.generateUri();
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(propUri, false));
@@ -241,7 +237,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsAnnotationPropertyValues() {
+    void findLoadsAnnotationPropertyValues() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -276,7 +272,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsAllStatementsWhenDescriptorContainsUnspecifiedProperty() {
+    void findLoadsAllStatementsWhenDescriptorContainsUnspecifiedProperty() {
         final Assertion dp = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
         final List<Statement> statements = generateDataPropertyAssertions(Collections.singletonList(dp));
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
@@ -294,7 +290,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsStatementsForWhichAssertionIsNotPresentInDescriptor() {
+    void findSkipsStatementsForWhichAssertionIsNotPresentInDescriptor() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(Generator.generateUri(), false));
         final List<Statement> statements = generateDataPropertyAssertions(descriptor.getAssertions());
@@ -309,7 +305,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsLiteralsWhenLoadingObjectPropertyValues() {
+    void findSkipsLiteralsWhenLoadingObjectPropertyValues() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI property = Generator.generateUri();
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(property, false));
@@ -321,7 +317,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsResourcesWhenLoadingDataPropertyValues() {
+    void findSkipsResourcesWhenLoadingDataPropertyValues() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final URI property = Generator.generateUri();
         descriptor.addAssertion(Assertion.createDataPropertyAssertion(property, false));
@@ -333,7 +329,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsClassAssertionsWhenLoadingUnspecifiedPropertyValues() {
+    void findSkipsClassAssertionsWhenLoadingUnspecifiedPropertyValues() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
         final List<Statement> statements = generateClassAssertions();
@@ -344,7 +340,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsClassAssertionStatementsFromContext() {
+    void findLoadsClassAssertionStatementsFromContext() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createClassAssertion(false));
         descriptor.setSubjectContext(CONTEXT);
@@ -357,7 +353,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsAssertionValuesFromContext() {
+    void findLoadsAssertionValuesFromContext() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -372,7 +368,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsStatementsWhichAreInDifferentContextThanAssertionExpects() {
+    void findSkipsStatementsWhichAreInDifferentContextThanAssertionExpects() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -397,7 +393,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findSkipsPropertyValuesWhenUnspecifiedPropertyHasDifferentContext() {
+    void findSkipsPropertyValuesWhenUnspecifiedPropertyHasDifferentContext() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion ap = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
         final List<Statement> notMatching = generateAnnotations(Collections.singletonList(ap));
@@ -416,7 +412,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsMultipleKindsOfProperties() {
+    void findLoadsMultipleKindsOfProperties() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
         descriptor.addAssertion(clsAssertion);
@@ -441,7 +437,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsDataPropertyValueWhenItIsNotStringAndAssertionHasLanguage() {
+    void findLoadsDataPropertyValueWhenItIsNotStringAndAssertionHasLanguage() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), "en", false);
         descriptor.addAssertion(assertion);
@@ -453,7 +449,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsDataPropertyWithLongValueAsLong() {
+    void findLoadsDataPropertyWithLongValueAsLong() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), "en", false);
         descriptor.addAssertion(assertion);
@@ -469,7 +465,7 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsDataPropertyWithXSDDateTimeValueAsDate() {
+    void findLoadsDataPropertyWithXSDDateTimeValueAsDate() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -487,22 +483,9 @@ public class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findUsesOntologyLanguageWhenNoneIsSpecifiedInAssertion() {
-        this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock, "cs");
+    void findLoadsDataPropertyWhenAssertionLanguageTagIsNotSpecified() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
-        descriptor.addAssertion(assertion);
-        final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),
-                createLangLiteral("test", "en"));
-        when(connectorMock.find(any(), any(), any(), any())).thenReturn(Collections.singleton(statement));
-        final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    public void findLoadsDataPropertyWhenAssertionLanguageTagIsExplicitlyNull() {
-        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
-        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), null, false);
         descriptor.addAssertion(assertion);
         final String value = "test";
         final Statement statement = createStatement(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()),

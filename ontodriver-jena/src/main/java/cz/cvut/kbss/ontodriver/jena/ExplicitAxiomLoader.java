@@ -35,8 +35,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
     private Map<String, Assertion> assertedProperties;
     private Assertion unspecifiedProperty;
 
-    ExplicitAxiomLoader(StorageConnector connector, String language) {
-        super(language);
+    ExplicitAxiomLoader(StorageConnector connector) {
         this.connector = connector;
     }
 

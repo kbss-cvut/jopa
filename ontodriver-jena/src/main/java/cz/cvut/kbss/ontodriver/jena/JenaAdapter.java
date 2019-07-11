@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -48,12 +46,9 @@ public class JenaAdapter implements Wrapper {
     private final StorageConnector connector;
     private final InferredStorageConnector inferenceConnector;
 
-    private final String language;
-
-    JenaAdapter(StorageConnector connector, InferredStorageConnector inferenceConnector, String language) {
+    JenaAdapter(StorageConnector connector, InferredStorageConnector inferenceConnector) {
         this.connector = connector;
         this.inferenceConnector = inferenceConnector;
-        this.language = language;
     }
 
     void commit() throws JenaDriverException {
@@ -86,12 +81,12 @@ public class JenaAdapter implements Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         beginTransactionIfNotActive();
-        return new MainAxiomLoader(connector, inferenceConnector, language).find(descriptor);
+        return new MainAxiomLoader(connector, inferenceConnector).find(descriptor);
     }
 
     boolean contains(Axiom<?> axiom, URI context) {
         beginTransactionIfNotActive();
-        return new MainAxiomLoader(connector, inferenceConnector, language).contains(axiom, context);
+        return new MainAxiomLoader(connector, inferenceConnector).contains(axiom, context);
     }
 
     List<URI> getContext() {
@@ -127,7 +122,7 @@ public class JenaAdapter implements Wrapper {
 
     PropertiesHandler propertiesHandler() {
         beginTransactionIfNotActive();
-        return new PropertiesHandler(connector, language);
+        return new PropertiesHandler(connector);
     }
 
     public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> simpleListHandler() {
