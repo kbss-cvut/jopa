@@ -16,9 +16,9 @@ import java.lang.annotation.*;
 
 /**
  * Marks an attribute mapped to an OWL datatype property.
- *
+ * <p>
  * This means that literal values are expected for such attributes.
- *
+ * <p>
  * Note that for use with RDF(S), attributes annotated with this annotation are expected to reference literals.
  */
 @Documented
@@ -41,11 +41,19 @@ public @interface OWLDataProperty {
     FetchType fetch() default FetchType.EAGER;
 
     /**
-     * Marks an attribute whose value is a lexical form of a literal value.
+     * (Optional) Marks an attribute whose value is a lexical form of a literal value.
      * <p>
      * This parameter should be used on {@code String} attributes, as literal lexical form is always a string. Lexical
      * form of a literal of any datatype can be loaded. However, saving the lexical form is forbidden to prevent
      * unintentional change of the data type.
      */
     boolean lexicalForm() default false;
+
+    /**
+     * (Optional) Whether the value should be stored as a <a href="https://www.w3.org/TR/rdf11-concepts/">simple
+     * literal</a>, i.e. {@code xsd:string}.
+     *
+     * @return Whether the mapped value is a simple literal
+     */
+    boolean simpleLiteral() default false;
 }

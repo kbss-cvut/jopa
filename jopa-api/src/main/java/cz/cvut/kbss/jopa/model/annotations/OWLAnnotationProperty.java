@@ -16,7 +16,7 @@ import java.lang.annotation.*;
 
 /**
  * Marks an attribute mapped to an OWL annotation property.
- *
+ * <p>
  * This means that the attribute can contain a literal or a reference to another object.
  */
 @Documented
@@ -38,7 +38,7 @@ public @interface OWLAnnotationProperty {
     FetchType fetch() default FetchType.EAGER;
 
     /**
-     * Marks an attribute whose value is a lexical form of a literal value.
+     * (Optional) Marks an attribute whose value is a lexical form of a literal value.
      * <p>
      * This parameter should be used on {@code String} attributes, as literal lexical form is always a string. Lexical
      * form of a literal of any datatype can be loaded. However, saving the lexical form is forbidden to prevent
@@ -48,4 +48,16 @@ public @interface OWLAnnotationProperty {
      * {@code String} is a valid identifier mapping type.
      */
     boolean lexicalForm() default false;
+
+    /**
+     * (Optional) Whether the value should be stored as a <a href="https://www.w3.org/TR/rdf11-concepts/">simple
+     * literal</a>, i.e. {@code xsd:string}.
+     * <p>
+     * Note that if the value being loaded is an identifier, it will still be loaded, because it is not a literal and
+     * {@code String} is a valid identifier mapping type. However, updates will replace the original with a {@code
+     * xsd:string} value.
+     *
+     * @return Whether the mapped value is a simple literal
+     */
+    boolean simpleLiteral() default false;
 }
