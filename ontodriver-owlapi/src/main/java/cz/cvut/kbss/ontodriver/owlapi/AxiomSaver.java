@@ -44,7 +44,7 @@ class AxiomSaver {
         this.adapter = adapter;
         this.snapshot = snapshot;
         this.ontology = snapshot.getOntology();
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), adapter.getLanguage());
+        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
     }
 
     void persist(AxiomValueDescriptor descriptor) {

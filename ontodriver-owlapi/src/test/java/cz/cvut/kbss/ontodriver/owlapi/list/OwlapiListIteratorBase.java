@@ -43,7 +43,7 @@ abstract class OwlapiListIteratorBase {
 
     public void setUp() throws Exception {
         this.snapshot = TestUtils.initRealOntology(null);
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), "en");
+        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
     }
 
     abstract OwlapiListIterator iterator();

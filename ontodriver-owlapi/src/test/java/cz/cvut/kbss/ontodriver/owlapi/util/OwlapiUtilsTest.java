@@ -1,59 +1,65 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
-import org.junit.Test;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
+import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public class OwlapiUtilsTest {
+class OwlapiUtilsTest {
 
     private static final String LANG = "en";
 
     private OWLDataFactory dataFactory = new OWLDataFactoryImpl();
 
     @Test
-    public void doesLanguageMatchReturnsTrueWhenLanguageTagMatches() {
+    void doesLanguageMatchForAssertionReturnsTrueWhenLanguageTagMatches() {
         final OWLLiteral literal = dataFactory.getOWLLiteral("test", LANG);
-        assertTrue(OwlapiUtils.doesLanguageMatch(literal, LANG));
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), LANG, false);
+        assertTrue(OwlapiUtils.doesLanguageMatch(literal, assertion));
     }
 
     @Test
-    public void doesLanguageMatchReturnsFalseWhenLanguageTagDoesNotMatch() {
+    void doesLanguageMatchForAssertionReturnsFalseWhenLanguageTagDoesNotMatch() {
         final OWLLiteral literal = dataFactory.getOWLLiteral("test", LANG);
-        assertFalse(OwlapiUtils.doesLanguageMatch(literal, "cs"));
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), "cs", false);
+        assertFalse(OwlapiUtils.doesLanguageMatch(literal, assertion));
     }
 
     @Test
-    public void doesLanguageMatchReturnsTrueWhenLanguageIsNotSpecified() {
+    void doesLanguageMatchForAssertionsReturnsTrueWhenLanguageIsNotSpecifiedOnAssertion() {
         final OWLLiteral literal = dataFactory.getOWLLiteral("test", LANG);
-        assertTrue(OwlapiUtils.doesLanguageMatch(literal, null));
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), false);
+        assertTrue(OwlapiUtils.doesLanguageMatch(literal, assertion));
     }
 
     @Test
-    public void doesLanguageMatchReturnsTrueWhenLiteralHasNoLanguageTag() {
+    void doesLanguageMatchForAssertionReturnsTrueWhenLiteralHasNoLanguageTag() {
         final OWLLiteral literal = dataFactory.getOWLLiteral("test");
-        assertTrue(OwlapiUtils.doesLanguageMatch(literal, LANG));
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), LANG, false);
+        assertTrue(OwlapiUtils.doesLanguageMatch(literal, assertion));
     }
 
     @Test
-    public void doesLanguageMatchReturnsTrueForNonString() {
+    void doesLanguageMatchForAssertionReturnsTrueForNonStringLiteral() {
         final OWLLiteral literal = dataFactory.getOWLLiteral(117);
-        assertTrue(OwlapiUtils.doesLanguageMatch(literal, LANG));
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), LANG, false);
+        assertTrue(OwlapiUtils.doesLanguageMatch(literal, assertion));
     }
 }

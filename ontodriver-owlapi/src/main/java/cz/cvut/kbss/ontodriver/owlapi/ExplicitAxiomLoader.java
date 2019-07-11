@@ -33,7 +33,6 @@ class ExplicitAxiomLoader implements AxiomLoader {
 
     private final OwlapiAdapter adapter;
     private final AxiomAdapter axiomAdapter;
-    private final String language;
 
     private Map<URI, Assertion> assertionMap;
 
@@ -41,8 +40,7 @@ class ExplicitAxiomLoader implements AxiomLoader {
         this.adapter = adapter;
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
-        this.axiomAdapter = new AxiomAdapter(dataFactory, adapter.getLanguage());
-        this.language = adapter.getLanguage();
+        this.axiomAdapter = new AxiomAdapter(dataFactory);
     }
 
     @Override
@@ -76,8 +74,7 @@ class ExplicitAxiomLoader implements AxiomLoader {
         final OWLLiteral value = axiom.getObject();
         final IRI dpIri = axiom.getProperty().asOWLDataProperty().getIRI();
         final Optional<Assertion> assertion = assertionForAxiom(dpIri);
-        return assertion.isPresent() && OwlapiUtils
-                .doesLanguageMatch(value, assertion.get().hasLanguage() ? assertion.get().getLanguage() : language);
+        return assertion.isPresent() && OwlapiUtils.doesLanguageMatch(value, assertion.get());
     }
 
     private Optional<Assertion> assertionForAxiom(IRI propertyIri) {
@@ -114,9 +111,8 @@ class ExplicitAxiomLoader implements AxiomLoader {
         final OWLAnnotationValue value = axiom.getValue();
         final IRI apIri = axiom.getProperty().asOWLAnnotationProperty().getIRI();
         final Optional<Assertion> assertion = assertionForAxiom(apIri);
-        return assertion.isPresent() &&
-                (!value.asLiteral().isPresent() || OwlapiUtils.doesLanguageMatch(value.asLiteral().get(),
-                        assertion.get().hasLanguage() ? assertion.get().getLanguage() : language));
+        return assertion.isPresent() && (!value.asLiteral().isPresent() ||
+                OwlapiUtils.doesLanguageMatch(value.asLiteral().get(), assertion.get()));
     }
 
     @Override

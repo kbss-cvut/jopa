@@ -1,21 +1,17 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
-import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
@@ -40,14 +36,11 @@ import java.util.List;
 
 /**
  * Adapter between OntoDriver API and OWLAPI.
- *
- * @author ledvima1
  */
 public class OwlapiAdapter {
 
     private final Connector connector;
     private OntologySnapshot ontologySnapshot;
-    private final String language;
 
     private StatementExecutorFactory statementExecutorFactory;
 
@@ -58,9 +51,8 @@ public class OwlapiAdapter {
         INITIAL, RUNNING
     }
 
-    public OwlapiAdapter(Connector connector, DriverConfiguration configuration) {
+    public OwlapiAdapter(Connector connector) {
         this.connector = connector;
-        this.language = configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, "en");
     }
 
     private void startTransactionIfNotActive() {
@@ -140,7 +132,7 @@ public class OwlapiAdapter {
 
     private Collection<OWLAxiom> asOwlAxioms(Axiom<?> axiom) {
         final Collection<OWLAxiom> owlAxioms = new ArrayList<>(3);
-        final AxiomAdapter axiomAdapter = new AxiomAdapter(dataFactory(), language);
+        final AxiomAdapter axiomAdapter = new AxiomAdapter(dataFactory());
         switch (axiom.getAssertion().getType()) {
             case CLASS:
                 owlAxioms.add(axiomAdapter.toOwlClassAssertionAxiom(axiom));
@@ -202,10 +194,6 @@ public class OwlapiAdapter {
 
     public void addTransactionalChanges(Collection<OWLOntologyChange> changes) {
         pendingChanges.addAll(changes);
-    }
-
-    public String getLanguage() {
-        return language;
     }
 
     public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {

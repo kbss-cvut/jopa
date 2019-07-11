@@ -89,12 +89,13 @@ class EpistemicAxiomRemover {
     }
 
     private Collection<? extends OWLOntologyChange> removeDataPropertyAssertions(OWLNamedIndividual individual,
-                                                                                 IRI propertyId,
+                                                                                 Assertion assertion,
                                                                                  Set<Value<?>> values) {
-        final OWLDataProperty dataProperty = dataFactory.getOWLDataProperty(propertyId);
+        final OWLDataProperty dataProperty = dataFactory.getOWLDataProperty(IRI.create(assertion.getIdentifier()));
         return values.stream().map(value -> {
             final OWLLiteral literal = OwlapiUtils
-                    .createOWLLiteralFromValue(value.getValue(), dataFactory, owlapiAdapter.getLanguage());
+                    .createOWLLiteralFromValue(value.getValue(), dataFactory,
+                            OwlapiUtils.getAssertionLanguage(assertion));
             return new MutableRemoveAxiom(ontology,
                     dataFactory.getOWLDataPropertyAssertionAxiom(dataProperty, individual, literal));
         }).collect(Collectors.toList());
@@ -132,15 +133,17 @@ class EpistemicAxiomRemover {
     }
 
     private Collection<? extends OWLOntologyChange> removeAnnotationAssertions(OWLNamedIndividual individual,
-                                                                               IRI assertionId,
+                                                                               Assertion assertion,
                                                                                Set<Value<?>> values) {
-        final OWLAnnotationProperty annProperty = dataFactory.getOWLAnnotationProperty(assertionId);
+        final OWLAnnotationProperty annProperty = dataFactory
+                .getOWLAnnotationProperty(IRI.create(assertion.getIdentifier()));
         return values.stream().map(value -> {
             OWLAnnotationValue av;
             try {
                 av = IRI.create(value.stringValue());
             } catch (IllegalArgumentException e) {
-                av = OwlapiUtils.createOWLLiteralFromValue(value.getValue(), dataFactory, owlapiAdapter.getLanguage());
+                av = OwlapiUtils.createOWLLiteralFromValue(value.getValue(), dataFactory,
+                        OwlapiUtils.getAssertionLanguage(assertion));
             }
             return new MutableRemoveAxiom(ontology,
                     dataFactory.getOWLAnnotationAssertionAxiom(annProperty, individual.getIRI(), av));
@@ -153,11 +156,11 @@ class EpistemicAxiomRemover {
         for (Map.Entry<Assertion, Set<Value<?>>> e : toRemove.entrySet()) {
             final IRI assertionIri = IRI.create(e.getKey().getIdentifier());
             if (ontology.containsDataPropertyInSignature(assertionIri)) {
-                changes.addAll(removeDataPropertyAssertions(individual, assertionIri, e.getValue()));
+                changes.addAll(removeDataPropertyAssertions(individual, e.getKey(), e.getValue()));
             } else if (ontology.containsObjectPropertyInSignature(assertionIri)) {
                 changes.addAll(removeObjectPropertyAssertions(individual, assertionIri, e.getValue()));
             } else if (ontology.containsAnnotationPropertyInSignature(assertionIri)) {
-                changes.addAll(removeAnnotationAssertions(individual, assertionIri, e.getValue()));
+                changes.addAll(removeAnnotationAssertions(individual, e.getKey(), e.getValue()));
             } else if (e.getKey().isClassAssertion()) {
                 changes.addAll(removeClassAssertionAxioms(individual, e.getValue()));
             }
