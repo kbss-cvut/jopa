@@ -31,7 +31,7 @@ import java.util.*;
 class OwlapiDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.MODULE_EXTRACTION_SIGNATURE, DriverConfigParam.ONTOLOGY_LANGUAGE,
+            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.MODULE_EXTRACTION_SIGNATURE,
                     DriverConfigParam.REASONER_FACTORY_CLASS,
                     OwlapiConfigParam.IRI_MAPPING_DELIMITER, OwlapiConfigParam.MAPPING_FILE_LOCATION,
                     OwlapiConfigParam.WRITE_ON_COMMIT);
