@@ -57,6 +57,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
     private String lexicalForm;
 
+    @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
+    private String simpleLiteral;
+
     public enum Severity {
         LOW, MEDIUM, HIGH
     }
@@ -144,6 +147,7 @@ public class OWLClassM {
                 ", enumAttribute=" + enumAttribute +
                 ", integerSet=" + integerSet +
                 ", lexicalForm=" + lexicalForm +
+                ", simpleLiteral=" + simpleLiteral +
                 '}';
     }
 
@@ -159,9 +163,10 @@ public class OWLClassM {
         this.enumAttribute = Severity.MEDIUM;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
         this.lexicalForm = "test";
+        this.simpleLiteral = "test";
     }
 
-    public static String getClassIri() throws Exception {
+    public static String getClassIri() {
         return OWLClassM.class.getAnnotation(OWLClass.class).iri();
     }
 
@@ -199,5 +204,9 @@ public class OWLClassM {
 
     public static Field getLexicalFormField() throws Exception {
         return OWLClassM.class.getDeclaredField("lexicalForm");
+    }
+
+    public static Field getSimpleLiteralField() throws Exception {
+        return OWLClassM.class.getDeclaredField("simpleLiteral");
     }
 }

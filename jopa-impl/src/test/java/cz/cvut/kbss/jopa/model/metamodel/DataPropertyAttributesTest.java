@@ -48,4 +48,12 @@ class DataPropertyAttributesTest {
         sut.resolve(OWLClassM.getLexicalFormField(), metamodelBuilder, OWLClassM.getLexicalFormField().getType());
         assertTrue(sut.isLexicalForm());
     }
+
+    @Test
+    void resolveResolvesSimpleLiteralConfigurationFromAnnotation() throws Exception {
+        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
+        sut.typeBuilderContext = typeBuilderContext;
+        sut.resolve(OWLClassM.getSimpleLiteralField(), metamodelBuilder, OWLClassM.getSimpleLiteralField().getType());
+        assertTrue(sut.isSimpleLiteral());
+    }
 }

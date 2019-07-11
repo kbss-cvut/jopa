@@ -91,18 +91,25 @@ class FieldMappingValidator {
         assert field != null;
         assert config != null;
         validateLexicalFormField(field, config.lexicalForm());
+        validateSimpleLiteralField(field, config.simpleLiteral());
     }
 
     void validateDataPropertyField(Field field, OWLDataProperty config) {
         assert field != null;
         assert config != null;
         validateLexicalFormField(field, config.lexicalForm());
+        validateSimpleLiteralField(field, config.simpleLiteral());
     }
 
     private void validateLexicalFormField(Field field, boolean lexicalForm) {
-        assert field != null;
         if (lexicalForm && !String.class.isAssignableFrom(field.getType())) {
-            throw new InvalidFieldMappingException("@LexicalForm can be used only on fields of type String.");
+            throw new InvalidFieldMappingException("lexicalForm mapping can be used only on fields of type String.");
+        }
+    }
+
+    private void validateSimpleLiteralField(Field field, boolean simpleLiteral) {
+        if (simpleLiteral && !String.class.isAssignableFrom(field.getType())) {
+            throw new InvalidFieldMappingException("simpleLiteral mapping can be used only on fields of type String.");
         }
     }
 }

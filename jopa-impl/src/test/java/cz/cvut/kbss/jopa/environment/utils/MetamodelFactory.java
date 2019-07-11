@@ -504,7 +504,8 @@ public class MetamodelFactory {
                                          AbstractAttribute intAtt, SingularAttributeImpl longAtt,
                                          AbstractAttribute doubleAtt, AbstractAttribute dateAtt,
                                          AbstractAttribute enumAtt, AbstractPluralAttribute intSetAtt,
-                                         SingularAttributeImpl lexicalFormAtt, Identifier idMock)
+                                         SingularAttributeImpl lexicalFormAtt, SingularAttributeImpl simpleLiteralAtt,
+                                         Identifier idMock)
             throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassM.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassM.getClassIri()));
@@ -515,10 +516,10 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                        dateAtt, enumAtt, intSetAtt, lexicalFormAtt)));
+                        dateAtt, enumAtt, intSetAtt, lexicalFormAtt, simpleLiteralAtt)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                        enumAtt, intSetAtt, lexicalFormAtt, idMock)));
+                        enumAtt, intSetAtt, lexicalFormAtt, simpleLiteralAtt, idMock)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(booleanAtt.getName()).thenReturn(OWLClassM.getBooleanAttributeField().getName());
@@ -611,6 +612,18 @@ public class MetamodelFactory {
         when(lexicalFormAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
         when(lexicalFormAtt.isLexicalForm()).thenReturn(true);
         when(etMock.getFieldSpecification(OWLClassM.getLexicalFormField().getName())).thenReturn(lexicalFormAtt);
+
+        when(simpleLiteralAtt.getJavaField()).thenReturn(OWLClassM.getSimpleLiteralField());
+        when(simpleLiteralAtt.getName()).thenReturn(OWLClassM.getSimpleLiteralField().getName());
+        when(simpleLiteralAtt.getJavaType()).thenReturn(OWLClassM.getSimpleLiteralField().getType());
+        when(simpleLiteralAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
+        when(simpleLiteralAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(simpleLiteralAtt.isCollection()).thenReturn(false);
+        when(simpleLiteralAtt.getDeclaringType()).thenReturn(etMock);
+        when(simpleLiteralAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(simpleLiteralAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
+        when(simpleLiteralAtt.isSimpleLiteral()).thenReturn(true);
+        when(etMock.getFieldSpecification(OWLClassM.getSimpleLiteralField().getName())).thenReturn(simpleLiteralAtt);
 
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }

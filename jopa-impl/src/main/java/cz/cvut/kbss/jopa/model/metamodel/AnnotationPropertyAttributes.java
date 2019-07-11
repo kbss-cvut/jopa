@@ -34,6 +34,7 @@ class AnnotationPropertyAttributes extends PropertyAttributes {
         this.fetchType = oap.fetch();
         this.type = BasicTypeImpl.get(fieldValueCls);
         this.lexicalForm = oap.lexicalForm();
+        this.simpleLiteral = oap.simpleLiteral();
         validator.validateAnnotationPropertyField(field, oap);
     }
 }
