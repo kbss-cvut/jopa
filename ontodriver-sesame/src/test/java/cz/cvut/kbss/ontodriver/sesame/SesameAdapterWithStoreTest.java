@@ -1,21 +1,18 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -45,7 +42,6 @@ import static org.junit.Assert.assertTrue;
 
 public class SesameAdapterWithStoreTest {
 
-    private static final String LANGUAGE = "en";
     private static final NamedResource SUBJECT = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entityX");
 
@@ -62,7 +58,6 @@ public class SesameAdapterWithStoreTest {
                                                                       .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         configuration.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.toString(true));
-        configuration.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
         this.factory = ConnectorFactory.getInstance();
         this.connector = factory.createStorageConnector(configuration);
         this.adapter = new SesameAdapter(connector, configuration);

@@ -34,7 +34,6 @@ public class TestRepositoryProvider {
         configuration.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         configuration.setProperty(SesameConfigParam.USE_INFERENCE, Boolean.toString(useInference));
         configuration.setProperty(DriverConfigParam.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        configuration.setProperty(DriverConfigParam.ONTOLOGY_LANGUAGE, "en");
         return factory.createStorageConnector(configuration);
     }
 
