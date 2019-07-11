@@ -51,6 +51,7 @@ public abstract class Assertion extends NamedResource {
         super(identifier);
         this.inferred = isInferred;
         this.language = language;
+        // TODO hasLanguage should be false when language is set to null
         this.hasLanguage = true;
     }
 
@@ -102,6 +103,7 @@ public abstract class Assertion extends NamedResource {
         return hasLanguage;
     }
 
+    // TODO Include language in hashCode, equals
     @Override
     public int hashCode() {
         final int prime = 31;

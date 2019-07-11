@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
@@ -21,8 +19,8 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -33,12 +31,11 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class EpistemicAxiomRemoverTest {
+class EpistemicAxiomRemoverTest {
 
     private static final NamedResource SUBJECT = NamedResource.create("http://krizik.felk.cvut.cz/jopa#Individual");
 
@@ -56,10 +53,9 @@ public class EpistemicAxiomRemoverTest {
 
     private EpistemicAxiomRemover axiomRemover;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(adapterMock.getLanguage()).thenReturn("en");
         final OntologySnapshot snapshot = TestUtils.initRealOntology(null);
         this.ontology = spy(snapshot.getOntology());
         this.manager = spy(snapshot.getOntologyManager());
@@ -70,7 +66,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeDoesNothingWhenNoMatchingValuesAreFound() {
+    void removeDoesNothingWhenNoMatchingValuesAreFound() {
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
         descriptor.addAssertion(clsAssertion);
         axiomRemover.remove(descriptor);
@@ -78,7 +74,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithClassAssertions() {
+    void removeAxiomsByDescriptorWithClassAssertions() {
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
         descriptor.addAssertion(clsAssertion);
         initClassAssertions();
@@ -102,7 +98,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithDataPropertyAssertions() {
+    void removeAxiomsByDescriptorWithDataPropertyAssertions() {
         final Assertion dpAssertion = Assertion
                 .createDataPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#dataProperty"), false);
         final OWLDataProperty odp = dataFactory.getOWLDataProperty(IRI.create(dpAssertion.getIdentifier()));
@@ -137,7 +133,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithObjectPropertyAssertions() {
+    void removeAxiomsByDescriptorWithObjectPropertyAssertions() {
         final Assertion opAssertion = Assertion
                 .createObjectPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#objectProperty"), false);
         final OWLObjectProperty oop = dataFactory.getOWLObjectProperty(IRI.create(opAssertion.getIdentifier()));
@@ -162,7 +158,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeRetainsValuesOfAssertionsNotPresentInDescriptor() {
+    void removeRetainsValuesOfAssertionsNotPresentInDescriptor() {
         final Assertion opAssertion = Assertion
                 .createObjectPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#objectProperty"), false);
         final Assertion opAssertionTwo = Assertion
@@ -183,7 +179,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsByDescriptorWithAnnotationPropertyAssertions() {
+    void removeAxiomsByDescriptorWithAnnotationPropertyAssertions() {
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/jopa#annotationProperty"), false);
         final OWLAnnotationProperty oap = dataFactory.getOWLAnnotationProperty(IRI.create(apAssertion.getIdentifier()));
@@ -219,7 +215,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeCombinationOfDataObjectAndAnnotationPropertiesAndClassAssertion() {
+    void removeCombinationOfDataObjectAndAnnotationPropertiesAndClassAssertion() {
         final Set<OWLPropertyExpression> removed = initForCombinedTest();
         axiomRemover.remove(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
@@ -265,7 +261,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsRemovesCorrespondingAssertions() {
+    void removeAxiomsRemovesCorrespondingAssertions() {
         final Map<Assertion, Set<Value<?>>> toRemove = initForRemoveAxiomsTest();
         axiomRemover.removeAxioms(SUBJECT, toRemove);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
@@ -344,7 +340,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeAxiomsWithUnknownPropertyDoesNothing() {
+    void removeAxiomsWithUnknownPropertyDoesNothing() {
         final Map<Assertion, Set<Value<?>>> toRemove = new HashMap<>();
         final Assertion unknownProperty = Assertion
                 .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#unknownProperty"), false);

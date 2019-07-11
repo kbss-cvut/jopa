@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
@@ -24,11 +22,9 @@ import org.semanticweb.owlapi.model.*;
 public class AxiomAdapter {
 
     private final OWLDataFactory dataFactory;
-    private final String language;
 
-    public AxiomAdapter(OWLDataFactory dataFactory, String language) {
+    public AxiomAdapter(OWLDataFactory dataFactory) {
         this.dataFactory = dataFactory;
-        this.language = language;
     }
 
     OWLAxiom toOwlClassAssertionAxiom(Axiom<?> axiom) {
@@ -49,13 +45,9 @@ public class AxiomAdapter {
         final OWLDataProperty dataProperty = dataFactory
                 .getOWLDataProperty(IRI.create(axiom.getAssertion().getIdentifier()));
         final OWLLiteral dataValue = OwlapiUtils.createOWLLiteralFromValue(axiom.getValue().getValue(),
-                dataFactory, language(axiom.getAssertion()));
+                dataFactory, OwlapiUtils.getAssertionLanguage(axiom.getAssertion()));
         return dataFactory
                 .getOWLDataPropertyAssertionAxiom(dataProperty, toOWLIndividual(axiom.getSubject()), dataValue);
-    }
-
-    private String language(Assertion assertion) {
-        return assertion.hasLanguage() ? assertion.getLanguage() : language;
     }
 
     OWLAxiom toOwlAnnotationPropertyAssertionAxiom(Axiom<?> axiom) {
@@ -67,7 +59,7 @@ public class AxiomAdapter {
             annotationValue = IRI.create(value.toString());
         } else {
             annotationValue = OwlapiUtils.createOWLLiteralFromValue(
-                    axiom.getValue().getValue(), dataFactory, language(axiom.getAssertion()));
+                    axiom.getValue().getValue(), dataFactory, OwlapiUtils.getAssertionLanguage(axiom.getAssertion()));
         }
         return dataFactory
                 .getOWLAnnotationAssertionAxiom(annotationProperty, toOWLIndividual(axiom.getSubject()).getIRI(),

@@ -37,7 +37,7 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
 
     protected ListHandler(OwlapiAdapter owlapiAdapter, OntologySnapshot snapshot) {
         this.owlapiAdapter = owlapiAdapter;
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), owlapiAdapter.getLanguage());
+        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
         this.snapshot = snapshot;
         this.ontology = snapshot.getOntology();
     }

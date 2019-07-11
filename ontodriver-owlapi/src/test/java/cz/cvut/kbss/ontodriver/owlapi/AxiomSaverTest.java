@@ -37,7 +37,6 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.*;
 import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asSet;
 
@@ -71,7 +70,6 @@ public class AxiomSaverTest {
         this.dataFactory = snapshot.getDataFactory();
         final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, reasonerMock);
         this.axiomSaver = new AxiomSaver(adapterMock, snapshotToUse);
-        when(adapterMock.getLanguage()).thenReturn("en");
         this.descriptor = new AxiomValueDescriptor(SUBJECT);
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
     }

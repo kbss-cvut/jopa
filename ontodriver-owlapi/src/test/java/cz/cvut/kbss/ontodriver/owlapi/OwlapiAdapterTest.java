@@ -1,23 +1,19 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import com.google.common.collect.Multimap;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
@@ -25,8 +21,8 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -42,9 +38,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-public class OwlapiAdapterTest {
+class OwlapiAdapterTest {
 
     private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
     private static final NamedResource INDIVIDUAL = NamedResource.create(PK);
@@ -63,8 +60,8 @@ public class OwlapiAdapterTest {
 
     private OwlapiAdapter adapter;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = spy(snapshot.getOntology());
@@ -74,12 +71,11 @@ public class OwlapiAdapterTest {
         when(connectorMock.getOntologyUri())
                 .thenReturn(snapshot.getOntology().getOntologyID().getOntologyIRI().get().toURI());
 
-        this.adapter = spy(new OwlapiAdapter(connectorMock, new DriverConfiguration(
-                OntologyStorageProperties.driver(OwlapiDataSource.class.getName()).physicalUri("testFile").build())));
+        this.adapter = spy(new OwlapiAdapter(connectorMock));
     }
 
     @Test
-    public void commitSendsChangesToConnector() throws Exception {
+    void commitSendsChangesToConnector() throws Exception {
         startTransaction();
         adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
         adapter.commit();
@@ -93,7 +89,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void rollbackCausesChangesToEmpty() throws Exception {
+    void rollbackCausesChangesToEmpty() throws Exception {
         startTransaction();
         adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
         adapter.rollback();
@@ -102,7 +98,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void testIsConsistentWithCorrectContext() {
+    void testIsConsistentWithCorrectContext() {
         final URI uri = getOntologyUri();
         when(reasonerMock.isConsistent()).thenReturn(Boolean.TRUE);
 
@@ -116,7 +112,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void isConsistentIgnoresContextInfo() {
+    void isConsistentIgnoresContextInfo() {
         when(reasonerMock.isConsistent()).thenReturn(Boolean.TRUE);
         final URI ctx = URI.create("http://krizik.felk.cvut.cz/differentContext");
         assertTrue(adapter.isConsistent(ctx));
@@ -124,7 +120,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void testGetContexts() {
+    void testGetContexts() {
         final URI uri = getOntologyUri();
 
         final List<URI> res = adapter.getContexts();
@@ -133,7 +129,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void testContainsUnknownContext() {
+    void testContainsUnknownContext() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, false);
         final URI context = URI.create("http://krizik.felk.cvut.cz/jopa/different");
         boolean res = adapter.containsAxiom(axiom, context);
@@ -188,14 +184,16 @@ public class OwlapiAdapterTest {
                 break;
             case DATA_PROPERTY:
                 final OWLDataProperty dp = factory.getOWLDataProperty(IRI.create(ax.getAssertion().getIdentifier()));
-                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory, "en");
+                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory,
+                        OwlapiUtils.getAssertionLanguage(ax.getAssertion()));
                 owlAxiom = factory.getOWLDataPropertyAssertionAxiom(dp, individual, value);
                 break;
             case ANNOTATION_PROPERTY:
                 final OWLAnnotationProperty ap =
                         factory.getOWLAnnotationProperty(IRI.create(ax.getAssertion().getIdentifier()));
                 final OWLAnnotationValue val =
-                        OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory, "en");
+                        OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory,
+                                OwlapiUtils.getAssertionLanguage(ax.getAssertion()));
                 owlAxiom = factory.getOWLAnnotationAssertionAxiom(ap, individual.getIRI(), val);
                 break;
             default:
@@ -205,7 +203,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void testContainsClassAssertionAxiomNoContext() {
+    void testContainsClassAssertionAxiomNoContext() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, false);
         addAxiomToOntology(axiom);
         boolean res = adapter.containsAxiom(axiom, null);
@@ -222,7 +220,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void testContainsObjectPropertyAssertionInferred() {
+    void testContainsObjectPropertyAssertionInferred() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.OBJECT_PROPERTY, true);
         final URI ctx = getOntologyUri();
         when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(Boolean.TRUE);
@@ -243,7 +241,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void testContainsDataProperty() {
+    void testContainsDataProperty() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.DATA_PROPERTY, false);
         addAxiomToOntology(axiom);
         boolean res = adapter.containsAxiom(axiom, null);
@@ -264,7 +262,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void testContainsAnnotationPropertyInferred() {
+    void testContainsAnnotationPropertyInferred() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.ANNOTATION_PROPERTY, true);
         when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(Boolean.TRUE);
         boolean res = adapter.containsAxiom(axiom, null);
@@ -285,7 +283,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void persistIndividualInMultipleClassesIsLegal() {
+    void persistIndividualInMultipleClassesIsLegal() {
         final AxiomValueDescriptor descriptorOne = new AxiomValueDescriptor(INDIVIDUAL);
         final String typeA = "http://krizik.felk.cvut.cz/typeA";
         descriptorOne.addAssertionValue(Assertion.createClassAssertion(false), new Value<>(URI.create(typeA)));
@@ -317,7 +315,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void startingTransactionInitializesOntologySnapshotAndExecutorFactory() throws Exception {
+    void startingTransactionInitializesOntologySnapshotAndExecutorFactory() throws Exception {
         final Field executorFactoryField = OwlapiAdapter.class.getDeclaredField("statementExecutorFactory");
         executorFactoryField.setAccessible(true);
         assertNull(executorFactoryField.get(adapter));
@@ -327,7 +325,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void transactionCommitClosesTransactionalSnapshot() throws Exception {
+    void transactionCommitClosesTransactionalSnapshot() throws Exception {
         startTransaction();
         adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
         adapter.commit();
@@ -335,7 +333,7 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void transactionRollbackClosesTransactionalSnapshot() throws Exception {
+    void transactionRollbackClosesTransactionalSnapshot() throws Exception {
         startTransaction();
         adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
         adapter.rollback();
@@ -343,17 +341,17 @@ public class OwlapiAdapterTest {
     }
 
     @Test
-    public void unwrapReturnsTheAdapterWhenClassMatches() throws Exception {
+    void unwrapReturnsTheAdapterWhenClassMatches() throws Exception {
         assertSame(adapter, adapter.unwrap(OwlapiAdapter.class));
     }
 
     @Test
-    public void unwrapReturnsOntologySnapshotWhenOwlOntologyClassIsPassedIn() throws Exception {
+    void unwrapReturnsOntologySnapshotWhenOwlOntologyClassIsPassedIn() throws Exception {
         assertSame(ontology, adapter.unwrap(OWLOntology.class));
     }
 
-    @Test(expected = OwlapiDriverException.class)
-    public void throwsDriverExceptionWhenUnsupportedClassIsPassedToUnwrap() throws Exception {
-        adapter.unwrap(Connection.class);
+    @Test
+    void throwsDriverExceptionWhenUnsupportedClassIsPassedToUnwrap() {
+        assertThrows(OwlapiDriverException.class, () -> adapter.unwrap(Connection.class));
     }
 }
