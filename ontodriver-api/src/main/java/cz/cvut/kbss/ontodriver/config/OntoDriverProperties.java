@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.config;
 
@@ -34,34 +32,36 @@ public final class OntoDriverProperties {
     /**
      * Reasoner factory class property.
      * <p>
-     * Applies to OntoDriver implementations which support selection of reasoner factory class, which are currently OWL API and Jena.
+     * Applies to OntoDriver implementations which support selection of reasoner factory class, which are currently OWL
+     * API and Jena.
      */
     public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
 
     /**
      * Ontology language property.
+     *
+     * @deprecated Ontology language should be set at persistence unit level. The driver uses language specified per
+     * {@link cz.cvut.kbss.ontodriver.model.Assertion}.
      */
+    @Deprecated
     public static final String ONTOLOGY_LANGUAGE = "cz.cvut.jopa.lang";
 
     /**
-     * This setting tells the driver whether to use the transactional ontology
-     * for retrieving entities and answering queries.
+     * This setting tells the driver whether to use the transactional ontology for retrieving entities and answering
+     * queries.
      * <p>
-     * If so, uncommitted changes made during transaction will be included in
-     * query evaluation, entity retrieval etc. Otherwise the driver will use the
-     * ontology as it was when the transaction was started and uncommitted
-     * changes will not be visible until commit.
+     * If so, uncommitted changes made during transaction will be included in query evaluation, entity retrieval etc.
+     * Otherwise the driver will use the ontology as it was when the transaction was started and uncommitted changes
+     * will not be visible until commit.
      */
     public static final String USE_TRANSACTIONAL_ONTOLOGY = "cz.cvut.kbss.ontodriver.use-transactional-onto";
 
     /**
-     * Property for specifying extra URIs which should be added to the module
-     * extraction signature.
+     * Property for specifying extra URIs which should be added to the module extraction signature.
      * <p>
      * The module extraction signature is generated from metamodel, but
      * <i>types</i> and <i>properties</i> cannot be determined from the
-     * metamodel. Therefore it is possible to specify them using this property
-     * so that the module is complete.
+     * metamodel. Therefore it is possible to specify them using this property so that the module is complete.
      */
     public static final String MODULE_EXTRACTION_SIGNATURE = "cz.cvut.kbss.ontodriver.module-signature";
 
