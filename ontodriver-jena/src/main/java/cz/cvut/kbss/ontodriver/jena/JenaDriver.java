@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -33,8 +31,7 @@ import java.util.*;
 class JenaDriver implements Closeable, ConnectionListener {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.ONTOLOGY_LANGUAGE,
-                    DriverConfigParam.REASONER_FACTORY_CLASS,
+            .asList(DriverConfigParam.AUTO_COMMIT, DriverConfigParam.REASONER_FACTORY_CLASS,
                     JenaConfigParam.ISOLATION_STRATEGY, JenaConfigParam.STORAGE_TYPE,
                     JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
 
@@ -81,8 +78,7 @@ class JenaDriver implements Closeable, ConnectionListener {
     JenaConnection acquireConnection() {
         ensureOpen();
         final StorageConnector connector = connectorFactory.createConnector();
-        final JenaAdapter adapter = new JenaAdapter(connector, connectorFactory.createInferredConnector(connector),
-                configuration.getProperty(DriverConfigParam.ONTOLOGY_LANGUAGE));
+        final JenaAdapter adapter = new JenaAdapter(connector, connectorFactory.createInferredConnector(connector));
         final JenaConnection connection = new JenaConnection(adapter);
         connection.registerListener(this);
         connection.setAutoCommit(autoCommit);

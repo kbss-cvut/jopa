@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-public abstract class AxiomLoaderTestBase {
+abstract class AxiomLoaderTestBase {
 
     static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
     static final Resource SUBJECT_RES = createResource(SUBJECT.getIdentifier().toString());

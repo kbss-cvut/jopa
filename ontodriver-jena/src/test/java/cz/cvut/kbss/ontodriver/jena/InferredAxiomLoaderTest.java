@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -22,8 +20,8 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -31,11 +29,11 @@ import java.net.URI;
 import java.util.*;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
+class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
 
     @Mock
     private InferredStorageConnector connectorMock;
@@ -44,15 +42,15 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
 
     private InferredAxiomLoader axiomLoader;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         this.descriptor = new AxiomDescriptor(SUBJECT);
-        this.axiomLoader = new InferredAxiomLoader(connectorMock, null);
+        this.axiomLoader = new InferredAxiomLoader(connectorMock);
     }
 
     @Test
-    public void containsChecksForInferredAxiomExistenceInDefaultGraph() {
+    void containsChecksForInferredAxiomExistenceInDefaultGraph() {
         final URI clsUri = Generator.generateUri();
         final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(clsUri)));
@@ -63,7 +61,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void containsChecksForInferredAxiomExistenceInNamedGraph() {
+    void containsChecksForInferredAxiomExistenceInNamedGraph() {
         final URI clsUri = Generator.generateUri();
         final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(clsUri)));
@@ -76,7 +74,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsValuesOfSpecifiedAssertions() {
+    void findLoadsValuesOfSpecifiedAssertions() {
         final Assertion aOne = Assertion.createClassAssertion(true);
         final Assertion aTwo = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
         final Resource cls = createResource(Generator.generateUri().toString());
@@ -101,7 +99,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findLoadsValuesOfAssertionsInContext() {
+    void findLoadsValuesOfAssertionsInContext() {
         final Assertion aOne = Assertion.createClassAssertion(true);
         final Assertion aTwo = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
         final Resource cls = createResource(Generator.generateUri().toString());
@@ -128,7 +126,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findBySubjectLoadsAllPropertyAxiomsRelatedToSpecifiedSubject() {
+    void findBySubjectLoadsAllPropertyAxiomsRelatedToSpecifiedSubject() {
         final Assertion aOne = Assertion.createDataPropertyAssertion(Generator.generateUri(), true);
         final Assertion aTwo = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
         final Literal literal = createTypedLiteral(117);
@@ -151,7 +149,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findBySubjectSkipsClassAssertions() {
+    void findBySubjectSkipsClassAssertions() {
         final Literal literal = createTypedLiteral(117);
         final Property propertyOne = createProperty(Generator.generateUri().toString());
         final Resource object = createResource(Generator.generateUri().toString());
@@ -165,7 +163,7 @@ public class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    public void findBySubjectWorksInContext() {
+    void findBySubjectWorksInContext() {
         final Assertion aOne = Assertion.createDataPropertyAssertion(Generator.generateUri(), true);
         final Assertion aTwo = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
         final Literal literal = createTypedLiteral(117);
