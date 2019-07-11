@@ -54,7 +54,7 @@ public class EpistemicAxiomRemoverTest {
         this.vf = SimpleValueFactory.getInstance();
         this.descriptor = new AxiomDescriptor(SUBJECT);
 
-        this.axiomRemover = new EpistemicAxiomRemover(connectorMock, vf, "en");
+        this.axiomRemover = new EpistemicAxiomRemover(connectorMock, vf);
     }
 
     @Test

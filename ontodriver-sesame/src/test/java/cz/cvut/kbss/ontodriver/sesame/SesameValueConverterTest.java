@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -20,28 +18,28 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class SesameValueConverterTest {
+
+class SesameValueConverterTest {
 
     private static final String LANG = "en";
     private static final URI PROPERTY = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#property");
 
     private SesameValueConverter converter;
 
-    @Before
-    public void setUp() {
-        this.converter = new SesameValueConverter(SimpleValueFactory.getInstance(), LANG);
+    @BeforeEach
+    void setUp() {
+        this.converter = new SesameValueConverter(SimpleValueFactory.getInstance());
     }
 
     @Test
-    public void convertsObjectPropertyNamedResourceToSesameUri() throws Exception {
+    void convertsObjectPropertyNamedResourceToSesameUri() throws Exception {
         final Value res = converter.toSesameValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY),
                 value(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa#individual")));
         assertTrue(res instanceof org.eclipse.rdf4j.model.IRI);
@@ -69,7 +67,7 @@ public class SesameValueConverterTest {
     }
 
     @Test
-    public void convertsDataPropertyValueToSesameLiteral() throws Exception {
+    void convertsDataPropertyValueToSesameLiteral() throws Exception {
         final int val = 117;
         final Value res = converter.toSesameValue(assertion(Assertion.AssertionType.DATA_PROPERTY), value(val));
         assertTrue(res instanceof Literal);
@@ -77,16 +75,15 @@ public class SesameValueConverterTest {
     }
 
     @Test
-    public void convertsAnnotationPropertyLiteralValueToSesameLiteral() throws Exception {
+    void convertsAnnotationPropertyLiteralValueToSesameLiteral() throws Exception {
         final String val = "AnnotationValue";
         final Value res = converter.toSesameValue(assertion(Assertion.AssertionType.ANNOTATION_PROPERTY), value(val));
         assertTrue(res instanceof Literal);
         assertEquals(val, ((Literal) res).getLabel());
-        assertEquals(LANG, ((Literal) res).getLanguage().orElse(""));
     }
 
     @Test
-    public void convertsAnnotationPropertyNamedResourceToSesameUri() throws Exception {
+    void convertsAnnotationPropertyNamedResourceToSesameUri() throws Exception {
         final NamedResource val = NamedResource
                 .create("http://krizik.felk.cvut.cz/ontologies/jopa#individualAnnotation");
         final Value res = converter.toSesameValue(assertion(Assertion.AssertionType.ANNOTATION_PROPERTY), value(val));
@@ -94,58 +91,55 @@ public class SesameValueConverterTest {
         assertEquals(val.toString(), res.toString());
     }
 
-    @Test(expected = SesameDriverException.class)
-    public void conversionThrowsExceptionWhenObjectPropertyValueIsNotUri() throws Exception {
-        converter.toSesameValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY), value(117));
+    @Test
+    void conversionThrowsExceptionWhenObjectPropertyValueIsNotUri() {
+        assertThrows(SesameDriverException.class,
+                () -> converter.toSesameValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY), value(117)));
     }
 
     @Test
-    public void convertsStringLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
+    void convertsStringLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
         final String value = "hodnota v cestine";
-        final Assertion dpAssertion = Assertion.createDataPropertyAssertion(PROPERTY, "cs", false);
+        final Assertion dpAssertion = Assertion.createDataPropertyAssertion(PROPERTY, LANG, false);
         final Value res = converter.toSesameValue(dpAssertion, value(value));
         assertTrue(res instanceof Literal);
         final Literal literal = (Literal) res;
         assertTrue(literal.getLanguage().isPresent());
-        assertEquals("cs", literal.getLanguage().get());
+        assertEquals(LANG, literal.getLanguage().get());
         assertEquals(value, literal.stringValue());
     }
 
     @Test
-    public void convertsStringLiteralIntoValueWithLanguageSpecifiedInConfigurationWhenAssertionHasNoLanguage()
+    void convertsStringLiteralIntoValueWithoutLanguageWhenAssertionHasNoLanguage()
             throws Exception {
         final String value = "hodnota v cestine";
         final Assertion dpAssertion = Assertion.createDataPropertyAssertion(PROPERTY, false);
         final Value res = converter.toSesameValue(dpAssertion, value(value));
         assertTrue(res instanceof Literal);
         final Literal literal = (Literal) res;
+        assertFalse(literal.getLanguage().isPresent());
+    }
+
+    @Test
+    void convertsAnnotationLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
+        final String value = "hodnota v cestine";
+        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, LANG, false);
+        final Value res = converter.toSesameValue(apAssertion, value(value));
+        assertTrue(res instanceof Literal);
+        final Literal literal = (Literal) res;
         assertTrue(literal.getLanguage().isPresent());
         assertEquals(LANG, literal.getLanguage().get());
         assertEquals(value, literal.stringValue());
     }
 
     @Test
-    public void convertsAnnotationLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
-        final String value = "hodnota v cestine";
-        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, "cs", false);
-        final Value res = converter.toSesameValue(apAssertion, value(value));
-        assertTrue(res instanceof Literal);
-        final Literal literal = (Literal) res;
-        assertTrue(literal.getLanguage().isPresent());
-        assertEquals("cs", literal.getLanguage().get());
-        assertEquals(value, literal.stringValue());
-    }
-
-    @Test
-    public void convertsAnnotationLiteralIntoValueWithLanguageTagSpecifiedGloballyWhenAssertionHasNoLanguage()
+    void convertsAnnotationLiteralIntoValueWithoutLanguageWhenAssertionHasNoLanguage()
             throws Exception {
         final String value = "hodnota v cestine";
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, false);
         final Value res = converter.toSesameValue(apAssertion, value(value));
         assertTrue(res instanceof Literal);
         final Literal literal = (Literal) res;
-        assertTrue(literal.getLanguage().isPresent());
-        assertEquals(LANG, literal.getLanguage().get());
-        assertEquals(value, literal.stringValue());
+        assertFalse(literal.getLanguage().isPresent());
     }
 }

@@ -56,15 +56,14 @@ class SesameProperties implements Properties {
     public void addProperties(NamedResource individual, URI context, Map<Assertion, Set<Value<?>>> properties)
             throws OntoDriverException {
         beforeCallback.execute();
-        new AxiomSaver(connector, valueFactory, config.getLanguage()).persistAxioms(individual, properties, context);
+        new AxiomSaver(connector, valueFactory).persistAxioms(individual, properties, context);
         afterChangeCallback.execute();
     }
 
     @Override
     public void removeProperties(NamedResource individual, URI context, Map<Assertion, Set<Value<?>>> properties)
             throws OntoDriverException {
-        new EpistemicAxiomRemover(connector, valueFactory, config.getLanguage())
-                .remove(individual, properties, context);
+        new EpistemicAxiomRemover(connector, valueFactory).remove(individual, properties, context);
         afterChangeCallback.execute();
     }
 }

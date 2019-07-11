@@ -14,18 +14,20 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class SesameUtilsTest {
+class SesameUtilsTest {
 
     private static final String LANG = "en";
 
@@ -37,51 +39,79 @@ public class SesameUtilsTest {
         LOW, MEDIUM
     }
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() {
         memoryStore = new MemoryStore();
         memoryStore.initialize();
         vf = memoryStore.getValueFactory();
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    @AfterAll
+    static void tearDownAfterClass() {
         memoryStore.shutDown();
     }
 
     @Test
-    public void enumLiteralIsReturnedAsStringValue() throws Exception {
+    void enumLiteralIsReturnedAsStringValue() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
         final Object result = SesameUtils.getDataPropertyValue(literal);
         assertEquals(Severity.LOW.toString(), result);
     }
 
     @Test
-    public void doesLanguageMatchReturnsFalseForNonMatchingLanguageTag() {
+    void doesLanguageMatchReturnsFalseForNonMatchingLanguageTag() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
         assertFalse(SesameUtils.doesLanguageMatch(literal, "cs"));
     }
 
     @Test
-    public void doesLanguageMatchReturnsTrueForMatchingLanguageTag() {
+    void doesLanguageMatchReturnsTrueForMatchingLanguageTag() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
         assertTrue(SesameUtils.doesLanguageMatch(literal, LANG));
     }
 
     @Test
-    public void doesLanguageMatchReturnsTrueWhenNoLanguageIsSpecified() {
+    void doesLanguageMatchReturnsTrueWhenNoLanguageIsSpecified() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
-        assertTrue(SesameUtils.doesLanguageMatch(literal, null));
+        assertTrue(SesameUtils.doesLanguageMatch(literal, (String) null));
     }
 
     @Test
-    public void doesLanguageMatchReturnsTrueWhenLiteralHasNoLanguage() {
+    void doesLanguageMatchReturnsTrueWhenLiteralHasNoLanguage() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString());
         assertTrue(SesameUtils.doesLanguageMatch(literal, LANG));
     }
 
     @Test
-    public void enumValueIsReturnedAsStringLiteral() throws Exception {
+    void doesLanguageMatchForAssertionReturnsFalseForNonMatchingLanguageTag() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), "cs", false);
+        assertFalse(SesameUtils.doesLanguageMatch(literal, assertion));
+    }
+
+    @Test
+    void doesLanguageMatchForAssertionReturnsTrueForMatchingLanguageTag() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), LANG, false);
+        assertTrue(SesameUtils.doesLanguageMatch(literal, assertion));
+    }
+
+    @Test
+    void doesLanguageMatchForAssertionReturnsTrueWhenAssertionHasNoLanguage() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), false);
+        assertTrue(SesameUtils.doesLanguageMatch(literal, assertion));
+    }
+
+    @Test
+    void doesLanguageMatchForAssertionReturnsTrueWhenLiteralHasNoLanguage() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString());
+        final Assertion assertion = Assertion.createPropertyAssertion(Generator.generateUri(), LANG, false);
+        assertTrue(SesameUtils.doesLanguageMatch(literal, assertion));
+    }
+
+    @Test
+    void enumValueIsReturnedAsStringLiteral() {
         final Literal literal = SesameUtils.createDataPropertyLiteral(Severity.MEDIUM, LANG, vf);
         assertNotNull(literal);
         assertEquals(Severity.MEDIUM.toString(), literal.stringValue());
@@ -89,7 +119,7 @@ public class SesameUtilsTest {
     }
 
     @Test
-    public void createDataPropertyLiteralAttachesLanguageTagToStringLiteral() {
+    void createDataPropertyLiteralAttachesLanguageTagToStringLiteral() {
         final String value = "literal";
         final Literal result = SesameUtils.createDataPropertyLiteral(value, LANG, vf);
         assertTrue(result.getLanguage().isPresent());
@@ -98,7 +128,7 @@ public class SesameUtilsTest {
     }
 
     @Test
-    public void createDataPropertyLiteralCreatesStringWithoutLanguageTagWhenNullIsPassedIn() {
+    void createDataPropertyLiteralCreatesStringWithoutLanguageTagWhenNullIsPassedIn() {
         final String value = "literal";
         final Literal result = SesameUtils.createDataPropertyLiteral(value, null, vf);
         assertFalse(result.getLanguage().isPresent());

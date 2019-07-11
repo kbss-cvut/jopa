@@ -55,8 +55,8 @@ class AxiomLoader {
         final Collection<Axiom<?>> result = new HashSet<>();
         final Resource subject = SesameUtils.toSesameIri(descriptor.getSubject().getIdentifier(), valueFactory);
         final Assertion unspecified = processAssertions(descriptor);
-        final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified,
-                config.getLanguage());
+        final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified
+        );
         final StatementLoader statementLoader = new StatementLoader(config, descriptor, connector, subject,
                 axiomBuilder);
         if (unspecified == null || !unspecified.isInferred()) {
@@ -101,7 +101,7 @@ class AxiomLoader {
         final IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
         final IRI subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
         final AxiomBuilder axiomBuilder = new AxiomBuilder(individual, Collections.emptyMap(),
-                Assertion.createUnspecifiedPropertyAssertion(includeInferred), config.getLanguage());
+                Assertion.createUnspecifiedPropertyAssertion(includeInferred));
         final Collection<Statement> statements = connector
                 .findStatements(subject, null, null, includeInferred, sesameContext);
         return statements.stream().map(axiomBuilder::statementToAxiom).collect(Collectors.toSet());

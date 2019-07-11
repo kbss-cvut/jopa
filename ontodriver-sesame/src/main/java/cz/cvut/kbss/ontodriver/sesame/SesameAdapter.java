@@ -19,6 +19,7 @@ import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.sesame.config.Constants;
 import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
@@ -158,8 +159,9 @@ class SesameAdapter implements Closeable, Wrapper {
         if (SesameUtils.isResourceIdentifier(axiom.getValue().getValue())) {
             value = valueFactory.createIRI(axiom.getValue().stringValue());
         } else {
-            value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), config.getLanguage(),
-                    valueFactory);
+            final String lang =
+                    axiom.getAssertion().hasLanguage() ? axiom.getAssertion().getLanguage() : Constants.DEFAULT_LANG;
+            value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), lang, valueFactory);
         }
         final org.eclipse.rdf4j.model.IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
         return connector.containsStatement(
@@ -176,18 +178,18 @@ class SesameAdapter implements Closeable, Wrapper {
 
     void persist(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        new AxiomSaver(connector, valueFactory, config.getLanguage()).persistAxioms(axiomDescriptor);
+        new AxiomSaver(connector, valueFactory).persistAxioms(axiomDescriptor);
     }
 
     void update(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        new EpistemicAxiomRemover(connector, valueFactory, config.getLanguage()).remove(axiomDescriptor);
-        new AxiomSaver(connector, valueFactory, config.getLanguage()).persistAxioms(axiomDescriptor);
+        new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
+        new AxiomSaver(connector, valueFactory).persistAxioms(axiomDescriptor);
     }
 
     void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        new EpistemicAxiomRemover(connector, valueFactory, config.getLanguage()).remove(axiomDescriptor);
+        new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
     }
 
     StatementExecutor getQueryExecutor() {
