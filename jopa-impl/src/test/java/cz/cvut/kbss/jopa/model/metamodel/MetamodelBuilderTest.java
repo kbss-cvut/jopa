@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unused")
-public class MetamodelBuilderTest {
+class MetamodelBuilderTest {
 
     @Mock
     private PersistenceUnitClassFinder finderMock;
@@ -200,5 +200,15 @@ public class MetamodelBuilderTest {
         final AbstractAttribute<OWLClassM, String> att = (AbstractAttribute<OWLClassM, String>) result
                 .getAttribute(OWLClassM.getLexicalFormField().getName());
         assertTrue(att.isLexicalForm());
+    }
+
+    @Test
+    void buildMetamodelSetsSimpleLiteralConfigOnAttributeMappingBasedOnAnnotation() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
+        builder.buildMetamodel(finderMock);
+        final EntityTypeImpl<OWLClassM> result = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
+        final AbstractAttribute<OWLClassM, String> att = (AbstractAttribute<OWLClassM, String>) result
+                .getAttribute(OWLClassM.getSimpleLiteralField().getName());
+        assertTrue(att.isSimpleLiteral());
     }
 }

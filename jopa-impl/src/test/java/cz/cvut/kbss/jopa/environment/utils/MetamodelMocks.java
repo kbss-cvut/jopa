@@ -151,6 +151,8 @@ public class MetamodelMocks {
     private AbstractPluralAttribute<OWLClassM, Set, Integer> mIntegerSetAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, String> mLexicalFormAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassM, String> mSimpleLiteralAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassN> etN;
@@ -253,7 +255,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
-                mIntegerSetAtt, mLexicalFormAtt, idM);
+                mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
                 nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
@@ -595,6 +597,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassM, String> lexicalFormAttribute() {
             return MetamodelMocks.this.mLexicalFormAtt;
+        }
+
+        public AbstractAttribute<OWLClassM, String> simpleLiteralAttribute() {
+            return MetamodelMocks.this.mSimpleLiteralAtt;
         }
     }
 

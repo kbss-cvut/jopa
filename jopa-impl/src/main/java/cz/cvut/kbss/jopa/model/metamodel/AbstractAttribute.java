@@ -43,6 +43,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private boolean lexicalForm;
 
+    private boolean simpleLiteral;
+
     private final ParticipationConstraint[] constraints;
 
     private ConverterWrapper converter;
@@ -60,6 +62,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         this.nonEmpty = builder.nonEmpty;
         this.converter = builder.converter;
         this.lexicalForm = builder.lexicalForm;
+        this.simpleLiteral = builder.simpleLiteral;
     }
 
     @Override
@@ -121,6 +124,10 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return lexicalForm;
     }
 
+    public boolean isSimpleLiteral() {
+        return simpleLiteral;
+    }
+
     @Override
     public String getName() {
         return field.getName();
@@ -146,6 +153,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean includeExplicit;
         private boolean nonEmpty = false;
         private boolean lexicalForm = false;
+        private boolean simpleLiteral = false;
         private ParticipationConstraint[] constraints;
         private ConverterWrapper converter;
 
@@ -157,6 +165,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             this.nonEmpty = config.isNonEmpty();
             this.fetchType = config.getFetchType();
             this.lexicalForm = config.isLexicalForm();
+            this.simpleLiteral = config.simpleLiteral;
             return this;
         }
 

@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
@@ -38,7 +39,7 @@ class FieldMappingValidatorTest {
         assertThrows(InvalidFieldMappingException.class, () -> validator.validatePropertiesField(getField("values")));
     }
 
-    private Field getField(String name) throws Exception {
+    private static Field getField(String name) throws Exception {
         return InvalidClass.class.getDeclaredField(name);
     }
 
@@ -109,8 +110,8 @@ class FieldMappingValidatorTest {
 
     @Test
     void lexicalFormAnnotationIsValidOnStringField() throws Exception {
-        validator.validateDataPropertyField(getField("validLexicalForm"),
-                getField("validLexicalForm").getAnnotation(OWLDataProperty.class));
+        validator.validateDataPropertyField(OWLClassM.getLexicalFormField(),
+                OWLClassM.getLexicalFormField().getAnnotation(OWLDataProperty.class));
     }
 
     @Test
@@ -125,6 +126,26 @@ class FieldMappingValidatorTest {
         assertThrows(InvalidFieldMappingException.class,
                 () -> validator.validateAnnotationPropertyField(getField("invalidLexicalFormAnnotation"),
                         getField("invalidLexicalFormAnnotation").getAnnotation(OWLAnnotationProperty.class)));
+    }
+
+    @Test
+    void simpleLiteralAnnotationIsValidOnStringField() throws Exception {
+        validator.validateDataPropertyField(OWLClassM.getSimpleLiteralField(),
+                OWLClassM.getSimpleLiteralField().getAnnotation(OWLDataProperty.class));
+    }
+
+    @Test
+    void simpleLiteralAnnotationThrowsInvalidFieldMappingExceptionOnNonStringField() {
+        assertThrows(InvalidFieldMappingException.class,
+                () -> validator.validateDataPropertyField(getField("invalidSimpleLiteral"),
+                        getField("invalidSimpleLiteral").getAnnotation(OWLDataProperty.class)));
+    }
+
+    @Test
+    void simpleLiteralAnnotationThrowsInvalidFieldMappingExceptionOnNonStringAnnotationPropertyField() {
+        assertThrows(InvalidFieldMappingException.class,
+                () -> validator.validateAnnotationPropertyField(getField("invalidSimpleLiteralAnnotation"),
+                        getField("invalidSimpleLiteralAnnotation").getAnnotation(OWLAnnotationProperty.class)));
     }
 
     @SuppressWarnings("unused")
@@ -170,12 +191,15 @@ class FieldMappingValidatorTest {
         Integer invalidIdentifier;
 
         @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
-        private String validLexicalForm;
-
-        @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
         private Integer invalidLexicalForm;
 
         @OWLAnnotationProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
         private Integer invalidLexicalFormAnnotation;
+
+        @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
+        private Integer invalidSimpleLiteral;
+
+        @OWLAnnotationProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
+        private Integer invalidSimpleLiteralAnnotation;
     }
 }

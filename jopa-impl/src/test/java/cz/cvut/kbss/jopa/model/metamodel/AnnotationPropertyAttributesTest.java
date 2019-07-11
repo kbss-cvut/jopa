@@ -51,4 +51,18 @@ class AnnotationPropertyAttributesTest {
         @OWLAnnotationProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
         private String lexicalForm;
     }
+
+    @Test
+    void resolveResolvesSimpleLiteralConfigurationFromAnnotation() throws Exception {
+        final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
+        sut.typeBuilderContext = typeBuilderContext;
+        sut.resolve(WithSimpleLiteral.class.getDeclaredField("simpleLiteral"), metamodelBuilder, String.class);
+        assertTrue(sut.isSimpleLiteral());
+    }
+
+    @SuppressWarnings("unused")
+    private static class WithSimpleLiteral {
+        @OWLAnnotationProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
+        private String simpleLiteral;
+    }
 }
