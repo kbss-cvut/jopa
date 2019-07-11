@@ -80,17 +80,22 @@ public final class SesameUtils {
     }
 
     /**
-     * Checks whether the language of the specified string literal matches the expected one.
+     * Checks whether the language of the specified literal matches the specified assertion language.
      * <p>
-     * If the literal is not a string, it always matches.
+     * If the assertion does not specified a language, any literal will match. If the literal is not a string, it
+     * matches as well.
      *
-     * @param literal  Literal to check
-     * @param language Expected language, can be {@code null}
-     * @return {@code false} if the literal is a string literal and its language does not match the expected one, {@code
-     * true} otherwise
+     * @param literal   Literal to check
+     * @param assertion Assertion
+     * @return {@code false} if the literal is a string literal and its language does not match the one specified by the
+     * assertion, {@code true} otherwise
      */
-    public static boolean doesLanguageMatch(Literal literal, String language) {
-        assert literal != null;
+    public static boolean doesLanguageMatch(Literal literal, Assertion assertion) {
+        assert assertion != null;
+        if (!assertion.hasLanguage()) {
+            return true;
+        }
+        final String language = assertion.getLanguage();
         final IRI datatype = literal.getDatatype();
         if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
                 datatype.equals(RDF.LANGSTRING)) {
@@ -98,21 +103,6 @@ public final class SesameUtils {
                     literal.getLanguage().get().equals(language);
         }
         return true;
-    }
-
-    /**
-     * Checks whether the language of the specified literal matches the specified assertion language.
-     * <p>
-     * If the assertion does not specified a language, any string literal will match.
-     *
-     * @param literal   Literal to check
-     * @param assertion Assertion
-     * @return Whether literal matches the assertion's language
-     * @see #doesLanguageMatch(Literal, String)
-     */
-    public static boolean doesLanguageMatch(Literal literal, Assertion assertion) {
-        assert assertion != null;
-        return !assertion.hasLanguage() || doesLanguageMatch(literal, assertion.getLanguage());
     }
 
     /**
