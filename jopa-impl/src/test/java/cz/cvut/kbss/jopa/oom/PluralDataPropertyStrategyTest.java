@@ -35,9 +35,9 @@ import static org.mockito.Mockito.when;
 
 class PluralDataPropertyStrategyTest {
 
+    private static final String LANG = "en";
     private static final URI PK = Generators.createIndividualIdentifier();
     private static final NamedResource INDIVIDUAL = NamedResource.create(PK);
-
 
     @Mock
     private EntityMappingHelper mapperMock;
@@ -51,7 +51,7 @@ class PluralDataPropertyStrategyTest {
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final Configuration configuration = new Configuration(
-                Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
+                Collections.singletonMap(JOPAPersistenceProperties.LANG, LANG));
         when(mapperMock.getConfiguration()).thenReturn(configuration);
 
         this.gatherer = new AxiomValueGatherer(INDIVIDUAL, null);
@@ -74,13 +74,11 @@ class PluralDataPropertyStrategyTest {
     }
 
     private Axiom<Integer> createMSetAxiom() {
-        return new AxiomImpl<>(INDIVIDUAL,
-                assertionForMIntegerSet(),
-                new Value<>(Generators.randomInt()));
+        return new AxiomImpl<>(INDIVIDUAL, assertionForMIntegerSet(), new Value<>(Generators.randomInt()));
     }
 
     private Assertion assertionForMIntegerSet() {
-        return Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_IntegerSet), false);
+        return Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_IntegerSet), LANG, false);
     }
 
     @Test
@@ -173,11 +171,11 @@ class PluralDataPropertyStrategyTest {
 
     @Test
     void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
-        descriptor.setLanguage("en");
-        buildAxiomsAndVerifyLanguageTag();
+        descriptor.setLanguage("cs");
+        buildAxiomsAndVerifyLanguageTag("cs");
     }
 
-    private void buildAxiomsAndVerifyLanguageTag() throws Exception {
+    private void buildAxiomsAndVerifyLanguageTag(String expectedLang) throws Exception {
         // Yes, the plural attribute contains integers, but it is not important on this level
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final OWLClassM m = new OWLClassM();
@@ -189,13 +187,13 @@ class PluralDataPropertyStrategyTest {
         assertEquals(1, valueDescriptor.getAssertions().size());
         final Assertion assertion = valueDescriptor.getAssertions().iterator().next();
         assertTrue(assertion.hasLanguage());
-        assertEquals("en", assertion.getLanguage());
+        assertEquals(expectedLang, assertion.getLanguage());
     }
 
     @Test
     void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
             throws Exception {
-        buildAxiomsAndVerifyLanguageTag();
+        buildAxiomsAndVerifyLanguageTag(LANG);
     }
 
     @Test

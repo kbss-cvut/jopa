@@ -1,20 +1,19 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.model;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Base assertion axiom class.
@@ -51,8 +50,7 @@ public abstract class Assertion extends NamedResource {
         super(identifier);
         this.inferred = isInferred;
         this.language = language;
-        // TODO hasLanguage should be false when language is set to null
-        this.hasLanguage = true;
+        this.hasLanguage = language != null;
     }
 
     /**
@@ -103,25 +101,24 @@ public abstract class Assertion extends NamedResource {
         return hasLanguage;
     }
 
-    // TODO Include language in hashCode, equals
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + (inferred ? 1231 : 1237);
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Assertion)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        Assertion assertion = (Assertion) o;
+        return inferred == assertion.inferred && Objects.equals(language, assertion.language);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Assertion other = (Assertion) obj;
-        return inferred == other.inferred;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), language, inferred);
     }
 
     @Override

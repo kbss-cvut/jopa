@@ -40,6 +40,7 @@ import static org.mockito.Mockito.when;
 
 class SingularAnnotationPropertyStrategyTest {
 
+    private static final String LANG = "en";
     private static final URI PK = Generators.createIndividualIdentifier();
 
     @Mock
@@ -53,7 +54,7 @@ class SingularAnnotationPropertyStrategyTest {
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final Configuration configuration = new Configuration(
-                Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
+                Collections.singletonMap(JOPAPersistenceProperties.LANG, LANG));
         when(mapperMock.getConfiguration()).thenReturn(configuration);
         this.mocks = new MetamodelMocks();
     }
@@ -77,7 +78,7 @@ class SingularAnnotationPropertyStrategyTest {
 
     private Assertion annotationForN() {
         final URI uri = mocks.forOwlClassN().annotationAttribute().getIRI().toURI();
-        return Assertion.createAnnotationPropertyAssertion(uri, false);
+        return Assertion.createAnnotationPropertyAssertion(uri, LANG, false);
     }
 
     @Test
@@ -107,7 +108,7 @@ class SingularAnnotationPropertyStrategyTest {
 
     private Assertion annotationWithUriForN() {
         final URI uri = mocks.forOwlClassN().annotationUriAttribute().getIRI().toURI();
-        return Assertion.createAnnotationPropertyAssertion(uri, false);
+        return Assertion.createAnnotationPropertyAssertion(uri, LANG,false);
     }
 
     @Test
@@ -173,11 +174,11 @@ class SingularAnnotationPropertyStrategyTest {
 
     @Test
     void buildAxiomsSetsLanguageTagAccordingToDescriptorLanguage() throws Exception {
-        descriptor.setLanguage("en");
-        buildAxiomsAndVerifyLanguageTag();
+        descriptor.setLanguage("cs");
+        buildAxiomsAndVerifyLanguageTag("cs");
     }
 
-    private void buildAxiomsAndVerifyLanguageTag() throws Exception {
+    private void buildAxiomsAndVerifyLanguageTag(String expectedLang) throws Exception {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final OWLClassN n = new OWLClassN();
         n.setId(PK.toString());
@@ -189,13 +190,12 @@ class SingularAnnotationPropertyStrategyTest {
         assertEquals(1, valueDescriptor.getAssertions().size());
         final Assertion assertion = valueDescriptor.getAssertions().iterator().next();
         assertTrue(assertion.hasLanguage());
-        assertEquals("en", assertion.getLanguage());
+        assertEquals(expectedLang, assertion.getLanguage());
     }
 
     @Test
-    void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor()
-            throws Exception {
-        buildAxiomsAndVerifyLanguageTag();
+    void buildAxiomsSetsLanguageTagAccordingToPUConfigurationWhenItIsNotSpecifiedInDescriptor() throws Exception {
+        buildAxiomsAndVerifyLanguageTag(LANG);
     }
 
     @Test
