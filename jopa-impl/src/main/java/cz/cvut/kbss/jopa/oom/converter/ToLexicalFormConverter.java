@@ -17,8 +17,7 @@ public class ToLexicalFormConverter implements ConverterWrapper<String, Object> 
 
     @Override
     public Object convertToAxiomValue(String value) {
-        // TODO
-        return null;
+        return value;
     }
 
     @Override
