@@ -21,4 +21,10 @@ class ToLexicalFormConverterTest {
     void supportsAxiomValueTypeReturnsFalseForNamedResource() {
         assertFalse(sut.supportsAxiomValueType(NamedResource.class));
     }
+
+    @Test
+    void convertToAxiomValueReturnsSpecifiedString() {
+        final String value = "test";
+        assertEquals(value, sut.convertToAxiomValue(value));
+    }
 }
