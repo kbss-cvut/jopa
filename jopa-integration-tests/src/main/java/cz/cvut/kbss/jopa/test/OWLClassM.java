@@ -56,6 +56,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
     private String lexicalForm;
 
+    @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
+    private String simpleLiteral;
+
     public enum Severity {
         LOW, MEDIUM, HIGH
     }
@@ -132,6 +135,14 @@ public class OWLClassM {
         this.lexicalForm = lexicalForm;
     }
 
+    public String getSimpleLiteral() {
+        return simpleLiteral;
+    }
+
+    public void setSimpleLiteral(String simpleLiteral) {
+        this.simpleLiteral = simpleLiteral;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -143,6 +154,7 @@ public class OWLClassM {
                 ", enumAttribute=" + enumAttribute +
                 ", integerSet=" + integerSet +
                 ", lexicalForm=" + lexicalForm +
+                ", simpleLiteral=" + simpleLiteral +
                 '}';
     }
 

@@ -624,6 +624,7 @@ public class MetamodelFactory {
         when(simpleLiteralAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
         when(simpleLiteralAtt.isSimpleLiteral()).thenReturn(true);
         when(etMock.getFieldSpecification(OWLClassM.getSimpleLiteralField().getName())).thenReturn(simpleLiteralAtt);
+        when(etMock.getAttribute(OWLClassM.getSimpleLiteralField().getName())).thenReturn(simpleLiteralAtt);
 
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }

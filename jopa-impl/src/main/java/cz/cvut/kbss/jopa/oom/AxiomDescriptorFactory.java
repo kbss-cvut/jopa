@@ -83,7 +83,7 @@ class AxiomDescriptorFactory {
             case OBJECT:
                 return Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
             case DATA:
-                if (withLanguage(descriptor)) {
+                if (withLanguage(att, descriptor)) {
                     return Assertion
                             .createDataPropertyAssertion(att.getIRI().toURI(), language(descriptor), att.isInferred());
                 } else {
@@ -91,7 +91,7 @@ class AxiomDescriptorFactory {
                             .createDataPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
             case ANNOTATION:
-                if (withLanguage(descriptor)) {
+                if (withLanguage(att, descriptor)) {
                     return Assertion
                             .createAnnotationPropertyAssertion(att.getIRI().toURI(), language(descriptor),
                                     att.isInferred());
@@ -105,8 +105,8 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private boolean withLanguage(Descriptor descriptor) {
-        return descriptor.hasLanguage() || puLanguage != null;
+    private boolean withLanguage(Attribute<?, ?> att, Descriptor descriptor) {
+        return !att.isSimpleLiteral() && (descriptor.hasLanguage() || puLanguage != null);
     }
 
     private String language(Descriptor descriptor) {

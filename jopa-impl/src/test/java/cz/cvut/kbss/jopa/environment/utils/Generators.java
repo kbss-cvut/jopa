@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
  */
 public abstract class Generators {
 
+    public static final String LANG = "en";
     public static final int DEFAULT_SIZE = 5;
     private static final Set<String> TYPES = generateTypes(DEFAULT_SIZE);
 
