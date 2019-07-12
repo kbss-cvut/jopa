@@ -136,6 +136,14 @@ public class OWLClassM {
         this.lexicalForm = lexicalForm;
     }
 
+    public String getSimpleLiteral() {
+        return simpleLiteral;
+    }
+
+    public void setSimpleLiteral(String simpleLiteral) {
+        this.simpleLiteral = simpleLiteral;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +

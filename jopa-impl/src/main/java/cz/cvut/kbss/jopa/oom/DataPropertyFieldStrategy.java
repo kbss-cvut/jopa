@@ -43,6 +43,14 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
     }
 
     @Override
+    String getLanguage() {
+        if (attribute.isSimpleLiteral()) {
+            return null;
+        }
+        return super.getLanguage();
+    }
+
+    @Override
     Assertion createAssertion() {
         return Assertion.createDataPropertyAssertion(attribute.getIRI().toURI(), getLanguage(), attribute.isInferred());
     }

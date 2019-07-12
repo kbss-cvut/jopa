@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.environment;
 
@@ -34,11 +32,24 @@ public interface DataAccessor {
     /**
      * Verifies that the specified data are present in the storage.
      * <p>
-     * Data presence is verified using a vendor-specific storage access object unwrapped from the specified entity manager.
+     * Data presence is verified using a vendor-specific storage access object unwrapped from the specified entity
+     * manager.
      *
      * @param data Data to verify
      * @param em   Means of getting vendor-specific storage access
      * @throws Exception If storage access error occurs
      */
-    void verifyDataPresence(Collection<Triple> data, EntityManager em) throws Exception;
+    void verifyDataPresent(Collection<Triple> data, EntityManager em) throws Exception;
+
+    /**
+     * Verifies that the specified data are not present in the storage.
+     * <p>
+     * Data presence is verified using a vendor-specific storage access object unwrapped from the specified entity
+     * manager.
+     *
+     * @param data Data to verify
+     * @param em   Means of getting vendor-specific storage access
+     * @throws Exception If storage access error occurs
+     */
+    void verifyDataNotPresent(Collection<Triple> data, EntityManager em) throws Exception;
 }

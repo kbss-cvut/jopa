@@ -44,8 +44,7 @@ import static org.mockito.Mockito.when;
 
 class EntityDeconstructorTest {
 
-    private static final URI CONTEXT = URI
-            .create("http://krizik.felk.cvut.cz/ontologies/jopa/contextOne");
+    private static final URI CONTEXT = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/contextOne");
 
     private static OWLClassA entityA;
     private static URI strAttAIdentifier;
@@ -67,8 +66,7 @@ class EntityDeconstructorTest {
         entityA = new OWLClassA();
         entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityA"));
         entityA.setStringAttribute("someStringAttribute");
-        strAttAIdentifier = URI.create(OWLClassA.getStrAttField()
-                                                .getAnnotation(OWLDataProperty.class).iri());
+        strAttAIdentifier = URI.create(OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class).iri());
         entityB = new OWLClassB();
         entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityB"));
         entityB.setStringAttribute("entityBStringAttribute");
@@ -77,8 +75,7 @@ class EntityDeconstructorTest {
         entityD = new OWLClassD();
         entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityD"));
         entityD.setOwlClassA(entityA);
-        owlClassAAttIdentifier = URI.create(OWLClassD.getOwlClassAField()
-                                                     .getAnnotation(OWLObjectProperty.class).iri());
+        owlClassAAttIdentifier = URI.create(OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri());
         entityM = new OWLClassM();
         entityM.initializeTestValues(true);
 
@@ -472,5 +469,20 @@ class EntityDeconstructorTest {
         final Assertion ass = Assertion.createObjectPropertyAssertion(owlClassAAttIdentifier,
                 mocks.forOwlClassD().owlClassAAtt().isInferred());
         assertEquals(subjectContext, res.getAssertionContext(ass));
+    }
+
+    @Test
+    void mapFieldToAxiomsMapsSimpleLiteralFieldToAxiomWithAssertionWithoutLanguageTag() throws Exception {
+        final String value = "test";
+        entityM.setSimpleLiteral(value);
+        final AxiomValueGatherer builder = sut
+                .mapFieldToAxioms(URI.create(entityM.getKey()), entityM, OWLClassM.getSimpleLiteralField(),
+                        mocks.forOwlClassM().entityType(), new EntityDescriptor());
+        final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
+        assertEquals(1, res.getAssertions().size());
+        final Assertion a = res.getAssertions().iterator().next();
+        assertEquals(Vocabulary.p_m_simpleLiteral, a.getIdentifier().toString());
+        assertFalse(a.hasLanguage());
+        assertEquals(value, res.getAssertionValues(a).get(0).getValue());
     }
 }
