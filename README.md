@@ -128,7 +128,7 @@ A more mature project using JOPA as its persistence provider can be found at [ht
 It is a safety occurrence reporting tool developed for the aviation industry as part of the INBAS project ([https://www.inbas.cz](https://www.inbas.cz)).
 A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
 
-JOPA is also used in the [BINBAS project](https://www.inbas.cz/web/binbas) [6].
+JOPA is also used in the [BINBAS project](https://www.inbas.cz/web/binbas) [6] and, more recently, in [TermIt](https://github.com/kbss-cvut/termit) - a SKOS vocabulary manager.
 
 Note that JOPA requires Java 8.
 
