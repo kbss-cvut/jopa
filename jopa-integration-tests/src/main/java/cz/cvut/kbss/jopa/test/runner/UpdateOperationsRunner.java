@@ -19,10 +19,8 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.environment.DataAccessor;
-import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.test.environment.*;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -1292,5 +1290,38 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassU result = findRequired(OWLClassU.class, u.getUri());
         assertEquals(reference.getUri(), result.getOwlClassS().getUri());
+    }
+
+    @Test
+    void updateSupportsUpdatingSimpleLiteralValue() {
+        this.em = getEntityManager("updateSupportsUpdatingSimpleLiteralValue", true);
+        entityM.setSimpleLiteral("test original");
+        persist(entityM);
+
+        updateSimpleLiteralAndVerify();
+    }
+
+    private void updateSimpleLiteralAndVerify() {
+        em.getTransaction().begin();
+        final String newValue = "new test value";
+        final OWLClassM toUpdate = findRequired(OWLClassM.class, entityM.getKey());
+        toUpdate.setSimpleLiteral(newValue);
+        em.getTransaction().commit();
+
+        verifyValueDatatype(URI.create(entityM.getKey()), Vocabulary.p_m_simpleLiteral, XSD.STRING);
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(newValue, result.getSimpleLiteral());
+    }
+
+    @Test
+    void updateOverwritesLanguageStringWithSimpleLiteralForSimpleLiteralAttribute() throws Exception {
+        this.em = getEntityManager("updateOverwritesLanguageStringWithSimpleLiteralForSimpleLiteralAttribute", true);
+        persist(entityM);
+        final Collection<Triple> originalTriple = Collections.singleton(
+                new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), "test", "en"));
+        persistTestData(originalTriple, em);
+
+        updateSimpleLiteralAndVerify();
+        verifyStatementsNotPresent(originalTriple, em);
     }
 }

@@ -24,8 +24,7 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public abstract class BaseRunner {
@@ -183,7 +182,11 @@ public abstract class BaseRunner {
     }
 
     protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
-        dataAccessor.verifyDataPresence(expected, em);
+        dataAccessor.verifyDataPresent(expected, em);
+    }
+
+    protected void verifyStatementsNotPresent(Collection<Triple> notExpected, EntityManager em) throws Exception {
+        dataAccessor.verifyDataNotPresent(notExpected, em);
     }
 
     // Utility methods to reduce duplication
@@ -229,5 +232,13 @@ public abstract class BaseRunner {
 
     <T> void verifyExists(Class<T> type, Object identifier) {
         assertNotNull(em.find(type, identifier));
+    }
+
+    protected void verifyValueDatatype(URI identifier, String property, String expectedDatatype) {
+        assertTrue(em.createNativeQuery("ASK WHERE { ?x ?property ?value . " +
+                "FILTER (DATATYPE(?value) = ?datatype) }", Boolean.class)
+                     .setParameter("x", identifier)
+                     .setParameter("property", URI.create(property))
+                     .setParameter("datatype", URI.create(expectedDatatype)).getSingleResult());
     }
 }

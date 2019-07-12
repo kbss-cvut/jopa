@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -37,9 +38,8 @@ class FieldStrategyTest {
     void getLanguageRetrievesAttributeLanguageFromEntityDescriptor() throws Exception {
         final String lang = "cs";
         descriptor.setAttributeLanguage(OWLClassA.getStrAttField(), lang);
-        final FieldStrategy<?, ?> sut = FieldStrategy
-                .createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
-                        metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
+        final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
+                metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
         assertEquals(lang, sut.getLanguage());
     }
 
@@ -47,10 +47,16 @@ class FieldStrategyTest {
     void getAttributeContextRetrievesContextFromEntityDescriptor() throws Exception {
         final URI context = Generators.createIndividualIdentifier();
         descriptor.addAttributeContext(OWLClassA.getStrAttField(), context);
-        final FieldStrategy<?, ?> sut = FieldStrategy
-                .createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
-                        metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
+        final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
+                metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
         assertEquals(context, sut.getAttributeContext());
         verify(descriptor).getAttributeContext(metamodelMocks.forOwlClassA().stringAttribute());
+    }
+
+    @Test
+    void getLanguageReturnsNullForSimpleLiteralAttribute() {
+        final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassM().entityType(),
+                metamodelMocks.forOwlClassM().simpleLiteralAttribute(), descriptor, mapperMock);
+        assertNull(sut.getLanguage());
     }
 }

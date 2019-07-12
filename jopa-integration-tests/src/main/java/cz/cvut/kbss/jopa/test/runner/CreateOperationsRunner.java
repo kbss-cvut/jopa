@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -620,5 +621,17 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         final OWLClassN result = findRequired(OWLClassN.class, entityN.getId());
         assertEquals(annotations, result.getPluralAnnotationProperty());
+    }
+
+    @Test
+    void persistSupportsSavingSimpleLiteralValue() {
+        this.em = getEntityManager("persistSupportsSavingSimpleLiteralValue", false);
+        final String value = "test";
+        entityM.setSimpleLiteral(value);
+        persist(entityM);
+
+        verifyValueDatatype(URI.create(entityM.getKey()), Vocabulary.p_m_simpleLiteral, XSD.STRING);
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(value, result.getSimpleLiteral());
     }
 }

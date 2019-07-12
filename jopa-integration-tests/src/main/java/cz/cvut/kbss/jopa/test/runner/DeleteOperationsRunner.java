@@ -138,14 +138,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
         assertNull(resA);
         final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        boolean found = false;
-        for (OWLClassA aa : resC.getSimpleList()) {
-            if (aa.getUri().equals(a.getUri())) {
-                found = true;
-                break;
-            }
-        }
-        assertFalse(found);
+        assertFalse(resC.getSimpleList().stream().anyMatch(item -> item.getUri().equals(a.getUri())));
     }
 
     @Test
@@ -167,14 +160,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
         assertNull(resA);
         final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        boolean found = false;
-        for (OWLClassA aa : resC.getReferencedList()) {
-            if (aa.getUri().equals(a.getUri())) {
-                found = true;
-                break;
-            }
-        }
-        assertFalse(found);
+        assertFalse(resC.getReferencedList().stream().anyMatch(item -> item.getUri().equals(a.getUri())));
     }
 
     @Test
@@ -587,6 +573,21 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertNull(em.find(OWLClassM.class, entityM.getKey()));
+        assertFalse(
+                em.createNativeQuery("ASK { ?x ?y ?z .}", Boolean.class).setParameter("x", URI.create(entityM.getKey()))
+                  .getSingleResult());
+    }
+
+    @Test
+    void removeDeletesSimpleLiteralStatement() {
+        this.em = getEntityManager("removeDeletesSimpleLiteralStatement", true);
+        entityM.setSimpleLiteral("simple literal value");
+        persist(entityM);
+
+        em.getTransaction().begin();
+        em.remove(findRequired(OWLClassM.class, entityM.getKey()));
+        em.getTransaction().commit();
+
         assertFalse(
                 em.createNativeQuery("ASK { ?x ?y ?z .}", Boolean.class).setParameter("x", URI.create(entityM.getKey()))
                   .getSingleResult());
