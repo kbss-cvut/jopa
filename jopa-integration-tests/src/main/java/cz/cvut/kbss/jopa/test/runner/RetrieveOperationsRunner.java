@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.junit.jupiter.api.Test;
@@ -127,7 +128,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("RefreshNotManaged", false);
         persist(entityA);
 
-        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri());
+        findRequired(OWLClassA.class, entityA.getUri());
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
         newA.setStringAttribute("newA");
@@ -388,5 +389,29 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
                 em);
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value.toString(), result.getLexicalForm());
+    }
+
+    @Test
+    void loadingEntityWithSimpleLiteralLoadsSimpleLiteralValue() throws Exception {
+        this.em = getEntityManager("loadingEntityWithSimpleLiteralLoadsSimpleLiteralValue", false);
+        final String value = "test";
+        persistTestData(Arrays.asList(
+                new Triple(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, null)), em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(value, result.getSimpleLiteral());
+    }
+
+    @Test
+    void loadEntityWithSimpleLiteralLoadsAlsoLanguageTaggedValue() throws Exception {
+        this.em = getEntityManager("loadEntityWithSimpleLiteralLoadsAlsoLanguageTaggedValue", false);
+        final String value = "test";
+        persistTestData(Arrays.asList(
+                new Triple(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, "en")), em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(value, result.getSimpleLiteral());
     }
 }

@@ -43,7 +43,7 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
          * Corresponds to annotation properties
          */
         @NonJPA
-        ANNOTATION,
+        ANNOTATION;
     }
 
     /**
@@ -94,6 +94,28 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
      * @return boolean indicating whether the attribute can be empty
      */
     boolean isNonEmpty();
+
+    /**
+     * Does the attribute contain values in lexical form.
+     * <p>
+     * Note that lexical form attributes are effectively read only.
+     * <p>
+     * Applies only to datatype and annotation properties, object properties cannot be in lexical form.
+     *
+     * @return Boolean indicating whether the attribute contains values in lexical form
+     */
+    boolean isLexicalForm();
+
+    /**
+     * Does the attribute represent simple literals.
+     * <p>
+     * Simple literals are stored as {@code xsd:string}, i.e., strings without language tag.
+     * <p>
+     * Applies only to datatype and annotation properties, object properties cannot be simple literals.
+     *
+     * @return Boolean indicating whether the attribute represents simple literals.
+     */
+    boolean isSimpleLiteral();
 
     /**
      * Returns participation constraints specified for this attribute.

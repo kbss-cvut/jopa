@@ -60,7 +60,7 @@ public class OwlapiUtils {
         } else if (value instanceof Double) {
             return dataFactory.getOWLLiteral((Double) value);
         } else if (value instanceof String) {
-            return dataFactory.getOWLLiteral((String) value, lang);
+            return lang != null ? dataFactory.getOWLLiteral((String) value, lang) : dataFactory.getOWLLiteral((String) value);
         } else if (value instanceof Date) {
             SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
             return dataFactory.getOWLLiteral(sdf.format((Date) value),

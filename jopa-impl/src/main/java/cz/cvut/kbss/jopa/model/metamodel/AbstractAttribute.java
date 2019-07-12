@@ -120,10 +120,12 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return includeExplicit;
     }
 
+    @Override
     public boolean isLexicalForm() {
         return lexicalForm;
     }
 
+    @Override
     public boolean isSimpleLiteral() {
         return simpleLiteral;
     }

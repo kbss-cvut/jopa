@@ -1,21 +1,18 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.NonJPA;
-import cz.cvut.kbss.jopa.UnusedJPA;
 
 import java.util.Set;
 
@@ -25,7 +22,6 @@ import java.util.Set;
  *
  * @param <X> The represented type.
  */
-@UnusedJPA
 public interface ManagedType<X> extends Type<X> {
     /**
      * Return the attributes of the managed type.
@@ -229,9 +225,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return single-valued attribute with the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not present in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not present in the managed type
      */
     SingularAttribute<? super X, ?> getSingularAttribute(String name);
 
@@ -243,9 +237,7 @@ public interface ManagedType<X> extends Type<X> {
      * @return declared single-valued attribute of the given
      * <p>
      * name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not declared in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not declared in the managed type
      */
     SingularAttribute<X, ?> getDeclaredSingularAttribute(String name);
 
@@ -255,9 +247,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return CollectionAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not present in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not present in the managed type
      */
     CollectionAttribute<? super X, ?> getCollection(String name);
 
@@ -267,9 +257,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return declared CollectionAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not declared in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not declared in the managed type
      */
     CollectionAttribute<X, ?> getDeclaredCollection(String name);
 
@@ -279,9 +267,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return SetAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not present in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not present in the managed type
      */
     SetAttribute<? super X, ?> getSet(String name);
 
@@ -291,9 +277,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return declared SetAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not declared in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not declared in the managed type
      */
     SetAttribute<X, ?> getDeclaredSet(String name);
 
@@ -303,9 +287,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return ListAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not present in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not present in the managed type
      */
     ListAttribute<? super X, ?> getList(String name);
 
@@ -315,9 +297,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return declared ListAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not declared in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not declared in the managed type
      */
     ListAttribute<X, ?> getDeclaredList(String name);
 
@@ -327,9 +307,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return MapAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not present in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not present in the managed type
      */
     MapAttribute<? super X, ?, ?> getMap(String name);
 
@@ -339,9 +317,7 @@ public interface ManagedType<X> extends Type<X> {
      *
      * @param name the name of the represented attribute
      * @return declared MapAttribute of the given name
-     * @throws IllegalArgumentException if attribute of the given
-     *                                  <p>
-     *                                  name is not declared in the managed type
+     * @throws IllegalArgumentException if attribute of the given name is not declared in the managed type
      */
     MapAttribute<X, ?, ?> getDeclaredMap(String name);
 
