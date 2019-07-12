@@ -13,22 +13,22 @@
 package cz.cvut.kbss.ontodriver.config;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class DriverConfigurationTest {
+class DriverConfigurationTest {
 
     private DriverConfiguration configuration = new DriverConfiguration(
             OntologyStorageProperties.driver("cz.cvut.kbss.ontodriver.sesame.SesameDataSource")
                                      .physicalUri("memory-store").build());
 
     @Test
-    public void addConfigurationFiltersKnownConfigurationProperties() {
+    void addConfigurationFiltersKnownConfigurationProperties() {
         final Map<String, String> props = new HashMap<>();
         props.put(OntoDriverProperties.CONNECTION_AUTO_COMMIT, "true");
         props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, "false");
@@ -41,7 +41,7 @@ public class DriverConfigurationTest {
     }
 
     @Test
-    public void getWithDefaultReturnsDefaultWhenConfigParamValueIsNotFound() {
+    void getWithDefaultReturnsDefaultWhenConfigParamValueIsNotFound() {
         assertNull(configuration.getProperty(DriverConfigParam.USE_TRANSACTIONAL_ONTOLOGY));
         final String defaultValue = "false";
         assertEquals(defaultValue,
@@ -49,15 +49,13 @@ public class DriverConfigurationTest {
     }
 
     @Test
-    public void testGetPropertyAsBoolean() {
-        configuration.setProperty(DriverConfigParam.AUTO_COMMIT, "true");
-        final boolean res = configuration.is(DriverConfigParam.AUTO_COMMIT);
-        assertTrue(res);
+    void testGetPropertyAsBoolean() {
+        configuration.setProperty(DriverConfigParam.AUTO_COMMIT, Boolean.TRUE.toString());
+        assertTrue(configuration.is(DriverConfigParam.AUTO_COMMIT));
     }
 
     @Test
-    public void getAsBooleanReturnsFalseForUnknownProperty() {
-        final boolean res = configuration.is(DriverConfigParam.AUTO_COMMIT);
-        assertFalse(res);
+    void getAsBooleanReturnsFalseForUnknownProperty() {
+        assertFalse(configuration.is(DriverConfigParam.AUTO_COMMIT));
     }
 }

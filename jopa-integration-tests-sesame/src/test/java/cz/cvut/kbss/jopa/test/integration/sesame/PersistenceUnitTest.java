@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.integration.sesame;
 
@@ -33,7 +31,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,20 +41,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
-public class PersistenceUnitTest extends PersistenceUnitTestRunner {
+class PersistenceUnitTest extends PersistenceUnitTestRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersistenceUnitTest.class);
 
-    public PersistenceUnitTest() {
+    PersistenceUnitTest() {
         super(LOG, new SesamePersistenceFactory(), new SesameDataAccessor());
     }
 
     @Test
-    public void multiplePersistenceUnitsOnLocalNativeStoreCanExistSimultaneously() throws Exception {
+    void multiplePersistenceUnitsOnLocalNativeStoreCanExistSimultaneously() throws Exception {
         final File dir = Files.createTempDirectory("sesame-native-test").toFile();
         try {
             final int count = Generators.randomPositiveInt(2, 5);
@@ -122,11 +118,11 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
     }
 
     @Test
-    public void setRepositorySetsUnderlyingRepository() throws Exception {
+    void setRepositorySetsUnderlyingRepository() throws Exception {
         this.em = getEntityManager("setRepositorySetsUnderlyingRepository", false);
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
         final Repository repo = new SailRepository(new MemoryStore());
-        repo.initialize();
+        repo.init();
         final RepositoryConnection conn = repo.getConnection();
         final ValueFactory vf = conn.getValueFactory();
         conn.add(vf.createStatement(vf.createIRI(entityA.getUri().toString()), RDF.TYPE,
