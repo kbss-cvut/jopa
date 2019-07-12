@@ -1,36 +1,34 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class StatementHolderTest {
+class StatementHolderTest {
 
-    @Test(expected = NullPointerException.class)
-    public void constructorThrowsExceptionForNullStatement() {
-        new StatementHolder(null);
+    @Test
+    void constructorThrowsExceptionForNullStatement() {
+        assertThrows(NullPointerException.class, () -> new StatementHolder(null));
     }
 
     @Test
-    public void analyzingStatementWithoutParametersDoesNothing() {
+    void analyzingStatementWithoutParametersDoesNothing() {
         final String query = "SELECT nothing WHERE { <http://subject> <http://property> <http://subject> . }";
         final StatementHolder statementHolder = new StatementHolder(query);
         statementHolder.analyzeStatement();
@@ -38,7 +36,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void testAnalyzeSimpleQueryWithTwoParams() throws Exception {
+    void testAnalyzeSimpleQueryWithTwoParams() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x <http://property> ?y . }";
         final StatementHolder holder = new StatementHolder(query);
         holder.analyzeStatement();
@@ -50,7 +48,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void analyzeQueryHandlesParameterFollowedImmediatelyByFullStop() throws Exception {
+    void analyzeQueryHandlesParameterFollowedImmediatelyByFullStop() throws Exception {
         final String query = "SELECT * WHERE { ?x ?y ?z. }";
         final StatementHolder holder = new StatementHolder(query);
         holder.analyzeStatement();
@@ -64,7 +62,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void testAssembleSimpleQueryWithTwoParams() {
+    void testAssembleSimpleQueryWithTwoParams() {
         final String query = "SELECT ?x WHERE { ?x <http://property> ?y . }";
         final String expected = "SELECT ?x WHERE { ?x <http://property> 'Bill' . }";
         final StatementHolder holder = new StatementHolder(query);
@@ -74,7 +72,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void testQueryWithNewlines() {
+    void testQueryWithNewlines() {
         final String query = "WITH <urn:sparql:tests:update:insert:delete:with>"
                 + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }"
                 + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> 'William' } WHERE\n"
@@ -90,7 +88,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void testQueryWithDoubleQuotes() {
+    void testQueryWithDoubleQuotes() {
         final String query = "WITH <urn:sparql:tests:update:insert:delete:with>"
                 + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }"
                 + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> \"William\" } WHERE\n"
@@ -106,7 +104,7 @@ public class StatementHolderTest {
     }
 
     @Test
-    public void clearParametersRemovesAllPreviouslySetParameterValues() throws Exception {
+    void clearParametersRemovesAllPreviouslySetParameterValues() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x <http://property> ?y . }";
         final StatementHolder holder = new StatementHolder(query);
         holder.analyzeStatement();
@@ -124,18 +122,18 @@ public class StatementHolderTest {
         assertNull(paramValues.get("y"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void throwsExceptionWhenTryingToSetParameterOnStatementNotAnalysed() {
+    @Test
+    void throwsExceptionWhenTryingToSetParameterOnStatementNotAnalysed() {
         final String query = "SELECT ?x ?y WHERE { ?x <http://property> ?y . }";
         final StatementHolder holder = new StatementHolder(query);
-        holder.setParameter("x", "'hey'");
+        assertThrows(IllegalStateException.class, () -> holder.setParameter("x", "'hey'"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void setUnknownParameterValueThrowsException() {
+    @Test
+    void setUnknownParameterValueThrowsException() {
         final String query = "SELECT ?x ?y WHERE { ?x <http://property> ?y . }";
         final StatementHolder holder = new StatementHolder(query);
         holder.analyzeStatement();
-        holder.setParameter("z", "someValue@en");
+        assertThrows(IllegalArgumentException.class, () -> holder.setParameter("z", "someValue@en"));
     }
 }

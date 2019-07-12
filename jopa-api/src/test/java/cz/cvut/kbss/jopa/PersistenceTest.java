@@ -1,38 +1,34 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa;
 
 import cz.cvut.kbss.jopa.model.*;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-public class PersistenceTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class PersistenceTest {
 
     @Test
-    public void createEmfWithPropertiesInstantiatesPersistenceProviderFromProperties() {
+    void createEmfWithPropertiesInstantiatesPersistenceProviderFromProperties() {
         DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
         final Map<String, String> props = Collections.singletonMap(PersistenceProperties.JPA_PERSISTENCE_PROVIDER,
                 TestPersistenceProvider.class.getName());
@@ -42,21 +38,21 @@ public class PersistenceTest {
     }
 
     @Test
-    public void createEmfThrowsIllegalArgumentWhenProviderIsNotConfigured() {
+    void createEmfThrowsIllegalArgumentWhenProviderIsNotConfigured() {
         DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Missing persistence unit provider.");
-        Persistence.createEntityManagerFactory("testPU", Collections.emptyMap());
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Persistence.createEntityManagerFactory("testPU", Collections.emptyMap()));
+        assertEquals("Missing persistence unit provider.", ex.getMessage());
     }
 
     @Test
-    public void createEmfThrowsIllegalArgumentWhenConfiguredClassIsNotPersistenceProvider() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Type " + PersistenceTest.class.getName() + " is not a PersistenceProvider implementation.");
+    void createEmfThrowsIllegalArgumentWhenConfiguredClassIsNotPersistenceProvider() {
         final Map<String, String> props = Collections.singletonMap(PersistenceProperties.JPA_PERSISTENCE_PROVIDER,
                 PersistenceTest.class.getName());
-        Persistence.createEntityManagerFactory("testPU", props);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Persistence.createEntityManagerFactory("testPU", props));
+        assertThat(ex.getMessage(), containsString(
+                "Type " + PersistenceTest.class.getName() + " is not a PersistenceProvider implementation"));
     }
 
     public static class TestPersistenceProvider implements PersistenceProvider {

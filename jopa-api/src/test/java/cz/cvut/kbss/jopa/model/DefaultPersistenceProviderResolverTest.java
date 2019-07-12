@@ -15,10 +15,8 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.TestPersistenceProvider;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -29,17 +27,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class DefaultPersistenceProviderResolverTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class DefaultPersistenceProviderResolverTest {
 
     private DefaultPersistenceProviderResolver resolver = new DefaultPersistenceProviderResolver();
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         final Field typesField = DefaultPersistenceProviderResolver.class.getDeclaredField("PROVIDER_TYPES");
         typesField.setAccessible(true);
         ((Set) typesField.get(null)).clear();
@@ -47,7 +43,7 @@ public class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    public void getPersistenceProvidersInstantiatesProvidersOfRegisteredTypes() {
+    void getPersistenceProvidersInstantiatesProvidersOfRegisteredTypes() {
         DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();
         assertFalse(result.isEmpty());
@@ -57,7 +53,7 @@ public class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    public void getPersistenceProviderCachesProviderInstances() {
+    void getPersistenceProviderCachesProviderInstances() {
         DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
         final List<PersistenceProvider> providersOne = resolver.getPersistenceProviders();
         final List<PersistenceProvider> providersTwo = resolver.getPersistenceProviders();
@@ -68,7 +64,7 @@ public class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    public void clearCachedProvidersEvictsProviderCache() {
+    void clearCachedProvidersEvictsProviderCache() {
         DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
         final List<PersistenceProvider> providersOne = resolver.getPersistenceProviders();
         resolver.clearCachedProviders();
@@ -80,7 +76,7 @@ public class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    public void getProvidersSkipsNonInstantiableProviderClasses() {
+    void getProvidersSkipsNonInstantiableProviderClasses() {
         DefaultPersistenceProviderResolver.registerPersistenceProviderClass(InvalidPersistenceProvider.class);
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();
         assertNotNull(result);
@@ -90,7 +86,7 @@ public class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    public void getProvidersReturnsProvidersFoundOnClasspathViaMetaInfConfiguration() throws Exception {
+    void getProvidersReturnsProvidersFoundOnClasspathViaMetaInfConfiguration() throws Exception {
         generateProviderFileContent("cz.cvut.kbss.jopa.environment.TestPersistenceProvider");
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();
         assertFalse(result.isEmpty());
@@ -100,7 +96,7 @@ public class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    public void registerProviderClassSkipsClassesConfiguredOnClasspathButNotFound() throws Exception {
+    void registerProviderClassSkipsClassesConfiguredOnClasspathButNotFound() throws Exception {
         generateProviderFileContent("cz.cvut.kbss.jopa.UnknownClass");
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();
         assertNotNull(result);
@@ -113,7 +109,7 @@ public class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    public void registerProviderClassSkipsClassConfiguredOnClasspathAndNotPersistenceProviderImplementation()
+    void registerProviderClassSkipsClassConfiguredOnClasspathAndNotPersistenceProviderImplementation()
             throws Exception {
         generateProviderFileContent(DefaultPersistenceProviderResolver.class.getName());
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();

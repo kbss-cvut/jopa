@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.test.environment.SesameDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveWithInferenceRunner;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
