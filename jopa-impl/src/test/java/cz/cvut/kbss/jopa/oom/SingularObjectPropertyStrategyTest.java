@@ -236,4 +236,17 @@ class SingularObjectPropertyStrategyTest {
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
         verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, VALUE, aDescriptor);
     }
+
+    @Test
+    void buildAxiomValuesFromInstanceChecksForReferenceExistenceUsingTargetReferenceContext() throws Exception {
+        final EntityDescriptor aDescriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
+        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        final OWLClassD instance = new OWLClassD(Generators.createIndividualIdentifier());
+        instance.setOwlClassA(Generators.generateOwlClassAInstance());
+        sut.buildAxiomValuesFromInstance(instance, gatherer);
+        verify(referenceResolverMock).shouldSaveReference(instance.getOwlClassA(), aDescriptor.getContext());
+    }
 }

@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.util.Collection;
 
 abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? super X, ?, ?>, X>
@@ -53,7 +54,6 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
                 LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
             }
         }
-
     }
 
     @Override
@@ -61,6 +61,19 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
         if (!values.isEmpty()) {
             setValueOnInstance(instance, values);
         }
+    }
+
+    /**
+     * Gets the context in which this attribute values are stored.
+     * <p>
+     * I.e., this context may (and usually will be) different from the context in which this attribute's property assertion is stored, since that
+     * is usually stored in the subject's context.
+     *
+     * @return Attribute value (referenced entity) context
+     * @see Descriptor#areAssertionsInSubjectContext()
+     */
+    URI getAttributeValueContext() {
+        return entityDescriptor.getAttributeDescriptor(attribute).getContext();
     }
 
     @Override

@@ -74,7 +74,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         final Object extractedValue = extractFieldValueFromInstance(instance);
-        if (referenceSavingResolver.shouldSaveReference(extractedValue, getAttributeContext())) {
+        if (referenceSavingResolver.shouldSaveReference(extractedValue, getAttributeValueContext())) {
             final Value<NamedResource> val = extractReferenceIdentifier(extractedValue);
             valueBuilder.addValue(createAssertion(), val, getAttributeContext());
         } else {
@@ -84,6 +84,10 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
             // This will cause the existing property assertion to be removed
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
         }
+    }
+
+    private URI getAttributeValueContext() {
+        return entityDescriptor.getAttributeDescriptor(attribute).getContext();
     }
 
     private <V> Value<NamedResource> extractReferenceIdentifier(final V value) {

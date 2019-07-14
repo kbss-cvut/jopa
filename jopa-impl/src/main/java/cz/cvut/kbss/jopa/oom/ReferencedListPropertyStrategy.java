@@ -66,7 +66,7 @@ class ReferencedListPropertyStrategy<X> extends
     @Override
     <K> void extractListValues(List<K> list, X instance, AxiomValueGatherer valueBuilder) {
         final ReferencedListValueDescriptor listDescriptor = createListValueDescriptor(instance);
-        final List<K> pendingItems = resolveUnpersistedItems(list, listDescriptor);
+        final List<K> pendingItems = resolveUnpersistedItems(list);
         if (!pendingItems.isEmpty()) {
             pendingItems.forEach(item -> referenceSavingResolver.registerPendingReference(item, listDescriptor, list));
             return;

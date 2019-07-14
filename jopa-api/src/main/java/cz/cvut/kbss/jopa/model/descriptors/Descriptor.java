@@ -194,6 +194,16 @@ public abstract class Descriptor {
         return false;
     }
 
+    /**
+     * Whether property assertion should be stored in the subject's context (default), or whether they should be stored
+     * together with the assertion value. This applies to object references, as literal values are always stored in the specified context.
+     *
+     * @return Whether property assertion is stored in the subject context
+     */
+    public boolean areAssertionsInSubjectContext() {
+        return assertionsInSubjectContext;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
