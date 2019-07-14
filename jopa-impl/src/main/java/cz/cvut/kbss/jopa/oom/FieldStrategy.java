@@ -145,6 +145,15 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         return id;
     }
 
+    /**
+     * Gets the context of this attribute assertion.
+     * <p>
+     * Note that this may not (and in case of object properties usually won't) be the context containing the target object.
+     * Rather, it will be the context of the owner entity itself (depending on whether assertions are stored in subject context or not).
+     *
+     * @return Attribute assertion context
+     * @see Descriptor
+     */
     URI getAttributeContext() {
         return entityDescriptor.getAttributeContext(attribute);
     }

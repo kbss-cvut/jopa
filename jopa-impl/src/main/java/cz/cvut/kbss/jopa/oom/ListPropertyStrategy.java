@@ -66,7 +66,7 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
                 .addValue(NamedResource.create(EntityPropertiesUtils.getIdentifier(item, valueType))));
     }
 
-    <K> List<K> resolveUnpersistedItems(List<K> list, ListValueDescriptor listDescriptor) {
+    <K> List<K> resolveUnpersistedItems(List<K> list) {
         if (list == null) {
             return Collections.emptyList();
         }
@@ -74,7 +74,7 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
             return Collections.emptyList();
         } else {
             return list.stream().filter(item -> item != null && !referenceSavingResolver
-                    .shouldSaveReferenceToItem(item, listDescriptor.getContext())).collect(Collectors.toList());
+                    .shouldSaveReferenceToItem(item, getAttributeValueContext())).collect(Collectors.toList());
         }
     }
 

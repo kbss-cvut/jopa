@@ -13,12 +13,14 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +28,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class PluralObjectPropertyStrategyTest {
 
@@ -106,5 +108,37 @@ class PluralObjectPropertyStrategyTest {
 
         sut.addValueFromAxiom(axiom);
         verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, aReference, aDescriptor);
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceChecksForReferenceExistenceUsingTargetReferenceContext() throws Exception {
+        final Descriptor aDescriptor = new ObjectPropertyCollectionDescriptor(Generators.createIndividualIdentifier(),
+                OWLClassJ.getOwlClassAField());
+        descriptor.addAttributeDescriptor(OWLClassJ.getOwlClassAField(), aDescriptor);
+        final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
+        final ReferenceSavingResolver resolverMock = mock(ReferenceSavingResolver.class);
+        sut.setReferenceSavingResolver(resolverMock);
+        final OWLClassJ instance = new OWLClassJ(ID);
+        final OWLClassA aInstance = Generators.generateOwlClassAInstance();
+        instance.setOwlClassA(Collections.singleton(aInstance));
+        sut.buildAxiomValuesFromInstance(instance, new AxiomValueGatherer(NamedResource.create(ID), null));
+        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getContext());
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceChecksForListItemReferenceExistenceUsingTargetReferenceContext() throws Exception {
+        final Descriptor aDescriptor = new ObjectPropertyCollectionDescriptor(Generators.createIndividualIdentifier(),
+                OWLClassC.getSimpleListField());
+        descriptor.addAttributeDescriptor(OWLClassC.getSimpleListField(), aDescriptor);
+        final SimpleListPropertyStrategy<OWLClassC> sut =
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(),
+                        mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
+        final ReferenceSavingResolver resolverMock = mock(ReferenceSavingResolver.class);
+        sut.setReferenceSavingResolver(resolverMock);
+        final OWLClassC instance = new OWLClassC(ID);
+        final OWLClassA aInstance = Generators.generateOwlClassAInstance();
+        instance.setSimpleList(Collections.singletonList(aInstance));
+        sut.buildAxiomValuesFromInstance(instance, new AxiomValueGatherer(NamedResource.create(ID), null));
+        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getContext());
     }
 }
