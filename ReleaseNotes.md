@@ -1,5 +1,14 @@
 # JOPA - Release Notes
 
+## 0.13.0 - July 15, 2019
+- Added support for read-only literal lexical form access. This allows to load the lexical form of literals regardless of their type (Task #50).
+- Added support for RDF *simple literals*, i.e. literals of type `xsd:string`. Simple literals allow to use strings without language tags (Task #53).
+- Fixed handling of named graphs. Store property assertions in the subject's graph by default (Task #54).
+- Fixed incorrect handling of repository credentials in the RDF4J driver.
+- Added support for recursive entity descriptors.
+- Updated drivers to always use language specified by assertions and removed global language setting from the drivers.
+- Upgraded to OWLAPI 5.1.11, Jena 3.12.0 and RDF4J 2.5.3.
+
 ## 0.12.2 - May 28, 2019
 - Do not generate error message when directory structure for OWL2Java already exists.
 - Fixed issue with parent entity listeners/lifecycle callbacks not being called (Bug #49).
