@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -36,8 +34,8 @@ import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
-import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
-import org.eclipse.rdf4j.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
+import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
+import org.eclipse.rdf4j.sail.inferencer.fc.config.SchemaCachingRDFSInferencerConfig;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
 import org.slf4j.Logger;
@@ -77,7 +75,7 @@ class RepositoryConnectorInitializer {
                 this.repository = createLocalRepository();
             }
             verifyRepositoryCreated(serverUri, isRemote);
-            repository.initialize();
+            repository.init();
         } catch (RepositoryException | RepositoryConfigException e) {
             throw new SesameDriverException("Failed to acquire sesame repository connection.", e);
         }
@@ -96,9 +94,9 @@ class RepositoryConnectorInitializer {
     private Repository connectToRemoteRepository(String repoUri) {
         this.manager = RepositoryProvider.getRepositoryManagerOfRepository(repoUri);
         final RemoteRepositoryManager remoteManager = (RemoteRepositoryManager) manager;
-        final String username = configuration.getProperty(SesameConfigParam.USERNAME, "");
-        if (!username.isEmpty()) {
-            final String password = configuration.getProperty(SesameConfigParam.PASSWORD, "");
+        final String username = configuration.getStorageProperties().getUsername();
+        if (username != null) {
+            final String password = configuration.getStorageProperties().getPassword();
             remoteManager.setUsernameAndPassword(username, password);
         }
         return manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
@@ -185,7 +183,7 @@ class RepositoryConnectorInitializer {
         LOG.trace("Creating local in-memory repository.");
         final MemoryStore ms = new MemoryStore();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
-            return new SailRepository(new ForwardChainingRDFSInferencer(ms));
+            return new SailRepository(new SchemaCachingRDFSInferencer(ms));
         } else {
             return new SailRepository(ms);
         }
@@ -213,7 +211,8 @@ class RepositoryConnectorInitializer {
     private static void validateNativeStorePath(String path) {
         if (path.split(LOCAL_NATIVE_REPO).length != 2) {
             throw new RepositoryCreationException(
-                    "Unsupported local RDF4J/Sesame repository path. Expected file://path/repositories/id but got " + path);
+                    "Unsupported local RDF4J/Sesame repository path. Expected file://path/repositories/id but got " +
+                            path);
         }
     }
 
@@ -221,7 +220,7 @@ class RepositoryConnectorInitializer {
                                                                       DriverConfiguration configuration) {
         SailImplConfig backend = new NativeStoreConfig();
         if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
-            backend = new ForwardChainingRDFSInferencerConfig(backend);
+            backend = new SchemaCachingRDFSInferencerConfig(backend);
         }
         final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
         return new RepositoryConfig(repoId, repoType);
