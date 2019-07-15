@@ -115,6 +115,7 @@
                 </executions>
             </plugin>
 
+            <!-- Do not deploy/generate Javadoc for integration tests -->
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.plugin.version}</version>

@@ -35,6 +35,14 @@ public class EntityDescriptor extends Descriptor {
         this.fieldDescriptors = new HashMap<>();
     }
 
+    /**
+     * Allows to configure where object property assertions should be stored
+     *
+     * @param assertionsInSubjectContext Whether object property assertions are stored in the subject's. Defaults to
+     *                                   {@code true}. If {@code false}, object property assertions are stored in the
+     *                                   object's context
+     * @see #areAssertionsInSubjectContext()
+     */
     public EntityDescriptor(boolean assertionsInSubjectContext) {
         super(assertionsInSubjectContext);
         this.fieldDescriptors = new HashMap<>();
