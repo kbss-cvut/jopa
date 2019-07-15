@@ -19,6 +19,9 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Allows to provide descriptor for elements of an object property collection.
+ */
 public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
 
     private final EntityDescriptor elementDescriptor;
