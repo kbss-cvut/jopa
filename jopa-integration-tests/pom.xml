@@ -38,7 +38,6 @@
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-impl</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -73,16 +72,19 @@
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>sources</id>
+                        <id>compile</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>compile</goal>
+                            <!-- use this goal to weave all your main classes -->
                         </goals>
                     </execution>
                     <execution>
-                        <id>tests</id>
+                        <!-- Split into two executions to ensure AJC runs AFTER regular compile in tests as well -->
+                        <id>test-compile</id>
                         <phase>process-test-classes</phase>
                         <goals>
+                            <!-- use this goal to weave all test classes -->
                             <goal>test-compile</goal>
                         </goals>
                     </execution>
