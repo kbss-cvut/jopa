@@ -68,6 +68,8 @@ class AxiomSaver {
                 case PROPERTY:
                     persistPropertyValues(descriptor.getSubject(), assertion, descriptor.getAssertionValues(assertion));
                     break;
+                default:
+                    break;
             }
         }
     }

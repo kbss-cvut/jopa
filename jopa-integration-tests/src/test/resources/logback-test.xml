@@ -14,11 +14,6 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <!-- Restrict Sesame logging -->
-    <logger name="org.eclipse.rdf4j" level="INFO" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
-
     <!-- By default, the level of the root level is set to DEBUG -->
     <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
