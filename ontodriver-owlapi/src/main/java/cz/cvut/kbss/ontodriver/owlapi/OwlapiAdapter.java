@@ -137,12 +137,6 @@ public class OwlapiAdapter {
             case CLASS:
                 owlAxioms.add(axiomAdapter.toOwlClassAssertionAxiom(axiom));
                 break;
-            case PROPERTY:
-                owlAxioms.add(axiomAdapter.toOwlClassAssertionAxiom(axiom));
-                owlAxioms.add(axiomAdapter.toOwlObjectPropertyAssertionAxiom(axiom));
-                owlAxioms.add(axiomAdapter.toOwlDataPropertyAssertionAxiom(axiom));
-                owlAxioms.add(axiomAdapter.toOwlAnnotationPropertyAssertionAxiom(axiom));
-                break;
             case OBJECT_PROPERTY:
                 owlAxioms.add(axiomAdapter.toOwlObjectPropertyAssertionAxiom(axiom));
                 break;
@@ -150,6 +144,12 @@ public class OwlapiAdapter {
                 owlAxioms.add(axiomAdapter.toOwlDataPropertyAssertionAxiom(axiom));
                 break;
             case ANNOTATION_PROPERTY:
+                owlAxioms.add(axiomAdapter.toOwlAnnotationPropertyAssertionAxiom(axiom));
+                break;
+            default:
+                owlAxioms.add(axiomAdapter.toOwlClassAssertionAxiom(axiom));
+                owlAxioms.add(axiomAdapter.toOwlObjectPropertyAssertionAxiom(axiom));
+                owlAxioms.add(axiomAdapter.toOwlDataPropertyAssertionAxiom(axiom));
                 owlAxioms.add(axiomAdapter.toOwlAnnotationPropertyAssertionAxiom(axiom));
                 break;
         }
