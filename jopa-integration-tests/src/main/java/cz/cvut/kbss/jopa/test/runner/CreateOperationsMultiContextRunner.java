@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,9 +57,7 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         this.em = getEntityManager("MultiPersistDataPropertyIntoContext", false);
         final Descriptor aDescriptor = new EntityDescriptor();
         aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_ONE);
-        em.getTransaction().begin();
-        em.persist(entityA, aDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, aDescriptor));
 
         final OWLClassA res = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         assertEquals(entityA.getUri(), res.getUri());
@@ -72,10 +71,10 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         this.em = getEntityManager("MultiPersistObjectPropertyIntoContext", false);
         final Descriptor dDescriptor = new EntityDescriptor(false);
         dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), cOneDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityD, dDescriptor);
-        em.persist(entityA, cOneDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> {
+            em.persist(entityD, dDescriptor);
+            em.persist(entityA, cOneDescriptor);
+        });
 
         final OWLClassD resD = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(resD.getOwlClassA());
@@ -86,17 +85,43 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void persistWithObjectPropertySavesAssertionIntoSubjectContextWhenConfiguredTo() throws Exception {
-        this.em = getEntityManager("persistWithObjectPropertySavesAssertionIntoSubjectContextWhenConfiguredTo", false);
+    void persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault() throws Exception {
+        this.em = getEntityManager("persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault", false);
         cOneDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), cTwoDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityD, cOneDescriptor);
-        em.persist(entityA, cTwoDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> {
+            em.persist(entityD, cOneDescriptor);
+            em.persist(entityA, cTwoDescriptor);
+        });
 
         final TypedQuery<Boolean> query = em.createNativeQuery("ASK {GRAPH ?g {?d ?hasA ?a .}}", Boolean.class)
                                             .setParameter("g", CONTEXT_ONE).setParameter("d", entityD.getUri())
                                             .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                                            .setParameter("a", entityA.getUri());
+        assertTrue(query.getSingleResult());
+        query.setParameter("g", CONTEXT_TWO);
+        assertFalse(query.getSingleResult());
+    }
+
+    @Test
+    void persistWithPluralObjectPropertySavesAssertionIntoSubjectContextByDefault() throws Exception {
+        this.em = getEntityManager("persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault", false);
+        final ObjectPropertyCollectionDescriptor opDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
+                OWLClassF.getSimpleSetField());
+        final OWLClassF entityF = new OWLClassF();
+        entityF.setUri(Generators.generateUri());
+        entityF.setSimpleSet(Collections.singleton(entityA));
+        transactional(() -> em.persist(entityA, cTwoDescriptor));
+
+        cOneDescriptor.addAttributeDescriptor(OWLClassF.getSimpleSetField(), opDescriptor);
+        transactional(() -> em.persist(entityF, cOneDescriptor));
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri());
+        assertEquals(1, result.getSimpleSet().size());
+        assertEquals(entityA.getUri(), result.getSimpleSet().iterator().next().getUri());
+
+        final TypedQuery<Boolean> query = em.createNativeQuery("ASK {GRAPH ?g {?f ?hasA ?a .}}", Boolean.class)
+                                            .setParameter("g", CONTEXT_ONE).setParameter("f", entityF.getUri())
+                                            .setParameter("hasA", URI.create(Vocabulary.P_F_HAS_SIMPLE_SET))
                                             .setParameter("a", entityA.getUri());
         assertTrue(query.getSingleResult());
         query.setParameter("g", CONTEXT_TWO);

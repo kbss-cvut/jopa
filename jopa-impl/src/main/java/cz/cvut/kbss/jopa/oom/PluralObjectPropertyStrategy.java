@@ -33,8 +33,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     private Collection<Object> values;
 
-    PluralObjectPropertyStrategy(EntityType<X> et, Y att, Descriptor descriptor,
-                                 EntityMappingHelper mapper) {
+    PluralObjectPropertyStrategy(EntityType<X> et, Y att, Descriptor descriptor, EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
         this.values = CollectionFactory.createDefaultCollection(att.getCollectionType());
     }
