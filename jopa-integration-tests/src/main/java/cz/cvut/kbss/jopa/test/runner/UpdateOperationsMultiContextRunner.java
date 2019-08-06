@@ -65,10 +65,10 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         final Descriptor dDescriptor = new EntityDescriptor();
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityD, dDescriptor);
-        em.persist(entityA, aDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> {
+            em.persist(entityD, dDescriptor);
+            em.persist(entityA, aDescriptor);
+        });
 
         final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(d.getOwlClassA());
