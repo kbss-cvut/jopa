@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.13.1 - August 8, 2019
+- Fixed incorrect context handling in `ObjectPropertyCollectionDescriptor`.
+
 ## 0.13.0 - July 15, 2019
 - Added support for read-only literal lexical form access. This allows to load the lexical form of literals regardless of their type (Task #50).
 - Added support for RDF *simple literals*, i.e. literals of type `xsd:string`. Simple literals allow to use strings without language tags (Task #53).

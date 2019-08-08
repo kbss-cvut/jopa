@@ -55,8 +55,7 @@ class AxiomLoader {
         final Collection<Axiom<?>> result = new HashSet<>();
         final Resource subject = SesameUtils.toSesameIri(descriptor.getSubject().getIdentifier(), valueFactory);
         final Assertion unspecified = processAssertions(descriptor);
-        final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified
-        );
+        final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified);
         final StatementLoader statementLoader = new StatementLoader(config, descriptor, connector, subject,
                 axiomBuilder);
         if (unspecified == null || !unspecified.isInferred()) {

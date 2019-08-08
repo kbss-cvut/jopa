@@ -44,7 +44,7 @@ class SesameValueConverter {
         }
     }
 
-    private String language(Assertion assertion) {
+    private static String language(Assertion assertion) {
         return assertion.hasLanguage() ? assertion.getLanguage() : Constants.DEFAULT_LANG;
     }
 

@@ -84,6 +84,11 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
         return elementDescriptor.getContextsInternal(contexts, visited);
     }
 
+    @Override
+    protected boolean overridesAssertionsInSubjectContext() {
+        return false;
+    }
+
     public EntityDescriptor getElementDescriptor() {
         return elementDescriptor;
     }

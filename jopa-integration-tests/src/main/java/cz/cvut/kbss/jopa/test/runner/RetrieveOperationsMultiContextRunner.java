@@ -30,6 +30,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
+    private EntityDescriptor cOneDescriptor = new EntityDescriptor(CONTEXT_ONE);
+    private EntityDescriptor cTwoDescriptor = new EntityDescriptor(CONTEXT_TWO);
+
     public RetrieveOperationsMultiContextRunner(Logger logger, PersistenceFactory persistenceFactory,
                                                 DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
@@ -41,18 +44,12 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         final OWLClassA entityATwo = new OWLClassA();
         entityATwo.setUri(entityA.getUri());
         entityATwo.setStringAttribute("SomeCompletelyDifferentStringAttribute");
-        final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        final Descriptor aTwoDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        em.getTransaction().begin();
-        em.persist(entityA, aDescriptor);
-        em.getTransaction().commit();
-        em.getTransaction().begin();
-        em.persist(entityATwo, aTwoDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, cOneDescriptor));
+        transactional(() -> em.persist(entityATwo, cTwoDescriptor));
 
-        final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
+        final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri(), cOneDescriptor);
         assertEquals(entityA.getStringAttribute(), resOne.getStringAttribute());
-        final OWLClassA resTwo = findRequired(OWLClassA.class, entityATwo.getUri(), aTwoDescriptor);
+        final OWLClassA resTwo = findRequired(OWLClassA.class, entityATwo.getUri(), cTwoDescriptor);
         assertEquals(entityATwo.getStringAttribute(), resTwo.getStringAttribute());
     }
 
@@ -132,14 +129,13 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     void testRetrievePropertiesFromContext() throws Exception {
         this.em = getEntityManager("MultiRetrievePropertiesFromContext", false);
         entityB.setProperties(Generators.createProperties(50));
-        final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        bDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_TWO);
-        bDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("stringAttribute"), null);
+        cOneDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_TWO);
+        cOneDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("stringAttribute"), null);
         em.getTransaction().begin();
-        em.persist(entityB, bDescriptor);
+        em.persist(entityB, cOneDescriptor);
         em.getTransaction().commit();
 
-        final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri(), bDescriptor);
+        final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri(), cOneDescriptor);
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
         assertTrue(TestEnvironmentUtils.arePropertiesEqual(entityB.getProperties(), res.getProperties()));
     }
@@ -148,15 +144,13 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     void retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext() throws Exception {
         this.em = getEntityManager("retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext",
                 false);
-        final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityA, aDescriptor);
-        em.persist(entityD, dDescriptor);
-        em.getTransaction().commit();
+        cOneDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), cTwoDescriptor);
+        transactional(() -> {
+            em.persist(entityA, cTwoDescriptor);
+            em.persist(entityD, cOneDescriptor);
+        });
 
-        final OWLClassD res = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
+        final OWLClassD res = findRequired(OWLClassD.class, entityD.getUri(), cOneDescriptor);
         assertNotNull(res.getOwlClassA());
         assertEquals(entityA.getStringAttribute(), res.getOwlClassA().getStringAttribute());
     }
