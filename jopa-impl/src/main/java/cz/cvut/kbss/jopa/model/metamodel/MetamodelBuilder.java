@@ -107,7 +107,7 @@ public class MetamodelBuilder {
         return null;
     }
 
-    private <X> void resolveInheritanceType(EntityTypeImpl<X> et) {
+    private static <X> void resolveInheritanceType(EntityTypeImpl<X> et) {
         final Class<X> cls = et.getJavaType();
         final Inheritance inheritance = cls.getDeclaredAnnotation(Inheritance.class);
         if (inheritance != null) {

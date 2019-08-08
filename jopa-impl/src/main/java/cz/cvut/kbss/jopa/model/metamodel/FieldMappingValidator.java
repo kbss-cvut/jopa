@@ -101,13 +101,13 @@ class FieldMappingValidator {
         validateSimpleLiteralField(field, config.simpleLiteral());
     }
 
-    private void validateLexicalFormField(Field field, boolean lexicalForm) {
+    private static void validateLexicalFormField(Field field, boolean lexicalForm) {
         if (lexicalForm && !String.class.isAssignableFrom(field.getType())) {
             throw new InvalidFieldMappingException("lexicalForm mapping can be used only on fields of type String.");
         }
     }
 
-    private void validateSimpleLiteralField(Field field, boolean simpleLiteral) {
+    private static void validateSimpleLiteralField(Field field, boolean simpleLiteral) {
         if (simpleLiteral && !String.class.isAssignableFrom(field.getType())) {
             throw new InvalidFieldMappingException("simpleLiteral mapping can be used only on fields of type String.");
         }
