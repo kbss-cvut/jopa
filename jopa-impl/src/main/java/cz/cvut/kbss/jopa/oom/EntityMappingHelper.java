@@ -27,7 +27,7 @@ import java.util.Collection;
 
 interface EntityMappingHelper extends ConfigurationHolder {
 
-    <T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor);
+    <T> T getEntityFromCacheOrOntology(Class<T> cls, URI identifier, Descriptor descriptor);
 
     <T> EntityType<T> getEntityType(Class<T> cls);
 

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -42,6 +40,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
 
 public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMappingHelper {
 
@@ -228,8 +228,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (cache.contains(cls, identifier, descriptor)) {
             return cache.get(cls, identifier, descriptor);
         } else if (instanceRegistry.containsInstance(identifier, descriptor.getContext())) {
+            final Object existing = instanceRegistry.getInstance(identifier, descriptor.getContext());
+            if (!cls.isAssignableFrom(existing.getClass())) {
+                throw individualAlreadyManaged(identifier);
+            }
             // This prevents endless cycles in bidirectional relationships
-            return cls.cast(instanceRegistry.getInstance(identifier, descriptor.getContext()));
+            return cls.cast(existing);
         } else {
             return loadEntityInternal(new LoadingParameters<>(cls, identifier, descriptor));
         }
@@ -287,7 +291,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         // It is OK to do it like this, because if necessary, the mapping will re-register a pending assertion
         removePendingAssertions(et, field, pkUri);
-        final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field, et, entityDescriptor);
+        final AxiomValueGatherer axiomBuilder = entityBreaker
+                .mapFieldToAxioms(pkUri, entity, field, et, entityDescriptor);
         axiomBuilder.update(storageConnection);
     }
 
