@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -19,15 +17,15 @@ import cz.cvut.kbss.jopa.model.annotations.NamedNativeQueries;
 import cz.cvut.kbss.jopa.model.annotations.NamedNativeQuery;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class NamedNativeQueryProcessorTest {
+class NamedNativeQueryProcessorTest {
 
     private static final String SELECT_QUERY = "SELECT ?x ?y ?z WHERE { ?x ?y ?z .}";
     private static final String SELECT_NAME = "selectQuery";
@@ -36,8 +34,8 @@ public class NamedNativeQueryProcessorTest {
 
     private NamedNativeQueryProcessor processor;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         this.processor = new NamedNativeQueryProcessor();
     }
 
@@ -46,7 +44,7 @@ public class NamedNativeQueryProcessorTest {
     }
 
     @Test
-    public void processesSingleQueryDeclaredOnClass() {
+    void processesSingleQueryDeclaredOnClass() {
         processor.processClass(SingleQuery.class);
         final String query = queryManager().getQuery(SingleQuery.class.getSimpleName() + "." + SELECT_NAME);
         assertNotNull(query);
@@ -60,7 +58,7 @@ public class NamedNativeQueryProcessorTest {
     }
 
     @Test
-    public void processesNamedNativeQueriesDeclaredOnClass() {
+    void processesNamedNativeQueriesDeclaredOnClass() {
         processor.processClass(MultipleQueries.class);
         final String select = queryManager().getQuery(MultipleQueries.class.getSimpleName() + "." + SELECT_NAME);
         assertEquals(SELECT_QUERY, select);
@@ -76,7 +74,7 @@ public class NamedNativeQueryProcessorTest {
     }
 
     @Test
-    public void doesNothingForClassWithoutNamedNativeQueries() throws Exception {
+    void doesNothingForClassWithoutNamedNativeQueries() throws Exception {
         processor.processClass(OWLClassA.class);
         final Field queriesField = NamedQueryManager.class.getDeclaredField("queryMap");
         queriesField.setAccessible(true);
@@ -85,7 +83,7 @@ public class NamedNativeQueryProcessorTest {
     }
 
     @Test
-    public void processesClassWithCombinationOfNamedNativeQueriesAndNamedNativeQuery() {
+    void processesClassWithCombinationOfNamedNativeQueriesAndNamedNativeQuery() {
         processor.processClass(QueryCombination.class);
         final String select = queryManager().getQuery(QueryCombination.class.getSimpleName() + "." + SELECT_NAME);
         assertEquals(SELECT_QUERY, select);

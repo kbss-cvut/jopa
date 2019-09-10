@@ -1,35 +1,34 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.model.IRI;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class AbstractIdentifiableTypeTest {
+class AbstractIdentifiableTypeTest {
 
     private static final String ID_NAME = "uri";
 
@@ -37,20 +36,17 @@ public class AbstractIdentifiableTypeTest {
     private static IRI classIri;
     private static String className;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private EntityTypeImpl<OWLClassA> et;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() {
         cls = OWLClassA.class;
         classIri = IRI.create(OWLClassA.getClassIri());
         className = OWLClassA.class.getName();
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
         this.et = new EntityTypeImpl<>(className, cls, classIri);
         final Identifier<OWLClassA, URI> id = mock(Identifier.class);
         when(id.getName()).thenReturn(ID_NAME);
@@ -58,12 +54,12 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void hasSingleIdAttributeReturnsAlwaysTrue() {
+    void hasSingleIdAttributeReturnsAlwaysTrue() {
         assertTrue(et.hasSingleIdAttribute());
     }
 
     @Test
-    public void getAttributesReturnsDeclaredAttributesPlusInheritedAttributes() {
+    void getAttributesReturnsDeclaredAttributesPlusInheritedAttributes() {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         et.getAttributes();
@@ -71,7 +67,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getAttributesReturnsDeclaredAttributesWhenThereIsNoSupertype() {
+    void getAttributesReturnsDeclaredAttributesWhenThereIsNoSupertype() {
         final AbstractAttribute<OWLClassA, ?> att = mock(AbstractAttribute.class);
         et.addDeclaredAttribute("test", att);
         final Set<Attribute<? super OWLClassA, ?>> result = et.getAttributes();
@@ -80,7 +76,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getAttributeReturnsInheritedAttribute() {
+    void getAttributeReturnsInheritedAttribute() {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final String attName = "test";
@@ -91,27 +87,27 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getAttributeThrowsIllegalArgumentWhenAttributeIsNotFoundInDeclaredAndInheritedAttributes() {
+    void getAttributeThrowsIllegalArgumentWhenAttributeIsNotFoundInDeclaredAndInheritedAttributes() {
         final String attName = "unknownAttribute";
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Attribute " + attName + " is not present in type " + et.toString());
-        et.getAttribute(attName);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getAttribute(attName));
+        assertEquals("Attribute " + attName + " is not present in type " + et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getCollectionThrowsIllegalArgumentWhenElementTypeDoesNotMatch() {
+    void getCollectionThrowsIllegalArgumentWhenElementTypeDoesNotMatch() {
         final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Collection attribute " + attName + " with element type " + OWLClassB.class +
-                " is not present in type " + et.toString());
-        et.getCollection(attName, OWLClassB.class);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getCollection(attName, OWLClassB.class));
+        assertEquals("Collection attribute " + attName + " with element type " + OWLClassB.class +
+                " is not present in type " + et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getListReturnsListAttribute() {
+    void getListReturnsListAttribute() {
         final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
@@ -121,19 +117,19 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getSetThrowsIllegalArgumentWhenAttributeIsNotSet() {
+    void getSetThrowsIllegalArgumentWhenAttributeIsNotSet() {
         final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Set attribute " + attName + " with element type " + OWLClassA.class +
-                " is not present in type " + et.toString());
-        et.getSet(attName, OWLClassA.class);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getSet(attName, OWLClassA.class));
+        assertEquals("Set attribute " + attName + " with element type " + OWLClassA.class +
+                " is not present in type " + et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getPluralAttributesGetsAlsoInheritedPluralAttributes() {
+    void getPluralAttributesGetsAlsoInheritedPluralAttributes() {
         final CollectionAttribute att = mock(CollectionAttribute.class);
         when(att.isCollection()).thenReturn(true);
         final ListAttributeImpl listAtt = mock(ListAttributeImpl.class);
@@ -148,7 +144,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getSingularAttributesGetsAlsoInheritedSingularAttributes() {
+    void getSingularAttributesGetsAlsoInheritedSingularAttributes() {
         final SingularAttributeImpl attOne = mock(SingularAttributeImpl.class);
         when(attOne.isCollection()).thenReturn(false);
         final SingularAttributeImpl attTwo = mock(SingularAttributeImpl.class);
@@ -163,7 +159,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getSingularAttributeReturnsAttributeWithMatchingNameAndType() {
+    void getSingularAttributeReturnsAttributeWithMatchingNameAndType() {
         final SingularAttributeImpl attOne = mock(SingularAttributeImpl.class);
         when(attOne.isCollection()).thenReturn(false);
         final String attName = "test";
@@ -174,21 +170,20 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getSingularAttributeThrowsIllegalArgumentWhenAttributeIsNotSingular() {
+    void getSingularAttributeThrowsIllegalArgumentWhenAttributeIsNotSingular() {
         final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.isCollection()).thenReturn(true);
         et.addDeclaredAttribute(attName, att);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Singular attribute " + attName + " of type " + OWLClassB.class + " is not present in type " +
-                        et.toString());
-        et.getSingularAttribute(attName, OWLClassB.class);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getSingularAttribute(attName, OWLClassB.class));
+        assertEquals("Singular attribute " + attName + " of type " + OWLClassB.class + " is not present in type " +
+                et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getDeclaredAttributeReturnsAttributeDeclaredInType() {
+    void getDeclaredAttributeReturnsAttributeDeclaredInType() {
         final AbstractAttribute attOne = mock(AbstractAttribute.class);
         when(attOne.isCollection()).thenReturn(false);
         final String attName = "test";
@@ -200,9 +195,9 @@ public class AbstractIdentifiableTypeTest {
 
     // Disabled this test until we have a CollectionAttribute implementation (it will probably be SetAttributeImpl, cause set semantics is
     // default in ontologies and Set is compatible with Collection)
-    @Ignore
+    @Disabled
     @Test
-    public void getDeclaredCollectionReturnsDeclaredCollectionAttribute() {
+    void getDeclaredCollectionReturnsDeclaredCollectionAttribute() {
         final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
@@ -212,35 +207,35 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getDeclaredListThrowsIllegalArgumentWhenListElementTypeDoesNotMatch() {
+    void getDeclaredListThrowsIllegalArgumentWhenListElementTypeDoesNotMatch() {
         final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.isCollection()).thenReturn(true);
         et.addDeclaredAttribute(attName, att);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getDeclaredList(attName, OWLClassB.class));
+        assertEquals(
                 "List attribute " + attName + " with element type " + OWLClassB.class + " is not declared in type " +
-                        et.toString());
-        et.getDeclaredList(attName, OWLClassB.class);
+                        et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getDeclaredSetThrowsIllegalArgumentWhenAttributeIsNotSet() {
+    void getDeclaredSetThrowsIllegalArgumentWhenAttributeIsNotSet() {
         final ListAttributeImpl att = mock(ListAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.isCollection()).thenReturn(true);
         et.addDeclaredAttribute(attName, att);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getDeclaredSet(attName, OWLClassB.class));
+        assertEquals(
                 "Set attribute " + attName + " with element type " + OWLClassB.class + " is not declared in type " +
-                        et.toString());
-        et.getDeclaredSet(attName, OWLClassB.class);
+                        et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getDeclaredSingularAttributeReturnsDeclaredSingularAttribute() {
+    void getDeclaredSingularAttributeReturnsDeclaredSingularAttribute() {
         final SingularAttributeImpl att = mock(SingularAttributeImpl.class);
         final String attName = "test";
         when(att.isCollection()).thenReturn(false);
@@ -251,21 +246,20 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getDeclaredSingularAttributeThrowsIllegalArgumentForInvalidType() {
+    void getDeclaredSingularAttributeThrowsIllegalArgumentForInvalidType() {
         final AbstractAttribute att = mock(AbstractAttribute.class);
         final String attName = "test";
         when(att.isCollection()).thenReturn(false);
         when(att.getJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(
-                "Singular attribute " + attName + " of type " + OWLClassB.class + " is not declared in type " +
-                        et.toString());
-        et.getDeclaredSingularAttribute(attName, OWLClassB.class);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getDeclaredSingularAttribute(attName, OWLClassB.class));
+        assertEquals("Singular attribute " + attName + " of type " + OWLClassB.class + " is not declared in type " +
+                et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getFieldSpecificationsReturnsAllAttributesAndTypesAndProperties() {
+    void getFieldSpecificationsReturnsAllAttributesAndTypesAndProperties() {
         final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
@@ -285,7 +279,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getFieldSpecificationsReturnsAlsoIdentifier() {
+    void getFieldSpecificationsReturnsAlsoIdentifier() {
         final Set<FieldSpecification<? super OWLClassA, ?>> result = et.getFieldSpecifications();
         final Optional<FieldSpecification<? super OWLClassA, ?>> id = result.stream()
                                                                             .filter(fs -> fs.equals(et.getIdentifier()))
@@ -294,7 +288,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getTypesReturnsTypesAlsoFromSuperType() {
+    void getTypesReturnsTypesAlsoFromSuperType() {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final TypesSpecification types = mock(TypesSpecification.class);
@@ -304,7 +298,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getPropertiesReturnsPropertiesAlsoFromSuperType() {
+    void getPropertiesReturnsPropertiesAlsoFromSuperType() {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final PropertiesSpecification properties = mock(PropertiesSpecification.class);
@@ -314,7 +308,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getFieldSpecificationGetsFieldSpecification() {
+    void getFieldSpecificationGetsFieldSpecification() {
         final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
@@ -325,7 +319,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getFieldSpecificationGetsTypes() {
+    void getFieldSpecificationGetsTypes() {
         final TypesSpecification types = mock(TypesSpecification.class);
         final String attName = "types";
         when(types.getName()).thenReturn(attName);
@@ -335,7 +329,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getFieldSpecificationGetsDeclaredAttribute() {
+    void getFieldSpecificationGetsDeclaredAttribute() {
         final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
         final String attName = "test";
         et.addDeclaredAttribute(attName, att);
@@ -344,15 +338,15 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getFieldSpecificationThrowsIllegalArgumentWhenFieldIsNotFound() {
+    void getFieldSpecificationThrowsIllegalArgumentWhenFieldIsNotFound() {
         final String attName = "unknownAttribute";
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Field " + attName + " is not present in type " + et.toString());
-        et.getFieldSpecification(attName);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> et.getFieldSpecification(attName));
+        assertEquals("Field " + attName + " is not present in type " + et.toString(), ex.getMessage());
     }
 
     @Test
-    public void getIdentifierReturnsIdentifierFromSuperclass() {
+    void getIdentifierReturnsIdentifierFromSuperclass() {
         final Identifier id = mock(Identifier.class);
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         doReturn(id).when(supertype).getIdentifier();
@@ -362,7 +356,7 @@ public class AbstractIdentifiableTypeTest {
     }
 
     @Test
-    public void getFieldSpecificationReturnsIdentifier() {
+    void getFieldSpecificationReturnsIdentifier() {
         final FieldSpecification<? super OWLClassA, ?> idSpec = et.getFieldSpecification("uri");
         assertTrue(idSpec instanceof Identifier);
     }

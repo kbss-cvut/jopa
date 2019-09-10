@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -21,10 +19,8 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Constants;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -32,13 +28,10 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class MetamodelImplInheritanceTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+class MetamodelImplInheritanceTest {
 
     private static final Map<String, String> PROPERTIES = Collections
             .singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
@@ -48,13 +41,13 @@ public class MetamodelImplInheritanceTest {
 
     private Configuration conf = new Configuration(PROPERTIES);
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void buildsEntityTypeForClassWithMappedSuperclass() {
+    void buildsEntityTypeForClassWithMappedSuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
         assertNotNull(et);
@@ -69,7 +62,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void entityWithMappedSuperclassIsBuiltWithAllRelevantFields() throws Exception {
+    void entityWithMappedSuperclassIsBuiltWithAllRelevantFields() throws Exception {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
 
@@ -84,7 +77,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void entityWithMappedSuperclassSetsEntityTypeSupertype() {
+    void entityWithMappedSuperclassSetsEntityTypeSupertype() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
 
@@ -93,7 +86,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void entityWithAbstractEntityParentSetsEntityTypeSupertype() {
+    void entityWithAbstractEntityParentSetsEntityTypeSupertype() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
 
         final EntityType<OWLClassR> etR = metamodel.entity(OWLClassR.class);
@@ -104,7 +97,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void entityWithEntitySuperclassIsBuiltWithAllRelevantAttributes() throws Exception {
+    void entityWithEntitySuperclassIsBuiltWithAllRelevantAttributes() throws Exception {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final List<Field> fields = Arrays
                 .asList(OWLClassS.getNameField(), OWLClassR.getOwlClassAField(), OWLClassR.getStringAttField());
@@ -119,7 +112,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsSubtypesOfMappedSuperclass() {
+    void buildingMetamodelSetsSubtypesOfMappedSuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final IdentifiableType<? super OWLClassQ> supertype = metamodel.entity(OWLClassQ.class).getSupertype();
         assertTrue(supertype instanceof AbstractIdentifiableType);
@@ -129,7 +122,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsSubtypesOfEntitySuperclass() {
+    void buildingMetamodelSetsSubtypesOfEntitySuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
         assertTrue(supertype.hasSubtypes());
@@ -137,7 +130,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void subtypesOfEntityWithoutSubtypesAreEmpty() {
+    void subtypesOfEntityWithoutSubtypesAreEmpty() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassA.class);
         final EntityTypeImpl<OWLClassA> et = metamodel.entity(OWLClassA.class);
         assertFalse(et.hasSubtypes());
@@ -145,7 +138,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelResolvesInheritanceStrategy() {
+    void buildingMetamodelResolvesInheritanceStrategy() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final Inheritance inheritance = OWLClassS.class.getDeclaredAnnotation(Inheritance.class);
         final EntityTypeImpl<OWLClassS> sEntityType = metamodel.entity(OWLClassS.class);
@@ -155,18 +148,19 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsDefaultInheritanceStrategyWhenItIsNotSpecifiedOnEntity() {
+    void buildingMetamodelSetsDefaultInheritanceStrategyWhenItIsNotSpecifiedOnEntity() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassA.class);
         final EntityTypeImpl<OWLClassA> et = metamodel.entity(OWLClassA.class);
         assertEquals(Constants.DEFAULT_INHERITANCE_TYPE, et.getInheritanceType());
     }
 
     @Test
-    public void buildingMetamodelThrowsExceptionWhenInheritanceStrategyIsDeclaredOnSubtype() {
-        thrown.expect(MetamodelInitializationException.class);
-        thrown.expectMessage("Class " + SubclassWithInheritanceType.class +
-                " cannot declare inheritance strategy, because it already inherits it from its supertype.");
-        metamodelFor(OWLClassS.class, SubclassWithInheritanceType.class);
+    void buildingMetamodelThrowsExceptionWhenInheritanceStrategyIsDeclaredOnSubtype() {
+        final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
+                () -> metamodelFor(OWLClassS.class, SubclassWithInheritanceType.class));
+        assertEquals("Class " + SubclassWithInheritanceType.class +
+                        " cannot declare inheritance strategy, because it already inherits it from its supertype.",
+                ex.getMessage());
     }
 
     @Inheritance(strategy = InheritanceType.TRY_FIRST)
@@ -176,7 +170,7 @@ public class MetamodelImplInheritanceTest {
     }
 
     @Test
-    public void buildingMetamodelSetsMultipleSubtypesOnSuperType() {
+    void buildingMetamodelSetsMultipleSubtypesOnSuperType() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, AnotherSubclass.class, OWLClassS.class);
         final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
         assertEquals(2, supertype.getSubtypes().size());
@@ -192,7 +186,7 @@ public class MetamodelImplInheritanceTest {
      * Ref.: https://github.com/kbss-cvut/jopa/issues/3
      */
     @Test
-    public void buildingMetamodelSupportsReferenceFromParentEntityToSubEntity() {
+    void buildingMetamodelSupportsReferenceFromParentEntityToSubEntity() {
         final MetamodelImpl metamodel = metamodelFor(AnotherChildWithCircular.class);
         final EntityType<ChildWithCircular> et = metamodel.entity(ChildWithCircular.class);
         assertNotNull(et);
