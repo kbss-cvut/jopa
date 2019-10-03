@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.query;
 
@@ -22,11 +20,9 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -35,10 +31,11 @@ import java.util.NoSuchElementException;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class SelectResultSetTest {
+class SelectResultSetTest {
 
     private static final Resource SUBJECT = createResource(Generator.generateUri().toString());
     private static final Resource TYPE_ONE = createResource(Generator.generateUri().toString());
@@ -47,9 +44,6 @@ public class SelectResultSetTest {
     private static final String QUERY = "SELECT * WHERE { ?x ?y ?z . }";
     private static final String OPTIONAL_QUERY =
             "SELECT ?x ?y ?z WHERE { ?x a ?y . OPTIONAL { ?x <" + PROPERTY.getURI() + "> ?z . }}";
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private JenaStatement statement;
@@ -60,14 +54,14 @@ public class SelectResultSetTest {
     private ResultSet resultSet;
     private SelectResultSet selectResult;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         this.model = ModelFactory.createDefaultModel();
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         if (!execution.isClosed()) {
             execution.close();
         }
@@ -82,7 +76,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void closeClosesUnderlyingJenaResultSet() throws Exception {
+    void closeClosesUnderlyingJenaResultSet() throws Exception {
         this.selectResult = resultFor(QUERY);
         assertTrue(selectResult.isOpen());
         selectResult.close();
@@ -91,32 +85,32 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void findColumnReturnsIndexOfColumnWithSpecifiedName() {
+    void findColumnReturnsIndexOfColumnWithSpecifiedName() {
         this.selectResult = resultFor(QUERY);
         assertEquals(0, selectResult.findColumn("x"));
     }
 
     @Test
-    public void getColumnCountReturnsNumberOfBindings() {
+    void getColumnCountReturnsNumberOfBindings() {
         this.selectResult = resultFor(QUERY);
         assertEquals(3, selectResult.getColumnCount());
     }
 
     @Test
-    public void hasNextReturnsTrueWhenResultSetHasMoreElements() {
+    void hasNextReturnsTrueWhenResultSetHasMoreElements() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         assertTrue(selectResult.hasNext());
     }
 
     @Test
-    public void hasNextReturnsFalseWhenNoMoreResultsAreFound() {
+    void hasNextReturnsFalseWhenNoMoreResultsAreFound() {
         this.selectResult = resultFor(QUERY);
         assertFalse(selectResult.hasNext());
     }
 
     @Test
-    public void nextMovesResultSetCursorToNextRow() {
+    void nextMovesResultSetCursorToNextRow() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         assertTrue(selectResult.hasNext());
@@ -125,16 +119,15 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void nextThrowsNoSuchElementExceptionWhenNextIsCalledButNoMoreRowsAreAvailable() {
+    void nextThrowsNoSuchElementExceptionWhenNextIsCalledButNoMoreRowsAreAvailable() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
-        thrown.expect(NoSuchElementException.class);
         selectResult.next();
-        selectResult.next();
+        assertThrows(NoSuchElementException.class, () -> selectResult.next());
     }
 
     @Test
-    public void relativeMovesSpecifiedNumberOfRowsForward() {
+    void relativeMovesSpecifiedNumberOfRowsForward() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
@@ -148,20 +141,20 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void relativeThrowsUnsupportedOperationForNegativeArgument() {
+    void relativeThrowsUnsupportedOperationForNegativeArgument() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         this.selectResult = resultFor(QUERY);
         selectResult.next();
         assertEquals(0, selectResult.getRowIndex());
-        thrown.expect(UnsupportedOperationException.class);
-        thrown.expectMessage(containsString("Moving back is not supported by this result set."));
-        selectResult.relative(-2);
+        final UnsupportedOperationException ex = assertThrows(UnsupportedOperationException.class,
+                () -> selectResult.relative(-2));
+        assertThat(ex.getMessage(), containsString("Moving back is not supported by this result set."));
     }
 
     @Test
-    public void setRowIndexMovesToTargetRowIndex() {
+    void setRowIndexMovesToTargetRowIndex() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
@@ -175,30 +168,29 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void setRowIndexThrowsUnsupportedOperationForIndexLessThanCurrent() {
+    void setRowIndexThrowsUnsupportedOperationForIndexLessThanCurrent() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         this.selectResult = resultFor(QUERY);
         selectResult.next();
         selectResult.next();
-        thrown.expect(UnsupportedOperationException.class);
-        thrown.expectMessage(containsString("Moving back is not supported by this result set."));
-        selectResult.setRowIndex(0);
+        final UnsupportedOperationException ex = assertThrows(UnsupportedOperationException.class,
+                () -> selectResult.setRowIndex(0));
+        assertThat(ex.getMessage(), containsString("Moving back is not supported by this result set."));
     }
 
     @Test
-    public void setRowIndexThrowsNoSuchElementWhenTargetIndexExceedsRowCount() {
+    void setRowIndexThrowsNoSuchElementWhenTargetIndexExceedsRowCount() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         this.selectResult = resultFor(QUERY);
-        thrown.expect(NoSuchElementException.class);
-        selectResult.setRowIndex(10);
+        assertThrows(NoSuchElementException.class, () -> selectResult.setRowIndex(10));
     }
 
     @Test
-    public void lastMovesResultToLastExistingRow() {
+    void lastMovesResultToLastExistingRow() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
@@ -209,7 +201,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void isFirstReturnsTrueForFirstRowInResult() {
+    void isFirstReturnsTrueForFirstRowInResult() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
         model.add(SUBJECT, RDF.type, createResource(Generator.generateUri().toString()));
@@ -222,7 +214,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getStringByIndexReturnsLiteralAsString() {
+    void getStringByIndexReturnsLiteralAsString() {
         final int value = 117;
         model.add(SUBJECT, PROPERTY, createTypedLiteral(value));
         this.selectResult = resultFor(QUERY);
@@ -231,19 +223,19 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getStringByUnknownIndexThrowsIllegalArgumentException() {
+    void getStringByUnknownIndexThrowsIllegalArgumentException() {
         final int value = 117;
         model.add(SUBJECT, PROPERTY, createTypedLiteral(value));
         this.selectResult = resultFor(QUERY);
         selectResult.next();
-        thrown.expect(IllegalArgumentException.class);
         int index = 4;
-        thrown.expectMessage(containsString("Variable index " + index + " is out of bounds."));
-        selectResult.getString(index);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> selectResult.getString(index));
+        assertThat(ex.getMessage(), containsString("Variable index " + index + " is out of bounds."));
     }
 
     @Test
-    public void getStringByIndexReturnsResourceAsString() {
+    void getStringByIndexReturnsResourceAsString() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
@@ -251,7 +243,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getStringByVariableReturnsLiteralAsString() {
+    void getStringByVariableReturnsLiteralAsString() {
         final int value = 117;
         model.add(SUBJECT, PROPERTY, createTypedLiteral(value));
         this.selectResult = resultFor(QUERY);
@@ -260,19 +252,19 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getStringByVariableNameThrowsIllegalArgumentExceptionForUnknownVariableName() {
+    void getStringByVariableNameThrowsIllegalArgumentExceptionForUnknownVariableName() {
         final int value = 117;
         model.add(SUBJECT, PROPERTY, createTypedLiteral(value));
         this.selectResult = resultFor(QUERY);
         selectResult.next();
         final String name = "unknown";
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(containsString("Variable \'" + name + "\' not found in the result set."));
-        selectResult.getString(name);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> selectResult.getString(name));
+        assertThat(ex.getMessage(), containsString("Variable \'" + name + "\' not found in the result set."));
     }
 
     @Test
-    public void getStringByVariableReturnsResourceAsString() {
+    void getStringByVariableReturnsResourceAsString() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
@@ -280,16 +272,15 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getStringByIndexThrowsIllegalStateExceptionWhenCalledBeforeNext() {
+    void getStringByIndexThrowsIllegalStateExceptionWhenCalledBeforeNext() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Must call next before getting any values.");
-        selectResult.getString(0);
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> selectResult.getString(0));
+        assertEquals("Must call next before getting any values.", ex.getMessage());
     }
 
     @Test
-    public void getBooleanByIndexReturnsBooleanValue() throws JenaDriverException {
+    void getBooleanByIndexReturnsBooleanValue() throws JenaDriverException {
         saveValueAndExecuteQuery(true);
         assertTrue(selectResult.getBoolean(2));
     }
@@ -301,114 +292,113 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getBooleanByVariableReturnsBooleanValue() throws JenaDriverException {
+    void getBooleanByVariableReturnsBooleanValue() throws JenaDriverException {
         saveValueAndExecuteQuery(true);
         assertTrue(selectResult.getBoolean("z"));
     }
 
     @Test
-    public void getLiteralThrowsJenaDriverExceptionWhenResourceIsEncountered() throws JenaDriverException {
+    void getLiteralThrowsJenaDriverExceptionWhenResourceIsEncountered() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
-        thrown.expect(JenaDriverException.class);
-        thrown.expectMessage("Expected value " + RDF.type + " to be a literal.");
-        selectResult.getBoolean("y");
+        final JenaDriverException ex = assertThrows(JenaDriverException.class, () -> selectResult.getBoolean("y"));
+        assertEquals("Expected value " + RDF.type + " to be a literal.", ex.getMessage());
+
     }
 
     @Test
-    public void getByteByIndexReturnsByteValue() throws JenaDriverException {
+    void getByteByIndexReturnsByteValue() throws JenaDriverException {
         saveValueAndExecuteQuery(Byte.MAX_VALUE);
         assertEquals(Byte.MAX_VALUE, selectResult.getByte(2));
     }
 
     @Test
-    public void getByteByVariableReturnsByValue() throws JenaDriverException {
+    void getByteByVariableReturnsByValue() throws JenaDriverException {
         saveValueAndExecuteQuery(Byte.MAX_VALUE);
         assertEquals(Byte.MAX_VALUE, selectResult.getByte("z"));
     }
 
     @Test
-    public void getDoubleByIndexReturnsDoubleValue() throws JenaDriverException {
+    void getDoubleByIndexReturnsDoubleValue() throws JenaDriverException {
         saveValueAndExecuteQuery(Math.PI);
         assertEquals(Math.PI, selectResult.getDouble(2), 0.01);
     }
 
     @Test
-    public void getDoubleByVariableReturnsDoubleValue() throws JenaDriverException {
+    void getDoubleByVariableReturnsDoubleValue() throws JenaDriverException {
         saveValueAndExecuteQuery(Math.PI);
         assertEquals(Math.PI, selectResult.getDouble("z"), 0.01);
     }
 
     @Test
-    public void getFloatByIndexReturnsFloatValue() throws JenaDriverException {
+    void getFloatByIndexReturnsFloatValue() throws JenaDriverException {
         saveValueAndExecuteQuery(117.0f);
         assertEquals(117.0f, selectResult.getFloat(2), 0.01f);
     }
 
     @Test
-    public void getFloatByVariableReturnsFloatValue() throws JenaDriverException {
+    void getFloatByVariableReturnsFloatValue() throws JenaDriverException {
         saveValueAndExecuteQuery(117.0f);
         assertEquals(117.0f, selectResult.getFloat("z"), 0.01f);
     }
 
     @Test
-    public void getIntByIndexReturnsIntValue() throws JenaDriverException {
+    void getIntByIndexReturnsIntValue() throws JenaDriverException {
         saveValueAndExecuteQuery(117);
         assertEquals(117, selectResult.getInt(2));
     }
 
     @Test
-    public void getIntByVariableReturnsIntValue() throws JenaDriverException {
+    void getIntByVariableReturnsIntValue() throws JenaDriverException {
         saveValueAndExecuteQuery(117);
         assertEquals(117, selectResult.getInt("z"));
     }
 
     @Test
-    public void getLongByIndexReturnsLongValue() throws JenaDriverException {
+    void getLongByIndexReturnsLongValue() throws JenaDriverException {
         final long value = System.currentTimeMillis();
         saveValueAndExecuteQuery(value);
         assertEquals(value, selectResult.getLong(2));
     }
 
     @Test
-    public void getLongByVariableReturnsLongValue() throws JenaDriverException {
+    void getLongByVariableReturnsLongValue() throws JenaDriverException {
         final long value = System.currentTimeMillis();
         saveValueAndExecuteQuery(value);
         assertEquals(value, selectResult.getLong("z"));
     }
 
     @Test
-    public void getShortByIndexReturnsShortValue() throws JenaDriverException {
+    void getShortByIndexReturnsShortValue() throws JenaDriverException {
         final short value = 117;
         saveValueAndExecuteQuery(value);
         assertEquals(value, selectResult.getShort(2));
     }
 
     @Test
-    public void getShortByVariableReturnsShortValue() throws JenaDriverException {
+    void getShortByVariableReturnsShortValue() throws JenaDriverException {
         final short value = 117;
         saveValueAndExecuteQuery(value);
         assertEquals(value, selectResult.getShort("z"));
     }
 
     @Test
-    public void getShortRoundsDoubleValueToShort() throws JenaDriverException {
+    void getShortRoundsDoubleValueToShort() throws JenaDriverException {
         saveValueAndExecuteQuery(Math.PI);
         final short result = selectResult.getShort("z");
         assertEquals((short) Math.round(Math.PI), result);
     }
 
     @Test
-    public void getIntThrowsNumberFormatExceptionForStringValue() throws JenaDriverException {
+    void getIntThrowsNumberFormatExceptionForStringValue() {
         // This test is more for documentation purposes - it shows how Jena type resolution works
         saveValueAndExecuteQuery("Test");
-        thrown.expect(NumberFormatException.class);
-        selectResult.getInt(2);
+        assertThrows(NumberFormatException.class, () -> selectResult.getInt(2));
     }
 
     @Test
-    public void getObjectByIndexReturnsLiteralValue() {
+    void getObjectByIndexReturnsLiteralValue() {
         saveValueAndExecuteQuery(117);
         final Object result = selectResult.getObject(2);
         assertTrue(result instanceof Integer);
@@ -416,7 +406,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexReturnsURIForNamedResource() {
+    void getObjectByIndexReturnsURIForNamedResource() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
@@ -426,7 +416,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexReturnsStringValueForAnonymousResource() {
+    void getObjectByIndexReturnsStringValueForAnonymousResource() {
         final Resource resource = createResource();
         model.add(SUBJECT, RDF.type, resource);
         this.selectResult = resultFor(QUERY);
@@ -437,7 +427,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByVariableReturnsLiteralValue() {
+    void getObjectByVariableReturnsLiteralValue() {
         saveValueAndExecuteQuery(117);
         final Object result = selectResult.getObject("z");
         assertTrue(result instanceof Integer);
@@ -445,7 +435,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexAndClassReturnsObjectWhenItCanBeCastToExpectedClass() throws JenaDriverException {
+    void getObjectByIndexAndClassReturnsObjectWhenItCanBeCastToExpectedClass() throws JenaDriverException {
         saveValueAndExecuteQuery(117);
         final Literal result = selectResult.getObject(2, Literal.class);
         assertNotNull(result);
@@ -453,7 +443,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexAndClassReturnsLiteralValueWhenItCanBeCastToExpectedClass() throws JenaDriverException {
+    void getObjectByIndexAndClassReturnsLiteralValueWhenItCanBeCastToExpectedClass() throws JenaDriverException {
         saveValueAndExecuteQuery(117);
         final Integer result = selectResult.getObject(2, Integer.class);
         assertNotNull(result);
@@ -461,7 +451,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexAndClassReturnsURIWhenResourceIsExtractedAndURIIsExpected() throws JenaDriverException {
+    void getObjectByIndexAndClassReturnsURIWhenResourceIsExtractedAndURIIsExpected() throws JenaDriverException {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
@@ -470,7 +460,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexReturnsStringWhenBlankNodeIsExtractedAndStringIsExpected() throws JenaDriverException {
+    void getObjectByIndexReturnsStringWhenBlankNodeIsExtractedAndStringIsExpected() throws JenaDriverException {
         final Resource resource = createResource();
         model.add(SUBJECT, RDF.type, resource);
         this.selectResult = resultFor(QUERY);
@@ -480,7 +470,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexUsesConstructorWithJenaBasedParameterToBuildResult() throws JenaDriverException {
+    void getObjectByIndexUsesConstructorWithJenaBasedParameterToBuildResult() throws JenaDriverException {
         saveValueAndExecuteQuery(117);
         final ResultJenaBased result = selectResult.getObject(2, ResultJenaBased.class);
         assertEquals(117, result.value);
@@ -495,7 +485,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexUsesConstructorWithJavaBasedParameterToBuildResult() throws JenaDriverException {
+    void getObjectByIndexUsesConstructorWithJavaBasedParameterToBuildResult() throws JenaDriverException {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
@@ -512,7 +502,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexUsesStringBasedConstructorWhenPresent() throws JenaDriverException {
+    void getObjectByIndexUsesStringBasedConstructorWhenPresent() throws JenaDriverException {
         final Resource resource = createResource();
         model.add(SUBJECT, RDF.type, resource);
         this.selectResult = resultFor(QUERY);
@@ -530,41 +520,41 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectByIndexAndClassThrowsJenaDriverExceptionWhenNoMatchingConstructorIsFound() throws Exception {
+    void getObjectByIndexAndClassThrowsJenaDriverExceptionWhenNoMatchingConstructorIsFound() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
-        thrown.expect(JenaDriverException.class);
-        thrown.expectMessage(
-                "No suitable constructor for value " + TYPE_ONE + " found in type " + SelectResultSetTest.class);
-        selectResult.getObject(2, SelectResultSetTest.class);
+        final JenaDriverException ex = assertThrows(JenaDriverException.class,
+                () -> selectResult.getObject(2, SelectResultSetTest.class));
+        assertEquals("No suitable constructor for value " + TYPE_ONE + " found in type " + SelectResultSetTest.class,
+                ex.getMessage());
     }
 
     @Test
-    public void getObjectByVariableAndClassRetrievesValueAsCorrectType() throws JenaDriverException {
+    void getObjectByVariableAndClassRetrievesValueAsCorrectType() throws JenaDriverException {
         saveValueAndExecuteQuery(117);
         final ResultJenaBased result = selectResult.getObject("z", ResultJenaBased.class);
         assertEquals(117, result.value);
     }
 
     @Test
-    public void getObjectThrowsVariableNotBoundForNonPresentOptionalValue() {
+    void getObjectThrowsVariableNotBoundForNonPresentOptionalValue() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(OPTIONAL_QUERY);
         selectResult.next();
-        thrown.expect(VariableNotBoundException.class);
-        thrown.expectMessage(containsString("not bound in the current result row"));
-        assertNull(selectResult.getObject(2));
+        final VariableNotBoundException ex = assertThrows(VariableNotBoundException.class,
+                () -> selectResult.getObject(2));
+        assertThat(ex.getMessage(), containsString("not bound in the current result row"));
     }
 
     @Test
-    public void isBoundReturnsTrueForBoundVariableIndex() {
+    void isBoundReturnsTrueForBoundVariableIndex() {
         saveValueAndExecuteQuery(117);
         assertTrue(selectResult.isBound(1));
     }
 
     @Test
-    public void isBoundReturnsFalseForUnboundVariableIndex() {
+    void isBoundReturnsFalseForUnboundVariableIndex() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(OPTIONAL_QUERY);
         selectResult.next();
@@ -572,16 +562,32 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void isBoundReturnsTrueForBoundVariableName() {
+    void isBoundReturnsTrueForBoundVariableName() {
         saveValueAndExecuteQuery(117);
         assertTrue(selectResult.isBound("x"));
     }
 
     @Test
-    public void isBoundReturnsFalseForUnboundVariableName() {
+    void isBoundReturnsFalseForUnboundVariableName() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(OPTIONAL_QUERY);
         selectResult.next();
         assertFalse(selectResult.isBound("z"));
+    }
+
+    @Test
+    void getStringByIndexReturnsIdentifierForBlankNodeResult() {
+        model.add(SUBJECT, PROPERTY, model.createResource());
+        this.selectResult = resultFor(QUERY);
+        selectResult.next();
+        assertNotNull(selectResult.getString(2));
+    }
+
+    @Test
+    void getStringByVariableNameReturnsIdentifierForBlankNodeResult() {
+        model.add(SUBJECT, PROPERTY, model.createResource());
+        this.selectResult = resultFor(QUERY);
+        selectResult.next();
+        assertNotNull(selectResult.getString("z"));
     }
 }

@@ -284,7 +284,7 @@ public class SelectResultSet extends AbstractResultSet {
         assert current != null;
         final RDFNode value = getCurrent(variableName);
         if (value.isResource()) {
-            return value.asResource().getURI();
+            return value.isURIResource() ? value.asResource().getURI() : value.asResource().getId().getLabelString();
         } else {
             return value.asLiteral().getString();
         }
