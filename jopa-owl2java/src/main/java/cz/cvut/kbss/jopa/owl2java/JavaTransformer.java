@@ -45,55 +45,55 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final String[] KEYWORDS = {"abstract",
-            "assert",
-            "boolean",
-            "break",
-            "byte",
-            "case",
-            "catch",
-            "char",
-            "class",
-            "const",
-            "continue",
-            "default",
-            "do",
-            "double",
-            "else",
-            "enum",
-            "extends",
-            "final",
-            "finally",
-            "float",
-            "for",
-            "goto",
-            "if",
-            "implements",
-            "import",
-            "instanceof",
-            "int",
-            "interface",
-            "long",
-            "native",
-            "new",
-            "package",
-            "private",
-            "protected",
-            "public",
-            "return",
-            "short",
-            "static",
-            "strictfp",
-            "super",
-            "switch",
-            "synchronized",
-            "this",
-            "throw",
-            "throws",
-            "transient",
-            "try",
-            "void",
-            "volatile",
-            "while"};
+                                              "assert",
+                                              "boolean",
+                                              "break",
+                                              "byte",
+                                              "case",
+                                              "catch",
+                                              "char",
+                                              "class",
+                                              "const",
+                                              "continue",
+                                              "default",
+                                              "do",
+                                              "double",
+                                              "else",
+                                              "enum",
+                                              "extends",
+                                              "final",
+                                              "finally",
+                                              "float",
+                                              "for",
+                                              "goto",
+                                              "if",
+                                              "implements",
+                                              "import",
+                                              "instanceof",
+                                              "int",
+                                              "interface",
+                                              "long",
+                                              "native",
+                                              "new",
+                                              "package",
+                                              "private",
+                                              "protected",
+                                              "public",
+                                              "return",
+                                              "short",
+                                              "static",
+                                              "strictfp",
+                                              "super",
+                                              "switch",
+                                              "synchronized",
+                                              "this",
+                                              "throw",
+                                              "throws",
+                                              "transient",
+                                              "try",
+                                              "void",
+                                              "volatile",
+                                              "while"};
 
     private static final String PREFIX_STRING = "s_";
     private static final String PREFIX_CLASS = "c_";
@@ -429,7 +429,7 @@ public class JavaTransformer {
         }
         final Optional<OWLAnnotation> ann = EntitySearcher.getAnnotations(owlEntity, ontology)
                                                           .filter(a -> a.getProperty().isComment()).findFirst();
-        ann.ifPresent(a -> a.getValue().asLiteral().ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral())));
+        ann.flatMap(a -> a.getValue().asLiteral()).ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral()));
         return ann.isPresent() && ann.get().getValue().isLiteral();
     }
 
@@ -476,6 +476,7 @@ public class JavaTransformer {
             final JFieldVar fvProperties = addField("properties", cls, ftProperties);
             fvProperties.annotate(Properties.class);
 
+            generateToStringMethod(cls, fvId, fvLabel);
         } catch (JClassAlreadyExistsException e) {
             LOG.trace("Class already exists. Using the existing version. {}", e.getMessage());
             cls = cm._getClass(name);
@@ -500,6 +501,18 @@ public class JavaTransformer {
             javaElem.javadoc().add("\n\n");
         }
         generateAuthorshipDoc(javaElem);
+    }
+
+    private void generateToStringMethod(JDefinedClass cls, JFieldVar idField, JFieldVar labelField) {
+        final JMethod toString = cls.method(JMod.PUBLIC, String.class, "toString");
+        toString.annotate(Override.class);
+        final JBlock body = toString.body();
+        JExpression expression = JExpr.lit(cls.name() + " {");
+        expression = expression.plus(JExpr.ref(labelField.name()));
+        expression = expression.plus(JExpr.lit("<")).plus(JExpr.ref(idField.name())).plus(JExpr.lit(">"));
+        expression = expression.plus(JExpr.lit("}"));
+
+        body._return(expression);
     }
 
     private JDefinedClass ensureCreated(final String pkg, final JCodeModel cm, final OWLClass clazz,
