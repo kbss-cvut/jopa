@@ -148,6 +148,18 @@ class FieldMappingValidatorTest {
                         getField("invalidSimpleLiteralAnnotation").getAnnotation(OWLAnnotationProperty.class)));
     }
 
+    @Test
+    void simpleLiteralAnnotationIsValidOnSetStringField() throws Exception {
+        validator.validateAnnotationPropertyField(getField("validSimpleLiteralSet"),
+                getField("validSimpleLiteralSet").getAnnotation(OWLAnnotationProperty.class));
+    }
+
+    @Test
+    void lexicalFormDataPropertyIsValidOnListStringFields() throws Exception {
+        validator.validateDataPropertyField(getField("validLexicalFormList"),
+                getField("validLexicalFormList").getAnnotation(OWLDataProperty.class));
+    }
+
     @SuppressWarnings("unused")
     private static final class InvalidClass {
 
@@ -201,5 +213,11 @@ class FieldMappingValidatorTest {
 
         @OWLAnnotationProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
         private Integer invalidSimpleLiteralAnnotation;
+
+        @OWLAnnotationProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
+        private Set<String> validSimpleLiteralSet;
+
+        @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
+        private List<String> validLexicalFormList;
     }
 }
