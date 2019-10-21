@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -290,13 +290,13 @@ public class SelectResultSet extends AbstractResultSet {
                 c.setAccessible(true);
                 final Class<?> type = c.getParameterTypes()[0];
                 if (type.isAssignableFrom(ob.getClass())) {
-                    return (T) c.newInstance(ob);
+                    return cls.cast(c.newInstance(ob));
                 }
                 if (type.isAssignableFrom(val.getClass())) {
-                    return (T) c.newInstance(val);
+                    return cls.cast(c.newInstance(val));
                 }
                 if (type.isAssignableFrom(String.class)) {
-                    return (T) c.newInstance(ob.toString());
+                    return cls.cast(c.newInstance(ob.toString()));
                 }
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
@@ -360,7 +360,6 @@ public class SelectResultSet extends AbstractResultSet {
 
     private Object getLiteralValue(int columnIndex) throws OntoDriverException {
         final Value val = getCurrent(columnIndex);
-        assert val != null;
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
@@ -369,7 +368,6 @@ public class SelectResultSet extends AbstractResultSet {
 
     private Object getLiteralValue(String columnName) throws OntoDriverException {
         final Value val = getCurrent(columnName);
-        assert val != null;
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }

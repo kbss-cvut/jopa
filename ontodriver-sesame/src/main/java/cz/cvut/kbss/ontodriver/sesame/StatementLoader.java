@@ -57,7 +57,7 @@ class StatementLoader {
 
     Collection<Axiom<?>> loadAxioms(Map<IRI, Assertion> properties)
             throws SesameDriverException {
-        this.loadAll = properties.values().contains(Assertion.createUnspecifiedPropertyAssertion(includeInferred));
+        this.loadAll = properties.containsValue(Assertion.createUnspecifiedPropertyAssertion(includeInferred));
         if (properties.size() < loadAllThreshold && !loadAll) {
             return loadOneByOne(properties.values());
         } else {

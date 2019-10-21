@@ -107,8 +107,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         this.em = getEntityManager("persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault", false);
         final ObjectPropertyCollectionDescriptor opDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
                 OWLClassF.getSimpleSetField());
-        final OWLClassF entityF = new OWLClassF();
-        entityF.setUri(Generators.generateUri());
         entityF.setSimpleSet(Collections.singleton(entityA));
         transactional(() -> em.persist(entityA, cTwoDescriptor));
 

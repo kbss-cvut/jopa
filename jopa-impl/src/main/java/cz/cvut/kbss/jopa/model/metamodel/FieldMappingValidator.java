@@ -20,8 +20,10 @@ import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import static cz.cvut.kbss.jopa.utils.Constants.SUPPORTED_IDENTIFIER_TYPES;
 
@@ -102,14 +104,25 @@ class FieldMappingValidator {
     }
 
     private static void validateLexicalFormField(Field field, boolean lexicalForm) {
-        if (lexicalForm && !String.class.isAssignableFrom(field.getType())) {
+        if (lexicalForm && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
             throw new InvalidFieldMappingException("lexicalForm mapping can be used only on fields of type String.");
         }
     }
 
     private static void validateSimpleLiteralField(Field field, boolean simpleLiteral) {
-        if (simpleLiteral && !String.class.isAssignableFrom(field.getType())) {
+        if (simpleLiteral && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
             throw new InvalidFieldMappingException("simpleLiteral mapping can be used only on fields of type String.");
         }
+    }
+
+    private static Class<?> getLiteralFieldType(Field field) {
+        final Class<?> fieldType = field.getType();
+        if (List.class.isAssignableFrom(fieldType) || Set.class.isAssignableFrom(fieldType) ||
+                SortedSet.class.isAssignableFrom(fieldType)) {
+            final ParameterizedType typeSpec = (ParameterizedType) field.getGenericType();
+            assert typeSpec.getActualTypeArguments().length == 1;
+            return (Class<?>) typeSpec.getActualTypeArguments()[0];
+        }
+        return fieldType;
     }
 }

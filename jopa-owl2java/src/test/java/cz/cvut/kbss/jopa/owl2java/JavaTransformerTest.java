@@ -2,16 +2,21 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JavaTransformerTest {
 
@@ -42,5 +47,20 @@ class JavaTransformerTest {
         assertNotNull(vocabClass);
         final Map<String, JFieldVar> fields = vocabClass.fields();
         assertTrue(fields.keySet().stream().anyMatch(n -> n.endsWith("navrzeny_term")));
+    }
+
+    @Test
+    void generateModelCreatesToStringMethodForGeneratedModelClasses() {
+        final String className = "TestClass";
+        final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/" + className);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri)));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iri));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+        assertNotNull(resultClass);
+        assertNotNull(resultClass.getMethod("toString", new JType[0]));
     }
 }

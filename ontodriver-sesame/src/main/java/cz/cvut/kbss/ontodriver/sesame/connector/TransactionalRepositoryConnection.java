@@ -178,11 +178,13 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
         return wrappedConnection.isEmpty();
     }
 
+    @Deprecated
     @Override
     public void setAutoCommit(boolean autoCommit) throws RepositoryException {
         wrappedConnection.setAutoCommit(autoCommit);
     }
 
+    @Deprecated
     @Override
     public boolean isAutoCommit() throws RepositoryException {
         return wrappedConnection.isAutoCommit();

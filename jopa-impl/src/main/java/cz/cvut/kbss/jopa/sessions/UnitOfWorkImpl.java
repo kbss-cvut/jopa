@@ -48,6 +48,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
@@ -164,21 +165,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return cls.cast(result);
         }
         // Object is already managed
-        result = keysToClones.get(identifier);
-        if (result != null) {
-            if (!cls.isAssignableFrom(result.getClass())) {
-                throw individualAlreadyManaged(identifier);
-            }
-            if (isInRepository(descriptor, result) && !deletedObjects.containsKey(result)) {
-                return cls.cast(result);
-            }
-        }
-        return null;
+        return getManagedClone(cls, identifier, descriptor);
     }
 
-    private static OWLEntityExistsException individualAlreadyManaged(Object identifier) {
-        return new OWLEntityExistsException(
-                "An entity with URI " + identifier + " is already present in the current persistence context.");
+    private <T> T getManagedClone(Class<T> cls, Object identifier, Descriptor descriptor) {
+        if (!keysToClones.containsKey(identifier)) {
+            return null;
+        }
+        final Object clone = keysToClones.get(identifier);
+        if (!cls.isAssignableFrom(clone.getClass())) {
+            throw individualAlreadyManaged(identifier);
+        }
+        return isInRepository(descriptor, clone) && !deletedObjects.containsKey(clone) ? cls.cast(clone) : null;
     }
 
     @Override
@@ -425,17 +423,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @return Original object managed by this UoW or {@code null} if this UoW doesn't contain a matching instance
      */
     public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
-        if (!keysToClones.containsKey(identifier)) {
-            return null;
-        }
-        final Object clone = keysToClones.get(identifier);
-        if (!cls.isAssignableFrom(clone.getClass())) {
-            return null;
-        }
-        if (!isInRepository(descriptor, clone)) {
-            return null;
-        }
-        return cls.cast(cloneToOriginals.get(clone));
+        final T clone = getManagedClone(cls, identifier, descriptor);
+        return clone != null ? cls.cast(cloneToOriginals.get(clone)) : null;
     }
 
     /**

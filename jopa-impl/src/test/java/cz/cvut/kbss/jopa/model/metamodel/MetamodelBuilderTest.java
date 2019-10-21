@@ -211,4 +211,28 @@ class MetamodelBuilderTest {
                 .getAttribute(OWLClassM.getSimpleLiteralField().getName());
         assertTrue(att.isSimpleLiteral());
     }
+
+    @Test
+    void buildMetamodelSupportsPluralSimpleLiteralAttributes() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(WithPluralSimpleLiteral.class));
+        builder.buildMetamodel(finderMock);
+        final EntityTypeImpl<WithPluralSimpleLiteral> result = (EntityTypeImpl<WithPluralSimpleLiteral>) builder
+                .getEntityClass(WithPluralSimpleLiteral.class);
+        final AbstractPluralAttribute<WithPluralSimpleLiteral, Set, String> att = (AbstractPluralAttribute<WithPluralSimpleLiteral, Set, String>) result
+                .getAttribute("pluralSimpleLiteral");
+        assertNotNull(att);
+        assertTrue(att.isSimpleLiteral());
+        assertTrue(att.isCollection());
+        assertEquals(String.class, att.getElementType().getJavaType());
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "WithPluralSimpleLiteral")
+    private static class WithPluralSimpleLiteral {
+
+        @Id
+        private URI uri;
+
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "pluralSimpleLiteral", simpleLiteral = true)
+        private Set<String> pluralSimpleLiteral;
+    }
 }

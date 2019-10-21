@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.LoadState;
@@ -1038,5 +1039,21 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertFalse(changeSet.getExistingObjectsChanges().isEmpty());
         uow.commit();
         assertTrue(changeSet.getExistingObjectsChanges().isEmpty());
+    }
+
+    @Test
+    void getManagedOriginalThrowsEntityExistsExceptionWhenIndividualIsManagedAsDifferentType() {
+        when(transactionMock.isActive()).thenReturn(true);
+        uow.registerExistingObject(entityA, descriptor);
+        assertThrows(OWLEntityExistsException.class, () -> uow.getManagedOriginal(OWLClassB.class, entityA.getUri(), descriptor));
+    }
+
+    @Test
+    void getManagedOriginalReturnsNullWhenObjectIsManagedButAmongDeletedObjects() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final Object entity = uow.registerExistingObject(entityA, descriptor);
+        assertNotNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor));
+        uow.removeObject(entity);
+        assertNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor));
     }
 }

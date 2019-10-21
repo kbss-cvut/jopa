@@ -69,6 +69,6 @@ public class TestUtils {
     }
 
     static IRI generateIri() {
-        return IRI.create(IRI_BASE + Integer.toString(RANDOM.nextInt()));
+        return IRI.create(IRI_BASE + RANDOM.nextInt());
     }
 }
