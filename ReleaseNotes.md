@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.13.2 - October 21, 2019
+- Upgraded to RDF4J 3.0.1.
+- Fixed missing support for lexical form and simple literal plural attributes.
+- Automatically generate `toString` method in OWL2Java model transformation.
+
 ## 0.13.1 - August 8, 2019
 - Fixed incorrect context handling in `ObjectPropertyCollectionDescriptor`.
 
