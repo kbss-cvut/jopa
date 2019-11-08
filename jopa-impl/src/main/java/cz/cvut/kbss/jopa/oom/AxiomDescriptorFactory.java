@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.model.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Objects;
 
 class AxiomDescriptorFactory {
 
@@ -64,7 +65,7 @@ class AxiomDescriptorFactory {
                                           final AxiomDescriptor descriptor, final Assertion assertion) {
         descriptor.addAssertion(assertion);
         final URI attContext = entityDescriptor.getAttributeContext(att);
-        if (attContext != null) {
+        if (!Objects.equals(entityDescriptor.getContext(), attContext)) {
             descriptor.setAssertionContext(assertion, attContext);
         }
     }
@@ -129,6 +130,7 @@ class AxiomDescriptorFactory {
 
     AxiomDescriptor createForFieldLoading(URI identifier, Field field, Descriptor entityDescriptor, EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));
+        descriptor.setSubjectContext(entityDescriptor.getContext());
         FieldSpecification<?, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {

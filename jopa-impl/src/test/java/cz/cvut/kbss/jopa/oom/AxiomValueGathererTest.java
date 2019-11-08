@@ -1,45 +1,44 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
-import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.Properties;
+import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-public class AxiomValueGathererTest {
+class AxiomValueGathererTest {
 
     private static final NamedResource SUBJECT = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa#Subject");
@@ -58,25 +57,22 @@ public class AxiomValueGathererTest {
     @Mock
     private Properties propertiesMock;
 
-    private AxiomValueGatherer gatherer;
+    private AxiomValueGatherer sut;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(connectionMock.lists()).thenReturn(listsMock);
         when(connectionMock.types()).thenReturn(typesMock);
         when(connectionMock.properties()).thenReturn(propertiesMock);
 
-        this.gatherer = new AxiomValueGatherer(SUBJECT, null);
+        this.sut = new AxiomValueGatherer(SUBJECT, null);
     }
 
     @Test
-    public void testAddValue() throws Exception {
+    void testAddValue() throws Exception {
         final Value<String> val = addValue();
-        final Field axDescField = AxiomValueGatherer.class.getDeclaredField("axiomDescriptor");
-        axDescField.setAccessible(true);
-        final AxiomValueDescriptor desc = (AxiomValueDescriptor) axDescField.get(gatherer);
-        assertNotNull(desc);
+        final AxiomValueDescriptor desc = getAxiomValueDescriptor();
         final List<Value<?>> values = desc.getAssertionValues(DATA_ASSERTION);
         assertNotNull(values);
         assertEquals(1, values.size());
@@ -84,23 +80,31 @@ public class AxiomValueGathererTest {
         assertEquals(CONTEXT, desc.getAssertionContext(DATA_ASSERTION));
     }
 
+    private AxiomValueDescriptor getAxiomValueDescriptor() throws Exception {
+        final Field axDescField = AxiomValueGatherer.class.getDeclaredField("axiomDescriptor");
+        axDescField.setAccessible(true);
+        final AxiomValueDescriptor desc = (AxiomValueDescriptor) axDescField.get(sut);
+        assertNotNull(desc);
+        return desc;
+    }
+
     private Value<String> addValue() {
         final Value<String> val = new Value<>("SomeValue");
-        gatherer.addValue(DATA_ASSERTION, val, CONTEXT);
+        sut.addValue(DATA_ASSERTION, val, CONTEXT);
         return val;
     }
 
     @Test
-    public void testAddPropertiesTwice() throws Exception {
+    void testAddPropertiesTwice() throws Exception {
         final Map<Assertion, Set<Value<?>>> propsOne = new HashMap<>();
         propsOne.put(DATA_ASSERTION, new HashSet<>(Arrays.asList(new Value<>("one"), new Value<>("two"))));
-        gatherer.addProperties(propsOne, null);
+        sut.addProperties(propsOne, null);
         final Map<Assertion, Set<Value<?>>> propsTwo = new HashMap<>();
         propsTwo.put(OBJECT_ASSERTION, Collections.singleton(new Value<>("http://krizik.felk.cvut.cz/pp")));
         propsTwo.put(DATA_ASSERTION, Collections.singleton(new Value<>("117")));
-        gatherer.addProperties(propsTwo, null);
+        sut.addProperties(propsTwo, null);
 
-        final Map<Assertion, Set<Value<?>>> res = OOMTestUtils.getPropertiesToAdd(gatherer);
+        final Map<Assertion, Set<Value<?>>> res = OOMTestUtils.getPropertiesToAdd(sut);
         verifyResultContainsAll(res, propsOne);
         verifyResultContainsAll(res, propsTwo);
     }
@@ -113,18 +117,18 @@ public class AxiomValueGathererTest {
     }
 
     @Test
-    public void testPersist() throws Exception {
+    void testPersist() throws Exception {
         addValue();
         final SimpleListValueDescriptor simpleD = mock(SimpleListValueDescriptor.class);
         final ReferencedListValueDescriptor referencedD = mock(ReferencedListValueDescriptor.class);
-        gatherer.addSimpleListValues(simpleD);
-        gatherer.addReferencedListValues(referencedD);
-        final Set<URI> typesToAdd = typesToAdd();
-        gatherer.addTypes(typesToAdd, null);
+        sut.addSimpleListValues(simpleD);
+        sut.addReferencedListValues(referencedD);
+        final Set<URI> typesToAdd = generateTypes();
+        sut.addTypes(typesToAdd, null);
         final Map<Assertion, Set<Value<?>>> propsToAdd = propertiesToAdd();
-        gatherer.addProperties(propsToAdd, null);
+        sut.addProperties(propsToAdd, null);
 
-        gatherer.persist(connectionMock);
+        sut.persist(connectionMock);
         verify(connectionMock).persist(any(AxiomValueDescriptor.class));
         verify(listsMock).persistSimpleList(simpleD);
         verify(listsMock).persistReferencedList(referencedD);
@@ -132,12 +136,8 @@ public class AxiomValueGathererTest {
         verify(propertiesMock).addProperties(SUBJECT, null, propsToAdd);
     }
 
-    private Set<URI> typesToAdd() {
-        final Set<URI> set = new HashSet<>();
-        set.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeOne"));
-        set.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeTwo"));
-        set.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeThre"));
-        return set;
+    private Set<URI> generateTypes() {
+        return IntStream.range(0, 3).mapToObj(i -> Generators.createIndividualIdentifier()).collect(Collectors.toSet());
     }
 
     private Map<Assertion, Set<Value<?>>> propertiesToAdd() {
@@ -149,22 +149,22 @@ public class AxiomValueGathererTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    void testUpdate() throws Exception {
         addValue();
         final SimpleListValueDescriptor simpleD = mock(SimpleListValueDescriptor.class);
         final ReferencedListValueDescriptor referencedD = mock(ReferencedListValueDescriptor.class);
-        gatherer.addSimpleListValues(simpleD);
-        gatherer.addReferencedListValues(referencedD);
-        final Set<URI> typesToAdd = typesToAdd();
-        gatherer.addTypes(typesToAdd, null);
-        final Set<URI> typesToRemove = typesToRemove();
-        gatherer.removeTypes(typesToRemove, null);
+        sut.addSimpleListValues(simpleD);
+        sut.addReferencedListValues(referencedD);
+        final Set<URI> typesToAdd = generateTypes();
+        sut.addTypes(typesToAdd, null);
+        final Set<URI> typesToRemove = generateTypes();
+        sut.removeTypes(typesToRemove, null);
         final Map<Assertion, Set<Value<?>>> propsToAdd = propertiesToAdd();
-        gatherer.addProperties(propsToAdd, null);
+        sut.addProperties(propsToAdd, null);
         final Map<Assertion, Set<Value<?>>> propsToRemove = propertiesToRemove();
-        gatherer.removeProperties(propsToRemove, null);
+        sut.removeProperties(propsToRemove, null);
 
-        gatherer.update(connectionMock);
+        sut.update(connectionMock);
         verify(connectionMock).update(any(AxiomValueDescriptor.class));
         verify(listsMock).updateSimpleList(simpleD);
         verify(listsMock).updateReferencedList(referencedD);
@@ -174,17 +174,21 @@ public class AxiomValueGathererTest {
         verify(propertiesMock).removeProperties(SUBJECT, null, propsToRemove);
     }
 
-    private Set<URI> typesToRemove() {
-        final Set<URI> set = new HashSet<>();
-        set.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeFour"));
-        set.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeFive"));
-        set.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeSix"));
-        return set;
-    }
-
     private Map<Assertion, Set<Value<?>>> propertiesToRemove() {
         final Map<Assertion, Set<Value<?>>> props = new HashMap<>();
         props.put(DATA_ASSERTION, Collections.singleton(new Value<>("valueFour")));
         return props;
+    }
+
+    @Test
+    void addValueSetsAssertionContextWhenItIsDefaultAndSubjectContextIsDifferent() throws Exception {
+        this.sut = new AxiomValueGatherer(SUBJECT, CONTEXT);
+        final Value<String> value = new Value<>("test value");
+        sut.addValue(DATA_ASSERTION, value, null);
+
+        final AxiomValueDescriptor result = getAxiomValueDescriptor();
+        assertEquals(CONTEXT, result.getSubjectContext());
+        assertTrue(result.containsAssertion(DATA_ASSERTION));
+        assertNull(result.getAssertionContext(DATA_ASSERTION));
     }
 }
