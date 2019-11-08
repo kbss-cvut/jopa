@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -101,24 +99,24 @@ public interface EntityManager {
     void remove(final Object entity);
 
     /**
-     * Find by primary key.
+     * Find by identifier.
      * <p>
-     * Search for an entity of the specified class and primary key. If the entity instance is contained in the
+     * Search for an entity of the specified class and identifier. If the entity instance is contained in the
      * persistence context, it is returned from there.
      *
      * @param entityClass Entity class
-     * @param primaryKey  Primary key
+     * @param identifier  Entity identifier
      * @return the found entity instance or {@code null} if the entity does not exist in the given ontology context
      * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
-     *                                  not a valid type for that entity’s primary key
-     * @throws NullPointerException     If {@code entityClass}, {@code primaryKey} is {@code null}
+     *                                  not a valid type for that entity’s identifier
+     * @throws NullPointerException     If {@code entityClass}, {@code identifier} is {@code null}
      */
-    <T> T find(final Class<T> entityClass, final Object primaryKey);
+    <T> T find(final Class<T> entityClass, final Object identifier);
 
     /**
-     * Find by primary key.
+     * Find by identifier.
      * <p>
-     * Search for an entity of the specified class and primary key. If the entity instance is contained in the
+     * Search for an entity of the specified class and identifier. If the entity instance is contained in the
      * persistence context, it is returned from there.
      * <p>
      * The {@code descriptor} parameter represents repository and context in which the entity should be looked for.
@@ -128,7 +126,7 @@ public interface EntityManager {
      * @param descriptor  Entity descriptor
      * @return the found entity instance or {@code null} if the entity does not exist in the given ontology context
      * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
-     *                                  not a valid type for that entity’s primary key
+     *                                  not a valid type for that entity’s identifier
      * @throws NullPointerException     If {@code entityClass}, {@code identifier} or {@code contextUri} is {@code
      *                                  null}
      * @see #getContexts()

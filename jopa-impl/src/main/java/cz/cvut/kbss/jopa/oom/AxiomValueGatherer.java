@@ -73,7 +73,7 @@ class AxiomValueGatherer {
 
     void addTypes(Set<URI> types, URI context) {
         if (typesToAdd == null) {
-            this.typesToAdd = new HashSet<>();
+            this.typesToAdd = new HashSet<>(types.size());
         }
         appendTypes(typesToAdd, types, context);
     }
@@ -85,14 +85,14 @@ class AxiomValueGatherer {
 
     void removeTypes(Set<URI> types, URI context) {
         if (typesToRemove == null) {
-            this.typesToRemove = new HashSet<>();
+            this.typesToRemove = new HashSet<>(types.size());
         }
         appendTypes(typesToRemove, types, context);
     }
 
     void addProperties(Map<Assertion, Set<Value<?>>> properties, URI context) {
         if (propertiesToAdd == null) {
-            this.propertiesToAdd = new HashMap<>();
+            this.propertiesToAdd = new HashMap<>(properties.size());
         }
         appendProperties(propertiesToAdd, properties, context);
     }
@@ -111,7 +111,7 @@ class AxiomValueGatherer {
 
     void removeProperties(Map<Assertion, Set<Value<?>>> properties, URI context) {
         if (propertiesToRemove == null) {
-            this.propertiesToRemove = new HashMap<>();
+            this.propertiesToRemove = new HashMap<>(properties.size());
         }
         appendProperties(propertiesToRemove, properties, context);
     }

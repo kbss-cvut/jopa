@@ -30,7 +30,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
 
     final Class<?> elementType;
 
-    Collection<Object> values;
+    final Collection<Object> values;
 
     PluralDataPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att,
                                Descriptor attributeDescriptor, EntityMappingHelper mapper) {
