@@ -22,13 +22,13 @@ class InstanceRegistry {
 
     protected Map<URI, Map<URI, Object>> instances = new HashMap<>();
 
-    <T> void registerInstance(URI primaryKey, T instance, URI context) {
-        assert primaryKey != null;
+    <T> void registerInstance(URI identifier, T instance, URI context) {
+        assert identifier != null;
 
         if (!instances.containsKey(context)) {
             instances.put(context, new HashMap<>());
         }
-        instances.get(context).put(primaryKey, instance);
+        instances.get(context).put(identifier, instance);
     }
 
     boolean containsInstance(URI primaryKey, URI context) {

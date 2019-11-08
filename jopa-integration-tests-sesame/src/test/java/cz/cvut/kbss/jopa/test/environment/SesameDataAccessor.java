@@ -14,7 +14,10 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
@@ -26,19 +29,21 @@ import static org.junit.Assert.assertTrue;
 
 public class SesameDataAccessor implements DataAccessor {
 
+    private final ValueFactory vf = SimpleValueFactory.getInstance();
+
     @Override
-    public void persistTestData(Collection<Triple> data, EntityManager em) {
+    public void persistTestData(Collection<Quad> data, EntityManager em) {
         final Repository repository = em.unwrap(Repository.class);
         try (final RepositoryConnection connection = repository.getConnection()) {
-            final ValueFactory vf = connection.getValueFactory();
             connection.begin();
-            for (Triple t : data) {
-                if (t.getValue() instanceof URI) {
-                    connection.add(vf.createIRI(t.getSubject().toString()), vf.createIRI(t.getProperty().toString()),
-                            vf.createIRI(t.getValue().toString()));
+            for (Quad t : data) {
+                if (t.getContext() != null) {
+                    connection
+                            .add(toIri(t.getSubject()), toIri(t.getProperty()), toValue(t.getValue(), t.getLanguage()),
+                                    toIri(t.getContext()));
                 } else {
-                    connection.add(vf.createIRI(t.getSubject().toString()), vf.createIRI(t.getProperty().toString()),
-                            SesameUtils.createDataPropertyLiteral(t.getValue(), t.getLanguage(), vf));
+                    connection
+                            .add(toIri(t.getSubject()), toIri(t.getProperty()), toValue(t.getValue(), t.getLanguage()));
                 }
 
             }
@@ -46,32 +51,39 @@ public class SesameDataAccessor implements DataAccessor {
         }
     }
 
+    private IRI toIri(URI uri) {
+        return vf.createIRI(uri.toString());
+    }
+
+    private Value toValue(Object value, String language) {
+        return value instanceof URI ? toIri((URI) value) : SesameUtils.createDataPropertyLiteral(value, language, vf);
+    }
+
     @Override
-    public void verifyDataPresent(Collection<Triple> data, EntityManager em) {
+    public void verifyDataPresent(Collection<Quad> data, EntityManager em) {
         final Repository repository = em.unwrap(Repository.class);
         try (final RepositoryConnection connection = repository.getConnection()) {
-            data.forEach(t -> assertTrue(doesTripleExist(t, connection)));
+            data.forEach(t -> assertTrue(doesQuadExist(t, connection)));
         }
     }
 
-    private boolean doesTripleExist(Triple t, RepositoryConnection connection) {
-        final ValueFactory vf = connection.getValueFactory();
-        final boolean found;
-        if (t.getValue() instanceof URI) {
-            return connection.hasStatement(vf.createIRI(t.getSubject().toString()),
-                    vf.createIRI(t.getProperty().toString()), vf.createIRI(t.getValue().toString()), false);
+    private boolean doesQuadExist(Quad t, RepositoryConnection connection) {
+        if (t.getContext() != null) {
+            return connection
+                    .hasStatement(toIri(t.getSubject()), toIri(t.getProperty()), toValue(t.getValue(), t.getLanguage()),
+                            false, toIri(t.getContext()));
         } else {
-            return connection.hasStatement(vf.createIRI(t.getSubject().toString()),
-                    vf.createIRI(t.getProperty().toString()),
-                    SesameUtils.createDataPropertyLiteral(t.getValue(), t.getLanguage(), vf), false);
+            return connection
+                    .hasStatement(toIri(t.getSubject()), toIri(t.getProperty()), toValue(t.getValue(), t.getLanguage()),
+                            false);
         }
     }
 
     @Override
-    public void verifyDataNotPresent(Collection<Triple> data, EntityManager em) {
+    public void verifyDataNotPresent(Collection<Quad> data, EntityManager em) {
         final Repository repository = em.unwrap(Repository.class);
         try (final RepositoryConnection connection = repository.getConnection()) {
-            data.forEach(t -> assertFalse(doesTripleExist(t, connection)));
+            data.forEach(t -> assertFalse(doesQuadExist(t, connection)));
         }
     }
 }

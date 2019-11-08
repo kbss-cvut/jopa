@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -334,5 +335,28 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri(), cOneDescriptor);
         assertNotNull(result.getOwlClassA());
         assertEquals(entityA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
+    }
+
+    /**
+     * Bug #58
+     */
+    @Test
+    void persistEntityIntoContextAndAttributeIntoDefaultWorksCorrectly() {
+        this.em = getEntityManager("persistEntityIntoContextAndAttributeIntoDefaultWorksCorrectly", false);
+        cOneDescriptor.addAttributeContext(OWLClassA.getStringField(), null);
+        transactional(() -> em.persist(entityA, cOneDescriptor));
+
+        transactional(() -> {
+            try {
+                verifyStatementsPresent(Collections.singleton(
+                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                                entityA.getStringAttribute())), em);
+                verifyStatementsNotPresent(Collections.singleton(
+                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                                entityA.getStringAttribute(), CONTEXT_ONE)), em);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

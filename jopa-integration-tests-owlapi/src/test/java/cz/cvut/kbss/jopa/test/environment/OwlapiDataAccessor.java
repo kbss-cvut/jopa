@@ -29,11 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class OwlapiDataAccessor implements DataAccessor {
 
     @Override
-    public void persistTestData(Collection<Triple> data, EntityManager em) {
+    public void persistTestData(Collection<Quad> data, EntityManager em) {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
         final OWLOntologyManager manager = ontology.getOWLOntologyManager();
         final OWLDataFactory df = manager.getOWLDataFactory();
-        for (Triple t : data) {
+        for (Quad t : data) {
             final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
             final AddAxiom axiom;
             if (t.getProperty().toString().equals(RDF.TYPE)) {
@@ -61,33 +61,33 @@ public class OwlapiDataAccessor implements DataAccessor {
     }
 
     @Override
-    public void verifyDataPresent(Collection<Triple> data, EntityManager em) {
+    public void verifyDataPresent(Collection<Quad> data, EntityManager em) {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
         data.forEach(t -> assertTrue(doesAxiomExist(t, ontology)));
     }
 
-    private boolean doesAxiomExist(Triple triple, OWLOntology ontology) {
+    private boolean doesAxiomExist(Quad quad, OWLOntology ontology) {
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
-        final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(triple.getSubject()));
-        if (triple.getProperty().toString().equals(RDF.TYPE)) {
-            final OWLClass cls = df.getOWLClass(IRI.create(triple.getValue().toString()));
+        final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(quad.getSubject()));
+        if (quad.getProperty().toString().equals(RDF.TYPE)) {
+            final OWLClass cls = df.getOWLClass(IRI.create(quad.getValue().toString()));
             return ontology.containsAxiom(df.getOWLClassAssertionAxiom(cls, ind));
-        } else if (triple.getValue() instanceof URI) {
-            final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(triple.getProperty()));
-            final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) triple.getValue()));
+        } else if (quad.getValue() instanceof URI) {
+            final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(quad.getProperty()));
+            final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) quad.getValue()));
             return ontology.containsAxiom(df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));
         } else {
-            final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(triple.getProperty()));
-            final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(triple.getValue(), df, triple.getLanguage());
+            final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(quad.getProperty()));
+            final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(quad.getValue(), df, quad.getLanguage());
             final OWLAxiom apAxiom = df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value);
-            final OWLDataProperty dp = df.getOWLDataProperty(IRI.create(triple.getProperty()));
+            final OWLDataProperty dp = df.getOWLDataProperty(IRI.create(quad.getProperty()));
             final OWLAxiom dpAxiom = df.getOWLDataPropertyAssertionAxiom(dp, ind, value);
             return ontology.containsAxiom(apAxiom) || ontology.containsAxiom(dpAxiom);
         }
     }
 
     @Override
-    public void verifyDataNotPresent(Collection<Triple> data, EntityManager em) {
+    public void verifyDataNotPresent(Collection<Quad> data, EntityManager em) {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
         data.forEach(t -> assertFalse(doesAxiomExist(t, ontology)));
     }

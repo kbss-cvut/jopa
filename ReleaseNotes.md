@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.13.3 - November 8, 2019
+- Upgraded to RDF4J 3.0.2 and OWLAPI 5.1.12.
+- Fixed the issue with incorrect treatment of default context specification for attribute of an entity in a different context (Bug #58).
+
 ## 0.13.2 - October 21, 2019
 - Upgraded to RDF4J 3.0.1.
 - Fixed missing support for lexical form and simple literal plural attributes.

@@ -16,14 +16,14 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.environment.DataAccessor;
-import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.test.environment.*;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -153,5 +153,29 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         final OWLClassD res = findRequired(OWLClassD.class, entityD.getUri(), cOneDescriptor);
         assertNotNull(res.getOwlClassA());
         assertEquals(entityA.getStringAttribute(), res.getOwlClassA().getStringAttribute());
+    }
+
+    /**
+     * Bug #58
+     */
+    @Test
+    void retrieveFromContextWithAttributeInDefaultWorksCorrectly() {
+        this.em = getEntityManager("retrieveFromContextWithAttributeInDefaultWorksCorrectly", false);
+        cOneDescriptor.addAttributeContext(OWLClassA.getStringField(), null);
+        transactional(() -> {
+            try {
+                persistTestData(Arrays.asList(
+                        new Quad(entityA.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A),
+                                CONTEXT_ONE),
+                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                                entityA.getStringAttribute())), em);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri(), cOneDescriptor);
+        assertNotNull(result.getStringAttribute());
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
     }
 }

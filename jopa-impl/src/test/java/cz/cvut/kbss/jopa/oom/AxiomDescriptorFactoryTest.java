@@ -412,4 +412,17 @@ class AxiomDescriptorFactoryTest {
         final Assertion result = desc.getAssertions().iterator().next();
         assertFalse(result.hasLanguage());
     }
+
+    @Test
+    void createForLoadingSetsDefaultContextForAssertionInDefaultWhenSubjectContextIsDifferent() throws Exception {
+        descriptorInContext.addAttributeContext(OWLClassA.getStrAttField(), null);
+        final LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, PK, descriptorInContext);
+
+        final AxiomDescriptor desc = sut
+                .createForEntityLoading(params, metamodelMocks.forOwlClassA().entityType());
+        assertEquals(CONTEXT, desc.getSubjectContext());
+        final URI result = desc.getAssertionContext(
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), Generators.LANG, false));
+        assertNull(result);
+    }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -60,7 +58,7 @@ class AxiomValueGatherer {
         for (Value<?> v : values) {
             axiomDescriptor.addAssertionValue(assertion, v);
         }
-        if (context != null) {
+        if (!Objects.equals(axiomDescriptor.getSubjectContext(), context)) {
             axiomDescriptor.setAssertionContext(assertion, context);
         }
     }
@@ -75,7 +73,7 @@ class AxiomValueGatherer {
 
     void addTypes(Set<URI> types, URI context) {
         if (typesToAdd == null) {
-            this.typesToAdd = new HashSet<>();
+            this.typesToAdd = new HashSet<>(types.size());
         }
         appendTypes(typesToAdd, types, context);
     }
@@ -87,14 +85,14 @@ class AxiomValueGatherer {
 
     void removeTypes(Set<URI> types, URI context) {
         if (typesToRemove == null) {
-            this.typesToRemove = new HashSet<>();
+            this.typesToRemove = new HashSet<>(types.size());
         }
         appendTypes(typesToRemove, types, context);
     }
 
     void addProperties(Map<Assertion, Set<Value<?>>> properties, URI context) {
         if (propertiesToAdd == null) {
-            this.propertiesToAdd = new HashMap<>();
+            this.propertiesToAdd = new HashMap<>(properties.size());
         }
         appendProperties(propertiesToAdd, properties, context);
     }
@@ -113,7 +111,7 @@ class AxiomValueGatherer {
 
     void removeProperties(Map<Assertion, Set<Value<?>>> properties, URI context) {
         if (propertiesToRemove == null) {
-            this.propertiesToRemove = new HashMap<>();
+            this.propertiesToRemove = new HashMap<>(properties.size());
         }
         appendProperties(propertiesToRemove, properties, context);
     }
