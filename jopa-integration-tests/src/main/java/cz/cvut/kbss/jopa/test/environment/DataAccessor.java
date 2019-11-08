@@ -27,7 +27,7 @@ public interface DataAccessor {
      * @param em   Means of getting vendor-specific storage access
      * @throws Exception If storage access error occurs
      */
-    void persistTestData(Collection<Triple> data, EntityManager em) throws Exception;
+    void persistTestData(Collection<Quad> data, EntityManager em) throws Exception;
 
     /**
      * Verifies that the specified data are present in the storage.
@@ -39,7 +39,7 @@ public interface DataAccessor {
      * @param em   Means of getting vendor-specific storage access
      * @throws Exception If storage access error occurs
      */
-    void verifyDataPresent(Collection<Triple> data, EntityManager em) throws Exception;
+    void verifyDataPresent(Collection<Quad> data, EntityManager em) throws Exception;
 
     /**
      * Verifies that the specified data are not present in the storage.
@@ -51,5 +51,5 @@ public interface DataAccessor {
      * @param em   Means of getting vendor-specific storage access
      * @throws Exception If storage access error occurs
      */
-    void verifyDataNotPresent(Collection<Triple> data, EntityManager em) throws Exception;
+    void verifyDataNotPresent(Collection<Quad> data, EntityManager em) throws Exception;
 }

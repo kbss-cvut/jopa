@@ -20,7 +20,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
@@ -219,7 +219,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final String value = "v cestine";
         final String lang = "cs";
         persistTestData(Collections
-                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, lang)), em);
+                .singleton(new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, lang)), em);
 
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage(lang);
@@ -238,11 +238,11 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityN);
         final String csAnnotation = "anotace cesky";
         final String csString = "retezec cesky";
-        final Set<Triple> testData = new HashSet<>();
-        testData.add(new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
+        final Set<Quad> testData = new HashSet<>();
+        testData.add(new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
                 csAnnotation, "cs"));
         testData.add(
-                new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE), csString, "cs"));
+                new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE), csString, "cs"));
         persistTestData(testData, em);
 
         final Descriptor descriptor = new EntityDescriptor();
@@ -261,7 +261,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityA);
         final String value = "cestina";
         persistTestData(Collections
-                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
+                .singleton(new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
 
         final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri());
         assertNull(resOne.getStringAttribute());
@@ -281,7 +281,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityA);   // persisted with @en
         final String value = "cestina";
         persistTestData(Collections
-                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
+                .singleton(new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
 
         final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(entityA.getStringAttribute(), resOne.getStringAttribute());
@@ -385,7 +385,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityM);
         final Integer value = 117;
         persistTestData(Collections
-                        .singleton(new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_lexicalForm), value)),
+                        .singleton(new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_lexicalForm), value)),
                 em);
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value.toString(), result.getLexicalForm());
@@ -396,8 +396,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("loadingEntityWithSimpleLiteralLoadsSimpleLiteralValue", false);
         final String value = "test";
         persistTestData(Arrays.asList(
-                new Triple(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
-                new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, null)), em);
+                new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, (String) null)), em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value, result.getSimpleLiteral());
@@ -408,8 +408,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("loadEntityWithSimpleLiteralLoadsAlsoLanguageTaggedValue", false);
         final String value = "test";
         persistTestData(Arrays.asList(
-                new Triple(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
-                new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, "en")), em);
+                new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, "en")), em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value, result.getSimpleLiteral());

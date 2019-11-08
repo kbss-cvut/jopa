@@ -16,7 +16,7 @@ import cz.cvut.kbss.jopa.test.OWLClassW;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public abstract class RetrieveWithInferenceRunner extends BaseRunner {
     @Test
     public void retrievedEntityWithInferredTypesContainsInferredData() throws Exception {
         persistTestData(Collections.singleton(
-                new Triple(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
+                new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
         persist(entityW);
 

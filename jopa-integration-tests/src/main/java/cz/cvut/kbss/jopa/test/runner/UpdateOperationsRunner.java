@@ -1317,11 +1317,11 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     void updateOverwritesLanguageStringWithSimpleLiteralForSimpleLiteralAttribute() throws Exception {
         this.em = getEntityManager("updateOverwritesLanguageStringWithSimpleLiteralForSimpleLiteralAttribute", true);
         persist(entityM);
-        final Collection<Triple> originalTriple = Collections.singleton(
-                new Triple(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), "test", "en"));
-        persistTestData(originalTriple, em);
+        final Collection<Quad> originalQuad = Collections.singleton(
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), "test", "en"));
+        persistTestData(originalQuad, em);
 
         updateSimpleLiteralAndVerify();
-        verifyStatementsNotPresent(originalTriple, em);
+        verifyStatementsNotPresent(originalQuad, em);
     }
 }

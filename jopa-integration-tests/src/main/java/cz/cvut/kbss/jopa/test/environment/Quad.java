@@ -17,24 +17,43 @@ package cz.cvut.kbss.jopa.test.environment;
 import java.net.URI;
 import java.util.Objects;
 
-public class Triple {
+public class Quad {
 
     private final URI subject;
     private final URI property;
     private final Object value;
+    private final URI context;
     private final String language;
 
-    public Triple(URI subject, URI property, Object value) {
+    public Quad(URI subject, URI property, Object value) {
         this.subject = Objects.requireNonNull(subject);
         this.property = Objects.requireNonNull(property);
         this.value = Objects.requireNonNull(value);
+        this.context = null;
         this.language = "en";
     }
 
-    public Triple(URI subject, URI property, Object value, String language) {
+    public Quad(URI subject, URI property, Object value, URI context) {
         this.subject = Objects.requireNonNull(subject);
         this.property = Objects.requireNonNull(property);
         this.value = Objects.requireNonNull(value);
+        this.context = context;
+        this.language = "en";
+    }
+
+    public Quad(URI subject, URI property, Object value, String language) {
+        this.subject = Objects.requireNonNull(subject);
+        this.property = Objects.requireNonNull(property);
+        this.value = Objects.requireNonNull(value);
+        this.context = null;
+        this.language = language;
+    }
+
+    public Quad(URI subject, URI property, Object value, URI context, String language) {
+        this.subject = Objects.requireNonNull(subject);
+        this.property = Objects.requireNonNull(property);
+        this.value = Objects.requireNonNull(value);
+        this.context = context;
         this.language = language;
     }
 
@@ -50,28 +69,32 @@ public class Triple {
         return value;
     }
 
+    public URI getContext() {
+        return context;
+    }
+
     public String getLanguage() {
         return language;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Triple)) return false;
-
-        Triple triple = (Triple) o;
-
-        return subject.equals(triple.subject) && property.equals(triple.property) && language.equals(triple.language) &&
-                value.equals(triple.value);
-
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Quad)) {
+            return false;
+        }
+        Quad quad = (Quad) o;
+        return subject.equals(quad.subject) &&
+                property.equals(quad.property) &&
+                value.equals(quad.value) &&
+                Objects.equals(context, quad.context) &&
+                Objects.equals(language, quad.language);
     }
 
     @Override
     public int hashCode() {
-        int result = subject.hashCode();
-        result = 31 * result + property.hashCode();
-        result = 31 * result + value.hashCode();
-        result = 31 * result + language.hashCode();
-        return result;
+        return Objects.hash(subject, property, value, context, language);
     }
 }

@@ -17,7 +17,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import org.junit.jupiter.api.AfterEach;
 import org.slf4j.Logger;
 
@@ -177,15 +177,15 @@ public abstract class BaseRunner {
         return persistenceFactory.getEntityManager(repositoryName, cacheEnabled, properties);
     }
 
-    protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
+    protected void persistTestData(Collection<Quad> data, EntityManager em) throws Exception {
         dataAccessor.persistTestData(data, em);
     }
 
-    protected void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception {
+    protected void verifyStatementsPresent(Collection<Quad> expected, EntityManager em) throws Exception {
         dataAccessor.verifyDataPresent(expected, em);
     }
 
-    protected void verifyStatementsNotPresent(Collection<Triple> notExpected, EntityManager em) throws Exception {
+    protected void verifyStatementsNotPresent(Collection<Quad> notExpected, EntityManager em) throws Exception {
         dataAccessor.verifyDataNotPresent(notExpected, em);
     }
 

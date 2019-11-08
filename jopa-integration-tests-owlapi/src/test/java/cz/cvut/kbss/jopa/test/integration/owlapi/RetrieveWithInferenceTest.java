@@ -16,7 +16,7 @@ import cz.cvut.kbss.jopa.test.OWLClassW;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.runner.RetrieveWithInferenceRunner;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         // We have to add the subclass assertion here, so that it is applied to the same transactional snapshot as is
         // queried next
         persistTestData(Collections.singleton(
-                new Triple(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
+                new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
         final OWLClassW result = em.find(OWLClassW.class, entityW.getUri());
         assertNotNull(result);

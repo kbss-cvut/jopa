@@ -19,7 +19,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Triple;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
@@ -40,18 +40,18 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findReadsAttributesOfMappedSuperclass() throws Exception {
-        final Collection<Triple> data = new ArrayList<>();
+        final Collection<Quad> data = new ArrayList<>();
         entityQ.setUri(Generators.generateUri());
         data.add(
-                new Triple(entityQ.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_Q)));
-        data.add(new Triple(entityQ.getUri(), URI.create(RDFS.LABEL), entityQ.getLabel()));
+                new Quad(entityQ.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_Q)));
+        data.add(new Quad(entityQ.getUri(), URI.create(RDFS.LABEL), entityQ.getLabel()));
         data.add(
-                new Triple(entityQ.getUri(), URI.create(Vocabulary.P_Q_PARENT_STRING_ATTRIBUTE),
+                new Quad(entityQ.getUri(), URI.create(Vocabulary.P_Q_PARENT_STRING_ATTRIBUTE),
                         entityQ.getParentString()));
-        data.add(new Triple(entityQ.getUri(), URI.create(Vocabulary.P_Q_STRING_ATTRIBUTE),
+        data.add(new Quad(entityQ.getUri(), URI.create(Vocabulary.P_Q_STRING_ATTRIBUTE),
                 entityQ.getStringAttribute()));
         data.addAll(triplesForA());
-        data.add(new Triple(entityQ.getUri(), URI.create(Vocabulary.P_HAS_OWL_CLASS_A), entityA.getUri()));
+        data.add(new Quad(entityQ.getUri(), URI.create(Vocabulary.P_HAS_OWL_CLASS_A), entityA.getUri()));
         final EntityManager em = getEntityManager("findReadsAttributesOfMappedSuperclass", false);
         persistTestData(data, em);
 
@@ -64,19 +64,19 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         assertEquals(entityQ.getOwlClassA().getUri(), result.getOwlClassA().getUri());
     }
 
-    private Collection<Triple> triplesForA() {
-        final Collection<Triple> data = new ArrayList<>();
+    private Collection<Quad> triplesForA() {
+        final Collection<Quad> data = new ArrayList<>();
         entityA.setUri(Generators.generateUri());
         data.add(
-                new Triple(entityA.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A)));
-        data.add(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                new Quad(entityA.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A)));
+        data.add(new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
                 entityA.getStringAttribute()));
         return data;
     }
 
     @Test
     void findReadsAttributesOfEntitySuperclass() throws Exception {
-        final Collection<Triple> data = triplesForEntityT();
+        final Collection<Quad> data = triplesForEntityT();
         final EntityManager em = getEntityManager("findReadsAttributesOfEntitySuperclass", false);
         persistTestData(data, em);
 
@@ -89,15 +89,15 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         assertEquals(entityA.getUri(), result.getOwlClassA().getUri());
     }
 
-    private Collection<Triple> triplesForEntityT() {
-        final Collection<Triple> data = new ArrayList<>();
+    private Collection<Quad> triplesForEntityT() {
+        final Collection<Quad> data = new ArrayList<>();
         entityT.setUri(Generators.generateUri());
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_T)));
-        data.add(new Triple(entityT.getUri(), URI.create(RDFS.LABEL), entityT.getName()));
-        data.add(new Triple(entityT.getUri(), URI.create(Vocabulary.DC_DESCRIPTION), entityT.getDescription()));
-        data.add(new Triple(entityT.getUri(), URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE), entityT.getIntAttribute()));
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_T)));
+        data.add(new Quad(entityT.getUri(), URI.create(RDFS.LABEL), entityT.getName()));
+        data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.DC_DESCRIPTION), entityT.getDescription()));
+        data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE), entityT.getIntAttribute()));
         data.addAll(triplesForA());
-        data.add(new Triple(entityT.getUri(), URI.create(Vocabulary.P_HAS_OWL_CLASS_A), entityA.getUri()));
+        data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.P_HAS_OWL_CLASS_A), entityA.getUri()));
         return data;
     }
 
@@ -105,8 +105,8 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     void findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent() throws Exception {
         final EntityManager em = getEntityManager("findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent",
                 false);
-        final Collection<Triple> data = triplesForEntityT();
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
+        final Collection<Quad> data = triplesForEntityT();
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
         persistTestData(data, em);
 
         final OWLClassS result = em.find(OWLClassS.class, entityT.getUri());
@@ -118,7 +118,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass() throws Exception {
-        final Collection<Triple> data = triplesForEntityT();
+        final Collection<Quad> data = triplesForEntityT();
 
         final EntityManager em = getEntityManager(
                 "findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass",
@@ -140,11 +140,11 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findLoadsSubclassOfAbstractParent() throws Exception {
-        final Collection<Triple> data = new ArrayList<>();
+        final Collection<Quad> data = new ArrayList<>();
         entityT.setUri(Generators.generateUri());
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
-        data.add(new Triple(entityT.getUri(), URI.create(RDFS.LABEL), entityT.getName()));
-        data.add(new Triple(entityT.getUri(), URI.create(Vocabulary.DC_DESCRIPTION), entityT.getDescription()));
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
+        data.add(new Quad(entityT.getUri(), URI.create(RDFS.LABEL), entityT.getName()));
+        data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.DC_DESCRIPTION), entityT.getDescription()));
 
         final EntityManager em = getEntityManager("findLoadsSubclassOfAbstractParent", false);
         persistTestData(data, em);
@@ -159,8 +159,8 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findLoadsMostConcreteSubclassOfAbstractAncestor() throws Exception {
-        final Collection<Triple> data = triplesForEntityT();
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
+        final Collection<Quad> data = triplesForEntityT();
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
 
         final EntityManager em = getEntityManager("findLoadsMostConcreteSubclassOfAbstractAncestor", false);
         persistTestData(data, em);
@@ -173,9 +173,9 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findReturnsNullWhenMatchingClassIsAbstract() throws Exception {
-        final Collection<Triple> data = triplesForEntityT();
-        data.remove(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_T)));
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
+        final Collection<Quad> data = triplesForEntityT();
+        data.remove(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_T)));
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
 
         final EntityManager em = getEntityManager("findReturnsNullWhenMatchingClassIsAbstract", false);
         persistTestData(data, em);
@@ -185,9 +185,9 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor() throws Exception {
-        final Collection<Triple> data = triplesForEntityT();
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
+        final Collection<Quad> data = triplesForEntityT();
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
 
         final EntityManager em = getEntityManager("findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor",
                 false);
@@ -223,8 +223,8 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypes() throws Exception {
-        final Collection<Triple> data = triplesForEntityT();
-        data.add(new Triple(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_U)));
+        final Collection<Quad> data = triplesForEntityT();
+        data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_U)));
         this.em = getEntityManager("findThrowsAmbiguousTypeExceptionWhenIndividualHasMultipleMostSpecificTypes", false);
         persistTestData(data, em);
 
