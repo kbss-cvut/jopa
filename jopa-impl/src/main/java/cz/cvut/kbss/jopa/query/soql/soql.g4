@@ -1,7 +1,7 @@
 grammar soql;
 
 
-querySentence : typeDef params FROM tables WHERE? whereClausuleJoin? whereClausules?;
+querySentence : typeDef params FROM tables WHERE? whereClausuleJoin? whereClausules? orderByClausule?;
 
 
 
@@ -41,36 +41,30 @@ tableWithName: table tableName ;
 
 
 
-whereClausules: whereClausuleNot* ;
+whereClausules: whereClausuleNot whereClausuleNot* ;
 
-whereClausuleNot: NOT? whereClausule ;
+whereClausuleNot: logOp? NOT? whereClausule ;
 
-whereClausule: param QUERYOPERATOR whereClausuleValue logOp?;
+whereClausule: param QUERYOPERATOR whereClausuleValue;
 
-whereClausuleJoin: clausuleJoinNot* ;
+whereClausuleJoin: clausuleJoinNot clausuleJoinNot* ;
 
 whereClausuleValue: (QMARK TEXT QMARK) | COLONTEXT ;
 
-// whereClausuleMultiple: whereClausule logOp ;
+clausuleJoinNot : logOp? NOT? clausuleJoin ;
+
+clausuleJoin: joinedParams QUERYOPERATOR whereClausuleValue ;
 
 
-clausuleJoinNot : NOT? clausuleJoin ;
-clausuleJoin: joinedParams QUERYOPERATOR whereClausuleValue logOp? ;
 
+orderByClausule: ORDERBY orderBySingleComma orderBySingleComma* ;
 
-/*
+orderBySingleComma: orderBySingle COMMA? ;
 
-joinClausule: JOIN joinTable ;
+orderBySingle: orderByParam ORDERING? ;
 
-leftOuterJoinClausule: LEFTOUTERJOIN joinTable ;
+orderByParam: object DOT attribute (DOT attribute)* ;
 
-joinTable: tableWithName DOT tableParam joinParam ;
-
-tableParam: TEXT ;
-
-joinParam: TEXT ;
-
-*/
 
 
 SELECT: 'SELECT' | 'select' | 'Select' ;
@@ -86,6 +80,14 @@ JOIN: 'JOIN' | 'join' | 'Join' ;
 AND: 'AND' | 'and' | 'And' ;
 
 OR: 'OR' | 'or' | 'Or' ;
+
+ORDERBY: 'ORDER BY' ;
+
+ORDERING: ASC | DESC ;
+
+ASC: 'ASC' ;
+
+DESC: 'DESC' ;
 
 LEFTOUTERJOIN: 'LEFT OUTER JOIN' | 'left outer join' | 'Left Outer Join' ;
 

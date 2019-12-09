@@ -226,4 +226,44 @@ public interface soqlListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitClausuleJoin(soqlParser.ClausuleJoinContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#orderByClausule}.
+	 * @param ctx the parse tree
+	 */
+	void enterOrderByClausule(soqlParser.OrderByClausuleContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#orderByClausule}.
+	 * @param ctx the parse tree
+	 */
+	void exitOrderByClausule(soqlParser.OrderByClausuleContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#orderBySingleComma}.
+	 * @param ctx the parse tree
+	 */
+	void enterOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#orderBySingleComma}.
+	 * @param ctx the parse tree
+	 */
+	void exitOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#orderBySingle}.
+	 * @param ctx the parse tree
+	 */
+	void enterOrderBySingle(soqlParser.OrderBySingleContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#orderBySingle}.
+	 * @param ctx the parse tree
+	 */
+	void exitOrderBySingle(soqlParser.OrderBySingleContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#orderByParam}.
+	 * @param ctx the parse tree
+	 */
+	void enterOrderByParam(soqlParser.OrderByParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#orderByParam}.
+	 * @param ctx the parse tree
+	 */
+	void exitOrderByParam(soqlParser.OrderByParamContext ctx);
 }

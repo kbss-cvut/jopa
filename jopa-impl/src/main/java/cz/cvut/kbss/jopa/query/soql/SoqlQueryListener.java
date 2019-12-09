@@ -18,8 +18,6 @@ public class SoqlQueryListener implements soqlListener {
 
     private String typeDef;
 
-    private boolean orExists = false;
-
     // contains Couple of attributes (Owner, Attribute)
     private ArrayList<MyPair<String, String>> attributes;
 
@@ -27,10 +25,10 @@ public class SoqlQueryListener implements soqlListener {
     private HashMap<String, String> prefixies;
 
     // contains Couple of attributes and filter condiitions: (Owner, Attribute) -> (Operator, Value/QueryParameter)
-    private LinkedHashMap<MyPair<String, String>, MyPair<String, String>> filters;
+    private HashMap<MyPair<String, String>, MyPair<String, String>> filters;
 
     // contains Couple of attributes and filter condiitions: (Owner, Attribute) -> (Operator, Value/QueryParameter)
-    private LinkedHashMap<MyPair<String, String>, MyPair<String, String>> filtersNot;
+    private HashMap<MyPair<String, String>, MyPair<String, String>> filtersNot;
 
     // contains chain of couples of attributes.
     /* if NOT is not present and operator is '=' then last chain contains (Operator, Value/QueryParameter), else contains parameter,
@@ -39,8 +37,14 @@ public class SoqlQueryListener implements soqlListener {
     // Example: p.phone.mobile.number = :phoneNumber: (p, phone) -> (phone, number), (phone, mobile) -> (mobile, number), (mobile, number) -> ( = , :phoneNumber)
     private HashMap<MyPair<String, String>, MyPair<String, String>> joins;
 
-    //contains Couple of attributes of filters and their logical operator: (Owner, Attribute) -> "AND"
-    private HashMap<MyPair<String, String>, String> logicOp;
+    private HashMap<MyPair<String, String>, MyPair<String, String>> joinedNot;
+
+    //contains Couple of attributes which start new OR bracket
+    private ArrayList<MyPair<String, String>> opOr;
+
+    private HashMap<MyPair<String, String>, String> filtersRegex;
+
+    private LinkedHashMap<String, String> orderBy;
 
 
 
@@ -50,10 +54,13 @@ public class SoqlQueryListener implements soqlListener {
         this.typeDef = "SELECT";
         this.attributes = new ArrayList<>();
         this.prefixies = new HashMap<>();
-        this.filters = new LinkedHashMap<>();
-        this.filtersNot = new LinkedHashMap<>();
+        this.filters = new HashMap<>();
+        this.filtersNot = new HashMap<>();
         this.joins = new HashMap<>();
-        this.logicOp = new HashMap<>();
+        this.joinedNot = new HashMap<>();
+        this.filtersRegex = new HashMap<>();
+        this.opOr = new ArrayList<>();
+        this.orderBy = new LinkedHashMap<>();
     }
 
     @Override
@@ -154,6 +161,7 @@ public class SoqlQueryListener implements soqlListener {
 
     @Override
     public void enterLogOp(soqlParser.LogOpContext ctx) {
+
     }
 
     @Override
@@ -222,44 +230,32 @@ public class SoqlQueryListener implements soqlListener {
 
     @Override
     public void enterWhereClausule(soqlParser.WhereClausuleContext ctx) {
+        String[] operators = getOperators(ctx.getParent());
+        String logicalOperator = operators[0];
+        boolean hasNot = operators[1].equals("NOT");
+
         ParseTree objWithAttr = ctx.getChild(0).getChild(0);
-        ParseTree value = ctx.getChild(2); // whereClausuleValue Node
-        boolean isNot = hasNot(ctx.getParent());
-        String logicalOperator = getLogicalOperator(ctx, 3);
-        String tableName = objWithAttr.getChild(0).getChild(0).getText();
-        String attributeName = objWithAttr.getChild(2).getChild(0).getText();
-        MyPair<String, String> param = MyPair.of(tableName, attributeName);
-        //pro odstraneni problemu s OR
         String operator = ctx.getChild(1).getText();
+        // whereClausuleValue Node
+        ParseTree value = ctx.getChild(2);
+
+        String owner = getOwnerfromParam(objWithAttr);
+        String attribute = getAttributefromParam(objWithAttr);
+        MyPair<String, String> param = MyPair.of(owner, attribute);
+
+        //v operandu se muze nachazet parameter :age, alebo hodnota "32"
         String operand = value.getChildCount() > 1 ? value.getChild(1).getText() : value.getChild(0).getText();
         MyPair<String, String> filter = MyPair.of(operator, operand);
-        if (isNot){
+        if (hasNot){
             filtersNot.put(param, filter);
         } else {
-            filters.put(param, filter);
+            if (!operator.equals("=")){
+                filters.put(param, filter);
+            }
         }
-        if(!logicalOperator.isEmpty()){
-            logicOp.put(param, logicalOperator);
+        if (logicalOperator.equals("OR")){
+            opOr.add(param);
         }
-
-        //PROBLEM S OR
-//        if (isNot){
-//            String operand = value.getChildCount() > 1 ? value.getChild(1).getText() : value.getChild(0).getText();
-//            MyPair<String, String> filter = MyPair.of(operator, operand);
-//            filtersNot.put(param, filter);
-//            if(!logicalOperator.isEmpty()){
-//                logicOp.put(param, logicalOperator);
-//            }
-//        } else {
-//            if (!(operator.equals("=") && (logicalOperator.equals("AND") || logicalOperator.isEmpty()))) {
-//                String operand = value.getChildCount() > 1 ? value.getChild(1).getText() : value.getChild(0).getText();
-//                MyPair<String, String> filter = MyPair.of(operator, operand);
-//                filters.put(param, filter);
-//                if (!logicalOperator.isEmpty()) {
-//                    logicOp.put(param, logicalOperator);
-//                }
-//            }
-//        }
     }
 
     @Override
@@ -299,15 +295,18 @@ public class SoqlQueryListener implements soqlListener {
 
     @Override
     public void enterClausuleJoin(soqlParser.ClausuleJoinContext ctx) {
-        boolean isNot = hasNot(ctx.getParent());
+        String[] operators = getOperators(ctx.getParent());
+        String logicalOperator = operators[0];
+        boolean hasNot = operators[1].equals("NOT");
+
         ParseTree joinedParams = ctx.getChild(0);
         ParseTree operatorNode = ctx.getChild(1);
         ParseTree whereClausuleValue = ctx.getChild(2);
-        String logicalOperator = getLogicalOperator(ctx, 3);
 
         String owner = getOwnerfromParam(joinedParams);
         String attribute = getAttributefromParam(joinedParams);
-        MyPair<String, String> prevPair = MyPair.of(owner, attribute);
+        MyPair<String, String> firstPair = MyPair.of(owner, attribute);
+        MyPair<String, String> prevPair = firstPair;
         attributes.add(prevPair);
 
         for(int i = 4; i < joinedParams.getChildCount(); i += 2){
@@ -318,48 +317,114 @@ public class SoqlQueryListener implements soqlListener {
             prevPair = actualPair;
         }
         String operator = operatorNode.getText();
-
-        /* QueryParameter has to go to filters/filetrsNot, last couple for joins will be replaced by own parameter
-        example: p.phone.number => pPhoneNumber */
-        String ownParameter = owner + toUc(prevPair.getFirst()) + toUc(prevPair.getSecond());
-        MyPair<String, String> finalPair = MyPair.of(operator, ownParameter);
-        joins.put(prevPair, finalPair);
-        MyPair<String, String> filterKey = MyPair.of(owner + toUc(prevPair.getFirst()), prevPair.getSecond());
-        MyPair<String, String> filterPair = MyPair.of( operator, whereClausuleValue.getText());
-        if(isNot){
-            filtersNot.put(filterKey, filterPair);
+        String ownParameter;
+        if (operator.equals("=")){
+            ownParameter = prevPair.toQueryParam();
         }else{
+          /* QueryParameter has to go to filters/filetrsNot, last couple for joins will be replaced by own parameter
+            example: p.phone.number => pPhoneNumber */
+            ownParameter = owner + toUc(prevPair.getFirst()) + toUc(prevPair.getSecond());
+            MyPair<String, String> filterKey = MyPair.of(owner + toUc(prevPair.getFirst()), prevPair.getSecond());
+            MyPair<String, String> filterPair = MyPair.of( operator, whereClausuleValue.getText());
             filters.put(filterKey, filterPair);
         }
-        if(!logicalOperator.isEmpty()){
-            logicOp.put(filterKey, logicalOperator);
+        MyPair<String, String> finalPair = MyPair.of(operator, ownParameter);
+        if(hasNot){
+            filtersNot.put(firstPair,MyPair.of(operator, whereClausuleValue.getText()));
+            joinedNot.put(firstPair, finalPair);
         }
-
-        // STARA implementace - problem s OR
-//        if (operator.equals("=") && !isNot && !logicalOperator.equals("OR")){
-//            MyPair<String, String> finalPair = MyPair.of(operator, whereClausuleValue.getText());
-//            joins.put(prevPair, finalPair);
-//        }else{
-//            /* QueryParameter has to go to filters/filetrsNot, last couple for joins will be replaced by own parameter
-//            example: p.phone.number => pPhoneNumber */
-//            String ownParameter = owner + toUc(prevPair.getFirst()) + toUc(prevPair.getSecond());
-//            MyPair<String, String> finalPair = MyPair.of(operator, ownParameter);
-//            joins.put(prevPair, finalPair);
-//            MyPair<String, String> filterKey = MyPair.of(owner + toUc(prevPair.getFirst()), prevPair.getSecond());
-//            MyPair<String, String> filterPair = MyPair.of( operator, whereClausuleValue.getText());
-//            if(isNot){
-//                filtersNot.put(filterKey, filterPair);
-//            }else{
-//                filters.put(filterKey, filterPair);
-//            }
-//            if(!logicalOperator.isEmpty()){
-//                logicOp.put(filterKey, logicalOperator);
-//            }
-//        }
+        joins.put(prevPair, finalPair);
+        if (logicalOperator.equals("OR")){
+            opOr.add(firstPair);
+        }
     }
 
     @Override
     public void exitClausuleJoin(soqlParser.ClausuleJoinContext ctx) {
+
+    }
+
+    @Override
+    public void enterOrderByClausule(soqlParser.OrderByClausuleContext ctx) {
+
+    }
+
+    @Override
+    public void exitOrderByClausule(soqlParser.OrderByClausuleContext ctx) {
+
+    }
+
+    @Override
+    public void enterOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx) {
+
+    }
+
+    @Override
+    public void exitOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx) {
+
+    }
+
+    @Override
+    public void enterOrderBySingle(soqlParser.OrderBySingleContext ctx) {
+        ParseTree orderByParam = ctx.getChild(0);
+        String orderingBy = "ASC";
+        if (ctx.getChildCount() > 1){
+            orderingBy = ctx.getChild(1).getText();
+        }
+        int paramsCount = orderByParam.getChildCount();
+        boolean filtered = false;
+        String owner = getOwnerfromParam(orderByParam);
+        String attributeNonFilter;
+        String attributeFilter;
+        if(paramsCount > 3) {
+            String owningAttribute = orderByParam.getChild(paramsCount-3).getChild(0).getText();
+            String attribute = orderByParam.getChild(paramsCount-1).getChild(0).getText();
+            MyPair<String, String> filterKey = MyPair.of(owner + toUc(owningAttribute), attribute);
+            if(filters.containsKey(filterKey)){
+                filtered = true;
+            }
+            if(joinedNot.containsKey(filterKey)){
+                MyPair<String, String> valuePair = joinedNot.get(filterKey);
+                if(!valuePair.getFirst().equals("=")){
+                    filtered = true;
+                }
+            }
+            attributeNonFilter = owningAttribute + toUc(attribute);
+            attributeFilter = filterKey.toQueryParam();
+        } else {
+            String attribute = getAttributefromParam(orderByParam);
+            MyPair<String, String> pair = MyPair.of(owner, attribute);
+            if(filters.containsKey(pair)){
+                filtered = true;
+            }
+            if(filtersNot.containsKey(pair)){
+                MyPair<String, String> valuePair = filtersNot.get(pair);
+                if(!valuePair.getFirst().equals("=")){
+                    filtered = true;
+                }
+            }
+            attributeNonFilter = attribute;
+            attributeFilter = pair.toQueryParam();
+        }
+        if(filtered){
+            orderBy.put(attributeFilter, orderingBy);
+        }else{
+            orderBy.put(attributeNonFilter, orderingBy);
+        }
+    }
+
+    @Override
+    public void exitOrderBySingle(soqlParser.OrderBySingleContext ctx) {
+
+    }
+
+    @Override
+    public void enterOrderByParam(soqlParser.OrderByParamContext ctx) {
+
+    }
+
+    @Override
+    public void exitOrderByParam(soqlParser.OrderByParamContext ctx) {
 
     }
 
@@ -400,25 +465,38 @@ public class SoqlQueryListener implements soqlListener {
         return child.getChild(2).getChild(0).getText();
     }
 
-    private boolean hasNot(ParserRuleContext ctx){
-        return ctx.getChildCount() > 1;
-    }
-
-    private String getLogicalOperator(ParserRuleContext ctx, int position){
-        String operator = "" ;
-        if (ctx.getChildCount() == (position + 1)){
-            operator = ctx.getChild(position).getChild(0).getText();
+    private String[] getOperators(ParserRuleContext ctx){
+        String[] operators;
+        switch (ctx.getChildCount()){
+            case 1:
+                operators = new String[]{"", ""};
+                break;
+            case 2:
+                if(ctx.getChild(0).getChildCount() > 0){
+                    operators = new String[]{ctx.getChild(0).getChild(0).getText(), ""};
+                }else{
+                    operators = new String[]{"", "NOT"};
+                }
+                break;
+            case 3:
+                String logOp = ctx.getChild(0).getChild(0).getText();
+                String invOp = ctx.getChild(1).getText();
+                operators = new String[]{logOp, invOp};
+                break;
+            default:
+                operators = new String[]{"", ""};
         }
-        return operator;
+        return operators;
     }
 
     private String toUc(String s){
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
-    public String getSoqlQuery(){
+    public String getNewQuery(){
         return newQuery;
     }
+
 
     //Methods to build new Query
     private void buildString(){
@@ -426,73 +504,114 @@ public class SoqlQueryListener implements soqlListener {
             return;
         }
         StringBuilder newQueryBuilder = new StringBuilder(typeDef);
-        newQueryBuilder.append(" ?x WHERE { ").append(processAttributes());
-        if(!filters.isEmpty()){
-            newQueryBuilder.append(processFilters());
+        newQueryBuilder.append(" ?x WHERE { ");
+        if(!opOr.isEmpty()){
+            newQueryBuilder.append("{ ");
         }
-        if(!filtersNot.isEmpty()){
-            newQueryBuilder.append(processFiltersNot());
+        newQueryBuilder.append(processAttributes());
+        if(!opOr.isEmpty()){
+            newQueryBuilder.append(" } ");
         }
         newQueryBuilder.append("}");
+        if(!orderBy.isEmpty()){
+            newQueryBuilder.append(" ").append(buildOrdering());
+        }
         newQuery = newQueryBuilder.toString();
     }
 
     private StringBuilder processAttributes(){
         StringBuilder attributesPart = new StringBuilder();
+        ArrayList<MyPair<String,String>> toFilter = new ArrayList<>();
+        ArrayList<MyPair<String,String>> toInvFilter = new ArrayList<>();
         for (MyPair<String, String> attr: attributes) {
-            StringBuilder partBuilder = new StringBuilder();
-            if(attr.isSecondEqual("")) {
-                partBuilder.append(buildObject(attr.getFirst()));
-            }else{
-                partBuilder.append(buildParam(attr));
+            if(opOr.contains(attr)){
+                StringBuilder orPart = new StringBuilder();
+                orPart.append(processAllFilters(toFilter,toInvFilter));
+                orPart.append(" } UNION { ");
+                toFilter.clear();
+                toInvFilter.clear();
+                attributesPart.append(orPart);
             }
-            attributesPart.append(partBuilder);
+            if(filtersNot.containsKey(attr)){
+                toInvFilter.add(attr);
+            }else{
+                if (filters.containsKey(attr)){
+                    toFilter.add(attr);
+                }
+                attributesPart.append(processAttribute(attr));
+            }
         }
+        attributesPart.append(processAllFilters(toFilter,toInvFilter));
         return attributesPart;
     }
 
-    private StringBuilder processFilters(){
-        StringBuilder filtersPart = new StringBuilder("FILTER (");
-        filtersPart.append(processFilter(filters));
-        return filtersPart;
+    private StringBuilder processAllFilters(ArrayList<MyPair<String,String>> toFilter, ArrayList<MyPair<String,String>> toInvFilter){
+        StringBuilder part = new StringBuilder();
+        if(!toFilter.isEmpty()){
+            part.append(processFilter(toFilter, filters));
+        }
+        if(!toInvFilter.isEmpty()){
+            part.append(processInvFilter(toInvFilter));
+        }
+        return part;
     }
 
-    private StringBuilder processFiltersNot(){
-        StringBuilder filtersPart = new StringBuilder("FILTER NOT EXISTS(");
-        filtersPart.append(processFilter(filtersNot));
-        return filtersPart;
-    }
-
-    private StringBuilder processFilter(LinkedHashMap<MyPair<String, String>, MyPair<String, String>> filter){
-        StringBuilder filtersPart = new StringBuilder();
-        Iterator<MyPair<String, String>> keyIterator = filter.keySet().iterator();
-        while(keyIterator.hasNext()){
-            MyPair<String, String> key = keyIterator.next();
-            MyPair<String, String> value = filter.get(key);
-            filtersPart.append("?").append(key.toQueryParam()).append(" ").append(value.getFirst()).append(" ");
-            if(key.getSecond().charAt(0) == ':'){
-                filtersPart.append("?").append(key.getSecond());
-            }else{
-                filtersPart.append(value.getSecond());
+    private StringBuilder processFilter(ArrayList<MyPair<String, String>> toFilter,
+                                        HashMap<MyPair<String, String>, MyPair<String, String>> localFilters) {
+        StringBuilder buildFilter = new StringBuilder();
+        if (toFilter.isEmpty()) {
+            return buildFilter;
+        }
+        buildFilter.append("FILTER (");
+        for (MyPair<String, String> attr : toFilter) {
+            if (toFilter.indexOf(attr) != 0) {
+                buildFilter.append(" && ");
             }
-            if (logicOp.containsKey(key) && keyIterator.hasNext()){
-                filtersPart.append(" ").append(parseLogOp(logicOp.get(key))).append(" ");
+            if(joinedNot.containsKey(attr)){
+                MyPair<String, String> keyPair = joinedNot.get(attr);
+                MyPair<String, String> valuePair = localFilters.get(attr);
+                buildFilter.append("?").append(keyPair.getSecond()).append(" ").append(valuePair.getFirst()).append(" ");
+                if (valuePair.getSecond().charAt(0) == ':') {
+                    buildFilter.append("?").append(attr.getSecond().substring(1));
+                } else {
+                    buildFilter.append(valuePair.getSecond());
+                }
+            }else{
+                MyPair<String, String> valuePair = localFilters.get(attr);
+                buildFilter.append("?").append(attr.toQueryParam()).append(" ").append(valuePair.getFirst()).append(" ");
+                buildFilter.append(valuePair.getSecond());
             }
         }
-//        int filterSize = filter.size();
-//        filter.forEach((MyPair<String, String> k, MyPair<String, String> v) -> {
-//            filtersPart.append("?").append(k.toQueryParam()).append(" ").append(v.getFirst()).append(" ");
-//            if(v.getSecond().charAt(0) == ':'){
-//                filtersPart.append("?").append(k.getSecond());
-//            }else{
-//                filtersPart.append(v.getSecond());
-//            }
-//            if (logicOp.containsKey(k) && filterSize > 1){
-//                filtersPart.append(" ").append(parseLogOp(logicOp.get(k))).append(" ");
-//            }
-//        });
-        filtersPart.append(")");
-        return filtersPart;
+        buildFilter.append(") ");
+        return buildFilter;
+    }
+
+    private StringBuilder processInvFilter(ArrayList<MyPair<String,String>> toInvFilter) {
+        StringBuilder buildInvFilter = new StringBuilder();
+        ArrayList<MyPair<String,String>> toFilter = new ArrayList<>();
+        if (toInvFilter.isEmpty()) {
+            return buildInvFilter;
+        }
+        buildInvFilter.append("FILTER NOT EXISTS ( ");
+        for (MyPair<String, String> attr : toInvFilter) {
+            buildInvFilter.append(processAttribute(attr));
+            MyPair<String, String> pair = filtersNot.get(attr);
+            if(!pair.getFirst().equals("=")){
+                toFilter.add(attr);
+            }
+        }
+        buildInvFilter.append(processFilter(toFilter, filtersNot)).append(")");
+        return buildInvFilter;
+    }
+
+    private StringBuilder processAttribute(MyPair<String, String> attr) {
+        StringBuilder buildAttr = new StringBuilder();
+        if(attr.isSecondEqual("")) {
+            buildAttr.append(buildObject(attr.getFirst()));
+        }else{
+            buildAttr.append(buildParam(attr));
+        }
+        return buildAttr;
     }
 
     private StringBuilder buildObject(String a){
@@ -505,7 +624,16 @@ public class SoqlQueryListener implements soqlListener {
         StringBuilder sb = new StringBuilder("?x ");
         sb.append(toIri(attr.getSecond())).append(" ");
         if(filters.containsKey(attr) || filtersNot.containsKey(attr)){
-            sb.append("?").append(attr.toQueryParam());
+            if(filtersNot.containsKey(attr)){
+                MyPair<String, String> pair = filtersNot.get(attr);
+                if(pair.getFirst().equals("=")){
+                    sb.append("?").append(attr.getSecond());
+                }else{
+                    sb.append("?").append(attr.toQueryParam());
+                }
+            }else{
+                sb.append("?").append(attr.toQueryParam());
+            }
         }else{
             sb.append("?").append(attr.getSecond());
         }
@@ -520,9 +648,8 @@ public class SoqlQueryListener implements soqlListener {
         StringBuilder sb = new StringBuilder("?");
         MyPair<String, String> keyPair = attr;
         while(joins.containsKey(keyPair)){
-            MyPair<String, String> newPair = joins.get(keyPair);
-
             sb.append(keyPair.getFirst()).append(" ").append(toIri(keyPair.getSecond())).append(" ?");
+            MyPair<String, String> newPair = joins.get(keyPair);
             String lastParam = newPair.getSecond();
             if(lastParam.charAt(0) == ':'){
                 lastParam = lastParam.substring(1);
@@ -533,20 +660,24 @@ public class SoqlQueryListener implements soqlListener {
         return sb;
     }
 
+    private StringBuilder buildOrdering(){
+        StringBuilder sb = new StringBuilder("ORDER BY ");
+        Iterator<String> iterator = orderBy.keySet().iterator();
+        while(iterator.hasNext()){
+            String key = iterator.next();
+            String orderingBy = orderBy.get(key);
+            if(orderingBy.equals("DESC")){
+                sb.append("DESC(?").append(key).append(") ");
+            } else {
+                sb.append("?").append(key).append(" ");
+            }
+        }
+        return sb;
+    }
+
     private StringBuilder toIri(String param){
         StringBuilder sb = new StringBuilder("<");
         sb.append(prefix).append(param).append(">");
         return sb;
-    }
-
-    private String parseLogOp(String logOp){
-        switch (logOp) {
-            case "AND":
-                return "&&";
-            case "OR":
-                return "||";
-            default:
-                return "";
-        }
     }
 }
