@@ -6,6 +6,8 @@ public class SoqlOrderParam {
 
     private String orderingBy ;
 
+    private SoqlAttribute attribute;
+
     public SoqlOrderParam(SoqlNode firstNode, String orderingBy) {
         this.firstNode = firstNode;
         this.orderingBy = orderingBy.isEmpty() ? "ASC" : orderingBy;
@@ -39,11 +41,21 @@ public class SoqlOrderParam {
     }
 
     public String getOrderByPart(){
+        String param = attribute.isFilter() ? getAsParam() : attribute.getValue().substring(1);
+        StringBuilder sb = new StringBuilder();
         if(orderingBy.equals("ASC")){
-            return getAsParam();
+            sb.append("?").append(param);
         }else{
-            StringBuilder sb = new StringBuilder("DESC(");
-            return sb.append(getAsParam()).append(")").toString();
+            sb.append("DESC(").append(param).append(")");
         }
+        return sb.toString();
+    }
+
+    public SoqlAttribute getAttribute() {
+        return attribute;
+    }
+
+    public void setAttribute(SoqlAttribute attribute) {
+        this.attribute = attribute;
     }
 }

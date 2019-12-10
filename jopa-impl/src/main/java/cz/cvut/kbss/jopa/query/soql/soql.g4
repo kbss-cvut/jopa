@@ -1,7 +1,7 @@
 grammar soql;
 
 
-querySentence : typeDef params FROM tables WHERE? whereClausuleJoin? whereClausules? orderByClausule?;
+querySentence : typeDef distinct? params FROM tables WHERE? whereClausuleJoin? whereClausules? orderByClausule?;
 
 
 
@@ -24,6 +24,8 @@ attribute: TEXT ;
 
 
 typeDef: SELECT ;
+
+distinct: DISTINCT ;
 
 
 
@@ -88,6 +90,8 @@ ORDERING: ASC | DESC ;
 ASC: 'ASC' ;
 
 DESC: 'DESC' ;
+
+DISTINCT: 'DISTINCT' ;
 
 LEFTOUTERJOIN: 'LEFT OUTER JOIN' | 'left outer join' | 'Left Outer Join' ;
 

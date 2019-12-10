@@ -23,6 +23,8 @@ public class SoqlQueryListener implements soqlListener {
 
     private ArrayList<SoqlOrderParam> orderAttributes;
 
+    private boolean isSelectedParamDistinct = false;
+
 
 
     public SoqlQueryListener() {
@@ -146,6 +148,18 @@ public class SoqlQueryListener implements soqlListener {
 
     @Override
     public void exitTypeDef(soqlParser.TypeDefContext ctx) {}
+
+    @Override
+    public void enterDistinct(soqlParser.DistinctContext ctx) {
+        if(ctx.getChild(0).getText().equals("DISTINCT")){
+            isSelectedParamDistinct = true;
+        }
+    }
+
+    @Override
+    public void exitDistinct(soqlParser.DistinctContext ctx) {
+
+    }
 
     @Override
     public void enterLogOp(soqlParser.LogOpContext ctx) {
@@ -329,6 +343,11 @@ public class SoqlQueryListener implements soqlListener {
         }
         String orderingBy = getOrderingBy(ctx.getParent());
         SoqlOrderParam orderParam = new SoqlOrderParam(firstNode, orderingBy);
+        for (SoqlAttribute attr: attributes) {
+            if (attr.getAsParam().equals(orderParam.getAsParam())){
+                orderParam.setAttribute(attr);
+            }
+        }
         orderAttributes.add(orderParam);
 
     }
@@ -394,7 +413,7 @@ public class SoqlQueryListener implements soqlListener {
         return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : "";
     }
 
-    public String getNewQuery(){
+    public String getSoqlQuery(){
         return newQuery;
     }
 
@@ -405,6 +424,9 @@ public class SoqlQueryListener implements soqlListener {
             return;
         }
         StringBuilder newQueryBuilder = new StringBuilder(typeDef);
+        if(isSelectedParamDistinct){
+            newQueryBuilder.append(" ").append("DISTINCT");
+        }
         newQueryBuilder.append(" ?x WHERE { ");
         if(!indexOfNextOr.isEmpty()){
             newQueryBuilder.append("{ ");
@@ -491,8 +513,7 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     private StringBuilder processAttribute(SoqlAttribute attr) {
-        StringBuilder buildAttr = new StringBuilder(attr.getTripplePattern());
-        return buildAttr;
+        return new StringBuilder(attr.getTripplePattern());
     }
 
     private StringBuilder buildOrdering(){

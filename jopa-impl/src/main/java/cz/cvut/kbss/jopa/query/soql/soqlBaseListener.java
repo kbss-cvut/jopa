@@ -135,6 +135,18 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDistinct(soqlParser.DistinctContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDistinct(soqlParser.DistinctContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterLogOp(soqlParser.LogOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
