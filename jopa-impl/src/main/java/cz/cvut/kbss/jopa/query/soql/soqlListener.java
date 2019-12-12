@@ -17,6 +17,26 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitQuerySentence(soqlParser.QuerySentenceContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link soqlParser#selectStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterSelectStatement(soqlParser.SelectStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#selectStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitSelectStatement(soqlParser.SelectStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#typeDef}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeDef(soqlParser.TypeDefContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#typeDef}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeDef(soqlParser.TypeDefContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link soqlParser#params}.
 	 * @param ctx the parse tree
 	 */
@@ -26,26 +46,6 @@ public interface soqlListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParams(soqlParser.ParamsContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link soqlParser#param}.
-	 * @param ctx the parse tree
-	 */
-	void enterParam(soqlParser.ParamContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link soqlParser#param}.
-	 * @param ctx the parse tree
-	 */
-	void exitParam(soqlParser.ParamContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link soqlParser#joinedParams}.
-	 * @param ctx the parse tree
-	 */
-	void enterJoinedParams(soqlParser.JoinedParamsContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link soqlParser#joinedParams}.
-	 * @param ctx the parse tree
-	 */
-	void exitJoinedParams(soqlParser.JoinedParamsContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link soqlParser#paramComma}.
 	 * @param ctx the parse tree
@@ -57,15 +57,25 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitParamComma(soqlParser.ParamCommaContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#object}.
+	 * Enter a parse tree produced by {@link soqlParser#distinctParam}.
 	 * @param ctx the parse tree
 	 */
-	void enterObject(soqlParser.ObjectContext ctx);
+	void enterDistinctParam(soqlParser.DistinctParamContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link soqlParser#object}.
+	 * Exit a parse tree produced by {@link soqlParser#distinctParam}.
 	 * @param ctx the parse tree
 	 */
-	void exitObject(soqlParser.ObjectContext ctx);
+	void exitDistinctParam(soqlParser.DistinctParamContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#param}.
+	 * @param ctx the parse tree
+	 */
+	void enterParam(soqlParser.ParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#param}.
+	 * @param ctx the parse tree
+	 */
+	void exitParam(soqlParser.ParamContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link soqlParser#objWithAttr}.
 	 * @param ctx the parse tree
@@ -87,26 +97,6 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitObjWithOutAttr(soqlParser.ObjWithOutAttrContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#attribute}.
-	 * @param ctx the parse tree
-	 */
-	void enterAttribute(soqlParser.AttributeContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link soqlParser#attribute}.
-	 * @param ctx the parse tree
-	 */
-	void exitAttribute(soqlParser.AttributeContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link soqlParser#typeDef}.
-	 * @param ctx the parse tree
-	 */
-	void enterTypeDef(soqlParser.TypeDefContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link soqlParser#typeDef}.
-	 * @param ctx the parse tree
-	 */
-	void exitTypeDef(soqlParser.TypeDefContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link soqlParser#distinct}.
 	 * @param ctx the parse tree
 	 */
@@ -117,15 +107,35 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitDistinct(soqlParser.DistinctContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#logOp}.
+	 * Enter a parse tree produced by {@link soqlParser#object}.
 	 * @param ctx the parse tree
 	 */
-	void enterLogOp(soqlParser.LogOpContext ctx);
+	void enterObject(soqlParser.ObjectContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link soqlParser#logOp}.
+	 * Exit a parse tree produced by {@link soqlParser#object}.
 	 * @param ctx the parse tree
 	 */
-	void exitLogOp(soqlParser.LogOpContext ctx);
+	void exitObject(soqlParser.ObjectContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void enterAttribute(soqlParser.AttributeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#attribute}.
+	 * @param ctx the parse tree
+	 */
+	void exitAttribute(soqlParser.AttributeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#joinedParams}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoinedParams(soqlParser.JoinedParamsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#joinedParams}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoinedParams(soqlParser.JoinedParamsContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link soqlParser#tables}.
 	 * @param ctx the parse tree
@@ -167,6 +177,26 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitTableWithName(soqlParser.TableWithNameContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link soqlParser#logOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterLogOp(soqlParser.LogOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#logOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitLogOp(soqlParser.LogOpContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#whereClausuleWrapper}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#whereClausuleWrapper}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link soqlParser#whereClausules}.
 	 * @param ctx the parse tree
 	 */
@@ -177,15 +207,15 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitWhereClausules(soqlParser.WhereClausulesContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#whereClausuleNot}.
+	 * Enter a parse tree produced by {@link soqlParser#whereClausuleOps}.
 	 * @param ctx the parse tree
 	 */
-	void enterWhereClausuleNot(soqlParser.WhereClausuleNotContext ctx);
+	void enterWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link soqlParser#whereClausuleNot}.
+	 * Exit a parse tree produced by {@link soqlParser#whereClausuleOps}.
 	 * @param ctx the parse tree
 	 */
-	void exitWhereClausuleNot(soqlParser.WhereClausuleNotContext ctx);
+	void exitWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link soqlParser#whereClausule}.
 	 * @param ctx the parse tree
@@ -197,16 +227,6 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitWhereClausule(soqlParser.WhereClausuleContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#whereClausuleJoin}.
-	 * @param ctx the parse tree
-	 */
-	void enterWhereClausuleJoin(soqlParser.WhereClausuleJoinContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link soqlParser#whereClausuleJoin}.
-	 * @param ctx the parse tree
-	 */
-	void exitWhereClausuleJoin(soqlParser.WhereClausuleJoinContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link soqlParser#whereClausuleValue}.
 	 * @param ctx the parse tree
 	 */
@@ -217,25 +237,15 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#clausuleJoinNot}.
+	 * Enter a parse tree produced by {@link soqlParser#whereClausuleParam}.
 	 * @param ctx the parse tree
 	 */
-	void enterClausuleJoinNot(soqlParser.ClausuleJoinNotContext ctx);
+	void enterWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link soqlParser#clausuleJoinNot}.
+	 * Exit a parse tree produced by {@link soqlParser#whereClausuleParam}.
 	 * @param ctx the parse tree
 	 */
-	void exitClausuleJoinNot(soqlParser.ClausuleJoinNotContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link soqlParser#clausuleJoin}.
-	 * @param ctx the parse tree
-	 */
-	void enterClausuleJoin(soqlParser.ClausuleJoinContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link soqlParser#clausuleJoin}.
-	 * @param ctx the parse tree
-	 */
-	void exitClausuleJoin(soqlParser.ClausuleJoinContext ctx);
+	void exitWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link soqlParser#orderByClausule}.
 	 * @param ctx the parse tree
@@ -247,25 +257,25 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitOrderByClausule(soqlParser.OrderByClausuleContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#orderBySingleComma}.
+	 * Enter a parse tree produced by {@link soqlParser#orderByFullFormComma}.
 	 * @param ctx the parse tree
 	 */
-	void enterOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx);
+	void enterOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link soqlParser#orderBySingleComma}.
+	 * Exit a parse tree produced by {@link soqlParser#orderByFullFormComma}.
 	 * @param ctx the parse tree
 	 */
-	void exitOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx);
+	void exitOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link soqlParser#orderBySingle}.
+	 * Enter a parse tree produced by {@link soqlParser#orderByFullForm}.
 	 * @param ctx the parse tree
 	 */
-	void enterOrderBySingle(soqlParser.OrderBySingleContext ctx);
+	void enterOrderByFullForm(soqlParser.OrderByFullFormContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link soqlParser#orderBySingle}.
+	 * Exit a parse tree produced by {@link soqlParser#orderByFullForm}.
 	 * @param ctx the parse tree
 	 */
-	void exitOrderBySingle(soqlParser.OrderBySingleContext ctx);
+	void exitOrderByFullForm(soqlParser.OrderByFullFormContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link soqlParser#orderByParam}.
 	 * @param ctx the parse tree
@@ -276,4 +286,34 @@ public interface soqlListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitOrderByParam(soqlParser.OrderByParamContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#groupByClausule}.
+	 * @param ctx the parse tree
+	 */
+	void enterGroupByClausule(soqlParser.GroupByClausuleContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#groupByClausule}.
+	 * @param ctx the parse tree
+	 */
+	void exitGroupByClausule(soqlParser.GroupByClausuleContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#groupByParamComma}.
+	 * @param ctx the parse tree
+	 */
+	void enterGroupByParamComma(soqlParser.GroupByParamCommaContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#groupByParamComma}.
+	 * @param ctx the parse tree
+	 */
+	void exitGroupByParamComma(soqlParser.GroupByParamCommaContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#groupByParam}.
+	 * @param ctx the parse tree
+	 */
+	void enterGroupByParam(soqlParser.GroupByParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#groupByParam}.
+	 * @param ctx the parse tree
+	 */
+	void exitGroupByParam(soqlParser.GroupByParamContext ctx);
 }

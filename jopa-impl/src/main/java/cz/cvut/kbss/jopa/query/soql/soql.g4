@@ -1,35 +1,33 @@
 grammar soql;
 
 
-querySentence : typeDef distinct? params FROM tables WHERE? whereClausuleJoin? whereClausules? orderByClausule?;
+querySentence : selectStatement whereClausuleWrapper? groupByClausule? orderByClausule? ;
 
 
 
-params: paramComma* param ;
+selectStatement: typeDef params FROM tables ;
+
+typeDef: SELECT ;
+
+params: paramComma* distinctParam ;
+
+paramComma: distinctParam COMMA ;
+
+distinctParam: distinct? param ;
 
 param: objWithAttr | objWithOutAttr ;
-
-joinedParams: object DOT attribute (DOT attribute)+ ;
-
-paramComma: param COMMA ;
-
-object: TEXT ;
 
 objWithAttr: object DOT attribute;
 
 objWithOutAttr: object ;
 
-attribute: TEXT ;
-
-
-
-typeDef: SELECT ;
-
 distinct: DISTINCT ;
 
+object: TEXT ;
 
+attribute: TEXT ;
 
-logOp: AND | OR ;
+joinedParams: object DOT attribute (DOT attribute)+ ;
 
 
 
@@ -43,49 +41,61 @@ tableWithName: table tableName ;
 
 
 
-whereClausules: whereClausuleNot whereClausuleNot* ;
+logOp: AND | OR ;
 
-whereClausuleNot: logOp? NOT? whereClausule ;
 
-whereClausule: param QUERYOPERATOR whereClausuleValue;
 
-whereClausuleJoin: clausuleJoinNot clausuleJoinNot* ;
+whereClausuleWrapper: WHERE whereClausules ;
+
+whereClausules: whereClausuleOps whereClausuleOps* ;
+
+whereClausuleOps: logOp? NOT? whereClausule ;
+
+whereClausule: whereClausuleParam QUERYOPERATOR whereClausuleValue;
 
 whereClausuleValue: (QMARK TEXT QMARK) | COLONTEXT ;
 
-clausuleJoinNot : logOp? NOT? clausuleJoin ;
-
-clausuleJoin: joinedParams QUERYOPERATOR whereClausuleValue ;
+whereClausuleParam: param | joinedParams ;
 
 
 
-orderByClausule: ORDERBY orderBySingleComma orderBySingleComma* ;
+orderByClausule: ORDERBY orderByFullFormComma orderByFullFormComma* ;
 
-orderBySingleComma: orderBySingle COMMA? ;
+orderByFullFormComma: orderByFullForm COMMA? ;
 
-orderBySingle: orderByParam ORDERING? ;
+orderByFullForm: orderByParam ORDERING? ;
 
 orderByParam: object DOT attribute (DOT attribute)* ;
 
 
 
-SELECT: 'SELECT' | 'select' | 'Select' ;
+groupByClausule: GROUPBY groupByParamComma groupByParamComma* ;
 
-WHERE: 'WHERE' | 'where' | 'Where' ;
+groupByParamComma: groupByParam COMMA? ;
 
-NOT: 'NOT' | 'not' | 'Not' ;
+groupByParam: object DOT attribute (DOT attribute)* ;
 
-FROM: 'FROM' | 'from' | 'From' ;
 
-JOIN: 'JOIN' | 'join' | 'Join' ;
 
-AND: 'AND' | 'and' | 'And' ;
+SELECT: 'SELECT' ;
 
-OR: 'OR' | 'or' | 'Or' ;
+WHERE: 'WHERE' ;
+
+NOT: 'NOT' ;
+
+FROM: 'FROM' ;
+
+JOIN: 'JOIN' ;
+
+AND: 'AND' ;
+
+OR: 'OR' ;
 
 ORDERBY: 'ORDER BY' ;
 
 ORDERING: ASC | DESC ;
+
+GROUPBY: 'GROUP BY' ;
 
 ASC: 'ASC' ;
 
@@ -93,13 +103,7 @@ DESC: 'DESC' ;
 
 DISTINCT: 'DISTINCT' ;
 
-LEFTOUTERJOIN: 'LEFT OUTER JOIN' | 'left outer join' | 'Left Outer Join' ;
-
 QUERYOPERATOR: '>' | '<' | '>=' | '<=' | '=' | 'LIKE';
-
-RIGHTPAREN: ')' ;
-
-LEFTPAREN: '(' ;
 
 DOT: '.' ;
 

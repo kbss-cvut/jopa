@@ -23,6 +23,8 @@ public class SoqlQueryListener implements soqlListener {
 
     private ArrayList<SoqlOrderParam> orderAttributes;
 
+    private ArrayList<SoqlGroupParam> groupAttributes;
+
     private boolean isSelectedParamDistinct = false;
 
 
@@ -34,32 +36,32 @@ public class SoqlQueryListener implements soqlListener {
         this.attributes = new ArrayList<>();
         this.indexOfNextOr = new ArrayList<>();
         this.orderAttributes = new ArrayList<>();
+        this.groupAttributes = new ArrayList<>();
     }
 
     @Override
-    public void enterQuerySentence(soqlParser.QuerySentenceContext ctx) { }
+    public void enterQuerySentence(soqlParser.QuerySentenceContext ctx) {}
 
     @Override
-    public void exitQuerySentence(soqlParser.QuerySentenceContext ctx) {
-        buildString();
-    }
+    public void exitQuerySentence(soqlParser.QuerySentenceContext ctx) { buildString(); }
 
     @Override
-    public void enterParams(soqlParser.ParamsContext ctx) {
-
-    }
+    public void enterSelectStatement(soqlParser.SelectStatementContext ctx) {}
 
     @Override
-    public void exitParams(soqlParser.ParamsContext ctx) {
+    public void exitSelectStatement(soqlParser.SelectStatementContext ctx) {}
 
-    }
+    @Override
+    public void enterParams(soqlParser.ParamsContext ctx) {}
+
+    @Override
+    public void exitParams(soqlParser.ParamsContext ctx) {}
 
     @Override
     public void enterParam(soqlParser.ParamContext ctx) {}
 
     @Override
-    public void exitParam(soqlParser.ParamContext ctx) {
-    }
+    public void exitParam(soqlParser.ParamContext ctx) {}
 
     @Override
     public void enterJoinedParams(soqlParser.JoinedParamsContext ctx) {
@@ -79,29 +81,25 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitJoinedParams(soqlParser.JoinedParamsContext ctx) {
-
-    }
+    public void exitJoinedParams(soqlParser.JoinedParamsContext ctx) {}
 
     @Override
-    public void enterParamComma(soqlParser.ParamCommaContext ctx) {
-
-    }
+    public void enterParamComma(soqlParser.ParamCommaContext ctx) {}
 
     @Override
-    public void exitParamComma(soqlParser.ParamCommaContext ctx) {
-
-    }
+    public void exitParamComma(soqlParser.ParamCommaContext ctx) {}
 
     @Override
-    public void enterObject(soqlParser.ObjectContext ctx) {
-
-    }
+    public void enterDistinctParam(soqlParser.DistinctParamContext ctx) {}
 
     @Override
-    public void exitObject(soqlParser.ObjectContext ctx) {
+    public void exitDistinctParam(soqlParser.DistinctParamContext ctx) {}
 
-    }
+    @Override
+    public void enterObject(soqlParser.ObjectContext ctx) {}
+
+    @Override
+    public void exitObject(soqlParser.ObjectContext ctx) {}
 
     @Override
     public void enterObjWithAttr(soqlParser.ObjWithAttrContext ctx) {
@@ -119,32 +117,22 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitObjWithAttr(soqlParser.ObjWithAttrContext ctx) {
-
-    }
+    public void exitObjWithAttr(soqlParser.ObjWithAttrContext ctx) {}
 
     @Override
     public void enterObjWithOutAttr(soqlParser.ObjWithOutAttrContext ctx) { }
 
     @Override
-    public void exitObjWithOutAttr(soqlParser.ObjWithOutAttrContext ctx) {
-
-    }
+    public void exitObjWithOutAttr(soqlParser.ObjWithOutAttrContext ctx) {}
 
     @Override
-    public void enterAttribute(soqlParser.AttributeContext ctx) {
-
-    }
+    public void enterAttribute(soqlParser.AttributeContext ctx) {}
 
     @Override
-    public void exitAttribute(soqlParser.AttributeContext ctx) {
-
-    }
+    public void exitAttribute(soqlParser.AttributeContext ctx) {}
 
     @Override
-    public void enterTypeDef(soqlParser.TypeDefContext ctx) {
-        typeDef = ctx.getChild(0).getText();
-    }
+    public void enterTypeDef(soqlParser.TypeDefContext ctx) { typeDef = ctx.getChild(0).getText(); }
 
     @Override
     public void exitTypeDef(soqlParser.TypeDefContext ctx) {}
@@ -157,47 +145,37 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitDistinct(soqlParser.DistinctContext ctx) {
-
-    }
+    public void exitDistinct(soqlParser.DistinctContext ctx) {}
 
     @Override
-    public void enterLogOp(soqlParser.LogOpContext ctx) {
-
-    }
+    public void enterLogOp(soqlParser.LogOpContext ctx) {}
 
     @Override
-    public void exitLogOp(soqlParser.LogOpContext ctx) { }
+    public void exitLogOp(soqlParser.LogOpContext ctx) {}
 
     @Override
-    public void enterTables(soqlParser.TablesContext ctx) {
-
-    }
+    public void enterWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx) {}
 
     @Override
-    public void exitTables(soqlParser.TablesContext ctx) {
-
-    }
+    public void exitWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx) {}
 
     @Override
-    public void enterTable(soqlParser.TableContext ctx) {
-
-    }
+    public void enterTables(soqlParser.TablesContext ctx) {}
 
     @Override
-    public void exitTable(soqlParser.TableContext ctx) {
-
-    }
+    public void exitTables(soqlParser.TablesContext ctx) {}
 
     @Override
-    public void enterTableName(soqlParser.TableNameContext ctx) {
-
-    }
+    public void enterTable(soqlParser.TableContext ctx) {}
 
     @Override
-    public void exitTableName(soqlParser.TableNameContext ctx) {
+    public void exitTable(soqlParser.TableContext ctx) {}
 
-    }
+    @Override
+    public void enterTableName(soqlParser.TableNameContext ctx) {}
+
+    @Override
+    public void exitTableName(soqlParser.TableNameContext ctx) {}
 
     @Override
     public void enterTableWithName(soqlParser.TableWithNameContext ctx) {
@@ -214,88 +192,31 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitTableWithName(soqlParser.TableWithNameContext ctx) {
-
-    }
+    public void exitTableWithName(soqlParser.TableWithNameContext ctx) {}
 
     @Override
-    public void enterWhereClausules(soqlParser.WhereClausulesContext ctx) { }
+    public void enterWhereClausules(soqlParser.WhereClausulesContext ctx) {}
 
     @Override
-    public void exitWhereClausules(soqlParser.WhereClausulesContext ctx) {
-    }
+    public void exitWhereClausules(soqlParser.WhereClausulesContext ctx) {}
 
     @Override
-    public void enterWhereClausuleNot(soqlParser.WhereClausuleNotContext ctx) {
-
-    }
+    public void enterWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx) {}
 
     @Override
-    public void exitWhereClausuleNot(soqlParser.WhereClausuleNotContext ctx) {
-
-    }
+    public void exitWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx) {}
 
     @Override
-    public void enterWhereClausule(soqlParser.WhereClausuleContext ctx) {
-    }
+    public void enterWhereClausule(soqlParser.WhereClausuleContext ctx) {}
 
     @Override
     public void exitWhereClausule(soqlParser.WhereClausuleContext ctx) {
         String logicalOperator = getOperators(ctx.getParent());
         String operator = ctx.getChild(1).getText();
 
-        // whereClausuleValue Node
-        ParseTree value = ctx.getChild(2);
-
-        attrPointer.setOperator(operator);
-        attrPointer.setValue(value.getText());
-
-        if (logicalOperator.equals("OR")){
-            indexOfNextOr.add(attributes.indexOf(attrPointer));
-        }
-    }
-
-    @Override
-    public void enterWhereClausuleJoin(soqlParser.WhereClausuleJoinContext ctx) {
-
-    }
-
-    @Override
-    public void exitWhereClausuleJoin(soqlParser.WhereClausuleJoinContext ctx) {
-
-    }
-
-    @Override
-    public void enterWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx) {
-
-    }
-
-    @Override
-    public void exitWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx) {
-
-    }
-
-    @Override
-    public void enterClausuleJoinNot(soqlParser.ClausuleJoinNotContext ctx) {
-
-    }
-
-    @Override
-    public void exitClausuleJoinNot(soqlParser.ClausuleJoinNotContext ctx) {
-
-    }
-
-    @Override
-    public void enterClausuleJoin(soqlParser.ClausuleJoinContext ctx) { }
-
-    @Override
-    public void exitClausuleJoin(soqlParser.ClausuleJoinContext ctx) {
-        String logicalOperator = getOperators(ctx.getParent());
-
-        ParseTree operatorNode = ctx.getChild(1);
         ParseTree whereClausuleValue = ctx.getChild(2);
 
-        attrPointer.setOperator(operatorNode.getText());
+        attrPointer.setOperator(operator);
         attrPointer.setValue(whereClausuleValue.getText());
 
         if (logicalOperator.equals("OR")){
@@ -304,33 +225,34 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void enterOrderByClausule(soqlParser.OrderByClausuleContext ctx) {
-
-    }
+    public void enterWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx) {}
 
     @Override
-    public void exitOrderByClausule(soqlParser.OrderByClausuleContext ctx) {
-
-    }
+    public void exitWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx) {}
 
     @Override
-    public void enterOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx) {
-
-    }
+    public void enterWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx) {}
 
     @Override
-    public void exitOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx) {
-
-    }
+    public void exitWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx) {}
 
     @Override
-    public void enterOrderBySingle(soqlParser.OrderBySingleContext ctx) {
-    }
+    public void enterOrderByClausule(soqlParser.OrderByClausuleContext ctx) {}
 
     @Override
-    public void exitOrderBySingle(soqlParser.OrderBySingleContext ctx) {
+    public void exitOrderByClausule(soqlParser.OrderByClausuleContext ctx) {}
 
-    }
+    @Override
+    public void enterOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx) {}
+
+    @Override
+    public void exitOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx) {}
+
+    @Override
+    public void enterOrderByFullForm(soqlParser.OrderByFullFormContext ctx) {}
+
+    @Override
+    public void exitOrderByFullForm(soqlParser.OrderByFullFormContext ctx) {}
 
     @Override
     public void enterOrderByParam(soqlParser.OrderByParamContext ctx) {
@@ -349,42 +271,60 @@ public class SoqlQueryListener implements soqlListener {
             }
         }
         orderAttributes.add(orderParam);
-
     }
 
     @Override
-    public void exitOrderByParam(soqlParser.OrderByParamContext ctx) {
+    public void exitOrderByParam(soqlParser.OrderByParamContext ctx) {}
 
+    @Override
+    public void enterGroupByClausule(soqlParser.GroupByClausuleContext ctx) {}
+
+    @Override
+    public void exitGroupByClausule(soqlParser.GroupByClausuleContext ctx) {}
+
+    @Override
+    public void enterGroupByParamComma(soqlParser.GroupByParamCommaContext ctx) {}
+
+    @Override
+    public void exitGroupByParamComma(soqlParser.GroupByParamCommaContext ctx) {}
+
+    @Override
+    public void enterGroupByParam(soqlParser.GroupByParamContext ctx) {
+        SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
+        SoqlNode actualNode = firstNode;
+        for(int i = 2; i < ctx.getChildCount(); i += 2){
+            SoqlNode prevNode = actualNode;
+            actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
+            prevNode.setChild(actualNode);
+        }
+        SoqlGroupParam groupParam = new SoqlGroupParam(firstNode);
+        for (SoqlAttribute attr: attributes) {
+            if (attr.getAsParam().equals(groupParam.getAsParam())){
+                groupParam.setAttribute(attr);
+            }
+        }
+        groupAttributes.add(groupParam);
     }
 
     @Override
-    public void visitTerminal(TerminalNode terminalNode) {
-
-    }
+    public void exitGroupByParam(soqlParser.GroupByParamContext ctx) {}
 
     @Override
-    public void visitErrorNode(ErrorNode errorNode) {
-
-    }
+    public void visitTerminal(TerminalNode terminalNode) {}
 
     @Override
-    public void enterEveryRule(ParserRuleContext parserRuleContext) {
-
-    }
+    public void visitErrorNode(ErrorNode errorNode) {}
 
     @Override
-    public void exitEveryRule(ParserRuleContext parserRuleContext) {
+    public void enterEveryRule(ParserRuleContext parserRuleContext) {}
 
-    }
+    @Override
+    public void exitEveryRule(ParserRuleContext parserRuleContext) {}
 
     //Methods to help parse tree
-    private String getOwnerfromParam(ParserRuleContext ctx){
-        return ctx.getChild(0).getChild(0).getText();
-    }
+    private String getOwnerfromParam(ParserRuleContext ctx){ return ctx.getChild(0).getChild(0).getText(); }
 
-    private String getAttributefromParam(ParserRuleContext ctx){
-        return ctx.getChild(2).getChild(0).getText();
-    }
+    private String getAttributefromParam(ParserRuleContext ctx){ return ctx.getChild(2).getChild(0).getText(); }
 
     private String getOperators(ParserRuleContext ctx){
         String operator = "";
@@ -409,9 +349,7 @@ public class SoqlQueryListener implements soqlListener {
         return operator;
     }
 
-    private String getOrderingBy(ParserRuleContext ctx){
-        return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : "";
-    }
+    private String getOrderingBy(ParserRuleContext ctx){ return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : ""; }
 
     public String getSoqlQuery(){
         return newQuery;
@@ -436,6 +374,9 @@ public class SoqlQueryListener implements soqlListener {
             newQueryBuilder.append(" } ");
         }
         newQueryBuilder.append("}");
+        if(!groupAttributes.isEmpty()){
+            newQueryBuilder.append(" ").append(buildGrouping());
+        }
         if(!orderAttributes.isEmpty()){
             newQueryBuilder.append(" ").append(buildOrdering());
         }
@@ -520,6 +461,14 @@ public class SoqlQueryListener implements soqlListener {
         StringBuilder sb = new StringBuilder("ORDER BY");
         for (SoqlOrderParam orderParam: orderAttributes) {
             sb.append(" ").append(orderParam.getOrderByPart());
+        }
+        return sb;
+    }
+
+    private StringBuilder buildGrouping(){
+        StringBuilder sb = new StringBuilder("GROUP BY");
+        for (SoqlGroupParam groupParam: groupAttributes) {
+            sb.append(" ").append(groupParam.getGroupByPart());
         }
         return sb;
     }

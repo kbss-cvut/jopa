@@ -1,8 +1,6 @@
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlAttribute {
-
-    private SoqlNode firstNode;
+public class SoqlAttribute extends SoqlParam {
 
     private String value;
 
@@ -15,63 +13,32 @@ public class SoqlAttribute {
     private String rdfType;
 
     public SoqlAttribute() {
+        super();
     }
 
-    public SoqlNode getFirstNode() {
-        return firstNode;
-    }
+    public String getValue() { return value; }
 
-    public void setFirstNode(SoqlNode firstNode) {
-        this.firstNode = firstNode;
-    }
+    public void setValue(String value) { this.value = value; }
 
-    public String getValue() {
-        return value;
-    }
+    public boolean isNot() { return isNot; }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
+    public void setNot(boolean not) { isNot = not; }
 
-    public boolean isNot() {
-        return isNot;
-    }
+    public void setOperator(String operator) { this.operator = operator; }
 
-    public void setNot(boolean not) {
-        isNot = not;
-    }
+    public String getOperator() { return operator; }
 
-    public String getOperator() {
-        return operator;
-    }
+    public void setPrefix(String prefix){ this.prefix = prefix; }
 
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
+    public String getPrefix(){ return this.prefix; }
 
-    public void setPrefix(String prefix){
-        this.prefix = prefix;
-    }
+    public void setRdfType(String rdfType){ this.rdfType = rdfType; }
 
-    public String getPrefix(){
-        return this.prefix;
-    }
+    public String getRdfType(){ return this.rdfType; }
 
-    public void setRdfType(String rdfType){
-        this.rdfType = rdfType;
-    }
+    public boolean isFilter() { return !operator.isEmpty() && !operator.equals("="); }
 
-    public String getRdfType(){
-        return this.rdfType;
-    }
-
-    public boolean isFilter() {
-        return !operator.isEmpty() && !operator.equals("=");
-    }
-
-    private boolean isTable(){
-        return !firstNode.hasNextChild();
-    }
+    private boolean isTable(){ return !getFirstNode().hasNextChild(); }
 
     public String getFilter(){
         StringBuilder buildFilter = new StringBuilder();
@@ -87,11 +54,11 @@ public class SoqlAttribute {
         StringBuilder buildTP = new StringBuilder("?x ");
         if(isTable()){
             buildTP.append(getRdfType()).append(" ")
-                    .append(toIri(firstNode.getValue())).append(" . ");
+                    .append(toIri(getFirstNode().getValue())).append(" . ");
         }else{
-            SoqlNode pointer = firstNode.getChild();
+            SoqlNode pointer = getFirstNode().getChild();
             StringBuilder buildParam = new StringBuilder("?");
-            buildParam.append(firstNode.getValue());
+            buildParam.append(getFirstNode().getValue());
             buildParam.append(pointer.getCapitalizedvalue());
             buildTP.append(toIri(pointer.getValue())).append(" ?").append(pointer.getValue()).append(" . ");
             while(pointer.hasNextChild()){
@@ -119,16 +86,5 @@ public class SoqlAttribute {
         StringBuilder sb = new StringBuilder("<");
         sb.append(getPrefix()).append(param).append(">");
         return sb;
-    }
-
-    public String getAsParam(){
-        StringBuilder buildParam = new StringBuilder("?");
-        buildParam.append(firstNode.getValue());
-        SoqlNode pointer = firstNode;
-        while (pointer.hasNextChild()) {
-            pointer = pointer.getChild();
-            buildParam.append(pointer.getCapitalizedvalue());
-        }
-        return buildParam.toString();
     }
 }

@@ -27,6 +27,30 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSelectStatement(soqlParser.SelectStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSelectStatement(soqlParser.SelectStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTypeDef(soqlParser.TypeDefContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTypeDef(soqlParser.TypeDefContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterParams(soqlParser.ParamsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -34,30 +58,6 @@ public class soqlBaseListener implements soqlListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitParams(soqlParser.ParamsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterParam(soqlParser.ParamContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitParam(soqlParser.ParamContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterJoinedParams(soqlParser.JoinedParamsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitJoinedParams(soqlParser.JoinedParamsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -75,13 +75,25 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterObject(soqlParser.ObjectContext ctx) { }
+	@Override public void enterDistinctParam(soqlParser.DistinctParamContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitObject(soqlParser.ObjectContext ctx) { }
+	@Override public void exitDistinctParam(soqlParser.DistinctParamContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterParam(soqlParser.ParamContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParam(soqlParser.ParamContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -111,30 +123,6 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAttribute(soqlParser.AttributeContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAttribute(soqlParser.AttributeContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterTypeDef(soqlParser.TypeDefContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTypeDef(soqlParser.TypeDefContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterDistinct(soqlParser.DistinctContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -147,13 +135,37 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLogOp(soqlParser.LogOpContext ctx) { }
+	@Override public void enterObject(soqlParser.ObjectContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLogOp(soqlParser.LogOpContext ctx) { }
+	@Override public void exitObject(soqlParser.ObjectContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAttribute(soqlParser.AttributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAttribute(soqlParser.AttributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterJoinedParams(soqlParser.JoinedParamsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoinedParams(soqlParser.JoinedParamsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -207,6 +219,30 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterLogOp(soqlParser.LogOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLogOp(soqlParser.LogOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterWhereClausules(soqlParser.WhereClausulesContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -219,13 +255,13 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterWhereClausuleNot(soqlParser.WhereClausuleNotContext ctx) { }
+	@Override public void enterWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitWhereClausuleNot(soqlParser.WhereClausuleNotContext ctx) { }
+	@Override public void exitWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -243,18 +279,6 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterWhereClausuleJoin(soqlParser.WhereClausuleJoinContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitWhereClausuleJoin(soqlParser.WhereClausuleJoinContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -267,25 +291,13 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterClausuleJoinNot(soqlParser.ClausuleJoinNotContext ctx) { }
+	@Override public void enterWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitClausuleJoinNot(soqlParser.ClausuleJoinNotContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterClausuleJoin(soqlParser.ClausuleJoinContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitClausuleJoin(soqlParser.ClausuleJoinContext ctx) { }
+	@Override public void exitWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -303,25 +315,25 @@ public class soqlBaseListener implements soqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx) { }
+	@Override public void enterOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitOrderBySingleComma(soqlParser.OrderBySingleCommaContext ctx) { }
+	@Override public void exitOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterOrderBySingle(soqlParser.OrderBySingleContext ctx) { }
+	@Override public void enterOrderByFullForm(soqlParser.OrderByFullFormContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitOrderBySingle(soqlParser.OrderBySingleContext ctx) { }
+	@Override public void exitOrderByFullForm(soqlParser.OrderByFullFormContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -334,6 +346,42 @@ public class soqlBaseListener implements soqlListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitOrderByParam(soqlParser.OrderByParamContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGroupByClausule(soqlParser.GroupByClausuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGroupByClausule(soqlParser.GroupByClausuleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGroupByParamComma(soqlParser.GroupByParamCommaContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGroupByParamComma(soqlParser.GroupByParamCommaContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGroupByParam(soqlParser.GroupByParamContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGroupByParam(soqlParser.GroupByParamContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
