@@ -4,7 +4,6 @@ public class SoqlGroupParam extends SoqlParam {
 
     private SoqlAttribute attribute;
 
-
     public SoqlGroupParam(SoqlNode firstNode) {
         setFirstNode(firstNode);
     }

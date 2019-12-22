@@ -8,9 +8,9 @@ public class SoqlAttribute extends SoqlParam {
 
     private String operator;
 
-    private String prefix;
+    private String prefix = "http://www.example.org/";
 
-    private String rdfType;
+    private String rdfType = "rdf:type";
 
     public SoqlAttribute() {
         super();
@@ -36,16 +36,22 @@ public class SoqlAttribute extends SoqlParam {
 
     public String getRdfType(){ return this.rdfType; }
 
-    public boolean isFilter() { return !operator.isEmpty() && !operator.equals("="); }
+    public boolean isFilter() {
+        return !operator.isEmpty() && !operator.equals("=");
+    }
 
     private boolean isTable(){ return !getFirstNode().hasNextChild(); }
+
+    private boolean isValueParam(){
+        return !operator.isEmpty() && value.charAt(0) == ':';
+    }
 
     public String getFilter(){
         StringBuilder buildFilter = new StringBuilder();
         if(operator.equals("LIKE")){
-            buildFilter.append("regex(").append(getAsParam()).append(",").append(this.value).append(")");
+            buildFilter.append("regex(").append(getAsParam()).append(", ?").append(this.value.substring(1)).append(") ");
         } else {
-            buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" ").append(this.value);
+            buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" ").append("?").append(this.value.substring(1));
         }
         return buildFilter.toString();
     }
@@ -60,13 +66,24 @@ public class SoqlAttribute extends SoqlParam {
             StringBuilder buildParam = new StringBuilder("?");
             buildParam.append(getFirstNode().getValue());
             buildParam.append(pointer.getCapitalizedvalue());
-            buildTP.append(toIri(pointer.getValue())).append(" ?").append(pointer.getValue()).append(" . ");
+            String param = "";
+            if (pointer.hasNextChild()){
+                param = "?" + pointer.getValue();
+            }else{
+                if (isFilter()){
+                    param = buildParam.toString();
+                }else{
+                    param = "?" + this.value.substring(1);
+                }
+            }
+            buildTP.append(toIri(pointer.getValue())).append(" ").append(param).append(" . ");
             while(pointer.hasNextChild()){
                 SoqlNode newPointer = pointer.getChild();
                 buildTP.append("?").append(pointer.getValue())
                         .append(" ").append(toIri(newPointer.getValue())).append(" ");
+                buildParam.append(newPointer.getCapitalizedvalue());
                 if(newPointer.hasNextChild()){
-                    buildTP.append(newPointer.getChild().getValue());
+                    buildTP.append("?").append(pointer.getChild().getValue());
                 }else{
                     if (isFilter()){
                         buildTP.append(buildParam);
@@ -76,7 +93,6 @@ public class SoqlAttribute extends SoqlParam {
                 }
                 buildTP.append(" . ");
                 pointer = newPointer;
-                buildParam.append(pointer.getCapitalizedvalue());
             }
         }
         return buildTP.toString();

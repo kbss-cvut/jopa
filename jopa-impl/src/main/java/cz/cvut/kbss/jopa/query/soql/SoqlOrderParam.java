@@ -32,9 +32,9 @@ public class SoqlOrderParam extends SoqlParam{
         String param = attribute.isFilter() ? getAsParam().substring(1) : attribute.getValue().substring(1);
         StringBuilder sb = new StringBuilder();
         if(orderingBy.equals("ASC")){
-            sb.append("?").append(param);
+            sb.append("?").append(param).append(" ");
         }else{
-            sb.append("DESC(?").append(param).append(")");
+            sb.append("DESC(?").append(param).append(") ");
         }
         return sb.toString();
     }

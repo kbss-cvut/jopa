@@ -9,16 +9,15 @@ import java.util.ArrayList;
 public class SoqlQueryListener implements soqlListener {
 
     private String newQuery;
-    private String prefix = "http://www.example.org/";
-
-    private String rdfType = "rdf:type";
 
     private String typeDef;
 
+    // keeps pointer at created object of SoqlAttribute while processing other neccessary rules
     private SoqlAttribute attrPointer;
 
     private ArrayList<SoqlAttribute> attributes;
 
+    // keeps index of first object of SoqlAttribute after OR operator
     private ArrayList<Integer> indexOfNextOr;
 
     private ArrayList<SoqlOrderParam> orderAttributes;
@@ -74,8 +73,6 @@ public class SoqlQueryListener implements soqlListener {
             prevNode.setChild(actualNode);
         }
         myAttr.setFirstNode(firstNode);
-        myAttr.setPrefix(prefix);
-        myAttr.setRdfType(rdfType);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
@@ -110,8 +107,6 @@ public class SoqlQueryListener implements soqlListener {
         SoqlAttribute myAttr = new SoqlAttribute();
         firstNode.setChild(lastNode);
         myAttr.setFirstNode(firstNode);
-        myAttr.setPrefix(prefix);
-        myAttr.setRdfType(rdfType);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
@@ -183,8 +178,6 @@ public class SoqlQueryListener implements soqlListener {
         SoqlAttribute myAttr = new SoqlAttribute();
         SoqlNode node = new SoqlNode(table);
         myAttr.setFirstNode(node);
-        myAttr.setPrefix(prefix);
-        myAttr.setRdfType(rdfType);
         myAttr.setOperator("");
         myAttr.setValue("");
         attributes.add(myAttr);
@@ -351,9 +344,7 @@ public class SoqlQueryListener implements soqlListener {
 
     private String getOrderingBy(ParserRuleContext ctx){ return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : ""; }
 
-    public String getSoqlQuery(){
-        return newQuery;
-    }
+    public String getSoqlQuery(){ return newQuery; }
 
 
     //Methods to build new Query
@@ -371,7 +362,7 @@ public class SoqlQueryListener implements soqlListener {
         }
         newQueryBuilder.append(processAttributes());
         if(!indexOfNextOr.isEmpty()){
-            newQueryBuilder.append(" } ");
+            newQueryBuilder.append("} ");
         }
         newQueryBuilder.append("}");
         if(!groupAttributes.isEmpty()){
@@ -393,7 +384,7 @@ public class SoqlQueryListener implements soqlListener {
                 orPart.append(processAllFilters(toFilter,toInvFilter));
                 toFilter.clear();
                 toInvFilter.clear();
-                orPart.append(" } UNION { ");
+                orPart.append("} UNION { ");
                 attributesPart.append(orPart);
             }
             if(myAttr.isNot()){
@@ -449,13 +440,11 @@ public class SoqlQueryListener implements soqlListener {
                 toFilter.add(attr);
             }
         }
-        buildInvFilter.append(processFilter(toFilter)).append(")");
+        buildInvFilter.append(processFilter(toFilter)).append(") ");
         return buildInvFilter;
     }
 
-    private StringBuilder processAttribute(SoqlAttribute attr) {
-        return new StringBuilder(attr.getTripplePattern());
-    }
+    private StringBuilder processAttribute(SoqlAttribute attr) { return new StringBuilder(attr.getTripplePattern()); }
 
     private StringBuilder buildOrdering(){
         StringBuilder sb = new StringBuilder("ORDER BY");
