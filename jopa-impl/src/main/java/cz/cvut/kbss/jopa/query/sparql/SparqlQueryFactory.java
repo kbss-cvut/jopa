@@ -17,8 +17,10 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.model.QueryImpl;
 import cz.cvut.kbss.jopa.model.ResultSetMappingQuery;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
+import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
+import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -32,6 +34,7 @@ public class SparqlQueryFactory implements QueryFactory {
     private final ConnectionWrapper connection;
 
     private final QueryParser queryParser;
+    private final SoqlQueryParser soqlQueryParser;
 
     public SparqlQueryFactory(UnitOfWorkImpl uow, ConnectionWrapper connection) {
         assert uow != null;
@@ -39,6 +42,7 @@ public class SparqlQueryFactory implements QueryFactory {
         this.uow = uow;
         this.connection = connection;
         this.queryParser = new SparqlQueryParser();
+        this.soqlQueryParser = new SoqlQueryParser(uow.getMetamodel());
     }
 
     @Override
@@ -77,7 +81,10 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(query);
 
         // We do not support any more abstract syntax, yet
-        return createNativeQuery(query);
+        // return createNativeQuery(query);
+        final QueryImpl q = new QueryImpl(soqlQueryParser.parseQuery(query), connection);
+        q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
+        return q;
     }
 
     @Override

@@ -5,6 +5,7 @@ public class SoqlNode {
     private SoqlNode parent;
     private SoqlNode child;
     private String value;
+    private String iri = "";
 
     public SoqlNode(SoqlNode parent, SoqlNode child, String value) {
         this.parent = parent;
@@ -54,4 +55,12 @@ public class SoqlNode {
     public void setParent(SoqlNode parent) {
         this.parent = parent;
     }
+
+    public void setValue(String value) { this.value = value; }
+
+    public String getIri() { return iri; }
+
+    public void setIri(String iri) { this.iri = iri; }
+
+
 }

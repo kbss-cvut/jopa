@@ -12,6 +12,10 @@ public class SoqlAttribute extends SoqlParam {
 
     private String rdfType = "rdf:type";
 
+    private boolean isOrderBy = false;
+
+    private boolean isGroupBy = false;
+
     public SoqlAttribute() {
         super();
     }
@@ -36,11 +40,19 @@ public class SoqlAttribute extends SoqlParam {
 
     public String getRdfType(){ return this.rdfType; }
 
+    public boolean isOrderBy() { return isOrderBy; }
+
+    public void setOrderBy(boolean orderBy) { isOrderBy = orderBy; }
+
+    public boolean isGroupBy() { return isGroupBy; }
+
+    public void setGroupBy(boolean groupBy) { isGroupBy = groupBy; }
+
     public boolean isFilter() {
         return !operator.isEmpty() && !operator.equals("=");
     }
 
-    private boolean isTable(){ return !getFirstNode().hasNextChild(); }
+    public boolean isObject(){ return !getFirstNode().hasNextChild(); }
 
     private boolean isValueParam(){
         return !operator.isEmpty() && value.charAt(0) == ':';
@@ -58,9 +70,9 @@ public class SoqlAttribute extends SoqlParam {
 
     public String getTripplePattern(){
         StringBuilder buildTP = new StringBuilder("?x ");
-        if(isTable()){
+        if(isObject()){
             buildTP.append(getRdfType()).append(" ")
-                    .append(toIri(getFirstNode().getValue())).append(" . ");
+                    .append(toIri(getFirstNode())).append(" . ");
         }else{
             SoqlNode pointer = getFirstNode().getChild();
             StringBuilder buildParam = new StringBuilder("?");
@@ -76,11 +88,11 @@ public class SoqlAttribute extends SoqlParam {
                     param = "?" + this.value.substring(1);
                 }
             }
-            buildTP.append(toIri(pointer.getValue())).append(" ").append(param).append(" . ");
+            buildTP.append(toIri(pointer)).append(" ").append(param).append(" . ");
             while(pointer.hasNextChild()){
                 SoqlNode newPointer = pointer.getChild();
                 buildTP.append("?").append(pointer.getValue())
-                        .append(" ").append(toIri(newPointer.getValue())).append(" ");
+                        .append(" ").append(toIri(newPointer)).append(" ");
                 buildParam.append(newPointer.getCapitalizedvalue());
                 if(newPointer.hasNextChild()){
                     buildTP.append("?").append(pointer.getChild().getValue());
@@ -98,9 +110,10 @@ public class SoqlAttribute extends SoqlParam {
         return buildTP.toString();
     }
 
-    private StringBuilder toIri(String param){
+    private StringBuilder toIri(SoqlNode node){
         StringBuilder sb = new StringBuilder("<");
-        sb.append(getPrefix()).append(param).append(">");
+        String prefix = node.getIri().isEmpty() ? getPrefix() : node.getIri();
+        sb.append(prefix).append(node.getValue()).append(">");
         return sb;
     }
 }

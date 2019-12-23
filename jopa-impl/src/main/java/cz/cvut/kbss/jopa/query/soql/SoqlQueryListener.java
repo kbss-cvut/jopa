@@ -1,16 +1,22 @@
 package cz.cvut.kbss.jopa.query.soql;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class SoqlQueryListener implements soqlListener {
 
-    private String newQuery;
+    private MetamodelImpl metamodel;
 
-    private String typeDef;
+    private String newQuery = "";
+
+    private String typeDef = "SELECT";
 
     // keeps pointer at created object of SoqlAttribute while processing other neccessary rules
     private SoqlAttribute attrPointer;
@@ -18,24 +24,26 @@ public class SoqlQueryListener implements soqlListener {
     private ArrayList<SoqlAttribute> attributes;
 
     // keeps index of first object of SoqlAttribute after OR operator
-    private ArrayList<Integer> indexOfNextOr;
+    private ArrayList<SoqlAttribute> objectOfNextOr;
 
     private ArrayList<SoqlOrderParam> orderAttributes;
 
     private ArrayList<SoqlGroupParam> groupAttributes;
 
+    private HashMap<String, String> objectTypes;
+
     private boolean isSelectedParamDistinct = false;
 
 
 
-    public SoqlQueryListener() {
+    public SoqlQueryListener(MetamodelImpl metamodel) {
         super();
-        this.newQuery = "";
-        this.typeDef = "SELECT";
+        this.metamodel = metamodel;
         this.attributes = new ArrayList<>();
-        this.indexOfNextOr = new ArrayList<>();
+        this.objectOfNextOr = new ArrayList<>();
         this.orderAttributes = new ArrayList<>();
         this.groupAttributes = new ArrayList<>();
+        this.objectTypes = new HashMap<>();
     }
 
     @Override
@@ -72,6 +80,7 @@ public class SoqlQueryListener implements soqlListener {
             actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
             prevNode.setChild(actualNode);
         }
+        setNodeIris(objectTypes.get(firstNode.getValue()), firstNode);
         myAttr.setFirstNode(firstNode);
         attributes.add(myAttr);
         attrPointer = myAttr;
@@ -106,6 +115,7 @@ public class SoqlQueryListener implements soqlListener {
         SoqlNode lastNode = new SoqlNode(firstNode, attribute);
         SoqlAttribute myAttr = new SoqlAttribute();
         firstNode.setChild(lastNode);
+        setNodeIris(objectTypes.get(owner), firstNode);
         myAttr.setFirstNode(firstNode);
         attributes.add(myAttr);
         attrPointer = myAttr;
@@ -175,8 +185,11 @@ public class SoqlQueryListener implements soqlListener {
     @Override
     public void enterTableWithName(soqlParser.TableWithNameContext ctx) {
         String table = ctx.getChild(0).getChild(0).getText();
+        String objectName = ctx.getChild(1).getChild(0).getText();
+        objectTypes.put(objectName, table);
         SoqlAttribute myAttr = new SoqlAttribute();
         SoqlNode node = new SoqlNode(table);
+        setObjectIri(table, node);
         myAttr.setFirstNode(node);
         myAttr.setOperator("");
         myAttr.setValue("");
@@ -213,7 +226,7 @@ public class SoqlQueryListener implements soqlListener {
         attrPointer.setValue(whereClausuleValue.getText());
 
         if (logicalOperator.equals("OR")){
-            indexOfNextOr.add(attributes.indexOf(attrPointer));
+            objectOfNextOr.add(attrPointer);
         }
     }
 
@@ -258,10 +271,21 @@ public class SoqlQueryListener implements soqlListener {
         }
         String orderingBy = getOrderingBy(ctx.getParent());
         SoqlOrderParam orderParam = new SoqlOrderParam(firstNode, orderingBy);
+        boolean attrSet = false;
         for (SoqlAttribute attr: attributes) {
             if (attr.getAsParam().equals(orderParam.getAsParam())){
                 orderParam.setAttribute(attr);
+                attrSet = true;
             }
+        }
+        if(!attrSet){
+            SoqlAttribute myAttr = new SoqlAttribute();
+            myAttr.setFirstNode(firstNode);
+            myAttr.setOperator("");
+            myAttr.setValue(orderParam.getAsValue());
+            myAttr.setOrderBy(true);
+            attributes.add(1, myAttr);
+            orderParam.setAttribute(myAttr);
         }
         orderAttributes.add(orderParam);
     }
@@ -291,10 +315,21 @@ public class SoqlQueryListener implements soqlListener {
             prevNode.setChild(actualNode);
         }
         SoqlGroupParam groupParam = new SoqlGroupParam(firstNode);
+        boolean attrSet = false;
         for (SoqlAttribute attr: attributes) {
             if (attr.getAsParam().equals(groupParam.getAsParam())){
                 groupParam.setAttribute(attr);
+                attrSet = true;
             }
+        }
+        if(!attrSet){
+            SoqlAttribute myAttr = new SoqlAttribute();
+            myAttr.setFirstNode(firstNode);
+            myAttr.setOperator("");
+            myAttr.setValue(groupParam.getAsValue());
+            myAttr.setGroupBy(true);
+            attributes.add(1, myAttr);
+            groupParam.setAttribute(myAttr);
         }
         groupAttributes.add(groupParam);
     }
@@ -344,6 +379,24 @@ public class SoqlQueryListener implements soqlListener {
 
     private String getOrderingBy(ParserRuleContext ctx){ return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : ""; }
 
+    private void setObjectIri(String objectName, SoqlNode firstNode){
+        if(metamodel == null){
+            return;
+        }
+        Iterator<EntityType<?>> iterator = metamodel.getEntities().iterator();
+        while(iterator.hasNext()){
+            EntityType<?> entityType = iterator.next();
+            if(entityType.getName().equals(objectName)){
+                firstNode.setIri(entityType.getIRI().toString());
+            }
+        }
+    }
+
+    private void setNodeIris(String objectName, SoqlNode firstNode){
+        // nacti object class
+        // pro kazdy node se zahlbni zatial co si drzis ukazatel na ownera
+    }
+
     public String getSoqlQuery(){ return newQuery; }
 
 
@@ -357,11 +410,12 @@ public class SoqlQueryListener implements soqlListener {
             newQueryBuilder.append(" ").append("DISTINCT");
         }
         newQueryBuilder.append(" ?x WHERE { ");
-        if(!indexOfNextOr.isEmpty()){
+        newQueryBuilder.append(processSupremeAttributes());
+        if(!objectOfNextOr.isEmpty()){
             newQueryBuilder.append("{ ");
         }
         newQueryBuilder.append(processAttributes());
-        if(!indexOfNextOr.isEmpty()){
+        if(!objectOfNextOr.isEmpty()){
             newQueryBuilder.append("} ");
         }
         newQueryBuilder.append("}");
@@ -374,12 +428,27 @@ public class SoqlQueryListener implements soqlListener {
         newQuery = newQueryBuilder.toString();
     }
 
+    private StringBuilder processSupremeAttributes(){
+        StringBuilder attributesPart = new StringBuilder();
+        SoqlAttribute pointer = attributes.get(0);
+        while(pointer.isObject() || pointer.isOrderBy() || pointer.isGroupBy()){
+            attributesPart.append(processAttribute(pointer));
+            attributes.remove(pointer);
+            if(attributes.isEmpty()){
+                break;
+            }else{
+                pointer = attributes.get(0);
+            }
+        }
+        return attributesPart;
+    }
+
     private StringBuilder processAttributes(){
         StringBuilder attributesPart = new StringBuilder();
         ArrayList<SoqlAttribute> toFilter = new ArrayList<>();
         ArrayList<SoqlAttribute> toInvFilter = new ArrayList<>();
         for (SoqlAttribute myAttr: attributes) {
-            if(indexOfNextOr.contains(attributes.indexOf(myAttr))){
+            if(objectOfNextOr.contains(myAttr)){
                 StringBuilder orPart = new StringBuilder();
                 orPart.append(processAllFilters(toFilter,toInvFilter));
                 toFilter.clear();

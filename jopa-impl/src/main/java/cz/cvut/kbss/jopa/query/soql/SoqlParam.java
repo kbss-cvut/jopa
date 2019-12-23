@@ -25,4 +25,21 @@ public class SoqlParam {
     public void setFirstNode(SoqlNode firstNode) {
         this.firstNode = firstNode;
     }
+
+    public String getAsValue(){
+        StringBuilder buildParam = new StringBuilder("?");
+        SoqlNode firstNode = getFirstNode();
+        SoqlNode pointer;
+        if(firstNode.hasNextChild()){
+            pointer = getFirstNode().getChild();
+        } else {
+            return "?x";
+        }
+        buildParam.append(pointer.getValue());
+        while (pointer.hasNextChild()) {
+            pointer = pointer.getChild();
+            buildParam.append(pointer.getCapitalizedvalue());
+        }
+        return buildParam.toString();
+    }
 }
