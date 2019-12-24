@@ -1,14 +1,14 @@
 package cz.cvut.kbss.jopa.query.soql;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -412,20 +412,32 @@ public class SoqlQueryListener implements soqlListener {
         return null;
     }
 
+    private EntityTypeImpl<?> getEntityType(Type<?> type){
+        if(metamodel == null){
+            return null;
+        }
+        Iterator<EntityType<?>> iterator = metamodel.getEntities().iterator();
+        while(iterator.hasNext()){
+            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) iterator.next();
+            if(entityType.equals(type)){
+                return entityType;
+            }
+        }
+        return null;
+    }
+
     private void setAllNodesIris(EntityTypeImpl<?> entityType, SoqlNode node){
-        AbstractAttribute abstractAttribute = entityType.getAttribute(node.getValue());
+        SingularAttributeImpl abstractAttribute = (SingularAttributeImpl) entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
-//        if(node.hasNextChild()){
-        if(false) {
-            // from abstractAttribute get name of Java Class of abstractAttribute
-            String className = "";
-            EntityTypeImpl<?> attrEntityType = getEntityType(className);
+        node.setIri(abstractAttribute.getIRI().toString());
+        if(node.hasNextChild()){
+//        if(false) {
+            Type<?> type = abstractAttribute.getType();
+            EntityTypeImpl<?> attrEntityType = getEntityType(type);
             if(attrEntityType == null){
                 return;
             }
             setAllNodesIris(attrEntityType, node.getChild());
-        }else{
-            node.setIri(abstractAttribute.getIRI().toString());
         }
     }
 

@@ -50,7 +50,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final OWLClassD expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassD.class));
         final OWLClassD result = getEntityManager()
                 .createQuery("SELECT d FROM OWLClassD d WHERE d.owlClassA = :a", OWLClassD.class)
-                .setParameter("a", expected.getOwlClassA()).getSingleResult();
+                .setParameter("a", expected.getOwlClassA().getUri()).getSingleResult();
         assertEquals(expected.getUri(), result.getUri());
         assertEquals(expected.getOwlClassA().getUri(), result.getOwlClassA().getUri());
     }
@@ -61,7 +61,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final List<OWLClassT> result = getEntityManager()
                 .createQuery("SELECT t FROM OWLClassT t WHERE t.owlClassA = :a AND t.intAttribute <= :intAtt",
                         OWLClassT.class)
-                .setParameter("a", sample.getOwlClassA())
+                .setParameter("a", sample.getOwlClassA().getUri())
                 .setParameter("intAtt", sample.getIntAttribute()).getResultList();
         assertFalse(result.isEmpty());
         for (OWLClassT item : result) {
@@ -89,7 +89,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final List<OWLClassT> result = getEntityManager()
                 .createQuery("SELECT t FROM OWLClassT t WHERE t.owlClassA = :a OR t.intAttribute <= :intAtt",
                         OWLClassT.class)
-                .setParameter("a", sample.getOwlClassA())
+                .setParameter("a", sample.getOwlClassA().getUri())
                 .setParameter("intAtt", sample.getIntAttribute()).getResultList();
         assertFalse(result.isEmpty());
         for (OWLClassT item : result) {
@@ -99,7 +99,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         }
     }
 
-    @Disabled //problem wit chained attribute IRI, impl cant get entityType of object as attribute
+//    @Disabled //problem wit chained attribute IRI, impl cant get entityType of object as attribute
     @Test
     public void testFindByTransitiveAttributeValue() {
         final OWLClassD expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassD.class));
