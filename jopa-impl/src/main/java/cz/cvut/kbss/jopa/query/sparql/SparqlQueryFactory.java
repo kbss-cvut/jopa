@@ -93,7 +93,11 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
         // We do not support any more abstract syntax, yet
-        return createNativeQuery(query, resultClass);
+        // return createNativeQuery(query, resultClass);
+        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(soqlQueryParser.parseQuery(query), resultClass, connection, uow);
+        tq.setUnitOfWork(uow);
+        tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
+        return tq;
     }
 
     @Override

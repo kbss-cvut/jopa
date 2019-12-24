@@ -1,0 +1,6 @@
+Zoznam čo nieje implementované:
+1. v klauzule WHERE niesu rozoznávané zátvorky v súvislosti s logickými operátormi
+2. implementácia zatiaľ nevie vyľadať IRI, pokiaľ má attribut viac ako 2 fragmenty
+(funkčné: object.attribute, nefunkčné: object1.object2.attribute)
+3. konštruktor CONSTRUCT
+4. je možné vyľadávať len jeden objekt => "SELECT ?x ?y" to zatiaľ nevytvorí, "SELECT ?attribute" to tiež nevytvorí
