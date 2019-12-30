@@ -1,14 +1,11 @@
 package cz.cvut.kbss.jopa.query.soql;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,6 +33,8 @@ public class SoqlQueryListener implements soqlListener {
     private HashMap<String, String> objectTypes;
 
     private boolean isSelectedParamDistinct = false;
+
+    private boolean isSelectedParamCount = false;
 
 
 
@@ -103,6 +102,20 @@ public class SoqlQueryListener implements soqlListener {
 
     @Override
     public void exitDistinctParam(soqlParser.DistinctParamContext ctx) {}
+
+    @Override
+    public void enterSelectedParam(soqlParser.SelectedParamContext ctx) { }
+
+    @Override
+    public void exitSelectedParam(soqlParser.SelectedParamContext ctx) { }
+
+    @Override
+    public void enterCount(soqlParser.CountContext ctx) {
+        isSelectedParamCount = true;
+    }
+
+    @Override
+    public void exitCount(soqlParser.CountContext ctx) { }
 
     @Override
     public void enterObject(soqlParser.ObjectContext ctx) {}
@@ -467,10 +480,14 @@ public class SoqlQueryListener implements soqlListener {
             return;
         }
         StringBuilder newQueryBuilder = new StringBuilder(typeDef);
-        if(isSelectedParamDistinct){
+        if(isSelectedParamDistinct && !isSelectedParamCount){
             newQueryBuilder.append(" ").append("DISTINCT");
         }
-        newQueryBuilder.append(" ?x WHERE { ");
+        newQueryBuilder.append(" ?x ");
+        if(isSelectedParamCount){
+            newQueryBuilder.append(getCountPart());
+        }
+        newQueryBuilder.append("WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
         if(!objectOfNextOr.isEmpty()){
             newQueryBuilder.append("{ ");
@@ -487,6 +504,15 @@ public class SoqlQueryListener implements soqlListener {
             newQueryBuilder.append(" ").append(buildOrdering());
         }
         newQuery = newQueryBuilder.toString();
+    }
+
+    private StringBuilder getCountPart (){
+        StringBuilder countPart = new StringBuilder("(COUNT(");
+        if(isSelectedParamDistinct){
+            countPart.append("distinct ");
+        }
+        countPart.append("?x) AS ?count) ");
+        return countPart;
     }
 
     private StringBuilder processSupremeAttributes(){

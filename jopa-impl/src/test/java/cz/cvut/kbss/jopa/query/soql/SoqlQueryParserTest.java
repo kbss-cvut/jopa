@@ -34,6 +34,24 @@ public class SoqlQueryParserTest {
     }
 
     @Test
+    public void testParseDistinctFindAllQuery(){
+        final String jpqlQuery = "SELECT DISTINCT p FROM Person p";
+        final String expectedSparqlQuery = "SELECT DISTINCT ?x WHERE { ?x a <http://www.example.org/Person> . }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(1, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseCountQuery(){
+        final String jpqlQuery = "SELECT DISTINCT COUNT(p) FROM Person p";
+        final String expectedSparqlQuery = "SELECT ?x (COUNT(DISTINCT ?x) AS ?count) WHERE { ?x a <http://www.example.org/Person> . }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(2, holder.getParameters().size());
+    }
+
+    @Test
     public void testParseFindAllOWLClassAQuery(){
         final String jpqlQuery = "SELECT a FROM OWLClassA a";
         final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/OWLClassA> . }";

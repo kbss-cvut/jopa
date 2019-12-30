@@ -13,7 +13,11 @@ params: paramComma* distinctParam ;
 
 paramComma: distinctParam COMMA ;
 
-distinctParam: distinct? param ;
+distinctParam: distinct? selectedParam ;
+
+selectedParam: param | count;
+
+count: COUNT LEFTPAREN param RIGHTPAREN ;
 
 param: objWithAttr | objWithOutAttr ;
 
@@ -103,6 +107,8 @@ DESC: 'DESC' ;
 
 DISTINCT: 'DISTINCT' ;
 
+COUNT: 'COUNT' ;
+
 QUERYOPERATOR: '>' | '<' | '>=' | '<=' | '=' | 'LIKE';
 
 DOT: '.' ;
@@ -112,6 +118,10 @@ COMMA: ',' ;
 QMARK: '"' ;
 
 COLON: ':' ;
+
+RIGHTPAREN: ')' ;
+
+LEFTPAREN: '(' ;
 
 TEXT: (LOWERCASE | UPPERCASE | DIGIT)+ ;
 

@@ -67,6 +67,26 @@ public interface soqlListener extends ParseTreeListener {
 	 */
 	void exitDistinctParam(soqlParser.DistinctParamContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link soqlParser#selectedParam}.
+	 * @param ctx the parse tree
+	 */
+	void enterSelectedParam(soqlParser.SelectedParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#selectedParam}.
+	 * @param ctx the parse tree
+	 */
+	void exitSelectedParam(soqlParser.SelectedParamContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link soqlParser#count}.
+	 * @param ctx the parse tree
+	 */
+	void enterCount(soqlParser.CountContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link soqlParser#count}.
+	 * @param ctx the parse tree
+	 */
+	void exitCount(soqlParser.CountContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link soqlParser#param}.
 	 * @param ctx the parse tree
 	 */
