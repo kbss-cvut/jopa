@@ -480,12 +480,13 @@ public class SoqlQueryListener implements soqlListener {
             return;
         }
         StringBuilder newQueryBuilder = new StringBuilder(typeDef);
-        if(isSelectedParamDistinct && !isSelectedParamCount){
-            newQueryBuilder.append(" ").append("DISTINCT");
-        }
-        newQueryBuilder.append(" ?x ");
         if(isSelectedParamCount){
             newQueryBuilder.append(getCountPart());
+        } else {
+            if(isSelectedParamDistinct ){
+                newQueryBuilder.append(" ").append("DISTINCT");
+            }
+            newQueryBuilder.append(" ?x ");
         }
         newQueryBuilder.append("WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
@@ -507,7 +508,7 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     private StringBuilder getCountPart (){
-        StringBuilder countPart = new StringBuilder("(COUNT(");
+        StringBuilder countPart = new StringBuilder(" (COUNT(");
         if(isSelectedParamDistinct){
             countPart.append("distinct ");
         }

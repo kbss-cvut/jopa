@@ -37,9 +37,9 @@ public abstract class SoqlRunner extends BaseQueryRunner {
     @Test
     public void testSimpleCount() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-        final List<OWLClassA> result = getEntityManager().createQuery("SELECT DISTINCT COUNT(a) FROM OWLClassA a", OWLClassA.class)
-                .getResultList();
-        assertEquals(expected.size(), result.size());
+        final Object result = getEntityManager().createQuery("SELECT DISTINCT COUNT(a) FROM OWLClassA a")
+                .getSingleResult();
+        assertEquals(expected.size(), result);
     }
 
     @Test

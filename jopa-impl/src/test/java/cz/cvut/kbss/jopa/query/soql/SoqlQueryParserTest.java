@@ -45,7 +45,7 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseCountQuery(){
         final String jpqlQuery = "SELECT DISTINCT COUNT(p) FROM Person p";
-        final String expectedSparqlQuery = "SELECT ?x (COUNT(DISTINCT ?x) AS ?count) WHERE { ?x a <http://www.example.org/Person> . }";
+        final String expectedSparqlQuery = "SELECT (COUNT(distinct ?x) AS ?count) WHERE { ?x a <http://www.example.org/Person> . }";
         final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());
