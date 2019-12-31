@@ -1,10 +1,10 @@
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlParam {
+public class SoqlParameter {
 
     private SoqlNode firstNode;
 
-    public SoqlParam() {
+    public SoqlParameter() {
     }
 
     public String getAsParam(){

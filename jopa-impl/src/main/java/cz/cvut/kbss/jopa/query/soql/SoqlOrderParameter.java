@@ -1,12 +1,12 @@
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlOrderParam extends SoqlParam{
+public class SoqlOrderParameter extends SoqlParameter {
 
     private String orderingBy ;
 
     private SoqlAttribute attribute;
 
-    public SoqlOrderParam(SoqlNode firstNode, String orderingBy) {
+    public SoqlOrderParameter(SoqlNode firstNode, String orderingBy) {
         super();
         this.setFirstNode(firstNode);
         this.orderingBy = orderingBy.isEmpty() ? "ASC" : orderingBy;

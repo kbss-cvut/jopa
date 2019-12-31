@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlAttribute extends SoqlParam {
+public class SoqlAttribute extends SoqlParameter {
 
     private String value;
 

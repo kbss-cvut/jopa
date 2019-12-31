@@ -1,10 +1,10 @@
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlGroupParam extends SoqlParam {
+public class SoqlGroupParameter extends SoqlParameter {
 
     private SoqlAttribute attribute;
 
-    public SoqlGroupParam(SoqlNode firstNode) {
+    public SoqlGroupParameter(SoqlNode firstNode) {
         setFirstNode(firstNode);
     }
 

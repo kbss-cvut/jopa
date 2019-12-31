@@ -26,9 +26,9 @@ public class SoqlQueryListener implements soqlListener {
     // keeps index of first object of SoqlAttribute after OR operator
     private ArrayList<SoqlAttribute> objectOfNextOr;
 
-    private ArrayList<SoqlOrderParam> orderAttributes;
+    private ArrayList<SoqlOrderParameter> orderAttributes;
 
-    private ArrayList<SoqlGroupParam> groupAttributes;
+    private ArrayList<SoqlGroupParameter> groupAttributes;
 
     private HashMap<String, String> objectTypes;
 
@@ -287,7 +287,7 @@ public class SoqlQueryListener implements soqlListener {
         }
         setIris(firstNode);
         String orderingBy = getOrderingBy(ctx.getParent());
-        SoqlOrderParam orderParam = new SoqlOrderParam(firstNode, orderingBy);
+        SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
         boolean attrSet = false;
         for (SoqlAttribute attr: attributes) {
             if (attr.getAsParam().equals(orderParam.getAsParam())){
@@ -332,7 +332,7 @@ public class SoqlQueryListener implements soqlListener {
             prevNode.setChild(actualNode);
         }
         setIris(firstNode);
-        SoqlGroupParam groupParam = new SoqlGroupParam(firstNode);
+        SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
         boolean attrSet = false;
         for (SoqlAttribute attr: attributes) {
             if (attr.getAsParam().equals(groupParam.getAsParam())){
@@ -605,7 +605,7 @@ public class SoqlQueryListener implements soqlListener {
 
     private StringBuilder buildOrdering(){
         StringBuilder sb = new StringBuilder("ORDER BY");
-        for (SoqlOrderParam orderParam: orderAttributes) {
+        for (SoqlOrderParameter orderParam: orderAttributes) {
             sb.append(" ").append(orderParam.getOrderByPart());
         }
         return sb;
@@ -613,7 +613,7 @@ public class SoqlQueryListener implements soqlListener {
 
     private StringBuilder buildGrouping(){
         StringBuilder sb = new StringBuilder("GROUP BY");
-        for (SoqlGroupParam groupParam: groupAttributes) {
+        for (SoqlGroupParameter groupParam: groupAttributes) {
             sb.append(" ").append(groupParam.getGroupByPart());
         }
         return sb;
