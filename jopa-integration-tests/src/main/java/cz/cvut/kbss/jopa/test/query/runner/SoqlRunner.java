@@ -5,7 +5,6 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -54,6 +53,33 @@ public abstract class SoqlRunner extends BaseQueryRunner {
     }
 
     @Test
+    public void testFindByDataNotPropertyAttribute() {
+        final OWLClassA unexpected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        final List<OWLClassA> result = getEntityManager()
+                .createQuery("SELECT a FROM OWLClassA a WHERE NOT a.stringAttribute = :str", OWLClassA.class)
+                .setParameter("str", unexpected.getStringAttribute(), "en").getResultList();
+        for (OWLClassA item : result) {
+            assertNotEquals(unexpected.getUri(), item.getUri());
+            assertNotEquals(unexpected.getStringAttribute(), item.getStringAttribute());
+        }
+    }
+
+    @Test
+    public void testFindByDataNotPropertyAttributeAndPropertyAttribute() {
+        final OWLClassT unexpected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
+        final List<OWLClassT> result = getEntityManager()
+                .createQuery("SELECT t FROM OWLClassT t WHERE NOT t.owlClassA = :a AND t.intAttribute < :intAtt",
+                        OWLClassT.class)
+                .setParameter("a", unexpected.getOwlClassA().getUri())
+                .setParameter("intAtt", unexpected.getIntAttribute()).getResultList();
+        assertTrue(!result.isEmpty());
+        for (OWLClassT item : result) {
+            assertNotEquals(unexpected.getUri(), item.getUri());
+            assertTrue(unexpected.getIntAttribute() > item.getIntAttribute());
+        }
+    }
+
+    @Test
     public void testFindByObjectPropertyAttribute() {
         final OWLClassD expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassD.class));
         final OWLClassD result = getEntityManager()
@@ -78,7 +104,6 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         }
     }
 
-//    @Disabled // This might be problematic, because intAttribute is not part of the select clause
     @Test
     public void testOrderBy() {
         final List<OWLClassT> expected = QueryTestEnvironment.getData(OWLClassT.class);
@@ -107,7 +132,6 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         }
     }
 
-//    @Disabled //problem wit chained attribute IRI, impl cant get entityType of object as attribute
     @Test
     public void testFindByTransitiveAttributeValue() {
         final OWLClassD expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassD.class));

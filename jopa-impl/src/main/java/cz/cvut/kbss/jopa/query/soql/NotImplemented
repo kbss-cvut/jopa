@@ -2,7 +2,7 @@ Zoznam čo nieje implementované:
 1. v klauzule WHERE niesu rozoznávané zátvorky v súvislosti s logickými operátormi
 2. konštruktory ako CONSTRUCT a ASK
 3. je možné vyľadávať len jeden objekt => "SELECT ?x ?y" to zatiaľ nepreloží, "SELECT ?attribute" to tiež nepreloží
-4. zložitejśie formy JOINu
+4. zložitejšie formy JOINu
 5. agregačné funkcie okrem count
 6. agregačná funkcia count funguje len pre Entity
 7. chýba implementácia SPARQL funkcie OPTIONAL

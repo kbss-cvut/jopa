@@ -44,6 +44,15 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseCountQuery(){
+        final String jpqlQuery = "SELECT COUNT(p) FROM Person p";
+        final String expectedSparqlQuery = "SELECT (COUNT(?x) AS ?count) WHERE { ?x a <http://www.example.org/Person> . }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(2, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseDistinctCountQuery(){
         final String jpqlQuery = "SELECT DISTINCT COUNT(p) FROM Person p";
         final String expectedSparqlQuery = "SELECT (COUNT(distinct ?x) AS ?count) WHERE { ?x a <http://www.example.org/Person> . }";
         final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
@@ -88,6 +97,24 @@ public class SoqlQueryParserTest {
     }
 
     @Test
+    public void testParseFindMutipleJoinedQuery(){
+        final String jpqlQuery = "SELECT a FROM OWLClassA a WHERE a.OWLClassB.OWLClassC.OWLClassD = :d";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/OWLClassA> . ?x <http://www.example.org/OWLClassB> ?OWLClassB . ?OWLClassB <http://www.example.org/OWLClassC> ?OWLClassC . ?OWLClassC <http://www.example.org/OWLClassD> ?d . }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindMutipleJoinedQueryFilter(){
+        final String jpqlQuery = "SELECT a FROM OWLClassA a WHERE a.OWLClassB.OWLClassC.OWLClassD.intAttribute > :intAttribute";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/OWLClassA> . ?x <http://www.example.org/OWLClassB> ?OWLClassB . ?OWLClassB <http://www.example.org/OWLClassC> ?OWLClassC . ?OWLClassC <http://www.example.org/OWLClassD> ?OWLClassD . ?OWLClassD <http://www.example.org/intAttribute> ?aOWLClassBOWLClassCOWLClassDIntAttribute . FILTER (?aOWLClassBOWLClassCOWLClassDIntAttribute > ?intAttribute) }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(6, holder.getParameters().size());
+    }
+
+    @Test
     public void testParseFindOneOrderByQuery(){
         final String jpqlQuery = "SELECT p FROM Person p WHERE p.age > :age ORDER BY p.age DESC";
         final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } ORDER BY DESC(?pAge) ";
@@ -115,9 +142,18 @@ public class SoqlQueryParserTest {
     }
 
     @Test
+    public void testParseFindOneGroupByNotInWhereQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.age > :age GROUP BY p.gender";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/gender> ?gender . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } GROUP BY ?gender ";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
+    }
+
+    @Test
     public void testParseFindByOneNotQuery(){
         final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . FILTER NOT EXISTS ( ?x <http://www.example.org/username> ?username . ) }";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } }";
         final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());
@@ -133,12 +169,66 @@ public class SoqlQueryParserTest {
     }
 
     @Test
+    public void testParseFindByMultipleNotAndQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleAndNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/username> ?username . FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotAndNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
+    }
+
+    @Test
     public void testParseFindByMultipleOrQuery(){
         final String jpqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber OR p.age > :age";
         final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/phone> ?phone . ?phone <http://www.example.org/number> ?phoneNumber . } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/username> ?username . } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(4, holder.getParameters().size());
     }
 
     @Test
@@ -169,27 +259,198 @@ public class SoqlQueryParserTest {
     }
 
     @Test
-    public void testParseFindByMultipleAndNotQuery(){
-        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS ( ?x <http://www.example.org/username> ?username . ) }";
+    public void testParseFindByMultipleNotAndOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.phone.number = :phoneNumber AND p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/gender> ?gender . FILTER NOT EXISTS { ?x <http://www.example.org/phone> ?phone . ?phone <http://www.example.org/number> ?phoneNumber . } } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
-        assertEquals(4, holder.getParameters().size());
+        assertEquals(6, holder.getParameters().size());
     }
 
     @Test
-    public void testParseFindByMultipleOrNotQuery(){
-        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS ( ?x <http://www.example.org/username> ?username . ) } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+    public void testParseFindByMultipleAndNotOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/phone> ?phone . ?phone <http://www.example.org/number> ?phoneNumber . FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . } } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
-        assertEquals(4, holder.getParameters().size());
+        assertEquals(6, holder.getParameters().size());
     }
 
     @Test
     public void testParseFindByMultipleAndOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/phone> ?phone . ?phone <http://www.example.org/number> ?phoneNumber . ?x <http://www.example.org/gender> ?gender . } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(6, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotAndNotOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/gender> ?gender . } } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleAndNotOrNotQuery(){
         final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/username> ?username . FILTER NOT EXISTS ( ?x <http://www.example.org/gender> ?gender . ) } UNION { FILTER NOT EXISTS ( ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) ) } }";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/username> ?username . FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . } } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotAndOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/gender> ?gender . FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleAndAndQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/gender> ?gender . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotAndAndQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/gender> ?gender . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleAndNotAndQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleAndAndNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/gender> ?gender . FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotAndNotAndQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/gender> ?gender . } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleAndNotAndNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/username> ?username . FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotAndAndNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . ?x <http://www.example.org/gender> ?gender . FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotAndNotAndNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . ?x <http://www.example.org/gender> ?gender . ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleOrOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/username> ?username . } UNION { ?x <http://www.example.org/gender> ?gender . } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotOrOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } } UNION { ?x <http://www.example.org/gender> ?gender . } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleOrNotOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/username> ?username . } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . } } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleOrOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/username> ?username . } UNION { ?x <http://www.example.org/gender> ?gender . } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotOrNotOrQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . } } UNION { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleOrNotOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR NOT p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { ?x <http://www.example.org/username> ?username . } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . } } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotOrOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } } UNION { ?x <http://www.example.org/gender> ?gender . } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
+        final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(5, holder.getParameters().size());
+    }
+
+    @Test
+    public void testParseFindByMultipleNotOrNotOrNotQuery(){
+        final String jpqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <http://www.example.org/Person> . { FILTER NOT EXISTS { ?x <http://www.example.org/username> ?username . } } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/gender> ?gender . } } UNION { FILTER NOT EXISTS { ?x <http://www.example.org/age> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = queryParser.parseQuery(jpqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());

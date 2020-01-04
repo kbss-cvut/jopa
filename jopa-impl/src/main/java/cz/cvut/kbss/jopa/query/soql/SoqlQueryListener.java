@@ -590,14 +590,14 @@ public class SoqlQueryListener implements soqlListener {
         if (toInvFilter.isEmpty()) {
             return buildInvFilter;
         }
-        buildInvFilter.append("FILTER NOT EXISTS ( ");
+        buildInvFilter.append("FILTER NOT EXISTS { ");
         for (SoqlAttribute attr : toInvFilter) {
             buildInvFilter.append(processAttribute(attr));
             if(attr.isFilter()){
                 toFilter.add(attr);
             }
         }
-        buildInvFilter.append(processFilter(toFilter)).append(") ");
+        buildInvFilter.append(processFilter(toFilter)).append("} ");
         return buildInvFilter;
     }
 
