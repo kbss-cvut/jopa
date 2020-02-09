@@ -70,30 +70,30 @@ public class AxiomAdapter {
         return dataFactory.getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
     }
 
-    Axiom<?> toAxiom(NamedResource subject, OWLDataPropertyAssertionAxiom assertionAxiom, boolean isInferred) {
-        final Assertion assertion = Assertion
-                .createDataPropertyAssertion(assertionAxiom.getProperty().asOWLDataProperty().getIRI().toURI(),
-                        isInferred);
-        return createAxiom(subject, assertion, OwlapiUtils.owlLiteralToValue(assertionAxiom.getObject()));
-    }
-
     public <V> Axiom<V> createAxiom(NamedResource subject, Assertion assertion, V value) {
         return new AxiomImpl<>(subject, assertion, new Value<>(value));
     }
 
-    Axiom<?> toAxiom(NamedResource subject, OWLObjectPropertyAssertionAxiom assertionAxiom, boolean isInferred) {
-        final Assertion assertion = Assertion
-                .createObjectPropertyAssertion(assertionAxiom.getProperty().asOWLObjectProperty().getIRI().toURI(),
-                        isInferred);
-        final IRI target = assertionAxiom.getObject().asOWLNamedIndividual().getIRI();
+    Axiom<?> toAxiom(NamedResource subject, OWLDataPropertyExpression dataProperty, OWLLiteral value) {
+        final Assertion assertion =
+                Assertion.createDataPropertyAssertion(dataProperty.asOWLDataProperty().getIRI().toURI(),
+                        false);
+        return createAxiom(subject, assertion, OwlapiUtils.owlLiteralToValue(value));
+    }
+
+    Axiom<?> toAxiom(NamedResource subject, OWLObjectPropertyExpression objectProperty, OWLIndividual value) {
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(objectProperty.asOWLObjectProperty().getIRI().toURI(),
+                        false);
+        final IRI target = value.asOWLNamedIndividual().getIRI();
         return createAxiom(subject, assertion, NamedResource.create(target.toURI()));
     }
 
-    Axiom<?> toAxiom(NamedResource subject, OWLAnnotationAssertionAxiom assertionAxiom, boolean isInferred) {
+    Axiom<?> toAxiom(NamedResource subject, OWLAnnotationAssertionAxiom assertionAxiom) {
         final Assertion assertion = Assertion
                 .createAnnotationPropertyAssertion(
                         assertionAxiom.getProperty().asOWLAnnotationProperty().getIRI().toURI(),
-                        isInferred);
+                        false);
         if (assertionAxiom.getValue().asIRI().isPresent()) {
             return createAxiom(subject, assertion, assertionAxiom.getValue().asIRI().get().toURI());
         } else {

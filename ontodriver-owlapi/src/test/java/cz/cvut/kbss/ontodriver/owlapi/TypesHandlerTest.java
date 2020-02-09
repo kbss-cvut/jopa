@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,14 +14,15 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -33,15 +34,12 @@ import org.semanticweb.owlapi.reasoner.impl.OWLClassNodeSet;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -64,8 +62,8 @@ public class TypesHandlerTest {
 
     private TypesHandler typesHandler;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         this.dataFactory = new OWLDataFactoryImpl();
         final OntologySnapshot snapshot = new OntologySnapshot(ontologyMock, managerMock, dataFactory,
@@ -74,10 +72,10 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void getTypesLoadsExplicitTypesFromOntology() throws Exception {
+    void getTypesLoadsExplicitTypesFromOntology() throws Exception {
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         final Set<URI> types = initTypes();
-        addClassAssertionsToOntology(PK, types, snapshot);
+        addClassAssertionsToOntology(types, snapshot.getOntology(), snapshot.getOntologyManager());
         final Set<Axiom<URI>> result = new TypesHandler(adapterMock, snapshot).getTypes(INDIVIDUAL, null, false);
 
         assertEquals(types.size(), result.size());
@@ -86,12 +84,13 @@ public class TypesHandlerTest {
         }
     }
 
-    private void addClassAssertionsToOntology(URI subject, Collection<URI> classes, OntologySnapshot snapshot) {
-        final OWLNamedIndividual individual = snapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
+    private void addClassAssertionsToOntology(Collection<URI> classes, OWLOntology ontology,
+                                              OWLOntologyManager ontologyManager) {
+        final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(TypesHandlerTest.PK));
         classes.forEach(uri -> {
-            final OWLClass cls = snapshot.getDataFactory().getOWLClass(IRI.create(uri));
-            final OWLClassAssertionAxiom a = snapshot.getDataFactory().getOWLClassAssertionAxiom(cls, individual);
-            snapshot.getOntologyManager().applyChange(new AddAxiom(snapshot.getOntology(), a));
+            final OWLClass cls = dataFactory.getOWLClass(IRI.create(uri));
+            final OWLClassAssertionAxiom a = dataFactory.getOWLClassAssertionAxiom(cls, individual);
+            ontologyManager.applyChange(new AddAxiom(ontology, a));
         });
     }
 
@@ -104,7 +103,7 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void getTypesLoadsTypesIncludingInferred() {
+    void getTypesLoadsTypesIncludingInferred() {
         final Set<URI> typeUris = initTypes();
         final NodeSet<OWLClass> types = new OWLClassNodeSet(typeUris.stream().map(
                 uri -> new OWLClassNode(dataFactory.getOWLClass(IRI.create(uri)))).collect(
@@ -120,7 +119,7 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void addTypesAddsClassAssertionAxiomsForTheTypes() {
+    void addTypesAddsClassAssertionAxiomsForTheTypes() {
         final Set<URI> typeUris = initTypes();
 
         typesHandler.addTypes(INDIVIDUAL, null, typeUris);
@@ -138,7 +137,7 @@ public class TypesHandlerTest {
     }
 
     @Test
-    public void removeTypesRemovesClassAssertionsAboutTheTypes() {
+    void removeTypesRemovesClassAssertionsAboutTheTypes() {
         final Set<URI> typeUris = initTypes();
 
         typesHandler.removeTypes(INDIVIDUAL, null, typeUris);
@@ -153,5 +152,23 @@ public class TypesHandlerTest {
             assertTrue(typeUris.contains(clsAxiom.getClassExpression().asOWLClass().getIRI().toURI()));
         }
         verify(adapterMock).addTransactionalChanges(anyList());
+    }
+
+    @Test
+    void getTypesLoadsTypesFromImportedOntologiesAsWell() throws Exception {
+        final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
+        final Set<URI> types = initTypes();
+        final OWLOntologyManager manager = snapshot.getOntologyManager();
+        final OWLOntology imported = manager.createOntology(IRI.create(Generator.generateUri()));
+        manager.applyChange(new AddImport(snapshot.getOntology(),
+                dataFactory.getOWLImportsDeclaration(imported.getOntologyID().getOntologyIRI().get())));
+        addClassAssertionsToOntology(types, snapshot.getOntology(), snapshot.getOntologyManager());
+        final URI typeInImport = Generator.generateUri();
+        addClassAssertionsToOntology(Collections.singleton(typeInImport), imported, manager);
+        final Set<Axiom<URI>> result = new TypesHandler(adapterMock, snapshot).getTypes(INDIVIDUAL, null, false);
+
+        final Set<URI> resultTypes = result.stream().map(a -> a.getValue().getValue()).collect(Collectors.toSet());
+        assertTrue(resultTypes.containsAll(types));
+        assertTrue(resultTypes.contains(typeInImport));
     }
 }
