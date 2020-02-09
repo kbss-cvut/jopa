@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -329,12 +329,12 @@ public class OWL2JavaTransformerTest {
     @Test
     public void generateVocabularyDoesNotDuplicateRdfProperties() throws Exception {
         this.targetDir = getTempDirectory();
-        transformer.setOntology("http://purl.org/dc/terms", mappingFilePath);
+        transformer.setOntology("http://www.w3.org/2000/01/rdf-schema", mappingFilePath);
         transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
         // Using the elements/1.1 version of identifier, because the terms version is declared also as an individual
-        final String property = "http://purl.org/dc/elements/1.1/identifier";
+        final String property = "http://www.w3.org/2000/01/rdf-schema#label";
         verifyIriOccursOnce(fileContents, property);
     }
 
