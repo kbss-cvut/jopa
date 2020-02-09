@@ -151,9 +151,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 field, descriptor, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            if (axioms.isEmpty()) {
-                return;
-            }
             entityBuilder.setFieldValue(entity, field, axioms, et, descriptor);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
