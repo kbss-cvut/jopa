@@ -1,28 +1,30 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
-import org.junit.Before;
-import org.junit.Test;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 public class OrdinalParameterSparqlQueryHolderTest {
 
@@ -38,16 +40,18 @@ public class OrdinalParameterSparqlQueryHolderTest {
     private static final List<Object> PARAMS = Arrays.asList("craft", "craft", "craft", 1, "craft", 2);
     private static final Set<Object> PARAM_IDENTIFIERS = new HashSet<>(Arrays.asList("craft", 1, 2));
 
+    private final ParameterValueFactory paramValueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
+
     private SparqlQueryHolder holder;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final Map<Object, QueryParameter<?>> paramsByName = new HashMap<>();
         for (Object n : PARAM_IDENTIFIERS) {
             if (n instanceof String) {
-                paramsByName.put(n, new QueryParameter<>((String) n));
+                paramsByName.put(n, new QueryParameter<>((String) n, paramValueFactory));
             } else {
-                paramsByName.put(n, new QueryParameter<>((Integer) n));
+                paramsByName.put(n, new QueryParameter<>((Integer) n, paramValueFactory));
             }
         }
         final List<QueryParameter<?>> parameters = PARAMS.stream().map(paramsByName::get).collect(Collectors.toList());
@@ -61,22 +65,23 @@ public class OrdinalParameterSparqlQueryHolderTest {
         assertEquals(position, param.getPosition().intValue());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getParameterWithUnknownIndexThrowsException() {
-        holder.getParameter(Integer.MAX_VALUE);
+        assertThrows(IllegalArgumentException.class, () -> holder.getParameter(Integer.MAX_VALUE));
     }
 
     @Test
     public void testSetOrdinalParameterValue() {
         final String value = "NASA";
-        final QueryParameter<?> param = new QueryParameter<>(2);
+        final QueryParameter<?> param = new QueryParameter<>(2, paramValueFactory);
         holder.setParameter(param, value);
         assertEquals(value, holder.getParameterValue(param));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setValueOfUnknownParameterThrowsException() {
-        holder.setParameter(new QueryParameter<>(Integer.MAX_VALUE), "value");
+        assertThrows(IllegalArgumentException.class, () -> holder
+                .setParameter(new QueryParameter<>(Integer.MAX_VALUE, paramValueFactory), "value"));
     }
 
     @Test
@@ -90,8 +95,8 @@ public class OrdinalParameterSparqlQueryHolderTest {
                 "?craft foaf:homepage \"" + homepage + "\" .\n" +
                 "?craft foaf:fundedBy \"" + fundedBy + "\" .\n" +
                 "}";
-        holder.setParameter(new QueryParameter<>(1), homepage);
-        holder.setParameter(new QueryParameter<>(2), fundedBy);
+        holder.setParameter(new QueryParameter<>(1, paramValueFactory), homepage);
+        holder.setParameter(new QueryParameter<>(2, paramValueFactory), fundedBy);
         assertEquals(query, holder.assembleQuery());
     }
 
@@ -105,7 +110,7 @@ public class OrdinalParameterSparqlQueryHolderTest {
                 "?craft foaf:homepage $1 .\n" +
                 "?craft foaf:fundedBy \"" + fundedBy + "\" .\n" +
                 "}";
-        holder.setParameter(new QueryParameter<>(2), fundedBy);
+        holder.setParameter(new QueryParameter<>(2, paramValueFactory), fundedBy);
         assertEquals(query, holder.assembleQuery());
     }
 }

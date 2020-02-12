@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.exception.QueryParserException;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SparqlQueryParser implements QueryParser {
+
+    private final ParameterValueFactory parameterValueFactory;
 
     private String query;
 
@@ -39,9 +42,14 @@ public class SparqlQueryParser implements QueryParser {
     private int paramStartIndex;
     private ParamType currentParamType;
 
+    public SparqlQueryParser(ParameterValueFactory parameterValueFactory) {
+        this.parameterValueFactory = parameterValueFactory;
+    }
+
     private enum ParamType {
         POSITIONAL, NAMED
     }
+
 
     @Override
     public SparqlQueryHolder parseQuery(String query) {
@@ -153,7 +161,7 @@ public class SparqlQueryParser implements QueryParser {
     private QueryParameter<?> getQueryParameter(String name) {
         // We want to reuse the param instances, so that changes to them apply throughout the whole query
         if (!uniqueParams.containsKey(name)) {
-            uniqueParams.put(name, new QueryParameter<>(name));
+            uniqueParams.put(name, new QueryParameter<>(name, parameterValueFactory));
         }
         return uniqueParams.get(name);
     }
@@ -163,7 +171,7 @@ public class SparqlQueryParser implements QueryParser {
         if (uniqueParams.containsKey(position)) {
             throw new QueryParserException("Parameter with position " + position + " already found in query " + query);
         }
-        final QueryParameter<?> qp = new QueryParameter<>(position);
+        final QueryParameter<?> qp = new QueryParameter<>(position, parameterValueFactory);
         uniqueParams.put(position, qp);
         return qp;
     }

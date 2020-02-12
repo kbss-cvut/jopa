@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.jupiter.api.BeforeEach;
@@ -319,7 +320,7 @@ class TypedQueryImplTest extends QueryTestBase {
     void exceptionInSetParameterByParameterInvokesRollbackMarker() {
         final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_QUERY, OWLClassA.class);
         try {
-            q.setParameter(new QueryParameter<>(117), 117);
+            q.setParameter(new QueryParameter<>(117, mock(ParameterValueFactory.class)), 117);
         } catch (RuntimeException e) {
             // Swallow the exception
         }
@@ -330,7 +331,7 @@ class TypedQueryImplTest extends QueryTestBase {
     void exceptionInSetStringParameterByParameterInvokesRollbackMarker() {
         final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_QUERY, OWLClassA.class);
         try {
-            q.setParameter(new QueryParameter<>(117), "A", "en");
+            q.setParameter(new QueryParameter<>(117, mock(ParameterValueFactory.class)), "A", "en");
         } catch (RuntimeException e) {
             // Swallow the exception
         }

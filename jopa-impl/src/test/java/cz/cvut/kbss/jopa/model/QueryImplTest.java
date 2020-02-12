@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -243,7 +244,7 @@ class QueryImplTest extends QueryTestBase {
     void exceptionInSetParameterByParameterInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
-            q.setParameter(new QueryParameter<>(117), 117);
+            q.setParameter(new QueryParameter<>(117, mock(ParameterValueFactory.class)), 117);
         } catch (RuntimeException e) {
             // Swallow the exception
         }
@@ -254,7 +255,7 @@ class QueryImplTest extends QueryTestBase {
     void exceptionInSetStringParameterByParameterInvokesRollbackMarker() {
         final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
         try {
-            q.setParameter(new QueryParameter<>(117), "A", "en");
+            q.setParameter(new QueryParameter<>(117, mock(ParameterValueFactory.class)), "A", "en");
         } catch (RuntimeException e) {
             // Swallow the exception
         }

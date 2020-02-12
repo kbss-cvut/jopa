@@ -1,37 +1,40 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValue;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 
 public class QueryParameter<T> implements Parameter<T> {
 
     private final String name;
     private final Integer position;
 
+    private final ParameterValueFactory valueFactory;
+
     private ParameterValue value;
 
-    public QueryParameter(String name) {
+    public QueryParameter(String name, ParameterValueFactory valueFactory) {
         this.name = name;
+        this.valueFactory = valueFactory;
         this.position = null;
         resetValue();
     }
 
-    public QueryParameter(Integer position) {
+    public QueryParameter(Integer position, ParameterValueFactory valueFactory) {
         this.position = position;
+        this.valueFactory = valueFactory;
         this.name = null;
         resetValue();
     }
@@ -56,22 +59,22 @@ public class QueryParameter<T> implements Parameter<T> {
 
     public void setValue(Object value) {
         assert value != null;
-        this.value = ParameterValue.create(value);
+        this.value = valueFactory.create(value);
     }
 
     public void setValue(String value, String language) {
         assert value != null;
-        this.value = ParameterValue.create(value, language);
+        this.value = valueFactory.create(value, language);
     }
 
     public void setUntypedValue(Object value) {
         assert value != null;
-        this.value = ParameterValue.createUntyped(value);
+        this.value = valueFactory.createUntyped(value);
     }
 
     public void resetValue() {
         this.value =
-                name != null ? ParameterValue.createVariableValue(name) : ParameterValue.createVariableValue(position);
+                name != null ? valueFactory.createVariableValue(name) : valueFactory.createVariableValue(position);
     }
 
     @Override

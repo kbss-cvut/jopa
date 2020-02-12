@@ -297,7 +297,7 @@ abstract class AbstractQuery implements Query {
         setTargetOntology(stmt);
         logQuery();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-        return StreamSupport.stream(new QueryResultSpliterator<R>(rs.spliterator(), function, () -> {
+        return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), function, () -> {
             try {
                 stmt.close();
             } catch (OntoDriverException e) {

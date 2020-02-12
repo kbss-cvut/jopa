@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2019 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.sparql;
 
@@ -19,6 +17,7 @@ import cz.cvut.kbss.jopa.model.ResultSetMappingQuery;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -38,7 +37,7 @@ public class SparqlQueryFactory implements QueryFactory {
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.queryParser = new SparqlQueryParser();
+        this.queryParser = new SparqlQueryParser(new ParameterValueFactory(uow));
     }
 
     @Override
@@ -67,7 +66,8 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(resultSetMapping, ErrorUtils.getNPXMessageSupplier("resultSetMapping"));
 
         final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
-        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
+        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper,
+                uow);
         q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return q;
     }
