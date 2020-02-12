@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,7 +23,10 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.eclipse.rdf4j.rio.*;
+import org.eclipse.rdf4j.rio.ParserConfig;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandler;
+import org.eclipse.rdf4j.rio.RDFParseException;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,126 +80,116 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public Query prepareQuery(QueryLanguage ql, String query) throws RepositoryException, MalformedQueryException {
+    public Query prepareQuery(QueryLanguage ql, String query) {
         return wrappedConnection.prepareQuery(ql, query);
     }
 
     @Override
-    public Query prepareQuery(QueryLanguage ql, String query, String baseURI)
-            throws RepositoryException, MalformedQueryException {
+    public Query prepareQuery(QueryLanguage ql, String query, String baseURI) {
         return wrappedConnection.prepareQuery(ql, query, baseURI);
     }
 
     @Override
-    public TupleQuery prepareTupleQuery(QueryLanguage ql, String query)
-            throws RepositoryException, MalformedQueryException {
+    public TupleQuery prepareTupleQuery(QueryLanguage ql, String query) {
         return wrappedConnection.prepareTupleQuery(ql, query);
     }
 
     @Override
-    public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI)
-            throws RepositoryException, MalformedQueryException {
+    public TupleQuery prepareTupleQuery(QueryLanguage ql, String query, String baseURI) {
         return wrappedConnection.prepareTupleQuery(ql, query, baseURI);
     }
 
     @Override
-    public GraphQuery prepareGraphQuery(QueryLanguage ql, String query)
-            throws RepositoryException, MalformedQueryException {
+    public GraphQuery prepareGraphQuery(QueryLanguage ql, String query) {
         return wrappedConnection.prepareGraphQuery(ql, query);
     }
 
     @Override
-    public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI)
-            throws RepositoryException, MalformedQueryException {
+    public GraphQuery prepareGraphQuery(QueryLanguage ql, String query, String baseURI) {
         return wrappedConnection.prepareGraphQuery(ql, query, baseURI);
     }
 
     @Override
-    public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query)
-            throws RepositoryException, MalformedQueryException {
+    public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query) {
         return wrappedConnection.prepareBooleanQuery(ql, query);
     }
 
     @Override
-    public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI)
-            throws RepositoryException, MalformedQueryException {
+    public BooleanQuery prepareBooleanQuery(QueryLanguage ql, String query, String baseURI) {
         return wrappedConnection.prepareBooleanQuery(ql, query, baseURI);
     }
 
     @Override
-    public Update prepareUpdate(QueryLanguage ql, String update) throws RepositoryException, MalformedQueryException {
+    public Update prepareUpdate(QueryLanguage ql, String update) {
         return wrappedConnection.prepareUpdate(ql, update);
     }
 
     @Override
-    public Update prepareUpdate(QueryLanguage ql, String update, String baseURI)
-            throws RepositoryException, MalformedQueryException {
+    public Update prepareUpdate(QueryLanguage ql, String update, String baseURI) {
         return wrappedConnection.prepareUpdate(ql, update, baseURI);
     }
 
     @Override
-    public RepositoryResult<Resource> getContextIDs() throws RepositoryException {
+    public RepositoryResult<Resource> getContextIDs() {
         return wrappedConnection.getContextIDs();
     }
 
     @Override
     public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
-                                                     Resource... contexts) throws RepositoryException {
+                                                     Resource... contexts) {
         return wrappedConnection.getStatements(subj, pred, obj, includeInferred, contexts);
     }
 
     @Override
-    public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred, Resource... contexts)
-            throws RepositoryException {
+    public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred, Resource... contexts) {
         return wrappedConnection.hasStatement(subj, pred, obj, includeInferred, contexts);
     }
 
     @Override
-    public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts)
-            throws RepositoryException {
+    public boolean hasStatement(Statement st, boolean includeInferred, Resource... contexts) {
         return wrappedConnection.hasStatement(st, includeInferred, contexts);
     }
 
     @Override
     public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred, RDFHandler handler,
-                                 Resource... contexts) throws RepositoryException, RDFHandlerException {
+                                 Resource... contexts) {
         wrappedConnection.exportStatements(subj, pred, obj, includeInferred, handler, contexts);
     }
 
     @Override
-    public void export(RDFHandler handler, Resource... contexts) throws RepositoryException, RDFHandlerException {
+    public void export(RDFHandler handler, Resource... contexts) {
         wrappedConnection.export(handler, contexts);
     }
 
     @Override
-    public long size(Resource... contexts) throws RepositoryException {
+    public long size(Resource... contexts) {
         return wrappedConnection.size(contexts);
     }
 
     @Override
-    public boolean isEmpty() throws RepositoryException {
+    public boolean isEmpty() {
         return wrappedConnection.isEmpty();
     }
 
     @Deprecated
     @Override
-    public void setAutoCommit(boolean autoCommit) throws RepositoryException {
+    public void setAutoCommit(boolean autoCommit) {
         wrappedConnection.setAutoCommit(autoCommit);
     }
 
     @Deprecated
     @Override
-    public boolean isAutoCommit() throws RepositoryException {
+    public boolean isAutoCommit() {
         return wrappedConnection.isAutoCommit();
     }
 
     @Override
-    public boolean isActive() throws RepositoryException {
+    public boolean isActive() {
         return wrappedConnection.isActive();
     }
 
     @Override
-    public void setIsolationLevel(IsolationLevel level) throws IllegalStateException {
+    public void setIsolationLevel(IsolationLevel level) {
         wrappedConnection.setIsolationLevel(level);
     }
 
@@ -206,118 +199,117 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public void begin() throws RepositoryException {
+    public void begin() {
         wrappedConnection.begin();
     }
 
     @Override
-    public void begin(IsolationLevel level) throws RepositoryException {
+    public void begin(IsolationLevel level) {
         wrappedConnection.begin(level);
     }
 
     @Override
-    public void commit() throws RepositoryException {
+    public void commit() {
         wrappedConnection.commit();
     }
 
     @Override
-    public void rollback() throws RepositoryException {
+    public void rollback() {
         wrappedConnection.rollback();
     }
 
     @Override
     public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException, RepositoryException {
+            throws IOException, RDFParseException {
         wrappedConnection.add(in, baseURI, dataFormat, contexts);
     }
 
     @Override
     public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException, RepositoryException {
+            throws IOException, RDFParseException {
         wrappedConnection.add(reader, baseURI, dataFormat, contexts);
     }
 
     @Override
     public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException, RepositoryException {
+            throws IOException, RDFParseException {
         wrappedConnection.add(url, baseURI, dataFormat, contexts);
     }
 
     @Override
     public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException, RepositoryException {
+            throws IOException, RDFParseException {
         wrappedConnection.add(file, baseURI, dataFormat, contexts);
     }
 
     @Override
-    public void add(Resource subject, IRI predicate, Value object, Resource... contexts) throws RepositoryException {
+    public void add(Resource subject, IRI predicate, Value object, Resource... contexts) {
         wrappedConnection.add(subject, predicate, object, contexts);
     }
 
     @Override
-    public void add(Statement st, Resource... contexts) throws RepositoryException {
+    public void add(Statement st, Resource... contexts) {
         wrappedConnection.add(st, contexts);
     }
 
     @Override
-    public void add(Iterable<? extends Statement> statements, Resource... contexts) throws RepositoryException {
+    public void add(Iterable<? extends Statement> statements, Resource... contexts) {
         wrappedConnection.add(statements, contexts);
     }
 
     @Override
-    public <E extends Exception> void add(Iteration<? extends Statement, E> statements, Resource... contexts)
-            throws RepositoryException, E {
+    public <E extends Exception> void add(Iteration<? extends Statement, E> statements, Resource... contexts) throws E {
         wrappedConnection.add(statements, contexts);
     }
 
     @Override
-    public void remove(Resource subject, IRI predicate, Value object, Resource... contexts) throws RepositoryException {
+    public void remove(Resource subject, IRI predicate, Value object, Resource... contexts) {
         wrappedConnection.remove(subject, predicate, object, contexts);
     }
 
     @Override
-    public void remove(Statement st, Resource... contexts) throws RepositoryException {
+    public void remove(Statement st, Resource... contexts) {
         wrappedConnection.remove(st, contexts);
     }
 
     @Override
-    public void remove(Iterable<? extends Statement> statements, Resource... contexts) throws RepositoryException {
+    public void remove(Iterable<? extends Statement> statements, Resource... contexts) {
         wrappedConnection.remove(statements, contexts);
     }
 
     @Override
     public <E extends Exception> void remove(Iteration<? extends Statement, E> statements, Resource... contexts)
-            throws RepositoryException, E {
+            throws E {
         wrappedConnection.remove(statements, contexts);
     }
 
     @Override
-    public void clear(Resource... contexts) throws RepositoryException {
+    public void clear(Resource... contexts) {
         wrappedConnection.clear(contexts);
     }
 
     @Override
-    public RepositoryResult<Namespace> getNamespaces() throws RepositoryException {
+    public RepositoryResult<Namespace> getNamespaces() {
         return wrappedConnection.getNamespaces();
     }
 
     @Override
-    public String getNamespace(String prefix) throws RepositoryException {
+    public String getNamespace(String prefix) {
         return wrappedConnection.getNamespace(prefix);
     }
 
     @Override
-    public void setNamespace(String prefix, String name) throws RepositoryException {
+    public void setNamespace(String prefix, String name) {
         wrappedConnection.setNamespace(prefix, name);
     }
 
     @Override
-    public void removeNamespace(String prefix) throws RepositoryException {
+    public void removeNamespace(String prefix) {
         wrappedConnection.removeNamespace(prefix);
     }
 
     @Override
-    public void clearNamespaces() throws RepositoryException {
+    public void clearNamespaces() {
         wrappedConnection.clearNamespaces();
     }
 }

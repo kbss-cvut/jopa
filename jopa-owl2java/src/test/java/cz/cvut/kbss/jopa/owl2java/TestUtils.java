@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Random;
 
@@ -51,8 +50,13 @@ public class TestUtils {
     static void recursivelyDeleteDirectory(File directory) throws IOException {
         Files.walk(directory.toPath())
              .sorted(Comparator.reverseOrder())
-             .map(Path::toFile)
-             .forEach(File::delete);
+             .forEach(path -> {
+                 try {
+                     Files.delete(path);
+                 } catch (IOException e) {
+                     throw new RuntimeException("Unable to delete file " + path, e);
+                 }
+             });
     }
 
     static void addAxiom(OWLAxiom axiom, OWL2JavaTransformer transformer) throws Exception {

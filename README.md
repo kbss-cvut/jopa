@@ -176,8 +176,8 @@ A comprehensive comparison - feature and performance - of object-triple mapping 
 
 Some related libraries:
 
-* [JB4JSON-LD](https://github.com/kbss-cvut/jb4jsonld) - Serialization and deserialization of POJOs into JSON-LD,
-* [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA,
+* [JB4JSON-LD](https://github.com/kbss-cvut/jb4jsonld) - Serialization and deserialization of POJOs into JSON-LD.
+* [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA.
 * [Reporting Tool](https://github.com/kbss-cvut/reporting-tool) - Real-live use case of JOPA.
 * [TermIt](https://github.com/kbss-cvut/termit) - A more complex and up-to-date use case of JOPA.
 
@@ -191,3 +191,7 @@ Some related libraries:
 * [6] Ledvinka, M.; Křemen, P.; Kostov, B. JOPA: Efficient Ontology-based Information System Design In: The Semantic Web: ESWC 2016 Satellite Events. Cham: Springer International Publishing AG, 2016. pp. 156-160. 9989. ISSN 0302-9743. ISBN 978-3-319-47601-8. [ESWC 2016 Demo](http://2016.eswc-conferences.org/sites/default/files/papers/Accepted%20Posters%20and%20Demos/ESWC2016_DEMO_JOPA.pdf)
 * [7] Ledvinka, M.; Křemen, P.; Kostov, B.; Blaško, M. SISel: Aviation Safety Powered by Semantic Technologies In: Data a znalosti 2017. Plzeň: Západočeská univerzita v Plzni, 2017. pp. 77-82. ISBN 978-80-261-0720-0. [https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf](https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf)
 * [8] M. Ledvinka and  P. Křemen: A comparison of object-triple mapping libraries Semantic Web, 2019, doi: [10.3233/SW-190345](http://dx.doi.org/10.3233/SW-190345)
+
+## License
+
+LGPLv3

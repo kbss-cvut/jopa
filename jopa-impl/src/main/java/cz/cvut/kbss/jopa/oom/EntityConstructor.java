@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -165,7 +165,7 @@ class EntityConstructor {
         return mapper.getConfiguration().is(JOPAPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD);
     }
 
-    private <T> void validateIntegrityConstraints(T entity, FieldSpecification<? super T, ?> fieldSpec,
+    <T> void validateIntegrityConstraints(T entity, FieldSpecification<? super T, ?> fieldSpec,
                                                   EntityType<T> et) {
         if (shouldSkipICValidationOnLoad()) {
             return;
@@ -178,6 +178,10 @@ class EntityConstructor {
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
                            Descriptor entityDescriptor) throws IllegalAccessException {
         final FieldSpecification<? super T, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
+        if (axioms.isEmpty()) {
+            validateIntegrityConstraints(entity, fieldSpec, et);
+            return;
+        }
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec, entityDescriptor, mapper);
         axioms.forEach(fs::addValueFromAxiom);

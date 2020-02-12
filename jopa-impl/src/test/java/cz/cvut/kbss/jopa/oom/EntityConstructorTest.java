@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -619,5 +619,22 @@ class EntityConstructorTest {
         assertNotNull(result);
         assertEquals(PK.toString(), result.getId());
         assertEquals(Collections.singleton(STRING_ATT), result.getPluralAnnotation());
+    }
+
+    @Test
+    void setFieldValueSetsNothingWhenAxiomsAreEmpty() throws Exception {
+        final OWLClassA entity = new OWLClassA(Generators.createIndividualIdentifier());
+        assertNull(entity.getTypes());
+        constructor.setFieldValue(entity, OWLClassA.getTypesField(), Collections.emptyList(),
+                mocks.forOwlClassA().entityType(), descriptor);
+        assertNull(entity.getTypes());
+    }
+
+    @Test
+    void setFieldValueValidatesIntegrityConstraintsAlsoForEmptyAxiomCollection() {
+        final OWLClassL instance = new OWLClassL(Generators.createIndividualIdentifier());
+        assertThrows(IntegrityConstraintViolatedException.class, () -> constructor
+                .setFieldValue(instance, OWLClassL.getSingleAField(), Collections.emptyList(),
+                        mocks.forOwlClassL().entityType(), descriptor));
     }
 }

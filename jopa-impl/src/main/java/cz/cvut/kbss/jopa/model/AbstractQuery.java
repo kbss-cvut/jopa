@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -297,7 +297,7 @@ abstract class AbstractQuery implements Query {
         setTargetOntology(stmt);
         logQuery();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-        return StreamSupport.stream(new QueryResultSpliterator<R>(rs.spliterator(), function, () -> {
+        return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), function, () -> {
             try {
                 stmt.close();
             } catch (OntoDriverException e) {

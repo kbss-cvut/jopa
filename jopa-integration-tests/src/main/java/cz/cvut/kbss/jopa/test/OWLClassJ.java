@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,10 +26,6 @@ public class OWLClassJ {
     private URI uri;
 
     @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    // @ParticipationConstraints({
-    // @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
-    // max=1)
-    // })
     private Set<OWLClassA> owlClassA;
 
     public OWLClassJ() {
