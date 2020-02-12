@@ -409,4 +409,19 @@ public abstract class QueryRunner extends BaseQueryRunner {
         assertTrue(result.containsAll(types));
         assertThat(result.size(), greaterThanOrEqualTo(types.size()));
     }
+
+    @Test
+    void selectionByObjectPropertySupportsEntityAsQueryParameter() {
+        final OWLClassD d = QueryTestEnvironment.getData(OWLClassD.class).get(0);
+        final String query = "SELECT ?x WHERE { ?x a ?type ; ?hasA ?y . }";
+        final Query q = getEntityManager().createNativeQuery(query);
+        q.setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_D))
+         .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A)).setParameter("y", d.getOwlClassA());
+
+        final List res = q.getResultList();
+
+        assertEquals(1, res.size());
+        final Object subRes = res.get(0);
+        assertEquals(d.getUri(), subRes);
+    }
 }
