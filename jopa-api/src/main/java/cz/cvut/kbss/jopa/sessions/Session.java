@@ -18,26 +18,26 @@ import java.net.URI;
 
 public interface Session {
 
-	/**
-	 * Acquires UnitOfWork object to perform transaction operations.
-	 * 
-	 * @return UnitOfWork
-	 */
-	UnitOfWork acquireUnitOfWork();
+    /**
+     * Acquires UnitOfWork object to perform transaction operations.
+     *
+     * @return UnitOfWork
+     */
+    UnitOfWork acquireUnitOfWork();
 
-	/**
-	 * Release this session and all its children.
-	 */
-	void release();
+    /**
+     * Release this session and all its children.
+     */
+    void release();
 
-	/**
-	 * Remove the given object from the session's live object cache. This is
-	 * particularly meant for merging deleted objects from transactions.
-	 * 
-	 * @param object
-	 *            Object
-	 * @param context
-	 *            Entity context URI
-	 */
-	void removeObjectFromCache(Object object, URI context);
+    /**
+     * Remove the given object from the session's live object cache. This is
+     * particularly meant for merging deleted objects from transactions.
+     *
+     * @param object
+     *            Object
+     * @param context
+     *            Entity context URI
+     */
+    void removeObjectFromCache(Object object, URI context);
 }

@@ -38,7 +38,7 @@ public class SelectResultSet extends AbstractResultSet {
     private List<String> bindings;
     private BindingSet current;
 
-    public SelectResultSet(TupleQueryResult result, Statement statement) throws QueryEvaluationException {
+    public SelectResultSet(TupleQueryResult result, Statement statement) {
         super(statement);
         assert result != null;
 
@@ -46,7 +46,7 @@ public class SelectResultSet extends AbstractResultSet {
         init();
     }
 
-    private void init() throws QueryEvaluationException {
+    private void init() {
         this.bindings = result.getBindingNames();
     }
 

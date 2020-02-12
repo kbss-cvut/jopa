@@ -26,10 +26,6 @@ public class OWLClassJ {
     private URI uri;
 
     @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    // @ParticipationConstraints({
-    // @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
-    // max=1)
-    // })
     private Set<OWLClassA> owlClassA;
 
     public OWLClassJ() {

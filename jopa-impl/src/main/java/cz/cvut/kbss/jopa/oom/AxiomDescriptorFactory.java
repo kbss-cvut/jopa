@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -26,6 +24,8 @@ import cz.cvut.kbss.ontodriver.model.*;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Objects;
+
+import static cz.cvut.kbss.ontodriver.model.Assertion.*;
 
 class AxiomDescriptorFactory {
 
@@ -84,23 +84,19 @@ class AxiomDescriptorFactory {
         assert att != null;
         switch (att.getPersistentAttributeType()) {
             case OBJECT:
-                return Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
+                return createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
             case DATA:
                 if (withLanguage(att, descriptor)) {
-                    return Assertion
-                            .createDataPropertyAssertion(att.getIRI().toURI(), language(descriptor), att.isInferred());
+                    return createDataPropertyAssertion(att.getIRI().toURI(), language(descriptor), att.isInferred());
                 } else {
-                    return Assertion
-                            .createDataPropertyAssertion(att.getIRI().toURI(), att.isInferred());
+                    return createDataPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
             case ANNOTATION:
                 if (withLanguage(att, descriptor)) {
-                    return Assertion
-                            .createAnnotationPropertyAssertion(att.getIRI().toURI(), language(descriptor),
-                                    att.isInferred());
+                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), language(descriptor),
+                            att.isInferred());
                 } else {
-                    return Assertion
-                            .createAnnotationPropertyAssertion(att.getIRI().toURI(), att.isInferred());
+                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
             default:
                 throw new IllegalArgumentException(
