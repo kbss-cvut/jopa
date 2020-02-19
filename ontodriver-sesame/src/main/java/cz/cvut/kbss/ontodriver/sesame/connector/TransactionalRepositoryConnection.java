@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -26,7 +24,6 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandler;
-import org.eclipse.rdf4j.rio.RDFParseException;
 
 import java.io.File;
 import java.io.IOException;
@@ -220,25 +217,25 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
 
     @Override
     public void add(InputStream in, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException {
+            throws IOException {
         wrappedConnection.add(in, baseURI, dataFormat, contexts);
     }
 
     @Override
     public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException {
+            throws IOException {
         wrappedConnection.add(reader, baseURI, dataFormat, contexts);
     }
 
     @Override
     public void add(URL url, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException {
+            throws IOException {
         wrappedConnection.add(url, baseURI, dataFormat, contexts);
     }
 
     @Override
     public void add(File file, String baseURI, RDFFormat dataFormat, Resource... contexts)
-            throws IOException, RDFParseException {
+            throws IOException {
         wrappedConnection.add(file, baseURI, dataFormat, contexts);
     }
 
