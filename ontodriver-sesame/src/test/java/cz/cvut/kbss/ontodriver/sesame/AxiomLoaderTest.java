@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -81,7 +79,7 @@ class AxiomLoaderTest {
         desc.addAssertion(property);
         final Collection<Axiom<?>> res = axiomLoader.loadAxioms(desc);
         assertEquals(values.size(), res.size());
-        for (Axiom a : res) {
+        for (Axiom<?> a : res) {
             assertEquals(individual, a.getSubject().toString());
             assertEquals(property, a.getAssertion());
             assertTrue(values.contains(a.getValue().getValue()));
@@ -176,9 +174,9 @@ class AxiomLoaderTest {
         conn.begin();
         final Object value;
         if (property.getType() == Assertion.AssertionType.DATA_PROPERTY) {
-            value = new Date();
+            value = Generator.randomInt();
             conn.add(vf.createIRI(individual), vf.createIRI(property.getIdentifier().toString()),
-                    vf.createLiteral((Date) value), vf.createIRI(context));
+                    vf.createLiteral((Integer) value), vf.createIRI(context));
 
         } else {
             value = NamedResource.create("http://krizik.felk.cvut.cz/individualInContext" + Generator.randomInt());
