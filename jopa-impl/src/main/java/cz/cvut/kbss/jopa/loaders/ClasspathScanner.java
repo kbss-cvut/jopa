@@ -101,8 +101,9 @@ class ClasspathScanner {
                 final JarEntry entry = entries.nextElement();
                 final String entryName = entry.getName();
                 String className = null;
-                if (entryName.endsWith(CLASS_FILE_SUFFIX) && entryName.startsWith(relPath)) {
-                    className = entryName.replace('/', '.').replace('\\', '.');
+                if (entryName.endsWith(CLASS_FILE_SUFFIX) && entryName.contains(relPath)) {
+                    className = entryName.substring(entryName.indexOf(relPath));
+                    className = className.replace('/', '.').replace('\\', '.');
                     className = className.substring(0, className.length() - CLASS_FILE_SUFFIX.length());
                 }
                 if (className != null) {
