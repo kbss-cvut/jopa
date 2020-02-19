@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.13.5 - February 19, 2020
+- [JOPA] Fix an issue with loading entity classes in Spring Boot projects, where classes are in a non-standard location in the JAR (Bug #62).
+
 ## 0.13.4 - February 12, 2020
 - [JOPA] Support using entities as query parameters (Feature #61).
 - [JOPA] Run IC validation on lazy loaded fetched attributes also in case no value is loaded.
