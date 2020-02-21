@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  * <p>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -79,7 +79,7 @@ class AxiomLoaderTest {
         desc.addAssertion(property);
         final Collection<Axiom<?>> res = axiomLoader.loadAxioms(desc);
         assertEquals(values.size(), res.size());
-        for (Axiom a : res) {
+        for (Axiom<?> a : res) {
             assertEquals(individual, a.getSubject().toString());
             assertEquals(property, a.getAssertion());
             assertTrue(values.contains(a.getValue().getValue()));
@@ -174,9 +174,9 @@ class AxiomLoaderTest {
         conn.begin();
         final Object value;
         if (property.getType() == Assertion.AssertionType.DATA_PROPERTY) {
-            value = new Date();
+            value = Generator.randomInt();
             conn.add(vf.createIRI(individual), vf.createIRI(property.getIdentifier().toString()),
-                    vf.createLiteral((Date) value), vf.createIRI(context));
+                    vf.createLiteral((Integer) value), vf.createIRI(context));
 
         } else {
             value = NamedResource.create("http://krizik.felk.cvut.cz/individualInContext" + Generator.randomInt());

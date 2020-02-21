@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -25,45 +25,45 @@ import java.util.List;
 /**
  * This class wraps the Sesame TupleQueryResult returned by QueryExecutor to be
  * able to close the repository connection once the result is closed.
- * 
+ *
  */
 class QueryResult implements TupleQueryResult {
 
-	private final TupleQueryResult result;
-	private final RepositoryConnection connection;
+    private final TupleQueryResult result;
+    private final RepositoryConnection connection;
 
-	QueryResult(TupleQueryResult result, RepositoryConnection connection) {
-		this.result = result;
-		this.connection = connection;
-	}
+    QueryResult(TupleQueryResult result, RepositoryConnection connection) {
+        this.result = result;
+        this.connection = connection;
+    }
 
-	@Override
-	public void close() throws QueryEvaluationException {
-		result.close();
-		try {
-			connection.close();
-		} catch (RepositoryException e) {
-			throw new QueryEvaluationException(e);
-		}
-	}
+    @Override
+    public void close() {
+        result.close();
+        try {
+            connection.close();
+        } catch (RepositoryException e) {
+            throw new QueryEvaluationException(e);
+        }
+    }
 
-	@Override
-	public boolean hasNext() throws QueryEvaluationException {
-		return result.hasNext();
-	}
+    @Override
+    public boolean hasNext() {
+        return result.hasNext();
+    }
 
-	@Override
-	public BindingSet next() throws QueryEvaluationException {
-		return result.next();
-	}
+    @Override
+    public BindingSet next() {
+        return result.next();
+    }
 
-	@Override
-	public void remove() throws QueryEvaluationException {
-		result.remove();
-	}
+    @Override
+    public void remove() {
+        result.remove();
+    }
 
-	@Override
-	public List<String> getBindingNames() throws QueryEvaluationException {
-		return result.getBindingNames();
-	}
+    @Override
+    public List<String> getBindingNames() {
+        return result.getBindingNames();
+    }
 }

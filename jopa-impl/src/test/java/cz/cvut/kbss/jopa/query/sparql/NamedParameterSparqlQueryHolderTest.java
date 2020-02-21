@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,14 +16,17 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
-import org.junit.Before;
-import org.junit.Test;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 public class NamedParameterSparqlQueryHolderTest {
 
@@ -38,26 +41,28 @@ public class NamedParameterSparqlQueryHolderTest {
     private static final List<String> PARAMS = Arrays.asList("craft", "craft", "craft", "homepage");
     private static final Set<String> PARAM_NAMES = new HashSet<>(Arrays.asList("craft", "homepage"));
 
+    private final ParameterValueFactory paramValueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
+
     private SparqlQueryHolder holder;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final Map<String, QueryParameter<?>> paramsByName = new HashMap<>();
         for (String n : PARAM_NAMES) {
-            paramsByName.put(n, new QueryParameter<>(n));
+            paramsByName.put(n, new QueryParameter<>(n, paramValueFactory));
         }
         final List<QueryParameter<?>> parameters = PARAMS.stream().map(paramsByName::get).collect(Collectors.toList());
         this.holder = new SparqlQueryHolder(QUERY, PARTS, parameters);
     }
 
     @Test
-    public void testGetQuery() throws Exception {
+    public void testGetQuery() {
         final String original = holder.getQuery();
         assertEquals(QUERY, original);
     }
 
     @Test
-    public void testGetParameters() throws Exception {
+    public void testGetParameters() {
         final Collection<Parameter<?>> res = holder.getParameters();
         assertEquals(PARAM_NAMES.size(), res.size());
         for (Parameter<?> p : res) {
@@ -66,50 +71,53 @@ public class NamedParameterSparqlQueryHolderTest {
     }
 
     @Test
-    public void testGetParameterByName() throws Exception {
+    public void testGetParameterByName() {
         final String name = PARAM_NAMES.iterator().next();
         final Parameter<?> p = holder.getParameter(name);
         assertNotNull(p);
         assertEquals(name, p.getName());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void getParameterByUnknownNameThrowsIllegalArgument() throws Exception {
-        holder.getParameter("stupidUnknownParameter");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getValueOfUnknownParameterThrowsIllegalArgumentException() throws Exception {
-        final Parameter<Object> p = new QueryParameter<>("homepage");
-        holder.setParameter(p, 1);
-        holder.getParameterValue(new QueryParameter<>("blabla"));
+    @Test
+    public void getParameterByUnknownNameThrowsIllegalArgument() {
+        assertThrows(IllegalArgumentException.class, () -> holder.getParameter("stupidUnknownParameter"));
     }
 
     @Test
-    public void testSetParameter() throws Exception {
+    public void getValueOfUnknownParameterThrowsIllegalArgumentException() {
+        final Parameter<Object> p = new QueryParameter<>("homepage", paramValueFactory);
+        holder.setParameter(p, 1);
+        assertThrows(IllegalArgumentException.class,
+                () -> holder.getParameterValue(new QueryParameter<>("blabla", paramValueFactory)));
+    }
+
+    @Test
+    public void testSetParameter() {
         final String value = "http://kbss.felk.cvut.cz";
-        holder.setParameter(new QueryParameter<>("homepage"), value);
+        holder.setParameter(new QueryParameter<>("homepage", paramValueFactory), value);
         assertEquals(value, holder.getParameterValue(holder.getParameter("homepage")));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void setParameterToNullThrowsException() throws Exception {
-        holder.setParameter(new QueryParameter<>("homepage"), null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void setNullParameterThrowsException() throws Exception {
-        holder.setParameter(null, "Whatever");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setUnknownParameterThrowsException() throws Exception {
-        holder.setParameter(new QueryParameter<>("unknown"), "Whatever");
+    @Test
+    public void setParameterToNullThrowsException() {
+        assertThrows(NullPointerException.class,
+                () -> holder.setParameter(new QueryParameter<>("homepage", paramValueFactory), null));
     }
 
     @Test
-    public void clearParameterRemovesParameterValue() throws Exception {
-        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+    public void setNullParameterThrowsException() {
+        assertThrows(NullPointerException.class, () -> holder.setParameter(null, "Whatever"));
+    }
+
+    @Test
+    public void setUnknownParameterThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> holder
+                .setParameter(new QueryParameter<>("unknown", paramValueFactory), "Whatever"));
+    }
+
+    @Test
+    public void clearParameterRemovesParameterValue() {
+        final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
         holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz"));
         assertNotNull(holder.getParameterValue(qp));
         holder.clearParameter(qp);
@@ -117,10 +125,10 @@ public class NamedParameterSparqlQueryHolderTest {
     }
 
     @Test
-    public void clearParametersRemovesAllParameterValues() throws Exception {
-        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+    public void clearParametersRemovesAllParameterValues() {
+        final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
         holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz"));
-        final QueryParameter<?> qpTwo = new QueryParameter<>("craft");
+        final QueryParameter<?> qpTwo = new QueryParameter<>("craft", paramValueFactory);
         holder.setParameter(qpTwo, "Programming");
         holder.getParameters().forEach(param -> assertNotNull(holder.getParameterValue(param)));
         holder.clearParameters();
@@ -128,8 +136,8 @@ public class NamedParameterSparqlQueryHolderTest {
     }
 
     @Test
-    public void assembleQueryWithUri() throws Exception {
-        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+    public void assembleQueryWithUri() {
+        final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
         holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz"));
         final String expected = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
@@ -141,8 +149,8 @@ public class NamedParameterSparqlQueryHolderTest {
     }
 
     @Test
-    public void assembleQueryWithLiteral() throws Exception {
-        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+    public void assembleQueryWithLiteral() {
+        final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
         holder.setParameter(qp, "http://kbss.felk.cvut.cz", null);
         final String expected = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
@@ -154,22 +162,25 @@ public class NamedParameterSparqlQueryHolderTest {
     }
 
     @Test
-    public void setParametersAndAssembleQueryWithMultipleParamsNextToEachOther() throws Exception {
+    public void setParametersAndAssembleQueryWithMultipleParamsNextToEachOther() {
+        final ParameterValueFactory vf = paramValueFactory;
         final String query = "SELECT ?y ?z WHERE { <http://krizik.felk.cvut.cz/ontologies/jopa#entityA> ?y ?z . }";
         final List<QueryParameter<?>> params = Arrays
-                .asList(new QueryParameter<>("y"), new QueryParameter<>("z"), new QueryParameter<>("x"),
-                        new QueryParameter<>("y"), new QueryParameter<>("z"));
+                .asList(new QueryParameter<>("y", vf), new QueryParameter<>("z", vf),
+                        new QueryParameter<>("x", vf),
+                        new QueryParameter<>("y", vf),
+                        new QueryParameter<>("z", vf));
         final List<String> parts = Arrays.asList("SELECT ", " ", " WHERE { ", " ", " ", " . }");
         this.holder = new SparqlQueryHolder(query, parts, params);
-        holder.setParameter(new QueryParameter<>("x"),
+        holder.setParameter(new QueryParameter<>("x", vf),
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
         final String result = holder.assembleQuery();
         assertEquals(query, result);
     }
 
     @Test
-    public void setParameterReplacesAllOccurrencesOfVariable() throws Exception {
-        final QueryParameter<?> qp = new QueryParameter<>("craft");
+    public void setParameterReplacesAllOccurrencesOfVariable() {
+        final QueryParameter<?> qp = new QueryParameter<>("craft", paramValueFactory);
         holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz/apollo7"));
         final String result = holder.assembleQuery();
         assertFalse(result.contains("?craft"));

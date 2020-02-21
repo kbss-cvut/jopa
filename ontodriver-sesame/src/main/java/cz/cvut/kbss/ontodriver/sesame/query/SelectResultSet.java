@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2020 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -38,7 +38,7 @@ public class SelectResultSet extends AbstractResultSet {
     private List<String> bindings;
     private BindingSet current;
 
-    public SelectResultSet(TupleQueryResult result, Statement statement) throws QueryEvaluationException {
+    public SelectResultSet(TupleQueryResult result, Statement statement) {
         super(statement);
         assert result != null;
 
@@ -46,7 +46,7 @@ public class SelectResultSet extends AbstractResultSet {
         init();
     }
 
-    private void init() throws QueryEvaluationException {
+    private void init() {
         this.bindings = result.getBindingNames();
     }
 

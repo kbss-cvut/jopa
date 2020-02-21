@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,13 +18,25 @@ import cz.cvut.kbss.jopa.exception.QueryParserException;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
-import org.junit.Test;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 public class SparqlQueryParserTest {
 
-    private QueryParser queryParser = new SparqlQueryParser();
+    private QueryParser queryParser;
+
+    private ParameterValueFactory valueFactory;
+
+    @BeforeEach
+    void setUp() {
+        this.valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
+        this.queryParser = new SparqlQueryParser(valueFactory);
+    }
 
     @Test
     public void testParseSimpleQueryWithoutParameters() {
@@ -40,7 +52,7 @@ public class SparqlQueryParserTest {
         final String query = "SELECT ?x WHERE { ?x <http://www.w3.org/2000/01/rdf-schema#label> \"Test\" . }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(1, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x", valueFactory)));
     }
 
     @Test
@@ -48,9 +60,9 @@ public class SparqlQueryParserTest {
         final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("y")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("z")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("y", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("z", valueFactory)));
     }
 
     @Test
@@ -63,8 +75,8 @@ public class SparqlQueryParserTest {
                 "}";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("homepage")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("homepage", valueFactory)));
     }
 
     @Test
@@ -76,8 +88,8 @@ public class SparqlQueryParserTest {
                 "        }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("title")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("title", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x", valueFactory)));
     }
 
     @Test
@@ -90,9 +102,9 @@ public class SparqlQueryParserTest {
                 "          ?x dc:title ?title . }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("title")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("price")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("title", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("price", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x", valueFactory)));
     }
 
     @Test
@@ -104,14 +116,14 @@ public class SparqlQueryParserTest {
                 "WHERE  { ?x org:employeeName ?name }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("name")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("name", valueFactory)));
     }
 
-    @Test(expected = QueryParserException.class)
+    @Test
     public void parserThrowsExceptionWhenParameterNameIsMissing() {
         final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ? . }";
-        queryParser.parseQuery(query);
+        assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
     }
 
     @Test
@@ -124,9 +136,9 @@ public class SparqlQueryParserTest {
                 "}";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(1)));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(2)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(1, valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(2, valueFactory)));
     }
 
     @Test
@@ -139,9 +151,9 @@ public class SparqlQueryParserTest {
                 "}";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(1)));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(2)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(1, valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(2, valueFactory)));
     }
 
     @Test
@@ -154,12 +166,12 @@ public class SparqlQueryParserTest {
                 "}";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(1)));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(2)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(1, valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(2, valueFactory)));
     }
 
-    @Test(expected = QueryParserException.class)
+    @Test
     public void parsingQueryWithUsedParameterPositionThrowsException() {
         final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
@@ -167,10 +179,10 @@ public class SparqlQueryParserTest {
                 "?craft foaf:name $1 .\n" +
                 "?craft foaf:homepage $1\n" +
                 "}";
-        queryParser.parseQuery(query);
+        assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
     }
 
-    @Test(expected = QueryParserException.class)
+    @Test
     public void parsingQueryWithIncorrectlyMixedNumberedAndUnnumberedPositionsThrowsException() {
         final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
@@ -180,10 +192,10 @@ public class SparqlQueryParserTest {
                 "?craft rdf:label $2\n" +
                 // And here we're trying to use 2, but it will have been assigned to the previous one
                 "}";
-        queryParser.parseQuery(query);
+        assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
     }
 
-    @Test(expected = QueryParserException.class)
+    @Test
     public void parsingQueryWithPositionalParameterNotNumberThrowsException() {
         final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
@@ -191,7 +203,7 @@ public class SparqlQueryParserTest {
                 "?craft foaf:name $1 .\n" +
                 "?craft foaf:homepage $notanumber\n" +
                 "}";
-        queryParser.parseQuery(query);
+        assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
     }
 
     @Test
@@ -207,8 +219,8 @@ public class SparqlQueryParserTest {
         final String query = "SELECT ?x WHERE { ?x a ?y. } ORDER BY DESC(?y)";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("y")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x", valueFactory)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("y", valueFactory)));
         assertEquals(query, holder.assembleQuery());
     }
 
@@ -234,7 +246,7 @@ public class SparqlQueryParserTest {
 
     @Test
     public void parsesQueryWithStringLiteralInSingleQuotes() {
-        final String query = "SELECT ?x WHERE {?x a ?type; ?x rdfs:label \'label\'@en.}";
+        final String query = "SELECT ?x WHERE {?x a ?type; ?x rdfs:label 'label'@en.}";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertNotNull(holder.getParameter("x"));
         assertNotNull(holder.getParameter("type"));

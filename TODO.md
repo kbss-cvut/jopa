@@ -6,8 +6,6 @@
     - [x] Mapped superclass
     - [x] Single inheritance
     - [ ] Multiple inheritance
-- [ ] Add support for IC validation disabling on entity load
-    - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] Add a `@Context` annotation, which would specify that a field/entity should always be loaded from the specified context.
     - This could be overwritten with a descriptor passed to EM
 - [ ] Add support for `orphanRemoval` attribute in object properties

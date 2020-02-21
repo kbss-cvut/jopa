@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,106 +14,136 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
-import org.junit.Test;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 /**
  * Datatype specifications in the assertions are taken from the SPARQL specification.
  */
-public class ParameterValueTest {
+class ParameterValueFactoryTest {
+
+    @Mock
+    private MetamodelProvider metamodelProvider;
+
+    @InjectMocks
+    private ParameterValueFactory sut;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
-    public void createStringValueWithoutLanguageTag() {
-        final ParameterValue value = ParameterValue.create("test");
+    void createStringValueWithoutLanguageTag() {
+        final ParameterValue value = sut.create("test");
         assertEquals("test", value.getValue());
         assertEquals("\"test\"", value.getQueryString());
     }
 
     @Test
-    public void createStringValueWithLanguageTag() {
-        final ParameterValue value = ParameterValue.create("test", "en");
+    void createStringValueWithLanguageTag() {
+        final ParameterValue value = sut.create("test", "en");
         assertEquals("test", value.getValue());
         assertEquals("\"test\"@en", value.getQueryString());
     }
 
     @Test
-    public void createBooleanValue() {
-        final ParameterValue value = ParameterValue.create(true);
+    void createBooleanValue() {
+        final ParameterValue value = sut.create(true);
         assertEquals(Boolean.TRUE, value.getValue());
         assertEquals("\"true\"^^<http://www.w3.org/2001/XMLSchema#boolean>", value.getQueryString());
     }
 
     @Test
-    public void createShortValue() {
-        final ParameterValue value = ParameterValue.create((short) 117);
+    void createShortValue() {
+        final ParameterValue value = sut.create((short) 117);
         assertEquals((short) 117, value.getValue());
         assertEquals("\"117\"^^<http://www.w3.org/2001/XMLSchema#short>", value.getQueryString());
     }
 
     @Test
-    public void createIntegerValue() {
-        final ParameterValue value = ParameterValue.create(117);
+    void createIntegerValue() {
+        final ParameterValue value = sut.create(117);
         assertEquals(117, value.getValue());
         assertEquals("\"117\"^^<http://www.w3.org/2001/XMLSchema#int>", value.getQueryString());
     }
 
     @Test
-    public void createLongValue() {
+    void createLongValue() {
         final long v = System.currentTimeMillis();
-        final ParameterValue value = ParameterValue.create(v);
+        final ParameterValue value = sut.create(v);
         assertEquals(v, value.getValue());
         assertEquals("\"" + v + "\"^^<http://www.w3.org/2001/XMLSchema#long>", value.getQueryString());
     }
 
     @Test
-    public void createFloatValue() {
-        final ParameterValue value = ParameterValue.create(3.14f);
+    void createFloatValue() {
+        final ParameterValue value = sut.create(3.14f);
         assertEquals(3.14f, value.getValue());
         assertEquals("\"3.14\"^^<http://www.w3.org/2001/XMLSchema#float>", value.getQueryString());
     }
 
     @Test
-    public void createDoubleValue() {
-        final ParameterValue value = ParameterValue.create(3.14);
+    void createDoubleValue() {
+        final ParameterValue value = sut.create(3.14);
         assertEquals(3.14, value.getValue());
         assertEquals("\"3.14\"^^<http://www.w3.org/2001/XMLSchema#double>", value.getQueryString());
     }
 
     @Test
-    public void createDateValue() {
+    void createDateValue() {
         final Date date = new Date();
-        final ParameterValue value = ParameterValue.create(date);
+        final ParameterValue value = sut.create(date);
         assertEquals(date, value.getValue());
         assertEquals("\"" + date.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",
                 value.getQueryString());
     }
 
     @Test
-    public void createUriValue() {
+    void createUriValue() {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/jopa#Individual");
-        final ParameterValue value = ParameterValue.create(uri);
+        final ParameterValue value = sut.create(uri);
         assertEquals(uri, value.getValue());
         assertEquals("<" + uri.toString() + ">", value.getQueryString());
     }
 
     @Test
-    public void createUrlValue() throws Exception {
+    void createUrlValue() throws Exception {
         final URL url = new URL("http://krizik.felk.cvut.cz/jopa#Individual");
-        final ParameterValue value = ParameterValue.create(url);
+        final ParameterValue value = sut.create(url);
         assertEquals(url.toURI(), value.getValue());    // URLs are internally transformed to URIs
         assertEquals("<" + url.toString() + ">", value.getQueryString());
     }
 
     @Test
-    public void createUntypedValue() {
+    void createUntypedValue() {
         final Integer integer = 117;
-        final ParameterValue value = ParameterValue.createUntyped(integer);
+        final ParameterValue value = sut.createUntyped(integer);
         assertEquals(integer, value.getValue());
         assertEquals(integer.toString(), value.getQueryString());
+    }
+
+    @Test
+    void createValueSupportsCreatingParameterValueFromEntityInstance() {
+        final OWLClassA value = Generators.generateOwlClassAInstance();
+        when(metamodelProvider.isEntityType(value.getClass())).thenReturn(true);
+        final ParameterValue result = sut.create(value);
+        assertThat(result, instanceOf(EntityParameterValue.class));
+        assertEquals(value, result.getValue());
     }
 }

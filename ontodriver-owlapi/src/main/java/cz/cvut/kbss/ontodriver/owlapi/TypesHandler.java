@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,16 +14,19 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
-import cz.cvut.kbss.ontodriver.model.*;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 class TypesHandler {
@@ -54,7 +57,7 @@ class TypesHandler {
     }
 
     private Collection<OWLClassExpression> loadExplicitClasses(NamedResource subject) {
-        return EntitySearcher.getTypes(getIndividual(subject), ontology).collect(Collectors.toSet());
+        return EntitySearcher.getTypes(getIndividual(subject), ontology.importsClosure()).collect(Collectors.toSet());
     }
 
     private OWLNamedIndividual getIndividual(NamedResource subject) {

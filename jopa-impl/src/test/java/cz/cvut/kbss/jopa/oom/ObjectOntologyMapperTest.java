@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -155,18 +155,6 @@ class ObjectOntologyMapperTest {
         assertEquals(aTypes, entityA.getTypes());
         verify(connectionMock).find(axiomDescriptor);
         verify(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock, aDescriptor);
-    }
-
-    @Test
-    void testLoadFieldValueEmpty() throws Exception {
-        final Field typesField = OWLClassA.getTypesField();
-        typesField.setAccessible(true);
-        assertNull(typesField.get(entityA));
-        when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.emptyList());
-        mapper.loadFieldValue(entityA, typesField, aDescriptor);
-        assertNull(typesField.get(entityA));
-        verify(entityConstructorMock, never()).setFieldValue(any(), eq(typesField),
-                any(), any(), eq(aDescriptor));
     }
 
     @Test
@@ -658,6 +646,7 @@ class ObjectOntologyMapperTest {
     @Test
     void getEntityFromCacheOrOntologyThrowsEntityExistsWhenObjectIsAlreadyRegisteredUnderDifferentType() {
         mapper.registerInstance(IDENTIFIER, entityA, null);
-        assertThrows(OWLEntityExistsException.class, () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, aDescriptor));
+        assertThrows(OWLEntityExistsException.class,
+                () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, aDescriptor));
     }
 }

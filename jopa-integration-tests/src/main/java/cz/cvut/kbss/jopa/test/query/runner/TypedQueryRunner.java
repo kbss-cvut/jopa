@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -171,7 +171,8 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     void testCreateQueryNullClass() {
         final String query = "SELECT ?x WHERE { ?x ?y ?z .}";
-        assertThrows(NullPointerException.class, () -> getEntityManager().createNativeQuery(query, (Class<OWLClassA>) null));
+        assertThrows(NullPointerException.class,
+                () -> getEntityManager().createNativeQuery(query, (Class<OWLClassA>) null));
     }
 
     @Test
@@ -279,5 +280,28 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
         q.getResultStream().map(OWLClassD::getUri).forEach(rUri -> assertTrue(expected.contains(rUri)));
         assertEquals(dList.size(), (int) q.getResultStream().count());
+    }
+
+    @Test
+    void selectionByObjectPropertySupportsEntityAsQueryParameter() {
+        final String query = "SELECT ?x WHERE { ?x a ?type ; ?hasA ?y . }";
+        final List<OWLClassD> ds = new ArrayList<>(QueryTestEnvironment.getData(OWLClassD.class));
+        final OWLClassA a = ds.get(Generators.randomPositiveInt(2, ds.size())).getOwlClassA();
+        final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class)
+                                                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_D))
+                                                          .setParameter("hasA",
+                                                                  URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                                                          .setParameter("y", a);
+
+        final List<OWLClassD> expected = ds.stream().filter(d -> d.getOwlClassA().getUri().equals(a.getUri()))
+                                           .sorted(Comparator.comparing(OWLClassD::getUri))
+                                           .collect(Collectors.toList());
+        final List<OWLClassD> res = q.getResultList();
+        res.sort(Comparator.comparing(OWLClassD::getUri));
+        assertEquals(expected.size(), res.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getUri(), res.get(i).getUri());
+            assertNotNull(res.get(i).getOwlClassA());
+        }
     }
 }

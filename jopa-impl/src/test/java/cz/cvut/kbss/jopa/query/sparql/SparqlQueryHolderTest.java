@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,6 +15,8 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
 
 class SparqlQueryHolderTest {
 
@@ -36,7 +39,9 @@ class SparqlQueryHolderTest {
     @BeforeEach
     void setUp() {
         this.sut = new SparqlQueryHolder(QUERY, PARTS,
-                PARAMS.stream().map(QueryParameter::new).collect(Collectors.toList()));
+                PARAMS.stream()
+                      .map(name -> new QueryParameter<>(name, new ParameterValueFactory(mock(MetamodelProvider.class))))
+                      .collect(Collectors.toList()));
     }
 
     @Test

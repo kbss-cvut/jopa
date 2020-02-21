@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Czech Technical University in Prague
+ * Copyright (C) 2020 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -41,8 +42,8 @@ public class SparqlQueryFactory implements QueryFactory {
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.queryParser = new SparqlQueryParser();
         this.soqlQueryParser = new SoqlQueryParser(uow.getMetamodel());
+        this.queryParser = new SparqlQueryParser(new ParameterValueFactory(uow));
     }
 
     @Override
@@ -71,7 +72,8 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(resultSetMapping, ErrorUtils.getNPXMessageSupplier("resultSetMapping"));
 
         final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
-        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
+        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper,
+                uow);
         q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return q;
     }

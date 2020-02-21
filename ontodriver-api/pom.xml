@@ -6,7 +6,7 @@
     <parent>
         <artifactId>jopa-all</artifactId>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <version>0.13.3</version>
+        <version>0.13.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
