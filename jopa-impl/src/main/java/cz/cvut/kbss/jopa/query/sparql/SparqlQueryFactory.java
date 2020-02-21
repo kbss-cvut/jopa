@@ -17,8 +17,10 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.model.QueryImpl;
 import cz.cvut.kbss.jopa.model.ResultSetMappingQuery;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
+import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
+import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
@@ -33,12 +35,14 @@ public class SparqlQueryFactory implements QueryFactory {
     private final ConnectionWrapper connection;
 
     private final QueryParser queryParser;
+    private final SoqlQueryParser soqlQueryParser;
 
     public SparqlQueryFactory(UnitOfWorkImpl uow, ConnectionWrapper connection) {
         assert uow != null;
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
+        this.soqlQueryParser = new SoqlQueryParser(uow.getMetamodel());
         this.queryParser = new SparqlQueryParser(new ParameterValueFactory(uow));
     }
 
@@ -79,7 +83,10 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(query);
 
         // We do not support any more abstract syntax, yet
-        return createNativeQuery(query);
+        // return createNativeQuery(query);
+        final QueryImpl q = new QueryImpl(soqlQueryParser.parseQuery(query), connection);
+        q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
+        return q;
     }
 
     @Override
@@ -88,7 +95,11 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
         // We do not support any more abstract syntax, yet
-        return createNativeQuery(query, resultClass);
+        // return createNativeQuery(query, resultClass);
+        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(soqlQueryParser.parseQuery(query), resultClass, connection, uow);
+        tq.setUnitOfWork(uow);
+        tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
+        return tq;
     }
 
     @Override
