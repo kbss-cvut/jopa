@@ -16,7 +16,7 @@ public class SoqlGroupParameter extends SoqlParameter {
         this.attribute = attribute;
     }
 
-    public String getGroupByPart(){
+    public String getGroupByPart() {
         String param = attribute.isFilter() ? getAsParam().substring(1) : attribute.getValue().substring(1);
         return "?" + param + " ";
     }

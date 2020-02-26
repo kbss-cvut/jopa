@@ -1,4 +1,4 @@
-grammar soql;
+grammar Soql;
 
 
 querySentence : selectStatement whereClausuleWrapper? groupByClausule? orderByClausule? ;

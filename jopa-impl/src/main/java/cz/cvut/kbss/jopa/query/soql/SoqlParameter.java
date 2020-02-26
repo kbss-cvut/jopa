@@ -7,13 +7,13 @@ public class SoqlParameter {
     public SoqlParameter() {
     }
 
-    public String getAsParam(){
+    public String getAsParam() {
         StringBuilder buildParam = new StringBuilder("?");
         buildParam.append(firstNode.getValue());
         SoqlNode pointer = firstNode;
         while (pointer.hasNextChild()) {
             pointer = pointer.getChild();
-            buildParam.append(pointer.getCapitalizedvalue());
+            buildParam.append(pointer.getCapitalizedValue());
         }
         return buildParam.toString();
     }
@@ -26,11 +26,11 @@ public class SoqlParameter {
         this.firstNode = firstNode;
     }
 
-    public String getAsValue(){
+    public String getAsValue() {
         StringBuilder buildParam = new StringBuilder("?");
         SoqlNode firstNode = getFirstNode();
         SoqlNode pointer;
-        if(firstNode.hasNextChild()){
+        if (firstNode.hasNextChild()) {
             pointer = getFirstNode().getChild();
         } else {
             return "?x";
@@ -38,7 +38,7 @@ public class SoqlParameter {
         buildParam.append(pointer.getValue());
         while (pointer.hasNextChild()) {
             pointer = pointer.getChild();
-            buildParam.append(pointer.getCapitalizedvalue());
+            buildParam.append(pointer.getCapitalizedValue());
         }
         return buildParam.toString();
     }

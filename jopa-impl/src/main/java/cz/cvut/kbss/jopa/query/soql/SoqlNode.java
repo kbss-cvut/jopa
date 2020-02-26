@@ -13,38 +13,37 @@ public class SoqlNode {
         this.value = value;
     }
 
-    public SoqlNode(String value){
+    public SoqlNode(String value) {
         this.value = value;
     }
 
-    public SoqlNode(SoqlNode parent, String value){
+    public SoqlNode(SoqlNode parent, String value) {
         this.parent = parent;
         this.value = value;
     }
 
 
-
-    public boolean hasNextChild(){
+    public boolean hasNextChild() {
         return this.child != null;
     }
 
-    public SoqlNode getChild(){
+    public SoqlNode getChild() {
         return this.child;
     }
 
-    public boolean hasNextParent(){
+    public boolean hasNextParent() {
         return this.parent != null;
     }
 
-    public SoqlNode getParent(){
+    public SoqlNode getParent() {
         return this.parent;
     }
 
-    public String getValue(){
+    public String getValue() {
         return this.value;
     }
 
-    public String getCapitalizedvalue(){
+    public String getCapitalizedValue() {
         return this.value.substring(0, 1).toUpperCase() + this.value.substring(1);
     }
 
@@ -56,11 +55,17 @@ public class SoqlNode {
         this.parent = parent;
     }
 
-    public void setValue(String value) { this.value = value; }
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-    public String getIri() { return iri; }
+    public String getIri() {
+        return iri;
+    }
 
-    public void setIri(String iri) { this.iri = iri; }
+    public void setIri(String iri) {
+        this.iri = iri;
+    }
 
 
 }

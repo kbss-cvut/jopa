@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.query.soql;
 
 public class SoqlOrderParameter extends SoqlParameter {
 
-    private String orderingBy ;
+    private String orderingBy;
 
     private SoqlAttribute attribute;
 
@@ -28,12 +28,12 @@ public class SoqlOrderParameter extends SoqlParameter {
         this.attribute = attribute;
     }
 
-    public String getOrderByPart(){
+    public String getOrderByPart() {
         String param = attribute.isFilter() ? getAsParam().substring(1) : attribute.getValue().substring(1);
         StringBuilder sb = new StringBuilder();
-        if(orderingBy.equals("ASC")){
+        if (orderingBy.equals("ASC")) {
             sb.append("?").append(param).append(" ");
-        }else{
+        } else {
             sb.append("DESC(?").append(param).append(") ");
         }
         return sb.toString();

@@ -1,6 +1,10 @@
 package cz.cvut.kbss.jopa.query.soql;
+
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -8,9 +12,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
-public class SoqlQueryListener implements soqlListener {
+public class SoqlQueryListener implements SoqlListener {
 
     private MetamodelImpl metamodel;
 
@@ -37,7 +40,6 @@ public class SoqlQueryListener implements soqlListener {
     private boolean isSelectedParamCount = false;
 
 
-
     public SoqlQueryListener(MetamodelImpl metamodel) {
         super();
         this.metamodel = metamodel;
@@ -49,35 +51,44 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void enterQuerySentence(soqlParser.QuerySentenceContext ctx) {}
+    public void enterQuerySentence(SoqlParser.QuerySentenceContext ctx) {
+    }
 
     @Override
-    public void exitQuerySentence(soqlParser.QuerySentenceContext ctx) { buildString(); }
+    public void exitQuerySentence(SoqlParser.QuerySentenceContext ctx) {
+        buildString();
+    }
 
     @Override
-    public void enterSelectStatement(soqlParser.SelectStatementContext ctx) {}
+    public void enterSelectStatement(SoqlParser.SelectStatementContext ctx) {
+    }
 
     @Override
-    public void exitSelectStatement(soqlParser.SelectStatementContext ctx) {}
+    public void exitSelectStatement(SoqlParser.SelectStatementContext ctx) {
+    }
 
     @Override
-    public void enterParams(soqlParser.ParamsContext ctx) {}
+    public void enterParams(SoqlParser.ParamsContext ctx) {
+    }
 
     @Override
-    public void exitParams(soqlParser.ParamsContext ctx) {}
+    public void exitParams(SoqlParser.ParamsContext ctx) {
+    }
 
     @Override
-    public void enterParam(soqlParser.ParamContext ctx) {}
+    public void enterParam(SoqlParser.ParamContext ctx) {
+    }
 
     @Override
-    public void exitParam(soqlParser.ParamContext ctx) {}
+    public void exitParam(SoqlParser.ParamContext ctx) {
+    }
 
     @Override
-    public void enterJoinedParams(soqlParser.JoinedParamsContext ctx) {
+    public void enterJoinedParams(SoqlParser.JoinedParamsContext ctx) {
         SoqlAttribute myAttr = new SoqlAttribute();
         SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
         SoqlNode actualNode = firstNode;
-        for(int i = 2; i < ctx.getChildCount(); i += 2){
+        for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = actualNode;
             actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
             prevNode.setChild(actualNode);
@@ -89,42 +100,52 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitJoinedParams(soqlParser.JoinedParamsContext ctx) {}
+    public void exitJoinedParams(SoqlParser.JoinedParamsContext ctx) {
+    }
 
     @Override
-    public void enterParamComma(soqlParser.ParamCommaContext ctx) {}
+    public void enterParamComma(SoqlParser.ParamCommaContext ctx) {
+    }
 
     @Override
-    public void exitParamComma(soqlParser.ParamCommaContext ctx) {}
+    public void exitParamComma(SoqlParser.ParamCommaContext ctx) {
+    }
 
     @Override
-    public void enterDistinctParam(soqlParser.DistinctParamContext ctx) {}
+    public void enterDistinctParam(SoqlParser.DistinctParamContext ctx) {
+    }
 
     @Override
-    public void exitDistinctParam(soqlParser.DistinctParamContext ctx) {}
+    public void exitDistinctParam(SoqlParser.DistinctParamContext ctx) {
+    }
 
     @Override
-    public void enterSelectedParam(soqlParser.SelectedParamContext ctx) { }
+    public void enterSelectedParam(SoqlParser.SelectedParamContext ctx) {
+    }
 
     @Override
-    public void exitSelectedParam(soqlParser.SelectedParamContext ctx) { }
+    public void exitSelectedParam(SoqlParser.SelectedParamContext ctx) {
+    }
 
     @Override
-    public void enterCount(soqlParser.CountContext ctx) {
+    public void enterCount(SoqlParser.CountContext ctx) {
         isSelectedParamCount = true;
     }
 
     @Override
-    public void exitCount(soqlParser.CountContext ctx) { }
+    public void exitCount(SoqlParser.CountContext ctx) {
+    }
 
     @Override
-    public void enterObject(soqlParser.ObjectContext ctx) {}
+    public void enterObject(SoqlParser.ObjectContext ctx) {
+    }
 
     @Override
-    public void exitObject(soqlParser.ObjectContext ctx) {}
+    public void exitObject(SoqlParser.ObjectContext ctx) {
+    }
 
     @Override
-    public void enterObjWithAttr(soqlParser.ObjWithAttrContext ctx) {
+    public void enterObjWithAttr(SoqlParser.ObjWithAttrContext ctx) {
         String owner = getOwnerfromParam(ctx);
         String attribute = getAttributefromParam(ctx);
         SoqlNode firstNode = new SoqlNode(owner);
@@ -138,68 +159,87 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitObjWithAttr(soqlParser.ObjWithAttrContext ctx) {}
+    public void exitObjWithAttr(SoqlParser.ObjWithAttrContext ctx) {
+    }
 
     @Override
-    public void enterObjWithOutAttr(soqlParser.ObjWithOutAttrContext ctx) { }
+    public void enterObjWithOutAttr(SoqlParser.ObjWithOutAttrContext ctx) {
+    }
 
     @Override
-    public void exitObjWithOutAttr(soqlParser.ObjWithOutAttrContext ctx) {}
+    public void exitObjWithOutAttr(SoqlParser.ObjWithOutAttrContext ctx) {
+    }
 
     @Override
-    public void enterAttribute(soqlParser.AttributeContext ctx) {}
+    public void enterAttribute(SoqlParser.AttributeContext ctx) {
+    }
 
     @Override
-    public void exitAttribute(soqlParser.AttributeContext ctx) {}
+    public void exitAttribute(SoqlParser.AttributeContext ctx) {
+    }
 
     @Override
-    public void enterTypeDef(soqlParser.TypeDefContext ctx) { typeDef = ctx.getChild(0).getText(); }
+    public void enterTypeDef(SoqlParser.TypeDefContext ctx) {
+        typeDef = ctx.getChild(0).getText();
+    }
 
     @Override
-    public void exitTypeDef(soqlParser.TypeDefContext ctx) {}
+    public void exitTypeDef(SoqlParser.TypeDefContext ctx) {
+    }
 
     @Override
-    public void enterDistinct(soqlParser.DistinctContext ctx) {
-        if(ctx.getChild(0).getText().equals("DISTINCT")){
+    public void enterDistinct(SoqlParser.DistinctContext ctx) {
+        if (ctx.getChild(0).getText().equals("DISTINCT")) {
             isSelectedParamDistinct = true;
         }
     }
 
     @Override
-    public void exitDistinct(soqlParser.DistinctContext ctx) {}
+    public void exitDistinct(SoqlParser.DistinctContext ctx) {
+    }
 
     @Override
-    public void enterLogOp(soqlParser.LogOpContext ctx) {}
+    public void enterLogOp(SoqlParser.LogOpContext ctx) {
+    }
 
     @Override
-    public void exitLogOp(soqlParser.LogOpContext ctx) {}
+    public void exitLogOp(SoqlParser.LogOpContext ctx) {
+    }
 
     @Override
-    public void enterWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx) {}
+    public void enterWhereClausuleWrapper(SoqlParser.WhereClausuleWrapperContext ctx) {
+    }
 
     @Override
-    public void exitWhereClausuleWrapper(soqlParser.WhereClausuleWrapperContext ctx) {}
+    public void exitWhereClausuleWrapper(SoqlParser.WhereClausuleWrapperContext ctx) {
+    }
 
     @Override
-    public void enterTables(soqlParser.TablesContext ctx) {}
+    public void enterTables(SoqlParser.TablesContext ctx) {
+    }
 
     @Override
-    public void exitTables(soqlParser.TablesContext ctx) {}
+    public void exitTables(SoqlParser.TablesContext ctx) {
+    }
 
     @Override
-    public void enterTable(soqlParser.TableContext ctx) {}
+    public void enterTable(SoqlParser.TableContext ctx) {
+    }
 
     @Override
-    public void exitTable(soqlParser.TableContext ctx) {}
+    public void exitTable(SoqlParser.TableContext ctx) {
+    }
 
     @Override
-    public void enterTableName(soqlParser.TableNameContext ctx) {}
+    public void enterTableName(SoqlParser.TableNameContext ctx) {
+    }
 
     @Override
-    public void exitTableName(soqlParser.TableNameContext ctx) {}
+    public void exitTableName(SoqlParser.TableNameContext ctx) {
+    }
 
     @Override
-    public void enterTableWithName(soqlParser.TableWithNameContext ctx) {
+    public void enterTableWithName(SoqlParser.TableWithNameContext ctx) {
         String table = ctx.getChild(0).getChild(0).getText();
         String objectName = ctx.getChild(1).getChild(0).getText();
         objectTypes.put(objectName, table);
@@ -214,25 +254,31 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitTableWithName(soqlParser.TableWithNameContext ctx) {}
+    public void exitTableWithName(SoqlParser.TableWithNameContext ctx) {
+    }
 
     @Override
-    public void enterWhereClausules(soqlParser.WhereClausulesContext ctx) {}
+    public void enterWhereClausules(SoqlParser.WhereClausulesContext ctx) {
+    }
 
     @Override
-    public void exitWhereClausules(soqlParser.WhereClausulesContext ctx) {}
+    public void exitWhereClausules(SoqlParser.WhereClausulesContext ctx) {
+    }
 
     @Override
-    public void enterWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx) {}
+    public void enterWhereClausuleOps(SoqlParser.WhereClausuleOpsContext ctx) {
+    }
 
     @Override
-    public void exitWhereClausuleOps(soqlParser.WhereClausuleOpsContext ctx) {}
+    public void exitWhereClausuleOps(SoqlParser.WhereClausuleOpsContext ctx) {
+    }
 
     @Override
-    public void enterWhereClausule(soqlParser.WhereClausuleContext ctx) {}
+    public void enterWhereClausule(SoqlParser.WhereClausuleContext ctx) {
+    }
 
     @Override
-    public void exitWhereClausule(soqlParser.WhereClausuleContext ctx) {
+    public void exitWhereClausule(SoqlParser.WhereClausuleContext ctx) {
         String logicalOperator = getOperators(ctx.getParent());
         String operator = ctx.getChild(1).getText();
 
@@ -241,46 +287,56 @@ public class SoqlQueryListener implements soqlListener {
         attrPointer.setOperator(operator);
         attrPointer.setValue(whereClausuleValue.getText());
 
-        if (logicalOperator.equals("OR")){
+        if (logicalOperator.equals("OR")) {
             objectOfNextOr.add(attrPointer);
         }
     }
 
     @Override
-    public void enterWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx) {}
+    public void enterWhereClausuleValue(SoqlParser.WhereClausuleValueContext ctx) {
+    }
 
     @Override
-    public void exitWhereClausuleValue(soqlParser.WhereClausuleValueContext ctx) {}
+    public void exitWhereClausuleValue(SoqlParser.WhereClausuleValueContext ctx) {
+    }
 
     @Override
-    public void enterWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx) {}
+    public void enterWhereClausuleParam(SoqlParser.WhereClausuleParamContext ctx) {
+    }
 
     @Override
-    public void exitWhereClausuleParam(soqlParser.WhereClausuleParamContext ctx) {}
+    public void exitWhereClausuleParam(SoqlParser.WhereClausuleParamContext ctx) {
+    }
 
     @Override
-    public void enterOrderByClausule(soqlParser.OrderByClausuleContext ctx) {}
+    public void enterOrderByClausule(SoqlParser.OrderByClausuleContext ctx) {
+    }
 
     @Override
-    public void exitOrderByClausule(soqlParser.OrderByClausuleContext ctx) {}
+    public void exitOrderByClausule(SoqlParser.OrderByClausuleContext ctx) {
+    }
 
     @Override
-    public void enterOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx) {}
+    public void enterOrderByFullFormComma(SoqlParser.OrderByFullFormCommaContext ctx) {
+    }
 
     @Override
-    public void exitOrderByFullFormComma(soqlParser.OrderByFullFormCommaContext ctx) {}
+    public void exitOrderByFullFormComma(SoqlParser.OrderByFullFormCommaContext ctx) {
+    }
 
     @Override
-    public void enterOrderByFullForm(soqlParser.OrderByFullFormContext ctx) {}
+    public void enterOrderByFullForm(SoqlParser.OrderByFullFormContext ctx) {
+    }
 
     @Override
-    public void exitOrderByFullForm(soqlParser.OrderByFullFormContext ctx) {}
+    public void exitOrderByFullForm(SoqlParser.OrderByFullFormContext ctx) {
+    }
 
     @Override
-    public void enterOrderByParam(soqlParser.OrderByParamContext ctx) {
+    public void enterOrderByParam(SoqlParser.OrderByParamContext ctx) {
         SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
         SoqlNode actualNode = firstNode;
-        for(int i = 2; i < ctx.getChildCount(); i += 2){
+        for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = actualNode;
             actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
             prevNode.setChild(actualNode);
@@ -289,13 +345,13 @@ public class SoqlQueryListener implements soqlListener {
         String orderingBy = getOrderingBy(ctx.getParent());
         SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
         boolean attrSet = false;
-        for (SoqlAttribute attr: attributes) {
-            if (attr.getAsParam().equals(orderParam.getAsParam())){
+        for (SoqlAttribute attr : attributes) {
+            if (attr.getAsParam().equals(orderParam.getAsParam())) {
                 orderParam.setAttribute(attr);
                 attrSet = true;
             }
         }
-        if(!attrSet){
+        if (!attrSet) {
             SoqlAttribute myAttr = new SoqlAttribute();
             myAttr.setFirstNode(firstNode);
             myAttr.setOperator("");
@@ -308,25 +364,30 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitOrderByParam(soqlParser.OrderByParamContext ctx) {}
+    public void exitOrderByParam(SoqlParser.OrderByParamContext ctx) {
+    }
 
     @Override
-    public void enterGroupByClausule(soqlParser.GroupByClausuleContext ctx) {}
+    public void enterGroupByClausule(SoqlParser.GroupByClausuleContext ctx) {
+    }
 
     @Override
-    public void exitGroupByClausule(soqlParser.GroupByClausuleContext ctx) {}
+    public void exitGroupByClausule(SoqlParser.GroupByClausuleContext ctx) {
+    }
 
     @Override
-    public void enterGroupByParamComma(soqlParser.GroupByParamCommaContext ctx) {}
+    public void enterGroupByParamComma(SoqlParser.GroupByParamCommaContext ctx) {
+    }
 
     @Override
-    public void exitGroupByParamComma(soqlParser.GroupByParamCommaContext ctx) {}
+    public void exitGroupByParamComma(SoqlParser.GroupByParamCommaContext ctx) {
+    }
 
     @Override
-    public void enterGroupByParam(soqlParser.GroupByParamContext ctx) {
+    public void enterGroupByParam(SoqlParser.GroupByParamContext ctx) {
         SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
         SoqlNode actualNode = firstNode;
-        for(int i = 2; i < ctx.getChildCount(); i += 2){
+        for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = actualNode;
             actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
             prevNode.setChild(actualNode);
@@ -334,13 +395,13 @@ public class SoqlQueryListener implements soqlListener {
         setIris(firstNode);
         SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
         boolean attrSet = false;
-        for (SoqlAttribute attr: attributes) {
-            if (attr.getAsParam().equals(groupParam.getAsParam())){
+        for (SoqlAttribute attr : attributes) {
+            if (attr.getAsParam().equals(groupParam.getAsParam())) {
                 groupParam.setAttribute(attr);
                 attrSet = true;
             }
         }
-        if(!attrSet){
+        if (!attrSet) {
             SoqlAttribute myAttr = new SoqlAttribute();
             myAttr.setFirstNode(firstNode);
             myAttr.setOperator("");
@@ -353,35 +414,44 @@ public class SoqlQueryListener implements soqlListener {
     }
 
     @Override
-    public void exitGroupByParam(soqlParser.GroupByParamContext ctx) {}
+    public void exitGroupByParam(SoqlParser.GroupByParamContext ctx) {
+    }
 
     @Override
-    public void visitTerminal(TerminalNode terminalNode) {}
+    public void visitTerminal(TerminalNode terminalNode) {
+    }
 
     @Override
-    public void visitErrorNode(ErrorNode errorNode) {}
+    public void visitErrorNode(ErrorNode errorNode) {
+    }
 
     @Override
-    public void enterEveryRule(ParserRuleContext parserRuleContext) {}
+    public void enterEveryRule(ParserRuleContext parserRuleContext) {
+    }
 
     @Override
-    public void exitEveryRule(ParserRuleContext parserRuleContext) {}
+    public void exitEveryRule(ParserRuleContext parserRuleContext) {
+    }
 
     //Methods to help parse tree
-    private String getOwnerfromParam(ParserRuleContext ctx){ return ctx.getChild(0).getChild(0).getText(); }
+    private String getOwnerfromParam(ParserRuleContext ctx) {
+        return ctx.getChild(0).getChild(0).getText();
+    }
 
-    private String getAttributefromParam(ParserRuleContext ctx){ return ctx.getChild(2).getChild(0).getText(); }
+    private String getAttributefromParam(ParserRuleContext ctx) {
+        return ctx.getChild(2).getChild(0).getText();
+    }
 
-    private String getOperators(ParserRuleContext ctx){
+    private String getOperators(ParserRuleContext ctx) {
         String operator = "";
-        switch (ctx.getChildCount()){
+        switch (ctx.getChildCount()) {
             case 1:
                 attrPointer.setNot(false);
                 break;
             case 2:
-                if(ctx.getChild(0).getChildCount() > 0){
+                if (ctx.getChild(0).getChildCount() > 0) {
                     operator = ctx.getChild(0).getChild(0).getText();
-                }else{
+                } else {
                     attrPointer.setNot(true);
                 }
                 break;
@@ -395,174 +465,176 @@ public class SoqlQueryListener implements soqlListener {
         return operator;
     }
 
-    private String getOrderingBy(ParserRuleContext ctx){ return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : ""; }
+    private String getOrderingBy(ParserRuleContext ctx) {
+        return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : "";
+    }
 
-    private void setObjectIri(SoqlNode node){
-        if(metamodel == null){
+    private void setObjectIri(SoqlNode node) {
+        if (metamodel == null) {
             return;
         }
         EntityTypeImpl<?> entityType = getEntityType(node.getValue());
-        if(entityType == null){
+        if (entityType == null) {
             return;
         }
         node.setIri(entityType.getIRI().toString());
-        if(node.hasNextChild()){
+        if (node.hasNextChild()) {
             setAllNodesIris(entityType, node.getChild());
         }
     }
 
-    private EntityTypeImpl<?> getEntityType(String name){
-        if(metamodel == null){
+    private EntityTypeImpl<?> getEntityType(String name) {
+        if (metamodel == null) {
             return null;
         }
-        Iterator<EntityType<?>> iterator = metamodel.getEntities().iterator();
-        while(iterator.hasNext()){
-            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) iterator.next();
-            if(entityType.getName().equals(name)){
+        for (EntityType<?> type : metamodel.getEntities()) {
+            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) type;
+            if (entityType.getName().equals(name)) {
                 return entityType;
             }
         }
         return null;
     }
 
-    private EntityTypeImpl<?> getEntityType(Type<?> type){
-        if(metamodel == null){
+    private EntityTypeImpl<?> getEntityType(Type<?> type) {
+        if (metamodel == null) {
             return null;
         }
-        Iterator<EntityType<?>> iterator = metamodel.getEntities().iterator();
-        while(iterator.hasNext()){
-            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) iterator.next();
-            if(entityType.equals(type)){
+        for (EntityType<?> value : metamodel.getEntities()) {
+            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) value;
+            if (entityType.equals(type)) {
                 return entityType;
             }
         }
         return null;
     }
 
-    private void setAllNodesIris(EntityTypeImpl<?> entityType, SoqlNode node){
+    private void setAllNodesIris(EntityTypeImpl<?> entityType, SoqlNode node) {
         SingularAttributeImpl abstractAttribute = (SingularAttributeImpl) entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
-        if(node.hasNextChild()){
+        if (node.hasNextChild()) {
 //        if(false) {
             Type<?> type = abstractAttribute.getType();
             EntityTypeImpl<?> attrEntityType = getEntityType(type);
-            if(attrEntityType == null){
+            if (attrEntityType == null) {
                 return;
             }
             setAllNodesIris(attrEntityType, node.getChild());
         }
     }
 
-    private void setIris(SoqlNode firstNode){
-        if(!objectTypes.containsKey(firstNode.getValue())){
+    private void setIris(SoqlNode firstNode) {
+        if (!objectTypes.containsKey(firstNode.getValue())) {
             return;
         }
-        if(metamodel == null){
+        if (metamodel == null) {
             return;
         }
         String objectName = objectTypes.get(firstNode.getValue());
         EntityTypeImpl<?> entityType = getEntityType(objectName);
-        if(entityType == null){
+        if (entityType == null) {
             return;
         }
-        if(firstNode.hasNextChild()){
+        if (firstNode.hasNextChild()) {
             setAllNodesIris(entityType, firstNode.getChild());
         }
     }
 
-    public String getSoqlQuery(){ return newQuery; }
+    public String getSoqlQuery() {
+        return newQuery;
+    }
 
 
     //Methods to build new Query
-    private void buildString(){
-        if(attributes.isEmpty()){
+    private void buildString() {
+        if (attributes.isEmpty()) {
             return;
         }
         StringBuilder newQueryBuilder = new StringBuilder(typeDef);
-        if(isSelectedParamCount){
+        if (isSelectedParamCount) {
             newQueryBuilder.append(getCountPart());
         } else {
-            if(isSelectedParamDistinct ){
+            if (isSelectedParamDistinct) {
                 newQueryBuilder.append(" ").append("DISTINCT");
             }
             newQueryBuilder.append(" ?x ");
         }
         newQueryBuilder.append("WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
-        if(!objectOfNextOr.isEmpty()){
+        if (!objectOfNextOr.isEmpty()) {
             newQueryBuilder.append("{ ");
         }
         newQueryBuilder.append(processAttributes());
-        if(!objectOfNextOr.isEmpty()){
+        if (!objectOfNextOr.isEmpty()) {
             newQueryBuilder.append("} ");
         }
         newQueryBuilder.append("}");
-        if(!groupAttributes.isEmpty()){
+        if (!groupAttributes.isEmpty()) {
             newQueryBuilder.append(" ").append(buildGrouping());
         }
-        if(!orderAttributes.isEmpty()){
+        if (!orderAttributes.isEmpty()) {
             newQueryBuilder.append(" ").append(buildOrdering());
         }
         newQuery = newQueryBuilder.toString();
     }
 
-    private StringBuilder getCountPart (){
+    private StringBuilder getCountPart() {
         StringBuilder countPart = new StringBuilder(" (COUNT(");
-        if(isSelectedParamDistinct){
+        if (isSelectedParamDistinct) {
             countPart.append("distinct ");
         }
         countPart.append("?x) AS ?count) ");
         return countPart;
     }
 
-    private StringBuilder processSupremeAttributes(){
+    private StringBuilder processSupremeAttributes() {
         StringBuilder attributesPart = new StringBuilder();
         SoqlAttribute pointer = attributes.get(0);
-        while(pointer.isObject() || pointer.isOrderBy() || pointer.isGroupBy()){
+        while (pointer.isObject() || pointer.isOrderBy() || pointer.isGroupBy()) {
             attributesPart.append(processAttribute(pointer));
             attributes.remove(pointer);
-            if(attributes.isEmpty()){
+            if (attributes.isEmpty()) {
                 break;
-            }else{
+            } else {
                 pointer = attributes.get(0);
             }
         }
         return attributesPart;
     }
 
-    private StringBuilder processAttributes(){
+    private StringBuilder processAttributes() {
         StringBuilder attributesPart = new StringBuilder();
         ArrayList<SoqlAttribute> toFilter = new ArrayList<>();
         ArrayList<SoqlAttribute> toInvFilter = new ArrayList<>();
-        for (SoqlAttribute myAttr: attributes) {
-            if(objectOfNextOr.contains(myAttr)){
+        for (SoqlAttribute myAttr : attributes) {
+            if (objectOfNextOr.contains(myAttr)) {
                 StringBuilder orPart = new StringBuilder();
-                orPart.append(processAllFilters(toFilter,toInvFilter));
+                orPart.append(processAllFilters(toFilter, toInvFilter));
                 toFilter.clear();
                 toInvFilter.clear();
                 orPart.append("} UNION { ");
                 attributesPart.append(orPart);
             }
-            if(myAttr.isNot()){
+            if (myAttr.isNot()) {
                 toInvFilter.add(myAttr);
-            }else{
-                if (myAttr.isFilter()){
+            } else {
+                if (myAttr.isFilter()) {
                     toFilter.add(myAttr);
                 }
                 attributesPart.append(processAttribute(myAttr));
             }
         }
-        attributesPart.append(processAllFilters(toFilter,toInvFilter));
+        attributesPart.append(processAllFilters(toFilter, toInvFilter));
         return attributesPart;
     }
 
-    private StringBuilder processAllFilters(ArrayList<SoqlAttribute> toFilter, ArrayList<SoqlAttribute> toInvFilter){
+    private StringBuilder processAllFilters(ArrayList<SoqlAttribute> toFilter, ArrayList<SoqlAttribute> toInvFilter) {
         StringBuilder part = new StringBuilder();
-        if(!toFilter.isEmpty()){
+        if (!toFilter.isEmpty()) {
             part.append(processFilter(toFilter));
         }
-        if(!toInvFilter.isEmpty()){
+        if (!toInvFilter.isEmpty()) {
             part.append(processInvFilter(toInvFilter));
         }
         return part;
@@ -593,7 +665,7 @@ public class SoqlQueryListener implements soqlListener {
         buildInvFilter.append("FILTER NOT EXISTS { ");
         for (SoqlAttribute attr : toInvFilter) {
             buildInvFilter.append(processAttribute(attr));
-            if(attr.isFilter()){
+            if (attr.isFilter()) {
                 toFilter.add(attr);
             }
         }
@@ -601,19 +673,21 @@ public class SoqlQueryListener implements soqlListener {
         return buildInvFilter;
     }
 
-    private StringBuilder processAttribute(SoqlAttribute attr) { return new StringBuilder(attr.getTripplePattern()); }
+    private StringBuilder processAttribute(SoqlAttribute attr) {
+        return new StringBuilder(attr.getTripplePattern());
+    }
 
-    private StringBuilder buildOrdering(){
+    private StringBuilder buildOrdering() {
         StringBuilder sb = new StringBuilder("ORDER BY");
-        for (SoqlOrderParameter orderParam: orderAttributes) {
+        for (SoqlOrderParameter orderParam : orderAttributes) {
             sb.append(" ").append(orderParam.getOrderByPart());
         }
         return sb;
     }
 
-    private StringBuilder buildGrouping(){
+    private StringBuilder buildGrouping() {
         StringBuilder sb = new StringBuilder("GROUP BY");
-        for (SoqlGroupParameter groupParam: groupAttributes) {
+        for (SoqlGroupParameter groupParam : groupAttributes) {
             sb.append(" ").append(groupParam.getGroupByPart());
         }
         return sb;

@@ -23,9 +23,9 @@ public class SoqlQueryParser implements QueryParser {
     @Override
     public QueryHolder parseQuery(String query) {
         CharStream cs = CharStreams.fromString(query);
-        soqlLexer lexer = new soqlLexer(cs);
+        SoqlLexer lexer = new SoqlLexer(cs);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
-        soqlParser parser = new soqlParser(tokens);
+        SoqlParser parser = new SoqlParser(tokens);
 
         final ParseTree tree = parser.querySentence();
         final SoqlQueryListener listener = new SoqlQueryListener(this.metamodel);
