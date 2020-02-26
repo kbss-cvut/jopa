@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
 public class SparqlQueryFactoryTest {
 
     private static final String QUERY = "SELECT ?x ?y ?z WHERE { ?x ?y ?z. }";
+    private static final String SOQL_QUERY = "SELECT a FROM OWLClassA a";
     private static final Class<OWLClassA> CLS = OWLClassA.class;
 
     @Mock
@@ -92,7 +93,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateQuery() {
-        final Query q = factory.createQuery("SELECT a FROM OWLClassA a");
+        final Query q = factory.createQuery(SOQL_QUERY);
         assertNotNull(q);
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
@@ -105,7 +106,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateQueryTyped() {
-        final TypedQuery<OWLClassA> q = factory.createQuery("SELECT a FROM OWLClassA a", CLS);
+        final TypedQuery<OWLClassA> q = factory.createQuery(SOQL_QUERY, CLS);
         assertNotNull(q);
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
@@ -118,7 +119,7 @@ public class SparqlQueryFactoryTest {
 
     @Test(expected = NullPointerException.class)
     public void testCreateQueryTypedNullType() {
-        final TypedQuery<OWLClassA> q = factory.createQuery(QUERY, null);
+        final TypedQuery<OWLClassA> q = factory.createQuery(SOQL_QUERY, null);
         assert q == null;
     }
 
