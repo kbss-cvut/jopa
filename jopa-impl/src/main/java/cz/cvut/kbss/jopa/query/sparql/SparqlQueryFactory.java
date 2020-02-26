@@ -1,27 +1,24 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.QueryImpl;
 import cz.cvut.kbss.jopa.model.ResultSetMappingQuery;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
-import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
-import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -42,8 +39,8 @@ public class SparqlQueryFactory implements QueryFactory {
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.soqlQueryParser = new SoqlQueryParser(uow.getMetamodel());
         this.queryParser = new SparqlQueryParser(new ParameterValueFactory(uow));
+        this.soqlQueryParser = new SoqlQueryParser(queryParser, uow.getMetamodel());
     }
 
     @Override
@@ -82,8 +79,6 @@ public class SparqlQueryFactory implements QueryFactory {
     public QueryImpl createQuery(String query) {
         Objects.requireNonNull(query);
 
-        // We do not support any more abstract syntax, yet
-        // return createNativeQuery(query);
         final QueryImpl q = new QueryImpl(soqlQueryParser.parseQuery(query), connection);
         q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return q;
@@ -94,9 +89,8 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
         Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
-        // We do not support any more abstract syntax, yet
-        // return createNativeQuery(query, resultClass);
-        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(soqlQueryParser.parseQuery(query), resultClass, connection, uow);
+        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(soqlQueryParser.parseQuery(query), resultClass, connection,
+                uow);
         tq.setUnitOfWork(uow);
         tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return tq;

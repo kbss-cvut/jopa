@@ -72,7 +72,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
                         OWLClassT.class)
                 .setParameter("a", unexpected.getOwlClassA().getUri())
                 .setParameter("intAtt", unexpected.getIntAttribute()).getResultList();
-        assertTrue(!result.isEmpty());
+        assertFalse(result.isEmpty());
         for (OWLClassT item : result) {
             assertNotEquals(unexpected.getUri(), item.getUri());
             assertTrue(unexpected.getIntAttribute() > item.getIntAttribute());
