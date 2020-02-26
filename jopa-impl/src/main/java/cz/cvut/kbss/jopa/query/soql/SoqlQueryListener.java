@@ -207,11 +207,11 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterWhereClausuleWrapper(SoqlParser.WhereClausuleWrapperContext ctx) {
+    public void enterWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
     }
 
     @Override
-    public void exitWhereClausuleWrapper(SoqlParser.WhereClausuleWrapperContext ctx) {
+    public void exitWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
     }
 
     @Override
@@ -258,34 +258,34 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterWhereClausules(SoqlParser.WhereClausulesContext ctx) {
+    public void enterWhereClauses(SoqlParser.WhereClausesContext ctx) {
     }
 
     @Override
-    public void exitWhereClausules(SoqlParser.WhereClausulesContext ctx) {
+    public void exitWhereClauses(SoqlParser.WhereClausesContext ctx) {
     }
 
     @Override
-    public void enterWhereClausuleOps(SoqlParser.WhereClausuleOpsContext ctx) {
+    public void enterWhereClauseOps(SoqlParser.WhereClauseOpsContext ctx) {
     }
 
     @Override
-    public void exitWhereClausuleOps(SoqlParser.WhereClausuleOpsContext ctx) {
+    public void exitWhereClauseOps(SoqlParser.WhereClauseOpsContext ctx) {
     }
 
     @Override
-    public void enterWhereClausule(SoqlParser.WhereClausuleContext ctx) {
+    public void enterWhereClause(SoqlParser.WhereClauseContext ctx) {
     }
 
     @Override
-    public void exitWhereClausule(SoqlParser.WhereClausuleContext ctx) {
+    public void exitWhereClause(SoqlParser.WhereClauseContext ctx) {
         String logicalOperator = getOperators(ctx.getParent());
         String operator = ctx.getChild(1).getText();
 
-        ParseTree whereClausuleValue = ctx.getChild(2);
+        ParseTree whereClauseValue = ctx.getChild(2);
 
         attrPointer.setOperator(operator);
-        attrPointer.setValue(whereClausuleValue.getText());
+        attrPointer.setValue(whereClauseValue.getText());
 
         if (logicalOperator.equals("OR")) {
             objectOfNextOr.add(attrPointer);
@@ -293,27 +293,27 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterWhereClausuleValue(SoqlParser.WhereClausuleValueContext ctx) {
+    public void enterWhereClauseValue(SoqlParser.WhereClauseValueContext ctx) {
     }
 
     @Override
-    public void exitWhereClausuleValue(SoqlParser.WhereClausuleValueContext ctx) {
+    public void exitWhereClauseValue(SoqlParser.WhereClauseValueContext ctx) {
     }
 
     @Override
-    public void enterWhereClausuleParam(SoqlParser.WhereClausuleParamContext ctx) {
+    public void enterWhereClauseParam(SoqlParser.WhereClauseParamContext ctx) {
     }
 
     @Override
-    public void exitWhereClausuleParam(SoqlParser.WhereClausuleParamContext ctx) {
+    public void exitWhereClauseParam(SoqlParser.WhereClauseParamContext ctx) {
     }
 
     @Override
-    public void enterOrderByClausule(SoqlParser.OrderByClausuleContext ctx) {
+    public void enterOrderByClause(SoqlParser.OrderByClauseContext ctx) {
     }
 
     @Override
-    public void exitOrderByClausule(SoqlParser.OrderByClausuleContext ctx) {
+    public void exitOrderByClause(SoqlParser.OrderByClauseContext ctx) {
     }
 
     @Override
@@ -368,11 +368,11 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterGroupByClausule(SoqlParser.GroupByClausuleContext ctx) {
+    public void enterGroupByClause(SoqlParser.GroupByClauseContext ctx) {
     }
 
     @Override
-    public void exitGroupByClausule(SoqlParser.GroupByClausuleContext ctx) {
+    public void exitGroupByClause(SoqlParser.GroupByClauseContext ctx) {
     }
 
     @Override

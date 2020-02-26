@@ -1,7 +1,7 @@
 grammar Soql;
 
 
-querySentence : selectStatement whereClausuleWrapper? groupByClausule? orderByClausule? ;
+querySentence : selectStatement whereClauseWrapper? groupByClause? orderByClause? ;
 
 
 
@@ -49,21 +49,21 @@ logOp: AND | OR ;
 
 
 
-whereClausuleWrapper: WHERE whereClausules ;
+whereClauseWrapper: WHERE whereClauses ;
 
-whereClausules: whereClausuleOps whereClausuleOps* ;
+whereClauses: whereClauseOps whereClauseOps* ;
 
-whereClausuleOps: logOp? NOT? whereClausule ;
+whereClauseOps: logOp? NOT? whereClause ;
 
-whereClausule: whereClausuleParam QUERYOPERATOR whereClausuleValue;
+whereClause: whereClauseParam QUERYOPERATOR whereClauseValue;
 
-whereClausuleValue: (QMARK TEXT QMARK) | COLONTEXT ;
+whereClauseValue: (QMARK TEXT QMARK) | COLONTEXT ;
 
-whereClausuleParam: param | joinedParams ;
+whereClauseParam: param | joinedParams ;
 
 
 
-orderByClausule: ORDERBY orderByFullFormComma orderByFullFormComma* ;
+orderByClause: ORDERBY orderByFullFormComma orderByFullFormComma* ;
 
 orderByFullFormComma: orderByFullForm COMMA? ;
 
@@ -73,7 +73,7 @@ orderByParam: object DOT attribute (DOT attribute)* ;
 
 
 
-groupByClausule: GROUPBY groupByParamComma groupByParamComma* ;
+groupByClause: GROUPBY groupByParamComma groupByParamComma* ;
 
 groupByParamComma: groupByParam COMMA? ;
 
