@@ -77,6 +77,7 @@ public class Vocabulary {
     public static final String P_X_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDate";
     public static final String P_X_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDateTime";
     public static final String P_X_INSTANT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xInstant";
+    public static final String P_X_OBJECT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xObject";
 
     public static final String P_HAS_H = ATTRIBUTE_IRI_BASE + "hasH";
 
