@@ -37,7 +37,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
     public void testSimpleCount() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         final Object result = getEntityManager().createQuery("SELECT DISTINCT COUNT(a) FROM OWLClassA a")
-                .getSingleResult();
+                                                .getSingleResult();
         assertEquals(expected.size(), result);
     }
 
@@ -67,15 +67,16 @@ public abstract class SoqlRunner extends BaseQueryRunner {
     @Test
     public void testFindByDataNotPropertyAttributeAndPropertyAttribute() {
         final OWLClassT unexpected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
+        final int intThreshold = QueryTestEnvironment.getData(OWLClassT.class).size() / 2;
         final List<OWLClassT> result = getEntityManager()
                 .createQuery("SELECT t FROM OWLClassT t WHERE NOT t.owlClassA = :a AND t.intAttribute < :intAtt",
                         OWLClassT.class)
                 .setParameter("a", unexpected.getOwlClassA().getUri())
-                .setParameter("intAtt", unexpected.getIntAttribute()).getResultList();
+                .setParameter("intAtt", intThreshold).getResultList();
         assertFalse(result.isEmpty());
         for (OWLClassT item : result) {
             assertNotEquals(unexpected.getUri(), item.getUri());
-            assertTrue(unexpected.getIntAttribute() > item.getIntAttribute());
+            assertTrue(intThreshold > item.getIntAttribute());
         }
     }
 

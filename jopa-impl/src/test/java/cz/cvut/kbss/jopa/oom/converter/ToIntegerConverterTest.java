@@ -14,22 +14,22 @@
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ToIntegerConverterTest {
+class ToIntegerConverterTest {
 
     private ToIntegerConverter converter = new ToIntegerConverter();
 
     @Test
-    public void toAttributeSupportsWideningIntegerConversion() {
+    void toAttributeSupportsWideningIntegerConversion() {
         assertEquals(Integer.valueOf(11), converter.convertToAttribute(Byte.valueOf((byte) 11)));
         assertEquals(Integer.valueOf(117), converter.convertToAttribute(Short.valueOf((short) 117)));
     }
 
     @Test
-    public void toAttributeSupportsIdentityConversion() {
+    void toAttributeSupportsIdentityConversion() {
         assertEquals(Integer.valueOf(117), converter.convertToAttribute(117));
     }
 }

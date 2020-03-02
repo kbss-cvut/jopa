@@ -14,10 +14,7 @@
  */
 package cz.cvut.kbss.jopa.adapters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,9 +28,9 @@ import java.util.List;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -41,7 +38,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 
-public class IndirectSetTest {
+class IndirectSetTest {
 
     private static Set<OWLClassA> set;
     private static Set<OWLClassA> backupSet;
@@ -53,8 +50,8 @@ public class IndirectSetTest {
     @Mock
     private UnitOfWorkImpl uow;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() throws Exception {
         owner = new OWLClassF();
         owner.setUri(URI.create("http://C"));
         ownerField = OWLClassF.class.getDeclaredField("simpleSet");
@@ -63,8 +60,8 @@ public class IndirectSetTest {
         set.addAll(backupSet);
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         target = new IndirectSet<>(owner, ownerField, uow, set);
@@ -73,28 +70,24 @@ public class IndirectSetTest {
         owner.setSimpleSet(target);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testIndirectSetNullUoW() {
-        @SuppressWarnings("unused")
-        final IndirectSet<OWLClassA> res = new IndirectSet<>(owner, ownerField, null, set);
-        fail("This line should not have been reached.");
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testIndirectSetNullReferencedSet() {
-        @SuppressWarnings("unused")
-        final IndirectSet<OWLClassA> res = new IndirectSet<>(owner, ownerField, uow, null);
-        fail("This line should not have been reached.");
+    @Test
+    void testIndirectSetNullUoW() {
+        assertThrows(NullPointerException.class,() ->  new IndirectSet<>(owner, ownerField, null, set));
     }
 
     @Test
-    public void testContains() {
+    void testIndirectSetNullReferencedSet() {
+        assertThrows(NullPointerException.class,() ->  new IndirectSet<>(owner, ownerField, uow, null));
+    }
+
+    @Test
+    void testContains() {
         final OWLClassA elem = backupSet.iterator().next();
         assertTrue(target.contains(elem));
     }
 
     @Test
-    public void testIteratorHasNext() {
+    void testIteratorHasNext() {
         final Iterator<OWLClassA> it = set.iterator();
         final Iterator<OWLClassA> indIt = target.iterator();
         while (it.hasNext()) {
@@ -105,7 +98,7 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void testIteratorNext() {
+    void testIteratorNext() {
         final Iterator<OWLClassA> it = set.iterator();
         final Iterator<OWLClassA> indIt = target.iterator();
         while (it.hasNext()) {
@@ -115,7 +108,7 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void testIteratorRemove() {
+    void testIteratorRemove() {
         final Iterator<OWLClassA> it = target.iterator();
         assertTrue(it.hasNext());
         it.next();
@@ -125,7 +118,7 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void testAdd() {
+    void testAdd() {
         final OWLClassA a = new OWLClassA();
         a.setUri(URI.create("http://newA"));
         a.setStringAttribute("testAttribute");
@@ -135,14 +128,14 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void addingExistingElementDoesNotTriggerAttributeChange() {
+    void addingExistingElementDoesNotTriggerAttributeChange() {
         final OWLClassA toAdd = backupSet.iterator().next();
         target.add(toAdd);
         verify(uow, never()).attributeChanged(owner, ownerField);
     }
 
     @Test
-    public void testRemove() {
+    void testRemove() {
         final OWLClassA toRemove = set.iterator().next();
         target.remove(toRemove);
         verify(uow).attributeChanged(owner, ownerField);
@@ -150,7 +143,7 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void testAddAll() {
+    void testAddAll() {
         final List<OWLClassA> toAdd = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             final OWLClassA a = new OWLClassA();
@@ -164,7 +157,7 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void testRetainAll() {
+    void testRetainAll() {
         Set<OWLClassA> toRetain = new HashSet<>();
         Iterator<OWLClassA> it = backupSet.iterator();
         for (int i = 0; i < 8; i++) {
@@ -178,7 +171,7 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void testRemoveAll() {
+    void testRemoveAll() {
         Set<OWLClassA> toRemove = new HashSet<>();
         Iterator<OWLClassA> it = backupSet.iterator();
         for (int i = 0; i < 8; i++) {
@@ -190,14 +183,13 @@ public class IndirectSetTest {
         assertEquals(backupSet.size() - toRemove.size(), set.size());
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testRemoveAllNull() {
-        target.removeAll(null);
-        fail("This line should not have been reached.");
+    @Test
+    void testRemoveAllNull() {
+        assertThrows(NullPointerException.class, () -> target.removeAll(null));
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         target.clear();
         verify(uow).attributeChanged(owner, ownerField);
         assertTrue(set.isEmpty());
@@ -205,23 +197,35 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void equalsWorksForTwoIndirectSets() {
+    void equalsWorksForTwoIndirectSets() {
         final IndirectSet<OWLClassA> other = new IndirectSet<>(owner, ownerField, uow, set);
         assertEquals(target, other);
     }
 
     @Test
-    public void equalsWorksForRegularSetAndIndirectSet() {
+    void equalsWorksForRegularSetAndIndirectSet() {
         assertEquals(backupSet, target);
     }
 
     @Test
-    public void equalsWorksForIndirectSetAndRegularSet() {
+    void equalsWorksForIndirectSetAndRegularSet() {
         assertEquals(target, backupSet);
     }
 
     @Test
-    public void hashCodeReturnsInternalSetHashCode() {
+    void hashCodeReturnsInternalSetHashCode() {
         assertEquals(backupSet.hashCode(), target.hashCode());
+    }
+
+    @Test
+    void equalsReturnsFalseForInEqualIndirectSets() {
+        set.add(Generators.generateOwlClassAInstance());
+        assertNotEquals(backupSet, target);
+    }
+
+    @Test
+    void containsAllInvokesInternalSet() {
+        assertTrue(target.containsAll(backupSet));
+        assertTrue(set.containsAll(backupSet));
     }
 }
