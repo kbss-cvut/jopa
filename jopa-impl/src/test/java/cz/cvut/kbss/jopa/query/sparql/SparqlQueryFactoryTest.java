@@ -1,20 +1,20 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
 public class SparqlQueryFactoryTest {
 
     private static final String QUERY = "SELECT ?x ?y ?z WHERE { ?x ?y ?z. }";
+    private static final String SOQL_QUERY = "SELECT a FROM OWLClassA a";
     private static final Class<OWLClassA> CLS = OWLClassA.class;
 
     @Mock
@@ -52,6 +53,9 @@ public class SparqlQueryFactoryTest {
         when(uowMock.useBackupOntologyForQueryProcessing()).thenReturn(Boolean.FALSE);
         when(uowMock.useTransactionalOntologyForQueryProcessing()).thenReturn(Boolean.TRUE);
         when(uowMock.getNamedQueryManager()).thenReturn(namedQueryManagerMock);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        new MetamodelMocks().setMocks(metamodel);
+        when(uowMock.getMetamodel()).thenReturn(metamodel);
         this.factory = new SparqlQueryFactory(uowMock, connectionMock);
     }
 
@@ -89,7 +93,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateQuery() {
-        final Query q = factory.createQuery(QUERY);
+        final Query q = factory.createQuery(SOQL_QUERY);
         assertNotNull(q);
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
@@ -102,7 +106,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateQueryTyped() {
-        final TypedQuery<OWLClassA> q = factory.createQuery(QUERY, CLS);
+        final TypedQuery<OWLClassA> q = factory.createQuery(SOQL_QUERY, CLS);
         assertNotNull(q);
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
@@ -115,7 +119,7 @@ public class SparqlQueryFactoryTest {
 
     @Test(expected = NullPointerException.class)
     public void testCreateQueryTypedNullType() {
-        final TypedQuery<OWLClassA> q = factory.createQuery(QUERY, null);
+        final TypedQuery<OWLClassA> q = factory.createQuery(SOQL_QUERY, null);
         assert q == null;
     }
 

@@ -14,21 +14,21 @@
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ToShortConverterTest {
+class ToShortConverterTest {
 
     private ToShortConverter converter = new ToShortConverter();
 
     @Test
-    public void toAttributeSupportsWideningIntegerConversion() {
+    void toAttributeSupportsWideningIntegerConversion() {
         assertEquals(Short.valueOf((short) 11), converter.convertToAttribute(Byte.valueOf((byte) 11)));
     }
 
     @Test
-    public void toAttributeSupportsIdentityConversion() {
+    void toAttributeSupportsIdentityConversion() {
         assertEquals(Short.valueOf((short) 11), converter.convertToAttribute(Short.valueOf((short) 11)));
     }
 }

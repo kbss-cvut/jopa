@@ -1,29 +1,26 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.transactions;
 
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class EntityTransactionImplTest {
@@ -37,7 +34,7 @@ public class EntityTransactionImplTest {
 
     private EntityTransactionImpl transaction;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(wrapperMock.getEntityManager()).thenReturn(emMock);
@@ -45,9 +42,9 @@ public class EntityTransactionImplTest {
         this.transaction = new EntityTransactionImpl(wrapperMock);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void callingConstructorWithNullArgumentsThrowsNPX() {
-        new EntityTransactionImpl(null);
+        assertThrows(NullPointerException.class, () -> new EntityTransactionImpl(null));
     }
 
     @Test
@@ -58,12 +55,12 @@ public class EntityTransactionImplTest {
         verify(emMock).transactionStarted(transaction);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testBeginAlreadyActive() {
         assertFalse(transaction.isActive());
         transaction.begin();
         assertTrue(transaction.isActive());
-        transaction.begin();
+        assertThrows(IllegalStateException.class, () -> transaction.begin());
 
     }
 
@@ -83,27 +80,27 @@ public class EntityTransactionImplTest {
         verify(emMock).removeCurrentPersistenceContext();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCommitNotActive() {
-        transaction.commit();
+        assertThrows(IllegalStateException.class, () -> transaction.commit());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testCommitWithException() {
         doThrow(RuntimeException.class).when(uowMock).commit();
         transaction.begin();
         try {
-            transaction.commit();
+            assertThrows(RuntimeException.class, () -> transaction.commit());
         } finally {
             verify(emMock).removeCurrentPersistenceContext();
         }
     }
 
-    @Test(expected = RollbackException.class)
+    @Test
     public void testCommitRollbackOnly() {
         transaction.begin();
         transaction.setRollbackOnly();
-        transaction.commit();
+        assertThrows(RollbackException.class, () -> transaction.commit());
     }
 
     @Test
@@ -114,10 +111,10 @@ public class EntityTransactionImplTest {
         verify(uowMock).rollback();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testRollbackNotActive() {
         assertFalse(transaction.isActive());
-        transaction.rollback();
+        assertThrows(IllegalStateException.class, () -> transaction.rollback());
     }
 
     @Test
@@ -128,13 +125,13 @@ public class EntityTransactionImplTest {
         assertTrue(transaction.isRollbackOnly());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testSetRollbackOnlyNotActive() {
-        transaction.setRollbackOnly();
+        assertThrows(IllegalStateException.class, () -> transaction.setRollbackOnly());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetRollbackOnlyNotActive() {
-        transaction.isRollbackOnly();
+        assertThrows(IllegalStateException.class, () -> transaction.isRollbackOnly());
     }
 }

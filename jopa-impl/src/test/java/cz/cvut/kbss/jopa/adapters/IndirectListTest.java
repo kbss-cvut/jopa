@@ -18,9 +18,9 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -29,11 +29,10 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class IndirectListTest {
+class IndirectListTest {
 
     private static List<OWLClassA> list;
     private static List<OWLClassA> backupList;
@@ -45,8 +44,8 @@ public class IndirectListTest {
 
     private IndirectList<OWLClassA> target;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    static void setUpBeforeClass() throws Exception {
         owner = new OWLClassC();
         owner.setUri(URI.create("http://C"));
         ownerField = OWLClassC.class.getDeclaredField("referencedList");
@@ -55,8 +54,8 @@ public class IndirectListTest {
         list.addAll(backupList);
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
         MockitoAnnotations.initMocks(this);
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         target = new IndirectList<>(owner, ownerField, uow, list);
@@ -65,18 +64,18 @@ public class IndirectListTest {
         owner.setReferencedList(target);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testConstructorNull() {
-        new IndirectList<>(owner, ownerField, uow, null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testConstructorNullTwo() {
-        new IndirectList<>(owner, ownerField, null, list);
+    @Test
+    void constructorThrowsNullPointerForNullReferencedList() {
+        assertThrows(NullPointerException.class, () -> new IndirectList<>(owner, ownerField, uow, null));
     }
 
     @Test
-    public void testAdd() {
+    void constructorThrowsNullPointerForNullUnitOfWork() {
+        assertThrows(NullPointerException.class, () -> new IndirectList<>(owner, ownerField, null, list));
+    }
+
+    @Test
+    void testAdd() {
         final OWLClassA added = new OWLClassA();
         added.setUri(URI.create("http://added"));
         owner.getReferencedList().add(added);
@@ -85,7 +84,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testAddNull() {
+    void testAddNull() {
         // Adding null is possible for some list types (ArrayList in our case
         // permits them)
         owner.getReferencedList().add(null);
@@ -94,7 +93,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testAddAtIndex() {
+    void testAddAtIndex() {
         final OWLClassA added = new OWLClassA();
         added.setUri(URI.create("http://added"));
         owner.getReferencedList().add(list.size() / 2, added);
@@ -103,7 +102,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testAddAll() {
+    void testAddAll() {
         final List<OWLClassA> toAdd = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             final OWLClassA a = new OWLClassA();
@@ -116,13 +115,13 @@ public class IndirectListTest {
     }
 
     @Test
-    public void addAllDoesNothingWhenNoNewElementsAreAdded() {
+    void addAllDoesNothingWhenNoNewElementsAreAdded() {
         owner.getReferencedList().addAll(Collections.emptyList());
         verify(uow, never()).attributeChanged(owner, ownerField);
     }
 
     @Test
-    public void testAddAllAtIndex() {
+    void testAddAllAtIndex() {
         final List<OWLClassA> toAdd = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             final OWLClassA a = new OWLClassA();
@@ -137,7 +136,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void addAllAtIndexDoesNothingWhenNoElementsAreAdded() {
+    void addAllAtIndexDoesNothingWhenNoElementsAreAdded() {
         final int origSize = target.size();
         owner.getReferencedList().addAll(2, Collections.emptyList());
         verify(uow, never()).attributeChanged(owner, ownerField);
@@ -145,34 +144,34 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         owner.getReferencedList().clear();
         verify(uow).attributeChanged(owner, ownerField);
         assertTrue(target.isEmpty());
     }
 
     @Test
-    public void testRemoveObject() {
+    void testRemoveObject() {
         owner.getReferencedList().remove(list.get(0));
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupList.size() - 1, target.size());
     }
 
     @Test
-    public void testRemoveNull() {
+    void testRemoveNull() {
         owner.getReferencedList().remove(null);
         verify(uow, never()).attributeChanged(any(), any(Field.class));
     }
 
     @Test
-    public void testRemoveAtIndex() {
+    void testRemoveAtIndex() {
         owner.getReferencedList().remove(list.size() - 1);
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupList.size() - 1, target.size());
     }
 
     @Test
-    public void testRemoveAll() {
+    void testRemoveAll() {
         List<OWLClassA> toRemove = list.subList(2, 5);
         final int toRemoveSize = toRemove.size();
         owner.getReferencedList().removeAll(toRemove);
@@ -181,13 +180,13 @@ public class IndirectListTest {
     }
 
     @Test
-    public void removeAllDoesNothingWhenNoElementsAreRemoved() {
+    void removeAllDoesNothingWhenNoElementsAreRemoved() {
         owner.getReferencedList().removeAll(Collections.emptyList());
         verify(uow, never()).attributeChanged(owner, ownerField);
     }
 
     @Test
-    public void testRetainAll() {
+    void testRetainAll() {
         List<OWLClassA> toRetain = list.subList(2, 5);
         final int toRetainSize = toRetain.size();
         owner.getReferencedList().retainAll(toRetain);
@@ -196,7 +195,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testSet() {
+    void testSet() {
         final OWLClassA a = new OWLClassA();
         a.setUri(URI.create("http://setA"));
         owner.getReferencedList().set(0, a);
@@ -206,7 +205,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testIteratorRemove() {
+    void testIteratorRemove() {
         int cnt = 3;
         final OWLClassA toRemove = owner.getReferencedList().get(cnt);
         final Iterator<OWLClassA> it = owner.getReferencedList().iterator();
@@ -221,7 +220,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testListIteratorAdd() {
+    void testListIteratorAdd() {
         final OWLClassA addA = new OWLClassA();
         addA.setUri(URI.create("http://addA"));
         final ListIterator<OWLClassA> lit = owner.getReferencedList().listIterator();
@@ -237,7 +236,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testListIteratorSetReverse() {
+    void testListIteratorSetReverse() {
         final OWLClassA a = new OWLClassA();
         a.setUri(URI.create("http://setA"));
         final ListIterator<OWLClassA> lit = owner.getReferencedList().listIterator(5);
@@ -250,7 +249,7 @@ public class IndirectListTest {
     }
 
     @Test
-    public void testListIteratorRemove() {
+    void testListIteratorRemove() {
         int cnt = 3;
         final OWLClassA toRemove = owner.getReferencedList().get(cnt);
         final ListIterator<OWLClassA> it = owner.getReferencedList().listIterator();
@@ -267,34 +266,34 @@ public class IndirectListTest {
     }
 
     @Test
-    public void equalsWorksForTwoIndirectLists() {
+    void equalsWorksForTwoIndirectLists() {
         final IndirectList<OWLClassA> other = new IndirectList<>(owner, ownerField, uow, list);
         assertEquals(target, other);
     }
 
     @Test
-    public void equalsWorksForIndirectListAndRegularList() {
+    void equalsWorksForIndirectListAndRegularList() {
         assertEquals(backupList, target);
     }
 
     @Test
-    public void hashCodeIsEqualToRegularListWithIdenticalContent() {
+    void hashCodeIsEqualToRegularListWithIdenticalContent() {
         assertEquals(list.hashCode(), target.hashCode());
     }
 
     @Test
-    public void testContainsAll() {
+    void testContainsAll() {
         assertTrue(target.containsAll(list));
     }
 
     @Test
-    public void sublistReturnsAnotherIndirectList() {
+    void sublistReturnsAnotherIndirectList() {
         final List<OWLClassA> result = target.subList(0, target.size() / 2);
         assertTrue(result instanceof IndirectList);
     }
 
     @Test
-    public void removeIfNotifiesUoWOfRemovedElements() {
+    void removeIfNotifiesUoWOfRemovedElements() {
         final Set<URI> toRemove = target.stream().filter(e -> Generators.randomBoolean()).map(OWLClassA::getUri)
                                         .collect(Collectors.toSet());
         owner.getReferencedList().removeIf(e -> toRemove.contains(e.getUri()));

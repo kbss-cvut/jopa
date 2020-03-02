@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -24,10 +22,8 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.BasicTypeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
@@ -41,6 +37,7 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -238,5 +235,59 @@ class PluralAnnotationPropertyStrategyTest {
         final WithPluralStringAnnotations instance = new WithPluralStringAnnotations();
         sut.buildInstanceFieldValue(instance);
         assertEquals(Collections.singleton(value.toString()), instance.sources);
+    }
+
+    @Test
+    void addAxiomValueConvertsNamedResourceToUriForAttributeOfTypeObject() throws Exception {
+        final EntityType<ClassWithObjectAnnotation> et = mock(EntityType.class);
+        final SetAttributeImpl<ClassWithObjectAnnotation, Object> att = objectAnnotationAttribute(et);
+        final PluralAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new PluralAnnotationPropertyStrategy<>(
+                et, att, descriptor, mapperMock);
+        final URI identifier = Generators.createIndividualIdentifier();
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(PK), createAnnotationAssertionForN(),
+                new Value<>(NamedResource.create(identifier)));
+        sut.addValueFromAxiom(axiom);
+        final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(Collections.singleton(identifier), instance.pluralAnnotation);
+    }
+
+    private SetAttributeImpl<ClassWithObjectAnnotation, Object> objectAnnotationAttribute(
+            EntityType<ClassWithObjectAnnotation> et) throws NoSuchFieldException {
+        final SetAttributeImpl<ClassWithObjectAnnotation, Object> att = mock(SetAttributeImpl.class);
+        when(att.getJavaField()).thenReturn(ClassWithObjectAnnotation.class.getDeclaredField("pluralAnnotation"));
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
+        when(att.getElementType()).thenReturn(BasicTypeImpl.get(Object.class));
+        when(att.getDeclaringType()).thenReturn(et);
+        when(att.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(att.getName())
+                .thenReturn(ClassWithObjectAnnotation.class.getDeclaredField("pluralAnnotation").getName());
+        when(att.getConverter()).thenReturn(new ObjectConverter());
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "pluralAnnotation"));
+        return att;
+    }
+
+    private static class ClassWithObjectAnnotation {
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "pluralAnnotation")
+        private Set<Object> pluralAnnotation;
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceConvertsUriToNamedResourceForAttributeOfTypeObject() throws Exception {
+        final EntityType<ClassWithObjectAnnotation> et = mock(EntityType.class);
+        final SetAttributeImpl<ClassWithObjectAnnotation, Object> att = objectAnnotationAttribute(et);
+        final PluralAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new PluralAnnotationPropertyStrategy<>(
+                et, att, descriptor, mapperMock);
+        final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
+        instance.pluralAnnotation = Collections.singleton(Generators.createIndividualIdentifier());
+
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor
+                .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
+        assertEquals(1, values.size());
+        assertEquals(NamedResource.create((URI) instance.pluralAnnotation.iterator().next()), values.get(0).getValue());
     }
 }

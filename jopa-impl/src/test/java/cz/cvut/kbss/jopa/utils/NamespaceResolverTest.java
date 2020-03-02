@@ -1,55 +1,53 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NamespaceResolverTest {
+class NamespaceResolverTest {
 
-    private final NamespaceResolver resolver = new NamespaceResolver();
+    private final NamespaceResolver sut = new NamespaceResolver();
 
     @Test
-    public void resolveReturnsOriginalIriWhenItDoesNotContainPrefix() {
-        assertEquals(DC.Elements.DESCRIPTION, resolver.resolveFullIri(DC.Elements.DESCRIPTION));
+    void resolveReturnsOriginalIriWhenItDoesNotContainPrefix() {
+        assertEquals(DC.Elements.DESCRIPTION, sut.resolveFullIri(DC.Elements.DESCRIPTION));
     }
 
     @Test
-    public void resolveReturnsOriginalIriWhenPrefixIsNotRegistered() {
+    void resolveReturnsOriginalIriWhenPrefixIsNotRegistered() {
         final String iri = "dc:description";
-        assertEquals(iri, resolver.resolveFullIri(iri));
+        assertEquals(iri, sut.resolveFullIri(iri));
     }
 
     @Test
-    public void resolveReturnsPreregisteredIri() {
-        assertEquals(RDFS.LABEL, resolver.resolveFullIri("rdfs:label"));
+    void resolveReturnsPreregisteredIri() {
+        assertEquals(RDFS.LABEL, sut.resolveFullIri("rdfs:label"));
     }
 
     @Test
-    public void resolveReturnsIriBasedOnRegisteredNamespace() {
-        resolver.registerNamespace("dc", DC.Elements.NAMESPACE);
+    void resolveReturnsIriBasedOnRegisteredNamespace() {
+        sut.registerNamespace("dc", DC.Elements.NAMESPACE);
         final String iri = "dc:description";
-        assertEquals(DC.Elements.NAMESPACE + "description", resolver.resolveFullIri(iri));
+        assertEquals(DC.Elements.NAMESPACE + "description", sut.resolveFullIri(iri));
     }
 
     @Test
-    public void resolveReturnsOriginalIriWhenPrefixIsInvalid() {
+    void resolveReturnsOriginalIriWhenPrefixIsInvalid() {
         final String invalidIri = "prefixWithoutLocalName";
-        assertEquals(invalidIri, resolver.resolveFullIri(invalidIri));
+        assertEquals(invalidIri, sut.resolveFullIri(invalidIri));
     }
 }

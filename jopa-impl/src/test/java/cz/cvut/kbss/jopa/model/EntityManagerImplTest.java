@@ -573,13 +573,13 @@ class EntityManagerImplTest {
 
     @Test
     void createQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
-        final QueryImpl q = em.createQuery("SELECT * WHERE { ?x a rdf:Resource . }");
+        final QueryImpl q = em.createQuery("SELECT a FROM OWLClassA a");
         verifyEnsureOpenProcedureSet(q);
     }
 
     @Test
     void createTypedQuerySetsEnsureOpenProcedureOnQueryInstance() throws Exception {
-        final TypedQueryImpl<OWLClassA> q = em.createQuery("SELECT * WHERE { ?x a rdf:Resource . }", OWLClassA.class);
+        final TypedQueryImpl<OWLClassA> q = em.createQuery("SELECT a FROM OWLClassA a", OWLClassA.class);
         verifyEnsureOpenProcedureSet(q);
     }
 

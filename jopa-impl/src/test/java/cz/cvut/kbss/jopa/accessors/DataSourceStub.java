@@ -1,23 +1,21 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.accessors;
 
 import cz.cvut.kbss.ontodriver.*;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
@@ -45,12 +43,12 @@ public class DataSourceStub implements DataSource {
     }
 
     @Override
-    public void setStorageProperties(OntologyStorageProperties storageProperties) throws OntoDriverException {
+    public void setStorageProperties(OntologyStorageProperties storageProperties) {
         // Do nothing
     }
 
     @Override
-    public void setProperties(Map<String, String> properties) throws OntoDriverException {
+    public void setProperties(Map<String, String> properties) {
         // Do nothing
     }
 
@@ -79,12 +77,12 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public void commit() throws OntoDriverException {
+        public void commit() {
 
         }
 
         @Override
-        public void rollback() throws OntoDriverException {
+        public void rollback() {
 
         }
 
@@ -99,52 +97,52 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public Statement createStatement() throws OntoDriverException {
+        public Statement createStatement() {
             return null;
         }
 
         @Override
-        public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
+        public PreparedStatement prepareStatement(String sparql) {
             return null;
         }
 
         @Override
-        public boolean isConsistent(URI context) throws OntoDriverException {
+        public boolean isConsistent(URI context) {
             return false;
         }
 
         @Override
-        public List<URI> getContexts() throws OntoDriverException {
+        public List<URI> getContexts() {
             return null;
         }
 
         @Override
-        public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
+        public boolean contains(Axiom<?> axiom, URI context) {
             return false;
         }
 
         @Override
-        public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
+        public Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
             return null;
         }
 
         @Override
-        public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException {
+        public void persist(AxiomValueDescriptor descriptor) {
 
         }
 
         @Override
-        public URI generateIdentifier(URI classUri) throws OntoDriverException {
+        public URI generateIdentifier(URI classUri) {
             return null;
         }
 
         @Override
-        public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
+        public void update(AxiomValueDescriptor descriptor) {
 
         }
 
         @Override
-        public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
+        public void remove(AxiomDescriptor descriptor) {
 
         }
 
@@ -164,12 +162,12 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public void close() throws Exception {
+        public void close() {
 
         }
 
         @Override
-        public <T> T unwrap(Class<T> cls) throws OntoDriverException {
+        public <T> T unwrap(Class<T> cls) {
             return null;
         }
     }
