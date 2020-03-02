@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.14.0 - March 2, 2020
+- [JOPA] Implement basic support for the Semantic Object Query Language (SOQL), an object model-based query language. (Feature #19)
+- [JOPA] Support annotation properties of type `Object`, which allow to accommodate both literals and URIs.
+- Dependency updates - RDF4J 3.1.1.
+
 ## 0.13.5 - February 19, 2020
 - [JOPA] Fix an issue with loading entity classes in Spring Boot projects, where classes are in a non-standard location in the JAR (Bug #62).
 

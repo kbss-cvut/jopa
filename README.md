@@ -8,6 +8,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 Notable changes:
 
+* **0.14.0** - Support for the Semantic Object Query Language (SOQL). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Semantic-Object-Query-Language) for more info
 * **0.13.0** - Support for RDF simple literals (language-less strings), access to lexical form of literals, updated named graph handling
 * **0.12.0** - Support for `EntityManager.getReference`
 * **0.11.0** - Support for Java 8 Streams in Query API and RDF4J repository configuration file
