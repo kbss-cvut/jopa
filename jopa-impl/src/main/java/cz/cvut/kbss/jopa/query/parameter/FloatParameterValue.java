@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.util.Objects;
 
-public class FloatParameterValue extends AbstractParameterValue {
+class FloatParameterValue extends AbstractParameterValue {
 
     private final float value;
 

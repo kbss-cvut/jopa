@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.query.parameter;
 
 import java.util.Objects;
 
-public class StringParameterValue extends AbstractParameterValue {
+class StringParameterValue extends AbstractParameterValue {
 
     private final String value;
     private final String language;

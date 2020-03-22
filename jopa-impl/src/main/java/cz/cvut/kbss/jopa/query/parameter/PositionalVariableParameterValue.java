@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.query.parameter;
  * <p>
  * All query parameters start out as variable values, until real values are set for them.
  */
-public class PositionalVariableParameterValue extends AbstractParameterValue {
+class PositionalVariableParameterValue extends AbstractParameterValue {
 
     private final Integer position;
 

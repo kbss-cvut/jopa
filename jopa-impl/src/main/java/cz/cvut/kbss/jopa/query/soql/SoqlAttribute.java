@@ -77,7 +77,7 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     public boolean isFilter() {
-        return !operator.isEmpty() && !operator.equals("=");
+        return !operator.isEmpty() && !"=".equals(operator);
     }
 
     public boolean isObject() {
@@ -90,17 +90,17 @@ public class SoqlAttribute extends SoqlParameter {
 
     public String getFilter() {
         StringBuilder buildFilter = new StringBuilder();
-        if (operator.equals("LIKE")) {
-            buildFilter.append("regex(").append(getAsParam()).append(", ?").append(this.value.substring(1))
+        if ("LIKE".equals(operator)) {
+            buildFilter.append("regex(").append(getAsParam()).append(", ?").append(value.substring(1))
                        .append(") ");
         } else {
             buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" ").append("?")
-                       .append(this.value.substring(1));
+                       .append(value.substring(1));
         }
         return buildFilter.toString();
     }
 
-    public String getTripplePattern() {
+    public String getTriplePattern() {
         StringBuilder buildTP = new StringBuilder("?x ");
         if (isObject()) {
             buildTP.append(getRdfType()).append(" ")
@@ -117,7 +117,7 @@ public class SoqlAttribute extends SoqlParameter {
                 if (isFilter()) {
                     param = buildParam.toString();
                 } else {
-                    param = "?" + this.value.substring(1);
+                    param = "?" + value.substring(1);
                 }
             }
             buildTP.append(toIri(pointer)).append(" ").append(param).append(" . ");
@@ -132,7 +132,7 @@ public class SoqlAttribute extends SoqlParameter {
                     if (isFilter()) {
                         buildTP.append(buildParam);
                     } else {
-                        buildTP.append("?").append(this.value.substring(1));
+                        buildTP.append("?").append(value.substring(1));
                     }
                 }
                 buildTP.append(" . ");

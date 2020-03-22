@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,6 +25,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.net.URL;
+import java.time.*;
 import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -145,5 +146,63 @@ class ParameterValueFactoryTest {
         final ParameterValue result = sut.create(value);
         assertThat(result, instanceOf(EntityParameterValue.class));
         assertEquals(value, result.getValue());
+    }
+
+    @Test
+    void createLocalDateTimeValueCreatesDateTimeParameter() {
+        final LocalDateTime localDateTime = LocalDateTime.now();
+        final ParameterValue value = sut.create(localDateTime);
+        assertEquals("\"" + localDateTime.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",
+                value.getQueryString());
+    }
+
+    @Test
+    void createInstantValueCreatesDateTimeParameter() {
+        final Instant instant = Instant.now();
+        final ParameterValue value = sut.create(instant);
+        assertEquals("\"" + instant.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",
+                value.getQueryString());
+    }
+
+    @Test
+    void createZonedDateTimeValueCreatesDateTimeParameter() {
+        final ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        final ParameterValue value = sut.create(zonedDateTime);
+        assertEquals(
+                "\"" + zonedDateTime.toOffsetDateTime().toString() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",
+                value.getQueryString());
+    }
+
+    @Test
+    void createOffsetDateTimeValueCreatesDateTimeParameter() {
+        final OffsetDateTime offsetDateTime = OffsetDateTime.now();
+        final ParameterValue value = sut.create(offsetDateTime);
+        assertEquals(
+                "\"" + offsetDateTime.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",
+                value.getQueryString());
+    }
+
+    @Test
+    void createLocalDateValueCreatesDateParameter() {
+        final LocalDate localDate = LocalDate.now();
+        final ParameterValue value = sut.create(localDate);
+        assertEquals("\"" + localDate.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#date>",
+                value.getQueryString());
+    }
+
+    @Test
+    void createLocalTimeValueCreatesTimeParameter() {
+        final LocalTime localTime = LocalTime.now();
+        final ParameterValue value = sut.create(localTime);
+        assertEquals("\"" + localTime.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#time>",
+                value.getQueryString());
+    }
+
+    @Test
+    void createOfssetTimeValueCreatesTimeParameter() {
+        final OffsetTime offsetTime = OffsetTime.now();
+        final ParameterValue value = sut.create(offsetTime);
+        assertEquals("\"" + offsetTime.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#time>",
+                value.getQueryString());
     }
 }

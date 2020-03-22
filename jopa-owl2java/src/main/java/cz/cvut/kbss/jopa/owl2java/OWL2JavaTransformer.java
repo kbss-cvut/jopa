@@ -75,7 +75,10 @@ public class OWL2JavaTransformer {
         LOG.info("Loading ontology {}... ", owlOntologyName);
         if (ignoreMissingImports) {
             m.getOntologyConfigurator().setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
-            m.addMissingImportListener(e -> LOG.warn("Unable to import ontology {}.", e.getImportedOntologyURI()));
+            m.addMissingImportListener(e -> {
+                LOG.warn("Unable to import ontology {}.", e.getImportedOntologyURI());
+                LOG.debug("Error: {}", e.getCreationException().getMessage());
+            });
         }
 
         try {

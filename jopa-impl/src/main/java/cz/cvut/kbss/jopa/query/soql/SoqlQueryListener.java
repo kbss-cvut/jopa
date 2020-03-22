@@ -674,7 +674,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private StringBuilder processAttribute(SoqlAttribute attr) {
-        return new StringBuilder(attr.getTripplePattern());
+        return new StringBuilder(attr.getTriplePattern());
     }
 
     private StringBuilder buildOrdering() {
