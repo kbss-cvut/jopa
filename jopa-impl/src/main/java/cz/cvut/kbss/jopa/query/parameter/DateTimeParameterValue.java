@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,21 +14,26 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
-import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.Objects;
 
-class EntityParameterValue extends AbstractParameterValue {
-
-    private final MetamodelProvider metamodelProvider;
+/**
+ * Parameter values which represent XSD dateTime.
+ * <p>
+ * Currently, these are {@link Date}, {@link LocalDateTime}, {@link java.time.OffsetDateTime} and {@link Instant}.
+ */
+class DateTimeParameterValue extends AbstractParameterValue {
 
     private final Object value;
 
-    EntityParameterValue(Object value, MetamodelProvider metamodelProvider) {
+    DateTimeParameterValue(Object value) {
+        assert value instanceof Date || value instanceof LocalDateTime || value instanceof OffsetDateTime || value instanceof Instant;
         this.value = Objects.requireNonNull(value);
-        this.metamodelProvider = metamodelProvider;
-        assert metamodelProvider.isEntityType(value.getClass());
     }
 
     @Override
@@ -38,6 +43,6 @@ class EntityParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
-        return "<" + EntityPropertiesUtils.getIdentifier(value, metamodelProvider.getMetamodel()) + ">";
+        return "\"" + value + "\"^^<" + XSD.DATETIME + ">";
     }
 }

@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.util.Objects;
 
-public class IntegerParameterValue extends AbstractParameterValue {
+class IntegerParameterValue extends AbstractParameterValue {
 
     private final int value;
 

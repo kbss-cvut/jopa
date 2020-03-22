@@ -19,7 +19,7 @@ import java.util.Objects;
 /**
  * Represents parameter value which is directly inserted into the query string, without any XSD type specification.
  */
-public class UntypedParameterValue extends AbstractParameterValue {
+class UntypedParameterValue extends AbstractParameterValue {
 
     private final Object value;
 

@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.util.Objects;
 
-public class DoubleParameterValue extends AbstractParameterValue {
+class DoubleParameterValue extends AbstractParameterValue {
 
     private final double value;
 

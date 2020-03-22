@@ -20,7 +20,7 @@ import java.util.Objects;
 /**
  * Parameter value that will be put as an IRI into the query. I.e. it will be enclosed in &lt; and &gt;.
  */
-public class UriParameterValue extends AbstractParameterValue {
+class UriParameterValue extends AbstractParameterValue {
 
     private final URI uri;
 

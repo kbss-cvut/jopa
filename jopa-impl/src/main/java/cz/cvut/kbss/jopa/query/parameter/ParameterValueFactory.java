@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.*;
 import java.util.Date;
 import java.util.Objects;
 
@@ -97,13 +98,27 @@ public class ParameterValueFactory {
             return new DoubleParameterValue((Double) value);
         } else if (value instanceof Float) {
             return new FloatParameterValue((Float) value);
-        } else if (value instanceof Date) {
-            return new DateParameterValue((Date) value);
+        } else if (isDateTime(value)) {
+            return new DateTimeParameterValue(value);
+        } else if (value instanceof ZonedDateTime) {
+            return new DateTimeParameterValue(((ZonedDateTime) value).toOffsetDateTime());
+        } else if (value instanceof LocalDate) {
+            return new DateParameterValue((LocalDate) value);
+        } else if (isTime(value)) {
+            return new TimeParameterValue(value);
         } else if (metamodelProvider.isEntityType(value.getClass())) {
             return new EntityParameterValue(value, metamodelProvider);
         } else {
             return new StringParameterValue(value.toString());
         }
+    }
+
+    private boolean isDateTime(Object value) {
+        return value instanceof Date || value instanceof LocalDateTime || value instanceof OffsetDateTime || value instanceof Instant;
+    }
+
+    private boolean isTime(Object value) {
+        return value instanceof LocalTime || value instanceof OffsetTime;
     }
 
     /**
