@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.14.1 - March 22, 2020
+- [JOPA] Support using Java 8 Date/Time API as query parameters.
+- [OWL2Java] Log reasons why an ontology could not be imported for transformation.
+- Dependency updates - RDF4J 3.1.2.
+
 ## 0.14.0 - March 2, 2020
 - [JOPA] Implement basic support for the Semantic Object Query Language (SOQL), an object model-based query language. (Feature #19)
 - [JOPA] Support annotation properties of type `Object`, which allow to accommodate both literals and URIs.
