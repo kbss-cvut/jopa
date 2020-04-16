@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -34,9 +32,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.*;
@@ -462,5 +463,20 @@ public class OWL2JavaTransformerTest {
         for (File entityClass : modelFolder.listFiles()) {
             assertThat(readFile(entityClass), containsString("implements Serializable"));
         }
+    }
+
+    @Test
+    public void generateVocabularyDoesNotGenerateDuplicateConstantsForImportedOntologies() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology("http://onto.fel.cvut.cz/ontologies/dataset-descriptor", mappingFilePath);
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        final File vocabularyFile = targetDir.listFiles()[0];
+        final String fileContents = readFile(vocabularyFile);
+        final Matcher m = Pattern.compile("\"http://onto.fel.cvut.cz/ontologies/ufo-c\";").matcher(fileContents);
+        final List<String> matches = new ArrayList<>();
+        while (m.find()) {
+            matches.add(m.group());
+        }
+        assertEquals(1, matches.size());
     }
 }
