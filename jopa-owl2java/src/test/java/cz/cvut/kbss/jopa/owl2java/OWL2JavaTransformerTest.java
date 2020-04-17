@@ -15,11 +15,9 @@ package cz.cvut.kbss.jopa.owl2java;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -42,7 +40,8 @@ import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.*;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OWL2JavaTransformerTest {
 
@@ -60,10 +59,7 @@ public class OWL2JavaTransformerTest {
 
     private File targetDir;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setUp() {
         this.mappingFilePath = resolveMappingFilePath();
         this.dataFactory = new OWLDataFactoryImpl();
@@ -75,7 +71,7 @@ public class OWL2JavaTransformerTest {
         return mf.getAbsolutePath();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (targetDir != null) {
             TestUtils.recursivelyDeleteDirectory(targetDir);
@@ -160,27 +156,27 @@ public class OWL2JavaTransformerTest {
     @Test
     public void transformThrowsIllegalArgumentForUnknownContext() throws Exception {
         final String unknownContext = "someUnknownContext";
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Context " + unknownContext + " not found.");
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(unknownContext, "", targetDir.getAbsolutePath(), true).build());
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> transformer.transform(config(unknownContext, "", targetDir.getAbsolutePath(), true).build()));
+        assertThat(ex.getMessage(), containsString("Context " + unknownContext + " not found."));
     }
 
     @Test
     public void setUnknownOntologyIriThrowsOWL2JavaException() {
         final String unknownOntoIri = "http://krizik.felk.cvut.cz/ontologies/an-unknown-ontology.owl";
-        thrown.expect(OWL2JavaException.class);
-        thrown.expectMessage("Unable to load ontology " + unknownOntoIri);
-        transformer.setOntology(unknownOntoIri, mappingFilePath);
+        final OWL2JavaException ex =
+                assertThrows(OWL2JavaException.class, () -> transformer.setOntology(unknownOntoIri, mappingFilePath));
+        assertEquals("Unable to load ontology " + unknownOntoIri, ex.getMessage());
     }
 
     @Test
     public void setOntologyWithUnknownMappingFileThrowsIllegalArgument() {
         final String unknownMappingFile = "/tmp/unknown-mapping-file";
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Mapping file " + unknownMappingFile + " not found.");
-        transformer.setOntology(IC_ONTOLOGY_IRI, unknownMappingFile);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> transformer.setOntology(IC_ONTOLOGY_IRI, unknownMappingFile));
+        assertEquals("Mapping file " + unknownMappingFile + " not found.", ex.getMessage());
     }
 
     @Test
@@ -267,11 +263,13 @@ public class OWL2JavaTransformerTest {
 
     @Test
     public void transformationFailsWhenImportCannotBeResolved() throws Exception {
-        thrown.expect(OWL2JavaException.class);
-        thrown.expectMessage(containsString("Unable to load ontology"));
         final File targetDir = getTempDirectory();
-        transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        final OWL2JavaException ex = assertThrows(OWL2JavaException.class,
+                () -> {
+                    transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath);
+                    transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+                });
+        assertThat(ex.getMessage(), containsString("Unable to load ontology"));
     }
 
     @Test

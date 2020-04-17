@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,11 +14,9 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,8 +30,8 @@ import java.util.regex.Pattern;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.MAPPING_FILE_NAME;
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.VOCABULARY_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OWL2JavaTest {
 
@@ -42,12 +40,9 @@ public class OWL2JavaTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private File targetDir;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.mappingFilePath = resolveMappingFilePath();
         System.setOut(new PrintStream(outContent));
@@ -59,7 +54,7 @@ public class OWL2JavaTest {
         return mf.getAbsolutePath();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         System.setOut(null);
         System.setErr(null);
