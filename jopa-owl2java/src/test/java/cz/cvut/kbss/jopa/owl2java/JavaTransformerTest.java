@@ -14,9 +14,13 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JType;
+
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class JavaTransformerTest {
 
@@ -77,4 +82,26 @@ class JavaTransformerTest {
         assertNotNull(resultClass);
         assertNotNull(resultClass.getMethod("toString", new JType[0]));
     }
+    
+    @Test
+    void shouldGenerateIdAndTypesFields() {
+        final String className = "TestClass";
+        final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/" + className);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri)));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iri));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+        checkHasFieldWithName(resultClass, "id");
+        checkHasFieldWithName(resultClass, "types");
+    }
+    
+    private void checkHasFieldWithName(final JDefinedClass cls, final String name) {
+    	for(final JFieldVar f : cls.fields().values())
+        	if (f.name().equals(name)) return;
+        fail();    	
+    }
+
 }

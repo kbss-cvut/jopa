@@ -478,7 +478,7 @@ public class JavaTransformer {
             final JFieldVar fvProperties = addField("properties", cls, ftProperties);
             fvProperties.annotate(Properties.class);
 
-            generateToStringMethod(cls, fvId, fvLabel);
+            generateToStringMethod(cls, fvId.name(), fvLabel.name());
         } catch (JClassAlreadyExistsException e) {
             LOG.trace("Class already exists. Using the existing version. {}", e.getMessage());
             cls = cm._getClass(name);
@@ -505,13 +505,13 @@ public class JavaTransformer {
         generateAuthorshipDoc(javaElem);
     }
 
-    private void generateToStringMethod(JDefinedClass cls, JFieldVar idField, JFieldVar labelField) {
+    private void generateToStringMethod(JDefinedClass cls, String idFieldName, String labelFieldName) {
         final JMethod toString = cls.method(JMod.PUBLIC, String.class, "toString");
         toString.annotate(Override.class);
         final JBlock body = toString.body();
         JExpression expression = JExpr.lit(cls.name() + " {");
-        expression = expression.plus(JExpr.ref(labelField.name()));
-        expression = expression.plus(JExpr.lit("<")).plus(JExpr.ref(idField.name())).plus(JExpr.lit(">"));
+        expression = expression.plus(JExpr.ref(labelFieldName));
+        expression = expression.plus(JExpr.lit("<")).plus(JExpr.ref(idFieldName)).plus(JExpr.lit(">"));
         expression = expression.plus(JExpr.lit("}"));
 
         body._return(expression);
