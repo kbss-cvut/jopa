@@ -14,28 +14,28 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JType;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import cz.cvut.kbss.jopa.model.annotations.Types;
-import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JType;
+
+import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
-
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class JavaTransformerTest {
 
@@ -94,6 +94,7 @@ class JavaTransformerTest {
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
                 result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+        //TODO we should check the presence of fields with @Id and @Type annotation
         checkHasFieldWithName(resultClass, "id");
         checkHasFieldWithName(resultClass, "types");
     }
@@ -102,6 +103,40 @@ class JavaTransformerTest {
     	for(final JFieldVar f : cls.fields().values())
         	if (f.name().equals(name)) return;
         fail();    	
+    }
+
+    @Test
+    void shouldNotGenerateIdAndTypesFieldsInSubclasses() {
+        final String className1 = "TestClass1";
+        final IRI iri1 = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/" + className1);
+        final String className2 = "TestClass2";
+        final IRI iri2 = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/" + className2);
+
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri1)));
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri2)));
+        final ContextDefinition context = new ContextDefinition();
+        final OWLClass owlClass1 = dataFactory.getOWLClass(iri1); 
+        final OWLClass owlClass2 = dataFactory.getOWLClass(iri2); 
+        context.add(owlClass1);
+        context.add(owlClass2);
+        context.addAxiom(dataFactory.getOWLSubClassOfAxiom(owlClass2, owlClass1));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass1 =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className1);
+        //TODO we should check the presence of fields with @Id and @Type annotation
+        checkHasFieldWithName(resultClass1, "id");
+        checkHasFieldWithName(resultClass1, "types");
+        final JDefinedClass resultClass2 =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className2);
+        //TODO we should check the absence of fields with @Id and @Type annotation
+        checkHasNoFieldWithName(resultClass2, "id");
+        checkHasNoFieldWithName(resultClass2, "types");
+    }
+
+    private void checkHasNoFieldWithName(final JDefinedClass cls, final String name) {
+    	for(final JFieldVar f : cls.fields().values())
+        	assertFalse(f.name().equals(name));
     }
 
 }

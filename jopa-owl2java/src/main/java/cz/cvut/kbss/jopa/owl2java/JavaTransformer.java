@@ -14,15 +14,62 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import com.sun.codemodel.*;
+import static cz.cvut.kbss.jopa.owl2java.Constants.MODEL_PACKAGE;
+import static cz.cvut.kbss.jopa.owl2java.Constants.PACKAGE_SEPARATOR;
+import static cz.cvut.kbss.jopa.owl2java.Constants.VERSION;
+import static cz.cvut.kbss.jopa.owl2java.Constants.VOCABULARY_CLASS;
+
+import java.io.Serializable;
+import java.text.Normalizer;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.search.EntitySearcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.codemodel.JAnnotationArrayMember;
+import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JBlock;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JClassAlreadyExistsException;
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JDocCommentable;
+import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JExpression;
+import com.sun.codemodel.JFieldRef;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
+import com.sun.codemodel.JType;
+import com.sun.codemodel.JVar;
+
 import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
+import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
@@ -30,17 +77,6 @@ import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.search.EntitySearcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.text.Normalizer;
-import java.util.*;
-
-import static cz.cvut.kbss.jopa.owl2java.Constants.*;
 
 public class JavaTransformer {
 
@@ -339,13 +375,17 @@ public class JavaTransformer {
             LOG.info("  Generating class '{}'.", clazz);
             final JDefinedClass subj = ensureCreated(pkg, cm, clazz, ontology, propertiesType);
 
+            final AtomicBoolean extendClass = new AtomicBoolean(false);
             context.set.getClassIntegrityConstraints(clazz).stream()
                        .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
                 final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
                 subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
                         propertiesType));
+                extendClass.set(true);
             });
 
+            if (!extendClass.get())
+            	addCommonClassFields(cm, subj, propertiesType);
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
                 generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop, propertiesType);
             }
@@ -448,37 +488,7 @@ public class JavaTransformer {
             cls._implements(Serializable.class);
 
             generateClassJavadoc(ontology, clazz, cls);
-
-            // @Id(generated = true) protected String id;
-            final JClass ftId = cm.ref(String.class);
-            final JFieldVar fvId = addField("id", cls, ftId);
-            JAnnotationUse a = fvId.annotate(Id.class);
-            a.param("generated", true);
-
-            // RDFS label
-            final JClass ftLabel = cm.ref(String.class);
-            final JFieldVar fvLabel = addField("name", cls, ftLabel);
-            fvLabel.annotate(OWLAnnotationProperty.class).param("iri", cm.ref(RDFS.class).staticRef("LABEL"));
-
-            // DC description
-            final JClass ftDescription = cm.ref(String.class);
-            final JFieldVar fvDescription = addField("description", cls, ftDescription);
-            fvDescription.annotate(OWLAnnotationProperty.class)
-                         .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
-
-            // @Types Set<String> types;
-            final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
-            final JFieldVar fvTypes = addField("types", cls, ftTypes);
-            fvTypes.annotate(Types.class);
-
-            // @Properties public final Map<String,Set<String>> properties;
-            final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
-            final JClass ftProperties = cm.ref(Map.class)
-                                          .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
-            final JFieldVar fvProperties = addField("properties", cls, ftProperties);
-            fvProperties.annotate(Properties.class);
-
-            generateToStringMethod(cls, fvId.name(), fvLabel.name());
+            //addCommonClassFields(cm,cls,propertiesType);
         } catch (JClassAlreadyExistsException e) {
             LOG.trace("Class already exists. Using the existing version. {}", e.getMessage());
             cls = cm._getClass(name);
@@ -486,7 +496,47 @@ public class JavaTransformer {
         return cls;
     }
 
-    private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
+    /**
+     * Add common properties such as id and type
+     * 
+     * @param cm
+     * @param cls
+     * @param propertiesType 
+     */
+    private void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls, final PropertiesType propertiesType) {
+        // @Id(generated = true) protected String id;
+        final JClass ftId = cm.ref(String.class);
+        final JFieldVar fvId = addField("id", cls, ftId);
+        JAnnotationUse a = fvId.annotate(Id.class);
+        a.param("generated", true);
+
+        // RDFS label
+        final JClass ftLabel = cm.ref(String.class);
+        final JFieldVar fvLabel = addField("name", cls, ftLabel);
+        fvLabel.annotate(OWLAnnotationProperty.class).param("iri", cm.ref(RDFS.class).staticRef("LABEL"));
+
+        // DC description
+        final JClass ftDescription = cm.ref(String.class);
+        final JFieldVar fvDescription = addField("description", cls, ftDescription);
+        fvDescription.annotate(OWLAnnotationProperty.class)
+                     .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
+
+        // @Types Set<String> types;
+        final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
+        final JFieldVar fvTypes = addField("types", cls, ftTypes);
+        fvTypes.annotate(Types.class);
+
+        // @Properties public final Map<String,Set<String>> properties;
+        final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
+        final JClass ftProperties = cm.ref(Map.class)
+                                      .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
+        final JFieldVar fvProperties = addField("properties", cls, ftProperties);
+        fvProperties.annotate(Properties.class);
+
+        generateToStringMethod(cls, fvId.name(), fvLabel.name());
+	}
+
+	private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
         final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
                                                           .filter(a -> isJavaClassNameAnnotation(a) &&
                                                                   a.getValue().isLiteral()).findFirst();
