@@ -71,6 +71,20 @@ public class DC {
         public static final String ACCRUAL_POLICY = NAMESPACE + "accrualPolicy";
 
         /**
+         * A resource that acts or has the power to act.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Agent">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Agent</a>
+         */
+        public static final String AGENT = NAMESPACE + "Agent";
+
+        /**
+         * A group of agents.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/AgentClass">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/AgentClass</a>
+         */
+        public static final String AGENT_CLASS = NAMESPACE + "AgentClass";
+
+        /**
          * An alternative name for the resource.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/alternative">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/alternative</a>
@@ -97,6 +111,13 @@ public class DC {
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/bibliographicCitation">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/bibliographicCitation</a>
          */
         public static final String BIBLIOGRAPHIC_CITATION = NAMESPACE + "bibliographicCitation";
+
+        /**
+         * A book, article, or other documentary resource.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/BibliographicResource">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/BibliographicResource</a>
+         */
+        public static final String BIBLIOGRAPHIC_RESOURCE = NAMESPACE + "BibliographicResource";
 
         /**
          * An established standard to which the described resource conforms.
@@ -183,6 +204,13 @@ public class DC {
         public static final String EXTENT = NAMESPACE + "extent";
 
         /**
+         * A digital resource format.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/FileFormat">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/FileFormat</a>
+         */
+        public static final String FILE_FORMAT = NAMESPACE + "FileFormat";
+
+        /**
          * The file format, physical medium, or dimensions of the resource.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/format">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/format</a>
@@ -190,11 +218,18 @@ public class DC {
         public static final String FORMAT = NAMESPACE + "format";
 
         /**
+         * A rate at which something recurs.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Frequency">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Frequency</a>
+         */
+        public static final String FREQUENCY = NAMESPACE + "Frequency";
+
+        /**
          * A related resource that is substantially the same as the pre-existing described resource, but in another format.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/hasFormat">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/hasFormat</a>
          */
-        public static final String HAS_FOMAT = NAMESPACE + "hasFormat";
+        public static final String HAS_FORMAT = NAMESPACE + "hasFormat";
 
         /**
          * A related resource that is included either physically or logically in the described resource.
@@ -274,6 +309,13 @@ public class DC {
         public static final String IS_VERSION_OF = NAMESPACE + "isVersionOf";
 
         /**
+         * The extent or range of judicial, law enforcement, or other authority.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Jurisdiction">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Jurisdiction</a>
+         */
+        public static final String JURISDICTION = NAMESPACE + "Jurisdiction";
+
+        /**
          * A language of the resource.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/language">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/language</a>
@@ -288,11 +330,53 @@ public class DC {
         public static final String LICENSE = NAMESPACE + "license";
 
         /**
+         * A legal document giving official permission to do something with a resource.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/LicenseDocument">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/LicenseDocument</a>
+         */
+        public static final String LICENSE_DOCUMENT = NAMESPACE + "LicenseDocument";
+
+        /**
+         * A system of signs, symbols, sounds, gestures, or rules used in communication.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/LinguisticSystem">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/LinguisticSystem</a>
+         */
+        public static final String LINGUISTIC_SYSTEM = NAMESPACE + "LinguisticSystem";
+
+        /**
+         * A spatial region or named place.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Location">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Location</a>
+         */
+        public static final String LOCATION = NAMESPACE + "Location";
+
+        /**
+         * A location, period of time, or jurisdiction.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/LocationPeriodOrJurisdiction">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/LocationPeriodOrJurisdiction</a>
+         */
+        public static final String LOCATION_PERIOD_OR_JURISDICTION = NAMESPACE + "LocationPeriodOrJurisdiction";
+
+        /**
          * An entity that mediates access to the resource.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/mediator">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/mediator</a>
          */
         public static final String MEDIATOR = NAMESPACE + "mediator";
+
+        /**
+         * A file format or physical medium.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MediaType">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MediaType</a>
+         */
+        public static final String MEDIA_TYPE = NAMESPACE + "MediaType";
+
+        /**
+         * A media type or extent.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MediaTypeOrExtent">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MediaTypeOrExtent</a>
+         */
+        public static final String MEDIA_TYPE_OR_EXTENT = NAMESPACE + "MediaTypeOrExtent";
 
         /**
          * The material or physical carrier of the resource.
@@ -302,6 +386,20 @@ public class DC {
         public static final String MEDIUM = NAMESPACE + "medium";
 
         /**
+         * A method by which resources are added to a collection.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MethodOfAccrual">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MethodOfAccrual</a>
+         */
+        public static final String METHOD_OF_ACCRUAL = NAMESPACE + "MethodOfAccrual";
+
+        /**
+         * A process that is used to engender knowledge, attitudes, and skills.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MethodOfInstruction">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/MethodOfInstruction</a>
+         */
+        public static final String METHOD_OF_INSTRUCTION = NAMESPACE + "MethodOfInstruction";
+
+        /**
          * Date on which the resource was changed.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/modified">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/modified</a>
@@ -309,11 +407,46 @@ public class DC {
         public static final String MODIFIED = NAMESPACE + "modified";
 
         /**
+         * An interval of time that is named or defined by its start and end dates.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/PeriodOfTime">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/PeriodOfTime</a>
+         */
+        public static final String PERIOD_OF_TYPE = NAMESPACE + "PeriodOfTime";
+
+        /**
+         * A physical material or carrier.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/PhysicalMedium">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/PhysicalMedium</a>
+         */
+        public static final String PHYSICAL_MEDIUM = NAMESPACE + "PhysicalMedium";
+
+        /**
+         * A material thing.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/PhysicalResource">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/PhysicalResource</a>
+         */
+        public static final String PHYSICAL_RESOURCE = NAMESPACE + "PhysicalResource";
+
+        /**
+         * A plan or course of action by an authority, intended to influence and determine decisions, actions, and other matters.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Policy">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Policy</a>
+         */
+        public static final String POLICY = NAMESPACE + "Policy";
+
+        /**
          * A statement of any changes in ownership and custody of the resource since its creation that are significant for its authenticity, integrity, and interpretation.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/provenance">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/provenance</a>
          */
         public static final String PROVENANCE = NAMESPACE + "provenance";
+
+        /**
+         * Any changes in ownership and custody of a resource since its creation that are significant for its authenticity, integrity, and interpretation.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/ProvenanceStatement">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/ProvenanceStatement</a>
+         */
+        public static final String PROVENANCE_STATEMENT = NAMESPACE + "ProvenanceStatement";
 
         /**
          * An entity responsible for making the resource available.
@@ -365,6 +498,20 @@ public class DC {
         public static final String RIGHTS_HOLDER = NAMESPACE + "rightsHolder";
 
         /**
+         * A statement about the intellectual property rights (IPR) held in or over a resource, a legal document giving official permission to do something with a resource, or a statement about access rights.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/RightsStatement">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/RightsStatement</a>
+         */
+        public static final String RIGHTS_STATEMENT = NAMESPACE + "RightsStatement";
+
+        /**
+         * A dimension or extent, or a time taken to play or execute.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/SizeOrDuration">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/SizeOrDuration</a>
+         */
+        public static final String SIZE_OR_DURATION = NAMESPACE + "SizeOrDuration";
+
+        /**
          * A related resource from which the described resource is derived.
          *
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/source">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/source</a>
@@ -377,6 +524,13 @@ public class DC {
          * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/spatial">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/spatial</a>
          */
         public static final String SPATIAL = NAMESPACE + "spatial";
+
+        /**
+         * A reference point against which other things can be evaluated or compared.
+         *
+         * @see <a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Standard">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#http://purl.org/dc/terms/Standard</a>
+         */
+        public static final String STANDARD = NAMESPACE + "Standard";
 
         /**
          * The topic of the resource.
