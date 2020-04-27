@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,16 +21,12 @@ import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JavaTransformerTest {
 
@@ -77,4 +73,61 @@ class JavaTransformerTest {
         assertNotNull(resultClass);
         assertNotNull(resultClass.getMethod("toString", new JType[0]));
     }
+
+    @Test
+    void shouldGenerateIdAndTypesFields() {
+        final String className = "TestClass";
+        final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/" + className);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri)));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iri));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+        //Check the presence of fields with @Id and @Type annotation
+        checkHasFieldWithName(resultClass, "id");
+        checkHasFieldWithName(resultClass, "types");
+    }
+
+    private void checkHasFieldWithName(final JDefinedClass cls, final String name) {
+        for (final JFieldVar f : cls.fields().values())
+            if (f.name().equals(name)) return;
+        fail();
+    }
+
+    @Test
+    void shouldNotGenerateIdAndTypesFieldsInSubclasses() {
+        final String className1 = "TestClass1";
+        final IRI iri1 = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/" + className1);
+        final String className2 = "TestClass2";
+        final IRI iri2 = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/" + className2);
+
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri1)));
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri2)));
+        final ContextDefinition context = new ContextDefinition();
+        final OWLClass owlClass1 = dataFactory.getOWLClass(iri1);
+        final OWLClass owlClass2 = dataFactory.getOWLClass(iri2);
+        context.add(owlClass1);
+        context.add(owlClass2);
+        context.addAxiom(dataFactory.getOWLSubClassOfAxiom(owlClass2, owlClass1));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass1 =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className1);
+        //Check the presence of fields with @Id and @Type annotation
+        checkHasFieldWithName(resultClass1, "id");
+        checkHasFieldWithName(resultClass1, "types");
+        final JDefinedClass resultClass2 =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className2);
+        // Check the absence of fields with @Id and @Type annotation
+        checkHasNoFieldWithName(resultClass2, "id");
+        checkHasNoFieldWithName(resultClass2, "types");
+    }
+
+    private void checkHasNoFieldWithName(final JDefinedClass cls, final String name) {
+        for (final JFieldVar f : cls.fields().values())
+            assertNotEquals(f.name(), name);
+    }
+
 }

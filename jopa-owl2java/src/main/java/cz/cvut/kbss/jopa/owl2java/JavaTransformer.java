@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.owl2java.Constants.*;
@@ -338,13 +339,17 @@ public class JavaTransformer {
             LOG.info("  Generating class '{}'.", clazz);
             final JDefinedClass subj = ensureCreated(pkg, cm, clazz, ontology, propertiesType);
 
+            final AtomicBoolean extendClass = new AtomicBoolean(false);
             context.set.getClassIntegrityConstraints(clazz).stream()
                        .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
                 final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
                 subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
                         propertiesType));
+                extendClass.set(true);
             });
 
+            if (!extendClass.get())
+            	addCommonClassFields(cm, subj, propertiesType);
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
                 generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop, propertiesType);
             }
@@ -455,37 +460,7 @@ public class JavaTransformer {
             cls._implements(Serializable.class);
 
             generateClassJavadoc(ontology, clazz, cls);
-
-            // @Id(generated = true) protected String id;
-            final JClass ftId = cm.ref(String.class);
-            final JFieldVar fvId = addField("id", cls, ftId);
-            JAnnotationUse a = fvId.annotate(Id.class);
-            a.param("generated", true);
-
-            // RDFS label
-            final JClass ftLabel = cm.ref(String.class);
-            final JFieldVar fvLabel = addField("name", cls, ftLabel);
-            fvLabel.annotate(OWLAnnotationProperty.class).param("iri", cm.ref(RDFS.class).staticRef("LABEL"));
-
-            // DC description
-            final JClass ftDescription = cm.ref(String.class);
-            final JFieldVar fvDescription = addField("description", cls, ftDescription);
-            fvDescription.annotate(OWLAnnotationProperty.class)
-                         .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
-
-            // @Types Set<String> types;
-            final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
-            final JFieldVar fvTypes = addField("types", cls, ftTypes);
-            fvTypes.annotate(Types.class);
-
-            // @Properties public final Map<String,Set<String>> properties;
-            final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
-            final JClass ftProperties = cm.ref(Map.class)
-                                          .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
-            final JFieldVar fvProperties = addField("properties", cls, ftProperties);
-            fvProperties.annotate(Properties.class);
-
-            generateToStringMethod(cls, fvId, fvLabel);
+            //addCommonClassFields(cm,cls,propertiesType);
         } catch (JClassAlreadyExistsException e) {
             LOG.trace("Class already exists. Using the existing version. {}", e.getMessage());
             cls = cm._getClass(name);
@@ -493,7 +468,47 @@ public class JavaTransformer {
         return cls;
     }
 
-    private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
+    /**
+     * Add common properties such as id and type
+     *
+     * @param cm
+     * @param cls
+     * @param propertiesType
+     */
+    private void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls, final PropertiesType propertiesType) {
+        // @Id(generated = true) protected String id;
+        final JClass ftId = cm.ref(String.class);
+        final JFieldVar fvId = addField("id", cls, ftId);
+        JAnnotationUse a = fvId.annotate(Id.class);
+        a.param("generated", true);
+
+        // RDFS label
+        final JClass ftLabel = cm.ref(String.class);
+        final JFieldVar fvLabel = addField("name", cls, ftLabel);
+        fvLabel.annotate(OWLAnnotationProperty.class).param("iri", cm.ref(RDFS.class).staticRef("LABEL"));
+
+        // DC description
+        final JClass ftDescription = cm.ref(String.class);
+        final JFieldVar fvDescription = addField("description", cls, ftDescription);
+        fvDescription.annotate(OWLAnnotationProperty.class)
+                     .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
+
+        // @Types Set<String> types;
+        final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
+        final JFieldVar fvTypes = addField("types", cls, ftTypes);
+        fvTypes.annotate(Types.class);
+
+        // @Properties public final Map<String,Set<String>> properties;
+        final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
+        final JClass ftProperties = cm.ref(Map.class)
+                                      .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
+        final JFieldVar fvProperties = addField("properties", cls, ftProperties);
+        fvProperties.annotate(Properties.class);
+
+        generateToStringMethod(cls, fvId.name(), fvLabel.name());
+	}
+
+	private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
         final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
                                                           .filter(a -> isJavaClassNameAnnotation(a) &&
                                                                   a.getValue().isLiteral()).findFirst();
@@ -512,13 +527,13 @@ public class JavaTransformer {
         generateAuthorshipDoc(javaElem);
     }
 
-    private void generateToStringMethod(JDefinedClass cls, JFieldVar idField, JFieldVar labelField) {
+    private void generateToStringMethod(JDefinedClass cls, String idFieldName, String labelFieldName) {
         final JMethod toString = cls.method(JMod.PUBLIC, String.class, "toString");
         toString.annotate(Override.class);
         final JBlock body = toString.body();
         JExpression expression = JExpr.lit(cls.name() + " {");
-        expression = expression.plus(JExpr.ref(labelField.name()));
-        expression = expression.plus(JExpr.lit("<")).plus(JExpr.ref(idField.name())).plus(JExpr.lit(">"));
+        expression = expression.plus(JExpr.ref(labelFieldName));
+        expression = expression.plus(JExpr.lit("<")).plus(JExpr.ref(idFieldName)).plus(JExpr.lit(">"));
         expression = expression.plus(JExpr.lit("}"));
 
         body._return(expression);
