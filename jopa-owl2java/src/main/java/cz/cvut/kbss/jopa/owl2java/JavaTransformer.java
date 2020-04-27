@@ -104,9 +104,9 @@ public class JavaTransformer {
     private static final String PREFIX_DATATYPE = "d_";
 
     private JDefinedClass voc;
-    private Map<OWLEntity, JFieldRef> entities = new HashMap<>();
+    private final Map<OWLEntity, JFieldRef> entities = new HashMap<>();
 
-    private Map<OWLClass, JDefinedClass> classes = new HashMap<>();
+    private final Map<OWLClass, JDefinedClass> classes = new HashMap<>();
 
     private final TransformationConfiguration configuration;
 
@@ -424,7 +424,7 @@ public class JavaTransformer {
 
     private String ensureUniqueIdentifier(String id) {
         final StringBuilder sb = new StringBuilder(id);
-        while (voc.fields().keySet().contains(sb.toString())) {
+        while (voc.fields().containsKey(sb.toString())) {
             sb.append("_A");
         }
         return sb.toString();
@@ -460,7 +460,6 @@ public class JavaTransformer {
             cls._implements(Serializable.class);
 
             generateClassJavadoc(ontology, clazz, cls);
-            //addCommonClassFields(cm,cls,propertiesType);
         } catch (JClassAlreadyExistsException e) {
             LOG.trace("Class already exists. Using the existing version. {}", e.getMessage());
             cls = cm._getClass(name);
@@ -470,10 +469,6 @@ public class JavaTransformer {
 
     /**
      * Add common properties such as id and type
-     *
-     * @param cm
-     * @param cls
-     * @param propertiesType
      */
     private void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls, final PropertiesType propertiesType) {
         // @Id(generated = true) protected String id;
