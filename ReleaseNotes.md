@@ -1,7 +1,7 @@
 # JOPA - Release Notes
 
 ## 0.14.2 - April 28, 2020
-- [OWL2Java] Do not generate id, label, comment, types and properties fields in entities which already inherit them from parent. (Bug #66, thanks to @cristianlongo for reporting and providing a PR with fix)
+- [OWL2Java] Do not generate id, label, comment, types and properties fields in entities which already inherit them from parent. (Bug #66, thanks to @cristianolongo for reporting and providing a PR with fix)
 - [OWL2Java] Ensure ontology IRI is output into generated vocabularies only once even in case of multiple imports.
 - [JOPA] Add constants for all DC Terms properties and classes.
 - Dependency updates - RDF4J 3.1.4, OWLAPI 5.1.14.
