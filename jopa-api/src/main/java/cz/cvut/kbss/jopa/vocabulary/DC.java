@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.vocabulary;
  * <p>
  * See <a href="http://dublincore.org/documents/dcmi-terms/">http://dublincore.org/documents/dcmi-terms/</a>
  */
-public class DC {
+public final class DC {
 
     private DC() {
         throw new AssertionError();

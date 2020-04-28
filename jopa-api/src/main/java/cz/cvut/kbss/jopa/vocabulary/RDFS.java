@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.vocabulary;
 /**
  * A subset of the RDFS vocabulary.
  */
-public class RDFS {
+public final class RDFS {
 
     /**
      * RDFS vocabulary namespace.

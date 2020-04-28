@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.vocabulary;
 /**
  * A subset of the XML Schema built-in data types vocabulary.
  */
-public class XSD {
+public final class XSD {
 
     /**
      * XSD vocabulary namespace.
