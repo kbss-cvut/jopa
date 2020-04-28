@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.vocabulary;
 /**
  * A subset of the OWL vocabulary.
  */
-public class OWL {
+public final class OWL {
 
     /**
      * OWL vocabulary namespace.

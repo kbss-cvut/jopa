@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.vocabulary;
  *
  * @see <a href="https://www.w3.org/2009/08/skos-reference/skos.html">https://www.w3.org/2009/08/skos-reference/skos.html</a>
  */
-public class SKOS {
+public final class SKOS {
 
     /**
      * SKOS namespace.

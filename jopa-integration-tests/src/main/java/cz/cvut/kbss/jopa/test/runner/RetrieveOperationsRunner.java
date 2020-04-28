@@ -329,7 +329,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     private void replaceFileContents(File target) throws IOException {
-        try (final InputStream is = new URL("http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine").openStream()) {
+        try (final InputStream is = new URL("https://www.w3.org/TR/2003/PR-owl-guide-20031209/wine").openStream()) {
             Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }

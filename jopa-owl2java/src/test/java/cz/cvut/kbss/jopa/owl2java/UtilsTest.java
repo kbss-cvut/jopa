@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,12 +15,14 @@
 package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.exception.UnsupportedICException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.vocab.OWLFacet;
 import org.semanticweb.owlapi.vocab.XSDVocabulary;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UtilsTest {
 
@@ -31,9 +33,10 @@ public class UtilsTest {
         Utils.ensureClass(f.getOWLClass(IRI.create("http://examp.le/cls")));
     }
 
-    @Test(expected = UnsupportedICException.class)
+    @Test
     public void testFailOnClassExpression() {
-        Utils.ensureClass(f.getOWLObjectComplementOf(f.getOWLClass(IRI.create("http://examp.le/cls"))));
+        assertThrows(UnsupportedICException.class,
+                () -> Utils.ensureClass(f.getOWLObjectComplementOf(f.getOWLClass(IRI.create("http://examp.le/cls")))));
     }
 
     @Test
@@ -41,10 +44,10 @@ public class UtilsTest {
         Utils.ensureObjectProperty(f.getOWLObjectProperty(IRI.create("http://examp.le/prop")));
     }
 
-    @Test(expected = UnsupportedICException.class)
+    @Test
     public void testFailOnObjectPropertyExpression() {
-        Utils.ensureObjectProperty(
-            f.getOWLObjectInverseOf(f.getOWLObjectProperty(IRI.create("http://examp.le/prop"))));
+        assertThrows(UnsupportedICException.class, () -> Utils.ensureObjectProperty(
+                f.getOWLObjectInverseOf(f.getOWLObjectProperty(IRI.create("http://examp.le/prop")))));
     }
 
     @Test
@@ -57,10 +60,10 @@ public class UtilsTest {
         Utils.ensureDatatype(f.getOWLDatatype(XSDVocabulary.STRING.getIRI()));
     }
 
-    @Test(expected = UnsupportedICException.class)
+    @Test
     public void testFailOnDataRange() {
-        Utils.ensureDatatype(
-            f.getOWLDatatypeRestriction(f.getIntegerOWLDatatype(),
-                f.getOWLFacetRestriction(OWLFacet.MAX_LENGTH, 10)));
+        assertThrows(UnsupportedICException.class, () -> Utils.ensureDatatype(
+                f.getOWLDatatypeRestriction(f.getIntegerOWLDatatype(),
+                        f.getOWLFacetRestriction(OWLFacet.MAX_LENGTH, 10))));
     }
 }

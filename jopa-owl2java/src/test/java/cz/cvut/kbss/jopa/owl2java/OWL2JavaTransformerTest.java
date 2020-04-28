@@ -1,27 +1,23 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -34,14 +30,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.*;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OWL2JavaTransformerTest {
 
@@ -59,10 +59,7 @@ public class OWL2JavaTransformerTest {
 
     private File targetDir;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void setUp() {
         this.mappingFilePath = resolveMappingFilePath();
         this.dataFactory = new OWLDataFactoryImpl();
@@ -74,7 +71,7 @@ public class OWL2JavaTransformerTest {
         return mf.getAbsolutePath();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (targetDir != null) {
             TestUtils.recursivelyDeleteDirectory(targetDir);
@@ -159,27 +156,27 @@ public class OWL2JavaTransformerTest {
     @Test
     public void transformThrowsIllegalArgumentForUnknownContext() throws Exception {
         final String unknownContext = "someUnknownContext";
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Context " + unknownContext + " not found.");
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(unknownContext, "", targetDir.getAbsolutePath(), true).build());
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> transformer.transform(config(unknownContext, "", targetDir.getAbsolutePath(), true).build()));
+        assertThat(ex.getMessage(), containsString("Context " + unknownContext + " not found."));
     }
 
     @Test
     public void setUnknownOntologyIriThrowsOWL2JavaException() {
         final String unknownOntoIri = "http://krizik.felk.cvut.cz/ontologies/an-unknown-ontology.owl";
-        thrown.expect(OWL2JavaException.class);
-        thrown.expectMessage("Unable to load ontology " + unknownOntoIri);
-        transformer.setOntology(unknownOntoIri, mappingFilePath);
+        final OWL2JavaException ex =
+                assertThrows(OWL2JavaException.class, () -> transformer.setOntology(unknownOntoIri, mappingFilePath));
+        assertEquals("Unable to load ontology " + unknownOntoIri, ex.getMessage());
     }
 
     @Test
     public void setOntologyWithUnknownMappingFileThrowsIllegalArgument() {
         final String unknownMappingFile = "/tmp/unknown-mapping-file";
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Mapping file " + unknownMappingFile + " not found.");
-        transformer.setOntology(IC_ONTOLOGY_IRI, unknownMappingFile);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> transformer.setOntology(IC_ONTOLOGY_IRI, unknownMappingFile));
+        assertEquals("Mapping file " + unknownMappingFile + " not found.", ex.getMessage());
     }
 
     @Test
@@ -266,11 +263,13 @@ public class OWL2JavaTransformerTest {
 
     @Test
     public void transformationFailsWhenImportCannotBeResolved() throws Exception {
-        thrown.expect(OWL2JavaException.class);
-        thrown.expectMessage(containsString("Unable to load ontology"));
         final File targetDir = getTempDirectory();
-        transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        final OWL2JavaException ex = assertThrows(OWL2JavaException.class,
+                () -> {
+                    transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath);
+                    transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+                });
+        assertThat(ex.getMessage(), containsString("Unable to load ontology"));
     }
 
     @Test
@@ -462,5 +461,20 @@ public class OWL2JavaTransformerTest {
         for (File entityClass : modelFolder.listFiles()) {
             assertThat(readFile(entityClass), containsString("implements Serializable"));
         }
+    }
+
+    @Test
+    public void generateVocabularyDoesNotGenerateDuplicateConstantsForImportedOntologies() throws Exception {
+        this.targetDir = getTempDirectory();
+        transformer.setOntology("http://onto.fel.cvut.cz/ontologies/dataset-descriptor", mappingFilePath);
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        final File vocabularyFile = targetDir.listFiles()[0];
+        final String fileContents = readFile(vocabularyFile);
+        final Matcher m = Pattern.compile("\"http://onto.fel.cvut.cz/ontologies/ufo-c\";").matcher(fileContents);
+        final List<String> matches = new ArrayList<>();
+        while (m.find()) {
+            matches.add(m.group());
+        }
+        assertEquals(1, matches.size());
     }
 }

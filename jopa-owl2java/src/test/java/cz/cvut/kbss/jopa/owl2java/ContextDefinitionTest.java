@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.*;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.generateIri;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ContextDefinitionTest {
 
@@ -76,7 +76,8 @@ public class ContextDefinitionTest {
     @Test
     public void addAxiomAddsAnnotationPropertyInSignature() {
         final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(generateIri());
-        final OWLAxiom axiom = df.getOWLAnnotationAssertionAxiom(ap, df.getOWLAnonymousIndividual(), df.getOWLLiteral(117));
+        final OWLAxiom axiom =
+                df.getOWLAnnotationAssertionAxiom(ap, df.getOWLAnonymousIndividual(), df.getOWLLiteral(117));
         ctx.addAxiom(axiom);
         assertTrue(ctx.annotationProperties.contains(ap));
     }
@@ -86,7 +87,7 @@ public class ContextDefinitionTest {
         final OWLObjectProperty op = df.getOWLObjectProperty(generateIri());
         final OWLNamedIndividual indOne = df.getOWLNamedIndividual(generateIri());
         final OWLNamedIndividual indTwo = df.getOWLNamedIndividual(generateIri());
-        final OWLAxiom axiom = df.getOWLObjectPropertyAssertionAxiom(op, indOne,indTwo);
+        final OWLAxiom axiom = df.getOWLObjectPropertyAssertionAxiom(op, indOne, indTwo);
         ctx.addAxiom(axiom);
         assertTrue(ctx.individuals.contains(indOne));
         assertTrue(ctx.individuals.contains(indTwo));
@@ -99,8 +100,9 @@ public class ContextDefinitionTest {
             for (int j = 0; j < 10; j++) {
                 final OWLObjectProperty op = df.getOWLObjectProperty(generateIri());
                 properties.add(op);
-                final OWLAxiom axiom = df.getOWLObjectPropertyAssertionAxiom(op, df.getOWLNamedIndividual(generateIri()),
-                        df.getOWLAnonymousIndividual());
+                final OWLAxiom axiom =
+                        df.getOWLObjectPropertyAssertionAxiom(op, df.getOWLNamedIndividual(generateIri()),
+                                df.getOWLAnonymousIndividual());
                 ctx.addAxiom(axiom);
             }
             Collections.sort(properties);

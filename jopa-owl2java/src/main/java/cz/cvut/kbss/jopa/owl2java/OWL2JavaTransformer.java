@@ -40,7 +40,7 @@ public class OWL2JavaTransformer {
     private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
 
     private final ContextDefinition defaultContext = new ContextDefinition();
-    private Map<String, ContextDefinition> contexts = new HashMap<>();
+    private final Map<String, ContextDefinition> contexts = new HashMap<>();
 
     private boolean ignoreMissingImports;
 
@@ -203,7 +203,7 @@ public class OWL2JavaTransformer {
         result.writeModel(transformConfig.getTargetDir());
     }
 
-    private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
+    private static class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
 
         private String name;
 
