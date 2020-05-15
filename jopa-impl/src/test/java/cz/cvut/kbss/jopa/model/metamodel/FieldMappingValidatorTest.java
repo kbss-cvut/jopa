@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FieldMappingValidatorTest {
 
-    private FieldMappingValidator validator = new FieldMappingValidator();
+    private final FieldMappingValidator validator = new FieldMappingValidator();
 
     @Test
     void nonMapPropertiesFieldThrowsException() {
