@@ -12,15 +12,13 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_X)
@@ -40,6 +38,9 @@ public class OWLClassX {
 
     @OWLAnnotationProperty(iri = Vocabulary.P_X_OBJECT_ATTRIBUTE)
     private Set<Object> objectAnnotation;
+
+    @OWLObjectProperty(iri = Vocabulary.P_X_COLLECTION_ATTRIBUTE, cascade = CascadeType.PERSIST)
+    private Collection<OWLClassA> aCollection;
 
     public URI getUri() {
         return uri;
@@ -79,6 +80,14 @@ public class OWLClassX {
 
     public void setObjectAnnotation(Set<Object> objectAnnotation) {
         this.objectAnnotation = objectAnnotation;
+    }
+
+    public Collection<OWLClassA> getACollection() {
+        return aCollection;
+    }
+
+    public void setACollection(Collection<OWLClassA> aCollection) {
+        this.aCollection = aCollection;
     }
 
     @Override

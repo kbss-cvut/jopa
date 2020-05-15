@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -1325,5 +1323,26 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         updateSimpleLiteralAndVerify();
         verifyStatementsNotPresent(originalQuad, em);
+    }
+
+    @Test
+    void updateSupportCollectionAttribute() {
+        this.em = getEntityManager("updateSupportCollectionAttribute", true);
+        final OWLClassX x = new OWLClassX();
+        x.setACollection(new HashSet<>(Arrays.asList(entityA, entityA2)));
+
+        final OWLClassA newA = new OWLClassA();
+        newA.setUri(Generators.generateUri());
+        newA.setStringAttribute("stringAttributeeee");
+        em.getTransaction().begin();
+        em.persist(newA);
+        x.setACollection(Collections.singletonList(newA));
+        final OWLClassX merged = em.merge(x);
+        assertFalse(merged.getACollection().isEmpty());
+        em.getTransaction().commit();
+
+        final OWLClassX result = findRequired(OWLClassX.class, x.getUri());
+        assertEquals(1, result.getACollection().size());
+        assertEquals(newA.getUri(), result.getACollection().iterator().next().getUri());
     }
 }
