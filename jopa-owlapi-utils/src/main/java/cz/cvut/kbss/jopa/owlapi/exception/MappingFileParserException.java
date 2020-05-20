@@ -12,7 +12,7 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.owlapi.exception;
+package cz.cvut.kbss.jopa.owlapi.exception;
 
 /**
  * Marks issues with parsing of IRI mapping files.

@@ -1,56 +1,106 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.util;
 
-import java.io.*;
+import cz.cvut.kbss.jopa.owlapi.exception.MappingFileParserException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringTokenizer;
 
-public class MappingFileParser {
+public final class MappingFileParser {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MappingFileParser.class);
+
+    /**
+     * Default delimiter of mappings in the mapping file.
+     * <p>
+     * That is, on the left hand side of the delimiter would the original IRI and on the right hand side is the mapped
+     * value.
+     */
+    public static final String DEFAULT_DELIMITER = ">";
+
+    private static final String[] REMOTE_URL_SCHEMES = {"http://", "https://", "ftp://", "sftp://"};
 
     private MappingFileParser() {
         throw new AssertionError();
     }
 
-    public static Map<URI, URI> getMappings(final File mf) {
+    /**
+     * Retrieves IRI mappings from the specified file using the default mapping delimiter - {@link #DEFAULT_DELIMITER}.
+     *
+     * @param mappingFile Mapping file to use
+     * @return Map of IRI mappings
+     */
+    public static Map<URI, URI> getMappings(final File mappingFile) {
+        return getMappings(mappingFile, DEFAULT_DELIMITER);
+    }
+
+    /**
+     * Retrieves IRI mappings from the specified file using the specified mapping delimiter.
+     *
+     * @param mappingFile Mapping file to use
+     * @param delimiter   Delimiter of the mapped IRI
+     * @return Map of IRI mappings
+     */
+    public static Map<URI, URI> getMappings(final File mappingFile, String delimiter) {
+        Objects.requireNonNull(mappingFile);
+        Objects.requireNonNull(delimiter);
         final Map<URI, URI> map = new HashMap<>();
         String line;
-        if (!mf.exists()) {
-            throw new IllegalArgumentException("Mapping file " + mf.getPath() + " not found.");
-        }
-        final File defaultDir = mf.getParentFile();
-        try (final BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(mf)))) {
+        final File defaultDir = mappingFile.getParentFile();
+        try (final BufferedReader r = new BufferedReader(new FileReader(mappingFile))) {
             while ((line = r.readLine()) != null) {
-                final StringTokenizer t = new StringTokenizer(line, ">");
+                final StringTokenizer t = new StringTokenizer(line, delimiter);
                 if (t.countTokens() != 2) {
-                    System.out.println("Ignoring line '" + line + "' - invalid number of tokens=" + t.countTokens());
+                    LOG.warn("Ignoring line '" + line + "' - invalid number of tokens = " + t.countTokens());
                     continue;
                 }
-
                 final String uriName = t.nextToken().trim();
                 final String fileName = t.nextToken().trim();
-                final File actualFile =
-                        (new File(fileName).isAbsolute()) ? new File(fileName) : new File(defaultDir, fileName);
+                final URI fileUri = resolveLocation(defaultDir, fileName);
 
-                map.put(URI.create(uriName), actualFile.toURI());
+                LOG.debug("Mapping ontology {} to location {}.", uriName, fileUri);
+                map.put(URI.create(uriName), fileUri);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Unable to parse mapping file " + mf, e);
+            LOG.error("Unable to parse mapping file." + e);
+            throw new MappingFileParserException(e);
         }
         return map;
+    }
+
+    private static URI resolveLocation(File defaultDir, String targetUri) {
+        for (String scheme : REMOTE_URL_SCHEMES) {
+            if (targetUri.startsWith(scheme)) {
+                try {
+                    return URI.create(targetUri);
+                } catch (IllegalArgumentException e) {
+                    LOG.error("Target URI {} looks like a remote URI, but is not valid.", targetUri);
+                    throw new MappingFileParserException(e);
+                }
+            }
+        }
+        final File actualFile =
+                new File(targetUri).isAbsolute() ? new File(targetUri) : new File(defaultDir, targetUri);
+        return actualFile.toURI();
     }
 }

@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class DatatypeTransformer {
 
-    private static Map<OWL2Datatype, Class<?>> map = new EnumMap<>(OWL2Datatype.class);
+    private static final Map<OWL2Datatype, Class<?>> map = new EnumMap<>(OWL2Datatype.class);
 
     static {
         map.put(OWL2Datatype.RDF_PLAIN_LITERAL, String.class);
@@ -104,6 +104,6 @@ public class DatatypeTransformer {
     }
 
     public static boolean isSupportedJavaType(Class<?> dt) {
-        return map.values().contains(dt);
+        return map.containsValue(dt);
     }
 }

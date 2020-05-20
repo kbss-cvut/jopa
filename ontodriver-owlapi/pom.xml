@@ -33,6 +33,11 @@
             <artifactId>ontodriver-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-owlapi-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- OWLAPI -->
         <dependency>
