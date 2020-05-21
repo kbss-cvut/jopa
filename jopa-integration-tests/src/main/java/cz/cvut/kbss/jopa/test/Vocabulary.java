@@ -47,6 +47,7 @@ public class Vocabulary {
     public static final String p_m_IntegerSet = ATTRIBUTE_IRI_BASE + "m-pluralIntAttribute";
     public static final String p_m_lexicalForm = ATTRIBUTE_IRI_BASE + "m-lexicalForm";
     public static final String p_m_simpleLiteral = ATTRIBUTE_IRI_BASE + "m-simpleLiteral";
+    public static final String p_m_StringCollection = ATTRIBUTE_IRI_BASE + "m-collectionStringAttribute";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
     public static final String P_N_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "N-stringAttribute";
@@ -78,6 +79,7 @@ public class Vocabulary {
     public static final String P_X_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDateTime";
     public static final String P_X_INSTANT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xInstant";
     public static final String P_X_OBJECT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xObject";
+    public static final String P_X_COLLECTION_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xCollection";
 
     public static final String P_HAS_H = ATTRIBUTE_IRI_BASE + "hasH";
 

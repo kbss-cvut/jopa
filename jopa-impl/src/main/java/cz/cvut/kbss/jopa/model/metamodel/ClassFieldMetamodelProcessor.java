@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -150,22 +148,15 @@ class ClassFieldMetamodelProcessor<X> {
 
     private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
-        if (field.getType().isAssignableFrom(List.class)) {
-            final Sequence os = field.getAnnotation(Sequence.class);
-
-            if (os == null) {
-                throw new MetamodelInitializationException("Expected Sequence annotation.");
-            }
-            final ListAttributeImpl.ListAttributeBuilder builder =
-                    ListAttributeImpl.builder(propertyAttributes).declaringType(et)
-                                     .field(field)
-                                     .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
-                                     .owlListClass(IRI.create(os.ClassOWLListIRI()))
-                                     .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
-                                     .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
-                                     .sequenceType(os.type());
+        if (field.getType().isAssignableFrom(Collection.class)) {
+            final AbstractPluralAttribute.PluralAttributeBuilder builder =
+                    CollectionAttributeImpl.builder(propertyAttributes).declaringType(et)
+                                           .field(field)
+                                           .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
-            a = builder.build();
+            a = (AbstractAttribute<X, ?>) builder.build();
+        } else if (field.getType().isAssignableFrom(List.class)) {
+            a = createListAttribute(field, inference, propertyAttributes);
         } else if (field.getType().isAssignableFrom(Set.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
                     SetAttributeImpl.builder(propertyAttributes).declaringType(et)
@@ -184,6 +175,25 @@ class ClassFieldMetamodelProcessor<X> {
             a = (AbstractAttribute<X, ?>) builder.build();
         }
         et.addDeclaredAttribute(field.getName(), a);
+    }
+
+    private AbstractAttribute<X, ?> createListAttribute(Field field,
+                                                        InferenceInfo inference,
+                                                        PropertyAttributes propertyAttributes) {
+        final Sequence os = field.getAnnotation(Sequence.class);
+        if (os == null) {
+            throw new MetamodelInitializationException("Expected Sequence annotation.");
+        }
+        final ListAttributeImpl.ListAttributeBuilder builder =
+                ListAttributeImpl.builder(propertyAttributes).declaringType(et)
+                                 .field(field)
+                                 .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
+                                 .owlListClass(IRI.create(os.ClassOWLListIRI()))
+                                 .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
+                                 .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
+                                 .sequenceType(os.type());
+        context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+        return builder.build();
     }
 
     private boolean processIdentifierField(Field field) {

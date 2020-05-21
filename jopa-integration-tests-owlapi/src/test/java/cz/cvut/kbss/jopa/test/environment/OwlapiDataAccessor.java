@@ -51,11 +51,11 @@ public class OwlapiDataAccessor implements DataAccessor {
                 axiom = new AddAxiom(ontology, df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));
             } else if (t.getProperty().toString().equals(RDFS.LABEL)) {
                 final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(t.getProperty()));
-                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), df, t.getLanguage());
+                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), t.getLanguage());
                 axiom = new AddAxiom(ontology, df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value));
             } else {
                 final OWLDataProperty dp = df.getOWLDataProperty(IRI.create(t.getProperty()));
-                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), df, t.getLanguage());
+                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), t.getLanguage());
                 axiom = new AddAxiom(ontology, df.getOWLDataPropertyAssertionAxiom(dp, ind, value));
             }
             manager.applyChange(axiom);
@@ -80,7 +80,7 @@ public class OwlapiDataAccessor implements DataAccessor {
             return ontology.containsAxiom(df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));
         } else {
             final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(quad.getProperty()));
-            final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(quad.getValue(), df, quad.getLanguage());
+            final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(quad.getValue(), quad.getLanguage());
             final OWLAxiom apAxiom = df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value);
             final OWLDataProperty dp = df.getOWLDataProperty(IRI.create(quad.getProperty()));
             final OWLAxiom dpAxiom = df.getOWLDataPropertyAssertionAxiom(dp, ind, value);

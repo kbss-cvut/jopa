@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-class PoolingStorageConnector extends AbstractConnector {
+public class PoolingStorageConnector extends AbstractConnector {
 
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
     private static final Lock READ = LOCK.readLock();

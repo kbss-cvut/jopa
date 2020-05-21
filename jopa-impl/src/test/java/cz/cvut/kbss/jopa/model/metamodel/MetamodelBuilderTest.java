@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -33,9 +31,10 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -143,8 +142,8 @@ class MetamodelBuilderTest {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
         final EntityTypeImpl<OWLClassM> et = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
-        final AbstractPluralAttribute<OWLClassM, Set, Integer> result =
-                (AbstractPluralAttribute<OWLClassM, Set, Integer>) et
+        final AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer> result =
+                (AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer>) et
                         .getDeclaredAttribute(OWLClassM.getIntegerSetField().getName());
         assertTrue(result.getConverter() instanceof ToIntegerConverter);
     }
@@ -220,7 +219,7 @@ class MetamodelBuilderTest {
         builder.buildMetamodel(finderMock);
         final EntityTypeImpl<WithPluralSimpleLiteral> result = (EntityTypeImpl<WithPluralSimpleLiteral>) builder
                 .getEntityClass(WithPluralSimpleLiteral.class);
-        final AbstractPluralAttribute<WithPluralSimpleLiteral, Set, String> att = (AbstractPluralAttribute<WithPluralSimpleLiteral, Set, String>) result
+        final AbstractPluralAttribute<WithPluralSimpleLiteral, Set<String>, String> att = (AbstractPluralAttribute<WithPluralSimpleLiteral, Set<String>, String>) result
                 .getAttribute("pluralSimpleLiteral");
         assertNotNull(att);
         assertTrue(att.isSimpleLiteral());
@@ -236,5 +235,40 @@ class MetamodelBuilderTest {
 
         @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "pluralSimpleLiteral", simpleLiteral = true)
         private Set<String> pluralSimpleLiteral;
+    }
+
+    @Test
+    void buildMetamodelSupportsCollectionAttributes() {
+        when(finderMock.getEntities())
+                .thenReturn(new HashSet<>(Arrays.asList(WithCollectionAttributes.class, OWLClassA.class)));
+        builder.buildMetamodel(finderMock);
+
+        final EntityTypeImpl<WithCollectionAttributes> et = (EntityTypeImpl<WithCollectionAttributes>) builder
+                .getEntityClass(WithCollectionAttributes.class);
+        assertNotNull(et);
+        final PluralAttribute<WithCollectionAttributes, Collection<String>, String> dataAtt = (PluralAttribute<WithCollectionAttributes, Collection<String>, String>) et
+                .getAttribute("collectionDataProperty");
+        assertNotNull(dataAtt);
+        assertThat(dataAtt, instanceOf(CollectionAttribute.class));
+        assertEquals(Vocabulary.ATTRIBUTE_BASE + "collectionDataProperty", dataAtt.getIRI().toString());
+        assertEquals(PluralAttribute.CollectionType.COLLECTION, dataAtt.getCollectionType());
+        final PluralAttribute<WithCollectionAttributes, Collection<OWLClassA>, OWLClassA> objectAtt = (PluralAttribute<WithCollectionAttributes, Collection<OWLClassA>, OWLClassA>) et
+                .getAttribute("collectionObjectProperty");
+        assertNotNull(objectAtt);
+        assertThat(objectAtt, instanceOf(CollectionAttribute.class));
+        assertEquals(Vocabulary.ATTRIBUTE_BASE + "collectionObjectProperty", objectAtt.getIRI().toString());
+        assertEquals(PluralAttribute.CollectionType.COLLECTION, objectAtt.getCollectionType());
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "WithCollectionAttributes")
+    private static class WithCollectionAttributes {
+        @Id
+        private URI uri;
+
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "collectionDataProperty")
+        private Collection<String> collectionDataProperty;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "collectionObjectProperty")
+        private Collection<OWLClassA> collectionObjectProperty;
     }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -40,6 +38,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -399,7 +399,8 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final String value = "test";
         persistTestData(Arrays.asList(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
-                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, (String) null)), em);
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, (String) null)),
+                em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value, result.getSimpleLiteral());
@@ -415,5 +416,20 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value, result.getSimpleLiteral());
+    }
+
+    @Test
+    void loadEntitySupportsCollectionAttribute() throws Exception {
+        this.em = getEntityManager("loadEntitySupportsCollectionAttribute", false);
+        persistTestData(Arrays.asList(
+                new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), "value", "en"),
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), "valueTwo", "en")),
+                em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertNotNull(result.getStringCollection());
+        assertFalse(result.getStringCollection().isEmpty());
+        assertThat(result.getStringCollection(), hasItems("value", "valueTwo"));
     }
 }

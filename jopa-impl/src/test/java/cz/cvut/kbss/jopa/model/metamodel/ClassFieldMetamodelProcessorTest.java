@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 class ClassFieldMetamodelProcessorTest {
 
-    private MetamodelBuilder metamodelBuilder = new MetamodelBuilder();
+    private final MetamodelBuilder metamodelBuilder = new MetamodelBuilder();
 
     @Test
     void processingNonTransientFieldWithoutPropertyInfoThrowsException() throws Exception {

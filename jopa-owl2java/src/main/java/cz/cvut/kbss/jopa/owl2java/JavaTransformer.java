@@ -349,7 +349,7 @@ public class JavaTransformer {
             });
 
             if (!extendClass.get())
-            	addCommonClassFields(cm, subj, propertiesType);
+                addCommonClassFields(cm, subj, propertiesType);
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
                 generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop, propertiesType);
             }
@@ -394,10 +394,11 @@ public class JavaTransformer {
     }
 
     private void generateOntologyIrisConstants(OWLOntologyManager ontologyManager) {
-        // Get only unique ontology IRIs
-        final Set<IRI> ontologyIris = ontologyManager.ontologies().map(o -> o.getOntologyID().getOntologyIRI())
-                                                     .filter(Optional::isPresent).map(Optional::get)
-                                                     .collect(Collectors.toSet());
+        // Get only unique ontology IRIs sorted
+        final List<IRI> ontologyIris = ontologyManager.ontologies().map(o -> o.getOntologyID().getOntologyIRI())
+                                                      .filter(Optional::isPresent).map(Optional::get).distinct()
+                                                      .sorted(Comparator.comparing(IRI::getIRIString))
+                                                      .collect(Collectors.toList());
         ontologyIris.forEach(iri -> {
             final String fieldName = ensureUniqueIdentifier("ONTOLOGY_IRI_" + validJavaIDForIRI(iri));
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
@@ -470,7 +471,8 @@ public class JavaTransformer {
     /**
      * Add common properties such as id and type
      */
-    private void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls, final PropertiesType propertiesType) {
+    private void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls,
+                                      final PropertiesType propertiesType) {
         // @Id(generated = true) protected String id;
         final JClass ftId = cm.ref(String.class);
         final JFieldVar fvId = addField("id", cls, ftId);
@@ -501,9 +503,9 @@ public class JavaTransformer {
         fvProperties.annotate(Properties.class);
 
         generateToStringMethod(cls, fvId.name(), fvLabel.name());
-	}
+    }
 
-	private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
+    private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
         final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
                                                           .filter(a -> isJavaClassNameAnnotation(a) &&
                                                                   a.getValue().isLiteral()).findFirst();

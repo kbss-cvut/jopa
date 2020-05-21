@@ -11,7 +11,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -31,6 +31,11 @@
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>ontodriver-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-owlapi-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
 

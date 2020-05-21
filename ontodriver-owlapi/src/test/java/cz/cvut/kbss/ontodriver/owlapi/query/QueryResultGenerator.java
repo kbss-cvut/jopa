@@ -64,7 +64,7 @@ class QueryResultGenerator {
                 if (value instanceof URI) {
                     owlValue = dataFactory.getOWLNamedIndividual(IRI.create(value.toString()));
                 } else {
-                    owlValue = OwlapiUtils.createOWLLiteralFromValue(value, dataFactory, "en");
+                    owlValue = OwlapiUtils.createOWLLiteralFromValue(value, "en");
                 }
                 when(gt.getWrappedObject()).thenReturn(owlValue);
                 binding.put(result.getResultVars().get(i), gt);

@@ -19,8 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -60,6 +59,9 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
     private String simpleLiteral;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_StringCollection)
+    private Collection<String> stringCollection;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -145,6 +147,14 @@ public class OWLClassM {
         this.simpleLiteral = simpleLiteral;
     }
 
+    public Collection<String> getStringCollection() {
+        return stringCollection;
+    }
+
+    public void setStringCollection(Collection<String> stringCollection) {
+        this.stringCollection = stringCollection;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -157,6 +167,7 @@ public class OWLClassM {
                 ", integerSet=" + integerSet +
                 ", lexicalForm=" + lexicalForm +
                 ", simpleLiteral=" + simpleLiteral +
+                ", stringCollection=" + stringCollection +
                 '}';
     }
 
@@ -171,5 +182,6 @@ public class OWLClassM {
         this.dateAttribute = new Date();
         this.enumAttribute = Severity.MEDIUM;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
+        this.stringCollection = new HashSet<>(Arrays.asList("test-one", "test-two", "test-three"));
     }
 }
