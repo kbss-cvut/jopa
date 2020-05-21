@@ -1,24 +1,22 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 
@@ -31,11 +29,11 @@ class MainAxiomLoader {
     private final OwlapiAdapter adapter;
     private final OntologySnapshot snapshot;
 
-    private OWLOntology ontology;
+    private final OWLOntology ontology;
 
-    private Set<URI> inferredAssertionUris = new HashSet<>();
-    private Set<Assertion> inferredAssertions = new HashSet<>();
-    private Set<Assertion> explicitAssertions = new HashSet<>();
+    private final Set<URI> inferredAssertionUris = new HashSet<>();
+    private final Set<Assertion> inferredAssertions = new HashSet<>();
+    private final Set<Assertion> explicitAssertions = new HashSet<>();
 
     MainAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
@@ -48,10 +46,9 @@ class MainAxiomLoader {
         if (!ontology.containsIndividualInSignature(IRI.create(subject.getIdentifier()))) {
             return Collections.emptySet();
         }
-        final Collection<Axiom<?>> result = new ArrayList<>();
         resolveInferredAssertions(descriptor);
 
-        result.addAll(loadInferredValues(subject));
+        final Collection<Axiom<?>> result = new ArrayList<>(loadInferredValues(subject));
         result.addAll(loadExplicitValues(subject));
         return result;
     }
