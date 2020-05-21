@@ -186,7 +186,7 @@ class OwlapiAdapterTest {
                 break;
             case DATA_PROPERTY:
                 final OWLDataProperty dp = factory.getOWLDataProperty(IRI.create(ax.getAssertion().getIdentifier()));
-                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory,
+                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(),
                         OwlapiUtils.getAssertionLanguage(ax.getAssertion()));
                 owlAxiom = factory.getOWLDataPropertyAssertionAxiom(dp, individual, value);
                 break;
@@ -194,7 +194,7 @@ class OwlapiAdapterTest {
                 final OWLAnnotationProperty ap =
                         factory.getOWLAnnotationProperty(IRI.create(ax.getAssertion().getIdentifier()));
                 final OWLAnnotationValue val =
-                        OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory,
+                        OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(),
                                 OwlapiUtils.getAssertionLanguage(ax.getAssertion()));
                 owlAxiom = factory.getOWLAnnotationAssertionAxiom(ap, individual.getIRI(), val);
                 break;

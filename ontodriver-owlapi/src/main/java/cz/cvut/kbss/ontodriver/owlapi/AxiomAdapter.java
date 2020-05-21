@@ -47,7 +47,7 @@ public class AxiomAdapter {
         final OWLDataProperty dataProperty = dataFactory
                 .getOWLDataProperty(IRI.create(axiom.getAssertion().getIdentifier()));
         final OWLLiteral dataValue = OwlapiUtils.createOWLLiteralFromValue(axiom.getValue().getValue(),
-                dataFactory, OwlapiUtils.getAssertionLanguage(axiom.getAssertion()));
+                OwlapiUtils.getAssertionLanguage(axiom.getAssertion()));
         return dataFactory
                 .getOWLDataPropertyAssertionAxiom(dataProperty, toOWLIndividual(axiom.getSubject()), dataValue);
     }
@@ -61,7 +61,7 @@ public class AxiomAdapter {
             annotationValue = IRI.create(value.toString());
         } else {
             annotationValue = OwlapiUtils.createOWLLiteralFromValue(
-                    axiom.getValue().getValue(), dataFactory, OwlapiUtils.getAssertionLanguage(axiom.getAssertion()));
+                    axiom.getValue().getValue(), OwlapiUtils.getAssertionLanguage(axiom.getAssertion()));
         }
         return dataFactory
                 .getOWLAnnotationAssertionAxiom(annotationProperty, toOWLIndividual(axiom.getSubject()).getIRI(),

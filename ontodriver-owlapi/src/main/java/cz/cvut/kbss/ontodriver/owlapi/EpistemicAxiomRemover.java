@@ -96,7 +96,7 @@ class EpistemicAxiomRemover {
         final OWLDataProperty dataProperty = dataFactory.getOWLDataProperty(IRI.create(assertion.getIdentifier()));
         return values.stream().map(value -> {
             final OWLLiteral literal = OwlapiUtils
-                    .createOWLLiteralFromValue(value.getValue(), dataFactory,
+                    .createOWLLiteralFromValue(value.getValue(),
                             OwlapiUtils.getAssertionLanguage(assertion));
             return new MutableRemoveAxiom(ontology,
                     dataFactory.getOWLDataPropertyAssertionAxiom(dataProperty, individual, literal));
@@ -144,7 +144,7 @@ class EpistemicAxiomRemover {
             try {
                 av = IRI.create(value.stringValue());
             } catch (IllegalArgumentException e) {
-                av = OwlapiUtils.createOWLLiteralFromValue(value.getValue(), dataFactory,
+                av = OwlapiUtils.createOWLLiteralFromValue(value.getValue(),
                         OwlapiUtils.getAssertionLanguage(assertion));
             }
             return new MutableRemoveAxiom(ontology,

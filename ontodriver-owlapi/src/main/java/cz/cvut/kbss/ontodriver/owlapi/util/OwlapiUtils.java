@@ -20,20 +20,14 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
 
 /**
  * Utility methods for the OWLAPI driver.
  */
 public class OwlapiUtils {
-
-    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
     private OwlapiUtils() {
         throw new AssertionError("Can't create instance.");
@@ -42,35 +36,13 @@ public class OwlapiUtils {
     /**
      * Creates OWLLiteral from the specified Java instance.
      *
-     * @param value       The value to transform
-     * @param dataFactory Data factory
-     * @param lang        Ontology language
+     * @param value The value to transform
+     * @param lang  Ontology language
      * @return OWLLiteral representing the value
      * @throws IllegalArgumentException If {@code value} is of unsupported type
      */
-    public static OWLLiteral createOWLLiteralFromValue(Object value, OWLDataFactory dataFactory, String lang) {
-        Objects.requireNonNull(value);
-        if (value instanceof Integer) {
-            // Java implementations map int/Integer to xsd:int, because xsd:integer is unbounded, whereas xsd:int is 32-bit signed, same as Java
-            return dataFactory.getOWLLiteral(value.toString(), OWL2Datatype.XSD_INT);
-        } else if (value instanceof Long) {
-            return dataFactory.getOWLLiteral(value.toString(), OWL2Datatype.XSD_LONG);
-        } else if (value instanceof Boolean) {
-            return dataFactory.getOWLLiteral((Boolean) value);
-        } else if (value instanceof Double) {
-            return dataFactory.getOWLLiteral((Double) value);
-        } else if (value instanceof String) {
-            return lang != null ? dataFactory.getOWLLiteral((String) value, lang) :
-                   dataFactory.getOWLLiteral((String) value);
-        } else if (value instanceof Date) {
-            SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
-            return dataFactory.getOWLLiteral(sdf.format((Date) value),
-                    dataFactory.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
-        } else if (value.getClass().isEnum()) {
-            return dataFactory.getOWLLiteral(value.toString());
-        } else {
-            throw new IllegalArgumentException("Unsupported value " + value + " of type " + value.getClass());
-        }
+    public static OWLLiteral createOWLLiteralFromValue(Object value, String lang) {
+        return DatatypeTransformer.transform(value, lang);
     }
 
     /**

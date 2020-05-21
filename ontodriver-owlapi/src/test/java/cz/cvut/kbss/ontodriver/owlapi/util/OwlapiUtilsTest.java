@@ -69,14 +69,14 @@ class OwlapiUtilsTest {
 
     @Test
     void createOwlLiteralFromValueCreatesSimpleLiteralFromStringWithoutLanguageTag() {
-        final OWLLiteral result = OwlapiUtils.createOWLLiteralFromValue("test", dataFactory, null);
+        final OWLLiteral result = OwlapiUtils.createOWLLiteralFromValue("test", null);
         assertFalse(result.hasLang());
         assertEquals(OWL2Datatype.XSD_STRING.getDatatype(dataFactory), result.getDatatype());
     }
 
     @Test
     void createOwlLiteralFromValueCreatesLangStringFromStringWithLanguageTag() {
-        final OWLLiteral result = OwlapiUtils.createOWLLiteralFromValue("test", dataFactory, LANG);
+        final OWLLiteral result = OwlapiUtils.createOWLLiteralFromValue("test", LANG);
         assertTrue(result.hasLang());
         assertEquals(OWL2Datatype.RDF_LANG_STRING.getDatatype(dataFactory), result.getDatatype());
     }

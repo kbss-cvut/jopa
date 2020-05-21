@@ -12,9 +12,11 @@
  */
 package cz.cvut.kbss.jopa.owlapi;
 
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -24,28 +26,48 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 
+/**
+ * Contains utility functions for transformations between OWL2 datatypes (usually based on XSD types) and Java types.
+ * <p>
+ * Mostly based on <a href="https://xmlbeans.apache.org/docs/3.0.0/guide/conXMLBeansSupportBuiltInSchemaTypes.html">https://xmlbeans.apache.org/docs/3.0.0/guide/conXMLBeansSupportBuiltInSchemaTypes.html</a>
+ */
 public class DatatypeTransformer {
 
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
-    private static final Map<OWL2Datatype, Class<?>> map = new EnumMap<>(OWL2Datatype.class);
+    private static final Map<OWL2Datatype, Class<?>> DATATYPE_MAP = new EnumMap<>(OWL2Datatype.class);
+
+    private static final OWLDataFactory DATA_FACTORY = new OWLDataFactoryImpl();
 
     static {
-        map.put(OWL2Datatype.RDF_PLAIN_LITERAL, String.class);
-        map.put(OWL2Datatype.XSD_STRING, String.class);
-        map.put(OWL2Datatype.RDF_XML_LITERAL, String.class);
-        map.put(OWL2Datatype.XSD_INT, Integer.class);
-        map.put(OWL2Datatype.XSD_INTEGER, BigInteger.class);
-        map.put(OWL2Datatype.XSD_DOUBLE, Double.class);
-        map.put(OWL2Datatype.XSD_FLOAT, Float.class);
-        map.put(OWL2Datatype.XSD_BOOLEAN, Boolean.class);
-        map.put(OWL2Datatype.XSD_DATE_TIME, Date.class);
-        map.put(OWL2Datatype.XSD_DATE_TIME_STAMP, Date.class);
-        map.put(OWL2Datatype.XSD_SHORT, Short.class);
-        map.put(OWL2Datatype.XSD_LONG, Long.class);
-        map.put(OWL2Datatype.XSD_ANY_URI, URI.class);
-        map.put(OWL2Datatype.XSD_DECIMAL, BigDecimal.class);
+        DATATYPE_MAP.put(OWL2Datatype.RDF_PLAIN_LITERAL, String.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_STRING, String.class);
+        DATATYPE_MAP.put(OWL2Datatype.RDF_XML_LITERAL, String.class);
+        DATATYPE_MAP.put(OWL2Datatype.RDF_LANG_STRING, String.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_INT, Integer.class);
+        // technically, this is not correct, as XSD integer should be mapped to BigInteger, because it is unbound
+        // But OWL API maps it to integer, so we have to keep it this way too
+        DATATYPE_MAP.put(OWL2Datatype.XSD_INTEGER, Integer.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_NON_NEGATIVE_INTEGER, Integer.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_POSITIVE_INTEGER, Integer.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_NON_POSITIVE_INTEGER, Integer.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_NEGATIVE_INTEGER, Integer.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_UNSIGNED_INT, Long.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_DOUBLE, Double.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_FLOAT, Float.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_BOOLEAN, Boolean.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_DATE_TIME, Date.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_DATE_TIME_STAMP, Date.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_SHORT, Short.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_UNSIGNED_SHORT, Integer.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_LONG, Long.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_UNSIGNED_LONG, BigInteger.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_BYTE, Byte.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_UNSIGNED_BYTE, Short.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_ANY_URI, URI.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_DECIMAL, BigDecimal.class);
     }
 
     private DatatypeTransformer() {
@@ -56,7 +78,7 @@ public class DatatypeTransformer {
         Class<?> type = null;
 
         if (dt.isBuiltIn()) {
-            type = map.get(dt.getBuiltInDatatype());
+            type = DATATYPE_MAP.get(dt.getBuiltInDatatype());
         }
 
         if (type == null) {
@@ -67,26 +89,42 @@ public class DatatypeTransformer {
     }
 
     public static boolean isSupportedJavaType(Class<?> dt) {
-        return map.containsValue(dt);
+        return DATATYPE_MAP.containsValue(dt);
     }
 
+    /**
+     * Transforms the specified {@link OWLLiteral} to the corresponding Java type (if possible).
+     * <p>
+     * For instance, literals of type {@code xsd:int} are transformed to Java {@link Integer}s.
+     *
+     * @param literal Literal to transform
+     * @return Java object corresponding to the literal
+     */
     public static Object transform(final OWLLiteral literal) {
         if (literal.isRDFPlainLiteral()) {
             return literal.getLiteral();
         } else if (literal.getDatatype().isBuiltIn()) {
             switch (literal.getDatatype().getBuiltInDatatype()) {
                 case XSD_SHORT:
+                case XSD_UNSIGNED_BYTE:
                     return Short.parseShort(literal.getLiteral());
                 case XSD_LONG:
+                case XSD_UNSIGNED_INT:
                     return Long.parseLong(literal.getLiteral());
                 case XSD_INT:
                 case XSD_INTEGER:
+                case XSD_NON_NEGATIVE_INTEGER:
+                case XSD_NON_POSITIVE_INTEGER:
+                case XSD_POSITIVE_INTEGER:
+                case XSD_NEGATIVE_INTEGER:
+                case XSD_UNSIGNED_SHORT:
                     return Integer.parseInt(literal.getLiteral());
                 case XSD_DOUBLE:
-                case XSD_DECIMAL:
                     return Double.parseDouble(literal.getLiteral());
                 case XSD_FLOAT:
                     return Float.parseFloat(literal.getLiteral());
+                case XSD_DECIMAL:
+                    return new BigDecimal(literal.getLiteral());
                 case XSD_STRING:
                 case RDF_XML_LITERAL:
                 case RDF_LANG_STRING:
@@ -109,5 +147,45 @@ public class DatatypeTransformer {
             }
         }
         throw new IllegalArgumentException("Unsupported datatype: " + literal.getDatatype());
+    }
+
+    /**
+     * Transforms the specified Java object to an {@link OWLLiteral}.
+     * <p>
+     * The datatype is determined from the object's type.
+     *
+     * @param value Value to transform
+     * @param lang  Optional language for string literals
+     * @return {@code OWLiteral}
+     */
+    public static OWLLiteral transform(Object value, String lang) {
+        Objects.requireNonNull(value);
+        if (value instanceof Integer) {
+            // Java implementations map int/Integer to xsd:int, because xsd:integer is unbounded, whereas xsd:int is 32-bit signed, same as Java
+            return DATA_FACTORY.getOWLLiteral(value.toString(), OWL2Datatype.XSD_INT);
+        } else if (value instanceof BigInteger) {
+            return DATA_FACTORY.getOWLLiteral(value.toString(), OWL2Datatype.XSD_INTEGER);
+        } else if (value instanceof Long) {
+            return DATA_FACTORY.getOWLLiteral(value.toString(), OWL2Datatype.XSD_LONG);
+        } else if (value instanceof Boolean) {
+            return DATA_FACTORY.getOWLLiteral((Boolean) value);
+        } else if (value instanceof Double) {
+            return DATA_FACTORY.getOWLLiteral((Double) value);
+        } else if (value instanceof Float) {
+            return DATA_FACTORY.getOWLLiteral((Float) value);
+        } else if (value instanceof BigDecimal) {
+            return DATA_FACTORY.getOWLLiteral(((BigDecimal) value).toPlainString(), OWL2Datatype.XSD_DECIMAL);
+        } else if (value instanceof String) {
+            return lang != null ? DATA_FACTORY.getOWLLiteral((String) value, lang) :
+                   DATA_FACTORY.getOWLLiteral((String) value);
+        } else if (value instanceof Date) {
+            SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
+            return DATA_FACTORY.getOWLLiteral(sdf.format((Date) value),
+                    DATA_FACTORY.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
+        } else if (value.getClass().isEnum()) {
+            return DATA_FACTORY.getOWLLiteral(value.toString());
+        } else {
+            throw new IllegalArgumentException("Unsupported value " + value + " of type " + value.getClass());
+        }
     }
 }
