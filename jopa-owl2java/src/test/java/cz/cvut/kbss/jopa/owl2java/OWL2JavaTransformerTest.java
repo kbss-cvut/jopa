@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.owl2java;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
+import cz.cvut.kbss.jopa.owlapi.exception.MappingFileParserException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -172,11 +173,10 @@ public class OWL2JavaTransformerTest {
     }
 
     @Test
-    public void setOntologyWithUnknownMappingFileThrowsIllegalArgument() {
+    public void setOntologyWithUnknownMappingFileThrowsMappingFileParserException() {
         final String unknownMappingFile = "/tmp/unknown-mapping-file";
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        assertThrows(MappingFileParserException.class,
                 () -> transformer.setOntology(IC_ONTOLOGY_IRI, unknownMappingFile));
-        assertEquals("Mapping file " + unknownMappingFile + " not found.", ex.getMessage());
     }
 
     @Test

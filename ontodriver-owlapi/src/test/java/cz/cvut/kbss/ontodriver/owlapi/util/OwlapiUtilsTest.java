@@ -30,7 +30,7 @@ class OwlapiUtilsTest {
 
     private static final String LANG = "en";
 
-    private OWLDataFactory dataFactory = new OWLDataFactoryImpl();
+    private final OWLDataFactory dataFactory = new OWLDataFactoryImpl();
 
     @Test
     void doesLanguageMatchForAssertionReturnsTrueWhenLanguageTagMatches() {

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owlapi;
 
@@ -19,6 +17,7 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,6 +27,8 @@ import java.util.Map;
 
 public class DatatypeTransformer {
 
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
     private static final Map<OWL2Datatype, Class<?>> map = new EnumMap<>(OWL2Datatype.class);
 
     static {
@@ -35,7 +36,7 @@ public class DatatypeTransformer {
         map.put(OWL2Datatype.XSD_STRING, String.class);
         map.put(OWL2Datatype.RDF_XML_LITERAL, String.class);
         map.put(OWL2Datatype.XSD_INT, Integer.class);
-        map.put(OWL2Datatype.XSD_INTEGER, Integer.class);
+        map.put(OWL2Datatype.XSD_INTEGER, BigInteger.class);
         map.put(OWL2Datatype.XSD_DOUBLE, Double.class);
         map.put(OWL2Datatype.XSD_FLOAT, Float.class);
         map.put(OWL2Datatype.XSD_BOOLEAN, Boolean.class);
@@ -65,45 +66,48 @@ public class DatatypeTransformer {
         return type;
     }
 
-    public static Object transform(final OWLLiteral l) {
-        if (l.isRDFPlainLiteral()) {
-            return l.getLiteral();
-        } else if (l.getDatatype().isBuiltIn()) {
-            switch (l.getDatatype().getBuiltInDatatype()) {
+    public static boolean isSupportedJavaType(Class<?> dt) {
+        return map.containsValue(dt);
+    }
+
+    public static Object transform(final OWLLiteral literal) {
+        if (literal.isRDFPlainLiteral()) {
+            return literal.getLiteral();
+        } else if (literal.getDatatype().isBuiltIn()) {
+            switch (literal.getDatatype().getBuiltInDatatype()) {
                 case XSD_SHORT:
-                    return Short.parseShort(l.getLiteral());
+                    return Short.parseShort(literal.getLiteral());
                 case XSD_LONG:
-                    return Long.parseLong(l.getLiteral());
+                    return Long.parseLong(literal.getLiteral());
                 case XSD_INT:
                 case XSD_INTEGER:
-                    return Integer.parseInt(l.getLiteral());
+                    return Integer.parseInt(literal.getLiteral());
                 case XSD_DOUBLE:
                 case XSD_DECIMAL:
-                    return Double.parseDouble(l.getLiteral());
+                    return Double.parseDouble(literal.getLiteral());
                 case XSD_FLOAT:
-                    return Float.parseFloat(l.getLiteral());
+                    return Float.parseFloat(literal.getLiteral());
                 case XSD_STRING:
                 case RDF_XML_LITERAL:
-                    return l.getLiteral();
+                case RDF_LANG_STRING:
+                    return literal.getLiteral();
                 case XSD_BOOLEAN:
-                    return Boolean.parseBoolean(l.getLiteral());
+                    return Boolean.parseBoolean(literal.getLiteral());
                 case XSD_ANY_URI:
-                    return URI.create(l.getLiteral());
+                    return URI.create(literal.getLiteral());
                 case XSD_DATE_TIME_STAMP:
                 case XSD_DATE_TIME:
                     try {
-                        return new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss")
-                                .parse(l.getLiteral());
+                        return new SimpleDateFormat(DATE_TIME_FORMAT).parse(literal.getLiteral());
                     } catch (ParseException e) {
-                        throw new IllegalArgumentException("The date time '"
-                                + l.getLiteral() + "' cannot be parsed");
+                        throw new IllegalArgumentException(
+                                "The date time '" + literal.getLiteral() + "' cannot be parsed using format " +
+                                        DATE_TIME_FORMAT + ".");
                     }
+                default:
+                    break;
             }
         }
-        throw new IllegalArgumentException("Unsupported datatype: " + l.getDatatype());
-    }
-
-    public static boolean isSupportedJavaType(Class<?> dt) {
-        return map.containsValue(dt);
+        throw new IllegalArgumentException("Unsupported datatype: " + literal.getDatatype());
     }
 }
