@@ -1,6 +1,9 @@
 # JOPA - Release Notes
 
 
+## 0.14.4 - May 27, 2020
+- [JOPA] Fix handling of objects with overridden `equals`/`hashCode` in `PendingReferenceRegistry`.
+
 ## 0.14.3 - May 20, 2020
 - [OWLAPI OntoDriver, OWLAPI Utils] - Refactor common code in OWL API OntoDriver and OWL API Utils module. [Task #68]
 - [OWL2Java] Support mapping **to** remote URLs in the IRI mapping file.

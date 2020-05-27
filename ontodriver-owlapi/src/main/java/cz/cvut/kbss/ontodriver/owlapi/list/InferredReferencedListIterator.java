@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 class InferredReferencedListIterator extends ReferencedListIterator {
 
     private OWLNamedIndividual currentNode;
-    private OWLReasoner reasoner;
+    private final OWLReasoner reasoner;
 
     InferredReferencedListIterator(ReferencedListDescriptor descriptor, OntologySnapshot snapshot,
                                    AxiomAdapter axiomAdapter) {

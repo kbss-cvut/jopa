@@ -161,7 +161,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         verifyLists(entityK.getSimpleList(), result.getSimpleList());
     }
 
-    private void verifyLists(List<OWLClassE> expected, List<OWLClassE> actual) {
+    private static void verifyLists(List<OWLClassE> expected, List<OWLClassE> actual) {
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i).getUri(), actual.get(i).getUri());

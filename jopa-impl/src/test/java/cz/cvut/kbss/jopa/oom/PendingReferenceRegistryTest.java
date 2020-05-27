@@ -1,35 +1,38 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class PendingReferenceRegistryTest {
 
@@ -38,7 +41,7 @@ public class PendingReferenceRegistryTest {
             Assertion.createObjectPropertyAssertion(Generators.createPropertyIdentifier(), false);
     private final Object object = new Object();
 
-    private PendingReferenceRegistry registry = new PendingReferenceRegistry();
+    private final PendingReferenceRegistry registry = new PendingReferenceRegistry();
 
     @Test
     public void addPendingAssertionAddsPendingAssertionToObjectsMap() throws Exception {
@@ -164,7 +167,7 @@ public class PendingReferenceRegistryTest {
 
     @Test
     public void removeAndGetPendingReferencesToListDoesNotReturnDescriptorWhereOtherPendingItemsExist() throws
-                                                                                                        Exception {
+            Exception {
         final SimpleListValueDescriptor desc = new SimpleListValueDescriptor(owner, assertion, assertion);
         final List<OWLClassA> list = Generators.generateInstances(10);
         final OWLClassA item = list.get(0);
@@ -246,5 +249,39 @@ public class PendingReferenceRegistryTest {
         registry.removePendingReferences(owner, assertion);
         assertTrue(registry.getPendingResources().isEmpty());
         assertEquals(0, getPendingItemCount(desc));
+    }
+
+    /**
+     * Based on a reported bug.
+     */
+    @Test
+    void removePendingAssertionWorksForEntityWithOverriddenEqualsAndHashCodeWhenItWasInsertedWithoutId() {
+        final OWLClassD referer = new OWLClassD(Generators.createIndividualIdentifier());
+        final ObjectWithEquals object = new ObjectWithEquals();
+        registry.addPendingAssertion(NamedResource.create(referer.getUri()),
+                Assertion.createObjectPropertyAssertion(URI.create(
+                        Vocabulary.P_HAS_A), false), object, null);
+        assertTrue(registry.hasPendingResources());
+        object.uri = Generators.createIndividualIdentifier();
+        registry.removeAndGetPendingAssertionsWith(object);
+        assertFalse(registry.hasPendingResources());
+    }
+
+    private static class ObjectWithEquals {
+        @Id
+        private URI uri;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ObjectWithEquals)) return false;
+            ObjectWithEquals that = (ObjectWithEquals) o;
+            return Objects.equals(uri, that.uri);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(uri);
+        }
     }
 }

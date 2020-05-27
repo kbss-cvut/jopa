@@ -43,6 +43,13 @@ public class MappingFileParserTest {
     }
 
     @Test
+    void throwsMappingFileParserExceptionWhenMappingFileWithValidUriPathCannotBeFound() {
+        final String someFilePath = "file:///tmp/thisFile/does/not/exist";
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, someFilePath);
+        assertThrows(MappingFileParserException.class, () -> new MappingFileParser(configuration));
+    }
+
+    @Test
     public void mappingFileParserAlsoAcceptsURIAsMappingFilePath() throws Exception {
         final String ontUri = "http://krizik.felk.cvut.cz/ontologies/test";
         final String content = ontUri + " " +

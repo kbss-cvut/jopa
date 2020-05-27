@@ -63,7 +63,7 @@ abstract class OwlapiListIterator {
      */
     abstract List<OWLOntologyChange> replaceNode(NamedResource newValue);
 
-    void checkMaxSuccessors(OWLObjectProperty property, Collection<? extends OWLIndividual> successors) {
+    static void checkMaxSuccessors(OWLObjectProperty property, Collection<? extends OWLIndividual> successors) {
         if (successors.size() > 1) {
             throw new IntegrityConstraintViolatedException(
                     "Invalid number of successors. Expected only 1 value of property " + property + ", but got " +
@@ -71,7 +71,7 @@ abstract class OwlapiListIterator {
         }
     }
 
-    void checkIsNamed(OWLIndividual individual) {
+    static void checkIsNamed(OWLIndividual individual) {
         if (!individual.isNamed()) {
             throw new IllegalArgumentException("Expected OWLNamedIndividual, but got an anonymous one.");
         }

@@ -130,8 +130,6 @@ public class StatementHolder {
 
     public void clearParameters() {
         ensureState();
-        for (String param : paramValues.keySet()) {
-            paramValues.put(param, null);
-        }
+        paramValues.replaceAll((p, v) -> null);
     }
 }

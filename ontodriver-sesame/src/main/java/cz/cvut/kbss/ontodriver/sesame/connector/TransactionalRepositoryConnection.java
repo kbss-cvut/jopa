@@ -19,7 +19,6 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -67,12 +66,12 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public boolean isOpen() throws RepositoryException {
+    public boolean isOpen() {
         return wrappedConnection.isOpen();
     }
 
     @Override
-    public void close() throws RepositoryException {
+    public void close() {
         // Do nothing !!!
     }
 

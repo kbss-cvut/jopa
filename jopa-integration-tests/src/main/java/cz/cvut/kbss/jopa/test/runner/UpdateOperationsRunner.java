@@ -112,7 +112,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     void testUpdateReference() {
         this.em = getEntityManager("UpdateReference", true);
         persist(entityD, entityI);
-        // em.persist(entityA, ctx);
 
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
@@ -130,13 +129,11 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA resA1 = findRequired(OWLClassA.class, newA.getUri());
         final OWLClassD resD = findRequired(OWLClassD.class, d.getUri());
         assertEquals(resA1.getUri(), resD.getOwlClassA().getUri());
-//		assertSame(resD.getOwlClassA(), resA1);
         verifyExists(OWLClassA.class, entityA.getUri());
         final OWLClassI resI = findRequired(OWLClassI.class, i.getUri());
         assertEquals(newA.getUri(), resI.getOwlClassA().getUri());
         verifyExists(OWLClassA.class, entityA.getUri());
         assertEquals(resA1.getUri(), resI.getOwlClassA().getUri());
-//		assertEquals(resA1, resI.getOwlClassA());
     }
 
     @Test
@@ -531,7 +528,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(p.getProperties(), res.getProperties());
     }
 
-    private Object generateValueForProperty(OWLClassP instance, URI property) {
+    private static Object generateValueForProperty(OWLClassP instance, URI property) {
         final Set<Object> values = instance.getProperties().get(property);
         assert values != null && !values.isEmpty();
         if (values.iterator().next() instanceof URI) {
@@ -1129,7 +1126,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
                 result.getReferencedList().get(result.getReferencedList().size() - 1).getUri());
     }
 
-    private List<OWLClassE> generateEInstances(int count) {
+    private static List<OWLClassE> generateEInstances(int count) {
         return IntStream.range(0, count).mapToObj(i -> {
             final OWLClassE e = new OWLClassE();
             e.setStringAttribute("instance" + i);
