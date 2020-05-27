@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -33,7 +31,7 @@ class PendingReferenceRegistry {
 
     private static final Logger LOG = LoggerFactory.getLogger(PendingReferenceRegistry.class);
 
-    private final Map<Object, Set<PendingAssertion>> pendingAssertions = new HashMap<>();
+    private final Map<Object, Set<PendingAssertion>> pendingAssertions = new IdentityHashMap<>();
 
     private Map<Object, Set<PendingListReference>> pendingLists;
     /**
@@ -70,7 +68,7 @@ class PendingReferenceRegistry {
      */
     void addPendingListReference(Object item, ListValueDescriptor valueDescriptor, List<?> values) {
         if (pendingLists == null) {
-            this.pendingLists = new HashMap<>();
+            this.pendingLists = new IdentityHashMap<>();
             this.pendingListItems = new HashMap<>();
         }
         pendingLists.putIfAbsent(item, new HashSet<>());
@@ -99,6 +97,7 @@ class PendingReferenceRegistry {
         final Iterator<PendingListReference> it = refs.iterator();
         while (it.hasNext()) {
             final PendingListReference ref = it.next();
+            assert pendingListItems.get(ref.descriptor) != null;
             pendingListItems.compute(ref.descriptor, (k, v) -> v - 1);
             if (pendingListItems.get(ref.descriptor) == 0) {
                 pendingListItems.remove(ref.descriptor);
