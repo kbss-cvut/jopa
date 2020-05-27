@@ -222,8 +222,7 @@ public class JavaTransformer {
                                         final String pkg,
                                         final OWLClass clazz,
                                         final JDefinedClass subj,
-                                        final org.semanticweb.owlapi.model.OWLObjectProperty prop,
-                                        final PropertiesType propertiesType) {
+                                        final org.semanticweb.owlapi.model.OWLObjectProperty prop) {
         final ClassObjectPropertyComputer comp = new ClassObjectPropertyComputer(
                 clazz,
                 prop,
@@ -232,7 +231,7 @@ public class JavaTransformer {
         );
 
         if (Card.NO != comp.getCard()) {
-            JClass filler = ensureCreated(pkg, cm, comp.getFiller(), ontology, propertiesType);
+            JClass filler = ensureCreated(pkg, cm, comp.getFiller(), ontology);
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             switch (comp.getCard()) {
@@ -270,7 +269,7 @@ public class JavaTransformer {
     }
 
     private void setParticipationConstraintCardinality(JAnnotationUse u,
-                                                       cz.cvut.kbss.jopa.ic.api.ParticipationConstraint ic) {
+                                                       cz.cvut.kbss.jopa.ic.api.ParticipationConstraint<?, ?> ic) {
         if (ic.getMin() != 0) {
             u.param("min", ic.getMin());
         }
@@ -337,21 +336,21 @@ public class JavaTransformer {
 
         for (final OWLClass clazz : context.classes) {
             LOG.info("  Generating class '{}'.", clazz);
-            final JDefinedClass subj = ensureCreated(pkg, cm, clazz, ontology, propertiesType);
+            final JDefinedClass subj = ensureCreated(pkg, cm, clazz, ontology);
 
             final AtomicBoolean extendClass = new AtomicBoolean(false);
             context.set.getClassIntegrityConstraints(clazz).stream()
                        .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
                 final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
-                subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology,
-                        propertiesType));
+                subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology
+                ));
                 extendClass.set(true);
             });
 
             if (!extendClass.get())
                 addCommonClassFields(cm, subj, propertiesType);
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
-                generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop, propertiesType);
+                generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop);
             }
 
             for (org.semanticweb.owlapi.model.OWLDataProperty prop : context.dataProperties) {
@@ -449,7 +448,7 @@ public class JavaTransformer {
     }
 
     private JDefinedClass create(final String pkg, final JCodeModel cm, final OWLClass clazz,
-                                 final OWLOntology ontology, final PropertiesType propertiesType) {
+                                 final OWLOntology ontology) {
         JDefinedClass cls;
 
         String name = pkg + PACKAGE_SEPARATOR + javaClassId(ontology, clazz);
@@ -537,9 +536,9 @@ public class JavaTransformer {
     }
 
     private JDefinedClass ensureCreated(final String pkg, final JCodeModel cm, final OWLClass clazz,
-                                        final OWLOntology ontology, final PropertiesType propertiesType) {
+                                        final OWLOntology ontology) {
         if (!classes.containsKey(clazz)) {
-            classes.put(clazz, create(pkg, cm, clazz, ontology, propertiesType));
+            classes.put(clazz, create(pkg, cm, clazz, ontology));
         }
         return classes.get(clazz);
     }

@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 public class SoqlQueryListener implements SoqlListener {
 
-    private MetamodelImpl metamodel;
+    private final MetamodelImpl metamodel;
 
     private String newQuery = "";
 
@@ -24,16 +24,16 @@ public class SoqlQueryListener implements SoqlListener {
     // keeps pointer at created object of SoqlAttribute while processing other neccessary rules
     private SoqlAttribute attrPointer;
 
-    private ArrayList<SoqlAttribute> attributes;
+    private final ArrayList<SoqlAttribute> attributes;
 
     // keeps index of first object of SoqlAttribute after OR operator
-    private ArrayList<SoqlAttribute> objectOfNextOr;
+    private final ArrayList<SoqlAttribute> objectOfNextOr;
 
-    private ArrayList<SoqlOrderParameter> orderAttributes;
+    private final ArrayList<SoqlOrderParameter> orderAttributes;
 
-    private ArrayList<SoqlGroupParameter> groupAttributes;
+    private final ArrayList<SoqlGroupParameter> groupAttributes;
 
-    private HashMap<String, String> objectTypes;
+    private final HashMap<String, String> objectTypes;
 
     private boolean isSelectedParamDistinct = false;
 
@@ -189,7 +189,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterDistinct(SoqlParser.DistinctContext ctx) {
-        if (ctx.getChild(0).getText().equals("DISTINCT")) {
+        if ("DISTINCT".equals(ctx.getChild(0).getText())) {
             isSelectedParamDistinct = true;
         }
     }
@@ -287,7 +287,7 @@ public class SoqlQueryListener implements SoqlListener {
         attrPointer.setOperator(operator);
         attrPointer.setValue(whereClauseValue.getText());
 
-        if (logicalOperator.equals("OR")) {
+        if ("OR".equals(logicalOperator)) {
             objectOfNextOr.add(attrPointer);
         }
     }
@@ -514,7 +514,6 @@ public class SoqlQueryListener implements SoqlListener {
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
         if (node.hasNextChild()) {
-//        if(false) {
             Type<?> type = abstractAttribute.getType();
             EntityTypeImpl<?> attrEntityType = getEntityType(type);
             if (attrEntityType == null) {
