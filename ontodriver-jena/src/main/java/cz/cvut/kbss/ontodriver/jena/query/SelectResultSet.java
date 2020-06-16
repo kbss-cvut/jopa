@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -81,7 +81,6 @@ public class SelectResultSet extends AbstractResultSet {
         Objects.requireNonNull(varName);
         assert current != null;
         final RDFNode value = getCurrent(varName);
-        assert value != null;
         if (!value.isLiteral()) {
             throw new JenaDriverException("Expected value " + value + " to be a literal.");
         }
@@ -168,7 +167,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toObject(getCurrent(getVariableAt(variableIndex)));
     }
 
-    private Object toObject(RDFNode value) {
+    private static Object toObject(RDFNode value) {
         assert value != null;
         if (value.isLiteral()) {
             return value.asLiteral().getValue();
@@ -223,7 +222,8 @@ public class SelectResultSet extends AbstractResultSet {
         }
     }
 
-    private <T> T buildUsingConstructor(Class<T> cls, RDFNode jenaValue, Object javaValue) throws JenaDriverException {
+    private static <T> T buildUsingConstructor(Class<T> cls, RDFNode jenaValue, Object javaValue) throws
+                                                                                                  JenaDriverException {
         final Constructor<?>[] constructors = cls.getDeclaredConstructors();
         try {
             for (Constructor<?> c : constructors) {
@@ -293,7 +293,7 @@ public class SelectResultSet extends AbstractResultSet {
     private void ensureVariableExists(String name) {
         assert current != null;
         if (!current.contains(name)) {
-            throw new IllegalArgumentException("Variable \'" + name + "\' not found in the result set.");
+            throw new IllegalArgumentException("Variable '" + name + "' not found in the result set.");
         }
     }
 

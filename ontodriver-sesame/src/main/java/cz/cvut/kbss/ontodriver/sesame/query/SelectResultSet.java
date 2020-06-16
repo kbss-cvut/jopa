@@ -97,7 +97,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toBoolean(getLiteralValue(columnLabel));
     }
 
-    private boolean toBoolean(Object ob) {
+    private static boolean toBoolean(Object ob) {
         if (ob instanceof Boolean) {
             return (boolean) ob;
         } else {
@@ -129,7 +129,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toDouble(getLiteralValue(columnLabel));
     }
 
-    private double toDouble(Object ob) throws OntoDriverException {
+    private static double toDouble(Object ob) throws OntoDriverException {
         if (ob instanceof Number) {
             return ((Number) ob).doubleValue();
         } else {
@@ -153,7 +153,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toFloat(getLiteralValue(columnLabel));
     }
 
-    private float toFloat(Object ob) throws OntoDriverException {
+    private static float toFloat(Object ob) throws OntoDriverException {
         if (ob instanceof Number) {
             return ((Number) ob).floatValue();
         } else {
@@ -177,7 +177,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toInt(getLiteralValue(columnLabel));
     }
 
-    private int toInt(Object ob) throws OntoDriverException {
+    private static int toInt(Object ob) throws OntoDriverException {
         if (ob instanceof Number) {
             return ((Number) ob).intValue();
         } else {
@@ -201,7 +201,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toLong(getLiteralValue(columnLabel));
     }
 
-    private long toLong(Object ob) throws OntoDriverException {
+    private static long toLong(Object ob) throws OntoDriverException {
         if (ob instanceof Number) {
             return ((Number) ob).longValue();
         } else {
@@ -225,7 +225,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toObject(getCurrent(columnLabel));
     }
 
-    private Object toObject(Value val) {
+    private static Object toObject(Value val) {
         assert val != null;
         if (val instanceof Literal) {
             return SesameUtils.getDataPropertyValue((Literal) val);
@@ -248,7 +248,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toObject(getCurrent(columnLabel), cls);
     }
 
-    private <T> T toObject(Value val, Class<T> cls) throws OntoDriverException {
+    private static <T> T toObject(Value val, Class<T> cls) throws OntoDriverException {
         assert val != null;
         if (cls.isAssignableFrom(val.getClass())) {
             return cls.cast(val);
@@ -279,7 +279,7 @@ public class SelectResultSet extends AbstractResultSet {
      * @return The new instance
      * @throws OntoDriverException If no suitable constructor is found or the instance cannot be created
      */
-    private <T> T instantiateUsingConstructor(Class<T> cls, Value val, Object ob)
+    private static  <T> T instantiateUsingConstructor(Class<T> cls, Value val, Object ob)
             throws OntoDriverException {
         Constructor<?>[] ctors = cls.getDeclaredConstructors();
         try {
@@ -330,7 +330,7 @@ public class SelectResultSet extends AbstractResultSet {
         return getStringImpl(getCurrent(columnLabel));
     }
 
-    private String getStringImpl(Value val) {
+    private static String getStringImpl(Value val) {
         if (val instanceof Literal) {
             return SesameUtils.getDataPropertyValue((Literal) val).toString();
         } else {
