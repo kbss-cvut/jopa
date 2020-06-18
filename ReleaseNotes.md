@@ -1,6 +1,10 @@
 # JOPA - Release Notes
 
 
+## 0.14.5 - June 18, 2020
+- [JOPA] Extend XSD constants.
+- Dependency update - RDF4J 3.2.2.
+
 ## 0.14.4 - May 27, 2020
 - [JOPA] Fix handling of objects with overridden `equals`/`hashCode` in `PendingReferenceRegistry`.
 
