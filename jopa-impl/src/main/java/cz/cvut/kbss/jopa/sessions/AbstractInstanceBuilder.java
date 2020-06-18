@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -77,14 +77,10 @@ abstract class AbstractInstanceBuilder {
      * @return Constructor
      * @throws SecurityException If the security check denies access to the constructor.
      */
-    protected static Constructor<?> getDeclaredConstructorFor(final Class<?> javaClass,
-                                                              Class<?>[] args) throws SecurityException {
+    protected static Constructor<?> getDeclaredConstructorFor(final Class<?> javaClass, Class<?>[] args) {
         Constructor<?> c;
         try {
             c = javaClass.getDeclaredConstructor(args);
-            if (c == null) {
-                return null;
-            }
             if (!c.isAccessible()) {
                 c.setAccessible(true);
             }

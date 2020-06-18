@@ -113,11 +113,11 @@ public class ParameterValueFactory {
         }
     }
 
-    private boolean isDateTime(Object value) {
+    private static boolean isDateTime(Object value) {
         return value instanceof Date || value instanceof LocalDateTime || value instanceof OffsetDateTime || value instanceof Instant;
     }
 
-    private boolean isTime(Object value) {
+    private static boolean isTime(Object value) {
         return value instanceof LocalTime || value instanceof OffsetTime;
     }
 

@@ -255,7 +255,7 @@ class SelectResultSet extends AbstractResultSet {
         return owlObjectToObject(getCurrentValue(columnIndex));
     }
 
-    private Object owlObjectToObject(OWLObject owlValue) {
+    private static Object owlObjectToObject(OWLObject owlValue) {
         if (owlValue == null) {
             return null;
         }
@@ -303,7 +303,7 @@ class SelectResultSet extends AbstractResultSet {
         throw new OwlapiDriverException("Conversion to type " + cls + " is not supported.");
     }
 
-    private <T> T tryInstantiatingClassUsingConstructor(Class<T> cls, URI uri) throws OwlapiDriverException {
+    private static <T> T tryInstantiatingClassUsingConstructor(Class<T> cls, URI uri) throws OwlapiDriverException {
         try {
             final Constructor<T> constructor = cls.getDeclaredConstructor(uri.getClass());
             if (!constructor.isAccessible()) {
@@ -348,7 +348,7 @@ class SelectResultSet extends AbstractResultSet {
         return owlValueToString(getCurrentValue(columnIndex));
     }
 
-    private String owlValueToString(OWLObject owlValue) {
+    private static String owlValueToString(OWLObject owlValue) {
         if (owlValue instanceof OWLLiteral) {
             return OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue).toString();
         }

@@ -135,13 +135,13 @@ class EntityLifecycleCallbackResolver {
         verifyCallbackModifiers(listenerType, callback);
     }
 
-    private void verifyCallbackModifiers(Class<?> listenerType, Method callback) {
+    private static void verifyCallbackModifiers(Class<?> listenerType, Method callback) {
         if (Modifier.isFinal(callback.getModifiers()) || Modifier.isStatic(callback.getModifiers())) {
             throw MetamodelInitializationException.invalidEntityListenerCallbackModifier(listenerType, callback);
         }
     }
 
-    private void verifyCallbackReturnType(Class<?> listenerType, Method callback) {
+    private static void verifyCallbackReturnType(Class<?> listenerType, Method callback) {
         if (!callback.getReturnType().equals(Void.TYPE)) {
             throw MetamodelInitializationException.invalidReturnTypeForEntityListenerCallback(listenerType, callback);
         }
@@ -155,7 +155,7 @@ class EntityLifecycleCallbackResolver {
         }
     }
 
-    private void verifyCallbackParameterCount(Class<?> listenerType, Method callback) {
+    private static void verifyCallbackParameterCount(Class<?> listenerType, Method callback) {
         if (callback.getParameterCount() != 1) {
             throw MetamodelInitializationException
                     .invalidArgumentsForEntityListenerCallback(listenerType, callback);

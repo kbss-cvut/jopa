@@ -100,7 +100,7 @@ public class DatatypeTransformer {
 
     private static <T> Optional<T> tryConversionUsingConstructor(Object value, Class<T> targetType) {
         try {
-            final Constructor ctor = targetType.getDeclaredConstructor(value.getClass());
+            final Constructor<T> ctor = targetType.getDeclaredConstructor(value.getClass());
             return Optional.of(targetType.cast(ctor.newInstance(value)));
         } catch (NoSuchMethodException e) {
             return Optional.empty();
@@ -121,8 +121,12 @@ public class DatatypeTransformer {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Pair)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Pair)) {
+                return false;
+            }
 
             Pair pair = (Pair) o;
 

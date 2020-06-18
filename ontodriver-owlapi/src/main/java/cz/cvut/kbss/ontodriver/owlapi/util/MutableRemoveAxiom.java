@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -50,9 +50,15 @@ public class MutableRemoveAxiom extends RemoveAxiom implements MutableAxiomChang
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MutableRemoveAxiom)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MutableRemoveAxiom)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         MutableRemoveAxiom that = (MutableRemoveAxiom) o;
         return Objects.equals(ontology, that.ontology) && Objects.equals(getAxiom(), that.getAxiom());
     }
