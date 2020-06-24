@@ -33,7 +33,7 @@ import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 class SesameConnection implements Connection {
 
-    private SesameAdapter adapter;
+    private final SesameAdapter adapter;
     private boolean open;
     private boolean autoCommit;
 
@@ -128,7 +128,7 @@ class SesameConnection implements Connection {
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
+    public PreparedStatement prepareStatement(String sparql) {
         ensureOpen();
         Objects.requireNonNull(sparql);
         if (sparql.isEmpty()) {

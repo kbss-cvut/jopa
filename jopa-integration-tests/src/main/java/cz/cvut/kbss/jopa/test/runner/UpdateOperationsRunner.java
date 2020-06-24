@@ -556,6 +556,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.getTransaction().begin();
         final OWLClassM m = findRequired(OWLClassM.class, entityM.getKey());
         m.setBooleanAttribute(!entityM.getBooleanAttribute());
+        m.setFloatAttribute(m.getFloatAttribute() - 50.0F);
         m.setDoubleAttribute(m.getDoubleAttribute() - 100.0);
         m.setLongAttribute(m.getLongAttribute() + 100L);
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000));
@@ -564,6 +565,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassM res = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(m.getBooleanAttribute(), res.getBooleanAttribute());
         assertEquals(m.getLongAttribute(), res.getLongAttribute());
+        assertEquals(m.getFloatAttribute(), res.getFloatAttribute());
         assertEquals(m.getDoubleAttribute(), res.getDoubleAttribute());
         assertEquals(m.getDateAttribute(), res.getDateAttribute());
     }
