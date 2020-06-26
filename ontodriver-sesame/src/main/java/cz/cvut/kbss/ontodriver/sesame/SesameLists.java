@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -42,25 +40,25 @@ class SesameLists implements Lists {
     @Override
     public List<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor descriptor)
             throws OntoDriverException {
-        verifyArgs(descriptor, "descriptor");
+        verifyArgs(descriptor);
         return adapter.getSimpleListHandler().loadList(descriptor);
     }
 
-    private void verifyArgs(ListDescriptor descriptor, String argName) throws SesameDriverException {
+    private void verifyArgs(ListDescriptor descriptor) throws SesameDriverException {
         beforeCallback.execute();
-        Objects.requireNonNull(descriptor, getNPXMessageSupplier(argName));
+        Objects.requireNonNull(descriptor, getNPXMessageSupplier("descriptor"));
     }
 
     @Override
     public void persistSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
-        verifyArgs(descriptor, "descriptor");
+        verifyArgs(descriptor);
         adapter.getSimpleListHandler().persistList(descriptor);
         afterChangeCallback.execute();
     }
 
     @Override
     public void updateSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
-        verifyArgs(descriptor, "descriptor");
+        verifyArgs(descriptor);
         adapter.getSimpleListHandler().updateList(descriptor);
         afterChangeCallback.execute();
     }
@@ -68,14 +66,14 @@ class SesameLists implements Lists {
     @Override
     public List<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
             throws OntoDriverException {
-        verifyArgs(descriptor, "descriptor");
+        verifyArgs(descriptor);
         return adapter.getReferencedListHandler().loadList(descriptor);
     }
 
     @Override
     public void persistReferencedList(ReferencedListValueDescriptor descriptor)
             throws OntoDriverException {
-        verifyArgs(descriptor, "descriptor");
+        verifyArgs(descriptor);
         adapter.getReferencedListHandler().persistList(descriptor);
         afterChangeCallback.execute();
     }
@@ -83,7 +81,7 @@ class SesameLists implements Lists {
     @Override
     public void updateReferencedList(ReferencedListValueDescriptor descriptor)
             throws OntoDriverException {
-        verifyArgs(descriptor, "descriptor");
+        verifyArgs(descriptor);
         adapter.getReferencedListHandler().updateList(descriptor);
         afterChangeCallback.execute();
     }

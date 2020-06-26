@@ -246,7 +246,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         }
     }
 
-    private List<String> resolveCProperties() {
+    private static List<String> resolveCProperties() {
         final List<String> lst = new ArrayList<>();
         for (Field f : OWLClassC.class.getDeclaredFields()) {
             if (f.getAnnotation(Id.class) != null || EntityPropertiesUtils.isFieldTransient(f)) {
