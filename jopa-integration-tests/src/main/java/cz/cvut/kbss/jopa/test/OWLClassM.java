@@ -42,6 +42,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_longAttribute)
     private Long longAttribute;
 
+    @OWLDataProperty(iri = Vocabulary.p_m_floatAttribute)
+    private Float floatAttribute;
+
     @OWLDataProperty(iri = Vocabulary.p_m_doubleAttribute)
     private Double doubleAttribute;
 
@@ -97,6 +100,14 @@ public class OWLClassM {
 
     public void setLongAttribute(Long longAttribute) {
         this.longAttribute = longAttribute;
+    }
+
+    public Float getFloatAttribute() {
+        return floatAttribute;
+    }
+
+    public void setFloatAttribute(Float floatAttribute) {
+        this.floatAttribute = floatAttribute;
     }
 
     public Double getDoubleAttribute() {
@@ -162,6 +173,7 @@ public class OWLClassM {
                 ", booleanAttribute=" + booleanAttribute +
                 ", intAttribute=" + intAttribute +
                 ", longAttribute=" + longAttribute +
+                ", floatAttribute=" + floatAttribute +
                 ", doubleAttribute=" + doubleAttribute +
                 ", enumAttribute=" + enumAttribute +
                 ", integerSet=" + integerSet +
@@ -178,6 +190,7 @@ public class OWLClassM {
         this.booleanAttribute = true;
         this.intAttribute = 117;
         this.longAttribute = 365L;
+        this.floatAttribute = 3.14F;
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
         this.enumAttribute = Severity.MEDIUM;

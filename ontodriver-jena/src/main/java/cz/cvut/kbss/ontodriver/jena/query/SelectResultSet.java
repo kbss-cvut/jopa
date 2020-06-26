@@ -196,7 +196,7 @@ public class SelectResultSet extends AbstractResultSet {
         return toObject(getCurrent(getVariableAt(variableIndex)), cls);
     }
 
-    private <T> T toObject(RDFNode value, Class<T> cls) throws JenaDriverException {
+    private static <T> T toObject(RDFNode value, Class<T> cls) throws JenaDriverException {
         Objects.requireNonNull(cls);
         if (cls.isAssignableFrom(value.getClass())) {
             return cls.cast(value);

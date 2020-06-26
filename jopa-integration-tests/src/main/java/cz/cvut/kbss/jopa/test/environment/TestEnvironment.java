@@ -24,7 +24,7 @@ import java.util.*;
 
 public class TestEnvironment {
 
-    public static final String dir = "testResults";
+    public static final String TEST_RESULTS_DIR = "testResults";
 
     public static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
     public static final String IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/";
@@ -104,7 +104,7 @@ public class TestEnvironment {
         final List<EntityManager> managers = new ArrayList<>(storages.size());
         for (StorageConfig si : storages) {
             si.setName(baseName);
-            si.setDirectory(dir);
+            si.setDirectory(TEST_RESULTS_DIR);
             final Map<String, String> config = si.createStorageConfiguration(i++);
             config.putAll(params);
             final EntityManager em = Persistence.createEntityManagerFactory("context-name_" + i, config)

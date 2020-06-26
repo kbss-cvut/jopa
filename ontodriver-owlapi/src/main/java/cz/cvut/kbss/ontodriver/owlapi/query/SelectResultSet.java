@@ -281,7 +281,7 @@ class SelectResultSet extends AbstractResultSet {
         return owlObjectToType(getCurrentValue(columnIndex), cls);
     }
 
-    private <T> T owlObjectToType(OWLObject owlValue, Class<T> cls) throws OntoDriverException {
+    private static <T> T owlObjectToType(OWLObject owlValue, Class<T> cls) throws OntoDriverException {
         if (cls.isAssignableFrom(owlValue.getClass())) {
             return cls.cast(owlValue);
         }

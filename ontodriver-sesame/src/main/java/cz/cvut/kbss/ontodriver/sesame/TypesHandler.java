@@ -52,7 +52,7 @@ class TypesHandler {
         return connector.findStatements(subject, RDF.TYPE, null, includeInferred, contextUri);
     }
 
-    private Set<Axiom<URI>> resolveTypes(NamedResource individual, boolean includeInferred,
+    private static Set<Axiom<URI>> resolveTypes(NamedResource individual, boolean includeInferred,
                                          Collection<Statement> statements) {
         final Set<Axiom<URI>> types = new HashSet<>(statements.size());
         final Assertion clsAssertion = Assertion.createClassAssertion(includeInferred);

@@ -1,6 +1,9 @@
 # JOPA - Release Notes
 
 
+## 0.14.6 - June 26, 2020
+- Add missing support for mapping `float` attributes.
+
 ## 0.14.5 - June 18, 2020
 - [JOPA] Extend XSD constants.
 - Dependency update - RDF4J 3.2.2.

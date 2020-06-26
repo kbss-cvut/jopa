@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.util;
 
@@ -59,6 +57,8 @@ public final class SesameUtils {
             return literal.longValue();
         } else if (datatype.equals(XMLSchema.DECIMAL)) {
             return literal.decimalValue();
+        } else if (datatype.equals(XMLSchema.FLOAT)) {
+            return literal.floatValue();
         } else if (datatype.equals(XMLSchema.DOUBLE)) {
             return literal.doubleValue();
         } else if (datatype.equals(XMLSchema.SHORT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)) {
@@ -129,6 +129,8 @@ public final class SesameUtils {
             return vf.createLiteral((Short) value);
         } else if (value instanceof Boolean) {
             return vf.createLiteral((Boolean) value);
+        } else if (value instanceof Float) {
+            return vf.createLiteral((Float) value);
         } else if (value instanceof Double) {
             return vf.createLiteral((Double) value);
         } else if (value instanceof Long) {
