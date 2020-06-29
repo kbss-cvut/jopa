@@ -60,6 +60,11 @@
             <artifactId>logback-classic</artifactId>
             <version>${ch.qos.logback.version}</version>
         </dependency>
+        <dependency>
+			<groupId>cz.cvut.kbss.jsonld</groupId>
+			<artifactId>jb4jsonld</artifactId>
+			<version>${jb4jsonld.version}</version>
+		</dependency>        
     </dependencies>
 
     <profiles>

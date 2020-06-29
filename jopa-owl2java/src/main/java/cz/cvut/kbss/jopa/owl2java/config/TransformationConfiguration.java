@@ -34,6 +34,8 @@ public class TransformationConfiguration {
 
     private final CliParams cliParams;
 
+	private final boolean attributeOrder;
+
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
         this.context = builder.context;
         this.packageName = builder.packageName;
@@ -42,6 +44,7 @@ public class TransformationConfiguration {
         this.generateJavadoc = builder.generateJavadoc;
         this.propertiesType = builder.propertiesType;
         this.cliParams = CliParams.empty();
+        this.attributeOrder=builder.attributeOrder;
     }
 
     private TransformationConfiguration(CliParams cliParams) {
@@ -53,6 +56,7 @@ public class TransformationConfiguration {
         this.generateOwlapiIris = cliParams.is(Option.WITH_IRIS.arg, Defaults.WITH_IRIS);
         this.generateJavadoc = cliParams
                 .is(Option.GENERATE_JAVADOC_FROM_COMMENT.arg, Defaults.GENERATE_JAVADOC_FROM_COMMENT);
+        this.attributeOrder=false;
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
     }
 
@@ -88,6 +92,10 @@ public class TransformationConfiguration {
         return cliParams;
     }
 
+    public boolean isAddAttributeOrderAnnotationSet() {
+    	return attributeOrder;
+    }
+    
     public static TransformationConfiguration config(CliParams cliParams) {
         return new TransformationConfiguration(cliParams);
     }
@@ -103,6 +111,7 @@ public class TransformationConfiguration {
         private PropertiesType propertiesType = PropertiesType.valueOf(Defaults.PROPERTIES_TYPE);
         private boolean owlapiIris = Defaults.WITH_IRIS;
         private boolean generateJavadoc = Defaults.GENERATE_JAVADOC_FROM_COMMENT;
+		private boolean attributeOrder;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -134,6 +143,18 @@ public class TransformationConfiguration {
             return this;
         }
 
+        /**
+         * If true, add the @JsonLdAttributeOrder annotation to generated classes
+         * representing OWL classes.
+         * 
+         * @param attributeOrder
+         * @return
+         */
+        public TransformationConfigurationBuilder addAttributeOrderAnnotation(boolean attributeOrder) {
+        	this.attributeOrder=attributeOrder;
+        	return this;
+        }
+        
         public TransformationConfiguration build() {
             return new TransformationConfiguration(this);
         }
