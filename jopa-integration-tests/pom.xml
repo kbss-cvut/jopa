@@ -14,14 +14,6 @@
     <name>JOPA Integration Tests</name>
     <description>Integration tests of JOPA and its OntoDriver implementations</description>
 
-    <repositories>
-        <repository>
-            <id>kbss</id>
-            <name>KBSS Maven 2 Repository</name>
-            <url>http://kbss.felk.cvut.cz/m2repo</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>
