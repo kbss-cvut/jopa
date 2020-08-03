@@ -43,10 +43,10 @@ import static org.mockito.Mockito.verify;
 
 class AxiomLoaderTest {
 
-    private TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
+    private final TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
     private Generator.GeneratedData generatedData;
-    private ValueFactory vf = SimpleValueFactory.getInstance();
+    private final ValueFactory vf = SimpleValueFactory.getInstance();
 
     private Connector connector;
 
@@ -179,7 +179,9 @@ class AxiomLoaderTest {
                     vf.createLiteral((Integer) value), vf.createIRI(context));
 
         } else {
-            value = NamedResource.create("http://krizik.felk.cvut.cz/individualInContext" + Generator.randomInt());
+            value = property.getType() == Assertion.AssertionType.CLASS ?
+                    URI.create("http://krizik.felk.cvut.cz/individualInContext" + Generator.randomInt()) :
+                    NamedResource.create("http://krizik.felk.cvut.cz/individualInContext" + Generator.randomInt());
             conn.add(vf.createIRI(individual), vf.createIRI(property.getIdentifier().toString()),
                     vf.createIRI(value.toString()), vf.createIRI(context));
         }
