@@ -43,6 +43,6 @@ class DateTimeParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
-        return "\"" + value + "\"^^<" + XSD.DATETIME + ">";
+        return "\"" + (value instanceof Date ? ((Date) value).toInstant() : value) + "\"^^<" + XSD.DATETIME + ">";
     }
 }

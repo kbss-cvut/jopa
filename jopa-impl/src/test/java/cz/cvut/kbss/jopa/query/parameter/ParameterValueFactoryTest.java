@@ -111,7 +111,7 @@ class ParameterValueFactoryTest {
         final Date date = new Date();
         final ParameterValue value = sut.create(date);
         assertEquals(date, value.getValue());
-        assertEquals("\"" + date.toString() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",
+        assertEquals("\"" + date.toInstant().toString() + "\"^^<http://www.w3.org/2001/XMLSchema#dateTime>",
                 value.getQueryString());
     }
 

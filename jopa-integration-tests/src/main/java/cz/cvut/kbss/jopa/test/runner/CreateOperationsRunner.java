@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -604,7 +605,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassX entityX = new OWLClassX();
         final LocalDate date = LocalDate.now();
         entityX.setLocalDate(date);
-        final LocalDateTime dateTime = LocalDateTime.now();
+        // Truncate to millis to prevent problems with storage precision
+        final LocalDateTime dateTime = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
         entityX.setLocalDateTime(dateTime);
         persist(entityX);
 
