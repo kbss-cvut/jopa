@@ -1,6 +1,11 @@
 # JOPA - Release Notes
 
 
+## 0.14.7 - August 4, 2020
+- Dependency updates: Jena 3.16.0, OWL API 5.1.16, RDF4J 3.3.0.
+- Project configuration simplification.
+- Minor fix of formatting `java.util.Date` query parameter values.
+
 ## 0.14.6 - June 26, 2020
 - Add missing support for mapping `float` attributes.
 
