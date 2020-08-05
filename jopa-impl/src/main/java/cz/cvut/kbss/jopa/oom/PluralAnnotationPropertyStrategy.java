@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -42,7 +43,7 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
         if (isValidRange(value)) {
             values.add(toAttributeValue(value));
         } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) {
-            values.add(IdentifierTransformer.transformToIdentifier(value, elementType));
+            values.add(IdentifierTransformer.transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value), elementType));
         }
     }
 

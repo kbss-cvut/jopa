@@ -13,6 +13,7 @@
 package cz.cvut.kbss.ontodriver.sesame.util;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -46,9 +47,10 @@ public final class SesameUtils {
         final IRI datatype = literal.getDatatype();
         assert datatype != null;
 
-        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
-                datatype.equals(RDF.LANGSTRING)) {
+        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING)) {
             return literal.stringValue();
+        } else if (datatype.equals(RDF.LANGSTRING)) {
+            return new LangString(literal.stringValue(), literal.getLanguage().orElse(null));
         } else if (isInteger(datatype)) {
             return literal.intValue();
         } else if (datatype.equals(XMLSchema.BOOLEAN)) {
