@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -58,7 +59,7 @@ class PluralAnnotationPropertyStrategyTest {
     private AxiomValueGatherer gatherer;
 
     private MetamodelMocks mocks;
-    private Descriptor descriptor = new EntityDescriptor();
+    private final Descriptor descriptor = new EntityDescriptor();
 
     @BeforeEach
     void setUp() throws Exception {
@@ -118,7 +119,7 @@ class PluralAnnotationPropertyStrategyTest {
     @Test
     void addValueFromAxiomAddsStringToUriValues() throws Exception {
         final PluralAnnotationPropertyStrategy<WithPluralUriAnnotations> sut = createStrategyWithPluralAnnotations(
-                WithPluralUriAnnotations.class, URI.class);
+                WithPluralUriAnnotations.class, URI.class, null);
         final NamedResource value = NamedResource.create(Generators.createIndividualIdentifier());
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(INDIVIDUAL, createAnnotationAssertionForN(), new Value<>(value));
@@ -130,7 +131,8 @@ class PluralAnnotationPropertyStrategyTest {
     }
 
     private <T, X> PluralAnnotationPropertyStrategy<T> createStrategyWithPluralAnnotations(Class<T> entity,
-                                                                                           Class<X> elementType) throws
+                                                                                           Class<X> elementType,
+                                                                                           ConverterWrapper converter) throws
             Exception {
         final EntityTypeImpl<T> et = mock(EntityTypeImpl.class);
         final AbstractPluralAttribute<T, Set, X> att = mock(AbstractPluralAttribute.class);
@@ -139,6 +141,7 @@ class PluralAnnotationPropertyStrategyTest {
         when(att.getBindableJavaType()).thenReturn(elementType);
         when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.DC_SOURCE));
+        when(att.getConverter()).thenReturn(converter);
         return new PluralAnnotationPropertyStrategy<>(et, att, descriptor, mapperMock);
     }
 
@@ -189,7 +192,7 @@ class PluralAnnotationPropertyStrategyTest {
     @Test
     void buildAxiomValuesFromInstanceAddsUrisAsNamedResources() throws Exception {
         final PluralAnnotationPropertyStrategy<WithPluralUriAnnotations> sut = createStrategyWithPluralAnnotations(
-                WithPluralUriAnnotations.class, URI.class);
+                WithPluralUriAnnotations.class, URI.class, null);
         final Set<URI> values = IntStream.range(0, 5).mapToObj(i -> Generators.createIndividualIdentifier()).collect(
                 Collectors.toSet());
         final WithPluralUriAnnotations instance = new WithPluralUriAnnotations();
@@ -203,8 +206,7 @@ class PluralAnnotationPropertyStrategyTest {
     @Test
     void addValueFromAxiomTransformsValueToLexicalForm() throws Exception {
         final PluralAnnotationPropertyStrategy<WithPluralStringAnnotations> sut = createStrategyWithPluralAnnotations(
-                WithPluralStringAnnotations.class, String.class);
-        when(sut.attribute.getConverter()).thenReturn(new ToLexicalFormConverter());
+                WithPluralStringAnnotations.class, String.class, new ToLexicalFormConverter());
         final Integer value = 117;
         final Axiom<Integer> axiom = new AxiomImpl<>(INDIVIDUAL, Assertion.createAnnotationPropertyAssertion(URI.create(
                 DC.Terms.SOURCE), false), new Value<>(value));
@@ -225,7 +227,7 @@ class PluralAnnotationPropertyStrategyTest {
     @Test
     void addValueFromAxiomAcceptsIdentifiersForLexicalFormAttribute() throws Exception {
         final PluralAnnotationPropertyStrategy<WithPluralStringAnnotations> sut = createStrategyWithPluralAnnotations(
-                WithPluralStringAnnotations.class, String.class);
+                WithPluralStringAnnotations.class, String.class, null);
         when(sut.attribute.getConverter()).thenReturn(new ToLexicalFormConverter());
         final URI value = Generators.createIndividualIdentifier();
         final Axiom<NamedResource> axiom = new AxiomImpl<>(INDIVIDUAL,
