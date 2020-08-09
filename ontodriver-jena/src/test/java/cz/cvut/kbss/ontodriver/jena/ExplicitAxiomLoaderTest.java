@@ -192,7 +192,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
         final Axiom<?> axiom = result.iterator().next();
-        assertEquals(matching.getObject().asLiteral().getValue(), axiom.getValue().getValue());
+        assertEquals(matching.getObject().asLiteral().getValue(), ((LangString) axiom.getValue().getValue()).getValue());
     }
 
     @Test
@@ -221,7 +221,9 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
-        assertEquals("a", result.iterator().next().getValue().getValue());
+        assertEquals("a", ((LangString) result.iterator().next().getValue().getValue()).getValue());
+        assertTrue(((LangString) result.iterator().next().getValue().getValue()).getLanguage().isPresent());
+        assertEquals("en", ((LangString) result.iterator().next().getValue().getValue()).getLanguage().get());
     }
 
     @Test
@@ -496,6 +498,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
         final Axiom<?> axiom = result.iterator().next();
-        assertEquals(value, axiom.getValue().getValue());
+        assertEquals(value, ((LangString) axiom.getValue().getValue()).getValue());
+        assertEquals("en", ((LangString) axiom.getValue().getValue()).getLanguage().get());
     }
 }
