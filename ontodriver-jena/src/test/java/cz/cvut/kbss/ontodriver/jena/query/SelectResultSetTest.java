@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -262,7 +262,7 @@ class SelectResultSetTest {
         final String name = "unknown";
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> selectResult.getString(name));
-        assertThat(ex.getMessage(), containsString("Variable \'" + name + "\' not found in the result set."));
+        assertThat(ex.getMessage(), containsString("Variable '" + name + "' not found in the result set."));
     }
 
     @Test
@@ -479,7 +479,7 @@ class SelectResultSetTest {
     }
 
     public static class ResultJenaBased {
-        private Object value;
+        private final Object value;
 
         public ResultJenaBased(RDFNode node) {
             this.value = node.isLiteral() ? node.asLiteral().getValue() : URI.create(node.asResource().getURI());
@@ -496,7 +496,7 @@ class SelectResultSetTest {
     }
 
     public static class ResultJavaBased {
-        private URI value;
+        private final URI value;
 
         public ResultJavaBased(URI value) {
             this.value = value;
@@ -514,7 +514,7 @@ class SelectResultSetTest {
     }
 
     public static class ResultStringBased {
-        private String value;
+        private final String value;
 
         public ResultStringBased(String value) {
             this.value = value;
