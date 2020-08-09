@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -115,5 +116,25 @@ class VariableResultMapperTest {
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
         final Object result = mapper.map(resultRow, uowMock);
         assertNull(result);
+    }
+
+    @Test
+    void mapTransformsLangStringToString() throws OntoDriverException {
+        final LangString value = new LangString("test", "en");
+        when(resultRow.isBound(NAME)).thenReturn(true);
+        when(resultRow.getObject(NAME)).thenReturn(value);
+        final VariableResultMapper mapper = new VariableResultMapper(WithStringMapping.getVariableMapping());
+        final Object result = mapper.map(resultRow, uowMock);
+        assertEquals(value.getValue(), result);
+    }
+
+    @SparqlResultSetMapping(name = "testMapping", variables = {
+            @VariableResult(name = NAME, type = String.class)
+    })
+    private static class WithStringMapping {
+
+        private static VariableResult getVariableMapping() {
+            return WithStringMapping.class.getDeclaredAnnotation(SparqlResultSetMapping.class).variables()[0];
+        }
     }
 }

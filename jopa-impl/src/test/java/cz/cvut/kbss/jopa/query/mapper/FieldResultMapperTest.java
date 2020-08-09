@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -66,14 +67,15 @@ class FieldResultMapperTest {
         when(fsMock.getJavaType()).thenReturn(Boolean.class);
         when(fsMock.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(resultRow.isBound(fieldResult.variable())).thenReturn(true);
-        when(resultRow.getObject(fieldResult.variable())).thenReturn("string");
+        when(resultRow.getObject(fieldResult.variable())).thenReturn(117);
 
         final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
         final OWLClassM target = new OWLClassM();
         final SparqlResultMappingException result =
                 assertThrows(SparqlResultMappingException.class, () -> mapper.map(resultRow, target, uowMock));
         assertThat(result.getMessage(), containsString(
-                "Value " + resultRow.getObject(fieldResult.variable()) + " cannot be assigned to field of type " +
+                "Value " + resultRow
+                        .getObject(fieldResult.variable()) + " cannot be assigned (or transformed) to field of type " +
                         fsMock.getJavaType()));
         assertNull(target.getBooleanAttribute());
     }
@@ -121,5 +123,21 @@ class FieldResultMapperTest {
         final OWLClassM target = new OWLClassM();
         mapper.map(resultRow, target, uowMock);
         assertNull(target.getBooleanAttribute());
+    }
+
+    @Test
+    void mapSupportsTransformationFromLangStringToStringField() throws Exception {
+        final FieldResult fieldResult = WithMapping.getFieldResult();
+        final FieldSpecification fsMock = mock(FieldSpecification.class);
+        when(fsMock.getJavaType()).thenReturn(String.class);
+        when(fsMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+        final LangString value = new LangString("test", "en");
+        when(resultRow.isBound(fieldResult.variable())).thenReturn(true);
+        when(resultRow.getObject(fieldResult.variable())).thenReturn(value);
+
+        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
+        final OWLClassA target = new OWLClassA();
+        mapper.map(resultRow, target, uowMock);
+        assertEquals(value.getValue(), target.getStringAttribute());
     }
 }

@@ -59,7 +59,6 @@ public class DatatypeTransformer {
         map.put(new Pair(Double.class, Integer.class), value -> ((Double) value).intValue());
         map.put(new Pair(Double.class, Long.class), value -> ((Double) value).longValue());
         map.put(new Pair(Double.class, Float.class), value -> ((Double) value).floatValue());
-        map.put(new Pair(LangString.class, String.class), value -> ((LangString) value).getValue());
         map.put(new Pair(URI.class, URL.class), value -> {
             try {
                 return ((URI) value).toURL();
@@ -82,7 +81,7 @@ public class DatatypeTransformer {
             return null;
         }
         if (targetType.equals(String.class)) {
-            return targetType.cast(value.toString());
+            return targetType.cast(value instanceof LangString ? ((LangString) value).getValue() : value.toString());
         }
         final Class<?> sourceType = value.getClass();
         if (targetType.isAssignableFrom(sourceType)) {

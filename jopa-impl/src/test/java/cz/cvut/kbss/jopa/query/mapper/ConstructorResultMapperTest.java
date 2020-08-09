@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -125,7 +126,7 @@ class ConstructorResultMapperTest {
     }
 
     private static class WithPrivateConstructor {
-        private URI uri;
+        private final URI uri;
 
         private WithPrivateConstructor(URI uri) {
             this.uri = uri;
@@ -147,10 +148,30 @@ class ConstructorResultMapperTest {
 
     @SuppressWarnings("unused")
     private static abstract class AbstractClass {
-        private URI uri;
+        private final URI uri;
 
         private AbstractClass(URI uri) {
             this.uri = uri;
         }
+    }
+
+    @Test
+    void mapSupportsAutomaticConversionFromLangStringToString() {
+        final ConstructorResultMapper mapper = new ConstructorResultMapper(OWLClassA.class);
+        final VariableResultMapper idMapper = mock(VariableResultMapper.class);
+        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
+        final URI uri = Generators.createIndividualIdentifier();
+        when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
+        when(idMapper.getTargetType()).thenAnswer(inv -> URI.class);
+        mapper.addParameterMapper(idMapper);
+        final LangString strValue = new LangString("test", "en");
+        when(stringMapper.map(resultRow, uowMock)).thenReturn(strValue.getValue());
+        when(stringMapper.getTargetType()).thenAnswer(inv -> String.class);
+        mapper.addParameterMapper(stringMapper);
+
+        final Object result = mapper.map(resultRow, uowMock);
+        assertTrue(result instanceof OWLClassA);
+        assertEquals(uri, ((OWLClassA) result).getUri());
+        assertEquals(strValue.getValue(), ((OWLClassA) result).getStringAttribute());
     }
 }

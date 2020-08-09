@@ -14,6 +14,7 @@ package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 
 import java.net.URL;
@@ -71,5 +72,12 @@ class DatatypeTransformerTest {
                 () -> DatatypeTransformer.transform(value, OWLClassA.class));
         assertEquals(String.format("Cannot transform value %s of type %s to target type %s.", value, String.class,
                 OWLClassA.class), ex.getMessage());
+    }
+
+    @Test
+    void transformTransformsLangStringToString() {
+        final LangString value = new LangString("test", "en");
+        final String result = DatatypeTransformer.transform(value, String.class);
+        assertEquals(value.getValue(), result);
     }
 }
