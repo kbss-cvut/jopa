@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -22,6 +23,8 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,5 +82,15 @@ class OwlapiUtilsTest {
         final OWLLiteral result = OwlapiUtils.createOWLLiteralFromValue("test", LANG);
         assertTrue(result.hasLang());
         assertEquals(OWL2Datatype.RDF_LANG_STRING.getDatatype(dataFactory), result.getDatatype());
+    }
+
+    @Test
+    void owlLiteralToValueReturnLangStringForStringLiteralWithLanguage() {
+        final OWLLiteral literal = dataFactory.getOWLLiteral("test", LANG);
+        final Object result = OwlapiUtils.owlLiteralToValue(literal);
+        assertThat(result, instanceOf(LangString.class));
+        assertEquals("test", ((LangString) result).getValue());
+        assertTrue(((LangString) result).getLanguage().isPresent());
+        assertEquals(LANG, ((LangString) result).getLanguage().get());
     }
 }

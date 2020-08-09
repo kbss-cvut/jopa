@@ -17,6 +17,7 @@ package cz.cvut.kbss.ontodriver.owlapi.query;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.owlapi.exception.BindingValueMismatchException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
@@ -289,6 +290,8 @@ class SelectResultSet extends AbstractResultSet {
             final Object ob = OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue);
             if (cls.isAssignableFrom(ob.getClass())) {
                 return cls.cast(ob);
+            } else if (String.class.equals(cls) && ob instanceof LangString) {
+                return cls.cast(((LangString) ob).getValue());
             }
         } else {
             final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
@@ -350,7 +353,7 @@ class SelectResultSet extends AbstractResultSet {
 
     private static String owlValueToString(OWLObject owlValue) {
         if (owlValue instanceof OWLLiteral) {
-            return OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue).toString();
+            return ((OWLLiteral) owlValue).getLiteral();
         }
         final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
         if (sig.isEmpty()) {

@@ -289,7 +289,7 @@ class MainAxiomLoaderTest {
     private void checkLoadedAxiomsForStringValue(Collection<Axiom<?>> result, String expected) {
         assertEquals(1, result.size());
         final Axiom<?> ax = result.iterator().next();
-        assertEquals(expected, ax.getValue().getValue());
+        assertEquals(expected, ((LangString) ax.getValue().getValue()).getValue());
     }
 
     @Test
@@ -347,8 +347,8 @@ class MainAxiomLoaderTest {
         final Collection<Axiom<?>> result = sut.findAxioms(descriptor(apa));
         assertEquals(2, result.size());
         final Set<String> values = result.stream().map(ax -> ax.getValue().stringValue()).collect(Collectors.toSet());
-        assertTrue(values.contains("a"));
-        assertTrue(values.contains("b"));
+        assertTrue(values.contains("\"a\"@" + LANG));
+        assertTrue(values.contains("\"b\"@cs"));
     }
 
     @Test
