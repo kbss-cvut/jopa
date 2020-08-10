@@ -1,20 +1,17 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -44,14 +41,14 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
     static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
             EntityType<X> et, FieldSpecification<? super X, ?> att,
-            Descriptor fieldDescriptor, EntityMappingHelper mapper) {
+            Descriptor entityDescriptor, EntityMappingHelper mapper) {
         if (att.equals(et.getIdentifier())) {
-            return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, fieldDescriptor, mapper);
+            return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, entityDescriptor, mapper);
         }
         if (att instanceof TypesSpecification) {
-            return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, fieldDescriptor, mapper);
+            return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, entityDescriptor, mapper);
         } else if (att instanceof PropertiesSpecification) {
-            return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att, fieldDescriptor,
+            return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att, entityDescriptor,
                     mapper);
         }
         final AbstractAttribute<? super X, ?> attribute = (AbstractAttribute<? super X, ?>) att;
@@ -59,24 +56,24 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
                     return new PluralAnnotationPropertyStrategy<>(et,
-                            (AbstractPluralAttribute<? super X, ?, ?>) attribute, fieldDescriptor, mapper);
+                            (AbstractPluralAttribute<? super X, ?, ?>) attribute, entityDescriptor, mapper);
                 case DATA:
                     return new PluralDataPropertyStrategy<>(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            fieldDescriptor, mapper);
+                            entityDescriptor, mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            fieldDescriptor, mapper);
+                            entityDescriptor, mapper);
                 default:
                     break;
             }
         } else {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                    return new SingularAnnotationPropertyStrategy<>(et, attribute, fieldDescriptor, mapper);
+                    return new SingularAnnotationPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
                 case DATA:
-                    return new SingularDataPropertyStrategy<>(et, attribute, fieldDescriptor, mapper);
+                    return new SingularDataPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
                 case OBJECT:
-                    return new SingularObjectPropertyStrategy<>(et, attribute, fieldDescriptor, mapper);
+                    return new SingularObjectPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
                 default:
                     break;
             }
@@ -158,17 +155,6 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      */
     URI getAttributeContext() {
         return entityDescriptor.getAttributeContext(attribute);
-    }
-
-    /**
-     * Gets the language tag that should be used when mapping this field to an assertion.
-     *
-     * @return Language tag, possibly {@code null}
-     */
-    String getLanguage() {
-        final Descriptor attributeDescriptor = entityDescriptor.getAttributeDescriptor(attribute);
-        return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
-               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**

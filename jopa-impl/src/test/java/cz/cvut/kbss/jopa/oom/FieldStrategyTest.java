@@ -27,8 +27,7 @@ import java.net.URI;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class FieldStrategyTest {
@@ -49,15 +48,6 @@ class FieldStrategyTest {
     }
 
     @Test
-    void getLanguageRetrievesAttributeLanguageFromEntityDescriptor() throws Exception {
-        final String lang = "cs";
-        descriptor.setAttributeLanguage(OWLClassA.getStrAttField(), lang);
-        final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
-                metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
-        assertEquals(lang, sut.getLanguage());
-    }
-
-    @Test
     void getAttributeContextRetrievesContextFromEntityDescriptor() throws Exception {
         final URI context = Generators.createIndividualIdentifier();
         descriptor.addAttributeContext(OWLClassA.getStrAttField(), context);
@@ -65,13 +55,6 @@ class FieldStrategyTest {
                 metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
         assertEquals(context, sut.getAttributeContext());
         verify(descriptor).getAttributeContext(metamodelMocks.forOwlClassA().stringAttribute());
-    }
-
-    @Test
-    void getLanguageReturnsNullForSimpleLiteralAttribute() {
-        final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassM().entityType(),
-                metamodelMocks.forOwlClassM().simpleLiteralAttribute(), descriptor, mapperMock);
-        assertNull(sut.getLanguage());
     }
 
     @Test

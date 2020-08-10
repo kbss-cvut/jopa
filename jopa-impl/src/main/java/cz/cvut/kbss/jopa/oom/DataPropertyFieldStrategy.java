@@ -45,12 +45,12 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
         return converter.convertToAxiomValue(value);
     }
 
-    @Override
     String getLanguage() {
         if (attribute.isSimpleLiteral()) {
             return null;
         }
-        return super.getLanguage();
+        final Descriptor attDescriptor = entityDescriptor.getAttributeDescriptor(attribute);
+        return attDescriptor.hasLanguage() ? attDescriptor.getLanguage() : attribute.getLanguage();
     }
 
     @Override

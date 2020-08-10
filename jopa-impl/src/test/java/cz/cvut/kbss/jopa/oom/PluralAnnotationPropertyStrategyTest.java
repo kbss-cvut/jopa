@@ -142,6 +142,8 @@ class PluralAnnotationPropertyStrategyTest {
         when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.DC_SOURCE));
         when(att.getConverter()).thenReturn(converter);
+        when(att.hasLanguage()).thenReturn(true);
+        when(att.getLanguage()).thenReturn(LANG);
         return new PluralAnnotationPropertyStrategy<>(et, att, descriptor, mapperMock);
     }
 

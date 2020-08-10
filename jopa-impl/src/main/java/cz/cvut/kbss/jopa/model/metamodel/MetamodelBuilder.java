@@ -107,6 +107,7 @@ public class MetamodelBuilder {
             }
             final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
             context.setConverterResolver(converterResolver);
+            context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
             processManagedType(context);
             return context.getType();
         }
