@@ -16,13 +16,14 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassN;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class AnnotationPropertyAttributesTest {
@@ -78,5 +79,23 @@ class AnnotationPropertyAttributesTest {
     private static class WithSimpleLiteral {
         @OWLAnnotationProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
         private String simpleLiteral;
+    }
+
+    @Test
+    void resolveSetsLanguageFromPersistenceUnitLanguageConfiguration() throws Exception {
+        final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
+        when(typeBuilderContext.getPuLanguage()).thenReturn("en");
+        sut.typeBuilderContext = typeBuilderContext;
+        sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder, OWLClassN.getAnnotationPropertyField().getType());
+        assertEquals("en", sut.getLanguage());
+    }
+
+    @Test
+    void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
+        final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
+        when(typeBuilderContext.getPuLanguage()).thenReturn("en");
+        sut.typeBuilderContext = typeBuilderContext;
+        sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder, MultilingualString.class);
+        assertNull(sut.getLanguage());
     }
 }

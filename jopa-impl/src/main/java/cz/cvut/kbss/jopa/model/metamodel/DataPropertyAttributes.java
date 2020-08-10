@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
 import java.lang.reflect.Field;
@@ -37,6 +38,7 @@ class DataPropertyAttributes extends PropertyAttributes {
         this.type = BasicTypeImpl.get(fieldValueCls);
         this.lexicalForm = odp.lexicalForm();
         this.simpleLiteral = odp.simpleLiteral();
+        this.language = resolveLanguage(fieldValueCls);
         validator.validateDataPropertyField(field, odp);
     }
 }

@@ -16,16 +16,16 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class DataPropertyAttributesTest {
 
@@ -48,8 +48,7 @@ class DataPropertyAttributesTest {
     void resolveInvokesDataPropertyFieldValidation() throws Exception {
         final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
         sut.typeBuilderContext = typeBuilderContext;
-        sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder,
-                OWLClassA.getStrAttField().getType());
+        sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
         verify(validator)
                 .validateDataPropertyField(OWLClassA.getStrAttField(), OWLClassA.getStrAttField().getAnnotation(
                         OWLDataProperty.class));
@@ -69,5 +68,23 @@ class DataPropertyAttributesTest {
         sut.typeBuilderContext = typeBuilderContext;
         sut.resolve(OWLClassM.getSimpleLiteralField(), metamodelBuilder, OWLClassM.getSimpleLiteralField().getType());
         assertTrue(sut.isSimpleLiteral());
+    }
+
+    @Test
+    void resolveSetsLanguageFromPersistenceUnitLanguageConfiguration() throws Exception {
+        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
+        when(typeBuilderContext.getPuLanguage()).thenReturn("en");
+        sut.typeBuilderContext = typeBuilderContext;
+        sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
+        assertEquals("en", sut.getLanguage());
+    }
+
+    @Test
+    void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
+        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
+        when(typeBuilderContext.getPuLanguage()).thenReturn("en");
+        sut.typeBuilderContext = typeBuilderContext;
+        sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, MultilingualString.class);
+        assertNull(sut.getLanguage());
     }
 }
