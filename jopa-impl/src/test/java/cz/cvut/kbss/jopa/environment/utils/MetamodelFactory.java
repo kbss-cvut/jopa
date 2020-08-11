@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -19,6 +17,7 @@ import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
 import cz.cvut.kbss.jopa.environment.listener.ParentListener;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.*;
@@ -1129,5 +1128,47 @@ public class MetamodelFactory {
         when(owlClassSAtt.getDeclaringType()).thenReturn(et);
         when(owlClassSAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(owlClassSAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+    }
+
+    static void initOwlClassUMocks(EntityTypeImpl<OWLClassU> et, SingularAttributeImpl singularStringAtt,
+                                   AbstractPluralAttribute pluralStringAtt,
+                                   Identifier id) throws Exception {
+        when(et.getIdentifier()).thenReturn(id);
+        when(id.isGenerated()).thenReturn(true);
+        when(et.getJavaType()).thenReturn(OWLClassU.class);
+        when(id.getJavaField()).thenReturn(OWLClassU.getIdField());
+        when(id.getDeclaringType()).thenReturn(et);
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassU.getClassIri()));
+        when(et.getFieldSpecifications())
+                .thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt, id)));
+        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt)));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+
+        when(singularStringAtt.getJavaField()).thenReturn(OWLClassU.getSingularStringAttField());
+        when(singularStringAtt.getJavaType()).thenReturn(OWLClassU.getSingularStringAttField().getType());
+        when(singularStringAtt.getName()).thenReturn(OWLClassU.getSingularStringAttField().getName());
+        when(et.getAttribute(OWLClassU.getSingularStringAttField().getName())).thenReturn(singularStringAtt);
+        when(singularStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(singularStringAtt.isCollection()).thenReturn(false);
+        when(singularStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
+        when(singularStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassU.getSingularStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(singularStringAtt.getDeclaringType()).thenReturn(et);
+        when(singularStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(singularStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+
+        when(pluralStringAtt.getJavaField()).thenReturn(OWLClassU.getPluralStringAttField());
+        when(pluralStringAtt.getJavaType()).thenReturn(OWLClassU.getPluralStringAttField().getType());
+        when(pluralStringAtt.getName()).thenReturn(OWLClassU.getPluralStringAttField().getName());
+        when(et.getAttribute(OWLClassU.getPluralStringAttField().getName())).thenReturn(pluralStringAtt);
+        when(pluralStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(pluralStringAtt.isCollection()).thenReturn(true);
+        when(pluralStringAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(pluralStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
+        when(pluralStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassU.getPluralStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(pluralStringAtt.getDeclaringType()).thenReturn(et);
+        when(pluralStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(pluralStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
     }
 }

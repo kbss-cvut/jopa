@@ -27,6 +27,7 @@ public class Vocabulary {
     public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";
     public static final String c_OwlClassS = CLASS_BASE + "OWLClassS";
     public static final String c_OwlClassT = CLASS_BASE + "OWLClassT";
+    public static final String c_OwlClassU = CLASS_BASE + "OWLClassU";
 
     public static final String p_a_stringAttribute = ATTRIBUTE_BASE + "A-stringAttribute";
     public static final String p_m_booleanAttribute = ATTRIBUTE_BASE + "m-booleanAttribute";
@@ -48,6 +49,9 @@ public class Vocabulary {
     public static final String P_T_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDate";
     public static final String P_T_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDateTime";
     public static final String P_T_HAS_S = ATTRIBUTE_BASE + "tHasS";
+
+    public static final String P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "singularMultilingualAttribute";
+    public static final String P_U_PLURAL_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "pluralMultilingualAttribute";
 
     public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
 
