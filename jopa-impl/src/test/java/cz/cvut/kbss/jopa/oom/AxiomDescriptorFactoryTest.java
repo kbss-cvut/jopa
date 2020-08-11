@@ -1,23 +1,20 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
-import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -26,7 +23,6 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
-import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -36,7 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,7 +52,6 @@ class AxiomDescriptorFactoryTest {
 
     private Descriptor descriptor;
     private Descriptor descriptorInContext;
-    private Configuration configuration;
 
     private AxiomDescriptorFactory sut;
 
@@ -73,10 +67,8 @@ class AxiomDescriptorFactoryTest {
         this.metamodelMocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
         this.descriptorInContext = new EntityDescriptor(CONTEXT);
-        this.configuration = new Configuration(
-                Collections.singletonMap(JOPAPersistenceProperties.LANG, Generators.LANG));
 
-        sut = new AxiomDescriptorFactory(configuration);
+        sut = new AxiomDescriptorFactory();
     }
 
     @Test
@@ -152,7 +144,7 @@ class AxiomDescriptorFactoryTest {
         assertEquals(NamedResource.create(PK), res.getSubject());
         assertNull(res.getSubjectContext());
         assertTrue(res.getAssertions().contains(
-                Assertion.createAnnotationPropertyAssertion(owlClassAAttUri, Generators.LANG, false)));
+                Assertion.createAnnotationPropertyAssertion(owlClassAAttUri, false)));
     }
 
     @Test
@@ -272,7 +264,7 @@ class AxiomDescriptorFactoryTest {
 
     @Test
     void createForEntityLoadingSetsLanguageTagAccordingToGlobalPUSpecification() {
-        this.sut = new AxiomDescriptorFactory(configuration);
+        this.sut = new AxiomDescriptorFactory();
         final AxiomDescriptor res = sut.createForEntityLoading(loadingParameters(OWLClassA.class, descriptor),
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -304,7 +296,7 @@ class AxiomDescriptorFactoryTest {
 
     @Test
     void createForFieldLoadingSetsLanguageOfPUWhenDescriptorLanguageIsNotSpecified() throws Exception {
-        this.sut = new AxiomDescriptorFactory(configuration);
+        this.sut = new AxiomDescriptorFactory();
         final AxiomDescriptor res = sut.createForFieldLoading(PK, OWLClassA.getStrAttField(), descriptor,
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -338,11 +330,10 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void createForLoadingCreatesDataPropertyAssertionWithoutLanguageWhenNoneIsSetForPUAndInDescriptor()
+    void createForLoadingCreatesDataPropertyAssertionWithoutLanguageWhenNoneIsSetForAttributeAndInDescriptor()
             throws Exception {
-        configuration.set(JOPAPersistenceProperties.LANG, null);
-        this.sut = new AxiomDescriptorFactory(configuration);
         final Descriptor descriptor = new EntityDescriptor();
+        when(metamodelMocks.forOwlClassA().stringAttribute().hasLanguage()).thenReturn(false);
         final AxiomDescriptor res = sut.createForFieldLoading(PK, OWLClassA.getStrAttField(), descriptor,
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -351,11 +342,10 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void createForLoadingCreatesAnnotationPropertyAssertionWithoutLanguageWhenNoneIsSetForPUAndInDescriptor()
+    void createForLoadingCreatesAnnotationPropertyAssertionWithoutLanguageWhenNoneIsSetForAttributeAndInDescriptor()
             throws Exception {
-        configuration.set(JOPAPersistenceProperties.LANG, null);
-        this.sut = new AxiomDescriptorFactory(configuration);
         final Descriptor descriptor = new EntityDescriptor();
+        when(metamodelMocks.forOwlClassN().annotationAttribute().hasLanguage()).thenReturn(false);
         final AxiomDescriptor res = sut
                 .createForFieldLoading(PK, OWLClassN.getAnnotationPropertyField(), descriptor,
                         metamodelMocks.forOwlClassN().entityType());
@@ -424,7 +414,27 @@ class AxiomDescriptorFactoryTest {
                 .createForEntityLoading(params, metamodelMocks.forOwlClassA().entityType());
         assertEquals(CONTEXT, desc.getSubjectContext());
         final URI result = desc.getAssertionContext(
-                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), Generators.LANG, false));
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), Generators.LANG,
+                        false));
         assertNull(result);
+    }
+
+    @Test
+    void createForEntityLoadingAddsAssertionsWithoutLanguageTagForMultilingualAttributes() {
+        final LoadingParameters<OWLClassU> params = new LoadingParameters<>(OWLClassU.class, PK, descriptor);
+        final AxiomDescriptor desc = sut.createForEntityLoading(params, metamodelMocks.forOwlClassU().entityType());
+
+        final Optional<Assertion> singularAssertion = desc.getAssertions().stream()
+                                                          .filter(a -> a.getIdentifier().toString()
+                                                                        .equals(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE))
+                                                          .findAny();
+        assertTrue(singularAssertion.isPresent());
+        assertFalse(singularAssertion.get().hasLanguage());
+        final Optional<Assertion> pluralAssertion = desc.getAssertions().stream()
+                                                        .filter(a -> a.getIdentifier().toString()
+                                                                      .equals(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE))
+                                                        .findAny();
+        assertTrue(pluralAssertion.isPresent());
+        assertFalse(pluralAssertion.get().hasLanguage());
     }
 }

@@ -12,12 +12,10 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
-import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 
@@ -28,12 +26,6 @@ import java.util.Objects;
 import static cz.cvut.kbss.ontodriver.model.Assertion.*;
 
 class AxiomDescriptorFactory {
-
-    private final String puLanguage;
-
-    AxiomDescriptorFactory(Configuration configuration) {
-        this.puLanguage = configuration.get(JOPAPersistenceProperties.LANG);
-    }
 
     AxiomDescriptor createForEntityLoading(LoadingParameters<?> loadingParams, EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(loadingParams.getIdentifier()));
@@ -87,13 +79,14 @@ class AxiomDescriptorFactory {
                 return createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
             case DATA:
                 if (withLanguage(att, descriptor)) {
-                    return createDataPropertyAssertion(att.getIRI().toURI(), language(descriptor), att.isInferred());
+                    return createDataPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
+                            att.isInferred());
                 } else {
                     return createDataPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
             case ANNOTATION:
                 if (withLanguage(att, descriptor)) {
-                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), language(descriptor),
+                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
                             att.isInferred());
                 } else {
                     return createAnnotationPropertyAssertion(att.getIRI().toURI(), att.isInferred());
@@ -105,11 +98,11 @@ class AxiomDescriptorFactory {
     }
 
     private boolean withLanguage(Attribute<?, ?> att, Descriptor descriptor) {
-        return !att.isSimpleLiteral() && (descriptor.hasLanguage() || puLanguage != null);
+        return descriptor.hasLanguage() || att.hasLanguage();
     }
 
-    private String language(Descriptor descriptor) {
-        return descriptor.hasLanguage() ? descriptor.getLanguage() : puLanguage;
+    private String language(Attribute<?, ?> att, Descriptor descriptor) {
+        return descriptor.hasLanguage() ? descriptor.getLanguage() : att.getLanguage();
     }
 
     /**

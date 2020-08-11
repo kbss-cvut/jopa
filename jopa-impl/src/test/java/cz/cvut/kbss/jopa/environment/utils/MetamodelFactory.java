@@ -1156,6 +1156,8 @@ public class MetamodelFactory {
         when(singularStringAtt.getDeclaringType()).thenReturn(et);
         when(singularStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(singularStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(singularStringAtt.hasLanguage()).thenReturn(false);
+        when(singularStringAtt.getLanguage()).thenReturn(null);
 
         when(pluralStringAtt.getJavaField()).thenReturn(OWLClassU.getPluralStringAttField());
         when(pluralStringAtt.getJavaType()).thenReturn(OWLClassU.getPluralStringAttField().getType());
@@ -1170,5 +1172,7 @@ public class MetamodelFactory {
         when(pluralStringAtt.getDeclaringType()).thenReturn(et);
         when(pluralStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(pluralStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(pluralStringAtt.hasLanguage()).thenReturn(false);
+        when(pluralStringAtt.getLanguage()).thenReturn(null);
     }
 }
