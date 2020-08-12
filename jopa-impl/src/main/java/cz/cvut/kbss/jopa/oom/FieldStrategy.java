@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -48,7 +49,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         if (att instanceof TypesSpecification) {
             return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, entityDescriptor, mapper);
         } else if (att instanceof PropertiesSpecification) {
-            return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att, entityDescriptor,
+            return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att,
+                    entityDescriptor,
                     mapper);
         }
         final AbstractAttribute<? super X, ?> attribute = (AbstractAttribute<? super X, ?>) att;
@@ -69,9 +71,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         } else {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                    return new SingularAnnotationPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
+                    return createSingularAnnotationPropertyStrategy(et, attribute, entityDescriptor, mapper);
                 case DATA:
-                    return new SingularDataPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
+                    return createSingularDataPropertyStrategy(et, attribute, entityDescriptor, mapper);
                 case OBJECT:
                     return new SingularObjectPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
                 default:
@@ -112,6 +114,28 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         }
     }
 
+    private static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createSingularDataPropertyStrategy(
+            EntityType<X> et, AbstractAttribute<? super X, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getJavaType())) {
+            return new SingularMultilingualStringFieldStrategy<>(et,
+                    (AbstractAttribute<? super X, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new SingularDataPropertyStrategy<>(et, attribute, descriptor, mapper);
+        }
+    }
+
+    private static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createSingularAnnotationPropertyStrategy(
+            EntityType<X> et, AbstractAttribute<? super X, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getJavaType())) {
+            return new SingularMultilingualStringFieldStrategy<>(et,
+                    (AbstractAttribute<? super X, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new SingularAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
+        }
+    }
+
     void setReferenceSavingResolver(ReferenceSavingResolver referenceSavingResolver) {
         this.referenceSavingResolver = referenceSavingResolver;
     }
@@ -147,8 +171,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     /**
      * Gets the context of this attribute assertion.
      * <p>
-     * Note that this may not (and in case of object properties usually won't) be the context containing the target object.
-     * Rather, it will be the context of the owner entity itself (depending on whether assertions are stored in subject context or not).
+     * Note that this may not (and in case of object properties usually won't) be the context containing the target
+     * object. Rather, it will be the context of the owner entity itself (depending on whether assertions are stored in
+     * subject context or not).
      *
      * @return Attribute assertion context
      * @see Descriptor

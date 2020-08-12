@@ -84,4 +84,20 @@ class FieldStrategyTest {
         final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, descriptor, mapperMock);
         assertThat(result, instanceOf(SimpleSetPropertyStrategy.class));
     }
+
+    @Test
+    void createFieldStrategyCreatesSingularMultilingualStringFieldStrategyForSingularMultilingualStringAttributeMappingDataProperty() {
+        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassU().entityType(),
+                metamodelMocks.forOwlClassU().uSingularStringAtt(), descriptor, mapperMock);
+        assertThat(result, instanceOf(SingularMultilingualStringFieldStrategy.class));
+    }
+
+    @Test
+    void createFieldStrategyCreatesSingularMultilingualStringFieldStrategyForSingularMultilingualStringAttributeMappingAnnotationProperty() {
+        final AbstractAttribute<?, ?> att = metamodelMocks.forOwlClassU().uSingularStringAtt();
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
+        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassU().entityType(),
+                metamodelMocks.forOwlClassU().uSingularStringAtt(), descriptor, mapperMock);
+        assertThat(result, instanceOf(SingularMultilingualStringFieldStrategy.class));
+    }
 }
