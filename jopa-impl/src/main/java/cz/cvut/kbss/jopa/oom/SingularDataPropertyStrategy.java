@@ -45,7 +45,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
         if (value != null) {
             throw new CardinalityConstraintViolatedException(
                     "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
-                            ", but got multiple");
+                            ", but got multiple.");
         }
     }
 

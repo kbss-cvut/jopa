@@ -118,4 +118,29 @@ class MultilingualStringTest {
         final MultilingualString sut = new MultilingualString();
         assertNull(sut.get());
     }
+
+    @Test
+    void containsSimpleReturnsTrueForSimpleLiteral() {
+        final MultilingualString sut = MultilingualString.create(VALUE, LANGUAGE);
+        assertFalse(sut.containsSimple());
+        sut.set("test");
+        assertTrue(sut.containsSimple());
+    }
+
+    @Test
+    void isEmptyReturnsTrueForMissingTranslations() {
+        final MultilingualString sut = new MultilingualString();
+        assertTrue(sut.isEmpty());
+        sut.set("test");
+        assertFalse(sut.isEmpty());
+    }
+
+    @Test
+    void removeRemovesTranslationInSpecifiedLanguage() {
+        final MultilingualString sut = MultilingualString.create(VALUE, LANGUAGE);
+        assertTrue(sut.contains(LANGUAGE));
+        sut.remove(LANGUAGE);
+        assertFalse(sut.contains(LANGUAGE));
+        assertFalse(sut.getValue().containsKey(LANGUAGE));
+    }
 }

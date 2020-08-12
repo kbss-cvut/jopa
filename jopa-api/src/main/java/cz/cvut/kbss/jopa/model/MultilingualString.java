@@ -64,7 +64,7 @@ public class MultilingualString implements Serializable {
     }
 
     /**
-     * Gets value of simple literal represented by this instance.
+     * Gets the value of a simple literal represented by this instance.
      * <p>
      * If this instances does not represent a simple literal, any other existing value is returned. However, note that
      * in that case repeated calls may return values in different languages.
@@ -92,9 +92,40 @@ public class MultilingualString implements Serializable {
     }
 
     /**
+     * Checks whether this string contains a simple literal value.
+     * <p>
+     * That is, whether this instance contains a value without a language tag.
+     *
+     * @return {@code true} if and only if this string exists as a simple literal
+     */
+    public boolean containsSimple() {
+        return value.containsKey(null);
+    }
+
+    /**
+     * Checks whether this instance does not contain any language representations (including a simple literal).
+     *
+     * @return {@code true} if no translations exist in this instance
+     */
+    public boolean isEmpty() {
+        return value.isEmpty();
+    }
+
+    /**
+     * Removes translation in the specified language.
+     * <p>
+     * Passing in {@code null} will remove the simple literal contained in this instance.
+     *
+     * @param language Language for which translation should be removed
+     */
+    public void remove(String language) {
+        value.remove(language);
+    }
+
+    /**
      * Gets the set of languages for which translations exist in the instance.
      * <p>
-     * Note that the result may contain {@code null}, indicating a simple literal
+     * Note that the result may contain {@code null}, indicating a simple literal.
      *
      * @return Set of languages available in this multilingual string
      */
@@ -104,7 +135,7 @@ public class MultilingualString implements Serializable {
 
     /**
      * Gets the translations contained in this instance.
-     *
+     * <p>
      * Convenience method for accessing all values at once.
      *
      * @return Map of language -> translation values

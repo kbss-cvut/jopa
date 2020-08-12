@@ -23,9 +23,9 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
 
     private final ConverterWrapper<Object, Object> converter;
 
-    DataPropertyFieldStrategy(EntityType<X> et, A att, Descriptor attributeDescriptor,
+    DataPropertyFieldStrategy(EntityType<X> et, A att, Descriptor entityDescriptor,
                               EntityMappingHelper mapper) {
-        super(et, att, attributeDescriptor, mapper);
+        super(et, att, entityDescriptor, mapper);
         this.converter = att.getConverter() != null ? att.getConverter() : DefaultConverterWrapper.INSTANCE;
     }
 
