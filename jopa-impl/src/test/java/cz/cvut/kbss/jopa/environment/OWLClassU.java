@@ -22,6 +22,13 @@ public class OWLClassU implements Serializable {
     @OWLDataProperty(iri = Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE)
     private Set<MultilingualString> pluralStringAtt;
 
+    public OWLClassU() {
+    }
+
+    public OWLClassU(URI id) {
+        this.id = id;
+    }
+
     public URI getId() {
         return id;
     }

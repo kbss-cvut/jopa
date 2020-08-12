@@ -10,6 +10,8 @@ import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
+import java.util.stream.Collectors;
+
 class SingularMultilingualStringFieldStrategy<X>
         extends DataPropertyFieldStrategy<AbstractAttribute<? super X, MultilingualString>, X> {
 
@@ -53,8 +55,15 @@ class SingularMultilingualStringFieldStrategy<X>
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
-            throws IllegalAccessException {
-
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
+        final MultilingualString value = (MultilingualString) extractFieldValueFromInstance(instance);
+        if (value == null || value.isEmpty()) {
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+        } else {
+            valueBuilder.addValues(createAssertion(),
+                    value.getValue().entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())))
+                         .collect(Collectors.toList()),
+                    getAttributeContext());
+        }
     }
 }

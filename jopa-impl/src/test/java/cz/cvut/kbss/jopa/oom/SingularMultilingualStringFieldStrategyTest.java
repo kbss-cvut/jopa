@@ -5,8 +5,10 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 import static cz.cvut.kbss.jopa.environment.utils.Generators.LANG;
 import static org.junit.jupiter.api.Assertions.*;
@@ -146,5 +150,56 @@ class SingularMultilingualStringFieldStrategyTest {
 
         sut.addValueFromAxiom(axiomOne);
         assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(axiomTwo));
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceAddsAllTranslationsToValueDescriptor() throws Exception {
+        final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU instance = new OWLClassU(ID);
+        instance.setSingularStringAtt(MultilingualString.create("car", LANG));
+        instance.getSingularStringAtt().set("automobil", "cs");
+
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false));
+        assertEquals(instance.getSingularStringAtt().getLanguages().size(), values.size());
+        for (Map.Entry<String, String> entry : instance.getSingularStringAtt().getValue().entrySet()) {
+            assertTrue(values.contains(new Value<>(new LangString(entry.getValue(), entry.getKey()))));
+        }
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceAddsNullValueWhenAttributeValueIsNull() throws Exception {
+        final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU instance = new OWLClassU(ID);
+
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false));
+        assertEquals(1, values.size());
+        assertEquals(Value.nullValue(), values.get(0));
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceAddsNulLValueWhenAttributeValueIsEmpty() throws Exception {
+        final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU instance = new OWLClassU(ID);
+        instance.setSingularStringAtt(new MultilingualString());
+        assertTrue(instance.getSingularStringAtt().isEmpty());
+
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false));
+        assertEquals(1, values.size());
+        assertEquals(Value.nullValue(), values.get(0));
     }
 }
