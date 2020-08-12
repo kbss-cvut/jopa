@@ -35,6 +35,7 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_V = CLASS_IRI_BASE + "OWLClassV";
     public static final String C_OWL_CLASS_W = CLASS_IRI_BASE + "OWLClassW";
     public static final String C_OWL_CLASS_X = CLASS_IRI_BASE + "OWLClassX";
+    public static final String C_OWL_CLASS_Y = CLASS_IRI_BASE + "OWLClassY";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
@@ -79,6 +80,9 @@ public class Vocabulary {
     public static final String P_X_INSTANT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xInstant";
     public static final String P_X_OBJECT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xObject";
     public static final String P_X_COLLECTION_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xCollection";
+
+    public static final String P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "ySingularMultilingual";
+    public static final String P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "yPluralMultilingual";
 
     public static final String P_HAS_H = ATTRIBUTE_IRI_BASE + "hasH";
 

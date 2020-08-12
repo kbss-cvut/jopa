@@ -19,7 +19,22 @@ import java.util.*;
  */
 public class MultilingualString implements Serializable {
 
-    private final Map<String, String> value = new HashMap<>(8);
+    private final Map<String, String> value;
+
+    public MultilingualString() {
+        this.value = new HashMap<>(8);
+    }
+
+    /**
+     * Creates a new {@code MultilingualString} instance based on the specified value.
+     * <p>
+     * Convenience constructor for simple initialization with existing data.
+     *
+     * @param value Map of language -> translation values
+     */
+    public MultilingualString(Map<String, String> value) {
+        this.value = new HashMap<>(Objects.requireNonNull(value));
+    }
 
     /**
      * Sets value in the specified language.

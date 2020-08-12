@@ -49,7 +49,6 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
     CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
         super(builder, uow);
-        this.populates = true;
     }
 
     /**
@@ -232,5 +231,10 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
     private static Collection<Object> createDefaultCollection(Class<?> cls) {
         return CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.fromClass(cls));
+    }
+
+    @Override
+    boolean populatesAttributes() {
+        return true;
     }
 }
