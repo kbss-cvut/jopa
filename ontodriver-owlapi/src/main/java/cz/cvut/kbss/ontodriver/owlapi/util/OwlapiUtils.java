@@ -14,7 +14,6 @@ package cz.cvut.kbss.ontodriver.owlapi.util;
 
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.config.Constants;
 import org.semanticweb.owlapi.model.IRI;
@@ -54,9 +53,6 @@ public class OwlapiUtils {
      * @throws IllegalArgumentException If the literal is of unsupported type
      */
     public static Object owlLiteralToValue(final OWLLiteral literal) {
-        if (literal.hasLang()) {
-            return new LangString(literal.getLiteral(), literal.getLang());
-        }
         return DatatypeTransformer.transform(literal);
     }
 

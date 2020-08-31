@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.owlapi;
 
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLLiteral;
@@ -127,8 +128,9 @@ public class DatatypeTransformer {
                     return new BigDecimal(literal.getLiteral());
                 case XSD_STRING:
                 case RDF_XML_LITERAL:
-                case RDF_LANG_STRING:
                     return literal.getLiteral();
+                case RDF_LANG_STRING:
+                    return new LangString(literal.getLiteral(), literal.getLang());
                 case XSD_BOOLEAN:
                     return Boolean.parseBoolean(literal.getLiteral());
                 case XSD_ANY_URI:
@@ -175,9 +177,12 @@ public class DatatypeTransformer {
             return DATA_FACTORY.getOWLLiteral((Float) value);
         } else if (value instanceof BigDecimal) {
             return DATA_FACTORY.getOWLLiteral(((BigDecimal) value).toPlainString(), OWL2Datatype.XSD_DECIMAL);
+        } else if (value instanceof LangString) {
+            final LangString ls = (LangString) value;
+            return DATA_FACTORY.getOWLLiteral(ls.getValue(), ls.getLanguage().orElse(null));
         } else if (value instanceof String) {
-            return lang != null ? DATA_FACTORY.getOWLLiteral((String) value, lang) :
-                   DATA_FACTORY.getOWLLiteral((String) value);
+            return lang != null ? DATA_FACTORY.getOWLLiteral(value.toString(), lang) :
+                   DATA_FACTORY.getOWLLiteral(value.toString());
         } else if (value instanceof Date) {
             SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
             return DATA_FACTORY.getOWLLiteral(sdf.format((Date) value),
