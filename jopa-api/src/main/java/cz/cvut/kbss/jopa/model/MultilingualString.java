@@ -149,7 +149,7 @@ public class MultilingualString implements Serializable {
     }
 
     /**
-     * Gets the translations contained in this instance.
+     * Gets the translations contained in this instance as an unmodifiable map backed by this instance.
      * <p>
      * Convenience method for accessing all values at once.
      *

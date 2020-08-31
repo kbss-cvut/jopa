@@ -26,9 +26,9 @@ abstract class AbstractInstanceBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractInstanceBuilder.class);
 
     protected final CloneBuilderImpl builder;
-    protected final UnitOfWork uow;
+    protected final UnitOfWorkImpl uow;
 
-    AbstractInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
+    AbstractInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
         this.builder = builder;
         this.uow = uow;
     }

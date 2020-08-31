@@ -46,6 +46,7 @@ public class DatatypeTransformer {
         DATATYPE_MAP.put(OWL2Datatype.RDF_PLAIN_LITERAL, String.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_STRING, String.class);
         DATATYPE_MAP.put(OWL2Datatype.RDF_XML_LITERAL, String.class);
+        // TODO XSD langString should be mapped to MultilingualString, but make this configurable in OWL2Java
         DATATYPE_MAP.put(OWL2Datatype.RDF_LANG_STRING, String.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_INT, Integer.class);
         // technically, this is not correct, as XSD integer should be mapped to BigInteger, because it is unbound

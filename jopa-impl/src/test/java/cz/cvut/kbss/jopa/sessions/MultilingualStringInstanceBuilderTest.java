@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -22,7 +23,7 @@ class MultilingualStringInstanceBuilderTest {
 
     @BeforeEach
     void setUp() {
-        this.sut = new MultilingualStringInstanceBuilder(mock(CloneBuilderImpl.class), mock(UnitOfWork.class));
+        this.sut = new MultilingualStringInstanceBuilder(mock(CloneBuilderImpl.class), mock(UnitOfWorkImpl.class));
     }
 
     @Test
@@ -33,7 +34,6 @@ class MultilingualStringInstanceBuilderTest {
                 new CloneConfiguration(descriptor));
         assertThat(result, instanceOf(MultilingualString.class));
         final MultilingualString typedResult = (MultilingualString) result;
-        assertEquals(original, typedResult);
         assertEquals(original.getValue(), typedResult.getValue());
     }
 
@@ -45,6 +45,15 @@ class MultilingualStringInstanceBuilderTest {
     }
 
     @Test
+    void buildCloneReturnsIndirectWrapperAllowingToTrackModifyingOperations() throws Exception {
+        final MultilingualString original = MultilingualString.create("building", Generators.LANG);
+        original.set("stavba", "cs");
+        final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), original,
+                new CloneConfiguration(descriptor));
+        assertThat(result, instanceOf(IndirectMultilingualString.class));
+    }
+
+    @Test
     void mergeChangesCopiesValueOfCloneToOriginal() throws Exception {
         final MultilingualString clone = MultilingualString.create("building", Generators.LANG);
         clone.set("stavba", "cs");
@@ -53,5 +62,14 @@ class MultilingualStringInstanceBuilderTest {
         target.setSingularStringAtt(original);
         sut.mergeChanges(OWLClassU.getSingularStringAttField(), target, original, clone);
         assertEquals(clone.getValue(), target.getSingularStringAtt().getValue());
+    }
+
+    @Test
+    void mergeChangesSupportsCloneBeingNull() throws Exception {
+        final MultilingualString original = MultilingualString.create("construction", Generators.LANG);
+        final OWLClassU target = new OWLClassU();
+        target.setSingularStringAtt(original);
+        sut.mergeChanges(OWLClassU.getSingularStringAttField(), target, original, null);
+        assertNull(target.getSingularStringAtt());
     }
 }

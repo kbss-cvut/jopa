@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -7,7 +8,7 @@ import java.lang.reflect.Field;
 
 class MultilingualStringInstanceBuilder extends AbstractInstanceBuilder {
 
-    MultilingualStringInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
+    MultilingualStringInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 
@@ -17,12 +18,21 @@ class MultilingualStringInstanceBuilder extends AbstractInstanceBuilder {
             return null;
         }
         assert original instanceof MultilingualString;
-        return new MultilingualString(((MultilingualString) original).getValue());
+        MultilingualString orig = (MultilingualString) original;
+        if (orig instanceof IndirectMultilingualString) {
+            orig = ((IndirectMultilingualString) orig).unwrap();
+        }
+        return new IndirectMultilingualString(cloneOwner, field, uow, new MultilingualString(orig.getValue()));
     }
 
     @Override
     void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue) {
-        EntityPropertiesUtils.setFieldValue(field, target, buildClone(target, field, cloneValue, null));
+        MultilingualString clone = (MultilingualString) cloneValue;
+        if (clone instanceof IndirectMultilingualString) {
+            clone = ((IndirectMultilingualString) clone).unwrap();
+        }
+        EntityPropertiesUtils
+                .setFieldValue(field, target, clone != null ? new MultilingualString(clone.getValue()) : null);
     }
 
     @Override

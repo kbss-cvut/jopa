@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -47,7 +45,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<? extends List> DEFAULT_LIST_CLASS = ArrayList.class;
     private static final Class<? extends Set> DEFAULT_SET_CLASS = HashSet.class;
 
-    CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
+    CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 
@@ -65,7 +63,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         assert collection instanceof Collection;
         Collection<?> container = (Collection<?>) collection;
         if (container instanceof IndirectCollection<?>) {
-            container = (Collection<?>) ((IndirectCollection<?>) container).getReferencedCollection();
+            container = (Collection<?>) ((IndirectCollection<?>) container).unwrap();
         }
         if (Collections.emptyList() == container) {
             return Collections.emptyList();
@@ -73,14 +71,14 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         if (Collections.emptySet() == container) {
             return Collections.emptySet();
         }
-        Collection<?> clone = cloneUsingDefaultConstructor(cloneOwner, field, container, configuration);
+        Object clone = cloneUsingDefaultConstructor(cloneOwner, field, container, configuration);
         if (clone == null) {
             clone = buildInstanceOfSpecialCollection(cloneOwner, field, container, configuration);
         }
         if (clone == null) {
             clone = buildDefaultCollectionInstance(cloneOwner, field, container, configuration);
         }
-        clone = (Collection<?>) builder.createIndirectCollection(clone, cloneOwner, field);
+        clone = builder.createIndirectCollection(clone, cloneOwner, field);
         return clone;
     }
 
@@ -211,7 +209,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
         Collection<Object> clone = (Collection<Object>) cloneValue;
         if (clone instanceof IndirectCollection) {
-            clone = ((IndirectCollection<Collection<Object>>) clone).getReferencedCollection();
+            clone = ((IndirectCollection<Collection<Object>>) clone).unwrap();
         }
         final Optional<Collection<?>> origOpt = createNewInstance(clone.getClass(), clone.size());
         Collection<Object> orig = (Collection<Object>) origOpt.orElse(createDefaultCollection(clone.getClass()));

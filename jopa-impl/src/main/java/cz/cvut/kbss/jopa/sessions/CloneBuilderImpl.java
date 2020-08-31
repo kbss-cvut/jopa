@@ -12,7 +12,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -122,7 +121,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             if (isImmutable(origValueClass)) {
                 // The field is an immutable type
                 clonedValue = origVal;
-            } else if (origVal instanceof Collection || origVal instanceof Map) {
+            } else if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
                 final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                 // Collection or Map
                 clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
@@ -253,7 +252,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         visitedEntities.remove(descriptor, instance);
     }
 
-    IndirectCollection<?> createIndirectCollection(Object c, Object owner, Field f) {
+    Object createIndirectCollection(Object c, Object owner, Field f) {
         return uow.createIndirectCollection(c, owner, f);
     }
 

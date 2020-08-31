@@ -148,7 +148,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
     }
 
     @Override
-    public Set<E> getReferencedCollection() {
+    public Set<E> unwrap() {
         return internalSet;
     }
 

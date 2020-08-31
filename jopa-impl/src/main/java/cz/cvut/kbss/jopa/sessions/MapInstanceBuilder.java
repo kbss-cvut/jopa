@@ -32,7 +32,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonMapClass = Collections.singletonMap(null, null)
                                                                  .getClass();
 
-    MapInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
+    MapInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 
@@ -40,7 +40,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration configuration) {
         Map<?, ?> orig = (Map<?, ?>) original;
         if (original instanceof IndirectCollection) {
-            orig = ((IndirectCollection<Map<?, ?>>) original).getReferencedCollection();
+            orig = ((IndirectCollection<Map<?, ?>>) original).unwrap();
         }
         final Class<?> origCls = orig.getClass();
         Map<?, ?> clone;
@@ -159,7 +159,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         Map<Object, Object> orig = (Map<Object, Object>) originalValue;
         Map<Object, Object> clone = (Map<Object, Object>) cloneValue;
         if (clone instanceof IndirectCollection) {
-            clone = ((IndirectCollection<Map<Object, Object>>) clone).getReferencedCollection();
+            clone = ((IndirectCollection<Map<Object, Object>>) clone).unwrap();
         }
         if (orig == null) {
             orig = (Map<Object, Object>) createNewInstance(clone.getClass(), clone.size());

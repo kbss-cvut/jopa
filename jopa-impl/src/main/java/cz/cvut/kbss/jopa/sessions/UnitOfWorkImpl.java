@@ -1,20 +1,19 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -77,7 +76,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
-    private AbstractSession parent;
+    private final AbstractSession parent;
     private AbstractEntityManager entityManager;
     private final ConnectionWrapper storage;
 
@@ -85,7 +84,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
     private final SparqlQueryFactory queryFactory;
-    private final CollectionFactory collectionFactory;
+    private final IndirectWrapperHelper indirectWrapperHelper;
     /**
      * This is a shortcut for the second level cache.
      */
@@ -102,7 +101,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.cloneBuilder = new CloneBuilderImpl(this);
-        this.collectionFactory = new CollectionFactory(this);
+        this.indirectWrapperHelper = new IndirectWrapperHelper(this);
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
@@ -155,7 +154,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         }
         final Object clone = registerExistingObject(result, descriptor,
                 Collections.singletonList(new PostLoadInvoker(getMetamodel())));
-        checkForCollections(clone);
+        checkForIndirectObjects(clone);
         return cls.cast(clone);
     }
 
@@ -519,7 +518,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         storage.merge(entity, f, descriptor);
         createAndRegisterChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
         setHasChanges();
-        setIndirectCollectionIfPresent(entity, f);
+        setIndirectObjectIfPresent(entity, f);
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
         instanceDescriptors.get(entity).setLoaded(et.getFieldSpecification(f.getName()), LoadState.LOADED);
     }
@@ -624,7 +623,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             cacheManager.evict(et.getJavaType(), idUri, descriptor.getContext());
         }
         setHasChanges();
-        checkForCollections(clone);
+        checkForIndirectObjects(clone);
         return et.getJavaType().cast(clone);
     }
 
@@ -731,7 +730,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor));
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
             changeManager.calculateChanges(chSet);
-            new RefreshInstanceMerger(collectionFactory).mergeChanges(chSet);
+            new RefreshInstanceMerger(indirectWrapperHelper).mergeChanges(chSet);
             revertTransactionalChanges(object, descriptor, chSet);
             registerClone(object, original, descriptor);
             et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
@@ -781,7 +780,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         registerEntityWithOntologyContext(entity, descriptor);
         instanceDescriptors.put(entity, InstanceDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
         newObjectsKeyToClone.put(id, entity);
-        checkForCollections(entity);
+        checkForIndirectObjects(entity);
         this.hasNew = true;
         eType.getLifecycleListenerManager().invokePostPersistCallbacks(entity);
     }
@@ -1018,11 +1017,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      *
      * @param entity The entity to check
      */
-    private void checkForCollections(Object entity) {
+    private void checkForIndirectObjects(Object entity) {
         assert entity != null;
         final EntityType<?> et = entityType(entity.getClass());
         for (FieldSpecification<?, ?> fieldSpec : et.getFieldSpecifications()) {
-            setIndirectCollectionIfPresent(entity, fieldSpec.getJavaField());
+            setIndirectObjectIfPresent(entity, fieldSpec.getJavaField());
         }
     }
 
@@ -1036,16 +1035,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @param field  The field to set
      * @throws IllegalArgumentException Reflection
      */
-    private void setIndirectCollectionIfPresent(Object entity, Field field) {
+    private void setIndirectObjectIfPresent(Object entity, Field field) {
         assert entity != null;
         assert field != null;
 
         final Object value = EntityPropertiesUtils.getFieldValue(field, entity);
-        if (value instanceof IndirectCollection) {
+        if (value instanceof IndirectWrapper) {
             return;
         }
-        if (value instanceof Collection || value instanceof Map) {
-            EntityPropertiesUtils.setFieldValue(field, entity, createIndirectCollection(value, entity, field));
+        if (IndirectWrapperHelper.requiresIndirectWrapper(value)) {
+            EntityPropertiesUtils
+                    .setFieldValue(field, entity, indirectWrapperHelper.createIndirectWrapper(value, entity, field));
         }
     }
 
@@ -1058,8 +1058,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @param field      Field filled with the collection
      * @return Indirect collection
      */
-    public IndirectCollection<?> createIndirectCollection(Object collection, Object owner, Field field) {
-        return collectionFactory.createIndirectCollection(collection, owner, field);
+    public Object createIndirectCollection(Object collection, Object owner, Field field) {
+        return indirectWrapperHelper.createIndirectWrapper(collection, owner, field);
     }
 
     /**
@@ -1074,7 +1074,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
             if (value instanceof IndirectCollection) {
                 IndirectCollection<?> indCol = (IndirectCollection<?>) value;
-                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indCol.getReferencedCollection());
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indCol.unwrap());
             }
         }
     }
