@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -93,7 +93,7 @@ class SesameUtilsTest {
         final Literal literal = SesameUtils.createDataPropertyLiteral(Severity.MEDIUM, LANG, vf);
         assertNotNull(literal);
         assertEquals(Severity.MEDIUM.toString(), literal.stringValue());
-        assertEquals(literal.getDatatype(), XMLSchema.STRING);
+        assertEquals(literal.getDatatype(), XSD.STRING);
     }
 
     @Test
@@ -112,7 +112,7 @@ class SesameUtilsTest {
         final Literal result = SesameUtils.createDataPropertyLiteral(value, null, vf);
         assertFalse(result.getLanguage().isPresent());
         assertEquals(value, result.stringValue());
-        assertEquals(XMLSchema.STRING, result.getDatatype());
+        assertEquals(XSD.STRING, result.getDatatype());
     }
 
     @Test
@@ -124,5 +124,24 @@ class SesameUtilsTest {
         assertEquals(literal.stringValue(), lsResult.getValue());
         assertTrue(lsResult.getLanguage().isPresent());
         assertEquals(literal.getLanguage(), lsResult.getLanguage());
+    }
+
+    @Test
+    void createDataPropertyLiteralCreatesRDFLangStringWithLanguageSpecifiedByOntoDriverLangString() {
+        final LangString ls = new LangString("test", LANG);
+        final Literal result = SesameUtils.createDataPropertyLiteral(ls, null, vf);
+        assertEquals(ls.getValue(), result.stringValue());
+        assertTrue(result.getLanguage().isPresent());
+        assertEquals(ls.getLanguage(), result.getLanguage());
+        assertEquals(RDF.LANGSTRING, result.getDatatype());
+    }
+
+    @Test
+    void createDataPropertyLiteralCreatesSimpleLiteralFromOntoDriverLangStringWithoutLanguage() {
+        final LangString ls = new LangString("test");
+        final Literal result = SesameUtils.createDataPropertyLiteral(ls, null, vf);
+        assertEquals(ls.getValue(), result.stringValue());
+        assertFalse(result.getLanguage().isPresent());
+        assertEquals(XSD.STRING, result.getDatatype());
     }
 }

@@ -18,6 +18,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.*;
@@ -77,6 +78,9 @@ class AxiomSaver {
             final Literal value;
             if (a.hasLanguage() && v.getValue() instanceof String) {
                 value = ResourceFactory.createLangLiteral(v.stringValue(), a.getLanguage());
+            } else if (v.getValue() instanceof LangString) {
+                final LangString ls = (LangString) v.getValue();
+                value = ResourceFactory.createLangLiteral(ls.getValue(), ls.getLanguage().orElse(null));
             } else if (v.getValue() instanceof Date) {
                 // Jena does not like java.util.Date, it works with Calendar values
                 final GregorianCalendar cal = new GregorianCalendar();
