@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -617,5 +618,25 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
                       .setParameter("x", toRemove.getUri())
                       .setParameter("singularString", URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE))
                       .getSingleResult());
+    }
+
+    @Test
+    void settingMultilingualStringAttributeToNullRemovesAllValues() {
+        this.em = getEntityManager("settingMultilingualStringAttributeToNullRemovesAllValues", false);
+        final OWLClassY entityY = new OWLClassY();
+        entityY.setSingularString(new MultilingualString());
+        entityY.getSingularString().set("building", "en");
+        entityY.getSingularString().set("stavba", "cs");
+        entityY.getSingularString().set("der Bau", "de");
+        persist(entityY);
+
+        em.getTransaction().begin();
+        final OWLClassY toRemove = findRequired(OWLClassY.class, entityY.getUri());
+        assertNotNull(toRemove.getSingularString());
+        toRemove.setSingularString(null);
+        em.getTransaction().commit();
+
+        final OWLClassY result = findRequired(OWLClassY.class, entityY.getUri());
+        assertNull(result.getSingularString());
     }
 }

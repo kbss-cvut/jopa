@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
@@ -1343,5 +1344,65 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassX result = findRequired(OWLClassX.class, x.getUri());
         assertEquals(1, result.getACollection().size());
         assertEquals(newA.getUri(), result.getACollection().iterator().next().getUri());
+    }
+
+    @Test
+    void updateSupportsAddingTranslationsToMultilingualAttribute() {
+        this.em = getEntityManager("updateSupportsAddingTranslationsToMultilingualAttribute", true);
+        final OWLClassY y = new OWLClassY();
+        y.setSingularString(new MultilingualString());
+        y.getSingularString().set("building", "en");
+        persist(y);
+
+        y.getSingularString().set("stavba", "cs");
+        y.getSingularString().set("der Bau", "de");
+        transactional(() -> em.merge(y));
+
+        final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
+        assertEquals(3, result.getSingularString().getLanguages().size());
+        assertEquals(y.getSingularString(), result.getSingularString());
+    }
+
+    @Test
+    void updateSupportsReplacingTranslationsInMultilingualAttribute() {
+        this.em = getEntityManager("updateSupportsReplacingTranslationsInMultilingualAttribute", true);
+        final OWLClassY y = new OWLClassY();
+        y.setSingularString(new MultilingualString());
+        y.getSingularString().set("construction", "en");
+        persist(y);
+
+        final String replacement = "building";
+        transactional(() -> {
+            final OWLClassY toUpdate = findRequired(OWLClassY.class, y.getUri());
+            toUpdate.getSingularString().set(replacement, "en");
+            toUpdate.getSingularString().set("stavba", "cs");
+        });
+
+        final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
+        assertEquals(2, result.getSingularString().getLanguages().size());
+        assertEquals(replacement, result.getSingularString().get("en"));
+        assertEquals("stavba", result.getSingularString().get("cs"));
+    }
+
+    @Test
+    void updateSupportsCompletelyReplacingMultilingualAttributeValueInTransaction() {
+        this.em = getEntityManager("updateSupportsCompletelyReplacingMultilingualAttributeValueInTransaction", true);
+        final OWLClassY y = new OWLClassY();
+        y.setSingularString(new MultilingualString());
+        y.getSingularString().set("construction", "en");
+        persist(y);
+
+        final String replacement = "building";
+        transactional(() -> {
+            final OWLClassY toUpdate = findRequired(OWLClassY.class, y.getUri());
+            toUpdate.setSingularString(new MultilingualString());
+            toUpdate.getSingularString().set(replacement, "en");
+            toUpdate.getSingularString().set("stavba", "cs");
+        });
+
+        final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
+        assertEquals(2, result.getSingularString().getLanguages().size());
+        assertEquals(replacement, result.getSingularString().get("en"));
+        assertEquals("stavba", result.getSingularString().get("cs"));
     }
 }
