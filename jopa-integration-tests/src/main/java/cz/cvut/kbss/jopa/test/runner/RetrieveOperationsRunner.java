@@ -432,27 +432,4 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertFalse(result.getStringCollection().isEmpty());
         assertThat(result.getStringCollection(), hasItems("value", "valueTwo"));
     }
-
-    @Test
-    void loadEntitySupportsSingularMultilingualAttribute() throws Exception {
-        this.em = getEntityManager("loadEntitySupportsSingularMultilingualAttribute", false);
-        final URI uri = Generators.generateUri();
-        final URI singularProperty = URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE);
-        final Map<String, String> translations = new HashMap<>();
-        translations.put("en", "building");
-        translations.put("cs", "stavba");
-        translations.put("de", "der Bau");
-        final Collection<Quad> quads = new ArrayList<>();
-        quads.add(new Quad(uri, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_Y)));
-        translations.entrySet().stream().map(e -> new Quad(uri, singularProperty, e.getValue(), e.getKey())).forEach(
-                quads::add);
-        persistTestData(quads, em);
-
-        final OWLClassY result = findRequired(OWLClassY.class, uri);
-        assertNotNull(result.getSingularString());
-        translations.forEach((key, value) -> {
-            assertTrue(result.getSingularString().contains(key));
-            assertEquals(value, result.getSingularString().get(key));
-        });
-    }
 }

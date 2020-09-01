@@ -16,7 +16,6 @@ import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
@@ -647,26 +646,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         verifyStatementsPresent(entityM.getStringCollection().stream().map(s -> new Quad(URI.create(entityM.getKey()),
                 URI.create(Vocabulary.p_m_StringCollection), s, "en")).collect(
-                Collectors.toSet()), em);
-    }
-
-    @Test
-    void persistSupportsMultilingualAttributes() throws Exception {
-        final Map<String, String> translations = new HashMap<>();
-        translations.put("en", "building");
-        translations.put("cs", "stavba");
-        translations.put("de", "der Bau");
-        this.em = getEntityManager("persistSupportsMultilingualAttributes", false);
-
-        final OWLClassY toPersist = new OWLClassY();
-        toPersist.setSingularString(new MultilingualString(translations));
-        persist(toPersist);
-
-        final OWLClassY result = findRequired(OWLClassY.class, toPersist.getUri());
-        assertNotNull(result.getSingularString());
-        assertEquals(translations, result.getSingularString().getValue());
-        verifyStatementsPresent(translations.entrySet().stream().map(e -> new Quad(toPersist.getUri(),
-                URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE), e.getValue(), e.getKey())).collect(
                 Collectors.toSet()), em);
     }
 }

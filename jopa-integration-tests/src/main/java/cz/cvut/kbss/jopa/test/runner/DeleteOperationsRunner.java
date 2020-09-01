@@ -12,15 +12,16 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.environment.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -590,53 +591,5 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         assertFalse(
                 em.createNativeQuery("ASK { ?x ?y ?z .}", Boolean.class).setParameter("x", URI.create(entityM.getKey()))
                   .getSingleResult());
-    }
-
-    @Test
-    void removeDeletesAllValuesOfMultilingualAttribute() throws Exception {
-        this.em = getEntityManager("removeDeletesAllValuesOfMultilingualAttribute", false);
-        final URI uri = Generators.generateUri();
-        final URI singularProperty = URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE);
-        final Map<String, String> translations = new HashMap<>();
-        translations.put("en", "building");
-        translations.put("cs", "stavba");
-        translations.put("de", "der Bau");
-        final Collection<Quad> quads = new ArrayList<>();
-        quads.add(new Quad(uri, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_Y)));
-        translations.entrySet().stream().map(e -> new Quad(uri, singularProperty, e.getValue(), e.getKey())).forEach(
-                quads::add);
-        persistTestData(quads, em);
-
-        em.getTransaction().begin();
-        final OWLClassY toRemove = findRequired(OWLClassY.class, uri);
-        assertNotNull(toRemove.getSingularString());
-        assertFalse(toRemove.getSingularString().isEmpty());
-        em.remove(toRemove);
-        em.getTransaction().commit();
-
-        assertFalse(em.createNativeQuery("ASK { ?x ?singularString ?y . }", Boolean.class)
-                      .setParameter("x", toRemove.getUri())
-                      .setParameter("singularString", URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE))
-                      .getSingleResult());
-    }
-
-    @Test
-    void settingMultilingualStringAttributeToNullRemovesAllValues() {
-        this.em = getEntityManager("settingMultilingualStringAttributeToNullRemovesAllValues", false);
-        final OWLClassY entityY = new OWLClassY();
-        entityY.setSingularString(new MultilingualString());
-        entityY.getSingularString().set("building", "en");
-        entityY.getSingularString().set("stavba", "cs");
-        entityY.getSingularString().set("der Bau", "de");
-        persist(entityY);
-
-        em.getTransaction().begin();
-        final OWLClassY toRemove = findRequired(OWLClassY.class, entityY.getUri());
-        assertNotNull(toRemove.getSingularString());
-        toRemove.setSingularString(null);
-        em.getTransaction().commit();
-
-        final OWLClassY result = findRequired(OWLClassY.class, entityY.getUri());
-        assertNull(result.getSingularString());
     }
 }
