@@ -12,10 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -172,5 +169,26 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         assertEquals(2, result.getSingularString().getLanguages().size());
         assertEquals(replacement, result.getSingularString().get("en"));
         assertEquals("stavba", result.getSingularString().get("cs"));
+    }
+
+    @Test
+    void persistSupportsPluralMultilingualAttributes() {
+        this.em = getEntityManager("persistSupportsPluralMultilingualAttributes", false);
+        final OWLClassY y = new OWLClassY();
+        final MultilingualString sOne = new MultilingualString();
+        sOne.set("construction", "en");
+        sOne.set("stavba", "cs");
+        final MultilingualString sTwo = new MultilingualString();
+        sTwo.set("building", "en");
+        sTwo.set("budova", "cs");
+        y.setPluralString(new HashSet<>(Arrays.asList(sOne, sTwo)));
+        persist(y);
+
+        final URI property = URI.create(Vocabulary.P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE);
+        transactionalThrowing(
+                () -> verifyStatementsPresent(Arrays.asList(new Quad(y.getUri(), property, "construction", "en"),
+                        new Quad(y.getUri(), property, "stavba", "cs"),
+                        new Quad(y.getUri(), property, "building", "en"),
+                        new Quad(y.getUri(), property, "budova", "cs")), em));
     }
 }

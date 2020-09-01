@@ -57,10 +57,10 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         if (attribute.isCollection()) {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                    return new PluralAnnotationPropertyStrategy<>(et,
+                    return createPluralAnnotationPropertyStrategy(et,
                             (AbstractPluralAttribute<? super X, ?, ?>) attribute, entityDescriptor, mapper);
                 case DATA:
-                    return new PluralDataPropertyStrategy<>(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
+                    return createPluralDataPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
                             entityDescriptor, mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
@@ -82,6 +82,28 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         }
         // Shouldn't happen
         throw new IllegalArgumentException();
+    }
+
+    private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralAnnotationPropertyStrategy(
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
+            Descriptor descriptor, EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
+            return new PluralMultilingualStringFieldStrategy<>(et,
+                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new PluralAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
+        }
+    }
+
+    private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralDataPropertyStrategy(
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
+            Descriptor descriptor, EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
+            return new PluralMultilingualStringFieldStrategy<>(et,
+                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new PluralDataPropertyStrategy<>(et, attribute, descriptor, mapper);
+        }
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(

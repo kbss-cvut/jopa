@@ -43,7 +43,7 @@ public final class CollectionFactory {
      * @param collectionType Type of the collection to create
      * @return Collection implementation instance
      */
-    public static Collection<Object> createDefaultCollection(PluralAttribute.CollectionType collectionType) {
+    public static <T> Collection<T> createDefaultCollection(PluralAttribute.CollectionType collectionType) {
         switch (collectionType) {
             case LIST:
                 return new ArrayList<>();
