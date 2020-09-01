@@ -52,7 +52,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
         }
-        clone = (Map<?, ?>) builder.createIndirectCollection(clone, cloneOwner, field);
+        clone = (Map<?, ?>) uow.createIndirectCollection(clone, cloneOwner, field);
         return clone;
 
     }
@@ -106,7 +106,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         Object value = CloneBuilderImpl.isImmutable(e.getValue()) ? e.getValue() :
                        cloneObject(cloneOwner, field, e.getValue(), configuration);
         if (value instanceof Collection || value instanceof Map) {
-            value = builder.createIndirectCollection(value, cloneOwner, field);
+            value = uow.createIndirectCollection(value, cloneOwner, field);
         }
         return Collections.singletonMap(key, value);
     }

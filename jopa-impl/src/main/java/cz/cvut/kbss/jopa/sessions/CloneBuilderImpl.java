@@ -150,7 +150,7 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     private static void cloneIdentifier(Object original, Object clone, EntityType<?> et) {
-        final Identifier identifier = et.getIdentifier();
+        final Identifier<?, ?> identifier = et.getIdentifier();
         final Object idValue = EntityPropertiesUtils.getFieldValue(identifier.getJavaField(), original);
         EntityPropertiesUtils.setFieldValue(identifier.getJavaField(), clone, idValue);
     }
@@ -250,10 +250,6 @@ public class CloneBuilderImpl implements CloneBuilder {
     @Override
     public void removeVisited(Object instance, Descriptor descriptor) {
         visitedEntities.remove(descriptor, instance);
-    }
-
-    Object createIndirectCollection(Object c, Object owner, Field f) {
-        return uow.createIndirectCollection(c, owner, f);
     }
 
     /**
