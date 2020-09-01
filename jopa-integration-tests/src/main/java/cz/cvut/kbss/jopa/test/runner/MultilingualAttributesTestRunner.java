@@ -15,6 +15,10 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class MultilingualAttributesTestRunner extends BaseRunner {
@@ -174,6 +178,66 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
     @Test
     void persistSupportsPluralMultilingualAttributes() {
         this.em = getEntityManager("persistSupportsPluralMultilingualAttributes", false);
+        final OWLClassY y = persistYWithPluralMultilingualAttributeValues();
+
+        final URI property = URI.create(Vocabulary.P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE);
+        transactionalThrowing(
+                () -> verifyStatementsPresent(Arrays.asList(new Quad(y.getUri(), property, "construction", "en"),
+                        new Quad(y.getUri(), property, "stavba", "cs"),
+                        new Quad(y.getUri(), property, "building", "en"),
+                        new Quad(y.getUri(), property, "budova", "cs")), em));
+    }
+
+    @Test
+    void loadEntitySupportsPluralMultilingualAttributes() throws Exception {
+        this.em = getEntityManager("loadEntitySupportsPluralMultilingualAttributes", true);
+        final URI individual = Generators.generateUri();
+        final URI singularProperty = URI.create(Vocabulary.P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE);
+        final Map<String, Set<String>> translations = new HashMap<>();
+        translations.put("en", new HashSet<>(Arrays.asList("building", "construction")));
+        translations.put("cs", new HashSet<>(Arrays.asList("stavba", "budova")));
+        translations.put("de", Collections.singleton("der Bau"));
+        final Collection<Quad> quads = new ArrayList<>();
+        quads.add(new Quad(individual, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_Y)));
+        translations.entrySet().stream()
+                    .flatMap(e -> e.getValue().stream().map(s -> new Quad(individual, singularProperty, s, e.getKey())))
+                    .forEach(quads::add);
+        persistTestData(quads, em);
+
+        final OWLClassY result = findRequired(OWLClassY.class, individual);
+        assertNotNull(result.getPluralString());
+        for (Map.Entry<String, Set<String>> e : translations.entrySet()) {
+            for (String s : e.getValue()) {
+                verifyPluralContainsValue(result, e.getKey(), s);
+            }
+        }
+    }
+
+    private void verifyPluralContainsValue(OWLClassY instance, String lang, String value) {
+        assertTrue(instance.getPluralString().stream()
+                           .anyMatch(ms -> ms.contains(lang) && ms.get(lang).equals(value)));
+    }
+
+    @Test
+    void updateSupportsReplacingValuesInPluralMultilingualAttributes() {
+        this.em = getEntityManager("updateSupportsReplacingValuesInPluralMultilingualAttributes", true);
+        final OWLClassY y = persistYWithPluralMultilingualAttributeValues();
+
+        transactional(() -> {
+            final OWLClassY toUpdate = findRequired(OWLClassY.class, y.getUri());
+            toUpdate.getPluralString().iterator().next().set("der Bau", "de");
+        });
+        em.getEntityManagerFactory().getCache().evictAll();
+
+        final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
+        verifyPluralContainsValue(result, "de", "der Bau");
+        verifyPluralContainsValue(result, "en", "construction");
+        verifyPluralContainsValue(result, "cs", "stavba");
+        verifyPluralContainsValue(result, "en", "building");
+        verifyPluralContainsValue(result, "cs", "budova");
+    }
+
+    private OWLClassY persistYWithPluralMultilingualAttributeValues() {
         final OWLClassY y = new OWLClassY();
         final MultilingualString sOne = new MultilingualString();
         sOne.set("construction", "en");
@@ -183,12 +247,36 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         sTwo.set("budova", "cs");
         y.setPluralString(new HashSet<>(Arrays.asList(sOne, sTwo)));
         persist(y);
+        return y;
+    }
 
-        final URI property = URI.create(Vocabulary.P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE);
-        transactionalThrowing(
-                () -> verifyStatementsPresent(Arrays.asList(new Quad(y.getUri(), property, "construction", "en"),
-                        new Quad(y.getUri(), property, "stavba", "cs"),
-                        new Quad(y.getUri(), property, "building", "en"),
-                        new Quad(y.getUri(), property, "budova", "cs")), em));
+    @Test
+    void updateSupportsRemovingValuesFromPluralMultilingualAttributes() {
+        this.em = getEntityManager("updateSupportsRemovingValuesFromPluralMultilingualAttributes", true);
+        final OWLClassY y = persistYWithPluralMultilingualAttributeValues();
+
+        transactional(() -> {
+            final Iterator<MultilingualString> it = y.getPluralString().iterator();
+            it.next();
+            it.remove();
+            em.merge(y);
+        });
+
+        final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
+        assertEquals(1, result.getPluralString().size());
+    }
+
+    @Test
+    void clearingPluralMultilingualAttributeValueRemovesAllItsValues() {
+        this.em = getEntityManager("settingPluralMultilingualAttributeValueToNullRemovesAllItsValues", true);
+        final OWLClassY y = persistYWithPluralMultilingualAttributeValues();
+
+        transactional(() -> {
+            final OWLClassY toUpdate = findRequired(OWLClassY.class, y.getUri());
+            toUpdate.getPluralString().clear();
+        });
+
+        final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
+        assertThat(result.getPluralString(), anyOf(nullValue(), empty()));
     }
 }
