@@ -35,23 +35,20 @@ public class IRI implements AnnotationValue {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + value.hashCode();
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof IRI)) {
+            return false;
+        }
+        IRI iri = (IRI) o;
+        return value.equals(iri.value);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        IRI other = (IRI) obj;
-        return value.equals(other.value);
+    public int hashCode() {
+        return Objects.hash(value);
     }
 
     public static IRI create(final String s) {

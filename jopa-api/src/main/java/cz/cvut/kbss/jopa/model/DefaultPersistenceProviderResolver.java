@@ -53,7 +53,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         return Collections.unmodifiableList(providers);
     }
 
-    private List<PersistenceProvider> initProviders() {
+    private static List<PersistenceProvider> initProviders() {
         final List<Class<? extends PersistenceProvider>> providerTypes = new ArrayList<>(PROVIDER_TYPES);
         providerTypes.addAll(resolveProviders());
         final List<PersistenceProvider> providerList = new ArrayList<>(providerTypes.size());
@@ -87,7 +87,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         PROVIDER_TYPES.add(cls);
     }
 
-    private List<Class<? extends PersistenceProvider>> resolveProviders() {
+    private static List<Class<? extends PersistenceProvider>> resolveProviders() {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         final List<Class<? extends PersistenceProvider>> providerTypes = new ArrayList<>();
         try {
@@ -103,7 +103,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         return providerTypes;
     }
 
-    private Optional<Class<? extends PersistenceProvider>> resolveProvider(URL file) {
+    private static Optional<Class<? extends PersistenceProvider>> resolveProvider(URL file) {
         try (final BufferedReader in = new BufferedReader(new InputStreamReader(file.openStream()))) {
             String line;
             while ((line = in.readLine()) != null) {
