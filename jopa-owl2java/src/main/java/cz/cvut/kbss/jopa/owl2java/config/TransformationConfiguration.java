@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java.config;
 
@@ -30,6 +28,8 @@ public class TransformationConfiguration {
 
     private final boolean generateJavadoc;
 
+    private final boolean preferMultilingualStrings;
+
     private final PropertiesType propertiesType;
 
     private final CliParams cliParams;
@@ -40,6 +40,7 @@ public class TransformationConfiguration {
         this.targetDir = builder.targetDir;
         this.generateOwlapiIris = builder.owlapiIris;
         this.generateJavadoc = builder.generateJavadoc;
+        this.preferMultilingualStrings = builder.preferMultilingualStrings;
         this.propertiesType = builder.propertiesType;
         this.cliParams = CliParams.empty();
     }
@@ -53,6 +54,8 @@ public class TransformationConfiguration {
         this.generateOwlapiIris = cliParams.is(Option.WITH_IRIS.arg, Defaults.WITH_IRIS);
         this.generateJavadoc = cliParams
                 .is(Option.GENERATE_JAVADOC_FROM_COMMENT.arg, Defaults.GENERATE_JAVADOC_FROM_COMMENT);
+        this.preferMultilingualStrings = cliParams
+                .is(Option.PREFER_MULTILINGUAL_STRINGS.arg, Defaults.PREFER_MULTILINGUAL_STRINGS);
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
     }
 
@@ -80,6 +83,10 @@ public class TransformationConfiguration {
         return generateJavadoc;
     }
 
+    public boolean shouldPreferMultilingualStrings() {
+        return preferMultilingualStrings;
+    }
+
     public PropertiesType getPropertiesType() {
         return propertiesType;
     }
@@ -103,6 +110,7 @@ public class TransformationConfiguration {
         private PropertiesType propertiesType = PropertiesType.valueOf(Defaults.PROPERTIES_TYPE);
         private boolean owlapiIris = Defaults.WITH_IRIS;
         private boolean generateJavadoc = Defaults.GENERATE_JAVADOC_FROM_COMMENT;
+        private boolean preferMultilingualStrings = true;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -126,6 +134,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder generateJavadoc(boolean javadoc) {
             this.generateJavadoc = javadoc;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder preferMultilingualStrings(boolean preferMultilingualStrings) {
+            this.preferMultilingualStrings = preferMultilingualStrings;
             return this;
         }
 

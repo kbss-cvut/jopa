@@ -1,22 +1,20 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.maven;
 
 import cz.cvut.kbss.jopa.owl2java.OWL2JavaTransformer;
-import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
+import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -35,6 +33,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String IGNORE_FAILED_IMPORTS_PARAM = "ignore-failed-imports";
     private static final String PROPERTIES_TYPE = "properties-type";
     private static final String GENERATE_JAVADOC = "javadoc-from-rdfs-comment";
+    private static final String PREFER_MULTILINGUAL_STRINGS = "prefer-multilingual-strings";
 
     @Parameter(alias = MAPPING_FILE_PARAM)
     private String pMappingFile;
@@ -69,6 +68,9 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = GENERATE_JAVADOC, defaultValue = "true")
     private boolean generateJavadoc;
 
+    @Parameter(alias = PREFER_MULTILINGUAL_STRINGS, defaultValue = "true")
+    private boolean preferMultilingualStrings;
+
     @Override
     public void execute() {
         OWL2JavaTransformer owl2java = new OWL2JavaTransformer();
@@ -100,7 +102,7 @@ public class OWL2JavaMojo extends AbstractMojo {
 
         final TransformationConfiguration config =
                 builder.packageName(pPackage).targetDir(pOutputDirectory).addOwlapiIris(pWithOWLAPI)
-                       .generateJavadoc(generateJavadoc).build();
+                       .generateJavadoc(generateJavadoc).preferMultilingualStrings(preferMultilingualStrings).build();
 
         if (pVocabularyOnly) {
             owl2java.generateVocabulary(config);
@@ -123,5 +125,6 @@ public class OWL2JavaMojo extends AbstractMojo {
         getLog().info(IGNORE_FAILED_IMPORTS_PARAM + ": " + ignoreFailedImports);
         getLog().info(PROPERTIES_TYPE + ": " + pPropertiesType);
         getLog().info(GENERATE_JAVADOC + ": " + generateJavadoc);
+        getLog().info(PREFER_MULTILINGUAL_STRINGS + ": " + preferMultilingualStrings);
     }
 }

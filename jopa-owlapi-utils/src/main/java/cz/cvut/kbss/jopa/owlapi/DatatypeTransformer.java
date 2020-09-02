@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.owlapi;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDatatype;
@@ -46,8 +47,7 @@ public class DatatypeTransformer {
         DATATYPE_MAP.put(OWL2Datatype.RDF_PLAIN_LITERAL, String.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_STRING, String.class);
         DATATYPE_MAP.put(OWL2Datatype.RDF_XML_LITERAL, String.class);
-        // TODO XSD langString should be mapped to MultilingualString, but make this configurable in OWL2Java
-        DATATYPE_MAP.put(OWL2Datatype.RDF_LANG_STRING, String.class);
+        DATATYPE_MAP.put(OWL2Datatype.RDF_LANG_STRING, MultilingualString.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_INT, Integer.class);
         // technically, this is not correct, as XSD integer should be mapped to BigInteger, because it is unbound
         // But OWL API maps it to integer, so we have to keep it this way too

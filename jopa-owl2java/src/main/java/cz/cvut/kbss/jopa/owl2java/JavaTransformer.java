@@ -16,6 +16,7 @@ import com.sun.codemodel.*;
 import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -293,7 +294,7 @@ public class JavaTransformer {
 
         if (Card.NO != comp.getCard()) {
 
-            final JType obj = cm._ref(DatatypeTransformer.transformOWLType(comp.getFiller()));
+            final JType obj = cm._ref(resolveFieldType(comp.getFiller()));
 
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
@@ -325,6 +326,14 @@ public class JavaTransformer {
                 setParticipationConstraintCardinality(u, ic);
             }
         }
+    }
+
+    private Class<?> resolveFieldType(OWLDatatype datatype) {
+        final Class<?> cls = DatatypeTransformer.transformOWLType(datatype);
+        if (MultilingualString.class.equals(cls) && !configuration.shouldPreferMultilingualStrings()) {
+            return String.class;
+        }
+        return cls;
     }
 
     private void _generateModel(final OWLOntology ontology, final JCodeModel cm,
