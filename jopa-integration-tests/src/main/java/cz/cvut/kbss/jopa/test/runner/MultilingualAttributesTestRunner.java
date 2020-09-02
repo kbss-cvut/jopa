@@ -100,9 +100,9 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         this.em = getEntityManager("settingMultilingualStringAttributeToNullRemovesAllValues", false);
         final OWLClassY entityY = new OWLClassY();
         entityY.setSingularString(new MultilingualString());
-        entityY.getSingularString().set("building", "en");
-        entityY.getSingularString().set("stavba", "cs");
-        entityY.getSingularString().set("der Bau", "de");
+        entityY.getSingularString().set("en", "building");
+        entityY.getSingularString().set("cs", "stavba");
+        entityY.getSingularString().set("de", "der Bau");
         persist(entityY);
 
         em.getTransaction().begin();
@@ -120,11 +120,11 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         this.em = getEntityManager("updateSupportsAddingTranslationsToMultilingualAttribute", true);
         final OWLClassY y = new OWLClassY();
         y.setSingularString(new MultilingualString());
-        y.getSingularString().set("building", "en");
+        y.getSingularString().set("en", "building");
         persist(y);
 
-        y.getSingularString().set("stavba", "cs");
-        y.getSingularString().set("der Bau", "de");
+        y.getSingularString().set("cs", "stavba");
+        y.getSingularString().set("de", "der Bau");
         transactional(() -> em.merge(y));
 
         final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
@@ -137,14 +137,14 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         this.em = getEntityManager("updateSupportsReplacingTranslationsInMultilingualAttribute", true);
         final OWLClassY y = new OWLClassY();
         y.setSingularString(new MultilingualString());
-        y.getSingularString().set("construction", "en");
+        y.getSingularString().set("en", "construction");
         persist(y);
 
         final String replacement = "building";
         transactional(() -> {
             final OWLClassY toUpdate = findRequired(OWLClassY.class, y.getUri());
-            toUpdate.getSingularString().set(replacement, "en");
-            toUpdate.getSingularString().set("stavba", "cs");
+            toUpdate.getSingularString().set("en", replacement);
+            toUpdate.getSingularString().set("cs", "stavba");
         });
 
         final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
@@ -158,15 +158,15 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         this.em = getEntityManager("updateSupportsCompletelyReplacingMultilingualAttributeValueInTransaction", true);
         final OWLClassY y = new OWLClassY();
         y.setSingularString(new MultilingualString());
-        y.getSingularString().set("construction", "en");
+        y.getSingularString().set("en", "construction");
         persist(y);
 
         final String replacement = "building";
         transactional(() -> {
             final OWLClassY toUpdate = findRequired(OWLClassY.class, y.getUri());
             toUpdate.setSingularString(new MultilingualString());
-            toUpdate.getSingularString().set(replacement, "en");
-            toUpdate.getSingularString().set("stavba", "cs");
+            toUpdate.getSingularString().set("en", replacement);
+            toUpdate.getSingularString().set("cs", "stavba");
         });
 
         final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
@@ -225,7 +225,7 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
 
         transactional(() -> {
             final OWLClassY toUpdate = findRequired(OWLClassY.class, y.getUri());
-            toUpdate.getPluralString().iterator().next().set("der Bau", "de");
+            toUpdate.getPluralString().iterator().next().set("de", "der Bau");
         });
         em.getEntityManagerFactory().getCache().evictAll();
 
@@ -240,11 +240,11 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
     private OWLClassY persistYWithPluralMultilingualAttributeValues() {
         final OWLClassY y = new OWLClassY();
         final MultilingualString sOne = new MultilingualString();
-        sOne.set("construction", "en");
-        sOne.set("stavba", "cs");
+        sOne.set("en", "construction");
+        sOne.set("cs", "stavba");
         final MultilingualString sTwo = new MultilingualString();
-        sTwo.set("building", "en");
-        sTwo.set("budova", "cs");
+        sTwo.set("en", "building");
+        sTwo.set("cs", "budova");
         y.setPluralString(new HashSet<>(Arrays.asList(sOne, sTwo)));
         persist(y);
         return y;

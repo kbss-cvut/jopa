@@ -31,7 +31,7 @@ class SingularMultilingualStringFieldStrategy<X>
         if (axiomValue.getValue() instanceof LangString) {
             final LangString lsAxiomValue = (LangString) axiomValue.getValue();
             verifyCardinality(lsAxiomValue.getLanguage().orElse(null), ax.getSubject());
-            value.set(lsAxiomValue.getValue(), lsAxiomValue.getLanguage().orElse(null));
+            value.set(lsAxiomValue.getLanguage().orElse(null), lsAxiomValue.getValue());
         } else {
             value.set(axiomValue.stringValue());
         }

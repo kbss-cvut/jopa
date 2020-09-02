@@ -23,16 +23,16 @@ class MultilingualStringTest {
     @Test
     void setSetsValueInSpecifiedLanguage() {
         final MultilingualString sut = new MultilingualString();
-        sut.set(VALUE, LANGUAGE);
+        sut.set(LANGUAGE, VALUE);
         assertEquals(VALUE, sut.get(LANGUAGE));
     }
 
     @Test
     void setOverridesPreexistingValueForSpecifiedLanguage() {
         final MultilingualString sut = new MultilingualString();
-        sut.set(VALUE, LANGUAGE);
+        sut.set(LANGUAGE, VALUE);
         final String newValue = "exam";
-        sut.set(newValue, LANGUAGE);
+        sut.set(LANGUAGE, newValue);
         assertEquals(newValue, sut.get(LANGUAGE));
     }
 
@@ -53,7 +53,7 @@ class MultilingualStringTest {
     @Test
     void getWithNullLanguageReturnsAnyExistingLanguageTaggedValueWhenSimpleLiteralIsNotPresent() {
         final MultilingualString sut = new MultilingualString();
-        sut.set(VALUE, LANGUAGE);
+        sut.set(LANGUAGE, VALUE);
         assertEquals(VALUE, sut.get(null));
     }
 
@@ -67,14 +67,14 @@ class MultilingualStringTest {
     @Test
     void getWithoutArgumentReturnsAnyExistingLanguageTaggedValueWhenSimpleLiteralIsNotPresent() {
         final MultilingualString sut = new MultilingualString();
-        sut.set(VALUE, LANGUAGE);
+        sut.set(LANGUAGE, VALUE);
         assertEquals(VALUE, sut.get());
     }
 
     @Test
     void containsReturnsTrueForExistingLanguageValue() {
         final MultilingualString sut = new MultilingualString();
-        sut.set(VALUE, LANGUAGE);
+        sut.set(LANGUAGE, VALUE);
         assertTrue(sut.contains(LANGUAGE));
         assertFalse(sut.contains("cs"));
     }
@@ -82,14 +82,14 @@ class MultilingualStringTest {
     @Test
     void containsReturnsTrueForNullArgumentWhenAtLeastOneLanguageTaggedValueExists() {
         final MultilingualString sut = new MultilingualString();
-        sut.set(VALUE, LANGUAGE);
+        sut.set(LANGUAGE, VALUE);
         assertTrue(sut.contains(null));
     }
 
     @Test
     void getLanguagesReturnsSetOfLanguagesPresentInInstance() {
         final MultilingualString sut = new MultilingualString();
-        sut.set(VALUE, LANGUAGE);
+        sut.set(LANGUAGE, VALUE);
         sut.set("test");
         final Set<String> result = sut.getLanguages();
         assertEquals(2, result.size());

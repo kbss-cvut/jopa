@@ -157,7 +157,7 @@ class SingularMultilingualStringFieldStrategyTest {
         final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final OWLClassU instance = new OWLClassU(ID);
         instance.setSingularStringAtt(MultilingualString.create("car", LANG));
-        instance.getSingularStringAtt().set("automobil", "cs");
+        instance.getSingularStringAtt().set("cs", "automobil");
 
         final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
         sut.buildAxiomValuesFromInstance(instance, builder);

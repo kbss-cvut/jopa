@@ -41,12 +41,12 @@ public class MultilingualString implements Serializable {
      * <p>
      * This overrides any previous value in the specified language, if it existed.
      *
-     * @param value    String value in the specified language
      * @param language Language to use with the specified value. Passing {@code null} has the same effect as {@link
      *                 #set(String)}
+     * @param value    String value in the specified language
      * @see #set(String)
      */
-    public void set(String value, String language) {
+    public void set(String language, String value) {
         Objects.requireNonNull(value);
         this.value.put(language, value);
     }
@@ -187,7 +187,7 @@ public class MultilingualString implements Serializable {
      */
     public static MultilingualString create(String value, String language) {
         final MultilingualString instance = new MultilingualString();
-        instance.set(value, language);
+        instance.set(language, value);
         return instance;
     }
 }

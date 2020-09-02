@@ -56,7 +56,7 @@ class IndirectMultilingualStringTest {
 
     @Test
     void setWithValueAndLanguagePropagatesChangeAndNotifiesPersistenceContext() {
-        sut.set("der Bau", "de");
+        sut.set("de", "der Bau");
         verify(uow).attributeChanged(owner, field);
         assertEquals(translations.size() + 1, referencedString.getValue().size());
         assertTrue(referencedString.contains("de"));
@@ -96,7 +96,7 @@ class IndirectMultilingualStringTest {
         assertEquals(sut, referencedString);
         assertEquals(sut, new IndirectMultilingualString(owner, field, uow, referencedString));
         final MultilingualString another = new MultilingualString(translations);
-        another.set("der Bau", "de");
+        another.set("de", "der Bau");
         assertNotEquals(sut, another);
         assertNotEquals(sut, new IndirectMultilingualString(owner, field, uow, another));
         assertNotEquals(sut, "test");

@@ -56,8 +56,8 @@ class PluralMultilingualStringFieldStrategyTest {
         final PluralMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final OWLClassU u = new OWLClassU(ID);
         final MultilingualString ms = new MultilingualString();
-        ms.set("building", "en");
-        ms.set("budova", "cs");
+        ms.set("en", "building");
+        ms.set("cs", "budova");
         u.setPluralStringAtt(Collections.singleton(ms));
 
         final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
@@ -84,11 +84,11 @@ class PluralMultilingualStringFieldStrategyTest {
         final PluralMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final OWLClassU u = new OWLClassU(ID);
         final MultilingualString msOne = new MultilingualString();
-        msOne.set("building", "en");
-        msOne.set("budova", "cs");
+        msOne.set("en", "building");
+        msOne.set("cs", "budova");
         final MultilingualString msTwo = new MultilingualString();
-        msTwo.set("construction", "en");
-        msTwo.set("stavba", "cs");
+        msTwo.set("en", "construction");
+        msTwo.set("cs", "stavba");
         msTwo.set("construction");
         u.setPluralStringAtt(new HashSet<>(Arrays.asList(msOne, msTwo)));
 

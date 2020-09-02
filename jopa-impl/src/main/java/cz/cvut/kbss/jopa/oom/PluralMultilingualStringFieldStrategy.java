@@ -44,12 +44,12 @@ public class PluralMultilingualStringFieldStrategy<X>
     private void addValue(String value, String language) {
         for (MultilingualString ms : values) {
             if (!ms.contains(language)) {
-                ms.set(value, language);
+                ms.set(language, value);
                 return;
             }
         }
         final MultilingualString newOne = new MultilingualString();
-        newOne.set(value, language);
+        newOne.set(language, value);
         values.add(newOne);
     }
 

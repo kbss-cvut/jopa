@@ -29,7 +29,7 @@ class MultilingualStringInstanceBuilderTest {
     @Test
     void buildCloneCopiesAllTranslationsInSpecifiedOriginalMultilingualString() throws Exception {
         final MultilingualString original = MultilingualString.create("building", Generators.LANG);
-        original.set("stavba", "cs");
+        original.set("cs", "stavba");
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), original,
                 new CloneConfiguration(descriptor));
         assertThat(result, instanceOf(MultilingualString.class));
@@ -47,7 +47,7 @@ class MultilingualStringInstanceBuilderTest {
     @Test
     void buildCloneReturnsIndirectWrapperAllowingToTrackModifyingOperations() throws Exception {
         final MultilingualString original = MultilingualString.create("building", Generators.LANG);
-        original.set("stavba", "cs");
+        original.set("cs", "stavba");
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), original,
                 new CloneConfiguration(descriptor));
         assertThat(result, instanceOf(IndirectMultilingualString.class));
@@ -56,7 +56,7 @@ class MultilingualStringInstanceBuilderTest {
     @Test
     void mergeChangesCopiesValueOfCloneToOriginal() throws Exception {
         final MultilingualString clone = MultilingualString.create("building", Generators.LANG);
-        clone.set("stavba", "cs");
+        clone.set("cs", "stavba");
         final MultilingualString original = MultilingualString.create("construction", Generators.LANG);
         final OWLClassU target = new OWLClassU();
         target.setSingularStringAtt(original);
