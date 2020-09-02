@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.cache;
 
@@ -21,18 +19,18 @@ import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManager> {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         this.manager = new LruCacheManager();
@@ -107,7 +105,7 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
     }
 
     @Test
-    public void entryGetsEvictedWhenCacheIsFull() throws Exception {
+    public void entryGetsEvictedWhenCacheIsFull() {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         this.manager = new LruCacheManager(
@@ -121,7 +119,7 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
     }
 
     @Test
-    public void leastRecentlyUsedEntryGetsEvictedWhenCacheIsFull_withContext() throws Exception {
+    public void leastRecentlyUsedEntryGetsEvictedWhenCacheIsFull_withContext() {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         this.manager = new LruCacheManager(

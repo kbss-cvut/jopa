@@ -17,8 +17,8 @@ package cz.cvut.kbss.jopa.sessions.cache;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 
 public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManager> {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         this.manager = new TtlCacheManager(Collections.emptyMap());
@@ -95,8 +95,8 @@ public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManage
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
         // The cycle ensures that testA is refreshed and stays in the cache
         // while testB will be evicted because its TTL is exhausted
-        for (int i = 0; i < 5; i++) {
-            Thread.sleep(1000);
+        for (int i = 0; i < 8; i++) {
+            Thread.sleep(500);
             assertNotNull(manager.get(testA.getClass(), testA.getUri(), descriptorOne));
         }
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
