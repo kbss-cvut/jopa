@@ -24,7 +24,7 @@ public enum SequenceType {
      * <p>
      * Example:
      * <pre>
-     * entity -> nodeOne -> nodeTwo -> nodeThree
+     * entity - nodeOne - nodeTwo - nodeThree
      * </pre>
      */
     simple,
@@ -38,7 +38,7 @@ public enum SequenceType {
      * <p>
      * Example:
      * <pre>
-     * entity -> nodeOne -> nodeTwo -> nodeThree
+     * entity - nodeOne - nodeTwo - nodeThree
      *              |          |           |
      *           itemOne    itemTwo    itemThree
      * </pre>

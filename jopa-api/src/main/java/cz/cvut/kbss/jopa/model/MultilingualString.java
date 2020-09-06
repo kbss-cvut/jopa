@@ -30,7 +30,7 @@ public class MultilingualString implements Serializable {
      * <p>
      * Convenience constructor for simple initialization with existing data.
      *
-     * @param value Map of language -> translation values
+     * @param value Map of language to translation values
      */
     public MultilingualString(Map<String, String> value) {
         this.value = new HashMap<>(Objects.requireNonNull(value));
@@ -153,7 +153,7 @@ public class MultilingualString implements Serializable {
      * <p>
      * Convenience method for accessing all values at once.
      *
-     * @return Map of language -> translation values
+     * @return Map of language to translation values
      */
     public Map<String, String> getValue() {
         return Collections.unmodifiableMap(value);
