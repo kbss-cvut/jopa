@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.owl2java;
 import cz.cvut.kbss.jopa.owl2java.cli.CliParams;
 import cz.cvut.kbss.jopa.owl2java.cli.Command;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
+import cz.cvut.kbss.jopa.owl2java.config.Defaults;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -122,7 +123,7 @@ public class OWL2Java {
         } else {
             oj.setOntology(input.nonOptionArguments().get(1), null);
         }
-        oj.ignoreMissingImports(input.is(Option.IGNORE_FAILED_IMPORTS.arg));
+        oj.ignoreMissingImports(input.is(Option.IGNORE_FAILED_IMPORTS.arg, Defaults.IGNORE_FAILED_IMPORTS));
         return oj;
     }
 

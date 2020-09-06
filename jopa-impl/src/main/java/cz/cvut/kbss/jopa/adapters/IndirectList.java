@@ -188,7 +188,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
     }
 
     @Override
-    public List<E> getReferencedCollection() {
+    public List<E> unwrap() {
         return internalList;
     }
 

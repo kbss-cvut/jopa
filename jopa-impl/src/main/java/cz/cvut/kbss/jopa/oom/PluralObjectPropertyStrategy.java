@@ -33,7 +33,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     private static final Logger LOG = LoggerFactory.getLogger(PluralObjectPropertyStrategy.class);
 
-    private Collection<Object> values;
+    private final Collection<Object> values;
 
     PluralObjectPropertyStrategy(EntityType<X> et, Y att, Descriptor descriptor, EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);

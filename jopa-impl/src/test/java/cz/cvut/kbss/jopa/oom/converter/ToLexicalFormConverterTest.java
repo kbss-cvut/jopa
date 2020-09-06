@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
 
@@ -40,5 +41,11 @@ class ToLexicalFormConverterTest {
     void convertToAxiomValueReturnsSpecifiedString() {
         final String value = "test";
         assertEquals(value, sut.convertToAxiomValue(value));
+    }
+
+    @Test
+    void convertToAttributeReturnsLexicalFormOfLangString() {
+        final LangString langString = new LangString("test", "en");
+        assertEquals(langString.getValue(), sut.convertToAttribute(langString));
     }
 }

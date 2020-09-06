@@ -15,11 +15,15 @@
 package cz.cvut.kbss.ontodriver.jena.util;
 
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JenaUtilsTest {
 
@@ -58,5 +62,15 @@ public class JenaUtilsTest {
     @Test
     public void literalToValueTranslatesLongLiteralToJavaLong() {
         assertEquals(117L, JenaUtils.literalToValue(ResourceFactory.createTypedLiteral(117L)));
+    }
+
+    @Test
+    void literalToValueTransformsStringWithLanguageToLangString() {
+        final Literal literal = ResourceFactory.createLangLiteral("test", "en");
+        final Object result = JenaUtils.literalToValue(literal);
+        assertThat(result, instanceOf(LangString.class));
+        assertEquals("test", ((LangString) result).getValue());
+        assertTrue(((LangString) result).getLanguage().isPresent());
+        assertEquals("en", ((LangString) result).getLanguage().get());
     }
 }

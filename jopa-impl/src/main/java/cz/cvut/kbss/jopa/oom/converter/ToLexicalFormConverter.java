@@ -1,19 +1,18 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 /**
@@ -22,6 +21,8 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
  * This converter ensures seamless support for lexical forms.
  */
 public class ToLexicalFormConverter implements ConverterWrapper<String, Object> {
+
+    public static final ToLexicalFormConverter INSTANCE = new ToLexicalFormConverter();
 
     @Override
     public boolean supportsAxiomValueType(Class<?> type) {
@@ -37,6 +38,6 @@ public class ToLexicalFormConverter implements ConverterWrapper<String, Object> 
     @Override
     public String convertToAttribute(Object value) {
         assert value != null;
-        return value.toString();
+        return value instanceof LangString ? ((LangString) value).getValue() : value.toString();
     }
 }

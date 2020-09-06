@@ -13,10 +13,11 @@
 package cz.cvut.kbss.ontodriver.sesame.util;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
@@ -46,26 +47,27 @@ public final class SesameUtils {
         final IRI datatype = literal.getDatatype();
         assert datatype != null;
 
-        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
-                datatype.equals(RDF.LANGSTRING)) {
+        if (datatype.equals(XSD.STRING) || datatype.equals(XSD.NORMALIZEDSTRING)) {
             return literal.stringValue();
+        } else if (datatype.equals(RDF.LANGSTRING)) {
+            return new LangString(literal.stringValue(), literal.getLanguage().orElse(null));
         } else if (isInteger(datatype)) {
             return literal.intValue();
-        } else if (datatype.equals(XMLSchema.BOOLEAN)) {
+        } else if (datatype.equals(XSD.BOOLEAN)) {
             return literal.booleanValue();
-        } else if (datatype.equals(XMLSchema.LONG) || datatype.equals(XMLSchema.UNSIGNED_LONG)) {
+        } else if (datatype.equals(XSD.LONG) || datatype.equals(XSD.UNSIGNED_LONG)) {
             return literal.longValue();
-        } else if (datatype.equals(XMLSchema.DECIMAL)) {
+        } else if (datatype.equals(XSD.DECIMAL)) {
             return literal.decimalValue();
-        } else if (datatype.equals(XMLSchema.FLOAT)) {
+        } else if (datatype.equals(XSD.FLOAT)) {
             return literal.floatValue();
-        } else if (datatype.equals(XMLSchema.DOUBLE)) {
+        } else if (datatype.equals(XSD.DOUBLE)) {
             return literal.doubleValue();
-        } else if (datatype.equals(XMLSchema.SHORT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)) {
+        } else if (datatype.equals(XSD.SHORT) || datatype.equals(XSD.UNSIGNED_SHORT)) {
             return literal.shortValue();
-        } else if (datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.UNSIGNED_BYTE)) {
+        } else if (datatype.equals(XSD.BYTE) || datatype.equals(XSD.UNSIGNED_BYTE)) {
             return literal.byteValue();
-        } else if (datatype.equals(XMLSchema.DATE) || datatype.equals(XMLSchema.DATETIME)) {
+        } else if (datatype.equals(XSD.DATE) || datatype.equals(XSD.DATETIME)) {
             return literal.calendarValue().toGregorianCalendar().getTime();
         } else {
             throw new IllegalArgumentException("Unsupported datatype " + datatype);
@@ -73,12 +75,12 @@ public final class SesameUtils {
     }
 
     private static boolean isInteger(IRI datatype) {
-        return datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT) ||
-                datatype.equals(XMLSchema.INTEGER)
-                || datatype.equals(XMLSchema.POSITIVE_INTEGER)
-                || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
-                || datatype.equals(XMLSchema.NEGATIVE_INTEGER)
-                || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER);
+        return datatype.equals(XSD.INT) || datatype.equals(XSD.UNSIGNED_INT) ||
+                datatype.equals(XSD.INTEGER)
+                || datatype.equals(XSD.POSITIVE_INTEGER)
+                || datatype.equals(XSD.NON_NEGATIVE_INTEGER)
+                || datatype.equals(XSD.NEGATIVE_INTEGER)
+                || datatype.equals(XSD.NON_POSITIVE_INTEGER);
     }
 
     /**
@@ -99,7 +101,7 @@ public final class SesameUtils {
         }
         final String language = assertion.getLanguage();
         final IRI datatype = literal.getDatatype();
-        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
+        if (datatype.equals(XSD.STRING) || datatype.equals(XSD.NORMALIZEDSTRING) ||
                 datatype.equals(RDF.LANGSTRING)) {
             return language == null || !literal.getLanguage().isPresent() ||
                     literal.getLanguage().get().equals(language);
@@ -123,6 +125,10 @@ public final class SesameUtils {
             return vf.createLiteral((Integer) value);
         } else if (value instanceof String) {
             return language != null ? vf.createLiteral((String) value, language) : vf.createLiteral((String) value);
+        } else if (value instanceof LangString) {
+            final LangString ls = (LangString) value;
+            return ls.getLanguage().isPresent() ? vf.createLiteral(ls.getValue(), ls.getLanguage().get()) :
+                   vf.createLiteral(ls.getValue());
         } else if (value instanceof Byte) {
             return vf.createLiteral((Byte) value);
         } else if (value instanceof Short) {

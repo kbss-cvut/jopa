@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -86,9 +87,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
         assertFalse(res.isEmpty());
         assertEquals(exp.size(), res.size());
         for (Object lst2 : res) {
-            assertTrue(lst2 instanceof String);
+            assertTrue(lst2 instanceof LangString);
             // False means we got the expected value
-            assertFalse(exp.add((String) lst2));
+            assertFalse(exp.add(((LangString) lst2).getValue()));
         }
     }
 
@@ -232,9 +233,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
                 "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
                 "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
                 "}", OWLClassA.VARIABLE_MAPPING).getResultList();
-        final Map<String, String> expected = new HashMap<>();
+        final Map<String, Object> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class)
-                            .forEach(a -> expected.put(a.getUri().toString(), a.getStringAttribute()));
+                            .forEach(a -> expected.put(a.getUri().toString(), new LangString(a.getStringAttribute(), "en")));
         assertEquals(expected.size(), res.size());
         for (Object row : res) {
             assertTrue(row instanceof Object[]);

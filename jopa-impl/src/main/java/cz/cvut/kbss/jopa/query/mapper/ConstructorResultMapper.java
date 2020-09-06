@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
+import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -64,7 +65,7 @@ class ConstructorResultMapper implements SparqlResultMapper {
 
     private Object buildInstance(Object[] values, Class<?>[] types) {
         try {
-            final Constructor<?> ctor = targetType.getDeclaredConstructor(types);
+            final Constructor<?> ctor = resolveConstructor(types);
             if (!ctor.isAccessible()) {
                 ctor.setAccessible(true);
             }
@@ -76,6 +77,25 @@ class ConstructorResultMapper implements SparqlResultMapper {
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new SparqlResultMappingException(
                     String.format("Unable to map values %s to type %s.", Arrays.toString(values), targetType), e);
+        }
+    }
+
+    private Constructor<?> resolveConstructor(Class<?>[] types) throws NoSuchMethodException {
+        try {
+            return targetType.getDeclaredConstructor(types);
+        } catch (NoSuchMethodException e) {
+            boolean replaced = false;
+            // Try replacing LangString with String and finding a constructor then
+            for (int i = 0; i < types.length; i++) {
+                if (types[i].equals(LangString.class)) {
+                    replaced = true;
+                    types[i] = String.class;
+                }
+            }
+            if (replaced) {
+                return targetType.getDeclaredConstructor(types);
+            }
+            throw e;
         }
     }
 }

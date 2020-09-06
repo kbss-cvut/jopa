@@ -29,6 +29,8 @@ class TypeBuilderContext<X> {
 
     private ConverterResolver converterResolver;
 
+    private String puLanguage;
+
     TypeBuilderContext(AbstractIdentifiableType<X> type, NamespaceResolver namespaceResolver) {
         this.type = type;
         this.namespaceResolver = namespaceResolver;
@@ -52,5 +54,13 @@ class TypeBuilderContext<X> {
 
     void setConverterResolver(ConverterResolver converterResolver) {
         this.converterResolver = converterResolver;
+    }
+
+    String getPuLanguage() {
+        return puLanguage;
+    }
+
+    void setPuLanguage(String puLanguage) {
+        this.puLanguage = puLanguage;
     }
 }

@@ -27,10 +27,10 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
-    private IntegrityConstraintSet integrityConstraintSet = new IntegrityConstraintSet();
+    private final IntegrityConstraintSet integrityConstraintSet = new IntegrityConstraintSet();
 
-    private Map<OWLObjectProperty, OWLClass> opRanges = new HashMap<>();
-    private Map<OWLDataProperty, OWLDatatype> dpRanges = new HashMap<>();
+    private final Map<OWLObjectProperty, OWLClass> opRanges = new HashMap<>();
+    private final Map<OWLDataProperty, OWLDatatype> dpRanges = new HashMap<>();
 
     @Override
     public void visit(OWLAnnotationPropertyRangeAxiom axiom) {

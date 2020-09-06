@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -20,6 +18,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.slf4j.Logger;
 
@@ -139,11 +138,11 @@ public abstract class BaseRunner {
      * @param entity Entity to persist
      */
     protected void persist(Object... entity) {
-        em.getTransaction().begin();
-        for (Object ent : entity) {
-            em.persist(ent);
-        }
-        em.getTransaction().commit();
+        transactional(() -> {
+            for (Object ent : entity) {
+                em.persist(ent);
+            }
+        });
     }
 
     /**
@@ -155,6 +154,23 @@ public abstract class BaseRunner {
         em.getTransaction().begin();
         action.run();
         em.getTransaction().commit();
+    }
+
+    /**
+     * Runs the specified action in a transaction on the current entity manager.
+     *
+     * This allows using also actions which throw checked exceptions.
+     * @param action The code to run
+     * @see #transactional(Runnable)
+     */
+    protected void transactionalThrowing(ThrowingRunnable action) {
+        try {
+            em.getTransaction().begin();
+            action.run();
+            em.getTransaction().commit();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

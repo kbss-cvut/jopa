@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,14 +16,12 @@ package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.owlapi.exception.BindingValueMismatchException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
-import cz.cvut.kbss.owl2query.engine.InternalQuery;
 import cz.cvut.kbss.owl2query.model.QueryResult;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.OWLObject;
@@ -35,23 +33,20 @@ import java.util.Date;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class SelectResultSetTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Mock
     private Statement statementMock;
-    @Mock
-    private InternalQuery<OWLObject> query;
 
     private final QueryResultGenerator generator = new QueryResultGenerator();
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
@@ -126,7 +121,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getRowIndexReturnCurrentRow() throws Exception {
+    public void getRowIndexReturnCurrentRow() {
         final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -140,7 +135,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void firstReturnsIteratorToBeginning() throws Exception {
+    public void firstReturnsIteratorToBeginning() {
         final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -153,7 +148,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void previousReturnsPreviousRow() throws Exception {
+    public void previousReturnsPreviousRow() {
         final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -168,7 +163,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void setRowIndexLargerGoesForwardInResultSet() throws Exception {
+    public void setRowIndexLargerGoesForwardInResultSet() {
         final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -182,7 +177,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void setRowIndexSmallerGoesBackInResultSet() throws Exception {
+    public void setRowIndexSmallerGoesBackInResultSet() {
         final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -198,7 +193,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void setRowIndexTheSameDoesNothing() throws Exception {
+    public void setRowIndexTheSameDoesNothing() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -216,19 +211,19 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void setRowIndexNegativeThrowsException() throws Exception {
+    public void setRowIndexNegativeThrowsException() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
                         Arrays.asList(true, false))));
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(containsString("Cannot set row index to a number less than 0"));
-        resultSet.setRowIndex(-5);
+        final IllegalArgumentException ex =
+                assertThrows(IllegalArgumentException.class, () -> resultSet.setRowIndex(-5));
+        assertThat(ex.getMessage(), containsString("Cannot set row index to a number less than 0"));
     }
 
     @Test
-    public void setRowTooLargeGoesToEndOfResultSet() throws Exception {
+    public void setRowTooLargeGoesToEndOfResultSet() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -254,7 +249,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void relativeWithNegativeIntGoesBackward() throws Exception {
+    public void relativeWithNegativeIntGoesBackward() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -269,7 +264,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void relativeTooLargeEndsAtResultSetEnd() throws Exception {
+    public void relativeTooLargeEndsAtResultSetEnd() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
@@ -311,7 +306,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getValueOnClosedResultSetThrowsException() throws Exception {
+    public void getValueOnClosedResultSetThrowsException() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(false, true))));
@@ -319,19 +314,17 @@ public class SelectResultSetTest {
         assertTrue(resultSet.isOpen());
         resultSet.close();
         assertFalse(resultSet.isOpen());
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("closed"));
-        resultSet.getBoolean(1);
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> resultSet.getBoolean(1));
+        assertThat(ex.getMessage(), containsString("closed"));
     }
 
     @Test
-    public void getIncompatibleValueThrowsMismatchException() throws Exception {
+    public void getIncompatibleValueThrowsMismatchException() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(false, true))));
         resultSet.next();
-        thrown.expect(BindingValueMismatchException.class);
-        resultSet.getByte("a");
+        assertThrows(BindingValueMismatchException.class, () -> resultSet.getByte("a"));
     }
 
     @Test
@@ -366,44 +359,41 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getValueBeforeFirstRowThrowsIllegalState() throws Exception {
+    public void getValueBeforeFirstRowThrowsIllegalState() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
-        thrown.expect(IllegalStateException.class);
-        resultSet.getString(0);
+        assertThrows(IllegalStateException.class, () -> resultSet.getString(0));
     }
 
     @Test
-    public void getValueWithUnknownIndexThrowsOntoDriverException() throws Exception {
+    public void getValueWithUnknownIndexThrowsOntoDriverException() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.next();
-        thrown.expect(OwlapiDriverException.class);
-        thrown.expectMessage(containsString("No result binding found for index"));
-        resultSet.getString(5);
+        final OwlapiDriverException ex = assertThrows(OwlapiDriverException.class, () -> resultSet.getString(5));
+        assertThat(ex.getMessage(), containsString("No result binding found for index"));
     }
 
     @Test
-    public void getValueWithUnknownColumnLabelThrowsOntoDriverException() throws Exception {
+    public void getValueWithUnknownColumnLabelThrowsOntoDriverException() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.next();
-        thrown.expect(OwlapiDriverException.class);
-        thrown.expectMessage(containsString("No result binding found for label"));
-        resultSet.getString("unknown");
+        final OwlapiDriverException ex =
+                assertThrows(OwlapiDriverException.class, () -> resultSet.getString("unknown"));
+        assertThat(ex.getMessage(), containsString("No result binding found for label"));
     }
 
     @Test
-    public void nextAfterEndThrowsNoSuchElement() throws Exception {
+    public void nextAfterEndThrowsNoSuchElement() {
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.next();
-        thrown.expect(NoSuchElementException.class);
-        resultSet.next();
+        assertThrows(NoSuchElementException.class, resultSet::next);
     }
 
     @Test
@@ -412,9 +402,9 @@ public class SelectResultSetTest {
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", 117))));
         resultSet.next();
-        assertTrue(resultSet.getObject(0) instanceof String);
-        assertEquals("One", resultSet.getObject("a"));
-        assertTrue(resultSet.getObject("b") instanceof Integer);
+        assertThat(resultSet.getObject(0), instanceOf(LangString.class));
+        assertEquals("One", ((LangString) resultSet.getObject("a")).getValue());
+        assertThat(resultSet.getObject("b"), instanceOf(Integer.class));
         assertEquals(117, resultSet.getObject(1));
     }
 
@@ -465,26 +455,25 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getTypedObjectWithUnsupportedConversionThrowsDriverException() throws Exception {
+    public void getTypedObjectWithUnsupportedConversionThrowsDriverException() {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
         SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
         resultSet.next();
-        thrown.expect(OwlapiDriverException.class);
-        thrown.expectMessage(containsString("No constructor taking parameter of type"));
-        resultSet.getObject("a", String.class);
+        final OwlapiDriverException ex =
+                assertThrows(OwlapiDriverException.class, () -> resultSet.getObject("a", String.class));
+        assertThat(ex.getMessage(), containsString("No constructor taking parameter of type"));
     }
 
     @Test
-    public void getNamedIndividualAsLiteralValueThrowsException() throws Exception {
+    public void getNamedIndividualAsLiteralValueThrowsException() {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
         SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
         resultSet.next();
-        thrown.expect(BindingValueMismatchException.class);
-        resultSet.getInt(0);
+        assertThrows(BindingValueMismatchException.class, () -> resultSet.getInt(0));
     }
 
     public static class TestType {
@@ -500,7 +489,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void isBoundReturnsTrueForBoundVariableIndex() throws Exception {
+    public void isBoundReturnsTrueForBoundVariableIndex() {
         final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(false, true))));
@@ -509,7 +498,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void isBoundReturnsFalseForUnboundVariableIndex() throws Exception {
+    public void isBoundReturnsFalseForUnboundVariableIndex() {
         final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(false, null))));
@@ -518,7 +507,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void isBoundReturnsTrueForBoundVariableName() throws Exception {
+    public void isBoundReturnsTrueForBoundVariableName() {
         final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(false, true))));
@@ -527,7 +516,7 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void isBoundReturnsFalseForUnboundVariableName() throws Exception {
+    public void isBoundReturnsFalseForUnboundVariableName() {
         final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(false, null))));
@@ -536,24 +525,24 @@ public class SelectResultSetTest {
     }
 
     @Test
-    public void getObjectThrowsVariableNotBoundWhenVariableIsNotBoundInCurrentRow() throws Exception {
+    public void getObjectThrowsVariableNotBoundWhenVariableIsNotBoundInCurrentRow() {
         final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(false, null))));
-        thrown.expect(VariableNotBoundException.class);
-        thrown.expectMessage(containsString("Variable at index 1 not bound in the current result row"));
         resultSet.next();
-        resultSet.getBoolean(1);
+        final VariableNotBoundException ex =
+                assertThrows(VariableNotBoundException.class, () -> resultSet.getBoolean(1));
+        assertThat(ex.getMessage(), containsString("Variable at index 1 not bound in the current result row"));
     }
 
     @Test
-    public void getLongThrowsVariableNotBoundWhenVariableIsNotBoundInCurrentRow() throws Exception {
+    public void getLongThrowsVariableNotBoundWhenVariableIsNotBoundInCurrentRow() {
         final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(117L, null))));
-        thrown.expect(VariableNotBoundException.class);
-        thrown.expectMessage(containsString("Variable \"b\" not bound in the current result row"));
         resultSet.next();
-        resultSet.getLong("b");
+        final VariableNotBoundException ex =
+                assertThrows(VariableNotBoundException.class, () -> resultSet.getLong("b"));
+        assertThat(ex.getMessage(), containsString("Variable \"b\" not bound in the current result row"));
     }
 }

@@ -24,8 +24,8 @@ import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -33,7 +33,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -65,7 +65,7 @@ public class ChangeManagerTest {
 
     private ChangeManager manager;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         initInstances();
@@ -240,13 +240,13 @@ public class ChangeManagerTest {
         assertFalse(manager.hasChanges(testD, testDClone));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void calculateChangesThrowsNPXForNullArgument() throws Exception {
-        manager.calculateChanges(null);
+    @Test
+    public void calculateChangesThrowsNPXForNullArgument() {
+        assertThrows(NullPointerException.class, () -> manager.calculateChanges(null));
     }
 
     @Test
-    public void calculateChangesForIdenticalObjectsAddsNoChangesToChangeSet() throws Exception {
+    public void calculateChangesForIdenticalObjectsAddsNoChangesToChangeSet() {
         final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         final boolean res = manager.calculateChanges(chSet);
         assertFalse(res);
@@ -254,7 +254,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersChangeOnStringAttribute() throws Exception {
+    public void calculateChangesRegistersChangeOnStringAttribute() {
         testAClone.setStringAttribute("updated");
         ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
@@ -271,7 +271,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersChangeOnPrimitiveTypeAttribute() throws Exception {
+    public void calculateChangesRegistersChangeOnPrimitiveTypeAttribute() {
         final OWLClassM testMClone = new OWLClassM();
         testMClone.setIntAttribute(testM.getIntAttribute() + 117);
         ObjectChangeSet chSet = createChangeSet(testM, testMClone);
@@ -283,7 +283,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersChangeOnObjectPropertyAttribute() throws Exception {
+    public void calculateChangesRegistersChangeOnObjectPropertyAttribute() {
         testDClone.setOwlClassA(testAClone);
         ObjectChangeSet chSet = createChangeSet(testD, testDClone);
         assertTrue(chSet.getChanges().isEmpty());
@@ -293,9 +293,8 @@ public class ChangeManagerTest {
         assertEquals(testAClone, chSet.getChanges().iterator().next().getNewValue());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void calculateChangesRegistersChangeInCollection() throws Exception {
+    public void calculateChangesRegistersChangeInCollection() {
         testA.setTypes(typesCollection);
         Set<String> newCollection = new HashSet<>(typesCollection);
         newCollection.remove(typesCollection.iterator().next());
@@ -310,7 +309,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersMultipleChanges() throws Exception {
+    public void calculateChangesRegistersMultipleChanges() {
         testA.setTypes(typesCollection);
         Set<String> newCollection = new HashSet<>(typesCollection);
         newCollection.remove(typesCollection.iterator().next());
@@ -327,7 +326,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersChangeWhenValueIsSetToNull() throws Exception {
+    public void calculateChangesRegistersChangeWhenValueIsSetToNull() {
         ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         testAClone.setStringAttribute(null);
         assertTrue(chSet.getChanges().isEmpty());
@@ -339,7 +338,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersChangeWhenValueIsSetToNonNull() throws Exception {
+    public void calculateChangesRegistersChangeWhenValueIsSetToNonNull() {
         testA.setTypes(null);
         final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         final boolean res = manager.calculateChanges(chSet);
@@ -349,7 +348,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersItemRemovalFromReferenceCollection() throws Exception {
+    public void calculateChangesRegistersItemRemovalFromReferenceCollection() {
         testCClone.getReferencedList().remove(4);
         ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
@@ -361,7 +360,7 @@ public class ChangeManagerTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void calculateChangesRegistersItemAdditionToReferenceCollection() throws Exception {
+    public void calculateChangesRegistersItemAdditionToReferenceCollection() {
         testCClone.getReferencedList().add(testA);
         ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
@@ -376,7 +375,7 @@ public class ChangeManagerTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void calculateChangesRegistersItemReplacementInReferenceCollection() throws Exception {
+    public void calculateChangesRegistersItemReplacementInReferenceCollection() {
         testCClone.getReferencedList().remove(3);
         testCClone.getReferencedList().add(testA);
         ObjectChangeSet chSet = createChangeSet(testC, testCClone);
@@ -391,7 +390,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersMapKeyAddition() throws Exception {
+    public void calculateChangesRegistersMapKeyAddition() {
         testBClone.getProperties().put("newProperty", Collections.singleton("propVal"));
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
         final boolean res = manager.calculateChanges(chSet);
@@ -401,7 +400,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersMapValueChange() throws Exception {
+    public void calculateChangesRegistersMapValueChange() {
         final String key = testB.getProperties().keySet().iterator().next();
         testBClone.getProperties().put(key, Collections.singleton("propVal"));
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
@@ -412,7 +411,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesRegistersMapValueAddition() throws Exception {
+    public void calculateChangesRegistersMapValueAddition() {
         final String key = testB.getProperties().keySet().iterator().next();
         testBClone.getProperties().get(key).add("addedValue");
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
@@ -427,20 +426,20 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void twoSetsWithSameElementsButDifferentOrderHaveNoChanges() throws Exception {
+    public void twoSetsWithSameElementsButDifferentOrderHaveNoChanges() {
         testA.setTypes(typesCollection);
         testAClone.setStringAttribute(testA.getStringAttribute());
         final List<String> lst = new ArrayList<>(typesCollection);
         Collections.reverse(lst);
         final Set<String> newTypes = new LinkedHashSet<>(lst);
         testAClone.setTypes(newTypes);
-        assertFalse(typesCollection.iterator().next().equals(newTypes.iterator().next()));
+        assertNotEquals(typesCollection.iterator().next(), newTypes.iterator().next());
         final boolean res = manager.hasChanges(testA, testAClone);
         assertFalse(res);
     }
 
     @Test
-    public void twoSetsWithManagedElementsWithSameIdentifiersHaveNoChanges() throws Exception {
+    public void twoSetsWithManagedElementsWithSameIdentifiersHaveNoChanges() {
         final OWLClassF testF = new OWLClassF();
         final OWLClassF cloneF = new OWLClassF();
         initFAndClone(testF, cloneF);
@@ -467,7 +466,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void twoSetsWithManagedElementsOneElementReplacedWithNewWithoutIdHaveChanges() throws Exception {
+    public void twoSetsWithManagedElementsOneElementReplacedWithNewWithoutIdHaveChanges() {
         final OWLClassF testF = new OWLClassF();
         final OWLClassF cloneF = new OWLClassF();
         initFAndClone(testF, cloneF);
@@ -483,7 +482,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void hasChangesIgnoresTransientFieldChanges() throws Exception {
+    public void hasChangesIgnoresTransientFieldChanges() {
         final OWLClassO testOClone = new OWLClassO();
         testOClone.setUri(testO.getUri());
         testOClone.setStringAttribute(testO.getStringAttribute());
@@ -494,7 +493,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesIgnoresTransientFieldChanges() throws Exception {
+    public void calculateChangesIgnoresTransientFieldChanges() {
         final OWLClassO testOClone = new OWLClassO();
         testOClone.setUri(testO.getUri());
         testOClone.setStringAttribute(testO.getStringAttribute());
@@ -507,7 +506,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesDetectsChangesInMappedSuperclassFields() throws Exception {
+    public void calculateChangesDetectsChangesInMappedSuperclassFields() {
         final OWLClassQ testQClone = new OWLClassQ();
         testQClone.setUri(testQ.getUri());
         testQClone.setLabel("differentLabel");
@@ -532,7 +531,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void calculateChangesDetectsChangesInMappedSuperclassObjectPropertyField() throws Exception {
+    public void calculateChangesDetectsChangesInMappedSuperclassObjectPropertyField() {
         final OWLClassQ testQClone = new OWLClassQ();
         testQClone.setUri(testQ.getUri());
         testQClone.setStringAttribute(testQ.getStringAttribute());

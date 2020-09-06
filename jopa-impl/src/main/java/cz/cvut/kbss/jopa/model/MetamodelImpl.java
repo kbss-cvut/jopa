@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -66,7 +64,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         checkForWeaver();
         classFinder.scanClasspath(configuration);
 
-        final MetamodelBuilder metamodelBuilder = new MetamodelBuilder();
+        final MetamodelBuilder metamodelBuilder = new MetamodelBuilder(configuration);
         metamodelBuilder.buildMetamodel(classFinder);
 
         this.typeMap = metamodelBuilder.getTypeMap();
@@ -135,7 +133,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     }
 
     private synchronized Set<URI> getSignatureInternal() {
-        // This can be lazily loaded since we don'attributeType know if we'll need it
+        // This can be lazily loaded since we don't know if we'll need it
         if (moduleExtractionSignature == null) {
             initModuleExtractionSignature();
         }
@@ -143,6 +141,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     }
 
     private void initModuleExtractionSignature() {
+        assert configuration != null;
         final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, "");
         if (sig.isEmpty()) {
             this.moduleExtractionSignature = new HashSet<>();

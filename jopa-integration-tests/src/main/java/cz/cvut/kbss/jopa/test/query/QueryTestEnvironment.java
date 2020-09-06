@@ -37,7 +37,7 @@ public final class QueryTestEnvironment {
     private static final URI NULL_CONTEXT = URI.create("http://NullContext");
 
     private static Map<Class<?>, List<?>> data;
-    private static Map<URI, Map<Class<?>, List<?>>> dataByContext = new HashMap<>();
+    private static final Map<URI, Map<Class<?>, List<?>>> dataByContext = new HashMap<>();
 
     private QueryTestEnvironment() {
         // Private constructor to prevent instantiation

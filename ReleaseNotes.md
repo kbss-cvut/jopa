@@ -1,6 +1,10 @@
 # JOPA - Release Notes
 
 
+## 0.15.0 - September 6, 2020
+- [JOPA] Add support for multilingual String attributes (Feature #59).
+- Dependency updates: RDF4J 3.4.0, AspectJ 1.9.6.
+
 ## 0.14.7 - August 4, 2020
 - Dependency updates: Jena 3.16.0, OWL API 5.1.16, RDF4J 3.3.0.
 - Project configuration simplification.

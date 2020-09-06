@@ -68,7 +68,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.cache = uow.getLiveObjectCache();
         this.storageConnection = Objects.requireNonNull(connection);
         this.metamodel = uow.getMetamodel();
-        this.descriptorFactory = new AxiomDescriptorFactory(uow.getConfiguration());
+        this.descriptorFactory = new AxiomDescriptorFactory();
         this.instanceRegistry = new InstanceRegistry();
         this.pendingReferences = new PendingReferenceRegistry();
         this.entityBuilder = new EntityConstructor(this);

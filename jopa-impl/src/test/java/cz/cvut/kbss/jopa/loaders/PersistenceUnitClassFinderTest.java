@@ -48,10 +48,11 @@ public class PersistenceUnitClassFinderTest {
         set.add(OWLClassR.class);
         set.add(OWLClassS.class);
         set.add(OWLClassT.class);
+        set.add(OWLClassU.class);
         return set;
     }
 
-    private PersistenceUnitClassFinder finder = new PersistenceUnitClassFinder();
+    private final PersistenceUnitClassFinder finder = new PersistenceUnitClassFinder();
 
     @Test
     public void throwsExceptionWhenScanPackageIsNotSupplied() {

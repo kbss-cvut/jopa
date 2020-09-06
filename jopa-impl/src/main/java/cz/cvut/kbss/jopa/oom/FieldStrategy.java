@@ -1,20 +1,18 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -44,45 +42,68 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
     static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
             EntityType<X> et, FieldSpecification<? super X, ?> att,
-            Descriptor fieldDescriptor, EntityMappingHelper mapper) {
+            Descriptor entityDescriptor, EntityMappingHelper mapper) {
         if (att.equals(et.getIdentifier())) {
-            return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, fieldDescriptor, mapper);
+            return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, entityDescriptor, mapper);
         }
         if (att instanceof TypesSpecification) {
-            return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, fieldDescriptor, mapper);
+            return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, entityDescriptor, mapper);
         } else if (att instanceof PropertiesSpecification) {
-            return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att, fieldDescriptor,
+            return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att,
+                    entityDescriptor,
                     mapper);
         }
         final AbstractAttribute<? super X, ?> attribute = (AbstractAttribute<? super X, ?>) att;
         if (attribute.isCollection()) {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                    return new PluralAnnotationPropertyStrategy<>(et,
-                            (AbstractPluralAttribute<? super X, ?, ?>) attribute, fieldDescriptor, mapper);
+                    return createPluralAnnotationPropertyStrategy(et,
+                            (AbstractPluralAttribute<? super X, ?, ?>) attribute, entityDescriptor, mapper);
                 case DATA:
-                    return new PluralDataPropertyStrategy<>(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            fieldDescriptor, mapper);
+                    return createPluralDataPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
+                            entityDescriptor, mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            fieldDescriptor, mapper);
+                            entityDescriptor, mapper);
                 default:
                     break;
             }
         } else {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                    return new SingularAnnotationPropertyStrategy<>(et, attribute, fieldDescriptor, mapper);
+                    return createSingularAnnotationPropertyStrategy(et, attribute, entityDescriptor, mapper);
                 case DATA:
-                    return new SingularDataPropertyStrategy<>(et, attribute, fieldDescriptor, mapper);
+                    return createSingularDataPropertyStrategy(et, attribute, entityDescriptor, mapper);
                 case OBJECT:
-                    return new SingularObjectPropertyStrategy<>(et, attribute, fieldDescriptor, mapper);
+                    return new SingularObjectPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
                 default:
                     break;
             }
         }
         // Shouldn't happen
         throw new IllegalArgumentException();
+    }
+
+    private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralAnnotationPropertyStrategy(
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
+            Descriptor descriptor, EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
+            return new PluralMultilingualStringFieldStrategy<>(et,
+                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new PluralAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
+        }
+    }
+
+    private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralDataPropertyStrategy(
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
+            Descriptor descriptor, EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
+            return new PluralMultilingualStringFieldStrategy<>(et,
+                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new PluralDataPropertyStrategy<>(et, attribute, descriptor, mapper);
+        }
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(
@@ -112,6 +133,28 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported list attribute sequence type " + attribute.getSequenceType());
+        }
+    }
+
+    private static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createSingularDataPropertyStrategy(
+            EntityType<X> et, AbstractAttribute<? super X, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getJavaType())) {
+            return new SingularMultilingualStringFieldStrategy<>(et,
+                    (AbstractAttribute<? super X, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new SingularDataPropertyStrategy<>(et, attribute, descriptor, mapper);
+        }
+    }
+
+    private static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createSingularAnnotationPropertyStrategy(
+            EntityType<X> et, AbstractAttribute<? super X, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
+        if (MultilingualString.class.equals(attribute.getJavaType())) {
+            return new SingularMultilingualStringFieldStrategy<>(et,
+                    (AbstractAttribute<? super X, MultilingualString>) attribute, descriptor, mapper);
+        } else {
+            return new SingularAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
     }
 
@@ -150,25 +193,15 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     /**
      * Gets the context of this attribute assertion.
      * <p>
-     * Note that this may not (and in case of object properties usually won't) be the context containing the target object.
-     * Rather, it will be the context of the owner entity itself (depending on whether assertions are stored in subject context or not).
+     * Note that this may not (and in case of object properties usually won't) be the context containing the target
+     * object. Rather, it will be the context of the owner entity itself (depending on whether assertions are stored in
+     * subject context or not).
      *
      * @return Attribute assertion context
      * @see Descriptor
      */
     URI getAttributeContext() {
         return entityDescriptor.getAttributeContext(attribute);
-    }
-
-    /**
-     * Gets the language tag that should be used when mapping this field to an assertion.
-     *
-     * @return Language tag, possibly {@code null}
-     */
-    String getLanguage() {
-        final Descriptor attributeDescriptor = entityDescriptor.getAttributeDescriptor(attribute);
-        return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
-               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**

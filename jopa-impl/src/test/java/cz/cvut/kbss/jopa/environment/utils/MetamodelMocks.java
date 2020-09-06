@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -18,6 +16,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
 import cz.cvut.kbss.jopa.environment.listener.ParentListener;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -243,6 +242,15 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassT, OWLClassS> tOwlClassSAtt;
 
+    @Mock
+    private EntityTypeImpl<OWLClassU> etU;
+    @Mock
+    private Identifier idU;
+    @Mock
+    private SingularAttributeImpl<OWLClassU, MultilingualString> uSingularStringAtt;
+    @Mock
+    private AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
@@ -270,6 +278,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
+        MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, idU);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -294,6 +303,7 @@ public class MetamodelMocks {
         etMap.put(OWLClassR.class, etR);
         etMap.put(OWLClassS.class, etS);
         etMap.put(OWLClassT.class, etT);
+        etMap.put(OWLClassU.class, etU);
         when(metamodel.entity(any())).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
@@ -371,6 +381,10 @@ public class MetamodelMocks {
 
     public OWLClassTMetamodel forOwlClassT() {
         return new OWLClassTMetamodel();
+    }
+
+    public OWLClassUMetamodel forOwlClassU() {
+        return new OWLClassUMetamodel();
     }
 
     public class OWLClassAMetamodel {
@@ -774,6 +788,24 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassT, OWLClassS> tOwlClassSAtt() {
             return MetamodelMocks.this.tOwlClassSAtt;
+        }
+    }
+
+    public class OWLClassUMetamodel {
+        public EntityTypeImpl<OWLClassU> entityType() {
+            return MetamodelMocks.this.etU;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idU;
+        }
+
+        public AbstractAttribute<OWLClassU, MultilingualString> uSingularStringAtt() {
+            return MetamodelMocks.this.uSingularStringAtt;
+        }
+
+        public AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt() {
+            return MetamodelMocks.this.uPluralStringAtt;
         }
     }
 }

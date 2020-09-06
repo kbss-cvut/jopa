@@ -36,7 +36,7 @@ public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements 
     }
 
     @Override
-    public Map<K, V> getReferencedCollection() {
+    public Map<K, V> unwrap() {
         return internalMap;
     }
 

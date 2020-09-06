@@ -42,6 +42,7 @@ class Converters {
         defaultConverters.put(Float.class, new ToFloatConverter());
         defaultConverters.put(Double.class, new ToDoubleConverter());
         defaultConverters.put(Object.class, new ObjectConverter());
+        defaultConverters.put(String.class, new ToStringConverter());
     }
 
     Optional<ConverterWrapper<?, ?>> getConverter(Class<?> type) {

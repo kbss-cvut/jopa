@@ -1,25 +1,25 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,10 @@ public class MetamodelBuilder {
 
     private final ConverterResolver converterResolver = new ConverterResolver(new Converters());
 
-    public MetamodelBuilder() {
+    private final Configuration configuration;
+
+    public MetamodelBuilder(Configuration configuration) {
+        this.configuration = configuration;
         this.mappingProcessor = new ResultSetMappingProcessor(this);
     }
 
@@ -62,6 +65,7 @@ public class MetamodelBuilder {
 
         final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls);
         et.setConverterResolver(converterResolver);
+        et.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
 
         processManagedType(et);
     }
@@ -103,6 +107,7 @@ public class MetamodelBuilder {
             }
             final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
             context.setConverterResolver(converterResolver);
+            context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
             processManagedType(context);
             return context.getType();
         }

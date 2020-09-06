@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.oom.converter.LocalDateConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ class MetamodelBuilderTest {
     @Mock
     private PersistenceUnitClassFinder finderMock;
 
-    private final MetamodelBuilder builder = new MetamodelBuilder();
+    private final MetamodelBuilder builder = new MetamodelBuilder(new Configuration());
 
     @BeforeEach
     void setUp() {

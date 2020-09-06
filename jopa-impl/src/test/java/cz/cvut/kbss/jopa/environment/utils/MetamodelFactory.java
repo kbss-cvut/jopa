@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -19,6 +17,7 @@ import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
 import cz.cvut.kbss.jopa.environment.listener.ParentListener;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.*;
@@ -68,6 +67,8 @@ public class MetamodelFactory {
         when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(strAttMock.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(strAttMock.hasLanguage()).thenReturn(true);
+        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
@@ -121,6 +122,8 @@ public class MetamodelFactory {
         when(strAttMock.getName()).thenReturn(OWLClassB.getStrAttField().getName());
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
         when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(strAttMock.hasLanguage()).thenReturn(true);
+        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
         when(propsMock.getName()).thenReturn(OWLClassB.getPropertiesField().getName());
@@ -220,6 +223,8 @@ public class MetamodelFactory {
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
+        when(strAttMock.hasLanguage()).thenReturn(true);
+        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassE.class.getDeclaredField("uri"));
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
@@ -294,6 +299,8 @@ public class MetamodelFactory {
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(strAttMock.isInferred()).thenReturn(true);
+        when(strAttMock.hasLanguage()).thenReturn(true);
+        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassF.getStrAttField().getName())).thenReturn(strAttMock);
 
         when(etMock.getIdentifier()).thenReturn(idMock);
@@ -531,6 +538,8 @@ public class MetamodelFactory {
         when(booleanAtt.isCollection()).thenReturn(false);
         when(booleanAtt.getDeclaringType()).thenReturn(etMock);
         when(booleanAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(booleanAtt.hasLanguage()).thenReturn(true);
+        when(booleanAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
 
         when(intAtt.getJavaField()).thenReturn(OWLClassM.getIntAttributeField());
@@ -542,6 +551,8 @@ public class MetamodelFactory {
         when(intAtt.getDeclaringType()).thenReturn(etMock);
         when(intAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(intAtt.getConverter()).thenReturn(new ToIntegerConverter());
+        when(intAtt.hasLanguage()).thenReturn(true);
+        when(intAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
 
         when(longAtt.getJavaField()).thenReturn(OWLClassM.getLongAttributeField());
@@ -554,6 +565,8 @@ public class MetamodelFactory {
         when(longAtt.getDeclaringType()).thenReturn(etMock);
         when(longAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(longAtt.getConverter()).thenReturn(new ToLongConverter());
+        when(longAtt.hasLanguage()).thenReturn(true);
+        when(longAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
 
         when(doubleAtt.getJavaField()).thenReturn(OWLClassM.getDoubleAttributeField());
@@ -565,6 +578,8 @@ public class MetamodelFactory {
         when(doubleAtt.getDeclaringType()).thenReturn(etMock);
         when(doubleAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(doubleAtt.getConverter()).thenReturn(new ToDoubleConverter());
+        when(doubleAtt.hasLanguage()).thenReturn(true);
+        when(doubleAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
 
         when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
@@ -575,6 +590,8 @@ public class MetamodelFactory {
         when(dateAtt.isCollection()).thenReturn(false);
         when(dateAtt.getDeclaringType()).thenReturn(etMock);
         when(dateAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(dateAtt.hasLanguage()).thenReturn(true);
+        when(dateAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
 
         when(enumAtt.getJavaField()).thenReturn(OWLClassM.getEnumAttributeField());
@@ -586,6 +603,8 @@ public class MetamodelFactory {
         when(enumAtt.getDeclaringType()).thenReturn(etMock);
         when(enumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(enumAtt.getConverter()).thenReturn(new EnumConverter<>(OWLClassM.Severity.class));
+        when(enumAtt.hasLanguage()).thenReturn(true);
+        when(enumAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
 
         when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
@@ -600,6 +619,8 @@ public class MetamodelFactory {
         final Type typeMock = mock(Type.class);
         when(intSetAtt.getElementType()).thenReturn(typeMock);
         when(intSetAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(intSetAtt.hasLanguage()).thenReturn(true);
+        when(intSetAtt.getLanguage()).thenReturn(Generators.LANG);
         when(typeMock.getJavaType()).thenReturn(Integer.class);
         when(etMock.getFieldSpecification(OWLClassM.getIntegerSetField().getName())).thenReturn(intSetAtt);
 
@@ -657,6 +678,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassN.getAnnotationPropertyField().getAnnotation(OWLAnnotationProperty.class).iri()));
         when(annotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(annotationAtt.getDeclaringType()).thenReturn(et);
+        when(annotationAtt.hasLanguage()).thenReturn(true);
+        when(annotationAtt.getLanguage()).thenReturn(Generators.LANG);
 
         when(annotationUriAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationUriField());
         when(annotationUriAtt.getJavaType()).thenReturn(OWLClassN.getAnnotationUriField().getType());
@@ -668,6 +691,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassN.getAnnotationUriField().getAnnotation(OWLAnnotationProperty.class).iri()));
         when(annotationUriAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(annotationUriAtt.getDeclaringType()).thenReturn(et);
+        when(annotationUriAtt.hasLanguage()).thenReturn(true);
+        when(annotationUriAtt.getLanguage()).thenReturn(Generators.LANG);
 
         when(stringAtt.getJavaField()).thenReturn(OWLClassN.getStringAttributeField());
         when(stringAtt.getJavaType()).thenReturn(OWLClassN.getStringAttributeField().getType());
@@ -679,6 +704,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassN.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(stringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(stringAtt.getDeclaringType()).thenReturn(et);
+        when(stringAtt.hasLanguage()).thenReturn(true);
+        when(stringAtt.getLanguage()).thenReturn(Generators.LANG);
 
         when(pluralAnnotationAtt.getJavaField()).thenReturn(OWLClassN.getPluralAnnotationField());
         when(pluralAnnotationAtt.getJavaType()).thenReturn(OWLClassN.getPluralAnnotationField().getType());
@@ -694,6 +721,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassN.getPluralAnnotationField().getAnnotation(OWLAnnotationProperty.class).iri()));
         when(pluralAnnotationAtt.getDeclaringType()).thenReturn(et);
         when(pluralAnnotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(pluralAnnotationAtt.hasLanguage()).thenReturn(true);
+        when(pluralAnnotationAtt.getLanguage()).thenReturn(Generators.LANG);
 
         when(props.getJavaField()).thenReturn(OWLClassN.getPropertiesField());
         when(props.getName()).thenReturn(OWLClassN.getPropertiesField().getName());
@@ -719,6 +748,8 @@ public class MetamodelFactory {
         when(stringAtt.getIRI())
                 .thenReturn(IRI.create(OWLClassO.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(stringAtt.getDeclaringType()).thenReturn(et);
+        when(stringAtt.hasLanguage()).thenReturn(true);
+        when(stringAtt.getLanguage()).thenReturn(Generators.LANG);
         when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
@@ -845,6 +876,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassQ.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(qStringAtt.getDeclaringType()).thenReturn(et);
         when(qStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(qStringAtt.hasLanguage()).thenReturn(true);
+        when(qStringAtt.getLanguage()).thenReturn(Generators.LANG);
         when(et.getFieldSpecification(qStringAtt.getName())).thenReturn(qStringAtt);
 
         when(qParentStringAtt.getJavaField()).thenReturn(OWLClassQ.getParentStringField());
@@ -858,6 +891,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassQ.getParentStringField().getAnnotation(OWLDataProperty.class).iri()));
         when(qParentStringAtt.getDeclaringType()).thenReturn(et);
         when(qParentStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(qParentStringAtt.hasLanguage()).thenReturn(true);
+        when(qParentStringAtt.getLanguage()).thenReturn(Generators.LANG);
         when(et.getFieldSpecification(qParentStringAtt.getName())).thenReturn(qParentStringAtt);
 
         when(qLabelAtt.getJavaField()).thenReturn(OWLClassQ.getLabelField());
@@ -871,6 +906,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassQ.getLabelField().getAnnotation(OWLAnnotationProperty.class).iri()));
         when(qLabelAtt.getDeclaringType()).thenReturn(et);
         when(qLabelAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(qLabelAtt.hasLanguage()).thenReturn(true);
+        when(qLabelAtt.getLanguage()).thenReturn(Generators.LANG);
         when(et.getFieldSpecification(qLabelAtt.getName())).thenReturn(qLabelAtt);
 
         when(qOwlClassAAtt.getIRI())
@@ -912,6 +949,8 @@ public class MetamodelFactory {
         when(sNameAtt.getDeclaringType()).thenReturn(et);
         when(sNameAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(sNameAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(sNameAtt.hasLanguage()).thenReturn(true);
+        when(sNameAtt.getLanguage()).thenReturn(Generators.LANG);
         when(sTypes.getJavaField()).thenReturn(OWLClassS.getTypesField());
         when(sTypes.getName()).thenReturn(OWLClassS.getTypesField().getName());
         when(sTypes.getDeclaringType()).thenReturn(et);
@@ -955,6 +994,8 @@ public class MetamodelFactory {
                 IRI.create(OWLClassR.getStringAttField().getAnnotation(OWLDataProperty.class).iri()));
         when(rStringAtt.getDeclaringType()).thenReturn(et);
         when(rStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(rStringAtt.hasLanguage()).thenReturn(true);
+        when(rStringAtt.getLanguage()).thenReturn(Generators.LANG);
         when(et.getFieldSpecification(rStringAtt.getName())).thenReturn(rStringAtt);
 
         when(owlClassAAtt.getIRI())
@@ -1087,5 +1128,51 @@ public class MetamodelFactory {
         when(owlClassSAtt.getDeclaringType()).thenReturn(et);
         when(owlClassSAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(owlClassSAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+    }
+
+    static void initOwlClassUMocks(EntityTypeImpl<OWLClassU> et, SingularAttributeImpl singularStringAtt,
+                                   AbstractPluralAttribute pluralStringAtt,
+                                   Identifier id) throws Exception {
+        when(et.getIdentifier()).thenReturn(id);
+        when(id.isGenerated()).thenReturn(true);
+        when(et.getJavaType()).thenReturn(OWLClassU.class);
+        when(id.getJavaField()).thenReturn(OWLClassU.getIdField());
+        when(id.getDeclaringType()).thenReturn(et);
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassU.getClassIri()));
+        when(et.getFieldSpecifications())
+                .thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt, id)));
+        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt)));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+
+        when(singularStringAtt.getJavaField()).thenReturn(OWLClassU.getSingularStringAttField());
+        when(singularStringAtt.getJavaType()).thenReturn(OWLClassU.getSingularStringAttField().getType());
+        when(singularStringAtt.getName()).thenReturn(OWLClassU.getSingularStringAttField().getName());
+        when(et.getAttribute(OWLClassU.getSingularStringAttField().getName())).thenReturn(singularStringAtt);
+        when(singularStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(singularStringAtt.isCollection()).thenReturn(false);
+        when(singularStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
+        when(singularStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassU.getSingularStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(singularStringAtt.getDeclaringType()).thenReturn(et);
+        when(singularStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(singularStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(singularStringAtt.hasLanguage()).thenReturn(false);
+        when(singularStringAtt.getLanguage()).thenReturn(null);
+
+        when(pluralStringAtt.getJavaField()).thenReturn(OWLClassU.getPluralStringAttField());
+        when(pluralStringAtt.getJavaType()).thenReturn(OWLClassU.getPluralStringAttField().getType());
+        when(pluralStringAtt.getName()).thenReturn(OWLClassU.getPluralStringAttField().getName());
+        when(et.getAttribute(OWLClassU.getPluralStringAttField().getName())).thenReturn(pluralStringAtt);
+        when(pluralStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(pluralStringAtt.isCollection()).thenReturn(true);
+        when(pluralStringAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(pluralStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
+        when(pluralStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassU.getPluralStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(pluralStringAtt.getDeclaringType()).thenReturn(et);
+        when(pluralStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(pluralStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(pluralStringAtt.hasLanguage()).thenReturn(false);
+        when(pluralStringAtt.getLanguage()).thenReturn(null);
     }
 }

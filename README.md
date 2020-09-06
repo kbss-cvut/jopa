@@ -8,6 +8,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 Notable changes:
 
+* **0.15.0** - Support for multilingual String attributes. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Multilingual-String-Attributes) for more info
 * **0.14.0** - Support for the Semantic Object Query Language (SOQL). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Semantic-Object-Query-Language) for more info
 * **0.13.0** - Support for RDF simple literals (language-less strings), access to lexical form of literals, updated named graph handling
 * **0.12.0** - Support for `EntityManager.getReference`
@@ -132,7 +133,7 @@ A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](htt
 
 JOPA is also used in the [BINBAS project](https://www.inbas.cz/web/binbas) [6] and, more recently, in [TermIt](https://github.com/kbss-cvut/termit) - a SKOS vocabulary manager.
 
-Note that JOPA requires Java 8.
+Note that JOPA requires Java 8 or later.
 
 ## Getting JOPA
 

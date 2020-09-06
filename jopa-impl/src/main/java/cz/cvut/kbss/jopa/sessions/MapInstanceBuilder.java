@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -34,16 +32,15 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonMapClass = Collections.singletonMap(null, null)
                                                                  .getClass();
 
-    MapInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
+    MapInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
         super(builder, uow);
-        this.populates = true;
     }
 
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration configuration) {
         Map<?, ?> orig = (Map<?, ?>) original;
         if (original instanceof IndirectCollection) {
-            orig = ((IndirectCollection<Map<?, ?>>) original).getReferencedCollection();
+            orig = ((IndirectCollection<Map<?, ?>>) original).unwrap();
         }
         final Class<?> origCls = orig.getClass();
         Map<?, ?> clone;
@@ -55,7 +52,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
         }
-        clone = (Map<?, ?>) builder.createIndirectCollection(clone, cloneOwner, field);
+        clone = (Map<?, ?>) uow.createIndirectCollection(clone, cloneOwner, field);
         return clone;
 
     }
@@ -109,7 +106,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         Object value = CloneBuilderImpl.isImmutable(e.getValue()) ? e.getValue() :
                        cloneObject(cloneOwner, field, e.getValue(), configuration);
         if (value instanceof Collection || value instanceof Map) {
-            value = builder.createIndirectCollection(value, cloneOwner, field);
+            value = uow.createIndirectCollection(value, cloneOwner, field);
         }
         return Collections.singletonMap(key, value);
     }
@@ -162,7 +159,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         Map<Object, Object> orig = (Map<Object, Object>) originalValue;
         Map<Object, Object> clone = (Map<Object, Object>) cloneValue;
         if (clone instanceof IndirectCollection) {
-            clone = ((IndirectCollection<Map<Object, Object>>) clone).getReferencedCollection();
+            clone = ((IndirectCollection<Map<Object, Object>>) clone).unwrap();
         }
         if (orig == null) {
             orig = (Map<Object, Object>) createNewInstance(clone.getClass(), clone.size());
@@ -186,5 +183,10 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 
     private static Map<Object, Object> createDefaultMap(int size) {
         return new HashMap<>(size > 1 ? size : 16);
+    }
+
+    @Override
+    boolean populatesAttributes() {
+        return true;
     }
 }

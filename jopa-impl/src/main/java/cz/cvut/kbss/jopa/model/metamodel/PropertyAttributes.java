@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
@@ -32,6 +33,7 @@ abstract class PropertyAttributes {
     FetchType fetchType = FetchType.EAGER;
     boolean lexicalForm = false;
     boolean simpleLiteral = false;
+    String language;
     private boolean nonEmpty = false;
     private ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
 
@@ -75,12 +77,20 @@ abstract class PropertyAttributes {
         return simpleLiteral;
     }
 
+    String getLanguage() {
+        return language;
+    }
+
     ParticipationConstraint[] getParticipationConstraints() {
         return participationConstraints;
     }
 
     void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
         resolveParticipationConstraints(field);
+    }
+
+    String resolveLanguage(Class<?> fieldValueCls) {
+        return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
     }
 
     private void resolveParticipationConstraints(Field field) {

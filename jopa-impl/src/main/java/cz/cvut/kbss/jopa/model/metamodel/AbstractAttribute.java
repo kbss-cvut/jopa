@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -43,13 +41,15 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final boolean nonEmpty;
 
-    private boolean lexicalForm;
+    private final boolean lexicalForm;
 
-    private boolean simpleLiteral;
+    private final boolean simpleLiteral;
+
+    private final String language;
 
     private final ParticipationConstraint[] constraints;
 
-    private ConverterWrapper converter;
+    private final ConverterWrapper converter;
 
     AbstractAttribute(AbstractAttributeBuilder<X, Y> builder) {
         this.field = builder.field;
@@ -65,6 +65,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         this.converter = builder.converter;
         this.lexicalForm = builder.lexicalForm;
         this.simpleLiteral = builder.simpleLiteral;
+        this.language = builder.language;
     }
 
     @Override
@@ -133,6 +134,16 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
     }
 
     @Override
+    public boolean hasLanguage() {
+        return language != null && !simpleLiteral && !lexicalForm && attributeType != PersistentAttributeType.OBJECT;
+    }
+
+    @Override
+    public String getLanguage() {
+        return language;
+    }
+
+    @Override
     public String getName() {
         return field.getName();
     }
@@ -158,6 +169,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean nonEmpty = false;
         private boolean lexicalForm = false;
         private boolean simpleLiteral = false;
+        private String language;
         private ParticipationConstraint[] constraints;
         private ConverterWrapper converter;
 
@@ -170,6 +182,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             this.fetchType = config.getFetchType();
             this.lexicalForm = config.isLexicalForm();
             this.simpleLiteral = config.simpleLiteral;
+            this.language = config.getLanguage();
             return this;
         }
 

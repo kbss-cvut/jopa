@@ -17,6 +17,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.config.Constants;
 import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
@@ -325,7 +326,8 @@ class AxiomLoaderTest {
         final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
-        assertEquals("a", ax.getValue().getValue());
+        final LangString value = (LangString) ax.getValue().getValue();
+        assertEquals("a", value.getValue());
     }
 
     private void persistLanguageTaggedStrings(String individual) throws OntoDriverException {
@@ -349,7 +351,8 @@ class AxiomLoaderTest {
         final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
-        assertEquals("a", ax.getValue().getValue());
+        final LangString value = (LangString) ax.getValue().getValue();
+        assertEquals("a", value.getValue());
     }
 
     @Test
@@ -365,7 +368,8 @@ class AxiomLoaderTest {
         final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
-        assertEquals("b", ax.getValue().getValue());
+        final LangString value = (LangString) ax.getValue().getValue();
+        assertEquals("b", value.getValue());
     }
 
     @Test
@@ -382,7 +386,8 @@ class AxiomLoaderTest {
         final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
-        assertEquals("b", ax.getValue().getValue());
+        final LangString value = (LangString) ax.getValue().getValue();
+        assertEquals("b", value.getValue());
     }
 
     @Test
@@ -398,8 +403,8 @@ class AxiomLoaderTest {
         final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
         assertEquals(2, axioms.size());
         final Set<String> values = axioms.stream().map(ax -> ax.getValue().stringValue()).collect(Collectors.toSet());
-        assertTrue(values.contains("a"));
-        assertTrue(values.contains("b"));
+        assertTrue(values.contains(new LangString("a", "en").toString()));
+        assertTrue(values.contains(new LangString("b", "cs").toString()));
     }
 
     @Test

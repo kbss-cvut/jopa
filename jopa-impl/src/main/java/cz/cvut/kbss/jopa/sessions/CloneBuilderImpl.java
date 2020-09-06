@@ -1,21 +1,19 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -123,7 +121,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             if (isImmutable(origValueClass)) {
                 // The field is an immutable type
                 clonedValue = origVal;
-            } else if (origVal instanceof Collection || origVal instanceof Map) {
+            } else if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
                 final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                 // Collection or Map
                 clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
@@ -152,7 +150,7 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     private static void cloneIdentifier(Object original, Object clone, EntityType<?> et) {
-        final Identifier identifier = et.getIdentifier();
+        final Identifier<?, ?> identifier = et.getIdentifier();
         final Object idValue = EntityPropertiesUtils.getFieldValue(identifier.getJavaField(), original);
         EntityPropertiesUtils.setFieldValue(identifier.getJavaField(), clone, idValue);
     }
@@ -254,10 +252,6 @@ public class CloneBuilderImpl implements CloneBuilder {
         visitedEntities.remove(descriptor, instance);
     }
 
-    IndirectCollection<?> createIndirectCollection(Object c, Object owner, Field f) {
-        return uow.createIndirectCollection(c, owner, f);
-    }
-
     /**
      * Gets basic object info for logging.
      * <p>
@@ -296,8 +290,9 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     private final class Builders {
-        private AbstractInstanceBuilder defaultBuilder;
-        private AbstractInstanceBuilder dateBuilder;
+        private final AbstractInstanceBuilder defaultBuilder;
+        private final AbstractInstanceBuilder dateBuilder;
+        private final AbstractInstanceBuilder multilingualStringBuilder;
         // Lists and Sets
         private AbstractInstanceBuilder collectionBuilder;
         private AbstractInstanceBuilder mapBuilder;
@@ -305,11 +300,15 @@ public class CloneBuilderImpl implements CloneBuilder {
         private Builders() {
             this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilderImpl.this, uow);
             this.dateBuilder = new DateInstanceBuilder(CloneBuilderImpl.this, uow);
+            this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilderImpl.this, uow);
         }
 
         private AbstractInstanceBuilder getBuilder(Object toClone) {
             if (toClone instanceof Date) {
                 return dateBuilder;
+            }
+            if (toClone instanceof MultilingualString) {
+                return multilingualStringBuilder;
             }
             if (toClone instanceof Map) {
                 if (mapBuilder == null) {

@@ -26,7 +26,7 @@ public class Value<T> {
     /**
      * Represents a null value - empty value
      */
-    private static final Value NULL_VALUE = new NullValue();
+    private static final Value<?> NULL_VALUE = new NullValue();
 
     private final T value;
 
@@ -54,7 +54,7 @@ public class Value<T> {
      * @return Value as string
      */
     public String stringValue() {
-        return value != null ? value.toString() : "";
+        return value != null ? value.toString() : null;
     }
 
     /**
@@ -95,7 +95,7 @@ public class Value<T> {
 
     @Override
     public String toString() {
-        return value.toString();
+        return value != null ? value.toString() : "";
     }
 
     private static final class NullValue extends Value<Void> {

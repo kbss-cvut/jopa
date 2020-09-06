@@ -26,7 +26,7 @@ import java.util.Set;
 }), @SparqlResultSetMapping(name = OWLClassA.CONSTRUCTOR_MAPPING, classes = {
         @ConstructorResult(targetClass = OWLClassA.class, variables = {
                 @VariableResult(name = "x"),
-                @VariableResult(name = "y")
+                @VariableResult(name = "y", type = String.class)
 
         })
 }), @SparqlResultSetMapping(name = OWLClassA.ENTITY_MAPPING, entities = {

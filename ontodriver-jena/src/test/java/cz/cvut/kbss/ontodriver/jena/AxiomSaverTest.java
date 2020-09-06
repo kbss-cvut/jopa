@@ -18,13 +18,14 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -36,8 +37,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 
 public class AxiomSaverTest {
@@ -49,7 +49,7 @@ public class AxiomSaverTest {
 
     private AxiomSaver saver;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.saver = new AxiomSaver(connectorMock);
@@ -168,7 +168,7 @@ public class AxiomSaverTest {
         descriptor.addAssertionValue(assertion, new Value<>(value));
         descriptor.setAssertionContext(assertion, context);
         saver.saveAxioms(descriptor);
-        verify(connectorMock).add(anyListOf(Statement.class), eq(context.toString()));
+        verify(connectorMock).add(anyList(), eq(context.toString()));
     }
 
     @Test
@@ -180,5 +180,31 @@ public class AxiomSaverTest {
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture(), eq(null));
         assertTrue(captor.getValue().isEmpty());
+    }
+
+    @Test
+    void saveAxiomsSavesOntoDriverLangStringAxiomValuesAsRDFLangStringValues() {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertionValue(assertion, new Value<>(new LangString("test", "en")));
+        saver.saveAxioms(descriptor);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), eq(null));
+        final List<Statement> arg = captor.getValue();
+        assertEquals(1, arg.size());
+        assertEquals(ResourceFactory.createLangLiteral("test", "en"), arg.get(0).getObject());
+    }
+
+    @Test
+    void saveAxiomsSavesOntoDriverLangStringAxiomWithoutLanguageAsSimpleLiteral() {
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertionValue(assertion, new Value<>(new LangString("test")));
+        saver.saveAxioms(descriptor);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), eq(null));
+        final List<Statement> arg = captor.getValue();
+        assertEquals(1, arg.size());
+        assertEquals(ResourceFactory.createPlainLiteral("test"), arg.get(0).getObject());
     }
 }

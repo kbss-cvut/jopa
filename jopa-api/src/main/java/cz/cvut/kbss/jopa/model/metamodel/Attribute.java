@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -45,7 +43,7 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
          * Corresponds to annotation properties
          */
         @NonJPA
-        ANNOTATION;
+        ANNOTATION
     }
 
     /**
@@ -118,6 +116,32 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
      * @return Boolean indicating whether the attribute represents simple literals.
      */
     boolean isSimpleLiteral();
+
+    /**
+     * Indicates whether a language is specified for this attribute.
+     * <p>
+     * Note that language applies only to String-based data or annotation property attribute values, for which {@code
+     * rdfs:langString} values will be read and its language tag compared to the one required.
+     * <p>
+     * Also note that if the attribute is a simple literal or in lexical form only, it has no language and this method
+     * will return false.
+     *
+     * @return Boolean indicating whether language is specified for this attribute
+     */
+    boolean hasLanguage();
+
+    /**
+     * Gets the language configured for this attribute.
+     * <p>
+     * Note that language applies only to String-based data or annotation property attribute values, for which {@code
+     * rdfs:langString} values will be read and its language tag compared to the one required.
+     * <p>
+     * If no language is specified directly for the attribute, persistence unit-level language setting is used.
+     *
+     * @return Language configured for this attribute, {@code null} if none is set
+     * @see #hasLanguage()
+     */
+    String getLanguage();
 
     /**
      * Returns participation constraints specified for this attribute.

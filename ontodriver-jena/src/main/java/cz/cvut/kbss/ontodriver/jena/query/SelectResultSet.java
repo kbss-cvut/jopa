@@ -17,6 +17,7 @@ package cz.cvut.kbss.ontodriver.jena.query;
 
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
@@ -170,7 +171,7 @@ public class SelectResultSet extends AbstractResultSet {
     private static Object toObject(RDFNode value) {
         assert value != null;
         if (value.isLiteral()) {
-            return value.asLiteral().getValue();
+            return JenaUtils.literalToValue(value.asLiteral());
         } else {
             assert value.isResource();
             if (value.isURIResource()) {

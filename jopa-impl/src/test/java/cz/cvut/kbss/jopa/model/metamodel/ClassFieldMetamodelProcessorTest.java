@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.*;
 
 class ClassFieldMetamodelProcessorTest {
 
-    private final MetamodelBuilder metamodelBuilder = new MetamodelBuilder();
+    private final MetamodelBuilder metamodelBuilder = new MetamodelBuilder(new Configuration());
 
     @Test
     void processingNonTransientFieldWithoutPropertyInfoThrowsException() throws Exception {

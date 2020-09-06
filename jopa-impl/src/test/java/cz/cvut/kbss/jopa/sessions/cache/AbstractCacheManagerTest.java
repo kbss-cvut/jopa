@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.cache;
 
@@ -22,7 +20,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Collections;
@@ -31,7 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AbstractCacheManagerTest<T extends CacheManager> {
 
@@ -88,9 +86,10 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         assertSame(testA, res);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void addNullThrowsNullPointerException() {
-        manager.add(URI.create("http://blahblahblah"), null, descriptor(null));
+        assertThrows(NullPointerException.class,
+                () -> manager.add(URI.create("http://blahblahblah"), null, descriptor(null)));
     }
 
     @Test
@@ -218,11 +217,11 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         return OWLClassB.class;
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void evictByClassThrowsNPXForNullArgument() {
         manager.add(testA.getUri(), testA, descriptor(CONTEXT_ONE));
         addAllToCache(listOfBs, manager);
-        manager.evict((Class<?>) null);
+        assertThrows(NullPointerException.class, () -> manager.evict((Class<?>) null));
     }
 
     URI evictByContext() {
@@ -285,10 +284,10 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorTwo));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void evictByNullIdentifierThrowsNPX() {
         manager.add(testA.getUri(), testA, descriptor(CONTEXT_ONE));
-        manager.evict(null, null, CONTEXT_ONE);
+        assertThrows(NullPointerException.class, () -> manager.evict(null, null, CONTEXT_ONE));
     }
 
     private void addAllToCache(Map<URI, OWLClassB> entities, CacheManager manager) {

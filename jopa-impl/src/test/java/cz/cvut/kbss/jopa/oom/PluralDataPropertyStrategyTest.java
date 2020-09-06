@@ -47,7 +47,7 @@ class PluralDataPropertyStrategyTest {
     private AxiomValueGatherer gatherer;
 
     private MetamodelMocks mocks;
-    private Descriptor descriptor = new EntityDescriptor();
+    private final Descriptor descriptor = new EntityDescriptor();
 
     @BeforeEach
     void setUp() throws Exception {
