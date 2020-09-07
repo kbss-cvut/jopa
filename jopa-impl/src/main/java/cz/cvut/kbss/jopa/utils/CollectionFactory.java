@@ -18,6 +18,10 @@ import java.util.*;
 
 public final class CollectionFactory {
 
+    private CollectionFactory() {
+        throw new AssertionError();
+    }
+
     /**
      * Creates an instance of a {@link Collection} implementation best matching the specified instance.
      * <p>

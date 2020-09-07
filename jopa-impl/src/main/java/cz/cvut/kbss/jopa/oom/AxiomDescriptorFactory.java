@@ -97,11 +97,11 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private boolean withLanguage(Attribute<?, ?> att, Descriptor descriptor) {
+    private static boolean withLanguage(Attribute<?, ?> att, Descriptor descriptor) {
         return descriptor.hasLanguage() || att.hasLanguage();
     }
 
-    private String language(Attribute<?, ?> att, Descriptor descriptor) {
+    private static String language(Attribute<?, ?> att, Descriptor descriptor) {
         return descriptor.hasLanguage() ? descriptor.getLanguage() : att.getLanguage();
     }
 
