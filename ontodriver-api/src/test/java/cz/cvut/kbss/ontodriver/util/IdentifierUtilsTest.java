@@ -1,27 +1,29 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.util;
 
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 class IdentifierUtilsTest {
+
+    private static final String URI_WITH_SLASH = "http://onto.fel.cvut.cz/ontologies/jopa/ClassA";
 
     @Test
     void generateIdentifierAppendsInstanceIdentifierToUriWithHashFragment() {
@@ -32,15 +34,50 @@ class IdentifierUtilsTest {
 
     @Test
     void generateIdentifierAppendsIdentifierToUriEndingWithSlash() {
-        final URI clsUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa/ClassA/");
+        final URI clsUri = URI.create(URI_WITH_SLASH);
         final URI result = IdentifierUtils.generateIdentifier(clsUri);
         assertThat(result.toString(), containsString("/instance"));
     }
 
     @Test
     void generateIdentifierAppendsIdentifierWithSlashToUriWithoutHashFragment() {
-        final URI clsUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa/ClassA");
+        final URI clsUri = URI.create(URI_WITH_SLASH);
         final URI result = IdentifierUtils.generateIdentifier(clsUri);
         assertThat(result.toString(), containsString("/instance"));
+    }
+
+    @Test
+    void isResourceReturnsTrueForUri() {
+        assertTrue(IdentifierUtils.isResourceIdentifier(URI.create(URI_WITH_SLASH)));
+    }
+
+    @Test
+    void isResourceReturnsTrueForNamedResource() {
+        assertTrue(IdentifierUtils.isResourceIdentifier(NamedResource.create(URI_WITH_SLASH)));
+    }
+
+    @Test
+    void isResourceReturnsTrueForStringUri() {
+        assertTrue(IdentifierUtils.isResourceIdentifier(URI_WITH_SLASH));
+    }
+
+    @Test
+    void isResourceReturnsFalseForNonStringValue() {
+        assertFalse(IdentifierUtils.isResourceIdentifier(117));
+    }
+
+    @Test
+    void isResourceReturnsFalseForNonAbsoluteUriStringValue() {
+        assertFalse(IdentifierUtils.isResourceIdentifier("jdf123"));
+    }
+
+    @Test
+    void isResourceReturnsFalseForBlankNodeIdentifier() {
+        assertFalse(IdentifierUtils.isResourceIdentifier("_:123"));
+    }
+
+    @Test
+    void isResourceReturnsFalseForNullArgument() {
+        assertFalse(IdentifierUtils.isResourceIdentifier(null));
     }
 }
