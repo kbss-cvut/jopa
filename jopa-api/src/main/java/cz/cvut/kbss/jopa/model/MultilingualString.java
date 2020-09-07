@@ -176,6 +176,11 @@ public class MultilingualString implements Serializable {
         return Objects.hash(value);
     }
 
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+
     /**
      * Creates a new instance of {@link MultilingualString} and sets the specified value in the specified language.
      * <p>
