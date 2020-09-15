@@ -1,6 +1,8 @@
 package cz.cvut.kbss.jopa.oom.converter;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 /**
@@ -10,6 +12,8 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
  * literal values and references to other individuals. In that case, the loaded instance is a {@link NamedResource} and
  * needs to be transformed to a {@link java.net.URI} to prevent the internal OntoDriver API from leaking into the
  * application.
+ * <p>
+ * Similarly, OntoDriver API's {@link LangString} is transformed to {@link MultilingualString}.
  * <p>
  * In all other cases, the values will be just returned without any conversion.
  */
@@ -25,7 +29,15 @@ public class ObjectConverter implements ConverterWrapper<Object, Object> {
 
     @Override
     public Object convertToAttribute(Object value) {
-        return value instanceof NamedResource ? ((NamedResource) value).getIdentifier() : value;
+        if (value instanceof NamedResource) {
+            return ((NamedResource) value).getIdentifier();
+        } else if (value instanceof LangString) {
+            final MultilingualString ms = new MultilingualString();
+            final LangString ls = (LangString) value;
+            ms.set(ls.getLanguage().orElse(null), ls.getValue());
+            return ms;
+        }
+        return value;
     }
 
     @Override

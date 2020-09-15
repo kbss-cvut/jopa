@@ -1,11 +1,14 @@
 package cz.cvut.kbss.jopa.oom.converter;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ObjectConverterTest {
 
-    private ObjectConverter sut = new ObjectConverter();
+    private final ObjectConverter sut = new ObjectConverter();
 
     @Test
     void convertToAxiomValueDoesNothingToLiteralValues() {
@@ -43,5 +46,11 @@ class ObjectConverterTest {
     void convertToAttributeTransformsNamedResourceToUri() {
         final NamedResource value = NamedResource.create(Generators.createIndividualIdentifier());
         assertEquals(value.getIdentifier(), sut.convertToAttribute(value));
+    }
+
+    @Test
+    void convertToAttributeTransformsLangStringToMultilingualString() {
+        final LangString value = new LangString("test", "en");
+        assertEquals(new MultilingualString(Collections.singletonMap("en", "test")), sut.convertToAttribute(value));
     }
 }
