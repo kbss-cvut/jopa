@@ -14,6 +14,8 @@ package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -221,6 +224,20 @@ class ParameterValueFactoryTest {
         final Collection<Object> values = Arrays.asList(117, false);
         final ParameterValue result = sut.create(values);
         assertEquals("\"" + 117 + "\"^^<" + XSD.INT + ">,\"" + false + "\"^^<" + XSD.BOOLEAN + ">",
+                result.getQueryString());
+    }
+
+    @Test
+    void createCollectionValueCreatesCollectionOfUrisForEntityElements() throws Exception {
+        final Collection<OWLClassA> values = Arrays
+                .asList(Generators.generateOwlClassAInstance(), Generators.generateOwlClassAInstance());
+        when(metamodelProvider.isEntityType(OWLClassA.class)).thenReturn(true);
+        final MetamodelMocks mocks = new MetamodelMocks();
+        final Metamodel metamodel = mock(Metamodel.class);
+        mocks.setMocks(metamodel);
+        when(metamodelProvider.getMetamodel()).thenReturn(metamodel);
+        final ParameterValue result = sut.create(values);
+        assertEquals(values.stream().map(a -> "<" + a.getUri() + ">").collect(Collectors.joining(",")),
                 result.getQueryString());
     }
 }

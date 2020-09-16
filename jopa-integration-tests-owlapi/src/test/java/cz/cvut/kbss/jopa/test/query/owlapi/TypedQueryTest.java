@@ -80,4 +80,11 @@ public class TypedQueryTest extends TypedQueryRunner {
         assertEquals(expected.size() - offset, result.size());
         // OWL2Query does not support ORDER BY, so we can't use it to verify the offset
     }
+
+    @Disabled
+    @Test
+    @Override
+    protected void querySupportsCollectionParameters() {
+        // OWL2Query does not support FILTER (?x IN ...) in queries
+    }
 }
