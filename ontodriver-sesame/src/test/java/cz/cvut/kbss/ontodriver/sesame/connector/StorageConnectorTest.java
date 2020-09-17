@@ -263,4 +263,18 @@ class StorageConnectorTest {
                  .forEach(File::delete);
         }
     }
+
+    @Test
+    void initializationThrowsSesameDriverExceptionWhenReconnectAttemptsIsNotANumber() {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, "not-a-number");
+        assertThrows(SesameDriverException.class, () -> new StorageConnector(conf));
+    }
+
+    @Test
+    void initializationThrowsSesameDriverExceptionWhenReconnectAttemptsIsNegative() {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, "-1");
+        assertThrows(SesameDriverException.class, () -> new StorageConnector(conf));
+    }
 }
