@@ -120,6 +120,11 @@ public class IndirectMultilingualString extends MultilingualString implements In
     }
 
     @Override
+    public String toString() {
+        return referencedString.toString();
+    }
+
+    @Override
     public MultilingualString unwrap() {
         return referencedString;
     }
