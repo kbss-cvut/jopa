@@ -22,6 +22,7 @@ import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
@@ -38,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +50,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class StorageConnectorTest {
 
@@ -268,6 +271,7 @@ class StorageConnectorTest {
     void initializationThrowsSesameDriverExceptionWhenReconnectAttemptsIsNotANumber() {
         final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
         conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, "not-a-number");
+        conf.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         assertThrows(SesameDriverException.class, () -> new StorageConnector(conf));
     }
 
@@ -275,6 +279,26 @@ class StorageConnectorTest {
     void initializationThrowsSesameDriverExceptionWhenReconnectAttemptsIsNegative() {
         final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
         conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, "-1");
+        conf.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         assertThrows(SesameDriverException.class, () -> new StorageConnector(conf));
+    }
+
+    @Test
+    void getConnectionRetriesOnErrorConfiguredNumberOfTimes() throws Exception {
+        final int attempts = 3;
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+        conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, Integer.toString(attempts));
+        this.connector = new StorageConnector(conf);
+        final Repository repoMock = mock(Repository.class);
+        final Field repoField = StorageConnector.class.getDeclaredField("repository");
+        repoField.setAccessible(true);
+        ((Repository) repoField.get(connector)).shutDown();
+        repoField.set(connector, repoMock);
+        when(repoMock.getConnection()).thenThrow(RepositoryException.class);
+        when(repoMock.isInitialized()).thenReturn(true);
+
+        assertThrows(SesameDriverException.class, () -> connector.acquireConnection());
+        verify(repoMock, times(attempts)).getConnection();
     }
 }

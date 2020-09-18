@@ -101,7 +101,7 @@ class RepositoryConnectorInitializer {
             final String password = configuration.getStorageProperties().getPassword();
             remoteManager.setUsernameAndPassword(username, password);
         }
-        return connectToRemote(repoUri, 0);
+        return connectToRemote(repoUri, 1);
     }
 
     private Repository connectToRemote(String repoUri, int attempts) {

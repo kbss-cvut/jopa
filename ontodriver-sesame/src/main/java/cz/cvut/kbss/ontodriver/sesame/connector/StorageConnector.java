@@ -53,18 +53,23 @@ class StorageConnector extends AbstractConnector {
         assert configuration != null;
 
         this.configuration = configuration;
+        this.maxReconnectAttempts = resolveMaxReconnectAttempts();
+        initialize();
+        this.open = true;
+    }
+
+    private int resolveMaxReconnectAttempts() throws SesameDriverException {
         try {
-            this.maxReconnectAttempts = configuration.isSet(SesameConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
+            final int attempts = configuration.isSet(SesameConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
                     configuration.getProperty(SesameConfigParam.RECONNECT_ATTEMPTS)) :
-                                        Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
-            if (maxReconnectAttempts < 0) {
+                                 Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
+            if (attempts < 0) {
                 throw invalidReconnectAttemptsConfig();
             }
+            return attempts;
         } catch (NumberFormatException e) {
             throw invalidReconnectAttemptsConfig();
         }
-        initialize();
-        this.open = true;
     }
 
     private SesameDriverException invalidReconnectAttemptsConfig() {
@@ -111,10 +116,19 @@ class StorageConnector extends AbstractConnector {
         if (!repository.isInitialized()) {
             initialize();
         }
+        LOG.trace("Acquiring repository connection.");
+        return acquire(1);
+    }
+
+    private RepositoryConnection acquire(int attempts) throws SesameDriverException {
         try {
-            LOG.trace("Acquiring repository connection.");
             return repository.getConnection();
         } catch (RepositoryException e) {
+            if (attempts < maxReconnectAttempts) {
+                LOG.warn("Unable to acquire repository connection. Error is: {}. Retrying...", e.getMessage());
+                return acquire(attempts + 1);
+            }
+            LOG.error("Threshold of failed connection acquisition attempts reached, throwing exception.");
             throw new SesameDriverException(e);
         }
     }
