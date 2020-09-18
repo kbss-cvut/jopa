@@ -30,7 +30,8 @@ public enum SesameConfigParam implements ConfigurationParameter {
     LOAD_ALL_THRESHOLD(SesameOntoDriverProperties.SESAME_LOAD_ALL_THRESHOLD),
     USERNAME(OntoDriverProperties.DATA_SOURCE_USERNAME),
     PASSWORD(OntoDriverProperties.DATA_SOURCE_PASSWORD),
-    REPOSITORY_CONFIG(SesameOntoDriverProperties.SESAME_REPOSITORY_CONFIG);
+    REPOSITORY_CONFIG(SesameOntoDriverProperties.SESAME_REPOSITORY_CONFIG),
+    RECONNECT_ATTEMPTS(SesameOntoDriverProperties.SESAME_RECONNECT_ATTEMPTS);
 
     private final String name;
 
