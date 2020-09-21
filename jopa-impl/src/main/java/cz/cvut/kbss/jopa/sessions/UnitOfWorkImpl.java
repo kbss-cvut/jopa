@@ -37,7 +37,6 @@ import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
-import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;

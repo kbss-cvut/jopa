@@ -143,4 +143,10 @@ class MultilingualStringTest {
         assertFalse(sut.contains(LANGUAGE));
         assertFalse(sut.getValue().containsKey(LANGUAGE));
     }
+
+    @Test
+    void toStringOutputsInternalValue() {
+        final MultilingualString sut = MultilingualString.create(VALUE, LANGUAGE);
+        assertEquals(sut.getValue().toString(), sut.toString());
+    }
 }

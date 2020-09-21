@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -24,13 +22,14 @@ import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
 import org.eclipse.rdf4j.sail.config.SailImplConfig;
-import org.eclipse.rdf4j.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
 import org.eclipse.rdf4j.sail.lucene.LuceneSail;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
@@ -40,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class StorageConnectorTest {
 
@@ -123,7 +124,6 @@ class StorageConnectorTest {
         final RepositoryManager repoManager = RepositoryProvider.getRepositoryManagerOfRepository(repoUri.toString());
         repoManager.addRepositoryConfig(config);
         final Repository repo = repoManager.getRepository(repoId);
-        repo.initialize();
 
         final StorageConnector connector = new StorageConnector(TestUtils.createDriverConfig(repoUri.toString()));
         assertTrue(connector.isOpen());
@@ -160,7 +160,6 @@ class StorageConnectorTest {
     void setRepositoryReplacesOriginalInMemoryRepositoryWithSpecifiedOne() throws Exception {
         createInMemoryConnector();
         final Repository newRepository = new SailRepository(new MemoryStore());
-        newRepository.initialize();
         Generator.initTestData(newRepository);
         connector.setRepository(newRepository);
         final Collection<Statement> content = connector.findStatements(null, null, null, false);
@@ -176,7 +175,6 @@ class StorageConnectorTest {
                 .getAbsolutePath() + File.separator + "repositories" + File.separator + "test"));
 
         final Repository newRepository = new SailRepository(new MemoryStore());
-        newRepository.initialize();
         try {
             final UnsupportedOperationException result =
                     assertThrows(UnsupportedOperationException.class, () -> connector.setRepository(newRepository));
@@ -191,7 +189,6 @@ class StorageConnectorTest {
         createInMemoryConnector();
         connector.begin();
         final Repository newRepository = new SailRepository(new MemoryStore());
-        newRepository.initialize();
 
         try {
             final IllegalStateException result =
@@ -210,7 +207,7 @@ class StorageConnectorTest {
         this.connector = new StorageConnector(conf);
         final Repository repo = connector.unwrap(Repository.class);
         assertTrue(repo instanceof SailRepository);
-        assertTrue(((SailRepository) repo).getSail() instanceof ForwardChainingRDFSInferencer);
+        assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
     }
 
     @Test
@@ -228,7 +225,7 @@ class StorageConnectorTest {
         this.connector = new StorageConnector(conf);
         final Repository repo = connector.unwrap(Repository.class);
         assertTrue(repo instanceof SailRepository);
-        assertTrue(((SailRepository) repo).getSail() instanceof ForwardChainingRDFSInferencer);
+        assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
     }
 
     @Test
@@ -268,5 +265,40 @@ class StorageConnectorTest {
                  .map(Path::toFile)
                  .forEach(File::delete);
         }
+    }
+
+    @Test
+    void initializationThrowsSesameDriverExceptionWhenReconnectAttemptsIsNotANumber() {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, "not-a-number");
+        conf.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+        assertThrows(SesameDriverException.class, () -> new StorageConnector(conf));
+    }
+
+    @Test
+    void initializationThrowsSesameDriverExceptionWhenReconnectAttemptsIsNegative() {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, "-1");
+        conf.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+        assertThrows(SesameDriverException.class, () -> new StorageConnector(conf));
+    }
+
+    @Test
+    void getConnectionRetriesOnErrorConfiguredNumberOfTimes() throws Exception {
+        final int attempts = 3;
+        final DriverConfiguration conf = TestUtils.createDriverConfig("urn:test");
+        conf.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+        conf.setProperty(SesameConfigParam.RECONNECT_ATTEMPTS, Integer.toString(attempts));
+        this.connector = new StorageConnector(conf);
+        final Repository repoMock = mock(Repository.class);
+        final Field repoField = StorageConnector.class.getDeclaredField("repository");
+        repoField.setAccessible(true);
+        ((Repository) repoField.get(connector)).shutDown();
+        repoField.set(connector, repoMock);
+        when(repoMock.getConnection()).thenThrow(RepositoryException.class);
+        when(repoMock.isInitialized()).thenReturn(true);
+
+        assertThrows(SesameDriverException.class, () -> connector.acquireConnection());
+        verify(repoMock, times(attempts)).getConnection();
     }
 }

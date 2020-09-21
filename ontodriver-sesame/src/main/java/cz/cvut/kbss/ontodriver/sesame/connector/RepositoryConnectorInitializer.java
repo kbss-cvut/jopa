@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -58,12 +56,14 @@ class RepositoryConnectorInitializer {
     private static final String CLASSPATH_PREFIX = "classpath:";
 
     private final DriverConfiguration configuration;
+    private final int maxReconnectAttempts;
 
     private RepositoryManager manager;
     private Repository repository;
 
-    RepositoryConnectorInitializer(DriverConfiguration configuration) {
+    RepositoryConnectorInitializer(DriverConfiguration configuration, int maxReconnectAttempts) {
         this.configuration = configuration;
+        this.maxReconnectAttempts = maxReconnectAttempts;
     }
 
     void initializeRepository() throws SesameDriverException {
@@ -101,7 +101,20 @@ class RepositoryConnectorInitializer {
             final String password = configuration.getStorageProperties().getPassword();
             remoteManager.setUsernameAndPassword(username, password);
         }
-        return manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
+        return connectToRemote(repoUri, 1);
+    }
+
+    private Repository connectToRemote(String repoUri, int attempts) {
+        try {
+            return manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
+        } catch (RepositoryException e) {
+            if (attempts < maxReconnectAttempts) {
+                LOG.warn("Unable to connect to repository {}. Error is: {}. Retrying...", repoUri, e.getMessage());
+                return connectToRemote(repoUri, attempts + 1);
+            }
+            LOG.error("Threshold of failed connection attempts reached, throwing exception.");
+            throw e;
+        }
     }
 
     private Repository createLocalRepository() {

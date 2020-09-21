@@ -21,7 +21,7 @@ import java.util.*;
 
 public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E> {
 
-    private Set<E> internalSet;
+    private final Set<E> internalSet;
 
     /**
      * No-arg constructor to allow clone building.
@@ -124,7 +124,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 
     private class IndirectSetIterator<T> implements Iterator<T> {
 
-        private Iterator<T> iterator;
+        private final Iterator<T> iterator;
 
         private IndirectSetIterator(Iterator<T> iterator) {
             this.iterator = iterator;

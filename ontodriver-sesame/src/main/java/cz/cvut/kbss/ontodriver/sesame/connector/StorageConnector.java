@@ -1,21 +1,22 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.config.Constants;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.*;
@@ -42,6 +43,8 @@ class StorageConnector extends AbstractConnector {
 
     private final DriverConfiguration configuration;
 
+    private final int maxReconnectAttempts;
+
     private Repository repository;
     private RepositoryManager manager;
     private RepositoryConnection connection;
@@ -50,12 +53,34 @@ class StorageConnector extends AbstractConnector {
         assert configuration != null;
 
         this.configuration = configuration;
+        this.maxReconnectAttempts = resolveMaxReconnectAttempts();
         initialize();
         this.open = true;
     }
 
+    private int resolveMaxReconnectAttempts() throws SesameDriverException {
+        try {
+            final int attempts = configuration.isSet(SesameConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
+                    configuration.getProperty(SesameConfigParam.RECONNECT_ATTEMPTS)) :
+                                 Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
+            if (attempts < 0) {
+                throw invalidReconnectAttemptsConfig();
+            }
+            return attempts;
+        } catch (NumberFormatException e) {
+            throw invalidReconnectAttemptsConfig();
+        }
+    }
+
+    private SesameDriverException invalidReconnectAttemptsConfig() {
+        return new SesameDriverException(
+                "Invalid value of configuration parameter " + SesameOntoDriverProperties.SESAME_RECONNECT_ATTEMPTS +
+                        ". Must be a non-negative integer.");
+    }
+
     private void initialize() throws SesameDriverException {
-        final RepositoryConnectorInitializer initializer = new RepositoryConnectorInitializer(configuration);
+        final RepositoryConnectorInitializer initializer = new RepositoryConnectorInitializer(configuration,
+                maxReconnectAttempts);
         initializer.initializeRepository();
         this.manager = initializer.getManager();
         this.repository = initializer.getRepository();
@@ -91,10 +116,19 @@ class StorageConnector extends AbstractConnector {
         if (!repository.isInitialized()) {
             initialize();
         }
+        LOG.trace("Acquiring repository connection.");
+        return acquire(1);
+    }
+
+    private RepositoryConnection acquire(int attempts) throws SesameDriverException {
         try {
-            LOG.trace("Acquiring repository connection.");
             return repository.getConnection();
         } catch (RepositoryException e) {
+            if (attempts < maxReconnectAttempts) {
+                LOG.warn("Unable to acquire repository connection. Error is: {}. Retrying...", e.getMessage());
+                return acquire(attempts + 1);
+            }
+            LOG.error("Threshold of failed connection acquisition attempts reached, throwing exception.");
             throw new SesameDriverException(e);
         }
     }
@@ -287,6 +321,6 @@ class StorageConnector extends AbstractConnector {
         }
         final Sail sail = ((SailRepository) repo).getSail();
         return sail instanceof SailWrapper ? ((SailWrapper) sail).getBaseSail() instanceof MemoryStore :
-                sail instanceof MemoryStore;
+               sail instanceof MemoryStore;
     }
 }
