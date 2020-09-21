@@ -10,6 +10,7 @@ import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 class SingularMultilingualStringFieldStrategy<X>
@@ -60,10 +61,12 @@ class SingularMultilingualStringFieldStrategy<X>
         if (attValue == null || attValue.isEmpty()) {
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
         } else {
-            valueBuilder.addValues(createAssertion(),
-                    attValue.getValue().entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())))
-                         .collect(Collectors.toList()),
-                    getAttributeContext());
+            valueBuilder.addValues(createAssertion(), translationsToLangStrings(attValue), getAttributeContext());
         }
+    }
+
+    static List<Value<?>> translationsToLangStrings(MultilingualString str) {
+        return str.getValue().entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())))
+                  .collect(Collectors.toList());
     }
 }

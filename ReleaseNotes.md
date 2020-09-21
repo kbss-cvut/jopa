@@ -5,7 +5,7 @@
 - [JOPA] Add support for using collections as query parameters (Enhancement #74).
 - [Sesame OntoDriver] Retry connection to remote repository when configured to (Feature #72).
 - Minor fixes in multilingual string handling.
-- Dependency udpates: RDF4J 3.4.1.
+- Dependency updates: RDF4J 3.4.1.
 
 ## 0.15.0 - September 6, 2020
 - [JOPA] Add support for multilingual String attributes (Feature #59).

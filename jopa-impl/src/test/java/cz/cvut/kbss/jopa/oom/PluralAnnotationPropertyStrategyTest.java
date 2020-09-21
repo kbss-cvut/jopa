@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -36,13 +37,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -132,7 +132,8 @@ class PluralAnnotationPropertyStrategyTest {
 
     private <T, X> PluralAnnotationPropertyStrategy<T> createStrategyWithPluralAnnotations(Class<T> entity,
                                                                                            Class<X> elementType,
-                                                                                           ConverterWrapper converter) throws
+                                                                                           ConverterWrapper converter)
+            throws
             Exception {
         final EntityTypeImpl<T> et = mock(EntityTypeImpl.class);
         final AbstractPluralAttribute<T, Set, X> att = mock(AbstractPluralAttribute.class);
@@ -293,5 +294,27 @@ class PluralAnnotationPropertyStrategyTest {
                 .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
         assertEquals(1, values.size());
         assertEquals(NamedResource.create((URI) instance.pluralAnnotation.iterator().next()), values.get(0).getValue());
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceConvertsMultilingualStringTranslationsToLangStringValues() throws Exception {
+        final EntityType<ClassWithObjectAnnotation> et = mock(EntityType.class);
+        final SetAttributeImpl<ClassWithObjectAnnotation, Object> att = objectAnnotationAttribute(et);
+        final PluralAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new PluralAnnotationPropertyStrategy<>(
+                et, att, descriptor, mapperMock);
+        final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
+        final MultilingualString mls = MultilingualString.create("test", "en");
+        mls.set("cs", "test");
+        final MultilingualString mlsTwo = MultilingualString.create("building", "en");
+        instance.pluralAnnotation = new HashSet<>(Arrays.asList(mls, mlsTwo));
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor
+                .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
+        mls.getValue().forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
+        mlsTwo.getValue()
+              .forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
     }
 }
