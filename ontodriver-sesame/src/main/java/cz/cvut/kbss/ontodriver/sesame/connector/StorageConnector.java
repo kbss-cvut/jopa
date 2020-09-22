@@ -72,7 +72,7 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    private SesameDriverException invalidReconnectAttemptsConfig() {
+    private static SesameDriverException invalidReconnectAttemptsConfig() {
         return new SesameDriverException(
                 "Invalid value of configuration parameter " + SesameOntoDriverProperties.SESAME_RECONNECT_ATTEMPTS +
                         ". Must be a non-negative integer.");
