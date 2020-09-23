@@ -15,8 +15,10 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -30,7 +32,7 @@ import static org.mockito.Mockito.*;
 
 class ConverterResolverTest {
 
-    private ConverterResolver sut = new ConverterResolver(new Converters());
+    private ConverterResolver sut = new ConverterResolver(new Converters(new Configuration()));
 
     @Test
     void resolveConverterReturnsEmptyOptionalForObjectPropertyWithEntityTarget() throws Exception {
@@ -124,5 +126,21 @@ class ConverterResolverTest {
     private static class ClassWithObjectAnnotation {
         @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "singularAnnotation")
         private Object singularAnnotation;
+    }
+
+    @Test
+    void resolveConverterUsesConfigurationToProvideSettingsToObjectConverter() throws Exception {
+        final Configuration config = new Configuration();
+        config.set(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING, Boolean.TRUE.toString());
+        sut = new ConverterResolver(new Converters(config));
+        final Field field = ClassWithObjectAnnotation.class.getDeclaredField("singularAnnotation");
+        final AnnotationPropertyAttributes pa = mock(AnnotationPropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
+        doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertTrue(result.get() instanceof ObjectConverter);
+        final ObjectConverter objectConverter = (ObjectConverter) result.get();
+        assertTrue(objectConverter.doesPreferMultilingualString());
     }
 }

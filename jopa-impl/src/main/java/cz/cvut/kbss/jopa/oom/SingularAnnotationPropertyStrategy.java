@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -65,6 +66,10 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
                 !attribute.getJavaType().isAssignableFrom(String.class)) {
             valueBuilder.addValue(createAssertion(),
                     new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))), getAttributeContext());
+        } else if (value instanceof MultilingualString) {
+            valueBuilder.addValues(createAssertion(),
+                    SingularMultilingualStringFieldStrategy.translationsToLangStrings((MultilingualString) value),
+                    getAttributeContext());
         } else {
             valueBuilder.addValue(createAssertion(), new Value<>(toAxiomValue(value)), getAttributeContext());
         }

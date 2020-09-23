@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -41,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -293,5 +296,42 @@ class SingularAnnotationPropertyStrategyTest {
                 .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
         assertEquals(1, values.size());
         assertEquals(NamedResource.create((URI) instance.singularAnnotation), values.get(0).getValue());
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceConvertsMultilingualStringTranslationsToLangStringValues() throws Exception {
+        final EntityType<ClassWithObjectAnnotation> et = mock(EntityType.class);
+        final SingularAttributeImpl<ClassWithObjectAnnotation, Object> att = objectAnnotationAttribute(et);
+        final SingularAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new SingularAnnotationPropertyStrategy<>(
+                et, att, descriptor, mapperMock);
+        final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
+        final MultilingualString mls = MultilingualString.create("test", "en");
+        mls.set("cs", "test");
+        instance.singularAnnotation = mls;
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor
+                .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
+        mls.getValue().forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
+    }
+
+    @Test
+    void addAxiomValueConvertsLangStringToMultilingualStringWhenTargetIsObjectAndMultilingualStringsArePreferred()
+            throws Exception {
+        final EntityType<ClassWithObjectAnnotation> et = mock(EntityType.class);
+        final SingularAttributeImpl<ClassWithObjectAnnotation, Object> att = objectAnnotationAttribute(et);
+        when(att.getConverter()).thenReturn(new ObjectConverter(true));
+        final SingularAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new SingularAnnotationPropertyStrategy<>(
+                et, att, descriptor, mapperMock);
+        final LangString langString = new LangString("test", "en");
+        final Axiom<LangString> axiom = new AxiomImpl<>(NamedResource.create(PK), annotationWithUriForN(),
+                new Value<>(langString));
+        sut.addValueFromAxiom(axiom);
+        final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(MultilingualString.create(langString.getValue(), langString.getLanguage().get()),
+                instance.singularAnnotation);
     }
 }

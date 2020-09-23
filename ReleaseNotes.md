@@ -1,11 +1,16 @@
 # JOPA - Release Notes
 
 
+## 0.15.2 - September 23, 2020
+- [JOPA] Fix handling of multilingual strings in annotation properties when target type is `Object`.
+- Allow configuring whether `MultilingualString` should be preferred over `String` in situations like above (`cz.cvut.jopa.preferMultilingualString`).
+- Minor code quality improvements.
+
 ## 0.15.1 - September 21, 2020
 - [JOPA] Add support for using collections as query parameters (Enhancement #74).
 - [Sesame OntoDriver] Retry connection to remote repository when configured to (Feature #72).
 - Minor fixes in multilingual string handling.
-- Dependency udpates: RDF4J 3.4.1.
+- Dependency updates: RDF4J 3.4.1.
 
 ## 0.15.0 - September 6, 2020
 - [JOPA] Add support for multilingual String attributes (Feature #59).

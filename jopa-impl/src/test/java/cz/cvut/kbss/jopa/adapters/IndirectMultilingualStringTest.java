@@ -111,4 +111,9 @@ class IndirectMultilingualStringTest {
     void getReferencedStringReturnsWrappedInstance() {
         assertSame(referencedString, sut.unwrap());
     }
+
+    @Test
+    void toStringInvokesToStringOfReferencedInstance() {
+        assertEquals(referencedString.toString(), sut.toString());
+    }
 }

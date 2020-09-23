@@ -112,4 +112,28 @@ class EntityManagerFactoryImplTest {
         final DataSourceStub result = emf.unwrap(DataSourceStub.class);
         assertSame(emf.getServerSession().unwrap(DataSourceStub.class), result);
     }
+
+    @Test
+    void closeClosesAllOpenEntityManagers() {
+        final EntityManager emOne = emf.createEntityManager();
+        final EntityManager emTwo = emf.createEntityManager();
+        assertTrue(emOne.isOpen());
+        assertTrue(emTwo.isOpen());
+        emf.close();
+        assertFalse(emf.isOpen());
+        assertFalse(emOne.isOpen());
+        assertFalse(emTwo.isOpen());
+    }
+
+    @Test
+    void createEntityManagerOnClosedInstanceThrowsIllegalStateException() {
+        emf.close();
+        assertThrows(IllegalStateException.class, () -> emf.createEntityManager());
+    }
+
+    @Test
+    void getIdentifiersExtractsEntityIdentifier() {
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        assertEquals(instance.getUri(), emf.getIdentifier(instance));
+    }
 }

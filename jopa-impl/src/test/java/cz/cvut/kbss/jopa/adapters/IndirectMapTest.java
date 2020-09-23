@@ -44,7 +44,7 @@ class IndirectMapTest {
     private UnitOfWorkImpl uow;
 
     private Map<String, Set<String>> map;
-    private IndirectMap<String, Set<String>> indirectMap;
+    private IndirectMap<String, Set<String>> sut;
 
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
@@ -60,7 +60,7 @@ class IndirectMapTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         this.map = new HashMap<>();
         map.putAll(backupMap);
-        this.indirectMap = new IndirectMap<>(owner, ownerField, uow, map);
+        this.sut = new IndirectMap<>(owner, ownerField, uow, map);
 
     }
 
@@ -78,7 +78,7 @@ class IndirectMapTest {
     void testPut() {
         final String key = "http://krizik.felk.cvut.cz/ontologies/properties/p";
         final String value = "someDataPropertyValue";
-        indirectMap.put(key, Collections.singleton(value));
+        sut.put(key, Collections.singleton(value));
         verify(uow).attributeChanged(owner, ownerField);
         assertTrue(map.containsKey(key));
     }
@@ -86,7 +86,7 @@ class IndirectMapTest {
     @Test
     void testRemove() {
         final String key = map.keySet().iterator().next();
-        indirectMap.remove(key);
+        sut.remove(key);
         verify(uow).attributeChanged(owner, ownerField);
         assertFalse(map.containsKey(key));
     }
@@ -94,7 +94,7 @@ class IndirectMapTest {
     @Test
     void testPutAll() {
         final Map<String, Set<String>> newMap = Generators.generateStringProperties();
-        indirectMap.putAll(newMap);
+        sut.putAll(newMap);
         verify(uow).attributeChanged(owner, ownerField);
         for (String key : newMap.keySet()) {
             assertTrue(map.containsKey(key));
@@ -103,7 +103,7 @@ class IndirectMapTest {
 
     @Test
     void testClear() {
-        indirectMap.clear();
+        sut.clear();
         verify(uow).attributeChanged(owner, ownerField);
         assertTrue(map.isEmpty());
     }
@@ -111,33 +111,38 @@ class IndirectMapTest {
     @Test
     void equalsWorksForTwoIndirectMaps() {
         final IndirectMap<String, Set<String>> other = new IndirectMap<>(owner, ownerField, uow, map);
-        assertEquals(indirectMap, other);
+        assertEquals(sut, other);
     }
 
     @Test
     void equalsWorksForIndirectMapAndRegularMap() {
-        assertEquals(backupMap, indirectMap);
+        assertEquals(backupMap, sut);
     }
 
     @Test
     void equalsReturnsFalseForInEqualMaps() {
-        indirectMap.put("added", Collections.singleton("b"));
-        assertNotEquals(backupMap, indirectMap);
+        sut.put("added", Collections.singleton("b"));
+        assertNotEquals(backupMap, sut);
     }
 
     @Test
     void hashCodeReturnsHashCodeOfInternalMap() {
-        assertEquals(backupMap.hashCode(), indirectMap.hashCode());
+        assertEquals(backupMap.hashCode(), sut.hashCode());
     }
 
     @Test
     void keySetReturnsInternalMapKeySet() {
-        assertEquals(backupMap.keySet(), indirectMap.keySet());
+        assertEquals(backupMap.keySet(), sut.keySet());
     }
 
     @Test
     void valuesReturnsInternalMapValues() {
-        assertEquals(backupMap.values().size(), indirectMap.values().size());
-        assertTrue(backupMap.values().containsAll(indirectMap.values()));
+        assertEquals(backupMap.values().size(), sut.values().size());
+        assertTrue(backupMap.values().containsAll(sut.values()));
+    }
+
+    @Test
+    void toStringInvokesToStringOfReferencedInstance() {
+        assertEquals(map.toString(), sut.toString());
     }
 }

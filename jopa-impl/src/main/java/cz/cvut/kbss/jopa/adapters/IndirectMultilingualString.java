@@ -51,15 +51,17 @@ public class IndirectMultilingualString extends MultilingualString implements In
     }
 
     @Override
-    public void set(String language, String value) {
+    public MultilingualString set(String language, String value) {
         referencedString.set(language, value);
         notifyPersistenceContext();
+        return this;
     }
 
     @Override
-    public void set(String value) {
+    public MultilingualString set(String value) {
         referencedString.set(value);
         notifyPersistenceContext();
+        return this;
     }
 
     @Override

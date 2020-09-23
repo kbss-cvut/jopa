@@ -72,7 +72,7 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private Assertion createAssertion(Attribute<?, ?> att, Descriptor descriptor) {
+    private static Assertion createAssertion(Attribute<?, ?> att, Descriptor descriptor) {
         assert att != null;
         switch (att.getPersistentAttributeType()) {
             case OBJECT:
