@@ -44,11 +44,13 @@ public class MultilingualString implements Serializable {
      * @param language Language to use with the specified value. Passing {@code null} has the same effect as {@link
      *                 #set(String)}
      * @param value    String value in the specified language
+     * @return This instance
      * @see #set(String)
      */
-    public void set(String language, String value) {
+    public MultilingualString set(String language, String value) {
         Objects.requireNonNull(value);
         this.value.put(language, value);
+        return this;
     }
 
     /**
@@ -57,11 +59,13 @@ public class MultilingualString implements Serializable {
      * That is, the specified value will be stored as a simple literal (type xsd:string).
      *
      * @param value Value to set
+     * @return This instance
      * @see #set(String, String)
      */
-    public void set(String value) {
+    public MultilingualString set(String value) {
         Objects.requireNonNull(value);
         this.value.put(null, value);
+        return this;
     }
 
     /**
