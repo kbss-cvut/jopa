@@ -316,4 +316,22 @@ class SingularAnnotationPropertyStrategyTest {
                 .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
         mls.getValue().forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
     }
+
+    @Test
+    void addAxiomValueConvertsLangStringToMultilingualStringWhenTargetIsObjectAndMultilingualStringsArePreferred()
+            throws Exception {
+        final EntityType<ClassWithObjectAnnotation> et = mock(EntityType.class);
+        final SingularAttributeImpl<ClassWithObjectAnnotation, Object> att = objectAnnotationAttribute(et);
+        when(att.getConverter()).thenReturn(new ObjectConverter(true));
+        final SingularAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new SingularAnnotationPropertyStrategy<>(
+                et, att, descriptor, mapperMock);
+        final LangString langString = new LangString("test", "en");
+        final Axiom<LangString> axiom = new AxiomImpl<>(NamedResource.create(PK), annotationWithUriForN(),
+                new Value<>(langString));
+        sut.addValueFromAxiom(axiom);
+        final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(MultilingualString.create(langString.getValue(), langString.getLanguage().get()),
+                instance.singularAnnotation);
+    }
 }

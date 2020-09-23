@@ -12,7 +12,9 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,12 +28,12 @@ class Converters {
 
     private final Map<Class<?>, ConverterWrapper<?, ?>> defaultConverters;
 
-    Converters() {
+    Converters(Configuration configuration) {
         this.defaultConverters = new HashMap<>();
-        addDefaultConverters();
+        addDefaultConverters(configuration);
     }
 
-    private void addDefaultConverters() {
+    private void addDefaultConverters(Configuration configuration) {
         defaultConverters.put(LocalDate.class, new LocalDateConverter());
         defaultConverters.put(LocalDateTime.class, new LocalDateTimeConverter());
         defaultConverters.put(Instant.class, new InstantConverter());
@@ -41,7 +43,8 @@ class Converters {
         defaultConverters.put(Long.class, new ToLongConverter());
         defaultConverters.put(Float.class, new ToFloatConverter());
         defaultConverters.put(Double.class, new ToDoubleConverter());
-        defaultConverters.put(Object.class, new ObjectConverter());
+        defaultConverters.put(Object.class,
+                new ObjectConverter(configuration.is(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING)));
         defaultConverters.put(String.class, new ToStringConverter());
     }
 

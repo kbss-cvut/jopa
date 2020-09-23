@@ -14,19 +14,16 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUtil {
 
-    private static Set<EntityManagerFactoryImpl> emfs = new HashSet<>();
+    private static final Set<EntityManagerFactoryImpl> EMFS = Collections.synchronizedSet(new HashSet<>());
 
     @Override
     public EntityManagerFactoryImpl createEntityManagerFactory(String emName, Map<String, String> properties) {
         final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(properties);
-        emfs.add(emf);
+        EMFS.add(emf);
         return emf;
     }
 
@@ -37,7 +34,7 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
 
     @Override
     public LoadState isLoaded(Object entity) {
-        final Optional<EntityManagerFactoryImpl> found = emfs.stream().filter(emf -> emf.isLoaded(entity)).findAny();
+        final Optional<EntityManagerFactoryImpl> found = EMFS.stream().filter(emf -> emf.isLoaded(entity)).findAny();
         return found.map(entityManagerFactory -> LoadState.LOADED).orElse(LoadState.UNKNOWN);
     }
 
@@ -48,7 +45,7 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
 
     @Override
     public LoadState isLoadedWithoutReference(Object entity, String attributeName) {
-        final Optional<EntityManagerFactoryImpl> found = emfs.stream()
+        final Optional<EntityManagerFactoryImpl> found = EMFS.stream()
                                                              .filter(emf -> emf.isLoaded(entity, attributeName))
                                                              .findAny();
         return found.map(entityManagerFactory -> LoadState.LOADED).orElse(LoadState.UNKNOWN);

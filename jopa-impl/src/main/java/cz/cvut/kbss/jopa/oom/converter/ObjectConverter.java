@@ -19,6 +19,16 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
  */
 public class ObjectConverter implements ConverterWrapper<Object, Object> {
 
+    private final boolean preferMultilingualString;
+
+    public ObjectConverter() {
+        this.preferMultilingualString = false;
+    }
+
+    public ObjectConverter(boolean preferMultilingualString) {
+        this.preferMultilingualString = preferMultilingualString;
+    }
+
     @Override
     public Object convertToAxiomValue(Object value) {
         if (IdentifierTransformer.isValidIdentifierType(value.getClass()) && !(value instanceof String)) {
@@ -32,10 +42,14 @@ public class ObjectConverter implements ConverterWrapper<Object, Object> {
         if (value instanceof NamedResource) {
             return ((NamedResource) value).getIdentifier();
         } else if (value instanceof LangString) {
-            final MultilingualString ms = new MultilingualString();
             final LangString ls = (LangString) value;
-            ms.set(ls.getLanguage().orElse(null), ls.getValue());
-            return ms;
+            if (preferMultilingualString) {
+                final MultilingualString ms = new MultilingualString();
+                ms.set(ls.getLanguage().orElse(null), ls.getValue());
+                return ms;
+            } else {
+                return ls.getValue();
+            }
         }
         return value;
     }
@@ -43,5 +57,9 @@ public class ObjectConverter implements ConverterWrapper<Object, Object> {
     @Override
     public boolean supportsAxiomValueType(Class<?> type) {
         return true;
+    }
+
+    public boolean doesPreferMultilingualString() {
+        return preferMultilingualString;
     }
 }

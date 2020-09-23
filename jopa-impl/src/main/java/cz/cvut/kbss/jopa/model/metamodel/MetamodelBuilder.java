@@ -37,13 +37,14 @@ public class MetamodelBuilder {
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
-    private final ConverterResolver converterResolver = new ConverterResolver(new Converters());
+    private final ConverterResolver converterResolver;
 
     private final Configuration configuration;
 
     public MetamodelBuilder(Configuration configuration) {
         this.configuration = configuration;
         this.mappingProcessor = new ResultSetMappingProcessor(this);
+        this.converterResolver = new ConverterResolver(new Converters(configuration));
     }
 
     /**

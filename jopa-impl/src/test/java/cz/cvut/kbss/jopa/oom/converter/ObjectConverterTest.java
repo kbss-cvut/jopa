@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ObjectConverterTest {
 
-    private final ObjectConverter sut = new ObjectConverter();
+    private ObjectConverter sut = new ObjectConverter(true);
 
     @Test
     void convertToAxiomValueDoesNothingToLiteralValues() {
@@ -49,8 +49,15 @@ class ObjectConverterTest {
     }
 
     @Test
-    void convertToAttributeTransformsLangStringToMultilingualString() {
+    void convertToAttributeTransformsLangStringToMultilingualStringWhenMultilingualStringsArePreferred() {
         final LangString value = new LangString("test", "en");
         assertEquals(new MultilingualString(Collections.singletonMap("en", "test")), sut.convertToAttribute(value));
+    }
+
+    @Test
+    void convertToAttributeTransformsLangStringToStringWhenMultilingualStringsAreNotPreferred() {
+        this.sut = new ObjectConverter(false);
+        final LangString value = new LangString("test", "en");
+        assertEquals(value.getValue(), sut.convertToAttribute(value));
     }
 }
