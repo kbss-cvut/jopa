@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -28,8 +26,8 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -39,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class PoolingStorageConnectorTest {
@@ -57,7 +55,7 @@ public class PoolingStorageConnectorTest {
 
     private PoolingStorageConnector connector;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.vf = SimpleValueFactory.getInstance();
@@ -101,12 +99,12 @@ public class PoolingStorageConnectorTest {
         verify(tq).evaluate();
     }
 
-    @Test(expected = SesameDriverException.class)
+    @Test
     public void testUnlockWhenExecuteQueryThrowsException() throws Exception {
         final String query = "Some query";
         when(centralMock.executeSelectQuery(query)).thenThrow(new SesameDriverException());
         try {
-            connector.executeSelectQuery(query);
+            assertThrows(SesameDriverException.class, () -> connector.executeSelectQuery(query));
         } finally {
             verify(readLock).lock();
             verify(readLock).unlock();
@@ -138,13 +136,13 @@ public class PoolingStorageConnectorTest {
         verify(bq).evaluate();
     }
 
-    @Test(expected = SesameDriverException.class)
+    @Test
     public void unlocksReadLockWhenExecuteBooleanQueryThrowsException() throws Exception {
         final String query = "ASK some query";
         when(centralMock.executeBooleanQuery(query)).thenThrow(new SesameDriverException());
 
         try {
-            connector.executeBooleanQuery(query);
+            assertThrows(SesameDriverException.class, () -> connector.executeBooleanQuery(query));
         } finally {
             verify(readLock).unlock();
         }
@@ -162,13 +160,13 @@ public class PoolingStorageConnectorTest {
         inOrder.verify(writeLock).unlock();
     }
 
-    @Test(expected = SesameDriverException.class)
+    @Test
     public void testUnlockWhenExecuteUpdateThrowsException() throws Exception {
         connector.begin();
         final String query = "Some query";
         doThrow(new SesameDriverException()).when(centralMock).executeUpdate(query);
         try {
-            connector.executeUpdate(query);
+            assertThrows(SesameDriverException.class, () -> connector.executeUpdate(query));
         } finally {
             verify(writeLock).unlock();
         }
@@ -195,12 +193,12 @@ public class PoolingStorageConnectorTest {
         assertFalse(transaction.isActive());
     }
 
-    @Test(expected = SesameDriverException.class)
+    @Test
     public void testUnlockWhenCommitThrowsException() throws Exception {
         doThrow(new SesameDriverException()).when(centralMock).commit();
         connector.begin();
         try {
-            connector.commit();
+            assertThrows(SesameDriverException.class, () -> connector.commit());
         } finally {
             verify(centralMock).begin();
             verify(centralMock).addStatements(anyCollection());
@@ -218,10 +216,10 @@ public class PoolingStorageConnectorTest {
         assertEquals(TransactionState.ABORTED, transaction.getState());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testAddStatementsInactiveTransaction() {
         final List<Statement> statements = getStatements();
-        connector.addStatements(statements);
+        assertThrows(IllegalStateException.class, () -> connector.addStatements(statements));
     }
 
     private List<Statement> getStatements() {
@@ -229,10 +227,10 @@ public class PoolingStorageConnectorTest {
         return Collections.singletonList(stmt);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testRemoveStatementsInactiveTransaction() {
         final List<Statement> statements = getStatements();
-        connector.removeStatements(statements);
+        assertThrows(IllegalStateException.class, () -> connector.removeStatements(statements));
     }
 
     @Test
@@ -289,7 +287,7 @@ public class PoolingStorageConnectorTest {
         verify(conn).getStatements(res, property, null, false);
     }
 
-    @Test(expected = SesameDriverException.class)
+    @Test
     public void exceptionInFindStatementsCausesTransactionRollback() throws Exception {
         final RepositoryConnection conn = mock(RepositoryConnection.class);
         when(conn.getStatements(any(Resource.class), any(IRI.class), any(), anyBoolean()))
@@ -302,7 +300,7 @@ public class PoolingStorageConnectorTest {
         spy.begin();
         doCallRealMethod().when(spy).findStatements(any(Resource.class), any(IRI.class), any(), anyBoolean());
         try {
-            spy.findStatements(res, property, null, false);
+            assertThrows(SesameDriverException.class, () -> spy.findStatements(res, property, null, false));
         } finally {
             verify(spy).rollback();
         }

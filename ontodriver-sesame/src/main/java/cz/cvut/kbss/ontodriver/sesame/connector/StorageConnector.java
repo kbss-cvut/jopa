@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -243,20 +244,16 @@ class StorageConnector extends AbstractConnector {
     @Override
     public Collection<Statement> findStatements(Resource subject, IRI property, Value value, boolean includeInferred)
             throws SesameDriverException {
-        return findStatements(subject, property, value, includeInferred, null);
+        return findStatements(subject, property, value, includeInferred, Collections.emptySet());
     }
 
     @Override
     public Collection<Statement> findStatements(Resource subject, org.eclipse.rdf4j.model.IRI property,
-                                                Value value, boolean includeInferred, IRI context)
+                                                Value value, boolean includeInferred, Collection<IRI> context)
             throws SesameDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
             final RepositoryResult<Statement> m;
-            if (context != null) {
-                m = conn.getStatements(subject, property, null, includeInferred, context);
-            } else {
-                m = conn.getStatements(subject, property, null, includeInferred);
-            }
+            m = conn.getStatements(subject, property, null, includeInferred, context.toArray(new IRI[0]));
             return Iterations.asList(m);
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);

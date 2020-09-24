@@ -1,35 +1,32 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-
-import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-
-import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 class ReferencedListIterator extends AbstractSesameIterator {
 
@@ -53,11 +50,11 @@ class ReferencedListIterator extends AbstractSesameIterator {
     }
 
     private void init() throws SesameDriverException {
-        this.next = connector.findStatements(listOwner, hasListProperty, null, includeInferred, context);
+        this.next = connector.findStatements(listOwner, hasListProperty, null, includeInferred, contexts());
     }
 
     @Override
-    public boolean hasNext() throws SesameDriverException {
+    public boolean hasNext() {
         return !next.isEmpty();
     }
 
@@ -77,17 +74,17 @@ class ReferencedListIterator extends AbstractSesameIterator {
         checkNodeIsResource(currentNode);
         final Resource elem = (Resource) currentNode.getObject();
         this.currentContent = getNodeContent(elem);
-        this.next = connector.findStatements(elem, hasNextProperty, null, includeInferred, context);
+        this.next = connector.findStatements(elem, hasNextProperty, null, includeInferred, contexts());
     }
 
     private Statement getNodeContent(Resource node) throws SesameDriverException {
-        final Collection<Statement> elems = connector.findStatements(node, hasContentProperty,
-                null, includeInferred, context);
-        checkSuccessorMax(elems, hasContentProperty);
-        if (elems.isEmpty()) {
+        final Collection<Statement> elements = connector.findStatements(node, hasContentProperty,
+                null, includeInferred, contexts());
+        checkSuccessorMax(elements, hasContentProperty);
+        if (elements.isEmpty()) {
             throw new IntegrityConstraintViolatedException("Node " + node + " has no content.");
         }
-        final Statement elem = elems.iterator().next();
+        final Statement elem = elements.iterator().next();
         checkNodeIsResource(elem);
         return elem;
     }

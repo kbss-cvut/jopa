@@ -24,10 +24,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
 
@@ -71,7 +68,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
      */
     @Override
     void clearList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
-        final IRI context = context(listValueDescriptor);
+        final Set<IRI> contexts = contexts(listValueDescriptor);
         final Collection<Statement> toRemove = new ArrayList<>();
         IRI currentProperty = hasList(listValueDescriptor);
         final IRI hasNext = hasNext(listValueDescriptor);
@@ -79,7 +76,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         Collection<Statement> stmts;
         Resource subject = owner(listValueDescriptor);
         do {
-            stmts = connector.findStatements(subject, currentProperty, null, includeInferred, context);
+            stmts = connector.findStatements(subject, currentProperty, null, includeInferred, contexts);
             if (!stmts.isEmpty()) {
                 subject = extractListNode(stmts, hasNext);
                 toRemove.addAll(stmts);

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -99,12 +97,14 @@ class AxiomLoader {
 
     Collection<Axiom<?>> loadAxioms(NamedResource individual, boolean includeInferred, java.net.URI context)
             throws SesameDriverException {
-        final IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
+        final Set<IRI> contextIris =
+                context != null ? Collections.singleton(SesameUtils.toSesameIri(context, valueFactory)) :
+                Collections.emptySet();
         final IRI subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
         final AxiomBuilder axiomBuilder = new AxiomBuilder(individual, Collections.emptyMap(),
                 Assertion.createUnspecifiedPropertyAssertion(includeInferred));
         final Collection<Statement> statements = connector
-                .findStatements(subject, null, null, includeInferred, sesameContext);
+                .findStatements(subject, null, null, includeInferred, contextIris);
         return statements.stream().map(axiomBuilder::statementToAxiom).collect(Collectors.toSet());
     }
 }
