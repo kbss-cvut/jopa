@@ -26,16 +26,15 @@ import java.util.*;
  * Additionally, it can specify context URIs for both the descriptor and individual properties so that the underlying
  * driver knows where to look for the corresponding axioms.
  */
-public class AxiomDescriptor {
+public class AxiomDescriptor extends AbstractAxiomDescriptor {
 
-    private final NamedResource subject;
     private final Set<Assertion> assertions;
 
     private URI subjectContext;
     private final Map<Assertion, URI> assertionContexts;
 
     public AxiomDescriptor(NamedResource subject) {
-        this.subject = Objects.requireNonNull(subject);
+        super(subject);
         this.assertions = new HashSet<>();
         this.assertionContexts = new HashMap<>();
     }
@@ -78,10 +77,6 @@ public class AxiomDescriptor {
         assertionContexts.put(assertion, context);
     }
 
-    public NamedResource getSubject() {
-        return subject;
-    }
-
     public URI getSubjectContext() {
         return subjectContext;
     }
@@ -122,39 +117,37 @@ public class AxiomDescriptor {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + subject.hashCode();
-        result = prime * result + ((subjectContext == null) ? 0 : subjectContext.hashCode());
-        result = prime * result + assertions.hashCode();
-        result = prime * result + assertionContexts.hashCode();
-        return result;
+    public Set<URI> getSubjectContexts() {
+        // TODO
+        return Collections.singleton(getSubjectContext());
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AxiomDescriptor other = (AxiomDescriptor) obj;
-        if (!subject.equals(other.subject))
-            return false;
-        if (subjectContext == null) {
-            if (other.subjectContext != null)
-                return false;
-        } else if (!subjectContext.equals(other.subjectContext))
-            return false;
-        return assertions.equals(other.assertions) && assertionContexts.equals(other.assertionContexts);
+    public Set<URI> getAssertionContexts(Assertion assertion) {
+        // TODO
+        return Collections.singleton(getAssertionContext(assertion));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AxiomDescriptor)) return false;
+        if (!super.equals(o)) return false;
+        AxiomDescriptor that = (AxiomDescriptor) o;
+        return assertions.equals(that.assertions) &&
+                Objects.equals(subjectContext, that.subjectContext) &&
+                assertionContexts.equals(that.assertionContexts);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), assertions, subjectContext, assertionContexts);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("[").append(subject);
+        sb.append("[").append(getSubject());
         if (subjectContext != null) {
             sb.append(" - ").append(subjectContext);
         }
