@@ -1,33 +1,28 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class ReferencedListHandler extends
         ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> {
@@ -68,7 +63,7 @@ public class ReferencedListHandler extends
         do {
             node = vf.createIRI(uriBase + "-SEQ_" + sequenceCounter++);
             final Collection<Statement> stmts = connector.findStatements(node, null, null, false,
-                    context);
+                    context != null ? Collections.singleton(context) : Collections.emptySet());
             unique = stmts.isEmpty();
         } while (!unique);
         return node;
@@ -107,7 +102,7 @@ public class ReferencedListHandler extends
         final IRI hasNext = hasNext(listDescriptor);
         final IRI hasContent = hasContent(listDescriptor);
         final boolean includeInferred = listDescriptor.getListProperty().isInferred();
-        final IRI context = context(listDescriptor);
+        final Set<IRI> context = contexts(listDescriptor);
         Resource previous = owner(listDescriptor);
         IRI currentProperty = hasList(listDescriptor);
         final Collection<Statement> toRemove = new ArrayList<>();

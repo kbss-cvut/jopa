@@ -161,7 +161,7 @@ class AxiomLoaderTest {
 
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
         desc.addAssertion(property);
-        desc.setAssertionContext(property, URI.create(context));
+        desc.addAssertionContext(property, URI.create(context));
         connector.begin();
         final Collection<Axiom<?>> res = axiomLoader.loadAxioms(desc);
         assertEquals(1, res.size());
@@ -199,7 +199,7 @@ class AxiomLoaderTest {
         final Object value = saveValueIntoContext(individual, property, context);
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
         desc.addAssertion(property);
-        desc.setAssertionContext(property, URI.create(context));
+        desc.addAssertionContext(property, URI.create(context));
         final Set<Assertion> assertions = generatedData.values.get(individual).keySet();
         assertions.stream().filter(a -> !a.equals(property)).forEach(desc::addAssertion);
 
@@ -228,7 +228,7 @@ class AxiomLoaderTest {
         Object value = saveValueIntoContext(individual, property, context);
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
         desc.addAssertion(property);
-        desc.setAssertionContext(property, URI.create(context));
+        desc.addAssertionContext(property, URI.create(context));
         final Assertion unspecified = Assertion.createUnspecifiedPropertyAssertion(false);
         desc.addAssertion(unspecified);
 
@@ -255,7 +255,7 @@ class AxiomLoaderTest {
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
         desc.addAssertion(property);
         desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
-        desc.setAssertionContext(Assertion.createUnspecifiedPropertyAssertion(false), URI.create(context));
+        desc.addAssertionContext(Assertion.createUnspecifiedPropertyAssertion(false), URI.create(context));
 
         connector.begin();
         final Collection<Axiom<?>> res = axiomLoader.loadAxioms(desc);

@@ -24,18 +24,16 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
-import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class performs an epistemic remove of axioms described by the axiom descriptor.
  * <p/>
- * Epistemic remove means that only information known to the application is
- * deleted. The assertions in the descriptor represent this information. Thus,
- * only these assertions are removed from the ontology. Note that if the
- * descriptor contains an unspecified property assertion, all property
- * assertions related to the subject individual are removed from the property's
- * context.
+ * Epistemic remove means that only information known to the application is deleted. The assertions in the descriptor
+ * represent this information. Thus, only these assertions are removed from the ontology. Note that if the descriptor
+ * contains an unspecified property assertion, all property assertions related to the subject individual are removed
+ * from the property's context.
  */
 class EpistemicAxiomRemover {
 
@@ -54,11 +52,11 @@ class EpistemicAxiomRemover {
             if (a.isInferred()) {
                 continue;
             }
-            for (URI ctx : axiomDescriptor.getAssertionContexts(a)) {
-                final IRI contextUri = SesameUtils.toSesameIri(ctx, valueFactory);
-                toRemove.addAll(connector.findStatements(individual,
-                        SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred(), contextUri));
-            }
+            final Set<IRI> contexts = axiomDescriptor.getAssertionContexts(a).stream()
+                                                     .map(uri -> SesameUtils.toSesameIri(uri, valueFactory))
+                                                     .collect(Collectors.toSet());
+            toRemove.addAll(connector.findStatements(individual,
+                    SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred(), contexts));
         }
         connector.removeStatements(toRemove);
     }

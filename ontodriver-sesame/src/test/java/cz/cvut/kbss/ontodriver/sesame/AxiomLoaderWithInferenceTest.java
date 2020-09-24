@@ -41,9 +41,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AxiomLoaderWithInferenceTest {
 
-    private TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
+    private final TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
-    private ValueFactory vf = SimpleValueFactory.getInstance();
+    private final ValueFactory vf = SimpleValueFactory.getInstance();
 
     private Connector connector;
 
@@ -83,7 +83,7 @@ class AxiomLoaderWithInferenceTest {
         final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(instance.toString()));
         final Assertion a = Assertion.createClassAssertion(true);
         desc.addAssertion(a);
-        desc.setAssertionContext(a, context);
+        desc.addAssertionContext(a, context);
         connector.begin();
         final Collection<Axiom<?>> result = sut.loadAxioms(desc);
         assertFalse(result.isEmpty());

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -39,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.*;
 
@@ -51,7 +48,7 @@ class SesameAdapterTest {
     private static final NamedResource SUBJECT = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entityX");
 
-    private static ValueFactory vf = SimpleValueFactory.getInstance();
+    private static final ValueFactory VF = SimpleValueFactory.getInstance();
     private static org.eclipse.rdf4j.model.IRI subjectIri;
 
     @Mock
@@ -61,13 +58,13 @@ class SesameAdapterTest {
 
     @BeforeAll
     static void setUpBeforeClass() {
-        subjectIri = vf.createIRI(SUBJECT.getIdentifier().toString());
+        subjectIri = VF.createIRI(SUBJECT.getIdentifier().toString());
     }
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(connectorMock.getValueFactory()).thenReturn(vf);
+        when(connectorMock.getValueFactory()).thenReturn(VF);
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
@@ -92,7 +89,7 @@ class SesameAdapterTest {
     void testGetContexts() throws Exception {
         final List<Resource> contexts = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            contexts.add(vf.createIRI("http://krizik.felk.cvut.cz/ontologies/context" + i));
+            contexts.add(VF.createIRI("http://krizik.felk.cvut.cz/ontologies/context" + i));
         }
         when(connectorMock.getContexts()).thenReturn(contexts);
         final List<URI> res = adapter.getContexts();
@@ -108,10 +105,10 @@ class SesameAdapterTest {
         int bnodes = 0;
         for (int i = 0; i < 5; i++) {
             if (i % 2 == 1) {
-                contexts.add(vf.createBNode());
+                contexts.add(VF.createBNode());
                 bnodes++;
             } else {
-                contexts.add(vf.createIRI("http://krizik.felk.cvut.cz/ontologies/context" + i));
+                contexts.add(VF.createIRI("http://krizik.felk.cvut.cz/ontologies/context" + i));
             }
         }
         when(connectorMock.getContexts()).thenReturn(contexts);
@@ -293,15 +290,16 @@ class SesameAdapterTest {
         desc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(property), false));
         final Map<Assertion, Statement> statements = initStatementsForDescriptor(desc);
         for (Assertion as : statements.keySet()) {
-            final org.eclipse.rdf4j.model.IRI predicate = vf.createIRI(as.getIdentifier().toString());
+            final org.eclipse.rdf4j.model.IRI predicate = VF.createIRI(as.getIdentifier().toString());
             when(
-                    connectorMock.findStatements(subjectIri, predicate, null, as.isInferred(), null)).thenReturn(
-                    Collections.singletonList(statements.get(as)));
+                    connectorMock.findStatements(subjectIri, predicate, null, as.isInferred(), Collections.emptySet()))
+                    .thenReturn(
+                            Collections.singletonList(statements.get(as)));
         }
         final Collection<Axiom<?>> res = adapter.find(desc);
         verify(connectorMock, times(2)).findStatements(any(Resource.class),
                 any(org.eclipse.rdf4j.model.IRI.class), any(), anyBoolean(),
-                eq(null));
+                eq(Collections.emptySet()));
         assertEquals(statements.size(), res.size());
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
@@ -315,31 +313,31 @@ class SesameAdapterTest {
         int dpCounter = 0;
         int apCounter = 0;
         final Map<Assertion, Statement> lst = new HashMap<>();
-        final Resource subject = vf.createIRI(desc.getSubject().getIdentifier().toString());
+        final Resource subject = VF.createIRI(desc.getSubject().getIdentifier().toString());
         for (Assertion as : desc.getAssertions()) {
-            final org.eclipse.rdf4j.model.IRI property = vf.createIRI(as.getIdentifier().toString());
+            final org.eclipse.rdf4j.model.IRI property = VF.createIRI(as.getIdentifier().toString());
             org.eclipse.rdf4j.model.Value val = null;
             switch (as.getType()) {
                 case ANNOTATION_PROPERTY:
-                    val = vf.createLiteral(
+                    val = VF.createLiteral(
                             "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationPropertyValue"
                                     + apCounter++);
                     break;
                 case CLASS:
-                    val = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA");
+                    val = VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA");
                     break;
                 case DATA_PROPERTY:
-                    val = vf.createLiteral("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#dataPropertyValue"
+                    val = VF.createLiteral("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#dataPropertyValue"
                             + dpCounter++);
                     break;
                 case OBJECT_PROPERTY:
-                    val = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/entities#entityValue"
+                    val = VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/entities#entityValue"
                             + opCounter++);
                     break;
                 default:
                     break;
             }
-            lst.put(as, vf.createStatement(subject, property, val));
+            lst.put(as, VF.createStatement(subject, property, val));
         }
         return lst;
     }
@@ -354,17 +352,18 @@ class SesameAdapterTest {
         desc.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(obProperty), false));
         final Map<Assertion, Statement> statements = initStatementsForDescriptor(desc);
         for (Assertion as : statements.keySet()) {
-            final org.eclipse.rdf4j.model.IRI predicate = vf.createIRI(as.getIdentifier().toString());
+            final org.eclipse.rdf4j.model.IRI predicate = VF.createIRI(as.getIdentifier().toString());
             when(
-                    connectorMock.findStatements(subjectIri, predicate, null, as.isInferred(), null)).thenReturn(
-                    Collections.singletonList(statements.get(as)));
+                    connectorMock.findStatements(subjectIri, predicate, null, as.isInferred(), Collections.emptySet()))
+                    .thenReturn(
+                            Collections.singletonList(statements.get(as)));
         }
         final Collection<Axiom<?>> res = adapter.find(desc);
         verify(connectorMock, times(3)).findStatements(any(Resource.class),
                 any(org.eclipse.rdf4j.model.IRI.class), any(), anyBoolean(),
-                eq(null));
+                eq(Collections.emptySet()));
         verify(connectorMock, times(1)).findStatements(eq(subjectIri),
-                eq(vf.createIRI(anProperty)), eq(null), eq(true), eq(null));
+                eq(VF.createIRI(anProperty)), eq(null), eq(true), eq(Collections.emptySet()));
         assertEquals(statements.size(), res.size());
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
@@ -378,21 +377,21 @@ class SesameAdapterTest {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final URI subjectCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
         desc.addAssertion(Assertion.createClassAssertion(false));
-        desc.setSubjectContexts(subjectCtx);
+        desc.addSubjectContext(subjectCtx);
         final List<Statement> statements = new ArrayList<>();
-        final org.eclipse.rdf4j.model.IRI typeProperty = vf.createIRI(Assertion
+        final org.eclipse.rdf4j.model.IRI typeProperty = VF.createIRI(Assertion
                 .createClassAssertion(false).getIdentifier().toString());
         final int count = 10;
         final Set<String> types = new HashSet<>();
         for (int i = 0; i < count; i++) {
-            final org.eclipse.rdf4j.model.IRI type = vf
+            final org.eclipse.rdf4j.model.IRI type = VF
                     .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/types#Type" + i);
-            statements.add(vf.createStatement(subjectIri, typeProperty, type));
+            statements.add(VF.createStatement(subjectIri, typeProperty, type));
             types.add(type.stringValue());
         }
         when(
                 connectorMock.findStatements(subjectIri, typeProperty, null, false,
-                        vf.createIRI(subjectCtx.toString()))).thenReturn(statements);
+                        Collections.singleton(VF.createIRI(subjectCtx.toString())))).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertEquals(statements.size(), res.size());
         for (Axiom<?> ax : res) {
@@ -418,14 +417,14 @@ class SesameAdapterTest {
         }
         when(
                 connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(stmts);
-        when(connectorMock.findStatements(subjectIri, vf.createIRI(propertyOne), null, false))
+        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyOne), null, false))
                 .thenReturn(statements.get(asOne));
-        when(connectorMock.findStatements(subjectIri, vf.createIRI(propertyTwo), null, false))
+        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyTwo), null, false))
                 .thenReturn(statements.get(asTwo));
 
         final Collection<Axiom<?>> res = adapter.find(desc);
         verify(connectorMock).findStatements(subjectIri, null, null, false);
-        verify(connectorMock, never()).findStatements(eq(subjectIri), eq(vf.createIRI(propertyOne)),
+        verify(connectorMock, never()).findStatements(eq(subjectIri), eq(VF.createIRI(propertyOne)),
                 any(org.eclipse.rdf4j.model.Value.class), anyBoolean());
         verifyReturnedAxioms(stmts, res);
     }
@@ -435,12 +434,12 @@ class SesameAdapterTest {
         int cnt = 3;
         if (objectProperty) {
             for (int i = 0; i < cnt; i++) {
-                res.add(vf.createStatement(subjectIri, vf.createIRI(property),
-                        vf.createIRI("http://krizik.felk.cvut.cz/jopa#entity" + i)));
+                res.add(VF.createStatement(subjectIri, VF.createIRI(property),
+                        VF.createIRI("http://krizik.felk.cvut.cz/jopa#entity" + i)));
             }
         } else {
             for (int i = 0; i < cnt; i++) {
-                res.add(vf.createStatement(subjectIri, vf.createIRI(property), vf.createLiteral(i)));
+                res.add(VF.createStatement(subjectIri, VF.createIRI(property), VF.createLiteral(i)));
             }
         }
         return res;
@@ -479,19 +478,19 @@ class SesameAdapterTest {
             stmts.addAll(statements.get(a));
         }
         final Collection<Statement> inferred = new ArrayList<>();
-        inferred.add(vf.createStatement(subjectIri, vf.createIRI(propertyTwo), vf.createLiteral(true)));
+        inferred.add(VF.createStatement(subjectIri, VF.createIRI(propertyTwo), VF.createLiteral(true)));
         statements.get(asTwo).addAll(inferred);
         when(
                 connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(stmts);
-        when(connectorMock.findStatements(subjectIri, vf.createIRI(propertyOne), null, false, null))
+        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyOne), null, false, Collections.emptySet()))
                 .thenReturn(statements.get(asOne));
-        when(connectorMock.findStatements(subjectIri, vf.createIRI(propertyTwo), null, true, null))
+        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyTwo), null, true, Collections.emptySet()))
                 .thenReturn(statements.get(asTwo));
 
         final Collection<Axiom<?>> res = adapter.find(desc);
-        verify(connectorMock).findStatements(subjectIri, vf.createIRI(propertyTwo), null, true, null);
+        verify(connectorMock).findStatements(subjectIri, VF.createIRI(propertyTwo), null, true, Collections.emptySet());
         verify(connectorMock).findStatements(subjectIri, null, null, false);
-        verify(connectorMock, never()).findStatements(eq(subjectIri), eq(vf.createIRI(propertyOne)),
+        verify(connectorMock, never()).findStatements(eq(subjectIri), eq(VF.createIRI(propertyOne)),
                 any(org.eclipse.rdf4j.model.Value.class), anyBoolean(), eq(null));
         final Collection<Statement> allStatements = new ArrayList<>(stmts);
         allStatements.addAll(inferred);
@@ -507,13 +506,14 @@ class SesameAdapterTest {
                 false);
         desc.addAssertion(asOne);
         final String expected = "http://krizik.felk.cvut.cz/ontologies/jopa#entityOne";
-        statements.add(vf.createStatement(subjectIri, vf.createIRI(propertyOne),
-                vf.createIRI(expected)));
+        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
+                VF.createIRI(expected)));
         // This statement should be filtered out by the adapter
-        statements.add(vf.createStatement(subjectIri, vf.createIRI(propertyOne),
-                vf.createLiteral("someNonUriValue")));
+        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
+                VF.createLiteral("someNonUriValue")));
         when(
-                connectorMock.findStatements(subjectIri, vf.createIRI(propertyOne), null, false, null))
+                connectorMock
+                        .findStatements(subjectIri, VF.createIRI(propertyOne), null, false, Collections.emptySet()))
                 .thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertEquals(1, res.size());
@@ -529,10 +529,10 @@ class SesameAdapterTest {
                 false);
         desc.addAssertion(asOne);
         // This statement should be filtered out
-        statements.add(vf.createStatement(subjectIri, vf.createIRI(propertyOne),
-                vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
+        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
+                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
         when(
-                connectorMock.findStatements(subjectIri, vf.createIRI(propertyOne), null, false,
+                connectorMock.findStatements(subjectIri, VF.createIRI(propertyOne), null, false,
                         null)).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertTrue(res.isEmpty());
@@ -543,16 +543,16 @@ class SesameAdapterTest {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
         final List<Statement> statements = new ArrayList<>();
-        statements.add(vf.createStatement(subjectIri, vf.createIRI(propertyOne),
-                vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
+        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
+                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
         final Assertion asOne = Assertion.createObjectPropertyAssertion(URI.create(propertyOne),
                 false);
         final Set<Assertion> assertions = new LinkedHashSet<>();
         assertions.add(Assertion.createUnspecifiedPropertyAssertion(false));
         assertions.add(asOne);
-        setAssertions(desc, assertions);
+        assertions.forEach(desc::addAssertion);
         when(connectorMock
-                .findStatements(subjectIri, vf.createIRI(propertyOne), null, false))
+                .findStatements(subjectIri, VF.createIRI(propertyOne), null, false))
                 .thenReturn(statements);
         when(connectorMock.findStatements(subjectIri, null, null, false))
                 .thenReturn(statements);
@@ -562,26 +562,17 @@ class SesameAdapterTest {
         assertEquals(asOne, a);
     }
 
-    private void setAssertions(AxiomDescriptor descriptor, Set<Assertion> assertions) throws Exception {
-        final Field assertionsField = AxiomDescriptor.class.getDeclaredField("assertions");
-        assertionsField.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(assertionsField, assertionsField.getModifiers() & ~Modifier.FINAL);
-
-        assertionsField.set(descriptor, assertions);
-    }
-
     @Test
     void testFindEntityWithBlankNodeInTypes() throws Exception {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final List<Statement> statements = new ArrayList<>();
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
         desc.addAssertion(clsAssertion);
-        statements.add(vf.createStatement(subjectIri, RDF.TYPE, vf.createBNode()));
+        statements.add(VF.createStatement(subjectIri, RDF.TYPE, VF.createBNode()));
         final String type = "http://krizik.felk.cvutcz/ontologies/jopa#entityA";
-        statements.add(vf.createStatement(subjectIri, RDF.TYPE, vf.createIRI(type)));
-        when(connectorMock.findStatements(subjectIri, RDF.TYPE, null, false, null)).thenReturn(statements);
+        statements.add(VF.createStatement(subjectIri, RDF.TYPE, VF.createIRI(type)));
+        when(connectorMock.findStatements(subjectIri, RDF.TYPE, null, false, Collections.emptySet()))
+                .thenReturn(statements);
 
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertEquals(1, res.size());
@@ -594,12 +585,12 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
+                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
-        verify(connectorMock).containsStatement(vf.createIRI(res.toString()), RDF.TYPE,
-                vf.createIRI(clsUri.toString()), true);
+        verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
+                VF.createIRI(clsUri.toString()), true);
     }
 
     @Test
@@ -607,13 +598,13 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz/class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
+                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
         assertTrue(res.toString().contains("/instance"));
-        verify(connectorMock).containsStatement(vf.createIRI(res.toString()), RDF.TYPE,
-                vf.createIRI(clsUri.toString()), true);
+        verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
+                VF.createIRI(clsUri.toString()), true);
     }
 
     @Test
@@ -621,12 +612,12 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz/class/");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
+                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
-        verify(connectorMock).containsStatement(vf.createIRI(res.toString()), RDF.TYPE,
-                vf.createIRI(clsUri.toString()), true);
+        verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
+                VF.createIRI(clsUri.toString()), true);
     }
 
     @Test
@@ -634,7 +625,7 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(true);
+                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(true);
         assertThrows(IdentifierGenerationException.class, () -> adapter.generateIdentifier(clsUri));
     }
 
@@ -647,13 +638,14 @@ class SesameAdapterTest {
         final Collection<Statement> statements = new HashSet<>(initStatementsForDescriptor(desc)
                 .values());
         when(connectorMock
-                .findStatements(eq(subjectIri), any(org.eclipse.rdf4j.model.IRI.class), any(), eq(false), eq(null)))
+                .findStatements(eq(subjectIri), any(org.eclipse.rdf4j.model.IRI.class), any(), eq(false),
+                        eq(Collections.emptySet())))
                 .thenReturn(statements);
 
         adapter.remove(desc);
         for (Assertion ass : desc.getAssertions()) {
             verify(connectorMock).findStatements(subjectIri,
-                    vf.createIRI(ass.getIdentifier().toString()), null, false, null);
+                    VF.createIRI(ass.getIdentifier().toString()), null, false, Collections.emptySet());
         }
         verify(connectorMock).removeStatements(statements);
     }
@@ -663,12 +655,12 @@ class SesameAdapterTest {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         when(connectorMock
-                .containsStatement(eq(subjectIri), eq(RDF.TYPE), eq(vf.createIRI(ax.getValue().stringValue())),
+                .containsStatement(eq(subjectIri), eq(RDF.TYPE), eq(VF.createIRI(ax.getValue().stringValue())),
                         anyBoolean(), eq(null))).thenReturn(true);
 
         assertTrue(adapter.contains(ax, null));
         verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
-                vf.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(), null);
+                VF.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(), null);
     }
 
     @Test
@@ -679,13 +671,13 @@ class SesameAdapterTest {
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         when(
                 connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
-                        eq(vf.createIRI(ax.getValue().stringValue())), anyBoolean(),
+                        eq(VF.createIRI(ax.getValue().stringValue())), anyBoolean(),
                         any(org.eclipse.rdf4j.model.IRI.class))).thenReturn(true);
 
         assertTrue(adapter.contains(ax, context));
         verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
-                vf.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(),
-                vf.createIRI(context.toString()));
+                VF.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(),
+                VF.createIRI(context.toString()));
     }
 
     @Test
@@ -696,36 +688,37 @@ class SesameAdapterTest {
                 new Value<>(val));
         when(
                 connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
-                        eq(vf.createLiteral(val)), anyBoolean(), any(org.eclipse.rdf4j.model.IRI.class)))
+                        eq(VF.createLiteral(val)), anyBoolean(), any(org.eclipse.rdf4j.model.IRI.class)))
                 .thenReturn(false);
 
         assertFalse(adapter.contains(ax, context));
         verify(connectorMock)
-                .containsStatement(subjectIri, RDF.TYPE, vf.createLiteral(val), ax.getAssertion().isInferred(),
-                        vf.createIRI(context.toString()));
+                .containsStatement(subjectIri, RDF.TYPE, VF.createLiteral(val), ax.getAssertion().isInferred(),
+                        VF.createIRI(context.toString()));
     }
 
     @Test
     void updatesDataPropertyToNewValue() throws Exception {
         final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
         final URI property = URI.create("http://krizik.felk.cvut.cz/dataProperty");
-        final org.eclipse.rdf4j.model.IRI sesameProperty = vf.createIRI(property.toString());
+        final org.eclipse.rdf4j.model.IRI sesameProperty = VF.createIRI(property.toString());
         final boolean inferred = false;
         final Assertion assertion = Assertion.createDataPropertyAssertion(property, "en", inferred);
         final String oldValue = "oldValue";
         final String newValue = "newValue";
         desc.addAssertion(assertion);
         desc.addAssertionValue(assertion, new Value<>(newValue));
-        final Collection<Statement> statements = Collections.singleton(vf.createStatement(
-                subjectIri, sesameProperty, vf.createLiteral(oldValue, "en")));
-        when(connectorMock.findStatements(eq(subjectIri), eq(sesameProperty), any(), eq(inferred), eq(null)))
+        final Collection<Statement> statements = Collections.singleton(VF.createStatement(
+                subjectIri, sesameProperty, VF.createLiteral(oldValue, "en")));
+        when(connectorMock
+                .findStatements(eq(subjectIri), eq(sesameProperty), any(), eq(inferred), eq(Collections.emptySet())))
                 .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, sesameProperty, null, inferred, null);
+        verify(connectorMock).findStatements(subjectIri, sesameProperty, null, inferred, Collections.emptySet());
         verify(connectorMock).removeStatements(statements);
-        final Collection<Statement> inserted = Collections.singletonList(vf.createStatement(
-                subjectIri, sesameProperty, vf.createLiteral(newValue, "en")));
+        final Collection<Statement> inserted = Collections.singletonList(VF.createStatement(
+                subjectIri, sesameProperty, VF.createLiteral(newValue, "en")));
         verify(connectorMock).addStatements(inserted);
     }
 
@@ -733,22 +726,23 @@ class SesameAdapterTest {
     void updatesObjectPropertyToNewValue() throws Exception {
         final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
         final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
-        final org.eclipse.rdf4j.model.IRI sesameProperty = vf.createIRI(property.toString());
+        final org.eclipse.rdf4j.model.IRI sesameProperty = VF.createIRI(property.toString());
         final boolean inferred = false;
         final Assertion assertion = Assertion.createObjectPropertyAssertion(property, inferred);
-        final org.eclipse.rdf4j.model.IRI oldValue = vf.createIRI("http://www.old-value.org");
-        final org.eclipse.rdf4j.model.IRI newValue = vf.createIRI("http://www.new-value.org");
+        final org.eclipse.rdf4j.model.IRI oldValue = VF.createIRI("http://www.old-value.org");
+        final org.eclipse.rdf4j.model.IRI newValue = VF.createIRI("http://www.new-value.org");
         desc.addAssertion(assertion);
         desc.addAssertionValue(assertion, new Value<>(URI.create(newValue.stringValue())));
-        final Collection<Statement> statements = Collections.singleton(vf.createStatement(
+        final Collection<Statement> statements = Collections.singleton(VF.createStatement(
                 subjectIri, sesameProperty, oldValue));
-        when(connectorMock.findStatements(eq(subjectIri), eq(sesameProperty), any(), eq(inferred), eq(null)))
+        when(connectorMock
+                .findStatements(eq(subjectIri), eq(sesameProperty), any(), eq(inferred), eq(Collections.emptySet())))
                 .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, sesameProperty, null, inferred, null);
+        verify(connectorMock).findStatements(subjectIri, sesameProperty, null, inferred, Collections.emptySet());
         verify(connectorMock).removeStatements(statements);
-        final Collection<Statement> inserted = Collections.singletonList(vf.createStatement(
+        final Collection<Statement> inserted = Collections.singletonList(VF.createStatement(
                 subjectIri, sesameProperty, newValue));
         verify(connectorMock).addStatements(inserted);
     }
@@ -757,21 +751,22 @@ class SesameAdapterTest {
     void updatesObjectPropertyToEmptyValue() throws Exception {
         final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
         final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
-        final org.eclipse.rdf4j.model.IRI sesameProperty = vf.createIRI(property.toString());
+        final org.eclipse.rdf4j.model.IRI sesameProperty = VF.createIRI(property.toString());
         final boolean inferred = false;
         final Assertion assertion = Assertion.createObjectPropertyAssertion(property, inferred);
-        final org.eclipse.rdf4j.model.IRI oldValue = vf.createIRI("http://www.old-value.org");
+        final org.eclipse.rdf4j.model.IRI oldValue = VF.createIRI("http://www.old-value.org");
         desc.addAssertion(assertion);
         desc.addAssertionValue(assertion, Value.nullValue());
-        final Collection<Statement> statements = Collections.singleton(vf.createStatement(
+        final Collection<Statement> statements = Collections.singleton(VF.createStatement(
                 subjectIri, sesameProperty, oldValue));
-        when(connectorMock.findStatements(eq(subjectIri), eq(sesameProperty), any(), eq(inferred), eq(null)))
+        when(connectorMock
+                .findStatements(eq(subjectIri), eq(sesameProperty), any(), eq(inferred), eq(Collections.emptySet())))
                 .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, sesameProperty, null, inferred, null);
+        verify(connectorMock).findStatements(subjectIri, sesameProperty, null, inferred, Collections.emptySet());
         verify(connectorMock).removeStatements(statements);
-        verify(connectorMock, never()).addStatements(anyCollectionOf(Statement.class));
+        verify(connectorMock, never()).addStatements(anyCollection());
     }
 
     @Test
@@ -785,17 +780,18 @@ class SesameAdapterTest {
                 "http://krizik.felk.cvut.cz/ontologies/types#tFive"};
         desc.addAssertion(assertion);
         final URI context = Generator.generateUri();
-        final IRI iriContext = vf.createIRI(context.toString());
+        final IRI iriContext = VF.createIRI(context.toString());
         desc.setAssertionContext(assertion, context);
         for (String t : newTypes) {
             desc.addAssertionValue(assertion, new Value<>(URI.create(t)));
         }
         final Collection<Statement> statements = initOldTypes();
-        when(connectorMock.findStatements(eq(subjectIri), eq(RDF.TYPE), any(), eq(inferred), eq(iriContext)))
+        when(connectorMock.findStatements(eq(subjectIri), eq(RDF.TYPE), any(), eq(inferred),
+                eq(Collections.singleton(iriContext))))
                 .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, RDF.TYPE, null, inferred, iriContext);
+        verify(connectorMock).findStatements(subjectIri, RDF.TYPE, null, inferred, Collections.singleton(iriContext));
         verify(connectorMock).removeStatements(statements);
         final Collection<Statement> inserted = initNewTypes(newTypes, iriContext);
         verify(connectorMock).addStatements(inserted);
@@ -803,19 +799,19 @@ class SesameAdapterTest {
 
     private Collection<Statement> initOldTypes() {
         final Collection<Statement> stmts = new HashSet<>();
-        stmts.add(vf.createStatement(subjectIri, RDF.TYPE,
-                vf.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tOne")));
-        stmts.add(vf.createStatement(subjectIri, RDF.TYPE,
-                vf.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tTwo")));
-        stmts.add(vf.createStatement(subjectIri, RDF.TYPE,
-                vf.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tThree")));
+        stmts.add(VF.createStatement(subjectIri, RDF.TYPE,
+                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tOne")));
+        stmts.add(VF.createStatement(subjectIri, RDF.TYPE,
+                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tTwo")));
+        stmts.add(VF.createStatement(subjectIri, RDF.TYPE,
+                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tThree")));
         return stmts;
     }
 
     private Collection<Statement> initNewTypes(String[] newTypes, IRI context) {
         final Collection<Statement> statements = new ArrayList<>();
         for (String t : newTypes) {
-            statements.add(vf.createStatement(subjectIri, RDF.TYPE, vf.createIRI(t), context));
+            statements.add(VF.createStatement(subjectIri, RDF.TYPE, VF.createIRI(t), context));
         }
         return statements;
     }
@@ -827,7 +823,7 @@ class SesameAdapterTest {
 
     @Test
     void unwrapReturnValueFactoryWhenItMatches() throws Exception {
-        assertSame(vf, adapter.unwrap(ValueFactory.class));
+        assertSame(VF, adapter.unwrap(ValueFactory.class));
     }
 
     @Test

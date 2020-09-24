@@ -1,20 +1,17 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
@@ -35,21 +32,19 @@ import org.mockito.MockitoAnnotations;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ReferencedListHandlerTest extends ListHandlerTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
+public class ReferencedListHandlerTest
+        extends ListHandlerTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
     private static final String NODE_CONTENT_PROPERTY =
             "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
 
     private static IRI nodeContentProperty;
 
-    private List<Statement> added = new ArrayList<>();
-    private List<Statement> removed = new ArrayList<>();
+    private final List<Statement> added = new ArrayList<>();
+    private final List<Statement> removed = new ArrayList<>();
 
     @BeforeClass
     public static void setUpBeforeClass() {
@@ -123,13 +118,13 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase<ReferencedLis
                 node = vf.createStatement(prev, hasListProperty, itemUri);
                 when(
                         connector.findStatements(eq(prev), eq(hasListProperty), eq(null),
-                                anyBoolean(), eq(null))).thenReturn(
+                                anyBoolean(), eq(Collections.emptySet()))).thenReturn(
                         Collections.singleton(node));
             } else {
                 node = vf.createStatement(prev, nextNodeProperty, itemUri);
                 when(
                         connector.findStatements(eq(prev), eq(nextNodeProperty), eq(null),
-                                anyBoolean(), eq(null))).thenReturn(
+                                anyBoolean(), eq(Collections.emptySet()))).thenReturn(
                         Collections.singleton(node));
             }
             stmts.add(node);
@@ -137,7 +132,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase<ReferencedLis
                     vf.createIRI(values.get(i).toString()));
             when(
                     connector.findStatements(eq(itemUri), eq(nodeContentProperty),
-                            eq(null), anyBoolean(), eq(null))).thenReturn(
+                            eq(null), anyBoolean(), eq(Collections.emptySet()))).thenReturn(
                     Collections.singleton(content));
             stmts.add(content);
             prev = itemUri;
@@ -151,11 +146,11 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase<ReferencedLis
         final IRI headNode = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/SEQ0");
         when(
                 connector.findStatements(eq(owner), eq(hasListProperty), eq(null),
-                        anyBoolean(), eq(null))).thenReturn(
+                        anyBoolean(), eq(Collections.emptySet()))).thenReturn(
                 Collections.singleton(vf.createStatement(owner, hasListProperty, headNode)));
         when(
                 connector.findStatements(eq(headNode), eq(nodeContentProperty), eq(null),
-                        anyBoolean(), eq(null))).thenReturn(Collections.emptyList());
+                        anyBoolean(), eq(Collections.emptySet()))).thenReturn(Collections.emptyList());
         try {
             final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
             assert res == null;
@@ -174,7 +169,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase<ReferencedLis
         final Resource elem = selectRandomNode(listNodes);
         when(
                 connector.findStatements(eq(elem), eq(nodeContentProperty), eq(null),
-                        anyBoolean(), eq(null))).thenReturn(Collections.emptyList());
+                        anyBoolean(), eq(Collections.emptySet()))).thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assert res == null;
     }
@@ -197,9 +192,8 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase<ReferencedLis
         initStatementsForList(listNodes, refList);
         final Resource node = selectRandomNode(listNodes);
         final List<Statement> stmts = Arrays.asList(mock(Statement.class), mock(Statement.class));
-        when(
-                connector.findStatements(eq(node), eq(property), eq(null),
-                        anyBoolean(), eq(null))).thenReturn(stmts);
+        when(connector.findStatements(eq(node), eq(property), eq(null),
+                anyBoolean(), eq(Collections.emptySet()))).thenReturn(stmts);
         handler.loadList(listDescriptor);
     }
 

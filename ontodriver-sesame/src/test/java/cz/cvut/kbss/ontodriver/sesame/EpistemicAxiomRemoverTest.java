@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -18,7 +16,6 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -27,8 +24,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collections;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -76,13 +74,13 @@ public class EpistemicAxiomRemoverTest {
         final String context = "http://krizik.felk.cvut.cz/ontologies/jopa/contexts#One";
         final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(PROPERTY), false);
         descriptor.addAssertion(ass);
-        descriptor.setAssertionContext(ass, URI.create(context));
+        descriptor.addAssertionContext(ass, URI.create(context));
 
         axiomRemover.remove(descriptor);
 
         verify(connectorMock).findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false,
-                vf.createIRI(context));
-        verify(connectorMock).removeStatements(anyCollectionOf(Statement.class));
+                Collections.singleton(vf.createIRI(context)));
+        verify(connectorMock).removeStatements(anyCollection());
     }
 
     @Test
@@ -93,7 +91,7 @@ public class EpistemicAxiomRemoverTest {
         axiomRemover.remove(descriptor);
 
         verify(connectorMock)
-                .findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false, null);
-        verify(connectorMock).removeStatements(anyCollectionOf(Statement.class));
+                .findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false, Collections.emptySet());
+        verify(connectorMock).removeStatements(anyCollection());
     }
 }

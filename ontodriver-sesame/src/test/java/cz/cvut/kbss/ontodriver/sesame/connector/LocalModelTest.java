@@ -18,17 +18,17 @@ import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LocalModelTest {
 
-    private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    private LocalModel localModel = new LocalModel();
+    private final LocalModel localModel = new LocalModel();
 
     @Test
     public void containsReturnsTrueWhenStatementWasAddedInLocalModel() {
