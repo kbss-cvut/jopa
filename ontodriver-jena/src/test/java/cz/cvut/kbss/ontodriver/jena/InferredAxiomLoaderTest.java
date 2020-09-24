@@ -114,7 +114,7 @@ class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(aOne);
         descriptor.setAssertionContext(aOne, CONTEXT);
         descriptor.addAssertion(aTwo);
-        descriptor.setSubjectContext(CONTEXT);
+        descriptor.setSubjectContexts(CONTEXT);
         final List<Axiom<?>> result = axiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(2, result.size());
         final Optional<Axiom<?>> clsAxiom = result.stream().filter(a -> a.getAssertion().equals(aOne)).findAny();

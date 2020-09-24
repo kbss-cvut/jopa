@@ -64,7 +64,7 @@ public class EpistemicAxiomRemoverTest {
     public void removeRemovesStatementsByPropertyFromCorrectContexts() {
         final URI mainContext = Generator.generateUri();
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
-        descriptor.setSubjectContext(mainContext);
+        descriptor.setSubjectContexts(mainContext);
         final Assertion ca = Assertion.createClassAssertion(false);
         descriptor.addAssertion(ca);
         final Assertion ap = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);

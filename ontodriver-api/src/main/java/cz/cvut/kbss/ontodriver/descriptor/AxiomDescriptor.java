@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.descriptor;
 
@@ -28,24 +26,28 @@ import java.util.*;
  */
 public class AxiomDescriptor extends AbstractAxiomDescriptor {
 
-    private final Set<Assertion> assertions;
-
-    private URI subjectContext;
-    private final Map<Assertion, URI> assertionContexts;
+    private final Set<URI> subjectContexts = new HashSet<>(4);
+    private final Map<Assertion, Set<URI>> assertionContexts;
 
     public AxiomDescriptor(NamedResource subject) {
         super(subject);
-        this.assertions = new HashSet<>();
         this.assertionContexts = new HashMap<>();
     }
 
     /**
-     * Sets subject context.
+     * Adds subject context.
+     * <p>
+     * The context can be {@code null}, indicating the default context.
      *
      * @param context The context to use for subject
      */
-    public void setSubjectContext(URI context) {
-        this.subjectContext = context;
+    public AxiomDescriptor addSubjectContext(URI context) {
+        if (context == null) {
+            subjectContexts.clear();
+        } else {
+            subjectContexts.add(context);
+        }
+        return this;
     }
 
     /**
@@ -56,7 +58,7 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
      */
     public void addAssertion(Assertion assertion) {
         Objects.requireNonNull(assertion);
-        assertions.add(assertion);
+        assertionContexts.put(assertion, null);
     }
 
     /**
@@ -65,36 +67,22 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
      * Note that the assertion has to be already present in this descriptor.
      *
      * @param assertion The property to set context for
-     * @param context   Context URI
+     * @param context   Context URI. Use {@code null} to indicate the default context
      * @throws IllegalArgumentException If there is no such assertion in this descriptor
      * @throws NullPointerException     When {@code assertion} is {@code null}
      */
-    public void setAssertionContext(Assertion assertion, URI context) {
-        Objects.requireNonNull(assertion);
-        if (!assertions.contains(assertion)) {
-            throw new IllegalArgumentException("Assertion " + assertion + " is not present in this descriptor.");
-        }
-        assertionContexts.put(assertion, context);
-    }
-
-    public URI getSubjectContext() {
-        return subjectContext;
-    }
-
-    /**
-     * Gets context of the specified assertion.
-     * <p>
-     * If the context was not explicitly set, the same context as the subject's is returned.
-     *
-     * @param assertion Assertion for which context should be resolved
-     * @return Assertion context
-     */
-    public URI getAssertionContext(Assertion assertion) {
+    public AxiomDescriptor addAssertionContext(Assertion assertion, URI context) {
         Objects.requireNonNull(assertion);
         if (!assertionContexts.containsKey(assertion)) {
-            return subjectContext;
+            throw new IllegalArgumentException("Assertion " + assertion + " is not present in this descriptor.");
         }
-        return assertionContexts.get(assertion);
+        final Set<URI> contexts = assertionContexts.computeIfAbsent(assertion, a -> new HashSet<>());
+        if (context == null) {
+            contexts.clear();
+        } else {
+            contexts.add(context);
+        }
+        return this;
     }
 
     /**
@@ -103,7 +91,7 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
      * @return Set of assertions in this descriptor
      */
     public Set<Assertion> getAssertions() {
-        return Collections.unmodifiableSet(assertions);
+        return Collections.unmodifiableSet(assertionContexts.keySet());
     }
 
     /**
@@ -113,19 +101,21 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
      * @return True if the assertion is already present in this descriptor, false otherwise
      */
     public boolean containsAssertion(Assertion assertion) {
-        return assertions.contains(assertion);
+        return assertionContexts.containsKey(assertion);
     }
 
     @Override
     public Set<URI> getSubjectContexts() {
-        // TODO
-        return Collections.singleton(getSubjectContext());
+        return Collections.unmodifiableSet(subjectContexts);
     }
 
     @Override
     public Set<URI> getAssertionContexts(Assertion assertion) {
-        // TODO
-        return Collections.singleton(getAssertionContext(assertion));
+        Objects.requireNonNull(assertion);
+        if (!assertionContexts.containsKey(assertion) || assertionContexts.get(assertion) == null) {
+            return getSubjectContexts();
+        }
+        return Collections.unmodifiableSet(assertionContexts.get(assertion));
     }
 
     @Override
@@ -134,27 +124,22 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
         if (!(o instanceof AxiomDescriptor)) return false;
         if (!super.equals(o)) return false;
         AxiomDescriptor that = (AxiomDescriptor) o;
-        return assertions.equals(that.assertions) &&
-                Objects.equals(subjectContext, that.subjectContext) &&
+        return subjectContexts.equals(that.subjectContexts) &&
                 assertionContexts.equals(that.assertionContexts);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), assertions, subjectContext, assertionContexts);
+        return Objects.hash(super.hashCode(), subjectContexts, assertionContexts);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("[").append(getSubject());
-        if (subjectContext != null) {
-            sb.append(" - ").append(subjectContext);
-        }
+        sb.append(" - ").append(subjectContexts);
         if (!assertionContexts.isEmpty()) {
             sb.append(", properties: ").append(assertionContexts);
-        } else {
-            sb.append(", properties: ").append(assertions);
         }
         sb.append("]");
         return sb.toString();

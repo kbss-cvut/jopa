@@ -347,7 +347,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     void findLoadsClassAssertionStatementsFromContext() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(Assertion.createClassAssertion(false));
-        descriptor.setSubjectContext(CONTEXT);
+        descriptor.setSubjectContexts(CONTEXT);
         final Collection<Statement> statements = generateClassAssertions();
         when(connectorMock.find(any(), any(), any(), eq(CONTEXT.toString()))).thenReturn(statements);
 

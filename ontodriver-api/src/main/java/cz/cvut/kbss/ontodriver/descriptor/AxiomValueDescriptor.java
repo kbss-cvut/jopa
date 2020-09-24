@@ -75,12 +75,13 @@ public class AxiomValueDescriptor extends AbstractAxiomDescriptor {
 
     @Override
     public Set<URI> getSubjectContexts() {
-        return Collections.singleton(getSubjectContext());
+        return subjectContext != null ? Collections.singleton(getSubjectContext()) : Collections.emptySet();
     }
 
     @Override
     public Set<URI> getAssertionContexts(Assertion assertion) {
-        return Collections.singleton(getAssertionContext(assertion));
+        final URI ctx = getAssertionContext(assertion);
+        return ctx != null ? Collections.singleton(ctx) : Collections.emptySet();
     }
 
     /**

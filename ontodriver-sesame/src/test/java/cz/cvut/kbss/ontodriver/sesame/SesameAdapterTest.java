@@ -378,7 +378,7 @@ class SesameAdapterTest {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final URI subjectCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
         desc.addAssertion(Assertion.createClassAssertion(false));
-        desc.setSubjectContext(subjectCtx);
+        desc.setSubjectContexts(subjectCtx);
         final List<Statement> statements = new ArrayList<>();
         final org.eclipse.rdf4j.model.IRI typeProperty = vf.createIRI(Assertion
                 .createClassAssertion(false).getIdentifier().toString());
