@@ -29,7 +29,7 @@ class AxiomDescriptorFactory {
 
     AxiomDescriptor createForEntityLoading(LoadingParameters<?> loadingParams, EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(loadingParams.getIdentifier()));
-        descriptor.setSubjectContext(loadingParams.getDescriptor().getContext());
+        descriptor.addSubjectContext(loadingParams.getDescriptor().getContext());
         descriptor.addAssertion(Assertion.createClassAssertion(false));
         addForTypes(loadingParams, et, descriptor);
         addForProperties(loadingParams, et, descriptor);
@@ -60,7 +60,7 @@ class AxiomDescriptorFactory {
         descriptor.addAssertion(assertion);
         final URI attContext = entityDescriptor.getAttributeContext(att);
         if (!Objects.equals(entityDescriptor.getContext(), attContext)) {
-            descriptor.setAssertionContext(assertion, attContext);
+            descriptor.addAssertionContext(assertion, attContext);
         }
     }
 
@@ -121,7 +121,7 @@ class AxiomDescriptorFactory {
 
     AxiomDescriptor createForFieldLoading(URI identifier, Field field, Descriptor entityDescriptor, EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));
-        descriptor.setSubjectContext(entityDescriptor.getContext());
+        descriptor.addSubjectContext(entityDescriptor.getContext());
         FieldSpecification<?, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {

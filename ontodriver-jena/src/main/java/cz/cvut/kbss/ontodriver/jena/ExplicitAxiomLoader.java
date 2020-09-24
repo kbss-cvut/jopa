@@ -49,7 +49,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
         this.assertedProperties = assertions;
         this.unspecifiedProperty = resolveUnspecifiedProperty();
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
-        final Collection<Statement> statements = findStatements(subject, null, descriptor.getSubjectContext());
+        final Collection<Statement> statements = findStatements(subject, null, descriptor.getSubjectContexts());
         final List<Axiom<?>> result = transformStatementsToAxioms(descriptor, statements);
         result.addAll(loadAxiomsForPropertiesInContext(descriptor, subject));
         return result;
@@ -91,14 +91,14 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
             return true;
         }
         final Assertion a = assertedProperties.getOrDefault(propertyUri, unspecifiedProperty);
-        return !assertionContextSameAsSubject(descriptor.getSubjectContext(), descriptor.getAssertionContext(a));
+        return !assertionContextSameAsSubject(descriptor.getSubjectContexts(), descriptor.getAssertionContext(a));
     }
 
     private List<Axiom<?>> loadAxiomsForPropertiesInContext(AxiomDescriptor descriptor, Resource subject) {
         final List<Axiom<?>> axioms = new ArrayList<>();
         for (Assertion a : assertedProperties.values()) {
             final URI assertionCtx = descriptor.getAssertionContext(a);
-            if (assertionContextSameAsSubject(descriptor.getSubjectContext(), assertionCtx)) {
+            if (assertionContextSameAsSubject(descriptor.getSubjectContexts(), assertionCtx)) {
                 continue;
             }
             final Property property = ResourceFactory.createProperty(a.getIdentifier().toString());
@@ -108,7 +108,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
                 value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
             });
         }
-        if (unspecifiedProperty != null && !assertionContextSameAsSubject(descriptor.getSubjectContext(),
+        if (unspecifiedProperty != null && !assertionContextSameAsSubject(descriptor.getSubjectContexts(),
                 descriptor.getAssertionContext(unspecifiedProperty))) {
             final Collection<Statement> statements =
                     findStatements(subject, null, descriptor.getAssertionContext(unspecifiedProperty));
