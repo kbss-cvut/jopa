@@ -37,6 +37,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -80,7 +82,7 @@ class AxiomDescriptorFactoryTest {
         // Types specification and the string attribute
         assertEquals(2, res.getAssertions().size());
         assertEquals(NamedResource.create(PK), res.getSubject());
-        assertNull(res.getSubjectContexts());
+        assertThat(res.getSubjectContexts(), empty());
         assertTrue(res.getAssertions()
                       .contains(Assertion.createDataPropertyAssertion(stringAttAUri, Generators.LANG, false)));
         assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
@@ -95,7 +97,7 @@ class AxiomDescriptorFactoryTest {
         // Types specification and the string attribute
         assertEquals(2, res.getAssertions().size());
         assertEquals(NamedResource.create(PK), res.getSubject());
-        assertNull(res.getSubjectContexts());
+        assertThat(res.getSubjectContexts(), empty());
         assertTrue(res.getAssertions().contains(
                 Assertion.createDataPropertyAssertion(stringAttAUri, Generators.LANG, false)));
         assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
@@ -124,7 +126,7 @@ class AxiomDescriptorFactoryTest {
         // Class assertion and the object property assertion
         assertEquals(2, res.getAssertions().size());
         assertEquals(NamedResource.create(PK), res.getSubject());
-        assertNull(res.getSubjectContexts());
+        assertThat(res.getSubjectContexts(), empty());
         final Optional<Assertion> ass = res.getAssertions().stream()
                                            .filter(a -> a.getIdentifier().equals(owlClassAAttUri)).findAny();
         assertTrue(ass.isPresent());
@@ -143,7 +145,7 @@ class AxiomDescriptorFactoryTest {
         // Class assertion and the annotation property assertion
         assertEquals(2, res.getAssertions().size());
         assertEquals(NamedResource.create(PK), res.getSubject());
-        assertNull(res.getSubjectContexts());
+        assertThat(res.getSubjectContexts(), empty());
         assertTrue(res.getAssertions().contains(
                 Assertion.createAnnotationPropertyAssertion(owlClassAAttUri, false)));
     }
@@ -157,7 +159,7 @@ class AxiomDescriptorFactoryTest {
         // Types specification (class assertion)
         assertEquals(1, res.getAssertions().size());
         assertEquals(NamedResource.create(PK), res.getSubject());
-        assertNull(res.getSubjectContexts());
+        assertThat(res.getSubjectContexts(), empty());
         assertFalse(res.getAssertions().contains(
                 Assertion.createDataPropertyAssertion(stringAttAUri, false)));
         assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
@@ -372,7 +374,7 @@ class AxiomDescriptorFactoryTest {
         descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), descriptorInContext);
         final LoadingParameters<OWLClassD> params = new LoadingParameters<>(OWLClassD.class, PK, descriptor);
         final AxiomDescriptor desc = sut.createForEntityLoading(params, metamodelMocks.forOwlClassD().entityType());
-        assertEquals(Collections.singleton(descriptor.getContext()), desc.getAssertionContexts(
+        assertEquals(Collections.emptySet(), desc.getAssertionContexts(
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false)));
     }
 
@@ -382,7 +384,7 @@ class AxiomDescriptorFactoryTest {
         descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), descriptorInContext);
         final AxiomDescriptor desc = sut.createForFieldLoading(PK, OWLClassD.getOwlClassAField(), descriptor,
                 metamodelMocks.forOwlClassD().entityType());
-        assertEquals(Collections.singleton(descriptor.getContext()), desc.getAssertionContexts(
+        assertEquals(Collections.emptySet(), desc.getAssertionContexts(
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false)));
     }
 
