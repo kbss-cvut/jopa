@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -36,7 +34,6 @@ import java.util.*;
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class PropertiesHandlerTest {
@@ -64,7 +61,7 @@ public class PropertiesHandlerTest {
         final List<Statement> statements = Arrays
                 .asList(createStatement(SUBJECT_RESOURCE, pOne, ResourceFactory.createTypedLiteral(vOne)),
                         createStatement(SUBJECT_RESOURCE, pTwo, createResource(vTwo.toString())));
-        when(connectorMock.find(SUBJECT_RESOURCE, null, null, null)).thenReturn(statements);
+        when(connectorMock.find(SUBJECT_RESOURCE, null, null, Collections.emptySet())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = handler.getProperties(SUBJECT, null, false);
         final List<Axiom<?>> lResult = new ArrayList<>(result);
@@ -84,7 +81,7 @@ public class PropertiesHandlerTest {
         final String context = Generator.generateUri().toString();
         final List<Statement> statements = Collections
                 .singletonList(createStatement(SUBJECT_RESOURCE, pOne, ResourceFactory.createTypedLiteral(vOne)));
-        when(connectorMock.find(SUBJECT_RESOURCE, null, null, context)).thenReturn(statements);
+        when(connectorMock.find(SUBJECT_RESOURCE, null, null, Collections.singleton(context))).thenReturn(statements);
 
         final Collection<Axiom<?>> result = handler.getProperties(SUBJECT, URI.create(context), false);
         final List<Axiom<?>> lResult = new ArrayList<>(result);
@@ -92,7 +89,7 @@ public class PropertiesHandlerTest {
         assertEquals(Assertion.createDataPropertyAssertion(URI.create(pOne.getURI()), false),
                 lResult.get(0).getAssertion());
         assertEquals(new Value<>(vOne), lResult.get(0).getValue());
-        verify(connectorMock, never()).find(any(), any(), any(),eq(null));
+        verify(connectorMock, never()).find(any(), any(), any(), eq(Collections.emptySet()));
     }
 
     @Test

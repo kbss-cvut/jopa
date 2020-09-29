@@ -29,12 +29,10 @@ import java.util.Set;
 /**
  * This class performs an epistemic removal of statements.
  * <p/>
- * Epistemic remove means that only information known to the application is
- * deleted. The assertions in the descriptor represent this information. Thus,
- * only statements representing these properties are removed from the ontology. Note that if the
- * descriptor contains an unspecified property assertion, all property
- * assertions related to the subject individual are removed from the property's
- * context.
+ * Epistemic remove means that only information known to the application is deleted. The assertions in the descriptor
+ * represent this information. Thus, only statements representing these properties are removed from the ontology. Note
+ * that if the descriptor contains an unspecified property assertion, all property assertions related to the subject
+ * individual are removed from the property's context.
  */
 class EpistemicAxiomRemover {
 
@@ -52,10 +50,12 @@ class EpistemicAxiomRemover {
     void remove(AbstractAxiomDescriptor descriptor) {
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
         descriptor.getAssertions().stream().filter(a -> !a.isInferred()).forEach(assertion -> {
-            descriptor.getAssertionContexts(assertion).forEach(context -> {
-                final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
-                connector.remove(subject, property, null, context != null ? context.toString() : null);
-            });
+            final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
+            if (descriptor.getAssertionContexts(assertion).isEmpty()) {
+                connector.remove(subject, property, null, null);
+            }
+            descriptor.getAssertionContexts(assertion)
+                      .forEach(context -> connector.remove(subject, property, null, context.toString()));
         });
     }
 

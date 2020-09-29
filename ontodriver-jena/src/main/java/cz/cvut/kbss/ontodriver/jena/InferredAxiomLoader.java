@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -27,6 +25,7 @@ import org.apache.jena.rdf.model.Statement;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -51,8 +50,8 @@ class InferredAxiomLoader extends AbstractAxiomLoader {
         final Resource subject = createResource(descriptor.getSubject().getIdentifier().toString());
         for (Assertion a : assertions.values()) {
             final Property property = createProperty(a.getIdentifier().toString());
-            final Collection<Statement> statements =
-                    findStatements(subject, property, descriptor.getAssertionContext(a));
+            final Collection<Statement> statements = findStatements(subject, property,
+                    descriptor.getAssertionContexts(a));
             statements.forEach(s -> {
                 final Optional<Value<?>> value = resolveValue(a, s.getObject());
                 value.ifPresent(v -> result.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
@@ -62,7 +61,8 @@ class InferredAxiomLoader extends AbstractAxiomLoader {
     }
 
     @Override
-    Collection<Statement> findStatements(Resource subject, Property property, URI context) {
-        return connector.findWithInference(subject, property, null, context != null ? context.toString() : null);
+    Collection<Statement> findStatements(Resource subject, Property property, Collection<URI> contexts) {
+        return connector.findWithInference(subject, property, null, contexts.stream().map(URI::toString).collect(
+                Collectors.toSet()));
     }
 }

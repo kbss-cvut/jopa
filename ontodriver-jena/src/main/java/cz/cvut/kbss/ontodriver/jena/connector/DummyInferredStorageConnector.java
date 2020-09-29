@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -40,8 +38,9 @@ class DummyInferredStorageConnector implements InferredStorageConnector {
     }
 
     @Override
-    public Collection<Statement> findWithInference(Resource subject, Property property, RDFNode value, String context) {
-        return connector.find(subject, property, value, context);
+    public Collection<Statement> findWithInference(Resource subject, Property property, RDFNode value,
+                                                   Collection<String> contexts) {
+        return connector.find(subject, property, value, contexts);
     }
 
     @Override
@@ -57,20 +56,20 @@ class DummyInferredStorageConnector implements InferredStorageConnector {
     @Override
     public AbstractResultSet executeSelectQuery(Query query,
                                                 cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
-                                                                                                            JenaDriverException {
+            JenaDriverException {
         return connector.executeSelectQuery(query, target);
     }
 
     @Override
     public AbstractResultSet executeAskQuery(Query query,
                                              cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
-                                                                                                         JenaDriverException {
+            JenaDriverException {
         return connector.executeAskQuery(query, target);
     }
 
     @Override
     public void executeUpdate(String query, cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
-                                                                                                        JenaDriverException {
+            JenaDriverException {
         connector.executeUpdate(query, target);
     }
 }

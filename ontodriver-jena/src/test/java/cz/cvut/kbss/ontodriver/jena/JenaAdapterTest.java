@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -181,7 +179,7 @@ class JenaAdapterTest {
         assertEquals(SUBJECT, axiom.getSubject());
         assertEquals(assertion, axiom.getAssertion());
         assertEquals(s.getObject().asResource().getURI(), axiom.getValue().stringValue());
-        verify(connectorMock).find(SUBJECT_RESOURCE, null, null, null);
+        verify(connectorMock).find(SUBJECT_RESOURCE, null, null, Collections.emptySet());
     }
 
     private Property assertionToProperty(Assertion assertion) {
@@ -204,7 +202,7 @@ class JenaAdapterTest {
         final Statement s = ResourceFactory
                 .createStatement(SUBJECT_RESOURCE, assertionToProperty(assertion),
                         ResourceFactory.createResource(Generator.generateUri().toString()));
-        when(connectorMock.find(any(), any(), any(), anyString())).thenReturn(Collections.singletonList(s));
+        when(connectorMock.find(any(), any(), any(), anyCollection())).thenReturn(Collections.singletonList(s));
         final URI newValue = Generator.generateUri();
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         descriptor.addAssertionValue(assertion, new Value<>(NamedResource.create(newValue)));

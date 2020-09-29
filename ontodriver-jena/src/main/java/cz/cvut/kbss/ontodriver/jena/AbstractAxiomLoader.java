@@ -75,7 +75,8 @@ abstract class AbstractAxiomLoader {
      */
     Collection<Axiom<?>> find(NamedResource subject, URI context) {
         final Resource resource = ResourceFactory.createResource(subject.getIdentifier().toString());
-        final Collection<Statement> statements = findStatements(resource, null, context);
+        final Collection<Statement> statements = findStatements(resource, null,
+                context != null ? Collections.singleton(context) : Collections.emptySet());
         final List<Axiom<?>> axioms = new ArrayList<>(statements.size());
         for (Statement statement : statements) {
             if (statement.getPredicate().equals(RDF.type)) {
@@ -87,7 +88,7 @@ abstract class AbstractAxiomLoader {
         return axioms;
     }
 
-    abstract Collection<Statement> findStatements(Resource subject, Property property, URI context);
+    abstract Collection<Statement> findStatements(Resource subject, Property property, Collection<URI> contexts);
 
     Optional<Value<?>> resolveValue(Assertion assertion, RDFNode object) {
         if (object.isResource()) {
