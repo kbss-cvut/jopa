@@ -507,4 +507,22 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         assertEquals(value, ((LangString) axiom.getValue().getValue()).getValue());
         assertEquals("en", ((LangString) axiom.getValue().getValue()).getLanguage().get());
     }
+
+    @Test
+    void findLoadsAssertionValuesFromMultipleContexts() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(assertion);
+        descriptor.addAssertionContext(assertion, CONTEXT);
+        final URI otherContext = Generator.generateUri();
+        descriptor.addAssertionContext(assertion, otherContext);
+        final List<Statement> statements = generateObjectPropertyAssertions(descriptor.getAssertions());
+        when(connectorMock.find(any(), any(), any(), anyCollection())).thenReturn(statements);
+
+        final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
+        verifyObjectPropertyAxioms(statements, result);
+        verify(connectorMock)
+                .find(SUBJECT_RES, createProperty(assertion.getIdentifier().toString()), null,
+                        new HashSet<>(Arrays.asList(CONTEXT.toString(), otherContext.toString())));
+    }
 }
