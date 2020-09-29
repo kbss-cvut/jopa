@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -68,7 +66,7 @@ public class SharedStorageConnectorTest {
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
 
-        final Collection<Statement> result = connector.find(RESOURCE, null, null, null);
+        final Collection<Statement> result = connector.find(RESOURCE, null, null, Collections.emptySet());
         assertFalse(result.isEmpty());
     }
 
@@ -78,7 +76,7 @@ public class SharedStorageConnectorTest {
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
 
-        final Collection<Statement> result = connector.find(RESOURCE, null, null, NAMED_GRAPH);
+        final Collection<Statement> result = connector.find(RESOURCE, null, null, Collections.singleton(NAMED_GRAPH));
         assertFalse(result.isEmpty());
     }
 
@@ -87,7 +85,8 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
-        final Collection<Statement> result = connector.find(RESOURCE, null, null, "http://unknownGraph");
+        final Collection<Statement> result = connector
+                .find(RESOURCE, null, null, Collections.singleton("http://unknownGraph"));
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
@@ -389,7 +388,7 @@ public class SharedStorageConnectorTest {
         final String newType = Generator.generateUri().toString();
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + newType + "> . }";
         connector.executeUpdate(update, StatementOntology.CENTRAL);
-        final Collection<Statement> result = connector.find(RESOURCE, RDF.type, null, null);
+        final Collection<Statement> result = connector.find(RESOURCE, RDF.type, null, Collections.emptySet());
         assertTrue(result.stream().anyMatch(s -> s.getObject().asResource().getURI().equals(newType)));
     }
 

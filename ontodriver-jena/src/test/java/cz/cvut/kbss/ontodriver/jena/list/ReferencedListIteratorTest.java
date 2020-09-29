@@ -35,8 +35,8 @@ import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -87,7 +87,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     @Test
     public void nextThrowsListProcessingExceptionWhenNodeIsLiteral() {
         generateList();
-        when(connectorMock.find(RESOURCE, HAS_LIST, null, null)).thenReturn(
+        when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(
                 Collections.singletonList(createStatement(RESOURCE, HAS_LIST, createTypedLiteral(117))));
         final ReferencedListIterator iterator = iterator();
         thrown.expect(ListProcessingException.class);
@@ -102,7 +102,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         final List<URI> list = generateList();
         final int index = Generator.randomInt(list.size());
         final Resource node = testUtil.getReferencedListNodes().get(index);
-        when(connectorMock.find(node, HAS_CONTENT, null, null)).thenReturn(Arrays.asList(
+        when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(Arrays.asList(
                 createStatement(node, HAS_CONTENT, createResource(Generator.generateUri().toString())),
                 createStatement(node, HAS_CONTENT, createResource(list.get(index).toString()))
         ));
@@ -119,7 +119,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         final List<URI> list = generateList();
         final int index = Generator.randomInt(list.size());
         final Resource node = testUtil.getReferencedListNodes().get(index);
-        when(connectorMock.find(node, HAS_CONTENT, null, null)).thenReturn(Collections.emptyList());
+        when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(Collections.emptyList());
         final ReferencedListIterator iterator = iterator();
         thrown.expect(IntegrityConstraintViolatedException.class);
         thrown.expectMessage("No content found for list node " + node.getURI());

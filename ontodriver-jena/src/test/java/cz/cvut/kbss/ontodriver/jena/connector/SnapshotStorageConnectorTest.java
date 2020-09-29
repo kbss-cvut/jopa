@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -40,7 +38,6 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class SnapshotStorageConnectorTest {
@@ -169,9 +166,10 @@ public class SnapshotStorageConnectorTest {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), null);
-        final Collection<Statement> result = connector.find(added.getSubject(), added.getPredicate(), null, null);
+        final Collection<Statement> result = connector
+                .find(added.getSubject(), added.getPredicate(), null, Collections.emptySet());
         assertTrue(result.contains(added));
-        verify(centralConnector, never()).find(any(), any(), any(), anyString());
+        verify(centralConnector, never()).find(any(), any(), any(), anyCollection());
     }
 
     @Test
@@ -180,10 +178,11 @@ public class SnapshotStorageConnectorTest {
         final String context = Generator.generateUri().toString();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), context);
-        final Collection<Statement> result = connector.find(added.getSubject(), added.getPredicate(), null, context);
+        final Collection<Statement> result = connector
+                .find(added.getSubject(), added.getPredicate(), null, Collections.singleton(context));
         assertTrue(result.contains(added));
-        verify(centralConnector, never()).find(any(), any(), any(), anyString());
-        verify(centralConnector, never()).find(any(), any(), any(), eq(context));
+        verify(centralConnector, never()).find(any(), any(), any(), anyCollection());
+        verify(centralConnector, never()).find(any(), any(), any(), eq(Collections.singleton(context)));
     }
 
     @Test
@@ -257,7 +256,7 @@ public class SnapshotStorageConnectorTest {
 
     @Test
     public void removeRemovesStatementsFilteredBySubjectPredicateObjectFromSnapshotContext() throws
-                                                                                             JenaDriverException {
+            JenaDriverException {
         centralConnector.begin();
         final String context = Generator.generateUri().toString();
         final Statement existing = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));

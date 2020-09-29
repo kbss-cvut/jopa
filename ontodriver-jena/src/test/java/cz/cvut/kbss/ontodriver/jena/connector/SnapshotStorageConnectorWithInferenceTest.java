@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -63,7 +61,7 @@ public class SnapshotStorageConnectorWithInferenceTest {
     public void findReturnsStatementsFromRawDefaultModel() throws Exception {
         generateTestData(null);
         connector.begin();
-        final List<Statement> result = connector.find(createResource(SUBJECT), RDF.type, null, null);
+        final List<Statement> result = connector.find(createResource(SUBJECT), RDF.type, null, Collections.emptySet());
         assertEquals(1, result.size());
         assertEquals(createResource(TYPE_ONE), result.get(0).getObject());
     }
@@ -81,7 +79,8 @@ public class SnapshotStorageConnectorWithInferenceTest {
     public void findWithInferenceReturnsStatementsIncludingInferredKnowledge() throws Exception {
         generateTestData(null);
         connector.begin();
-        final Collection<Statement> result = connector.findWithInference(createResource(SUBJECT), RDF.type, null, null);
+        final Collection<Statement> result = connector
+                .findWithInference(createResource(SUBJECT), RDF.type, null, Collections.emptySet());
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(s -> s.getObject().equals(createResource(TYPE_TWO))));
     }
@@ -90,7 +89,8 @@ public class SnapshotStorageConnectorWithInferenceTest {
     public void findInContextReturnsStatementsFromRawNamedGraph() throws Exception {
         generateTestData(NAMED_GRAPH);
         connector.begin();
-        final List<Statement> result = connector.find(createResource(SUBJECT), RDF.type, null, NAMED_GRAPH);
+        final List<Statement> result = connector
+                .find(createResource(SUBJECT), RDF.type, null, Collections.singleton(NAMED_GRAPH));
         assertEquals(1, result.size());
         assertEquals(createResource(TYPE_ONE), result.get(0).getObject());
     }
@@ -100,7 +100,8 @@ public class SnapshotStorageConnectorWithInferenceTest {
         generateTestData(NAMED_GRAPH);
         connector.begin();
         final Collection<Statement> result =
-                connector.findWithInference(createResource(SUBJECT), RDF.type, null, NAMED_GRAPH);
+                connector
+                        .findWithInference(createResource(SUBJECT), RDF.type, null, Collections.singleton(NAMED_GRAPH));
         assertEquals(2, result.size());
         assertTrue(result.stream().anyMatch(s -> s.getObject().equals(createResource(TYPE_TWO))));
     }

@@ -26,7 +26,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -57,8 +59,12 @@ abstract class AbstractListIterator {
         moveCursor(currentNode);
     }
 
+    protected Set<String> contexts() {
+        return context != null ? Collections.singleton(context) : Collections.emptySet();
+    }
+
     void moveCursor(Resource from) {
-        this.cursor = connector.find(from, first() ? hasListProperty : hasNextProperty, null, context);
+        this.cursor = connector.find(from, first() ? hasListProperty : hasNextProperty, null, contexts());
     }
 
     void resolveNextListNode() {
