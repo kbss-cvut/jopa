@@ -427,4 +427,23 @@ class AxiomLoaderTest {
             spiedConnector.close();
         }
     }
+
+    @Test
+    void loadAxiomsLoadsAxiomsFromAllSpecifiedContexts() throws Exception {
+        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+        final Assertion property = generatedData.values.get(individual).keySet().iterator().next();
+        final URI contextOne =  Generator.generateUri();
+        final Object value = saveValueIntoContext(individual, property, contextOne.toString());
+        final URI contextTwo = Generator.generateUri();
+        final Object valueTwo = saveValueIntoContext(individual, property, contextTwo.toString());
+
+        final AxiomDescriptor desc = new AxiomDescriptor(NamedResource.create(individual));
+        desc.addAssertion(property);
+        desc.addAssertionContext(property, contextOne).addAssertionContext(property, contextTwo);
+        connector.begin();
+        final Collection<Axiom<?>> res = axiomLoader.loadAxioms(desc);
+        assertEquals(2, res.size());
+        assertTrue(res.stream().anyMatch(a -> a.getValue().getValue().equals(value)));
+        assertTrue(res.stream().anyMatch(a -> a.getValue().getValue().equals(valueTwo)));
+    }
 }
