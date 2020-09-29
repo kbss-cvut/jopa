@@ -18,8 +18,8 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
-import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.function.Executable;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -158,15 +158,16 @@ public abstract class BaseRunner {
 
     /**
      * Runs the specified action in a transaction on the current entity manager.
-     *
+     * <p>
      * This allows using also actions which throw checked exceptions.
+     *
      * @param action The code to run
      * @see #transactional(Runnable)
      */
-    protected void transactionalThrowing(ThrowingRunnable action) {
+    protected void transactionalThrowing(Executable action) {
         try {
             em.getTransaction().begin();
-            action.run();
+            action.execute();
             em.getTransaction().commit();
         } catch (Throwable e) {
             throw new RuntimeException(e);
