@@ -1,22 +1,19 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
@@ -28,17 +25,23 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
 
     private final EntityDescriptor elementDescriptor;
 
-    public ObjectPropertyCollectionDescriptor(Field attribute) {
+    public ObjectPropertyCollectionDescriptor(FieldSpecification<?, ?> attribute) {
         super(attribute);
         this.elementDescriptor = new EntityDescriptor();
     }
 
-    public ObjectPropertyCollectionDescriptor(URI context, Field attribute) {
+    public ObjectPropertyCollectionDescriptor(URI context, FieldSpecification<?, ?> attribute) {
         super(context, attribute);
         this.elementDescriptor = new EntityDescriptor(context);
     }
 
-    public ObjectPropertyCollectionDescriptor(URI context, Field attribute, boolean assertionsInSubjectContext) {
+    public ObjectPropertyCollectionDescriptor(Set<URI> contexts, FieldSpecification<?, ?> attribute) {
+        super(contexts, attribute);
+        this.elementDescriptor = new EntityDescriptor(contexts);
+    }
+
+    public ObjectPropertyCollectionDescriptor(URI context, FieldSpecification<?, ?> attribute,
+                                              boolean assertionsInSubjectContext) {
         super(context, attribute);
         this.elementDescriptor = new EntityDescriptor(context, assertionsInSubjectContext);
     }
@@ -53,41 +56,29 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
     }
 
     @Override
-    public URI getAttributeContext(FieldSpecification<?, ?> attribute) {
+    public Set<URI> getAttributeContexts(FieldSpecification<?, ?> attribute) {
         Objects.requireNonNull(attribute);
         if (getField().equals(attribute.getJavaField())) {
-            return getContext();
+            return getContexts();
         }
-        return elementDescriptor.getAttributeContext(attribute);
+        return elementDescriptor.getAttributeContexts(attribute);
     }
 
     @Override
-    public ObjectPropertyCollectionDescriptor addAttributeDescriptor(Field attribute, Descriptor descriptor) {
+    public ObjectPropertyCollectionDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute,
+                                                                     Descriptor descriptor) {
         elementDescriptor.addAttributeDescriptor(attribute, descriptor);
         return this;
     }
 
     @Override
-    public ObjectPropertyCollectionDescriptor addAttributeContext(Field attribute, URI context) {
+    public ObjectPropertyCollectionDescriptor addAttributeContext(FieldSpecification<?, ?> attribute, URI context) {
         elementDescriptor.addAttributeContext(attribute, context);
         return this;
     }
 
     @Override
-    protected Set<URI> getContextsInternal(Set<URI> contexts, Set<Descriptor> visited) {
-        if (visited.contains(this)) {
-            return contexts;
-        }
-        if (contexts == null) {
-            return null;
-        }
-        visited.add(this);
-        contexts.add(context);
-        return elementDescriptor.getContextsInternal(contexts, visited);
-    }
-
-    @Override
-    protected boolean overridesAssertionsInSubjectContext() {
+    public boolean overridesAssertionContext() {
         return false;
     }
 
