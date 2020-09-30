@@ -74,10 +74,10 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         final Set<Axiom<URI>> types = Collections.singleton(
                 new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
                         new Value<>(URI.create(OWLClassR.getClassIri()))));
-        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenReturn(types);
+        when(typesMock.getTypes(INDIVIDUAL, Collections.emptySet(), false)).thenReturn(types);
 
         instanceLoader.loadEntity(loadingParameters);
-        verify(typesMock).getTypes(INDIVIDUAL, null, false);
+        verify(typesMock).getTypes(INDIVIDUAL, Collections.emptySet(), false);
         verify(descriptorFactoryMock).createForEntityLoading(loadingParameters, metamodelMock.entity(OWLClassR.class));
     }
 
@@ -86,7 +86,7 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         final Set<Axiom<URI>> types = Collections.singleton(
                 new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
                         new Value<>(URI.create(OWLClassR.getClassIri()))));
-        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenReturn(types);
+        when(typesMock.getTypes(INDIVIDUAL, Collections.emptySet(), false)).thenReturn(types);
         final OWLClassR entityR = new OWLClassR();
         final Collection<Axiom<?>> axioms = new HashSet<>(types);
         when(connectionMock.find(axiomDescriptor)).thenReturn(axioms);
@@ -119,7 +119,7 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     @Test
     void loadEntityThrowsStorageAccessExceptionWhenOntoDriverThrowsException() throws Exception {
         final String msg = "Exception message.";
-        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenThrow(new OntoDriverException(msg));
+        when(typesMock.getTypes(INDIVIDUAL, Collections.emptySet(), false)).thenThrow(new OntoDriverException(msg));
 
         final StorageAccessException ex =
                 assertThrows(StorageAccessException.class, () -> instanceLoader.loadEntity(loadingParameters));
@@ -130,14 +130,14 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     void loadReferenceLoadsReferenceFromStorageWhenEntityTypeIsDetermined() throws Exception {
         final Axiom<URI> type = new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
                 new Value<>(URI.create(OWLClassA.getClassIri())));
-        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenReturn(Collections.singleton(type));
+        when(typesMock.getTypes(INDIVIDUAL, Collections.emptySet(), false)).thenReturn(Collections.singleton(type));
         when(entityConstructorMock.createEntityInstance(IDENTIFIER, metamodelMock.entity(OWLClassA.class)))
                 .thenReturn(new OWLClassA(IDENTIFIER));
 
         final OWLClassA result =
                 instanceLoader.loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
         assertNotNull(result);
-        verify(typesMock).getTypes(INDIVIDUAL, null, false);
+        verify(typesMock).getTypes(INDIVIDUAL, Collections.emptySet(), false);
     }
 
     @Test
@@ -155,7 +155,7 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
     @Test
     void loadReferenceThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
         final String msg = "Exception message.";
-        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenThrow(new OntoDriverException(msg));
+        when(typesMock.getTypes(INDIVIDUAL, Collections.emptySet(), false)).thenThrow(new OntoDriverException(msg));
 
         final StorageAccessException ex =
                 assertThrows(StorageAccessException.class, () -> instanceLoader.loadReference(loadingParameters));
