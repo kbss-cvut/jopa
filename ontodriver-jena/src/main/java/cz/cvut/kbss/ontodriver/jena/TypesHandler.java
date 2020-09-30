@@ -25,7 +25,6 @@ import org.apache.jena.vocabulary.RDF;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,8 +41,8 @@ public class TypesHandler implements Types {
     }
 
     @Override
-    public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred) {
-        final Collection<Statement> statements = getStatements(individual, context, includeInferred);
+    public Set<Axiom<URI>> getTypes(NamedResource individual, Collection<URI> contexts, boolean includeInferred) {
+        final Collection<Statement> statements = getStatements(individual, contexts, includeInferred);
         final Assertion assertion = Assertion.createClassAssertion(includeInferred);
         // Skip possible non-resources and anonymous resources (not likely to appear, but safety first)
         return statements.stream().filter(s -> s.getObject().isResource() && !s.getObject().isAnon())
@@ -52,10 +51,10 @@ public class TypesHandler implements Types {
                         Collectors.toSet());
     }
 
-    private Collection<Statement> getStatements(NamedResource individual, URI context, boolean includedInferred) {
+    private Collection<Statement> getStatements(NamedResource individual, Collection<URI> contexts,
+                                                boolean includedInferred) {
         final Resource subject = ResourceFactory.createResource(individual.getIdentifier().toString());
-        final Collection<String> ctx =
-                context != null ? Collections.singleton(context.toString()) : Collections.emptySet();
+        final Collection<String> ctx = contexts.stream().map(URI::toString).collect(Collectors.toSet());
         if (includedInferred) {
             return inferenceConnector.findWithInference(subject, RDF.type, null, ctx);
         } else {

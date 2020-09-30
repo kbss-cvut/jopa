@@ -23,6 +23,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 class TypesHandler {
 
@@ -34,21 +35,21 @@ class TypesHandler {
         this.valueFactory = valueFactory;
     }
 
-    Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred)
+    Set<Axiom<URI>> getTypes(NamedResource individual, Collection<URI> contexts, boolean includeInferred)
             throws SesameDriverException {
-        final Collection<Statement> statements = getTypesStatements(individual, context, includeInferred);
+        final Collection<Statement> statements = getTypesStatements(individual, contexts, includeInferred);
         if (statements.isEmpty()) {
             return Collections.emptySet();
         }
         return resolveTypes(individual, includeInferred, statements);
     }
 
-    private Collection<Statement> getTypesStatements(NamedResource individual, URI context, boolean includeInferred)
+    private Collection<Statement> getTypesStatements(NamedResource individual, Collection<URI> contexts,
+                                                     boolean includeInferred)
             throws SesameDriverException {
         final Resource subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
-        final org.eclipse.rdf4j.model.IRI contextUri = SesameUtils.toSesameIri(context, valueFactory);
         return connector.findStatements(subject, RDF.TYPE, null, includeInferred,
-                contextUri != null ? Collections.singleton(contextUri) : Collections.emptySet());
+                contexts.stream().map(c -> SesameUtils.toSesameIri(c, valueFactory)).collect(Collectors.toSet()));
     }
 
     private static Set<Axiom<URI>> resolveTypes(NamedResource individual, boolean includeInferred,

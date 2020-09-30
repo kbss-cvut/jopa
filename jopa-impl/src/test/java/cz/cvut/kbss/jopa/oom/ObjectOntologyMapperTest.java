@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -273,9 +271,9 @@ class ObjectOntologyMapperTest {
                 .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, aDescriptor, true),
                         etAMock)).thenReturn(axiomDescriptor);
         mapper.removeEntity(IDENTIFIER, OWLClassA.class, aDescriptor);
-        final ArgumentCaptor<LoadingParameters> captor = ArgumentCaptor.forClass(LoadingParameters.class);
+        final ArgumentCaptor<LoadingParameters<OWLClassA>> captor = ArgumentCaptor.forClass(LoadingParameters.class);
         verify(descriptorFactoryMock).createForEntityLoading(captor.capture(), eq(etAMock));
-        final LoadingParameters p = captor.getValue();
+        final LoadingParameters<OWLClassA> p = captor.getValue();
         assertTrue(p.isForceEager());
     }
 
@@ -358,8 +356,9 @@ class ObjectOntologyMapperTest {
         final Types typesMock = mock(Types.class);
         final NamedResource individual = NamedResource.create(IDENTIFIER);
         final URI typeUri = URI.create(Vocabulary.C_OWLClassR);
-        when(typesMock.getTypes(NamedResource.create(IDENTIFIER), null, false)).thenReturn(Collections.singleton(
-                new AxiomImpl<>(individual, Assertion.createClassAssertion(false), new Value<>(typeUri))));
+        when(typesMock.getTypes(NamedResource.create(IDENTIFIER), Collections.emptySet(), false))
+                .thenReturn(Collections.singleton(
+                        new AxiomImpl<>(individual, Assertion.createClassAssertion(false), new Value<>(typeUri))));
         when(connectionMock.types()).thenReturn(typesMock);
 
         final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER,
@@ -604,12 +603,12 @@ class ObjectOntologyMapperTest {
         final Set<Axiom<URI>> typesAxioms = Collections.singleton(
                 new AxiomImpl<>(idResource, Assertion.createClassAssertion(false),
                         new Value<>(URI.create(Vocabulary.C_OWLClassR))));
-        when(typesMock.getTypes(idResource, null, false)).thenReturn(typesAxioms);
+        when(typesMock.getTypes(idResource, Collections.emptySet(), false)).thenReturn(typesAxioms);
         final OWLClassS result = mapper
                 .loadReference(new LoadingParameters<>(OWLClassS.class, IDENTIFIER, new EntityDescriptor()));
         assertNotNull(result);
         assertTrue(result instanceof OWLClassR);
-        verify(typesMock).getTypes(eq(idResource), isNull(), eq(false));
+        verify(typesMock).getTypes(eq(idResource), eq(Collections.emptySet()), eq(false));
     }
 
     @Test
@@ -637,10 +636,10 @@ class ObjectOntologyMapperTest {
         final Set<Axiom<URI>> typesAxioms = Collections.singleton(
                 new AxiomImpl<>(idResource, Assertion.createClassAssertion(false),
                         new Value<>(URI.create(Vocabulary.C_OWLClassR))));
-        when(typesMock.getTypes(idResource, context, false)).thenReturn(typesAxioms);
+        when(typesMock.getTypes(idResource, Collections.singleton(context), false)).thenReturn(typesAxioms);
         final OWLClassS result = mapper.loadReference(new LoadingParameters<>(OWLClassS.class, IDENTIFIER, descriptor));
         assertNotNull(result);
-        verify(typesMock).getTypes(idResource, context, false);
+        verify(typesMock).getTypes(idResource, Collections.singleton(context), false);
     }
 
     @Test
