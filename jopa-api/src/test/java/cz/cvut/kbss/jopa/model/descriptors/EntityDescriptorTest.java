@@ -21,6 +21,9 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.Collections;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -43,8 +46,11 @@ class EntityDescriptorTest {
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(intAtt.getJavaField()).thenReturn(TestClass.intAttField());
+        when(intAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
     }
 
     @Test
@@ -275,5 +281,59 @@ class EntityDescriptorTest {
         sut.addAttributeContext(stringAtt, CONTEXT_TWO);
 
         assertEquals(Collections.singleton(CONTEXT_TWO), sut.getAttributeContexts(stringAtt));
+    }
+
+    @Test
+    void addAttributeContextCreatesEntityDescriptorAndAddsContextToItWhenItDidNotExist() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(parentAtt, CONTEXT_ONE);
+
+        assertThat(sut.getAttributeContexts(parentAtt), empty());
+        final Descriptor result = sut.getAttributeDescriptor(parentAtt);
+        assertEquals(Collections.singleton(CONTEXT_ONE), result.getContexts());
+    }
+
+    @Test
+    void addAttributeContextCreatesFieldDescriptorAndSetsItsContextForDataPropertyField() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, CONTEXT_TWO);
+
+        assertEquals(Collections.singleton(CONTEXT_TWO), sut.getAttributeContexts(stringAtt));
+        final Descriptor result = sut.getAttributeDescriptor(stringAtt);
+        assertEquals(Collections.singleton(CONTEXT_TWO), result.getContexts());
+    }
+
+    @Test
+    void addAttributeContextSupportsMultipleContextsAddedToObjectPropertyAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(parentAtt, CONTEXT_ONE).addAttributeContext(parentAtt, CONTEXT_TWO);
+
+        assertThat(sut.getAttributeContexts(parentAtt), empty());
+        final Descriptor result = sut.getAttributeDescriptor(parentAtt);
+        assertEquals(2, result.getContexts().size());
+        assertThat(result.getContexts(), hasItems(CONTEXT_ONE, CONTEXT_TWO));
+    }
+
+    @Test
+    void addAttributeContextSupportsMultipleContextsAddedToDataPropertyAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, CONTEXT_ONE).addAttributeContext(stringAtt, CONTEXT_TWO);
+
+        assertEquals(2, sut.getAttributeContexts(stringAtt).size());
+        assertThat(sut.getAttributeContexts(stringAtt), hasItems(CONTEXT_ONE, CONTEXT_TWO));
+        final Descriptor result = sut.getAttributeDescriptor(stringAtt);
+        assertEquals(2, result.getContexts().size());
+        assertThat(result.getContexts(), hasItems(CONTEXT_ONE, CONTEXT_TWO));
+    }
+
+    @Test
+    void addAttributeContextSupportsCreatesObjectPropertyCollectionDescriptorForPluralObjectProperty() {
+        when(parentAtt.isCollection()).thenReturn(true);    // Abusing existing field specification
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(parentAtt, CONTEXT_ONE);
+
+        assertThat(sut.getAttributeContexts(parentAtt), empty());
+        final Descriptor result = sut.getAttributeDescriptor(parentAtt);
+        assertEquals(Collections.singleton(CONTEXT_ONE), result.getContexts());
     }
 }

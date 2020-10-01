@@ -78,6 +78,7 @@ public class EntityDescriptor extends AbstractDescriptor {
 
         fieldDescriptors.putIfAbsent(attribute.getJavaField(),
                 createDescriptor(attribute, context != null ? Collections.singleton(context) : Collections.emptySet()));
+        fieldDescriptors.get(attribute.getJavaField()).addContext(context);
         return this;
     }
 
@@ -100,7 +101,7 @@ public class EntityDescriptor extends AbstractDescriptor {
     @Override
     public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
         Objects.requireNonNull(attribute);
-        Descriptor d = getFieldDescriptor(attribute.getJavaField());
+        Descriptor d = fieldDescriptors.get(attribute.getJavaField());
         if (d == null) {
             d = createDescriptor(attribute, getContexts());
             if (hasLanguage()) {
@@ -121,15 +122,6 @@ public class EntityDescriptor extends AbstractDescriptor {
     @Override
     public Collection<Descriptor> getAttributeDescriptors() {
         return Collections.unmodifiableCollection(fieldDescriptors.values());
-    }
-
-    private Descriptor getFieldDescriptor(Field field) {
-        for (Entry<Field, Descriptor> e : fieldDescriptors.entrySet()) {
-            if (e.getKey().equals(field)) {
-                return e.getValue();
-            }
-        }
-        return null;
     }
 
     private static AbstractDescriptor createDescriptor(FieldSpecification<?, ?> att, Set<URI> contexts) {
