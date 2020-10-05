@@ -23,7 +23,6 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.Set;
 
 class TwoStepInstanceLoader extends EntityInstanceLoader {
@@ -62,9 +61,8 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
     private <T> EntityType<? extends T> resolveEntityType(LoadingParameters<T> loadingParameters,
                                                           EntityTypeImpl<T> rootEt) throws OntoDriverException {
         NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
-        final URI ctx = loadingParameters.getDescriptor().getContext();
         final Set<Axiom<URI>> types = storageConnection.types().getTypes(individual,
-                ctx != null ? Collections.singleton(ctx) : Collections.emptySet(), false);
+                loadingParameters.getDescriptor().getContexts(), false);
         return new PolymorphicEntityTypeResolver<>(individual, rootEt, types).determineActualEntityType();
     }
 

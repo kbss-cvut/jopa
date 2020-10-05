@@ -357,4 +357,34 @@ class EntityDescriptorTest {
         sut.addContext(CONTEXT_TWO);
         assertThrows(AmbiguousContextException.class, sut::getSingleContext);
     }
+
+    @Test
+    void getSingleAttributeContextReturnsOneContextSpecifiedForAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(stringAtt, CONTEXT_ONE);
+        assertTrue(sut.getSingleAttributeContext(stringAtt).isPresent());
+        assertEquals(CONTEXT_ONE, sut.getSingleAttributeContext(stringAtt).get());
+    }
+
+    @Test
+    void getSingleAttributeContextReturnsEmptyOptionalWhenDefaultContextIsSetForAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, null);
+        assertFalse(sut.getSingleAttributeContext(stringAtt).isPresent());
+    }
+
+    @Test
+    void getSingleAttributeContextReturnsDescriptorContextWhenNoAttributeContextIsSpecified() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        assertTrue(sut.getSingleAttributeContext(stringAtt).isPresent());
+        assertEquals(CONTEXT_ONE, sut.getSingleAttributeContext(stringAtt).get());
+    }
+
+    @Test
+    void getSingleAttributeContextThrowsAmbiguousContextExceptionWhenMultipleAttributeContextsAreSpecifiedInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(stringAtt, CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, CONTEXT_TWO);
+        assertThrows(AmbiguousContextException.class, () -> sut.getSingleAttributeContext(stringAtt));
+    }
 }

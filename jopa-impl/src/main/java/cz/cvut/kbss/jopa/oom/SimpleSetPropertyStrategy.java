@@ -45,7 +45,7 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
 
     private <T> void extractValues(Collection<T> valueCollection, AxiomValueGatherer valueBuilder) {
         if (valueCollection == null) {
-            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
             return;
         }
         final Set<Value<?>> assertionValues = new HashSet<>(valueCollection.size());
@@ -65,10 +65,10 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
                 } else {
                     referenceSavingResolver
                             .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), val,
-                                    getAttributeContext());
+                                    getAttributeWriteContext());
                 }
             }
         }
-        valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
+        valueBuilder.addValues(createAssertion(), assertionValues, getAttributeWriteContext());
     }
 }

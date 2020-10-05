@@ -62,7 +62,7 @@ class EntityConstructor {
             return null;
         }
         final T instance = createEntityInstance(identifier, et);
-        mapper.registerInstance(identifier, instance, descriptor.getContext());
+        mapper.registerInstance(identifier, instance);
         populateAttributes(instance, et, descriptor, axioms);
         validateIntegrityConstraints(instance, et);
 

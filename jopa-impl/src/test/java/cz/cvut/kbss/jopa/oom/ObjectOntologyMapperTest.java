@@ -205,7 +205,7 @@ class ObjectOntologyMapperTest {
     @Test
     void testGetEntityFromCacheOrOntologyFromRegisteredInstances() {
         when(cacheMock.contains(OWLClassA.class, IDENTIFIER, null)).thenReturn(Boolean.FALSE);
-        mapper.registerInstance(IDENTIFIER, entityA, null);
+        mapper.registerInstance(IDENTIFIER, entityA);
         final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER,
                 aDescriptor);
         assertNotNull(res);
@@ -233,7 +233,7 @@ class ObjectOntologyMapperTest {
         regField.setAccessible(true);
         final InstanceRegistry reg = (InstanceRegistry) regField.get(mapper);
         assertFalse(reg.containsInstance(IDENTIFIER, context));
-        mapper.registerInstance(IDENTIFIER, entityA, context);
+        mapper.registerInstance(IDENTIFIER, entityA);
         assertTrue(reg.containsInstance(IDENTIFIER, context));
     }
 
@@ -448,8 +448,9 @@ class ObjectOntologyMapperTest {
                     final Descriptor attDescriptor =
                             descriptor.getAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt());
                     mapper.registerPendingAssertion(NamedResource.create(d.getUri()), assertion, d.getOwlClassA(),
-                            attDescriptor.getContext());
-                    return new AxiomValueGatherer(NamedResource.create(d.getUri()), descriptor.getContext());
+                            attDescriptor.getSingleContext().get());
+                    return new AxiomValueGatherer(NamedResource.create(d.getUri()),
+                            descriptor.getSingleContext().get());
                 });
     }
 
@@ -473,7 +474,7 @@ class ObjectOntologyMapperTest {
         final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
         verify(connectionMock, times(3)).persist(captor.capture());
         final AxiomValueDescriptor assertionDesc = captor.getAllValues().get(2);
-        assertEquals(aDescriptor.getContext(), assertionDesc.getAssertionContext(assertion));
+        assertEquals(aDescriptor.getSingleContext().get(), assertionDesc.getAssertionContext(assertion));
     }
 
     @Test
@@ -644,7 +645,7 @@ class ObjectOntologyMapperTest {
 
     @Test
     void getEntityFromCacheOrOntologyThrowsEntityExistsWhenObjectIsAlreadyRegisteredUnderDifferentType() {
-        mapper.registerInstance(IDENTIFIER, entityA, null);
+        mapper.registerInstance(IDENTIFIER, entityA);
         assertThrows(OWLEntityExistsException.class,
                 () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, aDescriptor));
     }

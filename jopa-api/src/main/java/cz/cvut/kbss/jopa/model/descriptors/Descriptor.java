@@ -121,6 +121,21 @@ public interface Descriptor {
     Set<URI> getAttributeContexts(FieldSpecification<?, ?> attribute);
 
     /**
+     * Gets the only context specified by this descriptor for the specified attribute.
+     * <p>
+     * If no context is specified (meaning the default context should be used), an empty {@link Optional} is returned.
+     * <p>
+     * If more than one context are available for the specified attribute, an {@link AmbiguousContextException} is
+     * thrown.
+     *
+     * @param attribute Entity attribute, as specified by the application model
+     * @return Context identifier
+     * @throws AmbiguousContextException If a unique attribute context cannot be determined
+     * @see #getAttributeContexts(FieldSpecification)
+     */
+    Optional<URI> getSingleAttributeContext(FieldSpecification<?, ?> attribute);
+
+    /**
      * Adds descriptor for the specified attribute.
      * <p>
      * If a descriptor already exists for the specified attribute, it is overridden by the new one.
