@@ -54,7 +54,7 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
         assert value instanceof Collection || value == null;
         final Collection<?> valueCollection = (Collection<?>) value;
         if (valueCollection == null || valueCollection.isEmpty()) {
-            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         } else {
             final Function<Object, Collection<Value<?>>> mapper;
             if (IdentifierTransformer.isValidIdentifierType(elementType) && !elementType
@@ -69,7 +69,7 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
             final Set<Value<?>> assertionValues =
                     valueCollection.stream().filter(Objects::nonNull).map(mapper).flatMap(Collection::stream)
                                    .collect(Collectors.toSet());
-            valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
+            valueBuilder.addValues(createAssertion(), assertionValues, getAttributeWriteContext());
         }
     }
 

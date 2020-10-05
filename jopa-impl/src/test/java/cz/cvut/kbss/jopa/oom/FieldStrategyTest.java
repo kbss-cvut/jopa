@@ -53,8 +53,8 @@ class FieldStrategyTest {
         descriptor.addAttributeContext(metamodelMocks.forOwlClassA().stringAttribute(), context);
         final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
                 metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
-        assertEquals(context, sut.getAttributeContext());
-        verify(descriptor).getAttributeContext(metamodelMocks.forOwlClassA().stringAttribute());
+        assertEquals(context, sut.getAttributeWriteContext());
+        verify(descriptor).getSingleAttributeContext(metamodelMocks.forOwlClassA().stringAttribute());
     }
 
     @Test

@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.model.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Objects;
+import java.util.Set;
 
 import static cz.cvut.kbss.ontodriver.model.Assertion.*;
 
@@ -29,7 +29,7 @@ class AxiomDescriptorFactory {
 
     AxiomDescriptor createForEntityLoading(LoadingParameters<?> loadingParams, EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(loadingParams.getIdentifier()));
-        descriptor.addSubjectContext(loadingParams.getDescriptor().getContext());
+        loadingParams.getDescriptor().getContexts().forEach(descriptor::addSubjectContext);
         descriptor.addAssertion(Assertion.createClassAssertion(false));
         addForTypes(loadingParams, et, descriptor);
         addForProperties(loadingParams, et, descriptor);
@@ -58,10 +58,9 @@ class AxiomDescriptorFactory {
     private void addAssertionToDescriptor(Descriptor entityDescriptor, FieldSpecification<?, ?> att,
                                           final AxiomDescriptor descriptor, final Assertion assertion) {
         descriptor.addAssertion(assertion);
-        final URI attContext = entityDescriptor.getAttributeContext(att);
-        if (!Objects.equals(entityDescriptor.getContext(), attContext)) {
-            descriptor.addAssertionContext(assertion, attContext);
-        }
+        final Set<URI> attContexts = entityDescriptor.getAttributeContexts(att);
+        attContexts.stream().filter(ctx -> !entityDescriptor.getContexts().contains(ctx))
+                   .forEach(ctx -> descriptor.addAssertionContext(assertion, ctx));
     }
 
     private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
@@ -121,7 +120,7 @@ class AxiomDescriptorFactory {
 
     AxiomDescriptor createForFieldLoading(URI identifier, Field field, Descriptor entityDescriptor, EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));
-        descriptor.addSubjectContext(entityDescriptor.getContext());
+        entityDescriptor.getContexts().forEach(descriptor::addSubjectContext);
         FieldSpecification<?, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {

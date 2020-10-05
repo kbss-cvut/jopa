@@ -59,6 +59,6 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
         final Object extractedValue = toAxiomValue(extractFieldValueFromInstance(instance));
 
         final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
-        valueBuilder.addValue(createAssertion(), val, getAttributeContext());
+        valueBuilder.addValue(createAssertion(), val, getAttributeWriteContext());
     }
 }

@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.net.URI;
 import java.util.*;
@@ -57,10 +58,14 @@ public abstract class AbstractDescriptor implements Descriptor {
 
     @Override
     public Optional<URI> getSingleContext() {
-        if (contexts.size() > 1) {
-            throw new AmbiguousContextException("Expected at most one context, but got " + contexts);
+        return retrieveSingleContext(contexts);
+    }
+
+    private Optional<URI> retrieveSingleContext(Set<URI> col) {
+        if (col.size() > 1) {
+            throw new AmbiguousContextException("Expected at most one context, but got " + col);
         }
-        return contexts.isEmpty() ? Optional.empty() : Optional.of(contexts.iterator().next());
+        return col.isEmpty() ? Optional.empty() : Optional.of(col.iterator().next());
     }
 
     @Override
@@ -71,6 +76,11 @@ public abstract class AbstractDescriptor implements Descriptor {
             contexts.add(context);
         }
         return this;
+    }
+
+    @Override
+    public Optional<URI> getSingleAttributeContext(FieldSpecification<?, ?> attribute) {
+        return retrieveSingleContext(getAttributeContexts(attribute));
     }
 
     @Override

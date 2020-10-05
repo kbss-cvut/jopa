@@ -58,20 +58,20 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         final Object value = extractFieldValueFromInstance(instance);
         if (value == null) {
-            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
             return;
         }
 
         if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType()) &&
                 !attribute.getJavaType().isAssignableFrom(String.class)) {
             valueBuilder.addValue(createAssertion(),
-                    new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))), getAttributeContext());
+                    new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))), getAttributeWriteContext());
         } else if (value instanceof MultilingualString) {
             valueBuilder.addValues(createAssertion(),
                     SingularMultilingualStringFieldStrategy.translationsToLangStrings((MultilingualString) value),
-                    getAttributeContext());
+                    getAttributeWriteContext());
         } else {
-            valueBuilder.addValue(createAssertion(), new Value<>(toAxiomValue(value)), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), new Value<>(toAxiomValue(value)), getAttributeWriteContext());
         }
     }
 

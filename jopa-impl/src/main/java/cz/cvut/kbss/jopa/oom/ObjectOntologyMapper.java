@@ -27,11 +27,11 @@ public interface ObjectOntologyMapper {
      * Checks whether the storage contains individual with the specified identifier and of the specified type.
      *
      * @param cls        Class representing the individual type
-     * @param primaryKey Identifier
+     * @param identifier Identifier
      * @param descriptor Descriptor, can specify context
      * @return {@code true} if the ontology contains such individual, {@code false} otherwise
      */
-    <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor);
+    <T> boolean containsEntity(Class<T> cls, URI identifier, Descriptor descriptor);
 
     /**
      * Loads and reconstructs an entity from the ontology.
@@ -65,20 +65,20 @@ public interface ObjectOntologyMapper {
     /**
      * Persists the specified entity into the underlying ontology.
      *
-     * @param primaryKey Primary key of the persisted entity, possibly {@code null}
+     * @param identifier Identifier of the persisted entity, possibly {@code null}
      * @param entity     The entity to persist
      * @param descriptor Descriptor possibly specifying entity and attribute contexts
      */
-    <T> void persistEntity(URI primaryKey, T entity, Descriptor descriptor);
+    <T> void persistEntity(URI identifier, T entity, Descriptor descriptor);
 
     /**
      * Removes entity with specified identifier from the ontology.
      *
-     * @param primaryKey Entity identifier
+     * @param identifier Entity identifier
      * @param cls        Entity class
      * @param descriptor Descriptor specifying entity attribute contexts
      */
-    <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor);
+    <T> void removeEntity(URI identifier, Class<T> cls, Descriptor descriptor);
 
     /**
      * Checks that there are no pending changes in the mapper.
