@@ -285,7 +285,7 @@ public class TtlCacheManager implements CacheManager {
                 final List<URI> toEvict = new ArrayList<>();
                 // Mark the objects for eviction (can't evict them now, it would
                 // cause ConcurrentModificationException)
-                for (Entry<URI, Long> e : cache.ttls.entrySet()) {
+                for (Entry<URI, Long> e : cache.ttl.entrySet()) {
                     final long lm = e.getValue();
                     if (lm + TtlCacheManager.this.timeToLive < currentTime) {
                         toEvict.add(e.getKey());
@@ -302,12 +302,15 @@ public class TtlCacheManager implements CacheManager {
 
     private static final class TtlCache extends EntityCache {
 
-        private final Map<URI, Long> ttls = new HashMap<>();
+        private final Map<URI, Long> ttl = new HashMap<>();
 
         @Override
         void put(Object identifier, Object entity, Descriptor descriptor) {
+            if (!isCacheable(descriptor)) {
+                return;
+            }
             super.put(identifier, entity, descriptor);
-            final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
+            final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
             updateTimeToLive(ctx);
         }
 
@@ -327,14 +330,14 @@ public class TtlCacheManager implements CacheManager {
         private void updateTimeToLive(URI context) {
             assert context != null;
 
-            ttls.put(context, System.currentTimeMillis());
+            ttl.put(context, System.currentTimeMillis());
         }
 
         @Override
         void evict(URI context) {
             final URI ctx = context != null ? context : defaultContext;
             super.evict(ctx);
-            ttls.remove(context);
+            ttl.remove(context);
         }
 
         @Override
@@ -348,7 +351,7 @@ public class TtlCacheManager implements CacheManager {
                     }
                 }
                 if (m.isEmpty()) {
-                    ttls.remove(e.getKey());
+                    ttl.remove(e.getKey());
                 }
             }
         }
