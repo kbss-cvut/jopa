@@ -19,7 +19,10 @@ import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.AskResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.SelectResultSet;
 import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.system.Txn;
 import org.apache.jena.update.UpdateAction;
 
@@ -98,11 +101,14 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public boolean contains(Resource subject, Property property, RDFNode value, String context) {
+    public boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureOpen();
         return Txn.calculateRead(storage.getDataset(), () -> {
-            final Model target = context != null ? storage.getNamedGraph(context) : storage.getDefaultGraph();
-            return target.contains(subject, property, value);
+            if (contexts.isEmpty()) {
+                return storage.getDefaultGraph().contains(subject, property, value);
+            } else {
+                return contexts.stream().anyMatch(c -> storage.getNamedGraph(c).contains(subject, property, value));
+            }
         });
     }
 

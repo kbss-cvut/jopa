@@ -29,11 +29,9 @@ import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -49,20 +47,19 @@ import java.util.Set;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
-import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JenaDriverTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private OntologyStorageProperties storageProps;
     private final Map<String, String> properties = new HashMap<>();
 
     private JenaDriver driver;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.storageProps = OntologyStorageProperties.driver(JenaDataSource.class.getName())
                                                      .physicalUri(URI.create("temp:memory")).build();
@@ -70,7 +67,7 @@ public class JenaDriverTest {
         properties.put(JenaOntoDriverProperties.JENA_ISOLATION_STRATEGY, JenaOntoDriverProperties.READ_COMMITTED);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (driver != null && driver.isOpen()) {
             driver.close();
@@ -203,9 +200,8 @@ public class JenaDriverTest {
         this.driver = new JenaDriver(storageProps, properties);
         driver.close();
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Driver is closed.");
-        driver.acquireConnection();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> driver.acquireConnection());
+        assertThat(ex.getMessage(), containsString("Driver is closed"));
     }
 
     @Test
@@ -233,8 +229,8 @@ public class JenaDriverTest {
         final JenaConnection connection = driver.acquireConnection();
         final SharedStorageConnector centralConnector = connection.unwrap(SharedStorageConnector.class);
         centralConnector.begin();
-        thrown.expect(JenaDriverException.class);
-        thrown.expectCause(isA(IllegalStateException.class));
-        driver.setDataset(DatasetFactory.create());
+        final JenaDriverException ex = assertThrows(JenaDriverException.class,
+                () -> driver.setDataset(DatasetFactory.create()));
+        assertThat(ex.getCause(), instanceOf(IllegalStateException.class));
     }
 }

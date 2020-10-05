@@ -59,23 +59,23 @@ public class MainAxiomLoaderTest {
     @Test
     public void containsChecksForNonInferredStatementsOnlyWhenAssertionIsNotInferred() {
         final Resource cls = createResource(Generator.generateUri().toString());
-        when(connectorMock.contains(SUBJECT_RES, RDF.type, cls, null)).thenReturn(true);
+        when(connectorMock.contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet())).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(cls.getURI())));
-        assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock).contains(SUBJECT_RES, RDF.type, cls, null);
-        verify(inferredConnectorMock, never()).containsWithInference(SUBJECT_RES, RDF.type, cls, null);
+        assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
+        verify(connectorMock).contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
+        verify(inferredConnectorMock, never()).containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
     }
 
     @Test
     public void containsChecksForInferredStatementsWhenAssertionIsInferred() {
         final Resource cls = createResource(Generator.generateUri().toString());
-        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, cls, null)).thenReturn(true);
+        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet())).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(cls.getURI())));
-        assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls, null);
-        verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls, null);
+        assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
+        verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
+        verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
     }
 
     @Test

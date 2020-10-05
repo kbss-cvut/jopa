@@ -15,7 +15,7 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import java.util.List;
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LocalModelTest {
 
@@ -67,7 +67,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), null);
         assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
     }
 
     @Test
@@ -75,7 +75,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
         assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(null, statement.getPredicate(), null, NAMED_GRAPH));
+                localModel.contains(null, statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.removeStatements(Collections.singletonList(statement), null);
         assertEquals(LocalModel.Containment.REMOVED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
     }
 
     @Test
@@ -91,13 +91,14 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
         assertEquals(LocalModel.Containment.REMOVED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, NAMED_GRAPH));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null,
+                        Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
     public void containsReturnsUnknownForStatementNotInLocalModel() {
         assertEquals(LocalModel.Containment.UNKNOWN,
-                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), null));
+                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -205,7 +206,8 @@ public class LocalModelTest {
         final LocalModel model = new LocalModel(true);
         final Statement added = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         model.addStatements(Collections.singletonList(added), NAMED_GRAPH);
-        assertEquals(LocalModel.Containment.ADDED, model.contains(createResource(SUBJECT), null, null, null));
+        assertEquals(LocalModel.Containment.ADDED,
+                model.contains(createResource(SUBJECT), null, null, Collections.emptySet()));
     }
 
     @Test

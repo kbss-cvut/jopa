@@ -23,10 +23,8 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -37,19 +35,17 @@ import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class SnapshotStorageConnectorTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private SharedStorageConnector centralConnector;
 
     private SnapshotStorageConnector connector;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         this.centralConnector = spy(new SharedStorageConnector(configuration));
@@ -94,9 +90,8 @@ public class SnapshotStorageConnectorTest {
     @Test
     public void beginThrowsIllegalStateWhenTransactionIsAlreadyActive() {
         connector.begin();
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Transaction is already active"));
-        connector.begin();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> connector.begin());
+        assertThat(ex.getMessage(), containsString("Transaction is already active"));
     }
 
     @Test
@@ -113,7 +108,8 @@ public class SnapshotStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), null);
         assertEquals(LocalModel.Containment.ADDED,
-                getTransactionalChanges().contains(added.getSubject(), added.getPredicate(), added.getObject(), null));
+                getTransactionalChanges()
+                        .contains(added.getSubject(), added.getPredicate(), added.getObject(), Collections.emptySet()));
     }
 
     private LocalModel getTransactionalChanges() throws Exception {
@@ -143,7 +139,8 @@ public class SnapshotStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), null);
         assertEquals(LocalModel.Containment.ADDED,
-                getTransactionalChanges().contains(added.getSubject(), added.getPredicate(), added.getObject(), null));
+                getTransactionalChanges()
+                        .contains(added.getSubject(), added.getPredicate(), added.getObject(), Collections.emptySet()));
         connector.rollback();
         assertNull(getTransactionalChanges());
     }
@@ -158,7 +155,8 @@ public class SnapshotStorageConnectorTest {
                             .contains(added.getSubject(), added.getPredicate(), added.getObject()));
         assertEquals(LocalModel.Containment.ADDED,
                 getTransactionalChanges()
-                        .contains(added.getSubject(), added.getPredicate(), added.getObject(), context));
+                        .contains(added.getSubject(), added.getPredicate(), added.getObject(),
+                                Collections.singleton(context)));
     }
 
     @Test
@@ -190,8 +188,8 @@ public class SnapshotStorageConnectorTest {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), null);
-        assertTrue(connector.contains(added.getSubject(), added.getPredicate(), null, null));
-        verify(centralConnector, never()).contains(any(), any(), any(), anyString());
+        assertTrue(connector.contains(added.getSubject(), added.getPredicate(), null, Collections.emptySet()));
+        verify(centralConnector, never()).contains(any(), any(), any(), anySet());
     }
 
     @Test
@@ -200,9 +198,9 @@ public class SnapshotStorageConnectorTest {
         final String context = Generator.generateUri().toString();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), context);
-        assertTrue(connector.contains(added.getSubject(), added.getPredicate(), null, context));
-        verify(centralConnector, never()).contains(any(), any(), any(), anyString());
-        verify(centralConnector, never()).contains(any(), any(), any(), eq(context));
+        assertTrue(connector.contains(added.getSubject(), added.getPredicate(), null, Collections.singleton(context)));
+        verify(centralConnector, never()).contains(any(), any(), any(), anySet());
+        verify(centralConnector, never()).contains(any(), any(), any(), eq(Collections.singleton(context)));
     }
 
     @Test
@@ -224,9 +222,11 @@ public class SnapshotStorageConnectorTest {
         centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
+        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.emptySet()));
         connector.remove(Collections.singletonList(existing), null);
-        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
+        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.emptySet()));
     }
 
     @Test
@@ -237,9 +237,11 @@ public class SnapshotStorageConnectorTest {
         centralConnector.add(Collections.singletonList(existing), context);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), context));
+        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.singleton(context)));
         connector.remove(Collections.singletonList(existing), context);
-        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), context));
+        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.singleton(context)));
     }
 
     @Test
@@ -249,9 +251,11 @@ public class SnapshotStorageConnectorTest {
         centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
+        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.emptySet()));
         connector.remove(existing.getSubject(), existing.getPredicate(), null, null);
-        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), null));
+        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.emptySet()));
     }
 
     @Test
@@ -263,9 +267,11 @@ public class SnapshotStorageConnectorTest {
         centralConnector.add(Collections.singletonList(existing), context);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), context));
+        assertTrue(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.singleton(context)));
         connector.remove(existing.getSubject(), null, existing.getObject(), context);
-        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(), context));
+        assertFalse(connector.contains(existing.getSubject(), existing.getPredicate(), existing.getObject(),
+                Collections.singleton(context)));
     }
 
     @Test
@@ -366,7 +372,8 @@ public class SnapshotStorageConnectorTest {
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
         connector.executeUpdate(update, StatementOntology.TRANSACTIONAL);
         verify(centralConnector, never()).executeUpdate(eq(update), any());
-        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
+        assertTrue(connector
+                .contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -382,11 +389,14 @@ public class SnapshotStorageConnectorTest {
         connector.begin();
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
         connector.executeUpdate(update, StatementOntology.TRANSACTIONAL);
-        assertTrue(connector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
-        assertFalse(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
+        assertTrue(connector
+                .contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
+        assertFalse(centralConnector
+                .contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
         connector.commit();
         verify(centralConnector).executeUpdate(update, StatementOntology.CENTRAL);
-        assertTrue(centralConnector.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), null));
+        assertTrue(centralConnector
+                .contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test

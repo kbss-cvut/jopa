@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
@@ -131,10 +132,10 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
-    public boolean contains(Axiom<?> axiom, URI context) {
+    public boolean contains(Axiom<?> axiom, Set<URI> contexts) {
         ensureOpen();
         Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
-        return adapter.containsAxiom(axiom, context);
+        return adapter.containsAxiom(axiom, contexts);
     }
 
     @Override

@@ -49,14 +49,14 @@ public class DummyInferredStorageConnectorTest {
 
     @Test
     public void containsWithInferenceByDefaultUsesRegularContains() {
-        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_ONE), null),
-                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_ONE), null));
+        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_ONE), Collections.emptySet()),
+                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
     public void containsWithInferenceInContextByDefaultUsesRegularContainsInContext() {
-        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_TWO), NAMED_GRAPH),
-                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_TWO), NAMED_GRAPH));
+        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)),
+                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test

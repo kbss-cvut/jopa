@@ -98,7 +98,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.newObjectsCloneToOriginal = createMap();
         this.instanceDescriptors = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
-        repoMap.initDescriptors();
         this.cloneBuilder = new CloneBuilderImpl(this);
         this.indirectWrapperHelper = new IndirectWrapperHelper(this);
         this.cacheManager = parent.getLiveObjectCache();

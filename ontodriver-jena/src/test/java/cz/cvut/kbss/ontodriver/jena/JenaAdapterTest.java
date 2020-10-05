@@ -74,7 +74,7 @@ class JenaAdapterTest {
         final NamedResource type = NamedResource.create(Generator.generateUri());
         descriptor.addAssertionValue(a, new Value<>(type));
         adapter.persist(descriptor);
-        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        final ArgumentCaptor<List<Statement>> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
@@ -128,7 +128,7 @@ class JenaAdapterTest {
         final String typeUri = Generator.generateUri().toString();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
-        adapter.contains(ax, Generator.generateUri());
+        adapter.contains(ax, Collections.singleton(Generator.generateUri()));
         verify(connectorMock).begin();
     }
 
@@ -138,7 +138,7 @@ class JenaAdapterTest {
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
         when(connectorMock.contains(any(), any(), any(), any())).thenReturn(true);
-        assertTrue(adapter.contains(ax, null));
+        assertTrue(adapter.contains(ax, Collections.emptySet()));
     }
 
     @Test
@@ -209,10 +209,10 @@ class JenaAdapterTest {
 
         adapter.update(descriptor);
         verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null, null);
-        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        final ArgumentCaptor<List<Statement>> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture(), eq(null));
         assertEquals(1, captor.getValue().size());
-        final Statement result = (Statement) captor.getValue().get(0);
+        final Statement result = captor.getValue().get(0);
         assertEquals(SUBJECT_RESOURCE, result.getSubject());
         assertEquals(assertionToProperty(assertion), result.getPredicate());
         assertEquals(ResourceFactory.createResource(newValue.toString()), result.getObject());

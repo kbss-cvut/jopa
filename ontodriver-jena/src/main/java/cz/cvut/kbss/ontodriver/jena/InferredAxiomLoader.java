@@ -40,8 +40,9 @@ class InferredAxiomLoader extends AbstractAxiomLoader {
     }
 
     @Override
-    boolean contains(Resource subject, Property property, RDFNode object, URI context) {
-        return connector.containsWithInference(subject, property, object, context != null ? context.toString() : null);
+    boolean contains(Resource subject, Property property, RDFNode object, Set<URI> contexts) {
+        return connector.containsWithInference(subject, property, object,
+                contexts.stream().map(URI::toString).collect(Collectors.toSet()));
     }
 
     @Override

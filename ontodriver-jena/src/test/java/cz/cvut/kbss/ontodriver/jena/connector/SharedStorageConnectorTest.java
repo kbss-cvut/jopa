@@ -96,7 +96,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.unwrap(Dataset.class);
         generateTestData(ds);
-        assertTrue(connector.contains(null, RDF.type, createResource(TYPE_ONE), null));
+        assertTrue(connector.contains(null, RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         final Dataset ds = connector.storage.getDataset();
         generateTestData(ds);
-        assertTrue(connector.contains(null, null, createResource(TYPE_TWO), NAMED_GRAPH));
+        assertTrue(connector.contains(null, null, createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test

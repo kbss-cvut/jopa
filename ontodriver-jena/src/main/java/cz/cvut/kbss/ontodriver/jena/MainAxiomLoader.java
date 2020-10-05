@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 class MainAxiomLoader {
 
@@ -42,12 +43,12 @@ class MainAxiomLoader {
      * Checks whether the storage contains the specified axiom.
      *
      * @param axiom   Axiom whose existence should be verified
-     * @param context Context to search, optional
+     * @param contexts Contexts to search, optional (empty indicates default context)
      * @return {@code true} if the axiom exists, {@code false} otherwise
      */
-    boolean contains(Axiom<?> axiom, URI context) {
-        return axiom.getAssertion().isInferred() ? inferredLoader.contains(axiom, context) :
-                explicitLoader.contains(axiom, context);
+    boolean contains(Axiom<?> axiom, Set<URI> contexts) {
+        return axiom.getAssertion().isInferred() ? inferredLoader.contains(axiom, contexts) :
+                explicitLoader.contains(axiom, contexts);
     }
 
     /**

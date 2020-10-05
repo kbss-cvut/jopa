@@ -100,12 +100,12 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public boolean contains(Resource subject, Property property, RDFNode value, String context) {
+    public boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         transaction.verifyActive();
-        final LocalModel.Containment localStatus = localModel.contains(subject, property, value, context);
+        final LocalModel.Containment localStatus = localModel.contains(subject, property, value, contexts);
         return localStatus == LocalModel.Containment.ADDED ||
                 localStatus == LocalModel.Containment.UNKNOWN &&
-                        centralConnector.contains(subject, property, value, context);
+                        centralConnector.contains(subject, property, value, contexts);
     }
 
     @Override

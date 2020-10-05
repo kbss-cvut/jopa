@@ -59,13 +59,14 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
     }
 
     @Override
-    public boolean contains(Resource subject, Property property, RDFNode value, String context) {
+    public boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureTransactionalState();
-        if (context != null) {
-            return ((SnapshotStorageWithInference) storage).getRawNamedGraph(context)
-                                                           .contains(subject, property, value);
-        } else {
+        if (contexts.isEmpty()) {
             return ((SnapshotStorageWithInference) storage).getRawDefaultGraph().contains(subject, property, value);
+        } else {
+            return contexts.stream().anyMatch(c -> ((SnapshotStorageWithInference) storage).getRawNamedGraph(c)
+                                                                                           .contains(subject, property,
+                                                                                                   value));
         }
     }
 
@@ -83,12 +84,13 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
     }
 
     @Override
-    public boolean containsWithInference(Resource subject, Property property, RDFNode value, String context) {
+    public boolean containsWithInference(Resource subject, Property property, RDFNode value,
+                                         Collection<String> contexts) {
         ensureTransactionalState();
-        if (context != null) {
-            return storage.getNamedGraph(context).contains(subject, property, value);
-        } else {
+        if (contexts.isEmpty()) {
             return storage.getDefaultGraph().contains(subject, property, value);
+        } else {
+            return contexts.stream().anyMatch(c -> storage.getNamedGraph(c).contains(subject, property, value));
         }
     }
 

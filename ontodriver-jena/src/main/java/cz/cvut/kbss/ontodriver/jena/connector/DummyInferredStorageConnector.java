@@ -24,8 +24,8 @@ import java.util.Collection;
 
 /**
  * This connector does not support inference, it wraps a regular {@link StorageConnector} and calls its regular methods
- * instead of performing any inference, e.g. {@link StorageConnector#contains(Resource, Property, RDFNode, String)} for
- * {@link #containsWithInference(Resource, Property, RDFNode, String)}.
+ * instead of performing any inference, e.g. {@link StorageConnector#contains(Resource, Property, RDFNode, Collection)}
+ * for {@link #containsWithInference(Resource, Property, RDFNode, Collection)}.
  * <p>
  * Thus, inference-based methods give the same results as regular connector methods.
  */
@@ -44,7 +44,8 @@ class DummyInferredStorageConnector implements InferredStorageConnector {
     }
 
     @Override
-    public boolean containsWithInference(Resource subject, Property property, RDFNode value, String context) {
+    public boolean containsWithInference(Resource subject, Property property, RDFNode value,
+                                         Collection<String> context) {
         return connector.contains(subject, property, value, context);
     }
 

@@ -28,6 +28,10 @@ final class RepositoryMap {
     private final Map<URI, Map<Object, Object>> origsToClones = new HashMap<>();
     private Map<Object, Descriptor> entityDescriptors;
 
+    RepositoryMap() {
+        initDescriptors();
+    }
+
     void initDescriptors() {
         this.entityDescriptors = new IdentityHashMap<>();
     }
@@ -49,17 +53,11 @@ final class RepositoryMap {
         entities.remove(original);
     }
 
-    /**
-     * Make sure to call {@link #initDescriptors()} before calling this.
-     */
     void addEntityToRepository(Object entity, Descriptor descriptor) {
         assert entityDescriptors != null;
         entityDescriptors.put(entity, descriptor);
     }
 
-    /**
-     * Make sure to call {@link #initDescriptors()} before calling this.
-     */
     void removeEntityToRepository(Object entity) {
         assert entityDescriptors != null;
         entityDescriptors.remove(entity);
@@ -84,9 +82,6 @@ final class RepositoryMap {
         return entities.get(original);
     }
 
-    /**
-     * Make sure to call {@link #initDescriptors()} before calling this.
-     */
     Descriptor getEntityDescriptor(Object entity) {
         assert entityDescriptors != null;
         assert entity != null;

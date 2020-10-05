@@ -179,8 +179,8 @@ public class JenaConnectionTest {
         final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Generator.generateUri())));
         final URI context = Generator.generateUri();
-        connection.contains(axiom, context);
-        verify(adapterMock).contains(axiom, context);
+        connection.contains(axiom, Collections.singleton(context));
+        verify(adapterMock).contains(axiom, Collections.singleton(context));
     }
 
     @Test
@@ -190,7 +190,7 @@ public class JenaConnectionTest {
         final URI context = Generator.generateUri();
         connection.close();
         expectClosedException();
-        connection.contains(axiom, context);
+        connection.contains(axiom, Collections.singleton(context));
     }
 
     @Test

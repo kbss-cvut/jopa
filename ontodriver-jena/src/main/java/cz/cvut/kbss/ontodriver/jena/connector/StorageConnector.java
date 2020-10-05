@@ -50,7 +50,7 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
      * @param subject  Statement subject, optional
      * @param property Property, optional
      * @param value    Value, optional
-     * @param contexts  Named graph IRIs, optional. If empty, the default graph will be used
+     * @param contexts Named graph IRIs, optional. If empty, the default graph will be used
      * @return Collection of matching statements
      */
     Collection<Statement> find(Resource subject, Property property, RDFNode value, Collection<String> contexts);
@@ -65,10 +65,10 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
      * @param subject  Subject, optional
      * @param property Property, optional
      * @param value    Value, optional
-     * @param context  Named graph IRI, optional
+     * @param contexts Named graph IRIs, optional. If empty, the default graph will be used
      * @return {@code true} if at least one statement matches the criteria, {@code false} otherwise
      */
-    boolean contains(Resource subject, Property property, RDFNode value, String context);
+    boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts);
 
     /**
      * Lists all contexts (named graph) in the repository (including the transactional ones).
