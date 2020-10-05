@@ -39,8 +39,9 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
     }
 
     @Override
-    boolean contains(Resource subject, Property property, RDFNode object, URI context) {
-        return connector.contains(subject, property, object, context != null ? context.toString() : null);
+    boolean contains(Resource subject, Property property, RDFNode object, Set<URI> contexts) {
+        return connector
+                .contains(subject, property, object, contexts.stream().map(URI::toString).collect(Collectors.toSet()));
     }
 
     @Override
@@ -122,6 +123,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
     }
 
     private static boolean assertionContextMatchesSubject(Set<URI> subjectCtx, Set<URI> assertionCtx) {
-        return (subjectCtx.isEmpty() && assertionCtx.isEmpty()) || (!subjectCtx.isEmpty() && assertionCtx.stream().anyMatch(subjectCtx::contains));
+        return (subjectCtx.isEmpty() && assertionCtx.isEmpty()) ||
+                (!subjectCtx.isEmpty() && assertionCtx.stream().anyMatch(subjectCtx::contains));
     }
 }

@@ -72,41 +72,46 @@ class LocalModel {
         return statements;
     }
 
-    Containment contains(Resource subject, Property property, RDFNode value, String context) {
-        final Model removedModel = context != null ? removed.getNamedModel(context) : removedDefault();
-        final Model addedModel = context != null ? added.getNamedModel(context) : addedDefault();
-        if (removedModel.contains(subject, property, value)) {
-            return Containment.REMOVED;
+    Containment contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
+        if (contexts.isEmpty()) {
+            if (removedDefault().contains(subject, property, value)) {
+                return Containment.REMOVED;
+            } else {
+                return addedDefault().contains(subject, property, value) ? Containment.ADDED :
+                       Containment.UNKNOWN;
+            }
         } else {
-            return addedModel.contains(subject, property, value) ? Containment.ADDED :
-                   Containment.UNKNOWN;
+            Containment result = Containment.UNKNOWN;
+            for (String c : contexts) {
+                if (removed.getNamedModel(c).contains(subject, property, value)) {
+                    return Containment.REMOVED;
+                } else if (added.getNamedModel(c).contains(subject, property, value)) {
+                    result = Containment.ADDED;
+                }
+            }
+            return result;
         }
     }
 
     void addStatements(List<Statement> statements, String context) {
+        registerStatements(statements, context, added, removed);
+    }
+
+    private void registerStatements(List<Statement> statements, String context, Dataset addTo, Dataset removeFrom) {
         if (context != null) {
-            added.getNamedModel(context).add(statements);
-            removed.getNamedModel(context).remove(statements);
+            addTo.getNamedModel(context).add(statements);
+            removeFrom.getNamedModel(context).remove(statements);
         } else {
-            added.getDefaultModel().add(statements);
-            removed.getDefaultModel().remove(statements);
+            addTo.getDefaultModel().add(statements);
+            removeFrom.getDefaultModel().remove(statements);
             if (defaultAsUnion) {
-                removed.listNames().forEachRemaining(n -> removed.getNamedModel(n).remove(statements));
+                removeFrom.listNames().forEachRemaining(n -> removeFrom.getNamedModel(n).remove(statements));
             }
         }
     }
 
     void removeStatements(List<Statement> statements, String context) {
-        if (context != null) {
-            removed.getNamedModel(context).add(statements);
-            added.getNamedModel(context).remove(statements);
-        } else {
-            removed.getDefaultModel().add(statements);
-            added.getDefaultModel().remove(statements);
-            if (defaultAsUnion) {
-                added.listNames().forEachRemaining(n -> added.getNamedModel(n).remove(statements));
-            }
-        }
+        registerStatements(statements, context, removed, added);
     }
 
     Dataset getAdded() {

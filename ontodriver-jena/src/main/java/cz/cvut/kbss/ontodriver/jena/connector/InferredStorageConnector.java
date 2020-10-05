@@ -48,10 +48,10 @@ public interface InferredStorageConnector extends StatementExecutor {
      * @param subject  Subject, optional
      * @param property Property, optional
      * @param value    Value, optional
-     * @param context  Named graph IRI, optional
+     * @param contexts Named graph IRIs, optional. Empty collection indicates the default graph should be used
      * @return {@code true} if at least one statement matches the criteria, {@code false} otherwise
      */
-    boolean containsWithInference(Resource subject, Property property, RDFNode value, String context);
+    boolean containsWithInference(Resource subject, Property property, RDFNode value, Collection<String> contexts);
 
     /**
      * Checks whether named graph with the specified IRI is consistent.

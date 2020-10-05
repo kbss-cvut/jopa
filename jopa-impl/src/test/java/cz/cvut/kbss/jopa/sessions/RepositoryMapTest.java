@@ -64,7 +64,6 @@ public class RepositoryMapTest {
     public void setUp() throws Exception {
         initData();
         this.repoMap = new RepositoryMap();
-        repoMap.initDescriptors();
         final Field mapField = RepositoryMap.class.getDeclaredField("origsToClones");
         mapField.setAccessible(true);
         this.theMap = (Map<URI, Map<Object, Object>>) mapField.get(repoMap);

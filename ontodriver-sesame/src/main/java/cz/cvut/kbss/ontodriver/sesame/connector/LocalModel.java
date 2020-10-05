@@ -44,18 +44,12 @@ class LocalModel {
         statements.removeAll(removed);
     }
 
-    Contains contains(Resource subject, IRI property, Value object, IRI context) {
-        if (context != null) {
-            if (addedStatements.contains(subject, property, object, context)) {
-                return Contains.TRUE;
-            }
-            return removedStatements.contains(subject, property, object, context) ? Contains.FALSE : Contains.UNKNOWN;
-        } else {
-            if (addedStatements.contains(subject, property, object)) {
-                return Contains.TRUE;
-            }
-            return removedStatements.contains(subject, property, object) ? Contains.FALSE : Contains.UNKNOWN;
+    Contains contains(Resource subject, IRI property, Value object, Collection<IRI> contexts) {
+        final IRI[] ctxArray = contexts.toArray(new IRI[0]);
+        if (addedStatements.contains(subject, property, object, ctxArray)) {
+            return Contains.TRUE;
         }
+        return removedStatements.contains(subject, property, object, ctxArray) ? Contains.FALSE : Contains.UNKNOWN;
     }
 
     void addStatements(Collection<Statement> statements) {

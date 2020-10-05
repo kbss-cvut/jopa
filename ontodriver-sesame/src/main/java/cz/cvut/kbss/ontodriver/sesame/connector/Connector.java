@@ -87,7 +87,8 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @param property        Statement property, optional
      * @param value           Statement value, optional
      * @param includeInferred Whether to include inferred statements as well
-     * @param contexts         Contexts in which the search should be performed. Empty collection indicates the default context will be searched
+     * @param contexts        Contexts in which the search should be performed. Empty collection indicates the default
+     *                        context will be searched
      * @return Collection of matching statements
      * @throws SesameDriverException If a repository access error occurs
      */
@@ -97,40 +98,25 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
 
     /**
      * Checks whether the repository contains any statements matching the specified criteria.
-     * <p>
-     * This version searches the default context.
      *
      * @param subject         Statement subject, optional
      * @param property        Statement property, optional
      * @param value           Statement value, optional
      * @param includeInferred Whether to include inferred statements as well
-     * @return Boolean indicating whether the statement exists
-     * @throws SesameDriverException If a repository access error occurs
-     * @see #containsStatement(Resource, IRI, Value, boolean, IRI)
-     */
-    boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred)
-            throws SesameDriverException;
-
-    /**
-     * Checks whether the repository contains any statements matching the specified criteria.
-     *
-     * @param subject         Statement subject, optional
-     * @param property        Statement property, optional
-     * @param value           Statement value, optional
-     * @param includeInferred Whether to include inferred statements as well
-     * @param context         Optionally specify context in which the search should be performed. If not specified, the
-     *                        default one is used
+     * @param contexts        Optionally specify contexts in which the search should be performed. If empty, the default
+     *                        one is used
      * @return Boolean indicating whether the statement exists
      * @throws SesameDriverException If a repository access error occurs
      */
-    boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred, IRI context)
+    boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
+                              Collection<IRI> contexts)
             throws SesameDriverException;
 
     /**
      * Adds the specified statements to the underlying repository.
      * <p>
-     * Note that this operation is transactional and the changes are required to
-     * be persistent only after successful {@link #commit()}.
+     * Note that this operation is transactional and the changes are required to be persistent only after successful
+     * {@link #commit()}.
      *
      * @param statements The statements to add
      * @throws IllegalStateException If transaction is not active
@@ -141,8 +127,8 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
     /**
      * Removes the specified statements from the underlying repository.
      * <p>
-     * Note that this operation is transactional and the changes are required to
-     * be persistent only after successful {@link #commit()}.
+     * Note that this operation is transactional and the changes are required to be persistent only after successful
+     * {@link #commit()}.
      *
      * @param statements The statements to remove
      * @throws IllegalStateException If transaction is not active

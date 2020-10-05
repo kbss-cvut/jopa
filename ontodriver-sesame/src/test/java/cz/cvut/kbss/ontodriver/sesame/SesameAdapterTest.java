@@ -135,11 +135,11 @@ class SesameAdapterTest {
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"),
                 false), new Value<>("StringValue"));
         adapter.persist(ad);
-        final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        final ArgumentCaptor<Collection<Statement>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
-        final Collection<?> res = captor.getValue();
+        final Collection<Statement> res = captor.getValue();
         assertEquals(2, res.size());
-        assertTrue(statementsCorrespondToAxiomDescriptor(ad, (Collection<Statement>) res));
+        assertTrue(statementsCorrespondToAxiomDescriptor(ad, res));
     }
 
     private boolean statementsCorrespondToAxiomDescriptor(AxiomValueDescriptor ad,
@@ -193,11 +193,11 @@ class SesameAdapterTest {
         ad.setAssertionContext(dataAssertion,
                 URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne"));
         adapter.persist(ad);
-        final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        final ArgumentCaptor<Collection<Statement>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
-        final Collection<?> res = captor.getValue();
+        final Collection<Statement> res = captor.getValue();
         assertEquals(4, res.size());
-        assertTrue(statementsCorrespondToAxiomDescriptor(ad, (Collection<Statement>) res));
+        assertTrue(statementsCorrespondToAxiomDescriptor(ad, res));
     }
 
     @Test
@@ -218,11 +218,11 @@ class SesameAdapterTest {
                 new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYYY")));
         ad.setSubjectContext(URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne"));
         adapter.persist(ad);
-        final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        final ArgumentCaptor<Collection<Statement>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
-        final Collection<?> res = captor.getValue();
+        final Collection<Statement> res = captor.getValue();
         assertEquals(4, res.size());
-        assertTrue(statementsCorrespondToAxiomDescriptor(ad, (Collection<Statement>) res));
+        assertTrue(statementsCorrespondToAxiomDescriptor(ad, res));
     }
 
     @Test
@@ -242,11 +242,11 @@ class SesameAdapterTest {
                 false);
         ad.addAssertionValue(dataAssertion, new Value<>("stringValue"));
         adapter.persist(ad);
-        final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        final ArgumentCaptor<Collection<Statement>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
-        final Collection<?> res = captor.getValue();
+        final Collection<Statement> res = captor.getValue();
         assertEquals(3, res.size());
-        assertTrue(statementsCorrespondToAxiomDescriptor(ad, (Collection<Statement>) res));
+        assertTrue(statementsCorrespondToAxiomDescriptor(ad, res));
     }
 
     @Test
@@ -266,11 +266,11 @@ class SesameAdapterTest {
         ad.addAssertionValue(dataAssertion, new Value<>("StringValue"));
         ad.setAssertionContext(dataAssertion, propertyCtx);
         adapter.persist(ad);
-        final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        final ArgumentCaptor<Collection<Statement>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
-        final Collection<?> res = captor.getValue();
+        final Collection<Statement> res = captor.getValue();
         assertEquals(2, res.size());
-        assertTrue(statementsCorrespondToAxiomDescriptor(ad, (Collection<Statement>) res));
+        assertTrue(statementsCorrespondToAxiomDescriptor(ad, res));
         // This checks that the contexts are set correctly
         for (Object s : res) {
             final Statement stmt = (Statement) s;
@@ -585,12 +585,12 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
+                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
         verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
-                VF.createIRI(clsUri.toString()), true);
+                VF.createIRI(clsUri.toString()), true, Collections.emptySet());
     }
 
     @Test
@@ -598,13 +598,13 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz/class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
+                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
         assertTrue(res.toString().contains("/instance"));
         verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
-                VF.createIRI(clsUri.toString()), true);
+                VF.createIRI(clsUri.toString()), true, Collections.emptySet());
     }
 
     @Test
@@ -612,12 +612,12 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz/class/");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
+                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
         verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
-                VF.createIRI(clsUri.toString()), true);
+                VF.createIRI(clsUri.toString()), true, Collections.emptySet());
     }
 
     @Test
@@ -625,7 +625,7 @@ class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
                 connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true))).thenReturn(true);
+                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(true);
         assertThrows(IdentifierGenerationException.class, () -> adapter.generateIdentifier(clsUri));
     }
 
@@ -656,11 +656,11 @@ class SesameAdapterTest {
                 new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         when(connectorMock
                 .containsStatement(eq(subjectIri), eq(RDF.TYPE), eq(VF.createIRI(ax.getValue().stringValue())),
-                        anyBoolean(), eq(null))).thenReturn(true);
+                        anyBoolean(), anySet())).thenReturn(true);
 
-        assertTrue(adapter.contains(ax, null));
+        assertTrue(adapter.contains(ax, Collections.emptySet()));
         verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
-                VF.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(), null);
+                VF.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(), Collections.emptySet());
     }
 
     @Test
@@ -672,12 +672,12 @@ class SesameAdapterTest {
         when(
                 connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
                         eq(VF.createIRI(ax.getValue().stringValue())), anyBoolean(),
-                        any(org.eclipse.rdf4j.model.IRI.class))).thenReturn(true);
+                        anyCollection())).thenReturn(true);
 
-        assertTrue(adapter.contains(ax, context));
+        assertTrue(adapter.contains(ax, Collections.singleton(context)));
         verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
                 VF.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(),
-                VF.createIRI(context.toString()));
+                Collections.singleton(VF.createIRI(context.toString())));
     }
 
     @Test
@@ -688,13 +688,13 @@ class SesameAdapterTest {
                 new Value<>(val));
         when(
                 connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
-                        eq(VF.createLiteral(val)), anyBoolean(), any(org.eclipse.rdf4j.model.IRI.class)))
+                        eq(VF.createLiteral(val)), anyBoolean(), anyCollection()))
                 .thenReturn(false);
 
-        assertFalse(adapter.contains(ax, context));
+        assertFalse(adapter.contains(ax, Collections.singleton(context)));
         verify(connectorMock)
                 .containsStatement(subjectIri, RDF.TYPE, VF.createLiteral(val), ax.getAssertion().isInferred(),
-                        VF.createIRI(context.toString()));
+                        Collections.singleton(VF.createIRI(context.toString())));
     }
 
     @Test

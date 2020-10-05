@@ -128,12 +128,12 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     }
 
     @Override
-    public boolean contains(Resource subject, Property property, RDFNode value, String context) {
+    public boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureTransactionalState();
-        if (context != null) {
-            return storage.getNamedGraph(context).contains(subject, property, value);
-        } else {
+        if (contexts.isEmpty()) {
             return storage.getDefaultGraph().contains(subject, property, value);
+        } else {
+            return contexts.stream().anyMatch(c -> storage.getNamedGraph(c).contains(subject, property, value));
         }
     }
 
@@ -163,7 +163,8 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     @Override
     public void remove(Resource subject, Property property, RDFNode object, String context) {
         ensureTransactionalState();
-        final List<Statement> toRemove = find(subject, property, object, context != null ? Collections.singleton(context) : Collections.emptySet());
+        final List<Statement> toRemove = find(subject, property, object,
+                context != null ? Collections.singleton(context) : Collections.emptySet());
         remove(toRemove, context);
     }
 

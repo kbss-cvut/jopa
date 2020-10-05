@@ -55,8 +55,8 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
         when(connectorMock.contains(any(), any(), any(), any())).thenReturn(true);
-        assertTrue(explicitAxiomLoader.contains(ax, null));
-        verify(connectorMock).contains(SUBJECT_RES, createProperty(Vocabulary.RDF_TYPE), createResource(typeUri), null);
+        assertTrue(explicitAxiomLoader.contains(ax, Collections.emptySet()));
+        verify(connectorMock).contains(SUBJECT_RES, createProperty(Vocabulary.RDF_TYPE), createResource(typeUri), Collections.emptySet());
     }
 
     @Test
@@ -65,10 +65,10 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final URI contextUri = Generator.generateUri();
         final Axiom<?> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(typeUri)));
-        when(connectorMock.contains(any(), any(), any(), anyString())).thenReturn(false);
-        assertFalse(explicitAxiomLoader.contains(ax, contextUri));
+        when(connectorMock.contains(any(), any(), any(), anyCollection())).thenReturn(false);
+        assertFalse(explicitAxiomLoader.contains(ax, Collections.singleton(contextUri)));
         verify(connectorMock).contains(SUBJECT_RES, createProperty(Vocabulary.RDF_TYPE), createResource(typeUri),
-                contextUri.toString());
+                Collections.singleton(contextUri.toString()));
     }
 
     @Test

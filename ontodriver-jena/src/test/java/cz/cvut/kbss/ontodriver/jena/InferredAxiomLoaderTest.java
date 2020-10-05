@@ -54,10 +54,10 @@ class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final URI clsUri = Generator.generateUri();
         final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(clsUri)));
-        when(connectorMock.containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), null))
+        when(connectorMock.containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), Collections.emptySet()))
                 .thenReturn(true);
-        assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock).containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), null);
+        assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
+        verify(connectorMock).containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), Collections.emptySet());
     }
 
     @Test
@@ -66,11 +66,13 @@ class InferredAxiomLoaderTest extends AxiomLoaderTestBase {
         final Axiom<?> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(clsUri)));
         when(connectorMock
-                .containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), CONTEXT.toString()))
+                .containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()),
+                        Collections.singleton(CONTEXT.toString())))
                 .thenReturn(true);
-        assertTrue(axiomLoader.contains(axiom, CONTEXT));
+        assertTrue(axiomLoader.contains(axiom, Collections.singleton(CONTEXT)));
         verify(connectorMock)
-                .containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()), CONTEXT.toString());
+                .containsWithInference(SUBJECT_RES, RDF.type, createResource(clsUri.toString()),
+                        Collections.singleton(CONTEXT.toString()));
     }
 
     @Test

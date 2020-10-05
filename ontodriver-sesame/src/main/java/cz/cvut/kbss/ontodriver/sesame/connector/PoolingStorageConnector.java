@@ -183,28 +183,20 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred)
-            throws SesameDriverException {
-        return containsStatement(subject, property, value, includeInferred, null);
-    }
-
-    @Override
-    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred, IRI context)
+    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
+                                     Collection<IRI> contexts)
             throws SesameDriverException {
         verifyTransactionActive();
         try {
-            final LocalModel.Contains containsLocally = localModel.contains(subject, property, value, context);
+            final LocalModel.Contains containsLocally = localModel.contains(subject, property, value, contexts);
             switch (containsLocally) {
                 case TRUE:
                     return true;
                 case FALSE:
                     return false;
                 default:
-                    if (context != null) {
-                        return connection.hasStatement(subject, property, value, includeInferred, context);
-                    } else {
-                        return connection.hasStatement(subject, property, value, includeInferred);
-                    }
+                    return connection
+                            .hasStatement(subject, property, value, includeInferred, contexts.toArray(new IRI[0]));
             }
         } catch (RepositoryException e) {
             rollback();

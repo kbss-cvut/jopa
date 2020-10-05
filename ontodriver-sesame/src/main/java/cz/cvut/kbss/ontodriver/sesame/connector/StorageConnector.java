@@ -261,20 +261,11 @@ class StorageConnector extends AbstractConnector {
     }
 
     @Override
-    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred)
-            throws SesameDriverException {
-        return containsStatement(subject, property, value, includeInferred, null);
-    }
-
-    @Override
-    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred, IRI context)
+    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
+                                     Collection<IRI> contexts)
             throws SesameDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
-            if (context != null) {
-                return conn.hasStatement(subject, property, null, includeInferred, context);
-            } else {
-                return conn.hasStatement(subject, property, null, includeInferred);
-            }
+            return conn.hasStatement(subject, property, null, includeInferred, contexts.toArray(new IRI[0]));
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);
         }

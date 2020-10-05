@@ -18,7 +18,10 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 import cz.cvut.kbss.ontodriver.util.TransactionState;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -335,7 +338,7 @@ public class PoolingStorageConnectorTest {
         connector.begin();
         connector
                 .addStatements(Collections.singletonList(vf.createStatement(subject, property, vf.createLiteral(117))));
-        assertTrue(connector.containsStatement(subject, property, null, false));
+        assertTrue(connector.containsStatement(subject, property, null, false, Collections.emptySet()));
         verify(conn, never()).hasStatement(subject, property, null, false);
     }
 
@@ -343,25 +346,25 @@ public class PoolingStorageConnectorTest {
     public void containsReturnsTrueWhenCentralConnectorsContainsStatementAndLocalDoesNot() throws Exception {
         final Resource subject = vf.createIRI(Generator.generateUri().toString());
         final IRI property = vf.createIRI(Generator.generateUri().toString());
-        when(centralMock.containsStatement(subject, property, null, false)).thenReturn(true);
+        when(centralMock.containsStatement(subject, property, null, false, Collections.emptySet())).thenReturn(true);
         final RepositoryConnection conn = mock(RepositoryConnection.class);
         when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
         when(centralMock.acquireConnection()).thenReturn(conn);
         connector.begin();
-        assertTrue(connector.containsStatement(subject, property, null, false));
+        assertTrue(connector.containsStatement(subject, property, null, false, Collections.emptySet()));
     }
 
     @Test
     public void containsReturnsFalseWhenStatementsWasRemovedLocally() throws Exception {
         final Resource subject = vf.createIRI(Generator.generateUri().toString());
         final IRI property = vf.createIRI(Generator.generateUri().toString());
-        when(centralMock.containsStatement(subject, property, null, false)).thenReturn(true);
+        when(centralMock.containsStatement(subject, property, null, false, Collections.emptySet())).thenReturn(true);
         final RepositoryConnection conn = mock(RepositoryConnection.class);
         when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
         when(centralMock.acquireConnection()).thenReturn(conn);
         connector.begin();
         connector.removeStatements(
                 Collections.singletonList(vf.createStatement(subject, property, vf.createLiteral(117))));
-        assertFalse(connector.containsStatement(subject, property, null, false));
+        assertFalse(connector.containsStatement(subject, property, null, false, Collections.emptySet()));
     }
 }
