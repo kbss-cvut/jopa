@@ -89,8 +89,8 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void testCreateForEntityLoadingWithTypesInContext() throws Exception {
-        descriptor.addAttributeContext(OWLClassA.getTypesField(), CONTEXT);
+    void testCreateForEntityLoadingWithTypesInContext() {
+        descriptor.addAttributeContext(metamodelMocks.forOwlClassA().typesSpec(), CONTEXT);
         final AxiomDescriptor res = sut
                 .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor),
                         metamodelMocks.forOwlClassA().entityType());
@@ -118,8 +118,8 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void testCreateForEntityLoadingWithObjectPropertyInContext() throws Exception {
-        descriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
+    void testCreateForEntityLoadingWithObjectPropertyInContext() {
+        descriptor.addAttributeContext(metamodelMocks.forOwlClassD().owlClassAAtt(), CONTEXT);
         final AxiomDescriptor res = sut
                 .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor),
                         metamodelMocks.forOwlClassD().entityType());
@@ -180,7 +180,7 @@ class AxiomDescriptorFactoryTest {
     @Test
     void testCreateForFieldLoadingObjectPropertyInEntityContext() throws Exception {
         final Descriptor desc = new EntityDescriptor(false);
-        desc.addAttributeDescriptor(OWLClassD.getOwlClassAField(), new EntityDescriptor(CONTEXT));
+        desc.addAttributeDescriptor(metamodelMocks.forOwlClassD().owlClassAAtt(), new EntityDescriptor(CONTEXT));
         final AxiomDescriptor res = sut.createForFieldLoading(PK,
                 OWLClassD.getOwlClassAField(), desc, metamodelMocks.forOwlClassD().entityType());
         assertEquals(1, res.getAssertions().size());
@@ -252,10 +252,10 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void createForEntityLoadingSetsLanguageTagOfSpecificAssertionAccordingToDescriptor() throws Exception {
+    void createForEntityLoadingSetsLanguageTagOfSpecificAssertionAccordingToDescriptor() {
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage("en");
-        descriptor.setAttributeLanguage(OWLClassA.getStrAttField(), "cs");
+        descriptor.setAttributeLanguage(metamodelMocks.forOwlClassA().stringAttribute(), "cs");
         final AxiomDescriptor res = sut.createForEntityLoading(loadingParameters(OWLClassA.class, descriptor),
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -289,7 +289,7 @@ class AxiomDescriptorFactoryTest {
     @Test
     void createForFieldLoadingSetsLanguageTagBasedOnAttributeLanguageTagInDescriptor() throws Exception {
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(OWLClassA.getStrAttField(), "cs");
+        descriptor.setAttributeLanguage(metamodelMocks.forOwlClassA().stringAttribute(), "cs");
         final AxiomDescriptor res = sut.createForFieldLoading(PK, OWLClassA.getStrAttField(), descriptor,
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -323,7 +323,7 @@ class AxiomDescriptorFactoryTest {
     @Test
     void createForFieldLoadingAllowsOverridingPULevelLanguageSetting() throws Exception {
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(OWLClassA.getStrAttField(), null);
+        descriptor.setAttributeLanguage(metamodelMocks.forOwlClassA().stringAttribute(), null);
         final AxiomDescriptor res = sut.createForFieldLoading(PK, OWLClassA.getStrAttField(), descriptor,
                 metamodelMocks.forOwlClassA().entityType());
         final Set<Assertion> assertions = res.getAssertions();
@@ -369,9 +369,8 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void createForEntityLoadingUsesSubjectContextForAssertionWhenAssertionsInSubjectContextIsConfiguredInDescriptor()
-            throws Exception {
-        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), descriptorInContext);
+    void createForEntityLoadingUsesSubjectContextForAssertionWhenAssertionsInSubjectContextIsConfiguredInDescriptor() {
+        descriptor.addAttributeDescriptor(metamodelMocks.forOwlClassD().owlClassAAtt(), descriptorInContext);
         final LoadingParameters<OWLClassD> params = new LoadingParameters<>(OWLClassD.class, PK, descriptor);
         final AxiomDescriptor desc = sut.createForEntityLoading(params, metamodelMocks.forOwlClassD().entityType());
         assertEquals(Collections.emptySet(), desc.getAssertionContexts(
@@ -381,7 +380,7 @@ class AxiomDescriptorFactoryTest {
     @Test
     void createForFieldLoadingUsesSubjectContextForAssertionWhenAssertionsInSubjectContextIsConfiguredInDescriptor()
             throws Exception {
-        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), descriptorInContext);
+        descriptor.addAttributeDescriptor(metamodelMocks.forOwlClassD().owlClassAAtt(), descriptorInContext);
         final AxiomDescriptor desc = sut.createForFieldLoading(PK, OWLClassD.getOwlClassAField(), descriptor,
                 metamodelMocks.forOwlClassD().entityType());
         assertEquals(Collections.emptySet(), desc.getAssertionContexts(
@@ -409,8 +408,8 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void createForLoadingSetsDefaultContextForAssertionInDefaultWhenSubjectContextIsDifferent() throws Exception {
-        descriptorInContext.addAttributeContext(OWLClassA.getStrAttField(), null);
+    void createForLoadingSetsDefaultContextForAssertionInDefaultWhenSubjectContextIsDifferent() {
+        descriptorInContext.addAttributeContext(metamodelMocks.forOwlClassA().stringAttribute(), null);
         final LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, PK, descriptorInContext);
 
         final AxiomDescriptor desc = sut

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -184,7 +182,7 @@ class EntityConstructorTest {
     void testReconstructEntityWithObjectProperty() throws Exception {
         final Set<Axiom<?>> axiomsD = getAxiomsForD();
         final Descriptor fieldDesc = new EntityDescriptor();
-        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), fieldDesc);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDesc);
         final OWLClassA entityA = new OWLClassA();
         entityA.setUri(PK_TWO);
         entityA.setStringAttribute(STRING_ATT);
@@ -261,7 +259,7 @@ class EntityConstructorTest {
     void reconstructsEntityWithObjectPropertyWhereRangeDoesNotMatch() throws Exception {
         final Set<Axiom<?>> axioms = getAxiomsForD();
         final Descriptor fieldDescriptor = new EntityDescriptor();
-        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), fieldDescriptor);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDescriptor);
         // The property value hasn't the corresponding type, so it cannot be returned by mapper
         when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDescriptor)).thenReturn(null);
         final OWLClassD res = constructor.reconstructEntity(PK, mocks.forOwlClassD().entityType(), descriptor, axioms);
@@ -280,7 +278,7 @@ class EntityConstructorTest {
         final OWLClassA entityThree = new OWLClassA();
         entityThree.setUri(pkThree);
         final Descriptor fieldDescriptor = new EntityDescriptor();
-        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), fieldDescriptor);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDescriptor);
         when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDescriptor)).thenReturn(entityA);
         when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, pkThree, fieldDescriptor))
                 .thenReturn(entityThree);
@@ -305,7 +303,7 @@ class EntityConstructorTest {
     void testSetFieldValue_ObjectProperty() throws Exception {
         final Set<Axiom<?>> axioms = new HashSet<>();
         final Descriptor fieldDesc = mock(Descriptor.class);
-        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), fieldDesc);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDesc);
         axioms.add(createObjectPropertyAxiomForD());
         final OWLClassD entityD = new OWLClassD();
         entityD.setUri(PK);
@@ -326,7 +324,7 @@ class EntityConstructorTest {
     void testSetFieldValue_Types() throws Exception {
         final Set<Axiom<?>> axioms = new HashSet<>(getTypesAxiomsForOwlClassA());
         final Descriptor fieldDesc = mock(Descriptor.class);
-        descriptor.addAttributeDescriptor(OWLClassA.getTypesField(), fieldDesc);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassA().typesSpec(), fieldDesc);
         final OWLClassA entityA = new OWLClassA();
         entityA.setUri(PK);
         assertNull(entityA.getTypes());
@@ -365,7 +363,7 @@ class EntityConstructorTest {
     void testSetFieldValue_ObjectPropertySet() throws Exception {
         final Descriptor desc = mock(Descriptor.class);
         final Set<OWLClassA> set = initEntities(desc);
-        descriptor.addAttributeDescriptor(OWLClassJ.getOwlClassAField(), desc);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassJ().setAttribute(), desc);
         final Collection<Axiom<?>> axioms = initAxiomsForReferencedSet(set);
         final OWLClassJ entityJ = new OWLClassJ();
         entityJ.setUri(PK);
@@ -442,7 +440,7 @@ class EntityConstructorTest {
 
     private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date,
                                                        OWLClassM.Severity severity) throws
-                                                                                    Exception {
+            Exception {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         if (b != null) {
             final String boolAttIri = OWLClassM.getBooleanAttributeField().getAnnotation(OWLDataProperty.class).iri();
@@ -534,7 +532,7 @@ class EntityConstructorTest {
         final Set<Axiom<NamedResource>> listAxioms = new HashSet<>();
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(listAxioms);
         final Descriptor attDescriptor = new EntityDescriptor();
-        descriptor.addAttributeDescriptor(OWLClassL.getReferencedListField(), attDescriptor);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassL().referencedListAtt(), attDescriptor);
         final Assertion nodeContent = Assertion
                 .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
         final int max = OWLClassL.getReferencedListField().getAnnotation(ParticipationConstraints.class).value()[0]

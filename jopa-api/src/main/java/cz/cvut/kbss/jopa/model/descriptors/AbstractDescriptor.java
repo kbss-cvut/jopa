@@ -12,11 +12,10 @@
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
+import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
+
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Defines base descriptor, which is used to specify context information for entities and their fields.
@@ -54,6 +53,14 @@ public abstract class AbstractDescriptor implements Descriptor {
     @Override
     public Set<URI> getContexts() {
         return Collections.unmodifiableSet(contexts);
+    }
+
+    @Override
+    public Optional<URI> getSingleContext() {
+        if (contexts.size() > 1) {
+            throw new AmbiguousContextException("Expected at most one context, but got " + contexts);
+        }
+        return contexts.isEmpty() ? Optional.empty() : Optional.of(contexts.iterator().next());
     }
 
     @Override

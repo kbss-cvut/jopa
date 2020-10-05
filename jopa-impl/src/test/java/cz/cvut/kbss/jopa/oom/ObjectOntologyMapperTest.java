@@ -459,7 +459,7 @@ class ObjectOntologyMapperTest {
         final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
         final Descriptor descriptor = new EntityDescriptor();
         final Descriptor aDescriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
-        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), aDescriptor);
         d.setOwlClassA(a);
         final Assertion assertion =
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);

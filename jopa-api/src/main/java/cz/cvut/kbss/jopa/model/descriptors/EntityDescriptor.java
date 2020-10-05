@@ -175,11 +175,10 @@ public class EntityDescriptor extends AbstractDescriptor {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (fieldDescriptors != null ? fieldDescriptors.entrySet().stream()
-                                                                           .map(e -> e.getKey().hashCode() ^
-                                                                                   (e.getValue() == this ? 0 :
-                                                                                    e.getValue().hashCode())).reduce(0,
-                        Integer::sum) : 0);
+        result = 31 * result + fieldDescriptors.entrySet().stream()
+                                               .map(e -> e.getKey().hashCode() ^
+                                                       (e.getValue() == this ? 0 :
+                                                        e.getValue().hashCode())).reduce(0, Integer::sum);
         return result;
     }
 }

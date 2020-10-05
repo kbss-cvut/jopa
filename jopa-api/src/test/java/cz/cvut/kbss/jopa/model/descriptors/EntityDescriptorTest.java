@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
+import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -335,5 +336,25 @@ class EntityDescriptorTest {
         assertThat(sut.getAttributeContexts(parentAtt), empty());
         final Descriptor result = sut.getAttributeDescriptor(parentAtt);
         assertEquals(Collections.singleton(CONTEXT_ONE), result.getContexts());
+    }
+
+    @Test
+    void getSingleContextReturnsOneContextSpecifiedInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        assertTrue(sut.getSingleContext().isPresent());
+        assertEquals(CONTEXT_ONE, sut.getSingleContext().get());
+    }
+
+    @Test
+    void getSingleContextReturnsEmptyOptionalWhenNoContextsAreSetInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        assertFalse(sut.getSingleContext().isPresent());
+    }
+
+    @Test
+    void getSingleContextThrowsAmbiguousContextExceptionWhenMultipleContextsAreSpecifiedInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addContext(CONTEXT_TWO);
+        assertThrows(AmbiguousContextException.class, sut::getSingleContext);
     }
 }

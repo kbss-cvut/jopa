@@ -60,7 +60,7 @@ public class DetachedInstanceMergerTest {
     }
 
     @Test
-    public void mergeFromDetachedAssignsValuesOfNonManagedTypes() throws Exception {
+    public void mergeFromDetachedAssignsValuesOfNonManagedTypes() {
         final OWLClassA original = Generators.generateOwlClassAInstance();
         final OWLClassA detached = new OWLClassA(original.getUri());
         detached.setTypes(original.getTypes());
@@ -74,7 +74,7 @@ public class DetachedInstanceMergerTest {
     }
 
     @Test
-    public void mergeFromDetachedSetsValueToNullWhenChangeValueIsNull() throws Exception {
+    public void mergeFromDetachedSetsValueToNullWhenChangeValueIsNull() {
         final OWLClassA original = Generators.generateOwlClassAInstance();
         final OWLClassA detached = new OWLClassA(original.getUri());
         detached.setTypes(original.getTypes());
@@ -86,7 +86,7 @@ public class DetachedInstanceMergerTest {
     }
 
     @Test
-    public void mergeFromDetachedLoadsExistingInstanceCorrespondingToNewValue() throws Exception {
+    public void mergeFromDetachedLoadsExistingInstanceCorrespondingToNewValue() {
         final OWLClassD orig = new OWLClassD(Generators.createIndividualIdentifier());
         final OWLClassA origRef = Generators.generateOwlClassAInstance();
         orig.setOwlClassA(origRef);
