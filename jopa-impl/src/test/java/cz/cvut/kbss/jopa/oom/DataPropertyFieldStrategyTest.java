@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -40,9 +39,9 @@ class DataPropertyFieldStrategyTest {
     }
 
     @Test
-    void getLanguageRetrievesAttributeLanguageFromEntityDescriptor() throws Exception {
+    void getLanguageRetrievesAttributeLanguageFromEntityDescriptor() {
         final String lang = "cs";
-        descriptor.setAttributeLanguage(OWLClassA.getStrAttField(), lang);
+        descriptor.setAttributeLanguage(metamodelMocks.forOwlClassA().stringAttribute(), lang);
         final DataPropertyFieldStrategy<?, ?> sut = (DataPropertyFieldStrategy<?, ?>) FieldStrategy
                 .createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
                         metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);

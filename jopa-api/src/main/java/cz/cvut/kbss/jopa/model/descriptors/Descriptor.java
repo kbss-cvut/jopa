@@ -1,9 +1,11 @@
 package cz.cvut.kbss.jopa.model.descriptors;
 
+import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -23,6 +25,21 @@ public interface Descriptor {
      * @return Context URIs
      */
     Set<URI> getContexts();
+
+    /**
+     * Gets the only context specified by this descriptor.
+     * <p>
+     * This method will check whether there is at most one context specified in this descriptor. If there are none
+     * (meaning the default should be used), an empty {@link Optional} is returned. If there are more than one, an
+     * {@link AmbiguousContextException} is thrown.
+     * <p>
+     * This method is intended to be used by data modification operations, which require at most one target context to
+     * be specified.
+     *
+     * @return Single entity context wrapped in {@code Optional}, empty, if there is none
+     * @throws AmbiguousContextException If there are more than one context specified
+     */
+    Optional<URI> getSingleContext();
 
     /**
      * Adds the specified context to this descriptor.
