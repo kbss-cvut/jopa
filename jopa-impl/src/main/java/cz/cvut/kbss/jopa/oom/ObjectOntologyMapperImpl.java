@@ -90,7 +90,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(identifier),
                 Assertion.createClassAssertion(false), new Value<>(classUri));
         try {
-            return storageConnection.contains(ax, descriptor.getContext());
+            return storageConnection.contains(ax, descriptor.getContexts());
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }
