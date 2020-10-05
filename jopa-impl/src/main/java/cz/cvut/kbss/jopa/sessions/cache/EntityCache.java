@@ -17,10 +17,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 
 class EntityCache {
 
@@ -41,9 +38,12 @@ class EntityCache {
     void put(Object identifier, Object entity, Descriptor descriptor) {
         assert identifier != null;
         assert entity != null;
+        if (!isCacheable(descriptor)) {
+            return;
+        }
 
         final Class<?> cls = entity.getClass();
-        final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
+        final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
 
         Map<Object, Map<Class<?>, Object>> ctxMap;
         if (!repoCache.containsKey(ctx)) {
@@ -66,12 +66,15 @@ class EntityCache {
         descriptors.put(entity, descriptor);
     }
 
+    boolean isCacheable(Descriptor descriptor) {
+        return descriptor.getContexts().size() <= 1;
+    }
+
     <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
         assert cls != null;
         assert identifier != null;
 
-        final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
-        final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
+        final Map<Class<?>, Object> m = getMapForId(descriptor.getContexts(), identifier);
         final Object result = m.get(cls);
 
         return result != null && descriptors.get(result).equals(descriptor) ? cls.cast(result) : null;
@@ -82,14 +85,20 @@ class EntityCache {
         assert identifier != null;
         assert descriptor != null;
 
-        final Map<Class<?>, Object> m = getMapForId(descriptor.getContext(), identifier);
-        if (!m.containsKey(cls)) {
-            return false;
-        }
-        final Object result = m.get(cls);
-        assert descriptors.containsKey(result);
+        final Set<URI> contexts = descriptor.getContexts().isEmpty() ? Collections.singleton(defaultContext) : descriptor.getContexts();
+        for (URI ctx : contexts) {
+            final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
+            if (!m.containsKey(cls)) {
+                continue;
+            }
+            final Object result = m.get(cls);
+            assert descriptors.containsKey(result);
 
-        return descriptors.get(result).equals(descriptor);
+            if (descriptors.get(result).equals(descriptor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void evict(Class<?> cls, Object identifier, URI context) {

@@ -562,7 +562,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private void evictPossiblyUpdatedReferencesFromCache() {
         cloneToOriginals.forEach((clone, orig) -> {
             if (orig == null && !deletedObjects.containsKey(clone)) {
-                removeObjectFromCache(clone, getDescriptor(clone).getContext());
+                removeObjectFromCache(clone, getDescriptor(clone).getSingleContext().orElse(null));
             }
         });
     }
@@ -618,7 +618,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw e;
         }
         if (cacheManager.contains(et.getJavaType(), idUri, descriptor)) {
-            cacheManager.evict(et.getJavaType(), idUri, descriptor.getContext());
+            cacheManager.evict(et.getJavaType(), idUri, descriptor.getSingleContext().orElse(null));
         }
         setHasChanges();
         checkForIndirectObjects(clone);
