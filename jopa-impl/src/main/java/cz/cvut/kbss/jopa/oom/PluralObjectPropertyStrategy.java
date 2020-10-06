@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Set;
 
 abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? super X, ?, ?>, X>
         extends FieldStrategy<Y, X> {
@@ -63,16 +64,16 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
     }
 
     /**
-     * Gets the context in which this attribute values are stored.
+     * Gets the context(s) in which this attribute values are stored.
      * <p>
-     * I.e., this context may (and usually will be) different from the context in which this attribute's property assertion is stored, since that
+     * I.e., these contexts may (and usually will be) different from the context in which this attribute's property assertion is stored, since that
      * is usually stored in the subject's context.
      *
      * @return Attribute value (referenced entity) context
      * @see Descriptor#areAssertionsInSubjectContext()
      */
-    URI getAttributeValueContext() {
-        return entityDescriptor.getAttributeDescriptor(attribute).getSingleContext().orElse(null);
+    Set<URI> getAttributeValueContexts() {
+        return entityDescriptor.getAttributeDescriptor(attribute).getContexts();
     }
 
     @Override

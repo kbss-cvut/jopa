@@ -28,9 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -345,5 +343,26 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    @Test
+    void persistSupportsMultipleContextsSpecifiedForReferencedEntities() {
+        this.em = getEntityManager("persistSupportsMultipleContextsSpecifiedForReferencedEntities", true);
+        final OWLClassA entityA2 = new OWLClassA(Generators.generateUri(), "second instance");
+        transactional(() -> {
+            em.persist(entityA, cOneDescriptor);
+            em.persist(entityA2, cTwoDescriptor);
+        });
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+        entityF.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
+        transactional(() -> em.persist(entityF, descriptor));
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
+        assertEquals(2, result.getSimpleSet().size());
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
     }
 }

@@ -124,7 +124,7 @@ class PluralObjectPropertyStrategyTest {
         final OWLClassA aInstance = Generators.generateOwlClassAInstance();
         instance.setOwlClassA(Collections.singleton(aInstance));
         sut.buildAxiomValuesFromInstance(instance, new AxiomValueGatherer(NamedResource.create(ID), null));
-        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getSingleContext().orElse(null));
+        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getContexts());
     }
 
     @Test
@@ -141,6 +141,6 @@ class PluralObjectPropertyStrategyTest {
         final OWLClassA aInstance = Generators.generateOwlClassAInstance();
         instance.setSimpleList(Collections.singletonList(aInstance));
         sut.buildAxiomValuesFromInstance(instance, new AxiomValueGatherer(NamedResource.create(ID), null));
-        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getSingleContext().orElse(null));
+        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getContexts());
     }
 }

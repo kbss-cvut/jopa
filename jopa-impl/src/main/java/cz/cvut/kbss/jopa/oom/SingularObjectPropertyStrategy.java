@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Set;
 
 class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
@@ -86,8 +87,8 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
         }
     }
 
-    private URI getAttributeValueContext() {
-        return entityDescriptor.getAttributeDescriptor(attribute).getSingleContext().orElse(null);
+    private Set<URI> getAttributeValueContext() {
+        return entityDescriptor.getAttributeDescriptor(attribute).getContexts();
     }
 
     private <V> Value<NamedResource> extractReferenceIdentifier(final V value) {
