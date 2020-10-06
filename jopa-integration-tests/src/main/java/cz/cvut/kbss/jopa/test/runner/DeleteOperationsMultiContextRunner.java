@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -37,15 +37,13 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     void testRemoveFromContext() {
         this.em = getEntityManager("MultiRemoveFromContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        em.getTransaction().begin();
-        em.persist(entityA, aDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, aDescriptor));
 
         final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
-        em.getTransaction().begin();
-        em.remove(a);
-        assertFalse(em.contains(a));
-        em.getTransaction().commit();
+        transactional(() -> {
+            em.remove(a);
+            assertFalse(em.contains(a));
+        });
 
         final OWLClassA res = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
         assertNull(res);
@@ -56,12 +54,8 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
         this.em = getEntityManager("MultiRemoveFromOneContextAndKeepInTheOther", false);
         final Descriptor aDescriptorOne = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptorTwo = new EntityDescriptor(CONTEXT_TWO);
-        em.getTransaction().begin();
-        em.persist(entityA, aDescriptorOne);
-        em.getTransaction().commit();
-        em.getTransaction().begin();
-        em.persist(entityA, aDescriptorTwo);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, aDescriptorOne));
+        transactional(() -> em.persist(entityA, aDescriptorTwo));
 
         findRequired(OWLClassA.class, entityA.getUri(), aDescriptorOne);
         final OWLClassA aTwo = findRequired(OWLClassA.class, entityA.getUri(), aDescriptorTwo);
@@ -75,15 +69,16 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testRemoveObjectPropertyFromContext() throws Exception {
+    void testRemoveObjectPropertyFromContext() {
         this.em = getEntityManager("MultiRemoveObjectPropertyFromContext", false);
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        dDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), aDescriptor);
         em.getTransaction().begin();
-        em.persist(entityD, dDescriptor);
-        em.persist(entityA, aDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> {
+            em.persist(entityD, dDescriptor);
+            em.persist(entityA, aDescriptor);
+        });
 
         final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         final OWLClassA a = d.getOwlClassA();
@@ -100,25 +95,21 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testRemoveCascadeOverContexts() throws Exception {
+    void testRemoveCascadeOverContexts() {
         this.em = getEntityManager("MultiRemoveCascadeOverContexts", false);
         final Descriptor gDescriptor = new EntityDescriptor();
         final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        hDescriptor.addAttributeDescriptor(OWLClassH.class.getDeclaredField("owlClassA"), aDescriptor);
-        gDescriptor.addAttributeDescriptor(OWLClassG.class.getDeclaredField("owlClassH"), hDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityG, gDescriptor);
-        em.getTransaction().commit();
+        hDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassH.class, "owlClassA"), aDescriptor);
+        gDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassG.class, "owlClassH"), hDescriptor);
+        transactional(() -> em.persist(entityG, gDescriptor));
 
         final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         final OWLClassH h = findRequired(OWLClassH.class, entityH.getUri(), hDescriptor);
         assertSame(a, h.getOwlClassA());
         final OWLClassG g = findRequired(OWLClassG.class, entityG.getUri(), gDescriptor);
         assertSame(h, g.getOwlClassH());
-        em.getTransaction().begin();
-        em.remove(g);
-        em.getTransaction().commit();
+        transactional(() -> em.remove(g));
 
         assertNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
         assertNull(em.find(OWLClassH.class, entityH.getUri(), hDescriptor));
@@ -126,11 +117,11 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void removeRemovesObjectPropertyAssertionFromTargetContext() throws Exception {
+    void removeRemovesObjectPropertyAssertionFromTargetContext() {
         this.em = getEntityManager("removeRemovesObjectPropertyAssertionFromTargetContext", false);
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        dDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), aDescriptor);
         transactional(() -> {
             em.persist(entityD, dDescriptor);
             em.persist(entityA, aDescriptor);

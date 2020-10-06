@@ -14,6 +14,7 @@ package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
@@ -259,5 +260,9 @@ public abstract class BaseRunner {
                      .setParameter("x", identifier)
                      .setParameter("property", URI.create(property))
                      .setParameter("datatype", URI.create(expectedDatatype)).getSingleResult());
+    }
+
+    protected <T> FieldSpecification<? super T, ?> fieldSpecification(Class<T> cls, String attName) {
+        return em.getMetamodel().entity(cls).getFieldSpecification(attName);
     }
 }

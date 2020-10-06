@@ -134,7 +134,7 @@ class OwlapiAdapterTest {
     void testContainsUnknownContext() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, false);
         final URI context = URI.create("http://krizik.felk.cvut.cz/jopa/different");
-        boolean res = adapter.containsAxiom(axiom, context);
+        boolean res = adapter.containsAxiom(axiom, Collections.singleton(context));
         assertFalse(res);
     }
 
@@ -226,7 +226,7 @@ class OwlapiAdapterTest {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.OBJECT_PROPERTY, true);
         final URI ctx = getOntologyUri();
         when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(Boolean.TRUE);
-        boolean res = adapter.containsAxiom(axiom, ctx);
+        boolean res = adapter.containsAxiom(axiom, Collections.singleton(ctx));
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);

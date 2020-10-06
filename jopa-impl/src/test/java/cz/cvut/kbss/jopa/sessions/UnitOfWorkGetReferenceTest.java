@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -168,7 +168,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
         uow.removeObject(result);
         uow.commit();
-        verify(cacheManagerMock).evict(OWLClassA.class, reference.getUri(), descriptor.getContext());
+        verify(cacheManagerMock).evict(OWLClassA.class, reference.getUri(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test
@@ -205,7 +205,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final String strValue = "string value";
         a.setStringAttribute(strValue);
         uow.commit();
-        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getContext());
+        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test
@@ -223,7 +223,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
         final ObjectChangeSet changeSet = uow.getUowChangeSet().getExistingObjectChanges(owner);
         assertFalse(changeSet.getChanges().isEmpty());
-        final Optional<ChangeRecord> changeRecord = changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
+        final Optional<ChangeRecord> changeRecord =
+                changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
         assertTrue(changeRecord.isPresent());
         assertTrue(changeRecord.get().doesPreventCaching());
     }
@@ -244,7 +245,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
         final ObjectChangeSet changeSet = uow.getUowChangeSet().getExistingObjectChanges(owner);
         assertFalse(changeSet.getChanges().isEmpty());
-        final Optional<ChangeRecord> changeRecord = changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
+        final Optional<ChangeRecord> changeRecord =
+                changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
         assertTrue(changeRecord.isPresent());
         assertTrue(changeRecord.get().doesPreventCaching());
     }

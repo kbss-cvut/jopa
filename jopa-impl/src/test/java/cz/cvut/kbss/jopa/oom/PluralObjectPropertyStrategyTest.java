@@ -97,7 +97,7 @@ class PluralObjectPropertyStrategyTest {
     }
 
     @Test
-    void addValueFromAxiomGetsAttributeDescriptorFromEntityDescriptorForLoading() throws Exception {
+    void addValueFromAxiomGetsAttributeDescriptorFromEntityDescriptorForLoading() {
         final EntityDescriptor aDescriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
         descriptor.addAttributeDescriptor(mocks.forOwlClassJ().setAttribute(), aDescriptor);
         final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
@@ -124,7 +124,7 @@ class PluralObjectPropertyStrategyTest {
         final OWLClassA aInstance = Generators.generateOwlClassAInstance();
         instance.setOwlClassA(Collections.singleton(aInstance));
         sut.buildAxiomValuesFromInstance(instance, new AxiomValueGatherer(NamedResource.create(ID), null));
-        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getContext());
+        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getSingleContext().orElse(null));
     }
 
     @Test
@@ -141,6 +141,6 @@ class PluralObjectPropertyStrategyTest {
         final OWLClassA aInstance = Generators.generateOwlClassAInstance();
         instance.setSimpleList(Collections.singletonList(aInstance));
         sut.buildAxiomValuesFromInstance(instance, new AxiomValueGatherer(NamedResource.create(ID), null));
-        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getContext());
+        verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getSingleContext().orElse(null));
     }
 }

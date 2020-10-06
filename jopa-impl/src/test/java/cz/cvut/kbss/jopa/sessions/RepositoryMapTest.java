@@ -23,7 +23,9 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,7 +43,7 @@ public class RepositoryMapTest {
 
     private RepositoryMap repoMap;
 
-    private Map<URI, Map<Object, Object>> theMap;
+    private Map<Set<URI>, Map<Object, Object>> theMap;
     private Map<Object, Descriptor> descriptors;
 
     @BeforeAll
@@ -66,7 +68,7 @@ public class RepositoryMapTest {
         this.repoMap = new RepositoryMap();
         final Field mapField = RepositoryMap.class.getDeclaredField("origsToClones");
         mapField.setAccessible(true);
-        this.theMap = (Map<URI, Map<Object, Object>>) mapField.get(repoMap);
+        this.theMap = (Map<Set<URI>, Map<Object, Object>>) mapField.get(repoMap);
         final Field descriptorsField = RepositoryMap.class.getDeclaredField("entityDescriptors");
         descriptorsField.setAccessible(true);
         this.descriptors = (Map<Object, Descriptor>) descriptorsField.get(repoMap);
@@ -85,8 +87,8 @@ public class RepositoryMapTest {
     public void testAdd() {
         repoMap.add(descriptor, entityA, cloneA);
         assertTrue(repoMap.contains(descriptor, entityA));
-        assertTrue(theMap.containsKey(CONTEXT));
-        assertTrue(theMap.get(CONTEXT).containsKey(entityA));
+        assertTrue(theMap.containsKey(Collections.singleton(CONTEXT)));
+        assertTrue(theMap.get(Collections.singleton(CONTEXT)).containsKey(entityA));
     }
 
     @Test
@@ -174,9 +176,9 @@ public class RepositoryMapTest {
         entityB.setUri(null);
         cloneB.setUri(null);
         repoMap.add(descriptor, entityA, cloneA);
-        assertTrue(theMap.get(CONTEXT).containsValue(cloneA));
+        assertTrue(theMap.get(Collections.singleton(CONTEXT)).containsValue(cloneA));
         repoMap.add(descriptor, entityB, cloneB);
-        assertTrue(theMap.get(CONTEXT).containsValue(cloneA));
-        assertTrue(theMap.get(CONTEXT).containsValue(cloneB));
+        assertTrue(theMap.get(Collections.singleton(CONTEXT)).containsValue(cloneA));
+        assertTrue(theMap.get(Collections.singleton(CONTEXT)).containsValue(cloneB));
     }
 }

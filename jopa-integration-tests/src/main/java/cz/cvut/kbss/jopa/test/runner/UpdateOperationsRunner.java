@@ -914,16 +914,14 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void updateSupportsSavingStringLiteralWithDifferentLanguageTag() throws Exception {
+    void updateSupportsSavingStringLiteralWithDifferentLanguageTag() {
         this.em = getEntityManager("updateSupportsSavingStringLiteralWithDifferentLanguageTag", false);
         persist(entityA);
 
         entityA.setStringAttribute("hodnota v cestine");
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), "cs");
-        em.getTransaction().begin();
-        em.merge(entityA, descriptor);
-        em.getTransaction().commit();
+        descriptor.setAttributeLanguage(fieldSpecification(OWLClassA.class, "stringAttribute"), "cs");
+        transactional(() -> em.merge(entityA, descriptor));
 
         final OWLClassA resultOne = findRequired(OWLClassA.class, entityA.getUri());
         assertNull(resultOne.getStringAttribute());
@@ -937,18 +935,14 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("mergeDetachedReplacesObsoleteDescriptorInSecondLevelCache", true);
         final Descriptor descriptorOne = new EntityDescriptor();
         descriptorOne.setLanguage("en");
-        em.getTransaction().begin();
-        em.persist(entityA, descriptorOne);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, descriptorOne));
         assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorOne));
 
         final Descriptor descriptorTwo = new EntityDescriptor();
         descriptorTwo.setLanguage("cs");
         assertNotEquals(descriptorOne, descriptorTwo);
         entityA.setStringAttribute("cesky");
-        em.getTransaction().begin();
-        em.merge(entityA, descriptorTwo);
-        em.getTransaction().commit();
+        transactional(() -> em.merge(entityA, descriptorTwo));
 
         assertFalse(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorOne));
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptorTwo);
@@ -957,16 +951,14 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting() throws Exception {
+    void mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting() {
         this.em = getEntityManager("mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting", true);
         persist(entityA);
 
         final Descriptor descriptorTwo = new EntityDescriptor();
-        descriptorTwo.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), "cs");
+        descriptorTwo.setAttributeLanguage(fieldSpecification(OWLClassA.class, "stringAttribute"), "cs");
         entityA.setStringAttribute("cesky");
-        em.getTransaction().begin();
-        em.merge(entityA, descriptorTwo);
-        em.getTransaction().commit();
+        transactional(() -> em.merge(entityA, descriptorTwo));
 
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptorTwo);
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
@@ -979,11 +971,11 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         entityD.setOwlClassA(null);
         persist(entityD, entityA2);
 
-        em.getTransaction().begin();
-        final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
-        d.setOwlClassA(entityA);
-        d.setOwlClassA(findRequired(OWLClassA.class, entityA2.getUri()));
-        em.getTransaction().commit();
+        transactional(() -> {
+            final OWLClassD d = findRequired(OWLClassD.class, entityD.getUri());
+            d.setOwlClassA(entityA);
+            d.setOwlClassA(findRequired(OWLClassA.class, entityA2.getUri()));
+        });
 
         final OWLClassD dResult = findRequired(OWLClassD.class, entityD.getUri());
         assertNotNull(dResult.getOwlClassA());
@@ -1023,13 +1015,13 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         aUpdate.setTypes(new HashSet<>(entityA.getTypes()));
         dUpdate.setOwlClassA(aUpdate);
         em.clear();
-        em.getTransaction().begin();
-        final OWLClassD orig = findRequired(OWLClassD.class, entityD.getUri());
-        em.detach(orig);
-        em.find(OWLClassA.class, entityA.getUri());
-        em.merge(aUpdate);
-        em.merge(dUpdate);
-        em.getTransaction().commit();
+        transactional(() -> {
+            final OWLClassD orig = findRequired(OWLClassD.class, entityD.getUri());
+            em.detach(orig);
+            em.find(OWLClassA.class, entityA.getUri());
+            em.merge(aUpdate);
+            em.merge(dUpdate);
+        });
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         assertEquals(newString, result.getOwlClassA().getStringAttribute());
     }
@@ -1047,12 +1039,12 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         aUpdate.setTypes(new HashSet<>(entityA.getTypes()));
         dUpdate.setOwlClassA(aUpdate);
         em.clear();
-        em.getTransaction().begin();
-        final OWLClassD orig = findRequired(OWLClassD.class, entityD.getUri());
-        em.detach(orig);
-        em.merge(dUpdate);
-        em.merge(aUpdate);
-        em.getTransaction().commit();
+        transactional(() -> {
+            final OWLClassD orig = findRequired(OWLClassD.class, entityD.getUri());
+            em.detach(orig);
+            em.merge(dUpdate);
+            em.merge(aUpdate);
+        });
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri());
         assertEquals(newString, result.getOwlClassA().getStringAttribute());
     }
@@ -1073,18 +1065,18 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         toUpdate.getSet().remove(entityA2);
         toUpdate.setSimpleList(Collections.singletonList(entityA2));
         toUpdate.setSingleA(entityA2);
-        em.getTransaction().begin();
-        final OWLClassL original = findRequired(OWLClassL.class, entityL.getUri());
-        assertEquals(2, original.getSet().size());
-        for (OWLClassA a : original.getSet()) {
-            if (a.getUri().equals(entityA2.getUri())) {
-                original.getSet().remove(a);
-                break;
+        transactional(() -> {
+            final OWLClassL original = findRequired(OWLClassL.class, entityL.getUri());
+            assertEquals(2, original.getSet().size());
+            for (OWLClassA a : original.getSet()) {
+                if (a.getUri().equals(entityA2.getUri())) {
+                    original.getSet().remove(a);
+                    break;
+                }
             }
-        }
-        toUpdate.getSet().forEach(a -> em.merge(a));
-        em.merge(toUpdate);
-        em.getTransaction().commit();
+            toUpdate.getSet().forEach(a -> em.merge(a));
+            em.merge(toUpdate);
+        });
 
         final OWLClassL result = findRequired(OWLClassL.class, entityL.getUri());
         assertEquals(1, result.getSet().size());
@@ -1221,9 +1213,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(2, entityJ.getOwlClassA().size());
         final OWLClassA newA = new OWLClassA(Generators.generateUri());
         entityJ.setOwlClassA(Collections.singleton(newA));
-        em.getTransaction().begin();
-        em.merge(entityJ);
-        em.getTransaction().commit();
+        transactional(() -> em.merge(entityJ));
 
         final OWLClassJ result = findRequired(OWLClassJ.class, entityJ.getUri());
         assertEquals(1, result.getOwlClassA().size());
@@ -1277,9 +1267,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("updateSupportsSettingSubclassOnPolymorphicAttribute", true);
         final OWLClassU u = new OWLClassU();
         final OWLClassU reference = new OWLClassU();
-        em.getTransaction().begin();
-        em.persist(reference);
-        em.getTransaction().commit();
+        persist(reference);
 
         em.getTransaction().begin();
         final OWLClassU managedRef = em.merge(reference);
