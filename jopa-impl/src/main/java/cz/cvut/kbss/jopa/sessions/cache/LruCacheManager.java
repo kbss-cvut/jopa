@@ -59,7 +59,7 @@ public class LruCacheManager implements CacheManager {
     LruCacheManager(Map<String, String> properties) {
         Objects.requireNonNull(properties);
         this.capacity = properties.containsKey(JOPAPersistenceProperties.LRU_CACHE_CAPACITY) ?
-                        resolveCapacitySetting(properties) : DEFAULT_CAPACITY;
+                resolveCapacitySetting(properties) : DEFAULT_CAPACITY;
         final ReadWriteLock rwLock = new ReentrantReadWriteLock();
         this.readLock = rwLock.readLock();
         this.writeLock = rwLock.writeLock();
@@ -223,12 +223,8 @@ public class LruCacheManager implements CacheManager {
 
         @Override
         <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
-            final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
-            T result = super.get(cls, identifier, descriptor);
-            if (result != null) {
-                cache.get(new LruCache.CacheNode(ctx, cls, identifier));
-            }
-            return result;
+            return getInternal(cls, identifier, descriptor,
+                    ctx -> cache.get(new LruCache.CacheNode(ctx, cls, identifier)));
         }
 
         @Override
