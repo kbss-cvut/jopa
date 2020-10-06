@@ -195,12 +195,9 @@ class AbstractIdentifiableTypeTest {
         assertEquals(attOne, result);
     }
 
-    // Disabled this test until we have a CollectionAttribute implementation (it will probably be SetAttributeImpl, cause set semantics is
-    // default in ontologies and Set is compatible with Collection)
-    @Disabled
     @Test
     void getDeclaredCollectionReturnsDeclaredCollectionAttribute() {
-        final AbstractPluralAttribute att = mock(AbstractPluralAttribute.class);
+        final AbstractPluralAttribute att = mock(CollectionAttributeImpl.class);
         final String attName = "test";
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         et.addDeclaredAttribute(attName, att);

@@ -228,13 +228,12 @@ class ObjectOntologyMapperTest {
 
     @Test
     void testRegisterInstance() throws Exception {
-        final URI context = URI.create("http://someNamedContext");
         final Field regField = mapper.getClass().getDeclaredField("instanceRegistry");
         regField.setAccessible(true);
-        final InstanceRegistry reg = (InstanceRegistry) regField.get(mapper);
-        assertFalse(reg.containsInstance(IDENTIFIER, context));
+        final Map<URI, Object> reg = (Map<URI, Object>) regField.get(mapper);
+        assertFalse(reg.containsKey(IDENTIFIER));
         mapper.registerInstance(IDENTIFIER, entityA);
-        assertTrue(reg.containsInstance(IDENTIFIER, context));
+        assertTrue(reg.containsKey(IDENTIFIER));
     }
 
     @Test
@@ -280,14 +279,14 @@ class ObjectOntologyMapperTest {
     @Test
     void containsEntityThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
         final String message = "OntoDriver exception was thrown";
-        when(connectionMock.contains(any(Axiom.class), eq(null))).thenThrow(new OntoDriverException(message));
+        when(connectionMock.contains(any(Axiom.class), anySet())).thenThrow(new OntoDriverException(message));
 
         final StorageAccessException ex = assertThrows(StorageAccessException.class,
                 () -> mapper.containsEntity(OWLClassA.class, IDENTIFIER, aDescriptor));
         assertThat(ex.getMessage(), containsString(message));
         verify(connectionMock).contains(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(OWLClassA.getClassIri()))), null);
+                        new Value<>(NamedResource.create(OWLClassA.getClassIri()))), Collections.emptySet());
     }
 
     @Test
@@ -448,9 +447,9 @@ class ObjectOntologyMapperTest {
                     final Descriptor attDescriptor =
                             descriptor.getAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt());
                     mapper.registerPendingAssertion(NamedResource.create(d.getUri()), assertion, d.getOwlClassA(),
-                            attDescriptor.getSingleContext().get());
+                            attDescriptor.getSingleContext().orElse(null));
                     return new AxiomValueGatherer(NamedResource.create(d.getUri()),
-                            descriptor.getSingleContext().get());
+                            descriptor.getSingleContext().orElse(null));
                 });
     }
 
@@ -587,13 +586,13 @@ class ObjectOntologyMapperTest {
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
                 Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Vocabulary.c_OwlClassA)));
-        when(connectionMock.contains(axiom, null)).thenReturn(true);
+        when(connectionMock.contains(axiom, Collections.emptySet())).thenReturn(true);
         final OWLClassA result = mapper
                 .loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, aDescriptor));
         assertNotNull(result);
         assertEquals(IDENTIFIER, result.getUri());
         assertNull(result.getStringAttribute());
-        verify(connectionMock).contains(eq(axiom), isNull());
+        verify(connectionMock).contains(eq(axiom), eq(Collections.emptySet()));
     }
 
     @Test
@@ -620,11 +619,12 @@ class ObjectOntologyMapperTest {
                 .thenReturn(new OWLClassA(IDENTIFIER));
         when(connectionMock.contains(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(Vocabulary.c_OwlClassA))), context)).thenReturn(true);
+                        new Value<>(NamedResource.create(Vocabulary.c_OwlClassA))), Collections.singleton(context)))
+                .thenReturn(true);
         final OWLClassA result = mapper
                 .loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
         assertNotNull(result);
-        verify(connectionMock).contains(any(Axiom.class), eq(context));
+        verify(connectionMock).contains(any(Axiom.class), eq(Collections.singleton(context)));
     }
 
     @Test

@@ -114,7 +114,7 @@ class SingularObjectPropertyStrategyTest {
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.buildAxiomValuesFromInstance(d, gatherer);
 
-        verify(referenceResolverMock).shouldSaveReference(d.getOwlClassA(), descriptor.getContext());
+        verify(referenceResolverMock).shouldSaveReference(d.getOwlClassA(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test
@@ -247,6 +247,7 @@ class SingularObjectPropertyStrategyTest {
         final OWLClassD instance = new OWLClassD(Generators.createIndividualIdentifier());
         instance.setOwlClassA(Generators.generateOwlClassAInstance());
         sut.buildAxiomValuesFromInstance(instance, gatherer);
-        verify(referenceResolverMock).shouldSaveReference(instance.getOwlClassA(), aDescriptor.getContext());
+        verify(referenceResolverMock).shouldSaveReference(instance.getOwlClassA(), aDescriptor.getSingleContext()
+                                                                                              .orElse(null));
     }
 }

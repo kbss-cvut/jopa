@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -301,9 +301,9 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     @Test
     void testRemoveObjectFromCache() {
-        uow.removeObjectFromCache(entityB, descriptor.getContext());
+        uow.removeObjectFromCache(entityB, descriptor.getSingleContext().orElse(null));
         verify(cacheManagerMock).evict(OWLClassB.class, entityB.getUri(),
-                descriptor.getContext());
+                descriptor.getSingleContext().orElse(null));
     }
 
     @Test
@@ -1047,7 +1047,8 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void getManagedOriginalThrowsEntityExistsExceptionWhenIndividualIsManagedAsDifferentType() {
         when(transactionMock.isActive()).thenReturn(true);
         uow.registerExistingObject(entityA, descriptor);
-        assertThrows(OWLEntityExistsException.class, () -> uow.getManagedOriginal(OWLClassB.class, entityA.getUri(), descriptor));
+        assertThrows(OWLEntityExistsException.class,
+                () -> uow.getManagedOriginal(OWLClassB.class, entityA.getUri(), descriptor));
     }
 
     @Test

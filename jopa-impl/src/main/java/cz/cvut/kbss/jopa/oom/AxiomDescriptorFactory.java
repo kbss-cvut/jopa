@@ -59,8 +59,12 @@ class AxiomDescriptorFactory {
                                           final AxiomDescriptor descriptor, final Assertion assertion) {
         descriptor.addAssertion(assertion);
         final Set<URI> attContexts = entityDescriptor.getAttributeContexts(att);
-        attContexts.stream().filter(ctx -> !entityDescriptor.getContexts().contains(ctx))
-                   .forEach(ctx -> descriptor.addAssertionContext(assertion, ctx));
+        if (attContexts.isEmpty() && !entityDescriptor.getContexts().isEmpty()) {
+            descriptor.addAssertionContext(assertion, null);
+        } else {
+            attContexts.stream().filter(ctx -> !entityDescriptor.getContexts().contains(ctx))
+                       .forEach(ctx -> descriptor.addAssertionContext(assertion, ctx));
+        }
     }
 
     private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {

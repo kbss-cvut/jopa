@@ -119,19 +119,19 @@ class AxiomDescriptorFactoryTest {
 
     @Test
     void testCreateForEntityLoadingWithObjectPropertyInContext() {
-        descriptor.addAttributeContext(metamodelMocks.forOwlClassD().owlClassAAtt(), CONTEXT);
+        descriptor.addAttributeContext(metamodelMocks.forOwlClassA().stringAttribute(), CONTEXT);
         final AxiomDescriptor res = sut
-                .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor),
-                        metamodelMocks.forOwlClassD().entityType());
+                .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor),
+                        metamodelMocks.forOwlClassA().entityType());
         // Class assertion and the object property assertion
         assertEquals(2, res.getAssertions().size());
         assertEquals(NamedResource.create(PK), res.getSubject());
         assertThat(res.getSubjectContexts(), empty());
         final Optional<Assertion> ass = res.getAssertions().stream()
-                                           .filter(a -> a.getIdentifier().equals(owlClassAAttUri)).findAny();
+                                           .filter(a -> a.getIdentifier().toString().equals(Vocabulary.p_a_stringAttribute)).findAny();
         assertTrue(ass.isPresent());
         assertEquals(Collections.singleton(CONTEXT), res.getAssertionContexts(ass.get()));
-        assertEquals(owlClassAAttUri, ass.get().getIdentifier());
+        assertEquals(Vocabulary.p_a_stringAttribute, ass.get().getIdentifier().toString());
     }
 
     @Test

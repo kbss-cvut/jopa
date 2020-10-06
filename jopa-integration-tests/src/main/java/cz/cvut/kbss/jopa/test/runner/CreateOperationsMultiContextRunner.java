@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -39,8 +39,8 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     private OWLClassF entityF;
     private OWLClassK entityK;
 
-    private EntityDescriptor cOneDescriptor = new EntityDescriptor(CONTEXT_ONE);
-    private EntityDescriptor cTwoDescriptor = new EntityDescriptor(CONTEXT_TWO);
+    private final EntityDescriptor cOneDescriptor = new EntityDescriptor(CONTEXT_ONE);
+    private final EntityDescriptor cTwoDescriptor = new EntityDescriptor(CONTEXT_TWO);
 
     public CreateOperationsMultiContextRunner(Logger logger, PersistenceFactory persistenceFactory,
                                               DataAccessor dataAccessor) {
@@ -56,10 +56,10 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistDataPropertyIntoContext() throws Exception {
+    void testPersistDataPropertyIntoContext() {
         this.em = getEntityManager("MultiPersistDataPropertyIntoContext", false);
         final Descriptor aDescriptor = new EntityDescriptor();
-        aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_ONE);
+        aDescriptor.addAttributeContext(fieldSpecification(OWLClassA.class, "stringAttribute"), CONTEXT_ONE);
         transactional(() -> em.persist(entityA, aDescriptor));
 
         final OWLClassA res = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
@@ -70,10 +70,10 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistObjectPropertyIntoContext() throws Exception {
+    void testPersistObjectPropertyIntoContext() {
         this.em = getEntityManager("MultiPersistObjectPropertyIntoContext", false);
         final Descriptor dDescriptor = new EntityDescriptor(false);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), cOneDescriptor);
+        dDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), cOneDescriptor);
         transactional(() -> {
             em.persist(entityD, dDescriptor);
             em.persist(entityA, cOneDescriptor);
@@ -88,9 +88,9 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault() throws Exception {
+    void persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault() {
         this.em = getEntityManager("persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault", false);
-        cOneDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), cTwoDescriptor);
+        cOneDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), cTwoDescriptor);
         transactional(() -> {
             em.persist(entityD, cOneDescriptor);
             em.persist(entityA, cTwoDescriptor);
@@ -106,14 +106,14 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void persistWithPluralObjectPropertySavesAssertionIntoSubjectContextByDefault() throws Exception {
+    void persistWithPluralObjectPropertySavesAssertionIntoSubjectContextByDefault() {
         this.em = getEntityManager("persistWithObjectPropertySavesAssertionIntoSubjectContextByDefault", false);
         final ObjectPropertyCollectionDescriptor opDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassF.getSimpleSetField());
+                fieldSpecification(OWLClassF.class, "simpleSet"));
         entityF.setSimpleSet(Collections.singleton(entityA));
         transactional(() -> em.persist(entityA, cTwoDescriptor));
 
-        cOneDescriptor.addAttributeDescriptor(OWLClassF.getSimpleSetField(), opDescriptor);
+        cOneDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassF.class, "simpleSet"), opDescriptor);
         transactional(() -> em.persist(entityF, cOneDescriptor));
 
         final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri());
@@ -132,9 +132,7 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     void testPersistWithGeneratedIntoContext() {
         this.em = getEntityManager("MultiPersistWithGeneratedIntoContext", false);
-        em.getTransaction().begin();
-        em.persist(entityE, cOneDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityE, cOneDescriptor));
 
         final OWLClassE res = findRequired(OWLClassE.class, entityE.getUri(), cOneDescriptor);
         assertEquals(entityE.getUri(), res.getUri());
@@ -144,15 +142,13 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     void testPersistReferenceIntoContextAndThenOwnerIntoDefault() {
         this.em = getEntityManager("ReferenceIntoContextThenOwnerIntoDefault", false);
-        em.getTransaction().begin();
-        em.persist(entityA, cOneDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, cOneDescriptor));
 
         em.clear();
-        em.getTransaction().begin();
-        entityD.setOwlClassA(entityA);
-        em.persist(entityD);
-        em.getTransaction().commit();
+        transactional(() -> {
+            entityD.setOwlClassA(entityA);
+            em.persist(entityD);
+        });
 
         final OWLClassD res = findRequired(OWLClassD.class, entityD.getUri());
         assertNotNull(res.getOwlClassA());
@@ -161,26 +157,18 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     void persistTwiceIntoSameContextIsInvalid() {
         this.em = getEntityManager("MultiPersistTwiceIntoOneContext", false);
-        em.getTransaction().begin();
-        em.persist(entityA, cOneDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, cOneDescriptor));
 
-        assertThrows(OWLEntityExistsException.class, () -> {
-            em.getTransaction().begin();
-            em.persist(entityA, cOneDescriptor);
-            em.getTransaction().commit();
-        });
+        assertThrows(OWLEntityExistsException.class, () -> transactional(() -> em.persist(entityA, cOneDescriptor)));
     }
 
     @Test
     void persistTwiceIntoDifferentContextsIsLegal() {
         this.em = getEntityManager("MultiPersistTwiceIntoDifferentContexts", false);
-        em.getTransaction().begin();
-        em.persist(entityA, cOneDescriptor);
-        em.getTransaction().commit();
-        em.getTransaction().begin();
-        em.persist(entityA, cTwoDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityA, cOneDescriptor));
+
+        transactional(() -> em.persist(entityA, cTwoDescriptor));
+
 
         final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri(), cOneDescriptor);
         final OWLClassA resTwo = findRequired(OWLClassA.class, entityA.getUri(), cTwoDescriptor);
@@ -190,14 +178,12 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistPropertiesIntoDifferentContext() throws Exception {
+    void testPersistPropertiesIntoDifferentContext() {
         this.em = getEntityManager("MultiPersistPropertiesIntoDifferentContext", false);
         final Descriptor bDescriptor = new EntityDescriptor();
         entityB.setProperties(Generators.createProperties(10));
-        bDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_ONE);
-        em.getTransaction().begin();
-        em.persist(entityB, bDescriptor);
-        em.getTransaction().commit();
+        bDescriptor.addAttributeContext(em.getMetamodel().entity(OWLClassB.class).getProperties(), CONTEXT_ONE);
+        transactional(() -> em.persist(entityB, bDescriptor));
 
         final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri(), bDescriptor);
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
@@ -209,18 +195,18 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistCascadeIntoThreeContexts() throws Exception {
+    void testPersistCascadeIntoThreeContexts() {
         this.em = getEntityManager("MultiPersistCascadeIntoThreeContexts", false);
         final Descriptor gDescriptor = new EntityDescriptor(false);
         final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
-        hDescriptor.addAttributeDescriptor(OWLClassH.class.getDeclaredField("owlClassA"), cTwoDescriptor);
-        gDescriptor.addAttributeDescriptor(OWLClassG.class.getDeclaredField("owlClassH"), hDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityG, gDescriptor);
-        assertTrue(em.contains(entityG));
-        assertTrue(em.contains(entityH));
-        assertTrue(em.contains(entityA));
-        em.getTransaction().commit();
+        hDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassH.class, "owlClassA"), cTwoDescriptor);
+        gDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassG.class, "owlClassH"), hDescriptor);
+        transactional(() -> {
+            em.persist(entityG, gDescriptor);
+            assertTrue(em.contains(entityG));
+            assertTrue(em.contains(entityH));
+            assertTrue(em.contains(entityA));
+        });
 
         final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri(), cTwoDescriptor);
         final OWLClassH resH = findRequired(OWLClassH.class, entityH.getUri(), hDescriptor);
@@ -230,19 +216,18 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void persistCascadeIntoThreeContextSavesOPAssertionAlwaysIntoSubjectContextWhenConfigured()
-            throws Exception {
+    void persistCascadeIntoThreeContextSavesOPAssertionAlwaysIntoSubjectContextWhenConfigured() {
         this.em = getEntityManager(
                 "persistCascadeIntoThreeContextSavesOPAssertionAlwaysIntoSubjectContextWhenConfigured", false);
         final Descriptor gDescriptor = new EntityDescriptor();
-        cOneDescriptor.addAttributeDescriptor(OWLClassH.class.getDeclaredField("owlClassA"), cTwoDescriptor);
-        gDescriptor.addAttributeDescriptor(OWLClassG.class.getDeclaredField("owlClassH"), cOneDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityG, gDescriptor);
-        assertTrue(em.contains(entityG));
-        assertTrue(em.contains(entityH));
-        assertTrue(em.contains(entityA));
-        em.getTransaction().commit();
+        cOneDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassH.class, "owlClassA"), cTwoDescriptor);
+        gDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassG.class, "owlClassH"), cOneDescriptor);
+        transactional(() -> {
+            em.persist(entityG, gDescriptor);
+            assertTrue(em.contains(entityG));
+            assertTrue(em.contains(entityH));
+            assertTrue(em.contains(entityA));
+        });
 
         assertTrue(em.createNativeQuery("ASK { ?s ?p ?o . }", Boolean.class)
                      .setParameter("s", entityG.getUri())
@@ -263,21 +248,21 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistSetWithAttributeContexts() throws Exception {
+    void testPersistSetWithAttributeContexts() {
         this.em = getEntityManager("MultiPersistSetWithAttributeContexts", false);
         entityF.setSimpleSet(Generators.createSimpleSet(20));
         final Descriptor fDescriptor = new EntityDescriptor(false);
         final ObjectPropertyCollectionDescriptor setDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
-                OWLClassF.class.getDeclaredField("simpleSet"), false);
-        fDescriptor.addAttributeDescriptor(OWLClassF.class.getDeclaredField("simpleSet"), setDescriptor);
-        setDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_TWO);
-        setDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("types"), CONTEXT_TWO);
-        em.getTransaction().begin();
-        em.persist(entityF, fDescriptor);
-        for (OWLClassA a : entityF.getSimpleSet()) {
-            em.persist(a, setDescriptor.getElementDescriptor());
-        }
-        em.getTransaction().commit();
+                fieldSpecification(OWLClassF.class, "simpleSet"), false);
+        fDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassF.class, "simpleSet"), setDescriptor);
+        setDescriptor.addAttributeContext(fieldSpecification(OWLClassA.class, "stringAttribute"), CONTEXT_TWO);
+        setDescriptor.addAttributeContext(em.getMetamodel().entity(OWLClassA.class).getTypes(), CONTEXT_TWO);
+        transactional(() -> {
+            em.persist(entityF, fDescriptor);
+            for (OWLClassA a : entityF.getSimpleSet()) {
+                em.persist(a, setDescriptor.getElementDescriptor());
+            }
+        });
 
         final OWLClassF resF = findRequired(OWLClassF.class, entityF.getUri(), fDescriptor);
         assertEquals(entityF.getSimpleSet().size(), resF.getSimpleSet().size());
@@ -289,17 +274,16 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistEntityWithObjectPropertyWithGeneratedIdentifierAndPutTheReferenceIntoContext()
-            throws Exception {
+    void testPersistEntityWithObjectPropertyWithGeneratedIdentifierAndPutTheReferenceIntoContext() {
         this.em = getEntityManager("PersistEntityWithObjectPropertyWithGeneratedIdentifierContexts", true);
         entityK.setOwlClassE(entityE);
         assertNull(entityE.getUri());
-        cOneDescriptor.addAttributeDescriptor(OWLClassK.class.getDeclaredField("owlClassE"), cTwoDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityK, cOneDescriptor);
-        em.persist(entityE, cTwoDescriptor);
-        assertNotNull(entityE.getUri());
-        em.getTransaction().commit();
+        cOneDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassK.class, "owlClassE"), cTwoDescriptor);
+        transactional(() -> {
+            em.persist(entityK, cOneDescriptor);
+            em.persist(entityE, cTwoDescriptor);
+            assertNotNull(entityE.getUri());
+        });
 
         final OWLClassE resE = findRequired(OWLClassE.class, entityE.getUri(), cTwoDescriptor);
         assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
@@ -308,14 +292,14 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistEntityWithMappedSuperclassPuttingReferenceIntoDifferentContext() throws Exception {
+    void testPersistEntityWithMappedSuperclassPuttingReferenceIntoDifferentContext() {
         this.em = getEntityManager("PersistEntityWithMappedSuperclassReferenceInContext", true);
-        cOneDescriptor.addAttributeDescriptor(OWLClassQ.getOWlClassAField(), cTwoDescriptor);
-        cOneDescriptor.addAttributeDescriptor(OWLClassQ.getOWlClassAField(), cTwoDescriptor);
-        em.getTransaction().begin();
-        em.persist(entityQ, cOneDescriptor);
-        em.persist(entityA, cTwoDescriptor);
-        em.getTransaction().commit();
+        cOneDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassQ.class, "owlClassA"), cTwoDescriptor);
+        cOneDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassQ.class, "owlClassA"), cTwoDescriptor);
+        transactional(() -> {
+            em.persist(entityQ, cOneDescriptor);
+            em.persist(entityA, cTwoDescriptor);
+        });
 
         final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri(), cTwoDescriptor);
         final OWLClassQ resQ = findRequired(OWLClassQ.class, entityQ.getUri(), cOneDescriptor);
@@ -327,10 +311,11 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void persistReferenceIntoContextBeforeOwnerDoesNotThrowUnpersistedChangeException() throws Exception {
+    void persistReferenceIntoContextBeforeOwnerDoesNotThrowUnpersistedChangeException() {
         this.em =
                 getEntityManager("persistReferenceIntoContextBeforeOwnerDoesNotThrowUnpersistedChangeException", false);
-        cOneDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), new EntityDescriptor(null));
+        cOneDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"),
+                new EntityDescriptor((URI) null));
         persist(entityA);
         transactional(() -> em.persist(entityD, cOneDescriptor));
 
@@ -345,7 +330,7 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     void persistEntityIntoContextAndAttributeIntoDefaultWorksCorrectly() {
         this.em = getEntityManager("persistEntityIntoContextAndAttributeIntoDefaultWorksCorrectly", false);
-        cOneDescriptor.addAttributeContext(OWLClassA.getStringField(), null);
+        cOneDescriptor.addAttributeContext(fieldSpecification(OWLClassA.class, "stringAttribute"), null);
         transactional(() -> em.persist(entityA, cOneDescriptor));
 
         transactional(() -> {

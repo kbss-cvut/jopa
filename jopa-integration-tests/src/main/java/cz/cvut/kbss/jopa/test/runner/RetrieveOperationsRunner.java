@@ -248,8 +248,11 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persistTestData(testData, em);
 
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("annotationProperty"), "en");
-        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("stringAttribute"), "cs");
+        descriptor.setAttributeLanguage(
+                em.getMetamodel().entity(OWLClassN.class).getDeclaredAttribute("annotationProperty"), "en");
+        descriptor
+                .setAttributeLanguage(em.getMetamodel().entity(OWLClassN.class).getDeclaredAttribute("stringAttribute"),
+                        "cs");
         final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
         assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
         assertEquals(csString, result.getStringAttribute());
