@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Consumer;
 
 class EntityCache {
 
@@ -31,16 +32,15 @@ class EntityCache {
 
     EntityCache() {
         repoCache = new HashMap<>();
-        this.descriptors = new IdentityHashMap<>(); // Need to use identity to cope with entities overriding equals/hashcode
+        this.descriptors =
+                new IdentityHashMap<>(); // Need to use identity to cope with entities overriding equals/hashcode
         this.defaultContext = URI.create(DEFAULT_CONTEXT_BASE + System.currentTimeMillis());
     }
 
     void put(Object identifier, Object entity, Descriptor descriptor) {
         assert identifier != null;
         assert entity != null;
-        if (!isCacheable(descriptor)) {
-            return;
-        }
+        assert isCacheable(descriptor);
 
         final Class<?> cls = entity.getClass();
         final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
@@ -71,13 +71,24 @@ class EntityCache {
     }
 
     <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
+        return getInternal(cls, identifier, descriptor, u -> {});
+    }
+
+    <T> T getInternal(Class<T> cls, Object identifier, Descriptor descriptor, Consumer<URI> contextHandler) {
         assert cls != null;
         assert identifier != null;
 
-        final Map<Class<?>, Object> m = getMapForId(descriptor.getContexts(), identifier);
-        final Object result = m.get(cls);
-
-        return result != null && descriptors.get(result).equals(descriptor) ? cls.cast(result) : null;
+        final Set<URI> contexts =
+                descriptor.getContexts().isEmpty() ? Collections.singleton(defaultContext) : descriptor.getContexts();
+        for (URI ctx : contexts) {
+            final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
+            final Object result = m.get(cls);
+            if (result != null && descriptors.get(result).equals(descriptor)) {
+                contextHandler.accept(ctx);
+                return cls.cast(result);
+            }
+        }
+        return null;
     }
 
     boolean contains(Class<?> cls, Object identifier, Descriptor descriptor) {
@@ -85,7 +96,8 @@ class EntityCache {
         assert identifier != null;
         assert descriptor != null;
 
-        final Set<URI> contexts = descriptor.getContexts().isEmpty() ? Collections.singleton(defaultContext) : descriptor.getContexts();
+        final Set<URI> contexts =
+                descriptor.getContexts().isEmpty() ? Collections.singleton(defaultContext) : descriptor.getContexts();
         for (URI ctx : contexts) {
             final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
             if (!m.containsKey(cls)) {

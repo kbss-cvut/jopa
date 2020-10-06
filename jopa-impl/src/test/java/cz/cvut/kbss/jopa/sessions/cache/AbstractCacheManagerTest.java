@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractCacheManagerTest<T extends CacheManager> {
 
@@ -330,7 +333,9 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         manager.add(testA.getUri(), testA, descriptorOne);
         final Descriptor descriptorTwo = new EntityDescriptor();
         descriptorTwo.setLanguage("en");
-        descriptorTwo.setAttributeLanguage(OWLClassA.getStrAttField(), "cs");
+        final Attribute<OWLClassA, String> att = mock(Attribute.class);
+        when(att.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+        descriptorTwo.setAttributeLanguage(att, "cs");
         assertNotNull(manager.get(OWLClassA.class, testA.getUri(), descriptorOne));
         assertNull(manager.get(OWLClassA.class, testA.getUri(), descriptorTwo));
     }

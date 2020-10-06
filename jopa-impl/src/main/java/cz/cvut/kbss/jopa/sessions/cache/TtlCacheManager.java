@@ -319,12 +319,7 @@ public class TtlCacheManager implements CacheManager {
             assert cls != null;
             assert identifier != null;
 
-            final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
-            T result = super.get(cls, identifier, descriptor);
-            if (result != null) {
-                updateTimeToLive(ctx);
-            }
-            return result;
+            return getInternal(cls, identifier, descriptor, this::updateTimeToLive);
         }
 
         private void updateTimeToLive(URI context) {
