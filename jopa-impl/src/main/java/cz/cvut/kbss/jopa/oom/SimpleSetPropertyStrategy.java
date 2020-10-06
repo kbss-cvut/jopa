@@ -58,7 +58,7 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
                 if (val == null) {
                     continue;
                 }
-                if (referenceSavingResolver.shouldSaveReferenceToItem(val, getAttributeValueContext())) {
+                if (referenceSavingResolver.shouldSaveReferenceToItem(val, getAttributeValueContexts())) {
                     final URI valId = EntityPropertiesUtils.getIdentifier(val, et);
                     assert valId != null;
                     assertionValues.add(new Value<>(NamedResource.create(valId)));

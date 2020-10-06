@@ -34,6 +34,13 @@ public class OWLClassF {
     @OWLObjectProperty(iri = Vocabulary.P_F_HAS_SIMPLE_SET)
     private Set<OWLClassA> simpleSet;
 
+    public OWLClassF() {
+    }
+
+    public OWLClassF(URI uri) {
+        this.uri = uri;
+    }
+
     public URI getUri() {
         return uri;
     }

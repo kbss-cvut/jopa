@@ -26,10 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -320,5 +317,53 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(result.getOwlClassA());
         assertEquals(newA.getUri(), result.getOwlClassA().getUri());
+    }
+
+    @Test
+    void updateSupportsObjectPropertyWithMultipleContexts() {
+        this.em = getEntityManager("updateSupportsObjectPropertyWithMultipleContexts", true);
+        final OWLClassF entityF = new OWLClassF(Generators.generateUri());
+        final OWLClassA entityA2 = new OWLClassA(Generators.generateUri(), "another a");
+        transactional(() -> {
+            em.persist(entityF);
+            em.persist(entityA, new EntityDescriptor(CONTEXT_ONE));
+            em.persist(entityA2, new EntityDescriptor(CONTEXT_TWO));
+        });
+
+        entityF.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+        transactional(() -> em.merge(entityF, descriptor));
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
+        assertEquals(2, result.getSimpleSet().size());
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
+    }
+
+    @Test
+    void updateWithinTransactionSupportsObjectPropertyWithMultipleContexts() {
+        this.em = getEntityManager("updateSupportsObjectPropertyWithMultipleContexts", true);
+        final OWLClassF entityF = new OWLClassF(Generators.generateUri());
+        final OWLClassA entityA2 = new OWLClassA(Generators.generateUri(), "another a");
+        transactional(() -> {
+            em.persist(entityF);
+        });
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+        transactional(() -> {
+            final OWLClassF toUpdate = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
+            toUpdate.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
+            em.persist(entityA, new EntityDescriptor(CONTEXT_ONE));
+            em.persist(entityA2, new EntityDescriptor(CONTEXT_TWO));
+        });
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
+        assertEquals(2, result.getSimpleSet().size());
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
     }
 }

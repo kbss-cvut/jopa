@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,13 +53,13 @@ class ReferenceSavingResolverTest {
 
     @Test
     void shouldSaveReferenceReturnsTrueForNullValue() {
-        assertTrue(resolver.shouldSaveReference(null, null));
+        assertTrue(resolver.shouldSaveReference(null, Collections.emptySet()));
     }
 
     @Test
     void shouldSaveReferenceReturnsTrueForPlainIdentifierValue() {
         final URI value = Generators.createIndividualIdentifier();
-        assertTrue(resolver.shouldSaveReference(value, null));
+        assertTrue(resolver.shouldSaveReference(value, Collections.emptySet()));
     }
 
     @Test
@@ -66,14 +67,14 @@ class ReferenceSavingResolverTest {
         // Because it means it is not managed and does not exist in the storage either
         final OWLClassA value = new OWLClassA();
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
-        assertFalse(resolver.shouldSaveReference(value, null));
+        assertFalse(resolver.shouldSaveReference(value, Collections.emptySet()));
     }
 
     @Test
     void shouldSaveReferenceReturnsTrueForValueBeingManaged() {
         final OWLClassA value = Generators.generateOwlClassAInstance();
         when(mapperMock.isManaged(value)).thenReturn(true);
-        assertTrue(resolver.shouldSaveReference(value, null));
+        assertTrue(resolver.shouldSaveReference(value, Collections.emptySet()));
         verify(mapperMock).isManaged(value);
     }
 
@@ -83,7 +84,7 @@ class ReferenceSavingResolverTest {
         when(mapperMock.isManaged(value)).thenReturn(false);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
         when(mapperMock.containsEntity(eq(OWLClassA.class), eq(value.getUri()), any())).thenReturn(true);
-        assertTrue(resolver.shouldSaveReference(value, null));
+        assertTrue(resolver.shouldSaveReference(value, Collections.emptySet()));
         verify(mapperMock).containsEntity(OWLClassA.class, value.getUri(), new EntityDescriptor());
     }
 
@@ -94,7 +95,7 @@ class ReferenceSavingResolverTest {
         when(mapperMock.isManaged(value)).thenReturn(false);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
         when(mapperMock.containsEntity(eq(OWLClassA.class), eq(value.getUri()), any())).thenReturn(true);
-        assertTrue(resolver.shouldSaveReference(value, context));
+        assertTrue(resolver.shouldSaveReference(value, Collections.singleton(context)));
         verify(mapperMock).containsEntity(OWLClassA.class, value.getUri(), new EntityDescriptor(context));
     }
 

@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -193,5 +194,54 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri(), cOneDescriptor);
         assertNotNull(result.getStringAttribute());
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
+
+    @Test
+    void retrieveSupportsSpecifyingMultipleContextsForObjectPropertyValues() {
+        this.em = getEntityManager("retrieveSupportsSpecifyingMultipleContextsForObjectPropertyValues", false);
+        final EntityDescriptor descriptor = new EntityDescriptor();
+        descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+        final OWLClassA a2 = new OWLClassA(Generators.generateUri(), "string two");
+        final URI ownerUri = Generators.generateUri();
+        transactionalThrowing(() -> persistTestData(Arrays.asList(
+                new Quad(entityA.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A),
+                        CONTEXT_ONE),
+                new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                        entityA.getStringAttribute(), CONTEXT_ONE),
+                new Quad(a2.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A), CONTEXT_TWO),
+                new Quad(a2.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), a2.getStringAttribute(),
+                        CONTEXT_TWO),
+                new Quad(ownerUri, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_F)),
+                new Quad(ownerUri, URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), entityA.getUri()),
+                new Quad(ownerUri, URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), a2.getUri())), em));
+
+        final OWLClassF result = findRequired(OWLClassF.class, ownerUri);
+        assertEquals(2, result.getSimpleSet().size());
+        final Optional<OWLClassA> aOneResult =
+                result.getSimpleSet().stream().filter(a -> a.getUri().equals(entityA.getUri())).findAny();
+        assertTrue(aOneResult.isPresent());
+        assertEquals(entityA.getStringAttribute(), aOneResult.get().getStringAttribute());
+        final Optional<OWLClassA> aTwoResult =
+                result.getSimpleSet().stream().filter(a -> a.getUri().equals(a2.getUri())).findAny();
+        assertTrue(aTwoResult.isPresent());
+        assertEquals(a2.getStringAttribute(), aTwoResult.get().getStringAttribute());
+    }
+
+    @Test
+    void retrieveSupportsSpecifyingMultipleContextsForEntity() {
+        this.em = getEntityManager("retrieveSupportsSpecifyingMultipleContextsForEntity", false);
+        final Descriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
+        descriptor.addContext(CONTEXT_TWO);
+        final URI uri = URI.create(entityM.getKey());
+        transactionalThrowing(() -> persistTestData(Arrays.asList(
+                new Quad(uri, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M), CONTEXT_ONE),
+                new Quad(uri, URI.create(Vocabulary.p_m_booleanAttribute), entityM.getBooleanAttribute(), CONTEXT_ONE),
+                new Quad(uri, URI.create(Vocabulary.p_m_dateAttribute), entityM.getDateAttribute(), CONTEXT_TWO)
+        ), em));
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getBooleanAttribute(), result.getBooleanAttribute());
+        assertEquals(entityM.getDateAttribute(), result.getDateAttribute());
     }
 }
