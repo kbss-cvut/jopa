@@ -265,10 +265,10 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     void testUpdateFieldInMappedSuperclassInContext() {
+        this.em = getEntityManager("UpdateFieldInMappedSuperclassInContext", true);
         final Descriptor qDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
         qDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassQ.class, "owlClassA"), aDescriptor);
-        this.em = getEntityManager("UpdateFieldInMappedSuperclassInContext", true);
         em.getTransaction().begin();
         em.persist(entityQ, qDescriptor);
         em.persist(entityA, aDescriptor);
@@ -297,10 +297,10 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     void testUpdateObjectPropertyInContextWithAssertionInContext() {
+        this.em = getEntityManager("testUpdateObjectPropertyInContextWithAssertionInContext", true);
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
         dDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), aDescriptor);
-        this.em = getEntityManager("testUpdateObjectPropertyInContextWithAssertionInContext", true);
         transactional(() -> {
             em.persist(entityA, aDescriptor);
             em.persist(entityD, dDescriptor);

@@ -139,7 +139,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     void testRetrievePropertiesFromContext() {
         this.em = getEntityManager("MultiRetrievePropertiesFromContext", false);
         entityB.setProperties(Generators.createProperties(50));
-        cOneDescriptor.addAttributeContext(em.getMetamodel().entity(OWLClassA.class).getProperties(), CONTEXT_TWO);
+        cOneDescriptor.addAttributeContext(em.getMetamodel().entity(OWLClassB.class).getProperties(), CONTEXT_TWO);
         cOneDescriptor
                 .addAttributeContext(em.getMetamodel().entity(OWLClassB.class).getDeclaredAttribute("stringAttribute"),
                         null);
