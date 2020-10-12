@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -22,9 +20,9 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -34,8 +32,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,13 +50,13 @@ public class TypesHandlerTest {
 
     private TypesHandler handler;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    @BeforeAll
+    public static void setUpBeforeClass() {
         vf = SimpleValueFactory.getInstance();
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.handler = new TypesHandler(connectorMock, vf);
     }
@@ -66,9 +64,10 @@ public class TypesHandlerTest {
     @Test
     public void getsTypesWithoutContext() throws Exception {
         final Collection<Statement> statements = initStatements(null);
-        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false, null))
+        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false, Collections.emptySet()))
                 .thenReturn(statements);
-        final Set<Axiom<java.net.URI>> res = handler.getTypes(NamedResource.create(STR_PK), null, false);
+        final Set<Axiom<java.net.URI>> res = handler
+                .getTypes(NamedResource.create(STR_PK), Collections.emptySet(), false);
         assertEquals(statements.size(), res.size());
         final Set<java.net.URI> uris = new HashSet<>();
         for (Axiom<java.net.URI> u : res) {
@@ -93,9 +92,10 @@ public class TypesHandlerTest {
     public void getsTypesIncludingInferredAndInContext() throws Exception {
         final IRI context = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/contextOne");
         final Collection<Statement> statements = initStatements(context);
-        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, true, context)).thenReturn(statements);
+        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, true, Collections.singleton(context)))
+                .thenReturn(statements);
         final Set<Axiom<java.net.URI>> res = handler
-                .getTypes(NAMED_PK, java.net.URI.create(context.stringValue()), true);
+                .getTypes(NAMED_PK, Collections.singleton(java.net.URI.create(context.stringValue())), true);
         assertEquals(statements.size(), res.size());
         final Set<java.net.URI> uris = new HashSet<>();
         for (Axiom<java.net.URI> u : res) {
@@ -104,14 +104,16 @@ public class TypesHandlerTest {
         for (Statement stmt : statements) {
             assertTrue(uris.contains(java.net.URI.create(stmt.getObject().stringValue())));
         }
-        verify(connectorMock).findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, true, context);
+        verify(connectorMock)
+                .findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, true, Collections.singleton(context));
     }
 
     @Test
     public void getsEmptyTypes() throws Exception {
         when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false))
                 .thenReturn(Collections.emptySet());
-        final Set<Axiom<java.net.URI>> res = handler.getTypes(NamedResource.create(STR_PK), null, true);
+        final Set<Axiom<java.net.URI>> res = handler
+                .getTypes(NamedResource.create(STR_PK), Collections.emptySet(), true);
         assertTrue(res.isEmpty());
     }
 

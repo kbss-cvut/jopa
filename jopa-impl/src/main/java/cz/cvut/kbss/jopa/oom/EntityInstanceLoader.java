@@ -105,7 +105,7 @@ abstract class EntityInstanceLoader {
         final Axiom<NamedResource> typeAxiom = descriptorFactory.createForReferenceLoading(identifier, et);
         try {
             final boolean contains =
-                    storageConnection.contains(typeAxiom, loadingParameters.getDescriptor().getContext());
+                    storageConnection.contains(typeAxiom, loadingParameters.getDescriptor().getContexts());
             return contains ? entityBuilder.createEntityInstance(identifier, et) : null;
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);

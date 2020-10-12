@@ -1,23 +1,21 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,11 +24,11 @@ import java.util.List;
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LocalModelTest {
 
-    private LocalModel localModel = new LocalModel(false);
+    private final LocalModel localModel = new LocalModel(false);
 
     @Test
     public void addStatementsAddsThemIntoDefaultAddModel() {
@@ -69,7 +67,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), null);
         assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
     }
 
     @Test
@@ -77,7 +75,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
         assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(null, statement.getPredicate(), null, NAMED_GRAPH));
+                localModel.contains(null, statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
@@ -85,7 +83,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.removeStatements(Collections.singletonList(statement), null);
         assertEquals(LocalModel.Containment.REMOVED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, null));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
     }
 
     @Test
@@ -93,13 +91,14 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
         assertEquals(LocalModel.Containment.REMOVED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, NAMED_GRAPH));
+                localModel.contains(statement.getSubject(), statement.getPredicate(), null,
+                        Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
     public void containsReturnsUnknownForStatementNotInLocalModel() {
         assertEquals(LocalModel.Containment.UNKNOWN,
-                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), null));
+                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -153,7 +152,8 @@ public class LocalModelTest {
         final Collection<Statement> toEnhance = Collections
                 .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
         final Collection<Statement> result = localModel
-                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null,
+                        Collections.emptySet());
         assertEquals(2, result.size());
         assertTrue(result.contains(statement));
         assertTrue(result.containsAll(toEnhance));
@@ -166,7 +166,8 @@ public class LocalModelTest {
         final Collection<Statement> toEnhance = Collections
                 .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE));
         final Collection<Statement> result = localModel
-                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null,
+                        Collections.emptySet());
         assertTrue(result.isEmpty());
     }
 
@@ -180,7 +181,7 @@ public class LocalModelTest {
                 .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
         final Collection<Statement> result = localModel
                 .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null,
-                        NAMED_GRAPH);
+                        Collections.singleton(NAMED_GRAPH));
         assertEquals(1, result.size());
         assertTrue(result.contains(added));
     }
@@ -205,7 +206,8 @@ public class LocalModelTest {
         final LocalModel model = new LocalModel(true);
         final Statement added = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         model.addStatements(Collections.singletonList(added), NAMED_GRAPH);
-        assertEquals(LocalModel.Containment.ADDED, model.contains(createResource(SUBJECT), null, null, null));
+        assertEquals(LocalModel.Containment.ADDED,
+                model.contains(createResource(SUBJECT), null, null, Collections.emptySet()));
     }
 
     @Test
@@ -216,7 +218,8 @@ public class LocalModelTest {
         final Collection<Statement> toEnhance = Collections
                 .singletonList(statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO));
         final Collection<Statement> result = model
-                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null);
+                .enhanceStatements(toEnhance, createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null,
+                        Collections.emptySet());
         assertTrue(result.isEmpty());
     }
 

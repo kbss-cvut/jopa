@@ -25,7 +25,9 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 abstract class AbstractSesameIterator implements SesameIterator {
 
@@ -48,6 +50,10 @@ abstract class AbstractSesameIterator implements SesameIterator {
         this.includeInferred = listDescriptor.getListProperty().isInferred();
         this.connector = connector;
         this.vf = vf;
+    }
+
+    protected Set<IRI> contexts() {
+        return context != null ? Collections.singleton(context) : Collections.emptySet();
     }
 
     protected void checkSuccessorMax(Collection<Statement> stmts, IRI property) {

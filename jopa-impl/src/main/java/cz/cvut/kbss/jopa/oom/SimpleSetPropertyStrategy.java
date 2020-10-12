@@ -45,7 +45,7 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
 
     private <T> void extractValues(Collection<T> valueCollection, AxiomValueGatherer valueBuilder) {
         if (valueCollection == null) {
-            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
             return;
         }
         final Set<Value<?>> assertionValues = new HashSet<>(valueCollection.size());
@@ -58,17 +58,17 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
                 if (val == null) {
                     continue;
                 }
-                if (referenceSavingResolver.shouldSaveReferenceToItem(val, getAttributeValueContext())) {
+                if (referenceSavingResolver.shouldSaveReferenceToItem(val, getAttributeValueContexts())) {
                     final URI valId = EntityPropertiesUtils.getIdentifier(val, et);
                     assert valId != null;
                     assertionValues.add(new Value<>(NamedResource.create(valId)));
                 } else {
                     referenceSavingResolver
                             .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), val,
-                                    getAttributeContext());
+                                    getAttributeWriteContext());
                 }
             }
         }
-        valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
+        valueBuilder.addValues(createAssertion(), assertionValues, getAttributeWriteContext());
     }
 }

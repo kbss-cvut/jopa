@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -47,15 +45,15 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
      * <p>
      * The first three parameters are optional, their absence signifies that any value in that position is acceptable.
      * <p>
-     * {@code context} is also optional, its absence means that the default graph should be used.
+     * {@code contexts} are also optional, their absence means that the default graph should be used.
      *
      * @param subject  Statement subject, optional
      * @param property Property, optional
      * @param value    Value, optional
-     * @param context  Named graph IRI, optional
+     * @param contexts Named graph IRIs, optional. If empty, the default graph will be used
      * @return Collection of matching statements
      */
-    Collection<Statement> find(Resource subject, Property property, RDFNode value, String context);
+    Collection<Statement> find(Resource subject, Property property, RDFNode value, Collection<String> contexts);
 
     /**
      * Checks whether the specified context (named graph) contains any statements matching the specified criteria.
@@ -67,10 +65,10 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
      * @param subject  Subject, optional
      * @param property Property, optional
      * @param value    Value, optional
-     * @param context  Named graph IRI, optional
+     * @param contexts Named graph IRIs, optional. If empty, the default graph will be used
      * @return {@code true} if at least one statement matches the criteria, {@code false} otherwise
      */
-    boolean contains(Resource subject, Property property, RDFNode value, String context);
+    boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts);
 
     /**
      * Lists all contexts (named graph) in the repository (including the transactional ones).

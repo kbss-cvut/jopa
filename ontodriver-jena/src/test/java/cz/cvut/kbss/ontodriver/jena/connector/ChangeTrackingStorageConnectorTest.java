@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -24,9 +22,9 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -35,7 +33,7 @@ import java.util.List;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ChangeTrackingStorageConnectorTest {
@@ -43,14 +41,14 @@ public class ChangeTrackingStorageConnectorTest {
     private SharedStorageConnector centralConnector;
     private ChangeTrackingStorageConnector connector;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         this.centralConnector = spy(new SharedStorageConnector(configuration));
         this.connector = new ChangeTrackingStorageConnector(centralConnector);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         centralConnector.close();
     }
@@ -81,7 +79,8 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), null);
-        final Collection<Statement> result = connector.find(createResource(SUBJECT), null, null, null);
+        final Collection<Statement> result = connector
+                .find(createResource(SUBJECT), null, null, Collections.emptySet());
         assertEquals(2, result.size());
         assertTrue(result.contains(existing));
         assertTrue(result.contains(added));
@@ -100,7 +99,8 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
-        final Collection<Statement> result = connector.find(createResource(SUBJECT), null, null, NAMED_GRAPH);
+        final Collection<Statement> result = connector
+                .find(createResource(SUBJECT), null, null, Collections.singleton(NAMED_GRAPH));
         assertEquals(1, result.size());
         assertTrue(result.contains(added));
     }
@@ -115,7 +115,8 @@ public class ChangeTrackingStorageConnectorTest {
         centralConnector.commit();
         connector.begin();
         getLocalModel().addStatements(Collections.singletonList(statement), null);
-        final Collection<Statement> result = connector.find(createResource(SUBJECT), null, null, null);
+        final Collection<Statement> result = connector
+                .find(createResource(SUBJECT), null, null, Collections.emptySet());
         assertEquals(1, result.size());
         assertTrue(result.contains(statement));
 
@@ -127,7 +128,7 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), null);
-        assertTrue(connector.contains(null, null, added.getObject(), null));
+        assertTrue(connector.contains(null, null, added.getObject(), Collections.emptySet()));
     }
 
     @Test
@@ -139,7 +140,7 @@ public class ChangeTrackingStorageConnectorTest {
         centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(null, null, createResource(TYPE_ONE), null));
+        assertTrue(connector.contains(null, null, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -154,7 +155,7 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement removed = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_ONE));
         getLocalModel().removeStatements(Collections.singletonList(removed), null);
-        assertFalse(connector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, null));
+        assertFalse(connector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, Collections.emptySet()));
     }
 
     @Test
@@ -169,7 +170,7 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), null);
-        assertFalse(connector.contains(null, null, added.getObject(), NAMED_GRAPH));
+        assertFalse(connector.contains(null, null, added.getObject(), Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
@@ -278,9 +279,9 @@ public class ChangeTrackingStorageConnectorTest {
         getLocalModel().addStatements(Collections.singletonList(added), null);
         connector.commit();
         assertTrue(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
-                createResource(TYPE_TWO), null));
+                createResource(TYPE_TWO), Collections.emptySet()));
         assertFalse(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
-                createResource(TYPE_ONE), null));
+                createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -291,7 +292,7 @@ public class ChangeTrackingStorageConnectorTest {
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
         connector.commit();
         assertTrue(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
-                createResource(TYPE_TWO), NAMED_GRAPH));
+                createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
@@ -305,7 +306,7 @@ public class ChangeTrackingStorageConnectorTest {
         assertFalse(connector.transaction.isActive());
     }
 
-    @Test(expected = JenaDriverException.class)
+    @Test
     public void commitRollsBackChangesOnException() throws Exception {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
@@ -313,12 +314,9 @@ public class ChangeTrackingStorageConnectorTest {
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
         centralConnector.storage = spy(centralConnector.storage);
         doThrow(new JenaDriverException("Write failed.")).when(centralConnector.storage).writeChanges();
-        try {
-            connector.commit();
-        } finally {
-            assertFalse(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
-                    createResource(TYPE_TWO), NAMED_GRAPH));
-        }
+        assertThrows(JenaDriverException.class, () -> connector.commit());
+        assertFalse(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
+                createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test

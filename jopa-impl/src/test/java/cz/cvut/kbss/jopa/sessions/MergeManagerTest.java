@@ -104,7 +104,7 @@ class MergeManagerTest {
                 new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
         uowChangeSet.addObjectChangeSet(changeSet);
         mm.mergeChangesFromChangeSet(uowChangeSet);
-        verify(uow).removeObjectFromCache(objTwo, defaultDescriptor.getContext());
+        verify(uow).removeObjectFromCache(objTwo, DEFAULT_URI);
         verify(cloneBuilder).mergeChanges(changeSet);
     }
 
@@ -143,6 +143,6 @@ class MergeManagerTest {
         changeSet.addChangeRecord(record);
         mm.mergeChangesOnObject(changeSet);
         verify(uow, never()).putObjectIntoCache(original.getUri(), original, defaultDescriptor);
-        verify(uow).removeObjectFromCache(original, defaultDescriptor.getContext());
+        verify(uow).removeObjectFromCache(original, DEFAULT_URI);
     }
 }

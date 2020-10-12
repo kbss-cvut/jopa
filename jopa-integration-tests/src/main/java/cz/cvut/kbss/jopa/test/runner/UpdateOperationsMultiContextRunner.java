@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,10 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,19 +39,17 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateDataPropertyInContext() throws Exception {
+    void testUpdateDataPropertyInContext() {
         this.em = getEntityManager("MultiUpdateDataPropertyInContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_TWO);
-        em.getTransaction().begin();
-        em.persist(entityA, aDescriptor);
-        em.getTransaction().commit();
+        aDescriptor.addAttributeContext(fieldSpecification(OWLClassA.class, "stringAttribute"), CONTEXT_TWO);
+        transactional(() -> em.persist(entityA, aDescriptor));
 
-        em.getTransaction().begin();
-        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         final String newAttValue = "newStringAttributeValue";
-        a.setStringAttribute(newAttValue);
-        em.getTransaction().commit();
+        transactional(() -> {
+            final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
+            a.setStringAttribute(newAttValue);
+        });
 
         final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         assertEquals(newAttValue, resA.getStringAttribute());
@@ -62,11 +57,11 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateObjectPropertyToDifferentContext() throws Exception {
+    void testUpdateObjectPropertyToDifferentContext() {
         this.em = getEntityManager("MultiUpdateObjectPropertyToDifferent", false);
         final Descriptor dDescriptor = new EntityDescriptor();
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        dDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), aDescriptor);
         transactional(() -> {
             em.persist(entityD, dDescriptor);
             em.persist(entityA, aDescriptor);
@@ -80,7 +75,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         newA.setStringAttribute("newAStringAttribute");
         final Descriptor newADescriptor = new EntityDescriptor(CONTEXT_TWO);
         em.persist(newA, newADescriptor);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), newADescriptor);
+        dDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), newADescriptor);
         d.setOwlClassA(newA);
         em.getTransaction().commit();
 
@@ -92,14 +87,12 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateAddToPropertiesInContext() throws Exception {
+    void testUpdateAddToPropertiesInContext() {
         this.em = getEntityManager("MultiUpdateAddToPropertiesInContext", false);
         entityB.setProperties(Generators.createProperties());
         final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);
-        bDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_TWO);
-        em.getTransaction().begin();
-        em.persist(entityB, bDescriptor);
-        em.getTransaction().commit();
+        bDescriptor.addAttributeContext(em.getMetamodel().entity(OWLClassB.class).getProperties(), CONTEXT_TWO);
+        transactional(() -> em.persist(entityB, bDescriptor));
 
         em.getTransaction().begin();
         final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri(), bDescriptor);
@@ -117,13 +110,13 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateAddToSimpleListInContext() throws Exception {
+    void testUpdateAddToSimpleListInContext() {
         this.em = getEntityManager("MultiUpdateAddToSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final ObjectPropertyCollectionDescriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.getSimpleListField());
-        cDescriptor.addAttributeDescriptor(OWLClassC.getSimpleListField(), lstDescriptor);
+                fieldSpecification(OWLClassC.class, "simpleList"));
+        cDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassC.class, "simpleList"), lstDescriptor);
         persistCWithLists(entityC, cDescriptor, lstDescriptor);
 
         em.getTransaction().begin();
@@ -161,13 +154,13 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateAddToReferencedListInContext() throws Exception {
+    void testUpdateAddToReferencedListInContext() {
         this.em = getEntityManager("MultiUpdateAddToReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final ObjectPropertyCollectionDescriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.getReferencedListField());
-        cDescriptor.addAttributeDescriptor(OWLClassC.getReferencedListField(), lstDescriptor);
+                fieldSpecification(OWLClassC.class, "referencedList"));
+        cDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassC.class, "referencedList"), lstDescriptor);
         persistCWithLists(entityC, cDescriptor, lstDescriptor);
 
         em.getTransaction().begin();
@@ -192,13 +185,13 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateRemoveFromSimpleListInContext() throws Exception {
+    void testUpdateRemoveFromSimpleListInContext() {
         this.em = getEntityManager("MultiUpdateRemoveFromSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final ObjectPropertyCollectionDescriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.getSimpleListField());
-        cDescriptor.addAttributeDescriptor(OWLClassC.getSimpleListField(), lstDescriptor);
+                fieldSpecification(OWLClassC.class, "simpleList"));
+        cDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassC.class, "simpleList"), lstDescriptor);
         persistCWithLists(entityC, cDescriptor, lstDescriptor);
 
         em.getTransaction().begin();
@@ -215,13 +208,13 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateRemoveFromReferencedListInContext() throws Exception {
+    void testUpdateRemoveFromReferencedListInContext() {
         this.em = getEntityManager("MultiUpdateRemoveFromReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final ObjectPropertyCollectionDescriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.getReferencedListField());
-        cDescriptor.addAttributeDescriptor(OWLClassC.getReferencedListField(), lstDescriptor);
+                fieldSpecification(OWLClassC.class, "referencedList"));
+        cDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassC.class, "referencedList"), lstDescriptor);
         persistCWithLists(entityC, cDescriptor, lstDescriptor);
 
         em.getTransaction().begin();
@@ -255,28 +248,24 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         final Descriptor pDescriptor = new EntityDescriptor(CONTEXT_ONE);
         entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/originalIndividual"));
         this.em = getEntityManager("UpdatePlainIdentifierObjectPropertyValueInContext", true);
-        em.getTransaction().begin();
-        em.persist(entityP, pDescriptor);
-        em.getTransaction().commit();
+        transactional(() -> em.persist(entityP, pDescriptor));
 
         final OWLClassP toUpdate = findRequired(OWLClassP.class, entityP.getUri());
         em.detach(toUpdate);
         final URI newUri = URI.create("http://krizik.felk.cvut.cz/newIndividual");
         toUpdate.setIndividualUri(newUri);
-        em.getTransaction().begin();
-        em.merge(toUpdate);
-        em.getTransaction().commit();
+        transactional(() -> em.merge(toUpdate));
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(newUri, res.getIndividualUri());
     }
 
     @Test
-    void testUpdateFieldInMappedSuperclassInContext() throws Exception {
+    void testUpdateFieldInMappedSuperclassInContext() {
+        this.em = getEntityManager("UpdateFieldInMappedSuperclassInContext", true);
         final Descriptor qDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        qDescriptor.addAttributeDescriptor(OWLClassQ.getOWlClassAField(), aDescriptor);
-        this.em = getEntityManager("UpdateFieldInMappedSuperclassInContext", true);
+        qDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassQ.class, "owlClassA"), aDescriptor);
         em.getTransaction().begin();
         em.persist(entityQ, qDescriptor);
         em.persist(entityA, aDescriptor);
@@ -304,11 +293,11 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateObjectPropertyInContextWithAssertionInContext() throws Exception {
+    void testUpdateObjectPropertyInContextWithAssertionInContext() {
+        this.em = getEntityManager("testUpdateObjectPropertyInContextWithAssertionInContext", true);
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
-        this.em = getEntityManager("testUpdateObjectPropertyInContextWithAssertionInContext", true);
+        dDescriptor.addAttributeDescriptor(fieldSpecification(OWLClassD.class, "owlClassA"), aDescriptor);
         transactional(() -> {
             em.persist(entityA, aDescriptor);
             em.persist(entityD, dDescriptor);
@@ -328,5 +317,53 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(result.getOwlClassA());
         assertEquals(newA.getUri(), result.getOwlClassA().getUri());
+    }
+
+    @Test
+    void updateSupportsObjectPropertyWithMultipleContexts() {
+        this.em = getEntityManager("updateSupportsObjectPropertyWithMultipleContexts", true);
+        final OWLClassF entityF = new OWLClassF(Generators.generateUri());
+        final OWLClassA entityA2 = new OWLClassA(Generators.generateUri(), "another a");
+        transactional(() -> {
+            em.persist(entityF);
+            em.persist(entityA, new EntityDescriptor(CONTEXT_ONE));
+            em.persist(entityA2, new EntityDescriptor(CONTEXT_TWO));
+        });
+
+        entityF.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+        transactional(() -> em.merge(entityF, descriptor));
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
+        assertEquals(2, result.getSimpleSet().size());
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
+    }
+
+    @Test
+    void updateWithinTransactionSupportsObjectPropertyWithMultipleContexts() {
+        this.em = getEntityManager("updateSupportsObjectPropertyWithMultipleContexts", true);
+        final OWLClassF entityF = new OWLClassF(Generators.generateUri());
+        final OWLClassA entityA2 = new OWLClassA(Generators.generateUri(), "another a");
+        transactional(() -> {
+            em.persist(entityF);
+        });
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+        transactional(() -> {
+            final OWLClassF toUpdate = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
+            toUpdate.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
+            em.persist(entityA, new EntityDescriptor(CONTEXT_ONE));
+            em.persist(entityA2, new EntityDescriptor(CONTEXT_TWO));
+        });
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
+        assertEquals(2, result.getSimpleSet().size());
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
+        assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
     }
 }

@@ -74,7 +74,7 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
             return Collections.emptyList();
         } else {
             return list.stream().filter(item -> item != null && !referenceSavingResolver
-                    .shouldSaveReferenceToItem(item, getAttributeValueContext())).collect(Collectors.toList());
+                    .shouldSaveReferenceToItem(item, getAttributeValueContexts())).collect(Collectors.toList());
         }
     }
 

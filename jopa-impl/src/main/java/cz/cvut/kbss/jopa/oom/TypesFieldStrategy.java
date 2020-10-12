@@ -68,12 +68,12 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
             if (origTypes == null || origTypes.isEmpty()) {
                 return;
             }
-            valueBuilder.removeTypes(prepareTypes(origTypes), getAttributeContext());
+            valueBuilder.removeTypes(prepareTypes(origTypes), getAttributeWriteContext());
         } else {
             assert val instanceof Set;  // This is verified when the metamodel is built
             final Set<?> types = (Set<?>) val;
             if (original == null) {
-                valueBuilder.addTypes(prepareTypes(types), getAttributeContext());
+                valueBuilder.addTypes(prepareTypes(types), getAttributeWriteContext());
             } else {
                 Set<?> origTypes = (Set<?>) extractFieldValueFromInstance(original);
                 if (origTypes == null) {
@@ -87,7 +87,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
 
     private void extractTypesToAdd(AxiomValueGatherer valueBuilder, Set<?> types, Set<?> origTypes) {
         final Set<URI> toAdd = typesDiff(origTypes, types);
-        valueBuilder.addTypes(toAdd, getAttributeContext());
+        valueBuilder.addTypes(toAdd, getAttributeWriteContext());
     }
 
     private static Set<URI> typesDiff(Set<?> base, Set<?> difference) {
@@ -99,7 +99,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
 
     private void extractTypesToRemove(AxiomValueGatherer valueBuilder, Set<?> types, Set<?> origTypes) {
         final Set<URI> toRemove = typesDiff(types, origTypes);
-        valueBuilder.removeTypes(toRemove, getAttributeContext());
+        valueBuilder.removeTypes(toRemove, getAttributeWriteContext());
     }
 
     private static Set<URI> prepareTypes(Set<?> types) {

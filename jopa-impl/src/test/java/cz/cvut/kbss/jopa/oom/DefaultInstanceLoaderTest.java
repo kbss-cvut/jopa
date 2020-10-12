@@ -114,14 +114,14 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
                         new Value<>(NamedResource.create(
                                 Vocabulary.c_OwlClassA)));
-        when(connectionMock.contains(typeAxiom, null)).thenReturn(true);
+        when(connectionMock.contains(typeAxiom, Collections.emptySet())).thenReturn(true);
         when(descriptorFactoryMock.createForReferenceLoading(IDENTIFIER, etAMock)).thenReturn(typeAxiom);
         when(entityConstructorMock.createEntityInstance(IDENTIFIER, etAMock)).thenReturn(entityA);
 
         final OWLClassA result = instanceLoader.loadReference(loadingParameters);
         assertNotNull(result);
         verify(descriptorFactoryMock).createForReferenceLoading(IDENTIFIER, etAMock);
-        verify(connectionMock).contains(typeAxiom, null);
+        verify(connectionMock).contains(typeAxiom, Collections.emptySet());
         verify(entityConstructorMock).createEntityInstance(IDENTIFIER, etAMock);
     }
 
@@ -139,7 +139,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         final OWLClassA result =
                 instanceLoader.loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
         assertNotNull(result);
-        verify(connectionMock).contains(typeAxiom, descriptor.getContext());
+        verify(connectionMock).contains(typeAxiom, descriptor.getContexts());
     }
 
     @Test

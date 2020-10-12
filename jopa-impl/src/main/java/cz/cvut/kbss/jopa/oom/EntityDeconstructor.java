@@ -52,7 +52,7 @@ class EntityDeconstructor {
     }
 
     private static AxiomValueGatherer createAxiomValueBuilder(URI primaryKey, Descriptor descriptor) {
-        return new AxiomValueGatherer(NamedResource.create(primaryKey), descriptor.getContext());
+        return new AxiomValueGatherer(NamedResource.create(primaryKey), descriptor.getSingleContext().orElse(null));
     }
 
     private <T> void addAssertions(T entity, EntityType<T> et,

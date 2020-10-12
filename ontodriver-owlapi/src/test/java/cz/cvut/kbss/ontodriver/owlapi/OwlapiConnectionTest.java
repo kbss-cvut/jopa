@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,14 +14,14 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class OwlapiConnectionTest {
@@ -40,8 +40,8 @@ public class OwlapiConnectionTest {
 
     private OwlapiConnection connection;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.connection = new OwlapiConnection(adapterMock);
     }
@@ -52,10 +52,10 @@ public class OwlapiConnectionTest {
         verify(adapterMock).commit();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void commitOnCloseThrowsIllegalState() {
         connection.close();
-        connection.commit();
+        assertThrows(IllegalStateException.class, () -> connection.commit());
     }
 
     @Test
@@ -95,8 +95,8 @@ public class OwlapiConnectionTest {
         final Axiom<URI> axiom = new AxiomImpl<>(NamedResource.create("http://individual"),
                 Assertion.createClassAssertion(false), new Value<>(URI.create("http://class")));
         final URI context = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
-        connection.contains(axiom, context);
-        verify(adapterMock).containsAxiom(axiom, context);
+        connection.contains(axiom, Collections.singleton(context));
+        verify(adapterMock).containsAxiom(axiom, Collections.singleton(context));
     }
 
     @Test
@@ -119,12 +119,12 @@ public class OwlapiConnectionTest {
         verify(adapterMock).find(descriptor);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void findOnCloseThrowsIllegalState() throws Exception {
+    @Test
+    public void findOnCloseThrowsIllegalState() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(
                 NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa#instance"));
         connection.close();
-        connection.find(descriptor);
+        assertThrows(IllegalStateException.class, () -> connection.find(descriptor));
     }
 
     @Test
@@ -145,14 +145,11 @@ public class OwlapiConnectionTest {
         assertEquals(identifier, result);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void generateIdentifierOnClosedThrowsException() {
         connection.close();
-        try {
-            connection.generateIdentifier(URI.create("http://baseUri"));
-        } finally {
-            verify(adapterMock, never()).generateIdentifier(any(URI.class));
-        }
+        assertThrows(IllegalStateException.class, () -> connection.generateIdentifier(URI.create("http://baseUri")));
+        verify(adapterMock, never()).generateIdentifier(any(URI.class));
     }
 
     @Test

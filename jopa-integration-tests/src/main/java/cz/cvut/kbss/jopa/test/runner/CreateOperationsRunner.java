@@ -518,7 +518,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("persistSetsStringLiteralLanguageTagAccordingToDescriptor", false);
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), "cs");
+        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class).getDeclaredAttribute("stringAttribute"), "cs");
         em.persist(entityA, descriptor);
         em.getTransaction().commit();
 
@@ -548,7 +548,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("persistAllowsOverridingGlobalLanguageWithLocalEmptyTag", false);
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), null);
+        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class).getDeclaredAttribute("stringAttribute"), null);
         em.persist(entityA, descriptor);
         em.getTransaction().commit();
 
@@ -567,7 +567,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         entityN.setAnnotationProperty("entity descriptor ist in Deutsch");
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage("de");
-        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("stringAttribute"), "cs");
+        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassN.class).getDeclaredAttribute("stringAttribute"), "cs");
 
         em.getTransaction().begin();
         em.persist(entityN, descriptor);

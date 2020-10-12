@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DataSourceStub implements DataSource {
 
@@ -117,7 +118,7 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public boolean contains(Axiom<?> axiom, URI context) {
+        public boolean contains(Axiom<?> axiom, Set<URI> context) {
             return false;
         }
 

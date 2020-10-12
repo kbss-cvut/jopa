@@ -23,6 +23,8 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.*;
@@ -47,26 +49,26 @@ public class DummyInferredStorageConnectorTest {
 
     @Test
     public void containsWithInferenceByDefaultUsesRegularContains() {
-        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_ONE), null),
-                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_ONE), null));
+        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_ONE), Collections.emptySet()),
+                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
     public void containsWithInferenceInContextByDefaultUsesRegularContainsInContext() {
-        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_TWO), NAMED_GRAPH),
-                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_TWO), NAMED_GRAPH));
+        assertEquals(wrappedConnector.contains(RESOURCE, RDF.type, createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)),
+                connector.containsWithInference(RESOURCE, RDF.type, createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
     public void findWithInferenceByDefaultUsesRegularFind() {
-        assertEquals(wrappedConnector.find(RESOURCE, RDF.type, null, null),
-                connector.findWithInference(RESOURCE, RDF.type, null, null));
+        assertEquals(wrappedConnector.find(RESOURCE, RDF.type, null, Collections.emptySet()),
+                connector.findWithInference(RESOURCE, RDF.type, null, Collections.emptySet()));
     }
 
     @Test
     public void findWithInferenceInContextByDefaultUsesRegularFindInContext() {
-        assertEquals(wrappedConnector.find(RESOURCE, RDF.type, null, NAMED_GRAPH),
-                connector.findWithInference(RESOURCE, RDF.type, null, NAMED_GRAPH));
+        assertEquals(wrappedConnector.find(RESOURCE, RDF.type, null, Collections.singleton(NAMED_GRAPH)),
+                connector.findWithInference(RESOURCE, RDF.type, null, Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test

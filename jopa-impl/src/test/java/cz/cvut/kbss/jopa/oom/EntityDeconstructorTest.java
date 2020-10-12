@@ -166,7 +166,7 @@ class EntityDeconstructorTest {
     @Test
     void testMapEntityWithDataPropertyAndTypesPropertyInDifferentContext() throws Exception {
         final Descriptor aDescriptor = new EntityDescriptor();
-        aDescriptor.addAttributeContext(OWLClassA.getStrAttField(), CONTEXT);
+        aDescriptor.addAttributeContext(mocks.forOwlClassA().stringAttribute(), CONTEXT);
         final Set<String> types = createTypes();
         entityA.setTypes(types);
         final AxiomValueGatherer builder = sut.mapEntityToAxioms(entityA.getUri(),
@@ -329,8 +329,8 @@ class EntityDeconstructorTest {
 
     @Test
     void mapsEntityObjectPropertyValueInContextToAxiomDescriptor() throws Exception {
-        final Descriptor dDescriptor = new EntityDescriptor();
-        dDescriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
+        final Descriptor dDescriptor = new EntityDescriptor(false);
+        dDescriptor.addAttributeContext(mocks.forOwlClassD().owlClassAAtt(), CONTEXT);
         when(oomMock.isManaged(entityD.getOwlClassA())).thenReturn(true);
         final AxiomValueGatherer builder = sut.mapFieldToAxioms(entityD.getUri(), entityD,
                 OWLClassD.getOwlClassAField(), mocks.forOwlClassD().entityType(), dDescriptor);
@@ -377,9 +377,7 @@ class EntityDeconstructorTest {
     private boolean containsAssertionValue(AxiomValueDescriptor descriptor, Assertion assertion, Object value) {
         final List<Value<?>> values = descriptor.getAssertionValues(assertion);
         assertFalse(values.isEmpty());
-        if (true) {
-            assertEquals(1, values.size());
-        }
+        assertEquals(1, values.size());
         for (Value<?> val : values) {
             if (val.getValue().equals(value)) {
                 return true;
@@ -459,7 +457,7 @@ class EntityDeconstructorTest {
         final URI subjectContext = Generators.createIndividualIdentifier();
         final Descriptor dDescriptor = new EntityDescriptor(subjectContext);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT);
-        dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+        dDescriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), aDescriptor);
         when(oomMock.isManaged(entityD.getOwlClassA())).thenReturn(true);
         final AxiomValueGatherer builder = sut.mapFieldToAxioms(entityD.getUri(), entityD,
                 OWLClassD.getOwlClassAField(), mocks.forOwlClassD().entityType(), dDescriptor);

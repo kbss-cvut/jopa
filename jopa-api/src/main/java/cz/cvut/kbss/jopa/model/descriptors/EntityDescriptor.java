@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
@@ -29,7 +27,7 @@ import java.util.Map.Entry;
  * <p>
  * Each attribute has a descriptor associated with it.
  */
-public class EntityDescriptor extends Descriptor {
+public class EntityDescriptor extends AbstractDescriptor {
 
     private final Map<Field, Descriptor> fieldDescriptors;
 
@@ -55,25 +53,32 @@ public class EntityDescriptor extends Descriptor {
         this.fieldDescriptors = new HashMap<>();
     }
 
+    public EntityDescriptor(Set<URI> contexts) {
+        this();
+        this.contexts.addAll(Objects.requireNonNull(contexts));
+    }
+
     public EntityDescriptor(URI context, boolean assertionsInSubjectContext) {
         super(context, assertionsInSubjectContext);
         this.fieldDescriptors = new HashMap<>();
     }
 
     @Override
-    public EntityDescriptor addAttributeDescriptor(Field attribute, Descriptor descriptor) {
+    public EntityDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
         Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
         Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
-        fieldDescriptors.put(attribute, descriptor);
+        fieldDescriptors.put(attribute.getJavaField(), descriptor);
         return this;
     }
 
     @Override
-    public EntityDescriptor addAttributeContext(Field attribute, URI context) {
+    public EntityDescriptor addAttributeContext(FieldSpecification<?, ?> attribute, URI context) {
         Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
 
-        fieldDescriptors.put(attribute, new FieldDescriptor(context, attribute));
+        fieldDescriptors.putIfAbsent(attribute.getJavaField(),
+                createDescriptor(attribute, context != null ? Collections.singleton(context) : Collections.emptySet()));
+        fieldDescriptors.get(attribute.getJavaField()).addContext(context);
         return this;
     }
 
@@ -85,20 +90,20 @@ public class EntityDescriptor extends Descriptor {
     }
 
     @Override
-    public EntityDescriptor setAttributeLanguage(Field attribute, String languageTag) {
+    public EntityDescriptor setAttributeLanguage(FieldSpecification<?, ?> attribute, String languageTag) {
         Objects.requireNonNull(attribute);
 
-        fieldDescriptors.putIfAbsent(attribute, new FieldDescriptor(null, attribute));
-        fieldDescriptors.get(attribute).setLanguage(languageTag);
+        fieldDescriptors.putIfAbsent(attribute.getJavaField(), createDescriptor(attribute, getContexts()));
+        fieldDescriptors.get(attribute.getJavaField()).setLanguage(languageTag);
         return this;
     }
 
     @Override
     public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
         Objects.requireNonNull(attribute);
-        Descriptor d = getFieldDescriptor(attribute.getJavaField());
+        Descriptor d = fieldDescriptors.get(attribute.getJavaField());
         if (d == null) {
-            d = createDescriptor(attribute, context);
+            d = createDescriptor(attribute, getContexts());
             if (hasLanguage()) {
                 d.setLanguage(getLanguage());
             }
@@ -107,11 +112,11 @@ public class EntityDescriptor extends Descriptor {
     }
 
     @Override
-    public URI getAttributeContext(FieldSpecification<?, ?> attribute) {
+    public Set<URI> getAttributeContexts(FieldSpecification<?, ?> attribute) {
         Objects.requireNonNull(attribute);
         final Descriptor attDescriptor = getAttributeDescriptor(attribute);
-        return attDescriptor.overridesAssertionsInSubjectContext() || !assertionsInSubjectContext ?
-               attDescriptor.getContext() : getContext();
+        return attDescriptor.overridesAssertionContext() || !assertionsInSubjectContext ?
+               attDescriptor.getContexts() : getContexts();
     }
 
     @Override
@@ -119,46 +124,18 @@ public class EntityDescriptor extends Descriptor {
         return Collections.unmodifiableCollection(fieldDescriptors.values());
     }
 
-    private Descriptor getFieldDescriptor(Field field) {
-        for (Entry<Field, Descriptor> e : fieldDescriptors.entrySet()) {
-            if (e.getKey().equals(field)) {
-                return e.getValue();
-            }
-        }
-        return null;
-    }
-
-    private static Descriptor createDescriptor(FieldSpecification<?, ?> att, URI context) {
+    private static AbstractDescriptor createDescriptor(FieldSpecification<?, ?> att, Set<URI> contexts) {
         if (att instanceof Attribute) {
             final Attribute<?, ?> attSpec = (Attribute<?, ?>) att;
             if (attSpec.getPersistentAttributeType() == PersistentAttributeType.OBJECT) {
                 if (attSpec.isCollection()) {
-                    return new ObjectPropertyCollectionDescriptor(context, att.getJavaField());
+                    return new ObjectPropertyCollectionDescriptor(contexts, att);
                 } else {
-                    return new EntityDescriptor(context);
+                    return new EntityDescriptor(contexts);
                 }
             }
         }
-        return new FieldDescriptor(context, att.getJavaField());
-    }
-
-    @Override
-    protected Set<URI> getContextsInternal(Set<URI> contexts, Set<Descriptor> visited) {
-        if (visited.contains(this)) {
-            return contexts;
-        }
-        if (context == null) {
-            return null;
-        }
-        contexts.add(context);
-        visited.add(this);
-        for (Descriptor fd : fieldDescriptors.values()) {
-            contexts = fd.getContextsInternal(contexts, visited);
-            if (contexts == null) {
-                return null;
-            }
-        }
-        return contexts;
+        return new FieldDescriptor(contexts, att);
     }
 
     @Override
@@ -198,11 +175,10 @@ public class EntityDescriptor extends Descriptor {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (fieldDescriptors != null ? fieldDescriptors.entrySet().stream()
-                                                                           .map(e -> e.getKey().hashCode() ^
-                                                                                   (e.getValue() == this ? 0 :
-                                                                                    e.getValue().hashCode())).reduce(0,
-                        Integer::sum) : 0);
+        result = 31 * result + fieldDescriptors.entrySet().stream()
+                                               .map(e -> e.getKey().hashCode() ^
+                                                       (e.getValue() == this ? 0 :
+                                                        e.getValue().hashCode())).reduce(0, Integer::sum);
         return result;
     }
 }

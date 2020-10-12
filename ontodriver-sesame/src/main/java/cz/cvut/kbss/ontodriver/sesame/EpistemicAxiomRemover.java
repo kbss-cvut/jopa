@@ -1,20 +1,18 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AbstractAxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -27,16 +25,15 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class performs an epistemic remove of axioms described by the axiom descriptor.
  * <p/>
- * Epistemic remove means that only information known to the application is
- * deleted. The assertions in the descriptor represent this information. Thus,
- * only these assertions are removed from the ontology. Note that if the
- * descriptor contains an unspecified property assertion, all property
- * assertions related to the subject individual are removed from the property's
- * context.
+ * Epistemic remove means that only information known to the application is deleted. The assertions in the descriptor
+ * represent this information. Thus, only these assertions are removed from the ontology. Note that if the descriptor
+ * contains an unspecified property assertion, all property assertions related to the subject individual are removed
+ * from the property's context.
  */
 class EpistemicAxiomRemover {
 
@@ -48,16 +45,18 @@ class EpistemicAxiomRemover {
         this.valueFactory = valueFactory;
     }
 
-    void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
+    void remove(AbstractAxiomDescriptor axiomDescriptor) throws SesameDriverException {
         final Resource individual = SesameUtils.toSesameIri(axiomDescriptor.getSubject().getIdentifier(), valueFactory);
         final Collection<Statement> toRemove = new HashSet<>();
         for (Assertion a : axiomDescriptor.getAssertions()) {
             if (a.isInferred()) {
                 continue;
             }
-            final IRI contextUri = SesameUtils.toSesameIri(axiomDescriptor.getAssertionContext(a), valueFactory);
+            final Set<IRI> contexts = axiomDescriptor.getAssertionContexts(a).stream()
+                                                     .map(uri -> SesameUtils.toSesameIri(uri, valueFactory))
+                                                     .collect(Collectors.toSet());
             toRemove.addAll(connector.findStatements(individual,
-                    SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred(), contextUri));
+                    SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred(), contexts));
         }
         connector.removeStatements(toRemove);
     }

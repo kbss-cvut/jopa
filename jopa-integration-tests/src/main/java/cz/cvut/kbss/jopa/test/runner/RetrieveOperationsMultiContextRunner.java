@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.*;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -26,14 +27,15 @@ import org.slf4j.Logger;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
-    private EntityDescriptor cOneDescriptor = new EntityDescriptor(CONTEXT_ONE);
-    private EntityDescriptor cTwoDescriptor = new EntityDescriptor(CONTEXT_TWO);
+    private final EntityDescriptor cOneDescriptor = new EntityDescriptor(CONTEXT_ONE);
+    private final EntityDescriptor cTwoDescriptor = new EntityDescriptor(CONTEXT_TWO);
 
     public RetrieveOperationsMultiContextRunner(Logger logger, PersistenceFactory persistenceFactory,
                                                 DataAccessor dataAccessor) {
@@ -56,13 +58,15 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testRetrieveSimpleListFromContext() throws Exception {
+    void testRetrieveSimpleListFromContext() {
         this.em = getEntityManager("MultiRetrieveSimpleListFromContext", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         final Descriptor cDescriptor = new EntityDescriptor();
+        final ListAttribute<OWLClassC, ?> simpleListAtt =
+                em.getMetamodel().entity(OWLClassC.class).getDeclaredList("simpleList");
         final ObjectPropertyCollectionDescriptor listDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
-                OWLClassC.getSimpleListField(), false);
-        cDescriptor.addAttributeDescriptor(OWLClassC.getSimpleListField(), listDescriptor);
+                simpleListAtt, false);
+        cDescriptor.addAttributeDescriptor(simpleListAtt, listDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         for (OWLClassA a : entityC.getSimpleList()) {
@@ -81,13 +85,15 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testRetrieveReferencedListFromContext() throws Exception {
+    void testRetrieveReferencedListFromContext() {
         this.em = getEntityManager("MultiRetrieveReferencedListFromContext", false);
         entityC.setReferencedList(Generators.createReferencedList(15));
         final Descriptor cDescriptor = new EntityDescriptor();
+        final ListAttribute<OWLClassC, ?> referencedListAtt =
+                em.getMetamodel().entity(OWLClassC.class).getDeclaredList("referencedList");
         final ObjectPropertyCollectionDescriptor listDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
-                OWLClassC.getReferencedListField(), false);
-        cDescriptor.addAttributeDescriptor(OWLClassC.getReferencedListField(), listDescriptor);
+                referencedListAtt, false);
+        cDescriptor.addAttributeDescriptor(referencedListAtt, listDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         for (OWLClassA a : entityC.getReferencedList()) {
@@ -110,8 +116,11 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         this.em = getEntityManager("MultiRetrieveLazyReferenceFromContext", false);
         final Descriptor iDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-        aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_ONE);
-        iDescriptor.addAttributeDescriptor(OWLClassI.class.getDeclaredField("owlClassA"), aDescriptor);
+        aDescriptor
+                .addAttributeContext(em.getMetamodel().entity(OWLClassA.class).getDeclaredAttribute("stringAttribute"),
+                        CONTEXT_ONE);
+        iDescriptor.addAttributeDescriptor(em.getMetamodel().entity(OWLClassI.class).getDeclaredAttribute("owlClassA"),
+                aDescriptor);
         em.getTransaction().begin();
         // The relationship is CascadeType.PERSIST
         em.persist(entityI, iDescriptor);
@@ -128,11 +137,13 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testRetrievePropertiesFromContext() throws Exception {
+    void testRetrievePropertiesFromContext() {
         this.em = getEntityManager("MultiRetrievePropertiesFromContext", false);
         entityB.setProperties(Generators.createProperties(50));
-        cOneDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_TWO);
-        cOneDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("stringAttribute"), null);
+        cOneDescriptor.addAttributeContext(em.getMetamodel().entity(OWLClassB.class).getProperties(), CONTEXT_TWO);
+        cOneDescriptor
+                .addAttributeContext(em.getMetamodel().entity(OWLClassB.class).getDeclaredAttribute("stringAttribute"),
+                        null);
         em.getTransaction().begin();
         em.persist(entityB, cOneDescriptor);
         em.getTransaction().commit();
@@ -143,10 +154,12 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext() throws Exception {
+    void retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext() {
         this.em = getEntityManager("retrieveSupportsRetrievalOfReferenceWherePropertyAssertionIsInSubjectContext",
                 false);
-        cOneDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), cTwoDescriptor);
+        cOneDescriptor
+                .addAttributeDescriptor(em.getMetamodel().entity(OWLClassD.class).getDeclaredAttribute("owlClassA"),
+                        cTwoDescriptor);
         transactional(() -> {
             em.persist(entityA, cTwoDescriptor);
             em.persist(entityD, cOneDescriptor);
@@ -163,7 +176,9 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     @Test
     void retrieveFromContextWithAttributeInDefaultWorksCorrectly() {
         this.em = getEntityManager("retrieveFromContextWithAttributeInDefaultWorksCorrectly", false);
-        cOneDescriptor.addAttributeContext(OWLClassA.getStringField(), null);
+        cOneDescriptor
+                .addAttributeContext(em.getMetamodel().entity(OWLClassA.class).getDeclaredAttribute("stringAttribute"),
+                        null);
         transactional(() -> {
             try {
                 persistTestData(Arrays.asList(
@@ -179,5 +194,54 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri(), cOneDescriptor);
         assertNotNull(result.getStringAttribute());
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
+
+    @Test
+    void retrieveSupportsSpecifyingMultipleContextsForObjectPropertyValues() {
+        this.em = getEntityManager("retrieveSupportsSpecifyingMultipleContextsForObjectPropertyValues", false);
+        final EntityDescriptor descriptor = new EntityDescriptor();
+        descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+        final OWLClassA a2 = new OWLClassA(Generators.generateUri(), "string two");
+        final URI ownerUri = Generators.generateUri();
+        transactionalThrowing(() -> persistTestData(Arrays.asList(
+                new Quad(entityA.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A),
+                        CONTEXT_ONE),
+                new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                        entityA.getStringAttribute(), CONTEXT_ONE),
+                new Quad(a2.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A), CONTEXT_TWO),
+                new Quad(a2.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), a2.getStringAttribute(),
+                        CONTEXT_TWO),
+                new Quad(ownerUri, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_F)),
+                new Quad(ownerUri, URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), entityA.getUri()),
+                new Quad(ownerUri, URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), a2.getUri())), em));
+
+        final OWLClassF result = findRequired(OWLClassF.class, ownerUri);
+        assertEquals(2, result.getSimpleSet().size());
+        final Optional<OWLClassA> aOneResult =
+                result.getSimpleSet().stream().filter(a -> a.getUri().equals(entityA.getUri())).findAny();
+        assertTrue(aOneResult.isPresent());
+        assertEquals(entityA.getStringAttribute(), aOneResult.get().getStringAttribute());
+        final Optional<OWLClassA> aTwoResult =
+                result.getSimpleSet().stream().filter(a -> a.getUri().equals(a2.getUri())).findAny();
+        assertTrue(aTwoResult.isPresent());
+        assertEquals(a2.getStringAttribute(), aTwoResult.get().getStringAttribute());
+    }
+
+    @Test
+    void retrieveSupportsSpecifyingMultipleContextsForEntity() {
+        this.em = getEntityManager("retrieveSupportsSpecifyingMultipleContextsForEntity", false);
+        final Descriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
+        descriptor.addContext(CONTEXT_TWO);
+        final URI uri = URI.create(entityM.getKey());
+        transactionalThrowing(() -> persistTestData(Arrays.asList(
+                new Quad(uri, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M), CONTEXT_ONE),
+                new Quad(uri, URI.create(Vocabulary.p_m_booleanAttribute), entityM.getBooleanAttribute(), CONTEXT_ONE),
+                new Quad(uri, URI.create(Vocabulary.p_m_dateAttribute), entityM.getDateAttribute(), CONTEXT_TWO)
+        ), em));
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getBooleanAttribute(), result.getBooleanAttribute());
+        assertEquals(entityM.getDateAttribute(), result.getDateAttribute());
     }
 }

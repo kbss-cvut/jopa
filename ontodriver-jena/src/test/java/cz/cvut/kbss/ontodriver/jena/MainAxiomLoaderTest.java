@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -61,23 +59,23 @@ public class MainAxiomLoaderTest {
     @Test
     public void containsChecksForNonInferredStatementsOnlyWhenAssertionIsNotInferred() {
         final Resource cls = createResource(Generator.generateUri().toString());
-        when(connectorMock.contains(SUBJECT_RES, RDF.type, cls, null)).thenReturn(true);
+        when(connectorMock.contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet())).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(cls.getURI())));
-        assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock).contains(SUBJECT_RES, RDF.type, cls, null);
-        verify(inferredConnectorMock, never()).containsWithInference(SUBJECT_RES, RDF.type, cls, null);
+        assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
+        verify(connectorMock).contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
+        verify(inferredConnectorMock, never()).containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
     }
 
     @Test
     public void containsChecksForInferredStatementsWhenAssertionIsInferred() {
         final Resource cls = createResource(Generator.generateUri().toString());
-        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, cls, null)).thenReturn(true);
+        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet())).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(cls.getURI())));
-        assertTrue(axiomLoader.contains(axiom, null));
-        verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls, null);
-        verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls, null);
+        assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
+        verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
+        verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
     }
 
     @Test
@@ -85,7 +83,7 @@ public class MainAxiomLoaderTest {
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), false),
                         new Value<>(OBJECT));
-        when(connectorMock.find(SUBJECT_RES, null, null, null)).thenReturn(Collections.singletonList(
+        when(connectorMock.find(SUBJECT_RES, null, null, Collections.emptySet())).thenReturn(Collections.singletonList(
                 createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
         ));
         final Collection<Axiom<?>> result = axiomLoader.find(SUBJECT, null);
@@ -98,7 +96,7 @@ public class MainAxiomLoaderTest {
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), true),
                         new Value<>(OBJECT));
-        when(inferredConnectorMock.findWithInference(SUBJECT_RES, null, null, null))
+        when(inferredConnectorMock.findWithInference(SUBJECT_RES, null, null, Collections.emptySet()))
                 .thenReturn(Collections.singletonList(
                         createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
                 ));
@@ -112,7 +110,7 @@ public class MainAxiomLoaderTest {
         final Axiom<NamedResource> inferred =
                 new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), true),
                         new Value<>(OBJECT));
-        when(inferredConnectorMock.findWithInference(SUBJECT_RES, PROPERTY, null, null))
+        when(inferredConnectorMock.findWithInference(SUBJECT_RES, PROPERTY, null, Collections.emptySet()))
                 .thenReturn(Collections.singletonList(
                         createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
                 ));
@@ -120,7 +118,7 @@ public class MainAxiomLoaderTest {
         final Axiom<Integer> asserted =
                 new AxiomImpl<>(SUBJECT, Assertion.createDataPropertyAssertion(URI.create(proTwo.getURI()), false),
                         new Value<>(117));
-        when(connectorMock.find(SUBJECT_RES, null, null, null)).thenReturn(Collections.singletonList(
+        when(connectorMock.find(SUBJECT_RES, null, null, Collections.emptySet())).thenReturn(Collections.singletonList(
                 createStatement(SUBJECT_RES, proTwo, createTypedLiteral(117))
         ));
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);

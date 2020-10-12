@@ -88,22 +88,22 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
             if (origProps == null || origProps.isEmpty()) {
                 return;
             }
-            valueBuilder.removeProperties(prepareProperties(origProps), getAttributeContext());
+            valueBuilder.removeProperties(prepareProperties(origProps), getAttributeWriteContext());
             return;
         }
         assert val instanceof Map;
         final Map<?, Set<?>> props = (Map<?, Set<?>>) val;
         if (original == null) {
-            valueBuilder.addProperties(prepareProperties(props), getAttributeContext());
+            valueBuilder.addProperties(prepareProperties(props), getAttributeWriteContext());
         } else {
             final Map<?, Set<?>> origProps = (Map<?, Set<?>>) extractFieldValueFromInstance(original);
             final Map<Assertion, Set<Value<?>>> toRemove = resolvePropertiesToRemove(props, origProps);
             if (!toRemove.isEmpty()) {
-                valueBuilder.removeProperties(toRemove, getAttributeContext());
+                valueBuilder.removeProperties(toRemove, getAttributeWriteContext());
             }
             final Map<Assertion, Set<Value<?>>> toAdd = resolvePropertiesToAdd(props, origProps);
             if (!toAdd.isEmpty()) {
-                valueBuilder.addProperties(toAdd, getAttributeContext());
+                valueBuilder.addProperties(toAdd, getAttributeWriteContext());
             }
         }
     }

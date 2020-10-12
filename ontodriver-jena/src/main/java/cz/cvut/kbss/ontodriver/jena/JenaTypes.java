@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
@@ -38,11 +39,11 @@ public class JenaTypes implements Types {
     }
 
     @Override
-    public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred)
+    public Set<Axiom<URI>> getTypes(NamedResource individual, Collection<URI> contexts, boolean includeInferred)
             throws OntoDriverException {
         Objects.requireNonNull(individual);
         beforeCallback.execute();
-        return adapter.typesHandler().getTypes(individual, context, includeInferred);
+        return adapter.typesHandler().getTypes(individual, contexts, includeInferred);
     }
 
     @Override

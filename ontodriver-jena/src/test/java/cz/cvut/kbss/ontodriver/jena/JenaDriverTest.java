@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -31,11 +29,9 @@ import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -44,26 +40,26 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
-import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JenaDriverTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private OntologyStorageProperties storageProps;
     private final Map<String, String> properties = new HashMap<>();
 
     private JenaDriver driver;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.storageProps = OntologyStorageProperties.driver(JenaDataSource.class.getName())
                                                      .physicalUri(URI.create("temp:memory")).build();
@@ -71,7 +67,7 @@ public class JenaDriverTest {
         properties.put(JenaOntoDriverProperties.JENA_ISOLATION_STRATEGY, JenaOntoDriverProperties.READ_COMMITTED);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (driver != null && driver.isOpen()) {
             driver.close();
@@ -204,9 +200,8 @@ public class JenaDriverTest {
         this.driver = new JenaDriver(storageProps, properties);
         driver.close();
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Driver is closed.");
-        driver.acquireConnection();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> driver.acquireConnection());
+        assertThat(ex.getMessage(), containsString("Driver is closed"));
     }
 
     @Test
@@ -221,7 +216,8 @@ public class JenaDriverTest {
         driver.setDataset(newDataset);
 
         final JenaConnection connection = driver.acquireConnection();
-        final Set<Axiom<URI>> types = connection.types().getTypes(NamedResource.create(subject), null, false);
+        final Set<Axiom<URI>> types = connection.types()
+                                                .getTypes(NamedResource.create(subject), Collections.emptySet(), false);
         assertEquals(1, types.size());
         assertEquals(type, types.iterator().next().getValue().getValue());
     }
@@ -233,8 +229,8 @@ public class JenaDriverTest {
         final JenaConnection connection = driver.acquireConnection();
         final SharedStorageConnector centralConnector = connection.unwrap(SharedStorageConnector.class);
         centralConnector.begin();
-        thrown.expect(JenaDriverException.class);
-        thrown.expectCause(isA(IllegalStateException.class));
-        driver.setDataset(DatasetFactory.create());
+        final JenaDriverException ex = assertThrows(JenaDriverException.class,
+                () -> driver.setDataset(DatasetFactory.create()));
+        assertThat(ex.getCause(), instanceOf(IllegalStateException.class));
     }
 }
