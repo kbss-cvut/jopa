@@ -61,7 +61,7 @@ public abstract class AbstractDescriptor implements Descriptor {
         return retrieveSingleContext(contexts);
     }
 
-    private Optional<URI> retrieveSingleContext(Set<URI> col) {
+    private static Optional<URI> retrieveSingleContext(Set<URI> col) {
         if (col.size() > 1) {
             throw new AmbiguousContextException("Expected at most one context, but got " + col);
         }
