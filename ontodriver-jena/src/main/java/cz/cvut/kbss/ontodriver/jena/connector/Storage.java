@@ -159,6 +159,8 @@ interface Storage {
                 return new FileStorage(configuration);
             case JenaOntoDriverProperties.TDB:
                 return new TDBStorage(configuration);
+            case JenaOntoDriverProperties.FUSEKI:
+                return new FusekiStorage(configuration);
             case JenaOntoDriverProperties.SDB:
                 throw new UnsupportedOperationException("Not implemented, yet.");
             default:
