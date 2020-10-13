@@ -34,7 +34,7 @@ public class MemoryStorageTest extends StorageTestUtil {
     @Test
     public void initializationCreatesTransactionalInMemoryDataset() {
 
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
         storage.initialize();
         final Dataset dataset = storage.getDataset();
         assertNotNull(dataset);
@@ -43,7 +43,7 @@ public class MemoryStorageTest extends StorageTestUtil {
 
     @Test
     public void setDatasetReplacesStorageDataset() {
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
         storage.initialize();
 
         final Dataset newDataset = DatasetFactory.createTxnMem();
@@ -54,7 +54,7 @@ public class MemoryStorageTest extends StorageTestUtil {
 
     @Test
     public void setDatasetThrowsIllegalArgumentWhenDatasetDoesNotSupportTransactions() {
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
         storage.initialize();
 
         final Dataset newDataset = new NonTransactionDataset(ModelFactory.createDefaultModel());
@@ -78,7 +78,7 @@ public class MemoryStorageTest extends StorageTestUtil {
 
     @Test
     public void setDatasetThrowsIllegalStateWhenDatasetIsInTransaction() {
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
         storage.initialize();
         storage.begin(ReadWrite.WRITE);
 

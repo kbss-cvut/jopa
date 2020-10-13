@@ -40,7 +40,7 @@ public class JenaOntoDriverProperties {
     /**
      * Storage access isolation strategy.
      * <p>
-     * Represents situations where each transactional acquires a complete snapshot of the repository and works with it.
+     * Represents situations where each transaction acquires a complete snapshot of the repository and works with it.
      *
      * @see #JENA_ISOLATION_STRATEGY
      */

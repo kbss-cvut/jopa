@@ -111,7 +111,7 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     }
 
     @Override
-    InfModel getDefaultGraph() {
+    public InfModel getDefaultGraph() {
         return inferredGraphs.get(null);
     }
 
@@ -133,7 +133,7 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     }
 
     @Override
-    InfModel getNamedGraph(String context) {
+    public InfModel getNamedGraph(String context) {
         return inferredGraphs.computeIfAbsent(context, c -> {
             // If the context does not exist, we need to create it, so that the default Dataset behavior is preserved
             final InfModel model = ModelFactory.createInfModel(createReasoner(), ModelFactory.createDefaultModel());

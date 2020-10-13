@@ -23,7 +23,7 @@ import java.util.Objects;
 /**
  * Storage accessor using an in-memory dataset.
  */
-class MemoryStorage extends Storage {
+class MemoryStorage extends LocalStorage {
 
     MemoryStorage(DriverConfiguration configuration) {
         super(configuration);
@@ -35,7 +35,7 @@ class MemoryStorage extends Storage {
     }
 
     @Override
-    void setDataset(Dataset dataset) {
+    public void setDataset(Dataset dataset) {
         Objects.requireNonNull(dataset);
         if (!dataset.supportsTransactions()) {
             throw new IllegalArgumentException("The provided dataset does not support transactions.");

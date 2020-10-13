@@ -21,7 +21,7 @@ import org.apache.jena.system.Txn;
 
 import java.util.Iterator;
 
-class SnapshotStorage extends Storage {
+class SnapshotStorage extends LocalStorage {
 
     SnapshotStorage(DriverConfiguration configuration) {
         super(configuration);

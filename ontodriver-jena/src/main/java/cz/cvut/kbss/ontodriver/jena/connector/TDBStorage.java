@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.tdb.TDB;
 import org.apache.jena.tdb.TDBFactory;
 
-class TDBStorage extends Storage {
+class TDBStorage extends LocalStorage {
 
     private final String location;
 
@@ -34,7 +34,7 @@ class TDBStorage extends Storage {
     }
 
     @Override
-    void writeChanges() throws JenaDriverException {
+    public void writeChanges() throws JenaDriverException {
         try {
             TDB.sync(dataset);
         } catch (RuntimeException e) {

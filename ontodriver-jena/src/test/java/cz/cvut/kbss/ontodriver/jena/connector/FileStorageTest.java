@@ -49,7 +49,7 @@ public class FileStorageTest extends StorageTestUtil {
             model.write(writer, "TURTLE");
         }
 
-        final Storage result = new FileStorage(createConfiguration(file.getAbsolutePath()));
+        final LocalStorage result = new FileStorage(createConfiguration(file.getAbsolutePath()));
         result.initialize();
         final Dataset dataset = result.getDataset();
         assertNotNull(dataset);
@@ -66,7 +66,7 @@ public class FileStorageTest extends StorageTestUtil {
     @Test
     public void initializesStorageFromNonexistentFileByCreatingIt() {
         final String filePath = System.getProperty("java.io.tmpdir") + File.separator + "jena-test.ttl";
-        final Storage result = new FileStorage(createConfiguration(filePath));
+        final LocalStorage result = new FileStorage(createConfiguration(filePath));
         result.initialize();
         final Dataset dataset = result.getDataset();
         assertNotNull(dataset);
@@ -80,7 +80,7 @@ public class FileStorageTest extends StorageTestUtil {
     public void writeChangesOutputsChangesIntoTargetFile() throws Exception {
         final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
         file.deleteOnExit();
-        final Storage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
+        final LocalStorage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
         storage.initialize();
         final Dataset dataset = storage.getDataset();
         final Model m = dataset.getDefaultModel();
@@ -103,7 +103,7 @@ public class FileStorageTest extends StorageTestUtil {
     public void reloadReloadsDatasetFromFile() throws Exception {
         final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
         file.deleteOnExit();
-        final Storage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
+        final LocalStorage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
         storage.initialize();
         final Resource subj = createResource(SUBJECT);
         final Resource obj = createResource(TYPE_TWO);
@@ -124,7 +124,7 @@ public class FileStorageTest extends StorageTestUtil {
     public void reloadThrowsIllegalStateWhenStorageIsInTransaction() throws Exception {
         final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
         file.deleteOnExit();
-        final Storage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
+        final LocalStorage storage = new FileStorage(createConfiguration(file.getAbsolutePath()));
         storage.initialize();
 
         thrown.expect(IllegalStateException.class);

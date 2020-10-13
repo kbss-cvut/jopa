@@ -41,7 +41,7 @@ public class StorageTest extends StorageTestUtil {
     public void createInitializesMemoryStorageForMemoryConfiguration() {
         final DriverConfiguration config = createConfiguration("test:uri");
         config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
-        final Storage result = Storage.create(config);
+        final LocalStorage result = LocalStorage.create(config);
         assertNotNull(result);
         assertTrue(result instanceof MemoryStorage);
         assertNotNull(result.getDataset());
@@ -53,7 +53,7 @@ public class StorageTest extends StorageTestUtil {
         file.deleteOnExit();
         final DriverConfiguration config = createConfiguration(file.getAbsolutePath());
         config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.FILE);
-        final Storage result = Storage.create(config);
+        final Storage result = LocalStorage.create(config);
         assertNotNull(result);
         assertTrue(result instanceof FileStorage);
     }
@@ -64,13 +64,13 @@ public class StorageTest extends StorageTestUtil {
         thrown.expectMessage(containsString("Unsupported storage type"));
         final DriverConfiguration config = createConfiguration("test:uri");
         config.setProperty(JenaConfigParam.STORAGE_TYPE, "dontKnowThisOne");
-        Storage.create(config);
+        LocalStorage.create(config);
     }
 
     @Test
     public void createCreatesInMemoryByDefault() {
         final DriverConfiguration config = createConfiguration("test:uri");
-        final Storage result = Storage.create(config);
+        final Storage result = LocalStorage.create(config);
         assertNotNull(result);
         assertTrue(result instanceof MemoryStorage);
     }
@@ -79,7 +79,7 @@ public class StorageTest extends StorageTestUtil {
     public void getDefaultGraphReturnsUnionModelWhenConfiguredTo() {
         final DriverConfiguration config = createConfiguration("test:uri");
         config.setProperty(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION, Boolean.toString(true));
-        final Storage result = Storage.create(config);
+        final LocalStorage result = LocalStorage.create(config);
         final String ctx = "test";
         result.dataset.getNamedModel(ctx).add(ResourceFactory
                 .createStatement(ResourceFactory.createResource(), RDF.type, ResourceFactory.createResource(
@@ -94,7 +94,7 @@ public class StorageTest extends StorageTestUtil {
         file.deleteOnExit();
         final DriverConfiguration config = createConfiguration(file.getAbsolutePath());
         config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.FILE);
-        final Storage storage = Storage.create(config);
+        final LocalStorage storage = LocalStorage.create(config);
         assertNotNull(storage);
         thrown.expect(UnsupportedOperationException.class);
         storage.setDataset(DatasetFactory.create());

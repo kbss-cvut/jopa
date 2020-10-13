@@ -34,7 +34,7 @@ import java.io.IOException;
  * <p>
  * Note that currently this accessor does not support working with datasets. Only single graph can be present in the file.
  */
-class FileStorage extends Storage {
+class FileStorage extends LocalStorage {
 
     private final String location;
 
@@ -74,7 +74,7 @@ class FileStorage extends Storage {
     }
 
     @Override
-    void writeChanges() throws JenaDriverException {
+    public void writeChanges() throws JenaDriverException {
         try (final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(location))) {
             final String language = FileUtils.guessLang(location);
             RDFDataMgr.write(out, dataset.getDefaultModel(), RDFLanguages.nameToLang(language));
@@ -87,7 +87,7 @@ class FileStorage extends Storage {
      * Reloads data from the underlying file.
      */
     @Override
-    synchronized void reload() {
+    public synchronized void reload() {
         if (dataset.isInTransaction()) {
             throw new IllegalStateException("Cannot reload storage which is in transaction.");
         }
