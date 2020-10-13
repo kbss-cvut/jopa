@@ -38,7 +38,6 @@ class SnapshotStorageConnectorWithInference extends SnapshotStorageConnector imp
     @Override
     void snapshotCentralDataset() {
         final SnapshotStorageWithInference s = new SnapshotStorageWithInference(configuration, reasonerConfig);
-        s.initialize();
         s.addCentralData(centralConnector.getStorage().getDataset());
         this.storage = s;
     }

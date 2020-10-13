@@ -55,7 +55,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
 
     @Override
     void initialize() {
-        this.storage = LocalStorage.create(configuration);
+        this.storage = Storage.create(configuration);
     }
 
     @Override

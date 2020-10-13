@@ -63,6 +63,7 @@ class SnapshotStorageWithInference extends SnapshotStorage {
         this.reasonerConfig = reasonerConfig.entrySet().stream()
                                             .filter(e -> SUPPORTED_CONFIG.contains(e.getKey()))
                                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.dataset = DatasetFactory.createGeneral();
     }
 
     private ReasonerFactory initReasonerFactory(DriverConfiguration configuration) {
@@ -82,11 +83,6 @@ class SnapshotStorageWithInference extends SnapshotStorage {
             throw new ReasonerInitializationException(
                     "Unable to instantiate Jena reasoner from factory " + factoryClass, e);
         }
-    }
-
-    @Override
-    void initialize() {
-        this.dataset = DatasetFactory.createGeneral();
     }
 
     @Override

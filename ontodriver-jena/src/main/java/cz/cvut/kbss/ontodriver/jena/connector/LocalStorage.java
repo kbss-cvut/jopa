@@ -13,9 +13,7 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
-import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
@@ -47,8 +45,6 @@ abstract class LocalStorage implements Storage {
     public void writeChanges() throws JenaDriverException {
         // Do nothing by default
     }
-
-    abstract void initialize();
 
     public Dataset getDataset() {
         return dataset;
@@ -124,34 +120,5 @@ abstract class LocalStorage implements Storage {
     @Override
     public void executeUpdate(String update) {
         UpdateAction.parseExecute(update, dataset);
-    }
-
-    /**
-     * Creates a storage accessor according to the specified configuration.
-     *
-     * @param configuration Access configuration
-     * @return Storage accessor instance
-     * @throws OntoDriverInitializationException When storage type is not supported
-     */
-    static LocalStorage create(DriverConfiguration configuration) {
-        final String type = configuration.getProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
-        final LocalStorage storage;
-        switch (type) {
-            case JenaOntoDriverProperties.IN_MEMORY:
-                storage = new MemoryStorage(configuration);
-                break;
-            case JenaOntoDriverProperties.FILE:
-                storage = new FileStorage(configuration);
-                break;
-            case JenaOntoDriverProperties.TDB:
-                storage = new TDBStorage(configuration);
-                break;
-            case JenaOntoDriverProperties.SDB:
-                throw new UnsupportedOperationException("Not implemented, yet.");
-            default:
-                throw new OntoDriverInitializationException("Unsupported storage type '" + type + "'.");
-        }
-        storage.initialize();
-        return storage;
     }
 }

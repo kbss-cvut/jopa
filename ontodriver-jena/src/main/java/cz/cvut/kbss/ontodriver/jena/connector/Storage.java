@@ -1,5 +1,9 @@
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
+import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
+import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -137,5 +141,28 @@ interface Storage {
      */
     default void setDataset(Dataset dataset) {
         throw new UnsupportedOperationException("Cannot set dataset on storage of type " + getClass().getSimpleName());
+    }
+
+    /**
+     * Creates a storage accessor according to the specified configuration.
+     *
+     * @param configuration Access configuration
+     * @return Storage accessor instance
+     * @throws OntoDriverInitializationException When storage type is not supported
+     */
+    static Storage create(DriverConfiguration configuration) {
+        final String type = configuration.getProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
+        switch (type) {
+            case JenaOntoDriverProperties.IN_MEMORY:
+                return new MemoryStorage(configuration);
+            case JenaOntoDriverProperties.FILE:
+                return new FileStorage(configuration);
+            case JenaOntoDriverProperties.TDB:
+                return new TDBStorage(configuration);
+            case JenaOntoDriverProperties.SDB:
+                throw new UnsupportedOperationException("Not implemented, yet.");
+            default:
+                throw new OntoDriverInitializationException("Unsupported storage type '" + type + "'.");
+        }
     }
 }
