@@ -116,4 +116,9 @@ class IndirectMultilingualStringTest {
     void toStringInvokesToStringOfReferencedInstance() {
         assertEquals(referencedString.toString(), sut.toString());
     }
+
+    @Test
+    void equalsWorksFromNormalToIndirectMultilingualString() {
+        assertEquals(referencedString, sut);
+    }
 }
