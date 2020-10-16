@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.mapper;
 
@@ -53,13 +51,13 @@ public class ResultSetMappingProcessor {
         manager.addMapper(rowMapper.getName(), rowMapper);
     }
 
-    private void buildVariableMappers(SparqlResultSetMapping mapping, ResultRowMapper parent) {
+    private static void buildVariableMappers(SparqlResultSetMapping mapping, ResultRowMapper parent) {
         for (VariableResult vr : mapping.variables()) {
             parent.addMapper(new VariableResultMapper(vr));
         }
     }
 
-    private void buildConstructorMappers(SparqlResultSetMapping mapping, ResultRowMapper parent) {
+    private static void buildConstructorMappers(SparqlResultSetMapping mapping, ResultRowMapper parent) {
         for (ConstructorResult cr : mapping.classes()) {
             final ConstructorResultMapper mapper = new ConstructorResultMapper(cr.targetClass());
             for (VariableResult vr : cr.variables()) {
@@ -101,7 +99,7 @@ public class ResultSetMappingProcessor {
         }
     }
 
-    private Optional<FieldResultMapper> createFieldMapper(FieldResult fr, FieldSpecification<?, ?> fieldSpec) {
+    private static Optional<FieldResultMapper> createFieldMapper(FieldResult fr, FieldSpecification<?, ?> fieldSpec) {
         if (fieldSpec.isCollection()) {
             LOG.warn(
                     "Mapping of plural attributes via @FieldResult is not supported. Check the definition of {}.",
@@ -123,11 +121,11 @@ public class ResultSetMappingProcessor {
         }
         return et.getFieldSpecifications().stream()
                  .filter(fs -> !configuredFields.contains(fs.getName()) && !fs.isCollection())
-                 .map(this::createFieldMapper)
+                 .map(ResultSetMappingProcessor::createFieldMapper)
                  .collect(Collectors.toList());
     }
 
-    private FieldResultMapper createFieldMapper(FieldSpecification<?, ?> fieldSpec) {
+    private static FieldResultMapper createFieldMapper(FieldSpecification<?, ?> fieldSpec) {
         if (fieldSpec instanceof Attribute &&
                 ((Attribute) fieldSpec).getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
             return new ObjectPropertyFieldResultMapper(fieldSpec);

@@ -54,6 +54,17 @@ class MultilingualStringInstanceBuilderTest {
     }
 
     @Test
+    void buildCloneBuildsCloneOfWrappedMultilingualStringWhenArgumentIsIndirectMultilingualString() throws Exception {
+        final MultilingualString original = MultilingualString.create("building", Generators.LANG);
+        final IndirectMultilingualString arg = new IndirectMultilingualString(new OWLClassU(),
+                OWLClassU.getSingularStringAttField(), mock(UnitOfWorkImpl.class), original);
+        final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), arg, new CloneConfiguration(descriptor));
+        assertThat(result, instanceOf(IndirectMultilingualString.class));
+        final IndirectMultilingualString resultIndirect = (IndirectMultilingualString) result;
+        assertEquals(original, resultIndirect.unwrap());
+    }
+
+    @Test
     void mergeChangesCopiesValueOfCloneToOriginal() throws Exception {
         final MultilingualString clone = MultilingualString.create("building", Generators.LANG);
         clone.set("cs", "stavba");
