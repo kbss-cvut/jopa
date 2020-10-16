@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Represents a connection to a Jena Fuseki server.
  */
-public class FusekiStorage implements Storage {
+class FusekiStorage implements Storage {
 
     private final boolean defaultAsUnion;
     private final String serverUrl;
@@ -93,22 +93,32 @@ public class FusekiStorage implements Storage {
 
     @Override
     public void add(List<Statement> statements, String context) {
+        assert connection != null && connection.isInTransaction();
+        if (statements.isEmpty()) {
+            return;
+        }
         final Model model = ModelFactory.createDefaultModel().add(statements);
         if (context != null) {
-            connect().load(context, model);
+            connection.load(context, model);
         } else {
-            connect().load(model);
+            connection.load(model);
         }
     }
 
     @Override
     public void remove(List<Statement> statements, String context) {
+        assert connection != null && connection.isInTransaction();
+        if (statements.isEmpty()) {
+            return;
+        }
+        // Note that given the way Fuseki connection works, this can be quite inefficient (fetch model, update it, upload it again)
+        // So translation to a SPARQL update may be more appropriate
         if (context != null) {
-            final Model m = connect().fetch(context);
+            final Model m = connection.fetch(context);
             m.remove(statements);
             connection.put(context, m);
         } else {
-            final Model def = connect().fetch();
+            final Model def = connection.fetch();
             def.remove(statements);
             connection.put(def);
             if (defaultAsUnion) {
@@ -124,6 +134,7 @@ public class FusekiStorage implements Storage {
 
     @Override
     public void remove(StmtIterator iterator, String context) {
+        assert connection != null && connection.isInTransaction();
         final List<Statement> statements = iterator.toList();
         remove(statements, context);
     }
