@@ -59,7 +59,6 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
 
     void snapshotCentralDataset() {
         final SnapshotStorage s = new SnapshotStorage(configuration);
-        s.initialize();
         s.addCentralData(centralConnector.getStorage().getDataset());
         this.storage = s;
     }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -34,16 +32,16 @@ import java.io.IOException;
  * <p>
  * Note that currently this accessor does not support working with datasets. Only single graph can be present in the file.
  */
-class FileStorage extends Storage {
+class FileStorage extends LocalStorage {
 
     private final String location;
 
     FileStorage(DriverConfiguration configuration) {
         super(configuration);
         this.location = configuration.getStorageProperties().getPhysicalURI().toString();
+        initialize();
     }
 
-    @Override
     public void initialize() {
         try {
             try {
@@ -74,7 +72,7 @@ class FileStorage extends Storage {
     }
 
     @Override
-    void writeChanges() throws JenaDriverException {
+    public void writeChanges() throws JenaDriverException {
         try (final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(location))) {
             final String language = FileUtils.guessLang(location);
             RDFDataMgr.write(out, dataset.getDefaultModel(), RDFLanguages.nameToLang(language));
@@ -87,7 +85,7 @@ class FileStorage extends Storage {
      * Reloads data from the underlying file.
      */
     @Override
-    synchronized void reload() {
+    public synchronized void reload() {
         if (dataset.isInTransaction()) {
             throw new IllegalStateException("Cannot reload storage which is in transaction.");
         }

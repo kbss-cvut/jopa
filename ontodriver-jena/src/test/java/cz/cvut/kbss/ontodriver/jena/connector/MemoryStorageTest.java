@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -20,22 +18,16 @@ import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.core.DatasetImpl;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MemoryStorageTest extends StorageTestUtil {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void initializationCreatesTransactionalInMemoryDataset() {
 
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
-        storage.initialize();
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
         final Dataset dataset = storage.getDataset();
         assertNotNull(dataset);
         assertTrue(dataset.supportsTransactions());
@@ -43,8 +35,7 @@ public class MemoryStorageTest extends StorageTestUtil {
 
     @Test
     public void setDatasetReplacesStorageDataset() {
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
-        storage.initialize();
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
 
         final Dataset newDataset = DatasetFactory.createTxnMem();
         generateTestData(newDataset);
@@ -54,14 +45,13 @@ public class MemoryStorageTest extends StorageTestUtil {
 
     @Test
     public void setDatasetThrowsIllegalArgumentWhenDatasetDoesNotSupportTransactions() {
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
-        storage.initialize();
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
 
         final Dataset newDataset = new NonTransactionDataset(ModelFactory.createDefaultModel());
         assertFalse(newDataset.supportsTransactions());
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("The provided dataset does not support transactions.");
-        storage.setDataset(newDataset);
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> storage.setDataset(newDataset));
+        assertEquals("The provided dataset does not support transactions.", ex.getMessage());
     }
 
     private static final class NonTransactionDataset extends DatasetImpl {
@@ -78,12 +68,11 @@ public class MemoryStorageTest extends StorageTestUtil {
 
     @Test
     public void setDatasetThrowsIllegalStateWhenDatasetIsInTransaction() {
-        final Storage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
-        storage.initialize();
+        final LocalStorage storage = new MemoryStorage(StorageTestUtil.createConfiguration("urn:test"));
         storage.begin(ReadWrite.WRITE);
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Cannot replace dataset when it is in transaction.");
-        storage.setDataset(DatasetFactory.create());
+        final IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> storage.setDataset(DatasetFactory.create()));
+        assertEquals("Cannot replace dataset when it is in transaction.", ex.getMessage());
     }
 }

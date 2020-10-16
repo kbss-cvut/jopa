@@ -25,9 +25,7 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,13 +36,11 @@ import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class SharedStorageConnectorTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void initializationCreatesStorageAccessor() {
@@ -256,14 +252,13 @@ public class SharedStorageConnectorTest {
     public void unwrapReturnsDatasetInstanceWhenClassMatches() {
         final SharedStorageConnector connector = initConnector();
         final Dataset result = connector.unwrap(Dataset.class);
-        assertSame(connector.storage.dataset, result);
+        assertSame(connector.storage.getDataset(), result);
     }
 
     @Test
     public void unwrapThrowsUnsupportedOperationExceptionWhenTargetClassIsNotSupported() {
-        thrown.expect(UnsupportedOperationException.class);
         final SharedStorageConnector connector = initConnector();
-        connector.unwrap(Graph.class);
+        assertThrows(UnsupportedOperationException.class, () -> connector.unwrap(Graph.class));
     }
 
     @Test
@@ -346,15 +341,15 @@ public class SharedStorageConnectorTest {
     }
 
     @Test
-    public void executeSelectQueryThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
+    public void executeSelectQueryThrowsJenaDriverExceptionWhenQueryFails() {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final Query query = QueryFactory.create("SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }");
-        thrown.expect(JenaDriverException.class);
-        thrown.expectMessage(containsString("Execution of query " + query + " failed"));
         // Causes NPX in execution
-        doReturn(null).when(connector.storage).getDataset();
-        connector.executeSelectQuery(query, StatementOntology.CENTRAL);
+        doThrow(NullPointerException.class).when(connector.storage).prepareQuery(query);
+        final JenaDriverException ex = assertThrows(JenaDriverException.class,
+                () -> connector.executeSelectQuery(query, StatementOntology.CENTRAL));
+        assertThat(ex.getMessage(), containsString("Execution of query " + query + " failed"));
     }
 
     @Test
@@ -370,15 +365,15 @@ public class SharedStorageConnectorTest {
     }
 
     @Test
-    public void executeAskQueryThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
+    public void executeAskQueryThrowsJenaDriverExceptionWhenQueryFails() {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final Query query = QueryFactory.create("ASK WHERE { ?x a <" + TYPE_ONE + "> . }");
-        thrown.expect(JenaDriverException.class);
-        thrown.expectMessage(containsString("Execution of query " + query + " failed"));
         // Causes NPX in execution
-        doReturn(null).when(connector.storage).getDataset();
-        connector.executeAskQuery(query, StatementOntology.CENTRAL);
+        doThrow(NullPointerException.class).when(connector.storage).prepareQuery(query);
+        final JenaDriverException ex = assertThrows(JenaDriverException.class,
+                () -> connector.executeAskQuery(query, StatementOntology.CENTRAL));
+        assertThat(ex.getMessage(), containsString("Execution of query " + query + " failed"));
     }
 
     @Test
@@ -393,15 +388,15 @@ public class SharedStorageConnectorTest {
     }
 
     @Test
-    public void executeUpdateThrowsJenaDriverExceptionWhenQueryFails() throws Exception {
+    public void executeUpdateThrowsJenaDriverExceptionWhenQueryFails() {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final String newType = Generator.generateUri().toString();
         // Malformed query
         final String update = "INSERT DATA {" + SUBJECT + "> a <" + newType + "> . }";
-        thrown.expect(JenaDriverException.class);
-        thrown.expectMessage(containsString("Execution of query " + update + " failed"));
-        connector.executeUpdate(update, StatementOntology.CENTRAL);
+        final JenaDriverException ex = assertThrows(JenaDriverException.class,
+                () -> connector.executeUpdate(update, StatementOntology.CENTRAL));
+        assertThat(ex.getMessage(), containsString("Execution of query " + update + " failed"));
     }
 
     @Test
