@@ -74,6 +74,8 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
+        //TODO process sparql query here
+
         final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator, context);
         propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
 
