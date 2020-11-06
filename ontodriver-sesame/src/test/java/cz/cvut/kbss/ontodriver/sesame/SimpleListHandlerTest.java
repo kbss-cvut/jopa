@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -35,8 +33,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"unchecked"})
@@ -85,7 +81,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         initStatementsForList(simpleList);
 
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-        verify(connector).findStatements(owner, hasListProperty, null, false, null);
+        verify(connector).findStatements(owner, hasListProperty, null, false, Collections.emptySet());
         assertEquals(simpleList.size(), res.size());
         int i = 0;
         for (Axiom<?> ax : res) {
@@ -103,7 +99,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
             final Resource value = vf.createIRI(elem.toString());
             final IRI property = subject == owner ? hasListProperty : nextNodeProperty;
             stmt = vf.createStatement(subject, property, value);
-            when(connector.findStatements(subject, property, null, false, null))
+            when(connector.findStatements(subject, property, null, false, Collections.emptySet()))
                     .thenReturn(Collections.singleton(stmt));
             statements.add(stmt);
             subject = value;
@@ -116,14 +112,14 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         final Collection<Statement> stmts = new HashSet<>();
         stmts.add(mock(Statement.class));
         stmts.add(mock(Statement.class));
-        when(connector.findStatements(owner, hasListProperty, null, false, null)).thenReturn(stmts);
+        when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet())).thenReturn(stmts);
 
         try {
             handler.loadList(listDescriptor);
         } finally {
             verify(connector, never())
                     .findStatements(any(Resource.class), eq(nextNodeProperty), any(Value.class), any(Boolean.class),
-                            any());
+                            anyCollection());
         }
     }
 
@@ -136,14 +132,15 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
                 .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
 
-        when(connector.findStatements(owner, hasListProperty, null, false, null))
+        when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet()))
                 .thenReturn(Collections.singleton(firstStmt));
-        when(connector.findStatements(firstElem, nextNodeProperty, null, false, null)).thenReturn(stmts);
+        when(connector.findStatements(firstElem, nextNodeProperty, null, false, Collections.emptySet()))
+                .thenReturn(stmts);
 
         try {
             handler.loadList(listDescriptor);
         } finally {
-            verify(connector).findStatements(owner, hasListProperty, null, false, null);
+            verify(connector).findStatements(owner, hasListProperty, null, false, Collections.emptySet());
         }
     }
 
@@ -152,18 +149,18 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         final Resource firstElem = vf
                 .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
-        when(connector.findStatements(owner, hasListProperty, null, false, null))
+        when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet()))
                 .thenReturn(Collections.singleton(firstStmt));
         final Statement nextStmt = vf.createStatement(firstElem, nextNodeProperty,
                 vf.createLiteral(System.currentTimeMillis()));
-        when(connector.findStatements(firstElem, nextNodeProperty, null, false, null))
+        when(connector.findStatements(firstElem, nextNodeProperty, null, false, Collections.emptySet()))
                 .thenReturn(Collections.singleton(nextStmt));
 
         try {
             handler.loadList(listDescriptor);
         } finally {
-            verify(connector).findStatements(owner, hasListProperty, null, false, null);
-            verify(connector).findStatements(firstElem, nextNodeProperty, null, false, null);
+            verify(connector).findStatements(owner, hasListProperty, null, false, Collections.emptySet());
+            verify(connector).findStatements(firstElem, nextNodeProperty, null, false, Collections.emptySet());
         }
     }
 

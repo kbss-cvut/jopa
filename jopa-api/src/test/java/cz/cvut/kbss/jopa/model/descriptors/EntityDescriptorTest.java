@@ -1,19 +1,18 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
+import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collections;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -34,26 +37,37 @@ class EntityDescriptorTest {
     @Mock
     private Attribute<TestClass, String> stringAtt;
 
+    @Mock
+    private Attribute<TestClass, Integer> intAtt;
+
+    @Mock
+    private Attribute<RecursiveClass, RecursiveClass> parentAtt;
+
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(intAtt.getJavaField()).thenReturn(TestClass.intAttField());
+        when(intAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
     }
 
     @Test
     void fieldDescriptorByDefaultInheritsEntityContext() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
-        assertEquals(CONTEXT_ONE, result.getContext());
+        assertEquals(Collections.singleton(CONTEXT_ONE), result.getContexts());
     }
 
     @Test
     void fieldDescriptorHasItsOwnContextWhenItIsSetForIt() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
-        descriptor.addAttributeContext(stringAtt.getJavaField(), CONTEXT_TWO);
+        descriptor.addAttributeContext(stringAtt, CONTEXT_TWO);
 
         final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
-        assertEquals(CONTEXT_TWO, result.getContext());
+        assertEquals(Collections.singleton(CONTEXT_TWO), result.getContexts());
     }
 
     @Test
@@ -83,7 +97,7 @@ class EntityDescriptorTest {
         final EntityDescriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage(LANG);
         final String newLang = "cs";
-        descriptor.setAttributeLanguage(stringAtt.getJavaField(), newLang);
+        descriptor.setAttributeLanguage(stringAtt, newLang);
 
         final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
         assertTrue(result.hasLanguage());
@@ -91,13 +105,13 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoEntityDescriptorsAreEqualWhenTheirFieldDescriptorsHaveTheSameContexts() throws Exception {
+    void twoEntityDescriptorsAreEqualWhenTheirFieldDescriptorsHaveTheSameContexts() {
         final EntityDescriptor dOne = new EntityDescriptor(CONTEXT_ONE);
         final EntityDescriptor dTwo = new EntityDescriptor(CONTEXT_ONE);
-        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
-        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
-        dOne.addAttributeDescriptor(TestClass.intAttField(), new FieldDescriptor(CONTEXT_ONE, TestClass.intAttField()));
-        dTwo.addAttributeDescriptor(TestClass.intAttField(), new FieldDescriptor(CONTEXT_ONE, TestClass.intAttField()));
+        dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
+        dTwo.addAttributeContext(stringAtt, CONTEXT_TWO);
+        dOne.addAttributeDescriptor(intAtt, new FieldDescriptor(CONTEXT_ONE, intAtt));
+        dTwo.addAttributeDescriptor(intAtt, new FieldDescriptor(CONTEXT_ONE, intAtt));
 
         assertEquals(dOne, dTwo);
         assertEquals(dTwo, dOne);
@@ -105,11 +119,11 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoEntityDescriptorsAreNotEqualWhenTheyDifferInFieldContext() throws Exception {
+    void twoEntityDescriptorsAreNotEqualWhenTheyDifferInFieldContext() {
         final EntityDescriptor dOne = new EntityDescriptor(CONTEXT_ONE);
         final EntityDescriptor dTwo = new EntityDescriptor(CONTEXT_ONE);
-        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
-        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_ONE);
+        dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
+        dTwo.addAttributeContext(stringAtt, CONTEXT_ONE);
 
         assertNotEquals(dOne, dTwo);
         assertNotEquals(dOne.hashCode(), dTwo.hashCode());
@@ -132,11 +146,11 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoDescriptorsWithDifferentLanguageTagsAreNotEqual() throws Exception {
+    void twoDescriptorsWithDifferentLanguageTagsAreNotEqual() {
         final Descriptor dOne = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor dTwo = new EntityDescriptor(CONTEXT_ONE);
-        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
-        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
+        dTwo.addAttributeContext(stringAtt, CONTEXT_TWO);
         dOne.setLanguage("en");
         dTwo.setLanguage("cs");
         assertNotEquals(dOne, dTwo);
@@ -144,35 +158,35 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoDescriptorsWithDifferentAttributeLanguageTagsAreNotEqual() throws Exception {
+    void twoDescriptorsWithDifferentAttributeLanguageTagsAreNotEqual() {
         final Descriptor dOne = new EntityDescriptor();
         final Descriptor dTwo = new EntityDescriptor();
-        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
-        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
+        dTwo.addAttributeContext(stringAtt, CONTEXT_TWO);
         dOne.setLanguage("en");
         dTwo.setLanguage("en");
-        dOne.setAttributeLanguage(TestClass.stringAttField(), "en");
-        dTwo.setAttributeLanguage(TestClass.stringAttField(), "cs");
+        dOne.setAttributeLanguage(stringAtt, "en");
+        dTwo.setAttributeLanguage(stringAtt, "cs");
         assertNotEquals(dOne, dTwo);
         assertNotEquals(dOne.hashCode(), dTwo.hashCode());
     }
 
     @Test
-    void twoDescriptorsWithSameAttributeLanguageTagsAreEqual() throws Exception {
+    void twoDescriptorsWithSameAttributeLanguageTagsAreEqual() {
         final Descriptor dOne = new EntityDescriptor();
         final Descriptor dTwo = new EntityDescriptor();
-        dOne.setAttributeLanguage(TestClass.stringAttField(), "en");
-        dTwo.setAttributeLanguage(TestClass.stringAttField(), "en");
+        dOne.setAttributeLanguage(stringAtt, "en");
+        dTwo.setAttributeLanguage(stringAtt, "en");
         assertEquals(dOne, dTwo);
         assertEquals(dOne.hashCode(), dTwo.hashCode());
     }
 
     @Test
-    void twoDescriptorsWithNullLanguageTagSetAreEqual() throws Exception {
+    void twoDescriptorsWithNullLanguageTagSetAreEqual() {
         final Descriptor dOne = new EntityDescriptor();
         final Descriptor dTwo = new EntityDescriptor();
-        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
-        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
+        dTwo.addAttributeContext(stringAtt, CONTEXT_TWO);
         dOne.setLanguage(null);
         dTwo.setLanguage(null);
         assertEquals(dOne, dTwo);
@@ -189,20 +203,21 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void addAttributeDescriptorProvidesCorrectContextOnRetrieval() throws Exception {
+    void addAttributeDescriptorProvidesCorrectContextOnRetrieval() {
         final EntityDescriptor dOne = new EntityDescriptor(CONTEXT_ONE);
-        dOne.addAttributeDescriptor(TestClass.intAttField(), new FieldDescriptor(CONTEXT_TWO, TestClass.intAttField()));
+        dOne.addAttributeDescriptor(intAtt, new FieldDescriptor(CONTEXT_TWO, intAtt));
         assertFalse(dOne.getAttributeDescriptors().isEmpty());
-        assertEquals(CONTEXT_TWO, dOne.getAttributeDescriptors().iterator().next().getContext());
+        assertEquals(Collections.singleton(CONTEXT_TWO),
+                dOne.getAttributeDescriptors().iterator().next().getContexts());
     }
 
     @Test
-    void equalsHandlesRecursiveDescriptors() throws Exception {
+    void equalsHandlesRecursiveDescriptors() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
-        descriptor.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptor);
+        descriptor.addAttributeDescriptor(parentAtt, descriptor);
 
         final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
-        descriptorTwo.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptorTwo);
+        descriptorTwo.addAttributeDescriptor(parentAtt, descriptorTwo);
         assertEquals(descriptor, descriptorTwo);
     }
 
@@ -213,22 +228,21 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void equalsHandlesOneRecursiveDescriptorAndOtherNormal() throws Exception {
+    void equalsHandlesOneRecursiveDescriptorAndOtherNormal() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
-        descriptor.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptor);
+        descriptor.addAttributeDescriptor(parentAtt, descriptor);
 
         final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
-        descriptorTwo.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"),
-                new EntityDescriptor(CONTEXT_ONE));
+        descriptorTwo.addAttributeDescriptor(parentAtt, new EntityDescriptor(CONTEXT_ONE));
         // The first descriptor is recursive, while the second isn't, so it has only two levels
         assertNotEquals(descriptor, descriptorTwo);
     }
 
     @Test
-    void equalsReturnsFalseWhenFieldDescriptorCountDiffers() throws Exception {
+    void equalsReturnsFalseWhenFieldDescriptorCountDiffers() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
         descriptor.setLanguage("en");
-        descriptor.setAttributeLanguage(TestClass.stringAttField(), "cs");
+        descriptor.setAttributeLanguage(stringAtt, "cs");
 
         final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
         descriptor.setLanguage("en");
@@ -236,37 +250,141 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void hashCodeHandlesRecursiveDescriptors() throws Exception {
+    void hashCodeHandlesRecursiveDescriptors() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
-        descriptor.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptor);
+        descriptor.addAttributeDescriptor(parentAtt, descriptor);
 
         final EntityDescriptor descriptorTwo = new EntityDescriptor(CONTEXT_ONE);
-        descriptorTwo.addAttributeDescriptor(RecursiveClass.class.getDeclaredField("parent"), descriptorTwo);
+        descriptorTwo.addAttributeDescriptor(parentAtt, descriptorTwo);
 
         assertEquals(descriptor.hashCode(), descriptorTwo.hashCode());
     }
 
     @Test
-    void getAttributeContextReturnsSubjectContextWhenAssertionsInSubjectContextIsTrue() throws Exception {
+    void getAttributeContextReturnsSubjectContextWhenAssertionsInSubjectContextIsTrue() {
         final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
-        sut.addAttributeDescriptor(TestClass.stringAttField(), new EntityDescriptor(CONTEXT_TWO));
+        sut.addAttributeDescriptor(stringAtt, new EntityDescriptor(CONTEXT_TWO));
 
-        assertEquals(CONTEXT_ONE, sut.getAttributeContext(stringAtt));
+        assertEquals(Collections.singleton(CONTEXT_ONE), sut.getAttributeContexts(stringAtt));
     }
 
     @Test
-    void getAttributeContextReturnsAttributeContextWhenAssertionsInSubjectContextIsFalse() throws Exception {
+    void getAttributeContextReturnsAttributeContextWhenAssertionsInSubjectContextIsFalse() {
         final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE, false);
-        sut.addAttributeDescriptor(TestClass.stringAttField(), new EntityDescriptor(CONTEXT_TWO));
+        sut.addAttributeDescriptor(stringAtt, new EntityDescriptor(CONTEXT_TWO));
 
-        assertEquals(CONTEXT_TWO, sut.getAttributeContext(stringAtt));
+        assertEquals(Collections.singleton(CONTEXT_TWO), sut.getAttributeContexts(stringAtt));
     }
 
     @Test
-    void getAttributeContextReturnsAttributeContextWhenItOverridesSubjectContext() throws Exception {
+    void getAttributeContextReturnsAttributeContextWhenItOverridesSubjectContext() {
         final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE, true);
-        sut.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        sut.addAttributeContext(stringAtt, CONTEXT_TWO);
 
-        assertEquals(CONTEXT_TWO, sut.getAttributeContext(stringAtt));
+        assertEquals(Collections.singleton(CONTEXT_TWO), sut.getAttributeContexts(stringAtt));
+    }
+
+    @Test
+    void addAttributeContextCreatesEntityDescriptorAndAddsContextToItWhenItDidNotExist() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(parentAtt, CONTEXT_ONE);
+
+        assertThat(sut.getAttributeContexts(parentAtt), empty());
+        final Descriptor result = sut.getAttributeDescriptor(parentAtt);
+        assertEquals(Collections.singleton(CONTEXT_ONE), result.getContexts());
+    }
+
+    @Test
+    void addAttributeContextCreatesFieldDescriptorAndSetsItsContextForDataPropertyField() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, CONTEXT_TWO);
+
+        assertEquals(Collections.singleton(CONTEXT_TWO), sut.getAttributeContexts(stringAtt));
+        final Descriptor result = sut.getAttributeDescriptor(stringAtt);
+        assertEquals(Collections.singleton(CONTEXT_TWO), result.getContexts());
+    }
+
+    @Test
+    void addAttributeContextSupportsMultipleContextsAddedToObjectPropertyAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(parentAtt, CONTEXT_ONE).addAttributeContext(parentAtt, CONTEXT_TWO);
+
+        assertThat(sut.getAttributeContexts(parentAtt), empty());
+        final Descriptor result = sut.getAttributeDescriptor(parentAtt);
+        assertEquals(2, result.getContexts().size());
+        assertThat(result.getContexts(), hasItems(CONTEXT_ONE, CONTEXT_TWO));
+    }
+
+    @Test
+    void addAttributeContextSupportsMultipleContextsAddedToDataPropertyAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, CONTEXT_ONE).addAttributeContext(stringAtt, CONTEXT_TWO);
+
+        assertEquals(2, sut.getAttributeContexts(stringAtt).size());
+        assertThat(sut.getAttributeContexts(stringAtt), hasItems(CONTEXT_ONE, CONTEXT_TWO));
+        final Descriptor result = sut.getAttributeDescriptor(stringAtt);
+        assertEquals(2, result.getContexts().size());
+        assertThat(result.getContexts(), hasItems(CONTEXT_ONE, CONTEXT_TWO));
+    }
+
+    @Test
+    void addAttributeContextSupportsCreatesObjectPropertyCollectionDescriptorForPluralObjectProperty() {
+        when(parentAtt.isCollection()).thenReturn(true);    // Abusing existing field specification
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(parentAtt, CONTEXT_ONE);
+
+        assertThat(sut.getAttributeContexts(parentAtt), empty());
+        final Descriptor result = sut.getAttributeDescriptor(parentAtt);
+        assertEquals(Collections.singleton(CONTEXT_ONE), result.getContexts());
+    }
+
+    @Test
+    void getSingleContextReturnsOneContextSpecifiedInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        assertTrue(sut.getSingleContext().isPresent());
+        assertEquals(CONTEXT_ONE, sut.getSingleContext().get());
+    }
+
+    @Test
+    void getSingleContextReturnsEmptyOptionalWhenNoContextsAreSetInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        assertFalse(sut.getSingleContext().isPresent());
+    }
+
+    @Test
+    void getSingleContextThrowsAmbiguousContextExceptionWhenMultipleContextsAreSpecifiedInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addContext(CONTEXT_TWO);
+        assertThrows(AmbiguousContextException.class, sut::getSingleContext);
+    }
+
+    @Test
+    void getSingleAttributeContextReturnsOneContextSpecifiedForAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(stringAtt, CONTEXT_ONE);
+        assertTrue(sut.getSingleAttributeContext(stringAtt).isPresent());
+        assertEquals(CONTEXT_ONE, sut.getSingleAttributeContext(stringAtt).get());
+    }
+
+    @Test
+    void getSingleAttributeContextReturnsEmptyOptionalWhenDefaultContextIsSetForAttribute() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, null);
+        assertFalse(sut.getSingleAttributeContext(stringAtt).isPresent());
+    }
+
+    @Test
+    void getSingleAttributeContextReturnsDescriptorContextWhenNoAttributeContextIsSpecified() {
+        final EntityDescriptor sut = new EntityDescriptor(CONTEXT_ONE);
+        assertTrue(sut.getSingleAttributeContext(stringAtt).isPresent());
+        assertEquals(CONTEXT_ONE, sut.getSingleAttributeContext(stringAtt).get());
+    }
+
+    @Test
+    void getSingleAttributeContextThrowsAmbiguousContextExceptionWhenMultipleAttributeContextsAreSpecifiedInDescriptor() {
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeContext(stringAtt, CONTEXT_ONE);
+        sut.addAttributeContext(stringAtt, CONTEXT_TWO);
+        assertThrows(AmbiguousContextException.class, () -> sut.getSingleAttributeContext(stringAtt));
     }
 }

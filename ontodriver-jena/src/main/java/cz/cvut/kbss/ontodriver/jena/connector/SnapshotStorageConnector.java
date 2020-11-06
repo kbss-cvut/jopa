@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -26,12 +24,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.update.UpdateAction;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * This connector implements the {@link cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties#SNAPSHOT}-based transactional strategy.
+ * This connector implements the {@link cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties#SNAPSHOT}-based
+ * transactional strategy.
  * <p>
  * It is also used when inference is required from the driver.
  */
@@ -118,22 +116,24 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     }
 
     @Override
-    public List<Statement> find(Resource subject, Property property, RDFNode value, String context) {
+    public List<Statement> find(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureTransactionalState();
-        if (context != null) {
-            return storage.getNamedGraph(context).listStatements(subject, property, value).toList();
-        } else {
+        if (contexts.isEmpty()) {
             return storage.getDefaultGraph().listStatements(subject, property, value).toList();
+        } else {
+            return contexts.stream()
+                           .map(ctx -> storage.getNamedGraph(ctx).listStatements(subject, property, value).toList())
+                           .flatMap(Collection::stream).collect(Collectors.toList());
         }
     }
 
     @Override
-    public boolean contains(Resource subject, Property property, RDFNode value, String context) {
+    public boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureTransactionalState();
-        if (context != null) {
-            return storage.getNamedGraph(context).contains(subject, property, value);
-        } else {
+        if (contexts.isEmpty()) {
             return storage.getDefaultGraph().contains(subject, property, value);
+        } else {
+            return contexts.stream().anyMatch(c -> storage.getNamedGraph(c).contains(subject, property, value));
         }
     }
 
@@ -163,7 +163,8 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     @Override
     public void remove(Resource subject, Property property, RDFNode object, String context) {
         ensureTransactionalState();
-        final List<Statement> toRemove = find(subject, property, object, context);
+        final List<Statement> toRemove = find(subject, property, object,
+                context != null ? Collections.singleton(context) : Collections.emptySet());
         remove(toRemove, context);
     }
 

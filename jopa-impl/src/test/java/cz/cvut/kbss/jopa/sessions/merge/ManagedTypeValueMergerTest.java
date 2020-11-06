@@ -31,8 +31,8 @@ import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,7 +68,7 @@ public class ManagedTypeValueMergerTest {
     }
 
     @Test
-    public void mergeValueLoadsInstanceFromRepository() throws Exception {
+    public void mergeValueLoadsInstanceFromRepository() {
         final OWLClassA orig = Generators.generateOwlClassAInstance();
         final OWLClassA merged = new OWLClassA(orig);
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
@@ -80,7 +80,7 @@ public class ManagedTypeValueMergerTest {
     }
 
     @Test
-    public void mergeValueSetsValueDirectlyWhenItIsNull() throws Exception {
+    public void mergeValueSetsValueDirectlyWhenItIsNull() {
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
         target.setOwlClassA(Generators.generateOwlClassAInstance());
         merger.mergeValue(refASpec, target, target.getOwlClassA(), null, descriptor);
@@ -88,7 +88,7 @@ public class ManagedTypeValueMergerTest {
     }
 
     @Test
-    public void mergeValueSetsTheMergedValueDirectlyWhenItRepresentsANewInstance() throws Exception {
+    public void mergeValueSetsTheMergedValueDirectlyWhenItRepresentsANewInstance() {
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
         target.setOwlClassA(Generators.generateOwlClassAInstance());
         final OWLClassA merged = Generators.generateOwlClassAInstance();
@@ -98,7 +98,7 @@ public class ManagedTypeValueMergerTest {
     }
 
     @Test
-    public void mergeSetsTheMergedValueDirectlyWhenItHasNoIdentifier() throws Exception {
+    public void mergeSetsTheMergedValueDirectlyWhenItHasNoIdentifier() {
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
         target.setOwlClassA(Generators.generateOwlClassAInstance());
         final OWLClassA merged = Generators.generateOwlClassAInstance();

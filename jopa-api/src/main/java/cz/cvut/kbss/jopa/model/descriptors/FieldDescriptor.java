@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.descriptors;
 
@@ -26,17 +24,22 @@ import java.util.Set;
 /**
  * Describes a singular data property or a plural data, object or annotation property field.
  */
-public class FieldDescriptor extends Descriptor {
+public class FieldDescriptor extends AbstractDescriptor {
 
     private final Field field;
 
-    public FieldDescriptor(Field attribute) {
-        this.field = Objects.requireNonNull(attribute);
+    public FieldDescriptor(FieldSpecification<?, ?> attribute) {
+        this.field = Objects.requireNonNull(attribute).getJavaField();
     }
 
-    public FieldDescriptor(URI context, Field attribute) {
+    public FieldDescriptor(URI context, FieldSpecification<?, ?> attribute) {
         super(context);
-        this.field = Objects.requireNonNull(attribute);
+        this.field = Objects.requireNonNull(attribute).getJavaField();
+    }
+
+    public FieldDescriptor(Set<URI> contexts, FieldSpecification<?, ?> attribute) {
+        this(attribute);
+        this.contexts.addAll(Objects.requireNonNull(contexts));
     }
 
     @Override
@@ -51,19 +54,19 @@ public class FieldDescriptor extends Descriptor {
     }
 
     @Override
-    public URI getAttributeContext(FieldSpecification<?, ?> attribute) {
+    public Set<URI> getAttributeContexts(FieldSpecification<?, ?> attribute) {
         Objects.requireNonNull(attribute);
-        return getFieldDescriptor(attribute.getJavaField()).getContext();
+        return getFieldDescriptor(attribute.getJavaField()).getContexts();
     }
 
     @Override
-    public FieldDescriptor addAttributeDescriptor(Field attribute, Descriptor descriptor) {
+    public FieldDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
         // Do nothing
         return this;
     }
 
     @Override
-    public FieldDescriptor addAttributeContext(Field attribute, URI context) {
+    public FieldDescriptor addAttributeContext(FieldSpecification<?, ?> attribute, URI context) {
         // Do nothing
         return this;
     }
@@ -72,26 +75,16 @@ public class FieldDescriptor extends Descriptor {
      * Use {@link #setLanguage(String)} instead.
      */
     @Override
-    public FieldDescriptor setAttributeLanguage(Field attribute, String languageTag) {
+    public FieldDescriptor setAttributeLanguage(FieldSpecification<?, ?> attribute, String languageTag) {
         // Do nothing
         return this;
     }
 
-    private Descriptor getFieldDescriptor(Field field) {
+    private AbstractDescriptor getFieldDescriptor(Field field) {
         if (this.field.equals(field)) {
             return this;
         }
         throw new IllegalArgumentException("This field descriptor does not describe field " + field);
-    }
-
-    @Override
-    protected Set<URI> getContextsInternal(Set<URI> contexts, Set<Descriptor> visited) {
-        if (context == null) {
-            return null;
-        }
-        contexts.add(context);
-        visited.add(this);
-        return contexts;
     }
 
     Field getField() {
@@ -99,7 +92,7 @@ public class FieldDescriptor extends Descriptor {
     }
 
     @Override
-    protected boolean overridesAssertionsInSubjectContext() {
+    public boolean overridesAssertionContext() {
         return true;
     }
 

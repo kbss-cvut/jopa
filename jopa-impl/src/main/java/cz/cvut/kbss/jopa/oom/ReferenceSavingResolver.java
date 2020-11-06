@@ -24,6 +24,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 class ReferenceSavingResolver {
 
@@ -47,26 +48,26 @@ class ReferenceSavingResolver {
      * Otherwise, the reference should not be saved and should be registered as pending.
      *
      * @param value     The value to save
-     * @param context   Storage context
+     * @param contexts   Storage contexts
      * @return Whether to save the corresponding assertion or not
      */
-    boolean shouldSaveReference(Object value, URI context) {
-        return value == null || IdentifierTransformer.isValidIdentifierType(value.getClass()) || shouldSaveReferenceToItem(value, context);
+    boolean shouldSaveReference(Object value, Set<URI> contexts) {
+        return value == null || IdentifierTransformer.isValidIdentifierType(value.getClass()) || shouldSaveReferenceToItem(value, contexts);
     }
 
     /**
-     * Same as {@link #shouldSaveReference(Object, URI)}, but skips null-check and check whether the value is a plain identifier.
+     * Same as {@link #shouldSaveReference(Object, Set)}, but skips null-check and check whether the value is a plain identifier.
      * <p>
      * Used for collections.
      */
-    boolean shouldSaveReferenceToItem(Object value, URI context) {
+    boolean shouldSaveReferenceToItem(Object value, Set<URI> contexts) {
         if (mapper.isManaged(value)) {
             return true;
         }
         final EntityType<?> et = mapper.getEntityType(value.getClass());
         assert et != null;
         final URI identifier = EntityPropertiesUtils.getIdentifier(value, et);
-        return identifier != null && mapper.containsEntity(et.getJavaType(), identifier, new EntityDescriptor(context));
+        return identifier != null && mapper.containsEntity(et.getJavaType(), identifier, new EntityDescriptor(contexts));
     }
 
     /**

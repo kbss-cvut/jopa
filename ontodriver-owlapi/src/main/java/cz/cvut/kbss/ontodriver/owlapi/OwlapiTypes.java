@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.Procedure;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
@@ -41,11 +42,11 @@ public class OwlapiTypes implements Types {
     }
 
     @Override
-    public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred)
+    public Set<Axiom<URI>> getTypes(NamedResource individual, Collection<URI> contexts, boolean includeInferred)
             throws OntoDriverException {
         Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
         beforeCallback.execute();
-        return adapter.getTypesHandler().getTypes(individual, context, includeInferred);
+        return adapter.getTypesHandler().getTypes(individual, contexts, includeInferred);
     }
 
     @Override

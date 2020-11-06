@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -25,6 +23,7 @@ import org.apache.jena.rdf.model.*;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 class ExplicitAxiomLoader extends AbstractAxiomLoader {
 
@@ -40,8 +39,9 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
     }
 
     @Override
-    boolean contains(Resource subject, Property property, RDFNode object, URI context) {
-        return connector.contains(subject, property, object, context != null ? context.toString() : null);
+    boolean contains(Resource subject, Property property, RDFNode object, Set<URI> contexts) {
+        return connector
+                .contains(subject, property, object, contexts.stream().map(URI::toString).collect(Collectors.toSet()));
     }
 
     @Override
@@ -49,7 +49,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
         this.assertedProperties = assertions;
         this.unspecifiedProperty = resolveUnspecifiedProperty();
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
-        final Collection<Statement> statements = findStatements(subject, null, descriptor.getSubjectContext());
+        final Collection<Statement> statements = findStatements(subject, null, descriptor.getSubjectContexts());
         final List<Axiom<?>> result = transformStatementsToAxioms(descriptor, statements);
         result.addAll(loadAxiomsForPropertiesInContext(descriptor, subject));
         return result;
@@ -62,8 +62,9 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
     }
 
     @Override
-    Collection<Statement> findStatements(Resource subject, Property property, URI context) {
-        return connector.find(subject, property, null, context != null ? context.toString() : null);
+    Collection<Statement> findStatements(Resource subject, Property property, Collection<URI> contexts) {
+        return connector
+                .find(subject, property, null, contexts.stream().map(URI::toString).collect(Collectors.toSet()));
     }
 
     private List<Axiom<?>> transformStatementsToAxioms(AxiomDescriptor descriptor, Collection<Statement> statements) {
@@ -75,7 +76,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
             }
             final Assertion a =
                     assertedProperties.containsKey(property.getURI()) ? assertedProperties.get(property.getURI()) :
-                            createAssertionForStatement(statement);
+                    createAssertionForStatement(statement);
             final Optional<Value<?>> value = resolveValue(a, statement.getObject());
             value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
         }
@@ -91,14 +92,14 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
             return true;
         }
         final Assertion a = assertedProperties.getOrDefault(propertyUri, unspecifiedProperty);
-        return !assertionContextSameAsSubject(descriptor.getSubjectContext(), descriptor.getAssertionContext(a));
+        return !assertionContextMatchesSubject(descriptor.getSubjectContexts(), descriptor.getAssertionContexts(a));
     }
 
     private List<Axiom<?>> loadAxiomsForPropertiesInContext(AxiomDescriptor descriptor, Resource subject) {
         final List<Axiom<?>> axioms = new ArrayList<>();
         for (Assertion a : assertedProperties.values()) {
-            final URI assertionCtx = descriptor.getAssertionContext(a);
-            if (assertionContextSameAsSubject(descriptor.getSubjectContext(), assertionCtx)) {
+            final Set<URI> assertionCtx = descriptor.getAssertionContexts(a);
+            if (assertionContextMatchesSubject(descriptor.getSubjectContexts(), assertionCtx)) {
                 continue;
             }
             final Property property = ResourceFactory.createProperty(a.getIdentifier().toString());
@@ -108,10 +109,10 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
                 value.ifPresent(v -> axioms.add(new AxiomImpl<>(descriptor.getSubject(), a, v)));
             });
         }
-        if (unspecifiedProperty != null && !assertionContextSameAsSubject(descriptor.getSubjectContext(),
-                descriptor.getAssertionContext(unspecifiedProperty))) {
+        if (unspecifiedProperty != null && !assertionContextMatchesSubject(descriptor.getSubjectContexts(),
+                descriptor.getAssertionContexts(unspecifiedProperty))) {
             final Collection<Statement> statements =
-                    findStatements(subject, null, descriptor.getAssertionContext(unspecifiedProperty));
+                    findStatements(subject, null, descriptor.getAssertionContexts(unspecifiedProperty));
             for (Statement s : statements) {
                 final Assertion a = createAssertionForStatement(s);
                 final Optional<Value<?>> value = resolveValue(a, s.getObject());
@@ -121,7 +122,8 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
         return axioms;
     }
 
-    private static boolean assertionContextSameAsSubject(URI subjectCtx, URI assertionCtx) {
-        return assertionCtx == null && subjectCtx == null || (subjectCtx != null && subjectCtx.equals(assertionCtx));
+    private static boolean assertionContextMatchesSubject(Set<URI> subjectCtx, Set<URI> assertionCtx) {
+        return (subjectCtx.isEmpty() && assertionCtx.isEmpty()) ||
+                (!subjectCtx.isEmpty() && assertionCtx.stream().anyMatch(subjectCtx::contains));
     }
 }

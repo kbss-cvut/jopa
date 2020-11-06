@@ -48,13 +48,13 @@ class FieldStrategyTest {
     }
 
     @Test
-    void getAttributeContextRetrievesContextFromEntityDescriptor() throws Exception {
+    void getAttributeContextRetrievesContextFromEntityDescriptor() {
         final URI context = Generators.createIndividualIdentifier();
-        descriptor.addAttributeContext(OWLClassA.getStrAttField(), context);
+        descriptor.addAttributeContext(metamodelMocks.forOwlClassA().stringAttribute(), context);
         final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
                 metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
-        assertEquals(context, sut.getAttributeContext());
-        verify(descriptor).getAttributeContext(metamodelMocks.forOwlClassA().stringAttribute());
+        assertEquals(context, sut.getAttributeWriteContext());
+        verify(descriptor).getSingleAttributeContext(metamodelMocks.forOwlClassA().stringAttribute());
     }
 
     @Test

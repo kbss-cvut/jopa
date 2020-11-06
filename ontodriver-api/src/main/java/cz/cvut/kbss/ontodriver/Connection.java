@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface Connection extends AutoCloseable, Wrapper {
 
@@ -120,12 +121,12 @@ public interface Connection extends AutoCloseable, Wrapper {
      * The context optionally specifies context in which to look for the axiom.
      *
      * @param axiom   The axiom to look for
-     * @param context Optional search context, {@code null} means to look in the default storage context
+     * @param contexts Optional search contexts, an empty set means to look in the default storage context
      * @return {@code true} if the storage contains matching axiom, {@code false} otherwise
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException;
+    boolean contains(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException;
 
     /**
      * Finds axioms with the corresponding subject and properties.

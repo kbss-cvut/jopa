@@ -58,7 +58,7 @@ class ReferencedListPropertyStrategy<X> extends
                 .createObjectPropertyAssertion(attribute.getOWLPropertyHasContentsIRI().toURI(), inferred);
         final ReferencedListDescriptor listDescriptor = new ReferencedListDescriptorImpl(owner, listProperty,
                 nextNodeProperty, nodeContentProperty);
-        listDescriptor.setContext(getAttributeContext());
+        listDescriptor.setContext(getAttributeWriteContext());
         return listDescriptor;
     }
 
@@ -85,7 +85,7 @@ class ReferencedListPropertyStrategy<X> extends
                 .getOWLPropertyHasContentsIRI().toURI(), attribute.isInferred());
         final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(
                 NamedResource.create(owner), hasList, hasNext, hasContent);
-        descriptor.setContext(getAttributeContext());
+        descriptor.setContext(getAttributeWriteContext());
         return descriptor;
     }
 }

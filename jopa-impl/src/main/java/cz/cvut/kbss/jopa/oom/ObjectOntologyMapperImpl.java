@@ -38,10 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
 
@@ -57,7 +54,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final AxiomDescriptorFactory descriptorFactory;
     private final EntityConstructor entityBuilder;
     private final EntityDeconstructor entityBreaker;
-    private final InstanceRegistry instanceRegistry;
+    private Map<URI, Object> instanceRegistry;
     private final PendingReferenceRegistry pendingReferences;
 
     private final EntityInstanceLoader defaultInstanceLoader;
@@ -69,7 +66,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.storageConnection = Objects.requireNonNull(connection);
         this.metamodel = uow.getMetamodel();
         this.descriptorFactory = new AxiomDescriptorFactory();
-        this.instanceRegistry = new InstanceRegistry();
+        this.instanceRegistry = new HashMap<>();
         this.pendingReferences = new PendingReferenceRegistry();
         this.entityBuilder = new EntityConstructor(this);
         this.entityBreaker = new EntityDeconstructor(this);
@@ -93,7 +90,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(identifier),
                 Assertion.createClassAssertion(false), new Value<>(classUri));
         try {
-            return storageConnection.contains(ax, descriptor.getContext());
+            return storageConnection.contains(ax, descriptor.getContexts());
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }
@@ -103,7 +100,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> T loadEntity(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
-        instanceRegistry.reset();
+        this.instanceRegistry = new HashMap<>();
         return loadEntityInternal(loadingParameters);
     }
 
@@ -226,8 +223,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
         if (cache.contains(cls, identifier, descriptor)) {
             return cache.get(cls, identifier, descriptor);
-        } else if (instanceRegistry.containsInstance(identifier, descriptor.getContext())) {
-            final Object existing = instanceRegistry.getInstance(identifier, descriptor.getContext());
+        } else if (instanceRegistry.containsKey(identifier)) {
+            final Object existing = instanceRegistry.get(identifier);
             if (!cls.isAssignableFrom(existing.getClass())) {
                 throw individualAlreadyManaged(identifier);
             }
@@ -248,8 +245,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         return uow.isObjectManaged(instance);
     }
 
-    <T> void registerInstance(URI primaryKey, T instance, URI context) {
-        instanceRegistry.registerInstance(primaryKey, instance, context);
+    <T> void registerInstance(URI identifier, T instance) {
+        instanceRegistry.put(identifier, instance);
     }
 
     @Override

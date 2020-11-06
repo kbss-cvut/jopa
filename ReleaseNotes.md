@@ -1,6 +1,10 @@
 # JOPA - Release Notes
 
 
+## 0.16.0 - October 12, 2020
+- Support using multiple contexts for entity/attribute (Enhancement #73).
+- Dependency updates: RDF4J 3.4.3.
+
 ## 0.15.2 - September 23, 2020
 - [JOPA] Fix handling of multilingual strings in annotation properties when target type is `Object`.
 - Allow configuring whether `MultilingualString` should be preferred over `String` in situations like above (`cz.cvut.jopa.preferMultilingualString`).

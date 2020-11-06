@@ -30,6 +30,7 @@ import cz.cvut.kbss.ontodriver.util.Transaction;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -86,9 +87,9 @@ public class JenaAdapter implements Wrapper {
         return new MainAxiomLoader(connector, inferenceConnector).find(descriptor);
     }
 
-    boolean contains(Axiom<?> axiom, URI context) {
+    boolean contains(Axiom<?> axiom, Set<URI> contexts) {
         beginTransactionIfNotActive();
-        return new MainAxiomLoader(connector, inferenceConnector).contains(axiom, context);
+        return new MainAxiomLoader(connector, inferenceConnector).contains(axiom, contexts);
     }
 
     List<URI> getContext() {

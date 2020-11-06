@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
@@ -18,17 +16,17 @@ import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LocalModelTest {
 
-    private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    private LocalModel localModel = new LocalModel();
+    private final LocalModel localModel = new LocalModel();
 
     @Test
     public void containsReturnsTrueWhenStatementWasAddedInLocalModel() {
@@ -36,7 +34,7 @@ public class LocalModelTest {
         final IRI property = valueFactory.createIRI(Generator.generateUri().toString());
         localModel.addStatements(Collections
                 .singletonList(valueFactory.createStatement(subject, property, valueFactory.createLiteral(117))));
-        assertEquals(LocalModel.Contains.TRUE, localModel.contains(subject, property, null, null));
+        assertEquals(LocalModel.Contains.TRUE, localModel.contains(subject, property, null, Collections.emptySet()));
     }
 
     @Test
@@ -45,14 +43,14 @@ public class LocalModelTest {
         final IRI property = valueFactory.createIRI(Generator.generateUri().toString());
         localModel.removeStatements(Collections
                 .singletonList(valueFactory.createStatement(subject, property, valueFactory.createLiteral(117))));
-        assertEquals(LocalModel.Contains.FALSE, localModel.contains(subject, property, null, null));
+        assertEquals(LocalModel.Contains.FALSE, localModel.contains(subject, property, null, Collections.emptySet()));
     }
 
     @Test
     public void containsReturnsUnknownWhenStatementsIsNotInLocalModel() {
         final IRI subject = valueFactory.createIRI(Generator.generateUri().toString());
         final IRI property = valueFactory.createIRI(Generator.generateUri().toString());
-        assertEquals(LocalModel.Contains.UNKNOWN, localModel.contains(subject, property, null, null));
+        assertEquals(LocalModel.Contains.UNKNOWN, localModel.contains(subject, property, null, Collections.emptySet()));
     }
 
     @Test
@@ -62,7 +60,8 @@ public class LocalModelTest {
         final IRI context = valueFactory.createIRI(Generator.generateUri().toString());
         localModel.addStatements(Collections.singletonList(
                 valueFactory.createStatement(subject, property, valueFactory.createLiteral(117), context)));
-        assertEquals(LocalModel.Contains.TRUE, localModel.contains(subject, property, null, context));
+        assertEquals(LocalModel.Contains.TRUE,
+                localModel.contains(subject, property, null, Collections.singleton(context)));
     }
 
     @Test
@@ -72,7 +71,8 @@ public class LocalModelTest {
         final IRI context = valueFactory.createIRI(Generator.generateUri().toString());
         localModel.removeStatements(Collections.singletonList(
                 valueFactory.createStatement(subject, property, valueFactory.createLiteral(117), context)));
-        assertEquals(LocalModel.Contains.FALSE, localModel.contains(subject, property, null, context));
+        assertEquals(LocalModel.Contains.FALSE,
+                localModel.contains(subject, property, null, Collections.singleton(context)));
     }
 
     @Test
@@ -80,6 +80,7 @@ public class LocalModelTest {
         final IRI subject = valueFactory.createIRI(Generator.generateUri().toString());
         final IRI property = valueFactory.createIRI(Generator.generateUri().toString());
         final IRI context = valueFactory.createIRI(Generator.generateUri().toString());
-        assertEquals(LocalModel.Contains.UNKNOWN, localModel.contains(subject, property, null, context));
+        assertEquals(LocalModel.Contains.UNKNOWN,
+                localModel.contains(subject, property, null, Collections.singleton(context)));
     }
 }

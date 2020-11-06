@@ -1,44 +1,35 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
-import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
+import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
+import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.net.URI;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class SesameConnectionTest {
 
@@ -47,8 +38,8 @@ public class SesameConnectionTest {
 
     private Connection connection;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.connection = new SesameConnection(adapterMock);
     }
@@ -69,15 +60,12 @@ public class SesameConnectionTest {
         verify(adapterMock).commit();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCommitClosed() throws Exception {
         connection.close();
         assertFalse(connection.isOpen());
-        try {
-            connection.commit();
-        } finally {
-            verify(adapterMock, never()).commit();
-        }
+        assertThrows(IllegalStateException.class, () -> connection.commit());
+        verify(adapterMock, never()).commit();
     }
 
     @Test
@@ -108,12 +96,10 @@ public class SesameConnectionTest {
         assertTrue(res instanceof SesameStatement);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCreateStatementOnClosed() throws Exception {
         connection.close();
-        final Statement res = connection.createStatement();
-        fail("This line should not have been reached");
-        assert res == null;
+        assertThrows(IllegalStateException.class, () -> connection.createStatement());
     }
 
     @Test
@@ -124,11 +110,9 @@ public class SesameConnectionTest {
         assertTrue(res instanceof SesamePreparedStatement);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testPrepareStatementEmpty() throws Exception {
-        final PreparedStatement res = connection.prepareStatement("");
-        fail("This line should not have been reached.");
-        assert res == null;
+    @Test
+    public void testPrepareStatementEmpty() {
+        assertThrows(IllegalArgumentException.class, () -> connection.prepareStatement(""));
     }
 
     @Test
@@ -151,16 +135,11 @@ public class SesameConnectionTest {
         verify(adapterMock).getContexts();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetContextsOnClosed() throws Exception {
         connection.close();
-        try {
-            final List<URI> res = connection.getContexts();
-            fail("This line should not have been reached.");
-            assert res == null;
-        } finally {
-            verify(adapterMock, never()).getContexts();
-        }
+        assertThrows(IllegalStateException.class, () -> connection.getContexts());
+        verify(adapterMock, never()).getContexts();
     }
 
     @Test
@@ -177,16 +156,16 @@ public class SesameConnectionTest {
     @Test
     public void testContainsAxiom() throws Exception {
         final Axiom<?> ax = mock(Axiom.class);
-        when(adapterMock.contains(ax, null)).thenReturn(Boolean.TRUE);
-        final boolean res = connection.contains(ax, null);
+        when(adapterMock.contains(eq(ax), anySet())).thenReturn(Boolean.TRUE);
+        final boolean res = connection.contains(ax, Collections.emptySet());
         assertTrue(res);
-        verify(adapterMock).contains(ax, null);
+        verify(adapterMock).contains(ax, Collections.emptySet());
     }
 
     @Test
     public void testContainsAxiomInContext() throws Exception {
         final Axiom<?> ax = mock(Axiom.class);
-        final URI context = URI.create("http://context.org");
+        final Set<URI> context = Collections.singleton(URI.create("http://context.org"));
         when(adapterMock.contains(ax, context)).thenReturn(Boolean.TRUE);
         final boolean res = connection.contains(ax, context);
         assertTrue(res);
@@ -204,15 +183,10 @@ public class SesameConnectionTest {
         assertEquals(axioms, res);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testFindNull() throws Exception {
-        try {
-            final Collection<Axiom<?>> res = connection.find(null);
-            fail("This line should not have been reached.");
-            assert res == null;
-        } finally {
-            verify(adapterMock, never()).find(any(AxiomDescriptor.class));
-        }
+        assertThrows(NullPointerException.class, () -> connection.find(null));
+        verify(adapterMock, never()).find(any(AxiomDescriptor.class));
     }
 
     @Test
@@ -231,15 +205,12 @@ public class SesameConnectionTest {
         verify(adapterMock).commit();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testPersistOnClosed() throws Exception {
         connection.close();
         final AxiomValueDescriptor axDesc = mock(AxiomValueDescriptor.class);
-        try {
-            connection.persist(axDesc);
-        } finally {
-            verify(adapterMock, never()).persist(axDesc);
-        }
+        assertThrows(IllegalStateException.class, () -> connection.persist(axDesc));
+        verify(adapterMock, never()).persist(axDesc);
     }
 
     @Test

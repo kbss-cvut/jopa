@@ -66,7 +66,7 @@ public class PluralMultilingualStringFieldStrategy<X>
         assert value instanceof Collection || value == null;
         final Collection<MultilingualString> valueCollection = (Collection<MultilingualString>) value;
         if (valueCollection == null || valueCollection.isEmpty()) {
-            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
                                                                  .filter(Objects::nonNull)
@@ -75,7 +75,7 @@ public class PluralMultilingualStringFieldStrategy<X>
                                                                                         new LangString(e.getValue(),
                                                                                                 e.getKey()))))
                                                                  .collect(Collectors.toSet());
-            valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
+            valueBuilder.addValues(createAssertion(), assertionValues, getAttributeWriteContext());
         }
     }
 }

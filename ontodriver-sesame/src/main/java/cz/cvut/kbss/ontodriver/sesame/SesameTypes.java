@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
@@ -30,8 +31,8 @@ public class SesameTypes implements Types {
 
     private final SesameAdapter adapter;
 
-    private Procedure beforeCallback;
-    private Procedure afterChangeCallback;
+    private final Procedure beforeCallback;
+    private final Procedure afterChangeCallback;
 
     public SesameTypes(SesameAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
         this.adapter = adapter;
@@ -40,11 +41,11 @@ public class SesameTypes implements Types {
     }
 
     @Override
-    public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred)
+    public Set<Axiom<URI>> getTypes(NamedResource individual, Collection<URI> contexts, boolean includeInferred)
             throws OntoDriverException {
         Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
         beforeCallback.execute();
-        return adapter.getTypesHandler().getTypes(individual, context, includeInferred);
+        return adapter.getTypesHandler().getTypes(individual, contexts, includeInferred);
     }
 
     @Override

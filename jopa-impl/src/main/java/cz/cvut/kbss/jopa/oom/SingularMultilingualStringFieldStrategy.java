@@ -59,9 +59,9 @@ class SingularMultilingualStringFieldStrategy<X>
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         final MultilingualString attValue = (MultilingualString) extractFieldValueFromInstance(instance);
         if (attValue == null || attValue.isEmpty()) {
-            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         } else {
-            valueBuilder.addValues(createAssertion(), translationsToLangStrings(attValue), getAttributeContext());
+            valueBuilder.addValues(createAssertion(), translationsToLangStrings(attValue), getAttributeWriteContext());
         }
     }
 

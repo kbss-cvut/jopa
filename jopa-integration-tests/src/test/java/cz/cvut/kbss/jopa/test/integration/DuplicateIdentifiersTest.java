@@ -29,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -117,7 +118,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         initAxiomsForOWLClassA(subject, stringAss, entityA.getStringAttribute());
         when(connectionMock.contains(
                 new AxiomImpl<>(subject, Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(OWLClassA.getClassIri()))), null)).thenReturn(true);
+                        new Value<>(NamedResource.create(OWLClassA.getClassIri()))), Collections.emptySet())).thenReturn(true);
 
         final String newStringOne = "newStringAttributeOne";
         entityA.setStringAttribute(newStringOne);
@@ -196,7 +197,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         desc.addAssertion(stringAss);
         desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
         when(connectionMock.find(desc)).thenReturn(axioms);
-        when(connectionMock.contains(classAssertion, null)).thenReturn(true);
+        when(connectionMock.contains(classAssertion, Collections.emptySet())).thenReturn(true);
     }
 
     @Test

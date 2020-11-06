@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
@@ -21,7 +19,10 @@ import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.AskResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.SelectResultSet;
 import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.system.Txn;
 import org.apache.jena.update.UpdateAction;
 
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Main storage connector using the {@link cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties#READ_COMMITTED}
@@ -83,21 +85,30 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public Collection<Statement> find(Resource subject, Property property, RDFNode value, String context) {
+    public Collection<Statement> find(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureOpen();
         return Txn.calculateRead(storage.getDataset(), () -> {
-            final Model target = context != null ? storage.getNamedGraph(context) : storage.getDefaultGraph();
-            final StmtIterator it = target.listStatements(subject, property, value);
-            return it.toList();
+            final List<Statement> result;
+            if (contexts.isEmpty()) {
+                result = storage.getDefaultGraph().listStatements(subject, property, value).toList();
+            } else {
+                result = contexts.stream()
+                                 .map(c -> storage.getNamedGraph(c).listStatements(subject, property, value).toList())
+                                 .flatMap(Collection::stream).collect(Collectors.toList());
+            }
+            return result;
         });
     }
 
     @Override
-    public boolean contains(Resource subject, Property property, RDFNode value, String context) {
+    public boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureOpen();
         return Txn.calculateRead(storage.getDataset(), () -> {
-            final Model target = context != null ? storage.getNamedGraph(context) : storage.getDefaultGraph();
-            return target.contains(subject, property, value);
+            if (contexts.isEmpty()) {
+                return storage.getDefaultGraph().contains(subject, property, value);
+            } else {
+                return contexts.stream().anyMatch(c -> storage.getNamedGraph(c).contains(subject, property, value));
+            }
         });
     }
 

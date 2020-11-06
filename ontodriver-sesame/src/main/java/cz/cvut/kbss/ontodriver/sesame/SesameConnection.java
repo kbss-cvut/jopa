@@ -161,10 +161,11 @@ class SesameConnection implements Connection {
     }
 
     @Override
-    public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
+    public boolean contains(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
-        return adapter.contains(axiom, context);
+        Objects.requireNonNull(contexts);
+        return adapter.contains(axiom, contexts);
     }
 
     @Override

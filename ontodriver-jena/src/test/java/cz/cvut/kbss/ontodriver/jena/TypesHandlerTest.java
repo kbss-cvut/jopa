@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -31,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,10 +71,10 @@ public class TypesHandlerTest {
     @Test
     public void getTypesLoadsTypesFromStorage() {
         final Set<Statement> statements = generateTypesStatements();
-        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, null, false);
+        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, Collections.emptySet(), false);
         verifyLoadedTypes(statements, result, false);
-        verify(inferredConnectorMock, never()).findWithInference(any(), any(), any(), anyString());
-        verify(connectorMock).find(SUBJECT_RESOURCE, RDF.type, null, null);
+        verify(inferredConnectorMock, never()).findWithInference(any(), any(), any(), anyCollection());
+        verify(connectorMock).find(SUBJECT_RESOURCE, RDF.type, null, Collections.emptySet());
     }
 
     private Set<Statement> generateTypesStatements() {
@@ -103,9 +102,9 @@ public class TypesHandlerTest {
     public void getTypesLoadsTypesFromContext() {
         final URI context = Generator.generateUri();
         final Set<Statement> statements = generateTypesStatements();
-        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, context, false);
+        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, Collections.singleton(context), false);
         verifyLoadedTypes(statements, result, false);
-        verify(connectorMock).find(SUBJECT_RESOURCE, RDF.type, null, context.toString());
+        verify(connectorMock).find(SUBJECT_RESOURCE, RDF.type, null, Collections.singleton(context.toString()));
     }
 
     @Test
@@ -159,9 +158,9 @@ public class TypesHandlerTest {
     public void getTypesLoadsTypesWithInferenceWhenInferredSwitchIsOn() {
         final Set<Statement> statements = statementsForTypes();
         when(inferredConnectorMock.findWithInference(any(), any(), any(), any())).thenReturn(statements);
-        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, null, true);
+        final Set<Axiom<URI>> result = handler.getTypes(SUBJECT, Collections.emptySet(), true);
         verifyLoadedTypes(statements, result, true);
-        verify(connectorMock, never()).find(SUBJECT_RESOURCE, RDF.type, null, null);
-        verify(inferredConnectorMock).findWithInference(SUBJECT_RESOURCE, RDF.type, null, null);
+        verify(connectorMock, never()).find(SUBJECT_RESOURCE, RDF.type, null, Collections.emptySet());
+        verify(inferredConnectorMock).findWithInference(SUBJECT_RESOURCE, RDF.type, null, Collections.emptySet());
     }
 }

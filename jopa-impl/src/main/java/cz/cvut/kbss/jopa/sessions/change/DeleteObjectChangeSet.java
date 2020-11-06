@@ -97,6 +97,6 @@ public class DeleteObjectChangeSet implements ObjectChangeSet {
 
     @Override
     public URI getEntityContext() {
-        return descriptor.getContext();
+        return descriptor.getSingleContext().orElse(null);
     }
 }

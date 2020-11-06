@@ -74,6 +74,6 @@ public class IntegrationTestBase {
         desc.addAssertion(Assertion.createClassAssertion(false));
         desc.addAssertion(stringAss);
         when(connectionMock.find(desc)).thenReturn(axioms);
-        when(connectionMock.contains(classAssertion, null)).thenReturn(true);
+        when(connectionMock.contains(classAssertion, Collections.emptySet())).thenReturn(true);
     }
 }

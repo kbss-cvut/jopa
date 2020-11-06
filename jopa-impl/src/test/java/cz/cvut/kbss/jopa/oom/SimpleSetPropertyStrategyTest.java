@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -39,8 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +56,7 @@ class SimpleSetPropertyStrategyTest {
     private AxiomValueGatherer gatherer;
 
     private MetamodelMocks mocks;
-    private Descriptor descriptor = new EntityDescriptor();
+    private final Descriptor descriptor = new EntityDescriptor();
 
     @BeforeEach
     void setUp() throws Exception {
@@ -75,7 +74,7 @@ class SimpleSetPropertyStrategyTest {
         strategy.setReferenceSavingResolver(referenceResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet(true));
-        when(referenceResolverMock.shouldSaveReferenceToItem(any(), eq(null))).thenReturn(true);
+        when(referenceResolverMock.shouldSaveReferenceToItem(any(), anySet())).thenReturn(true);
         strategy.buildAxiomValuesFromInstance(j, gatherer);
         final Set<URI> expected = j.getOwlClassA().stream().map(OWLClassA::getUri).collect(Collectors.toSet());
         verifyExtractedValues(expected);
@@ -106,7 +105,7 @@ class SimpleSetPropertyStrategyTest {
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet(true));
         j.getOwlClassA().add(null);
-        when(referenceResolverMock.shouldSaveReferenceToItem(any(), eq(null))).thenReturn(true);
+        when(referenceResolverMock.shouldSaveReferenceToItem(any(), anySet())).thenReturn(true);
 
         strategy.buildAxiomValuesFromInstance(j, gatherer);
         final Set<URI> expected = j.getOwlClassA().stream().filter(Objects::nonNull).map(OWLClassA::getUri)

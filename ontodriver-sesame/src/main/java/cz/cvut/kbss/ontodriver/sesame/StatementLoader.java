@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -27,9 +25,12 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 class StatementLoader {
 
@@ -70,11 +71,13 @@ class StatementLoader {
     private Collection<Axiom<?>> loadOneByOne(Collection<Assertion> assertions) throws SesameDriverException {
         final Collection<Axiom<?>> result = new HashSet<>();
         for (Assertion a : assertions) {
-            final IRI context = SesameUtils.toSesameIri(descriptor.getAssertionContext(a), vf);
+            final Set<IRI> contexts = descriptor.getAssertionContexts(a).stream()
+                                                .map(uri -> SesameUtils.toSesameIri(uri, vf))
+                                                .collect(Collectors.toSet());
             final IRI property = SesameUtils.toSesameIri(a.getIdentifier(), vf);
 
             final Collection<Statement> statements;
-            statements = connector.findStatements(subject, property, null, includeInferred, context);
+            statements = connector.findStatements(subject, property, null, includeInferred, contexts);
             for (Statement s : statements) {
                 final Axiom<?> axiom = axiomBuilder.statementToAxiom(s, a);
                 if (axiom != null) {
@@ -113,13 +116,13 @@ class StatementLoader {
     }
 
     private boolean contextMatches(Assertion a, Statement s) {
-        final java.net.URI assertionCtx = descriptor.getAssertionContext(a);
+        final Set<java.net.URI> assertionCtx = descriptor.getAssertionContexts(a);
         final Resource statementContext = s.getContext();
-        if (assertionCtx == null) {
+        if (assertionCtx.isEmpty()) {
             // If the assertion should be in default, we don't care about the context of the statement, because
             // the default is a union of all the contexts
             return true;
         }
-        return statementContext != null && assertionCtx.toString().equals(statementContext.stringValue());
+        return statementContext != null && assertionCtx.contains(URI.create(statementContext.stringValue()));
     }
 }
