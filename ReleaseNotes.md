@@ -1,6 +1,10 @@
 # JOPA - Release Notes
 
 
+## 0.16.1 - November 13, 2020
+- [Jena OntoDriver] Support connecting to Jena Fuseki server (Feature #76).
+- Dependency updates: RDF4J 3.4.4, OWL API 5.1.17.
+
 ## 0.16.0 - October 12, 2020
 - Support using multiple contexts for entity/attribute (Enhancement #73).
 - Dependency updates: RDF4J 3.4.3.
