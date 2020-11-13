@@ -62,9 +62,9 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
     java.lang.reflect.Member getJavaMember();
 
     /**
-     * Return the java.lang.reflect.Member for the represented attribute.
+     * Returns the {@link IRI} identifier of the property mapped by this attribute.
      *
-     * @return corresponding java.lang.reflect.Member
+     * @return Property IRI
      */
     @NonJPA
     IRI getIRI();
