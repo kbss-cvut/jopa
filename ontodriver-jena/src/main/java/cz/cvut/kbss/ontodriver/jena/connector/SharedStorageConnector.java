@@ -18,7 +18,10 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.AskResultSet;
 import cz.cvut.kbss.ontodriver.jena.query.SelectResultSet;
-import org.apache.jena.query.*;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -87,7 +90,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     @Override
     public Collection<Statement> find(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureOpen();
-        return Txn.calculateRead(storage.getDataset(), () -> {
+        return Txn.calculateRead(storage.getTransactional(), () -> {
             final List<Statement> result;
             if (contexts.isEmpty()) {
                 result = storage.getDefaultGraph().listStatements(subject, property, value).toList();
@@ -103,7 +106,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     @Override
     public boolean contains(Resource subject, Property property, RDFNode value, Collection<String> contexts) {
         ensureOpen();
-        return Txn.calculateRead(storage.getDataset(), () -> {
+        return Txn.calculateRead(storage.getTransactional(), () -> {
             if (contexts.isEmpty()) {
                 return storage.getDefaultGraph().contains(subject, property, value);
             } else {
@@ -115,7 +118,8 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     @Override
     public List<String> getContexts() {
         ensureOpen();
-        final Iterator<String> it = Txn.calculateRead(storage.getDataset(), () -> storage.getDataset().listNames());
+        final Iterator<String> it = Txn
+                .calculateRead(storage.getTransactional(), () -> storage.getDataset().listNames());
         final List<String> contexts = new ArrayList<>();
         it.forEachRemaining(contexts::add);
         return contexts;
@@ -147,7 +151,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public AbstractResultSet executeSelectQuery(Query query, StatementOntology target) throws JenaDriverException {
         ensureOpen();
         try {
-            QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset());
+            QueryExecution exec = storage.prepareQuery(query);
             final org.apache.jena.query.ResultSet rs = exec.execSelect();
             // The QueryExecution is closed by the SelectResultSet (so that it has access to the results)
             return new SelectResultSet(exec, rs);
@@ -163,7 +167,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     @Override
     public AbstractResultSet executeAskQuery(Query query, StatementOntology target) throws JenaDriverException {
         ensureOpen();
-        try (final QueryExecution exec = QueryExecutionFactory.create(query, storage.getDataset())) {
+        try (final QueryExecution exec = storage.prepareQuery(query)) {
             return new AskResultSet(exec.execAsk());
         } catch (RuntimeException e) {
             throw queryFailed(query, e);

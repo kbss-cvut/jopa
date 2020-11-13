@@ -19,8 +19,15 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.function.Consumer;
 
-public abstract class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplorer {
+public class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplorer {
+
+    private final Consumer<Object> cascadedOperation;
+
+    protected SimpleOneLevelCascadeExplorer(Consumer<Object> cascadedOperation) {
+        this.cascadedOperation = cascadedOperation;
+    }
 
     protected void runForEach(final Attribute<?, ?> at, final Object o, boolean cascaded) {
         Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
@@ -50,7 +57,7 @@ public abstract class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplo
     }
 
     protected void runCascadedForEach(Object ox2) {
-        // nothing
+        cascadedOperation.accept(ox2);
     }
 
     @Override

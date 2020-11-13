@@ -80,7 +80,7 @@ abstract class AbstractStorageConnector implements StorageConnector {
         if (cls.isAssignableFrom(getClass())) {
             return cls.cast(this);
         } else if (cls.isAssignableFrom(Dataset.class)) {
-            return cls.cast(storage.dataset);
+            return cls.cast(storage.getDataset());
         }
         throw new UnsupportedOperationException("Unwrapping type " + cls + "not supported.");
     }

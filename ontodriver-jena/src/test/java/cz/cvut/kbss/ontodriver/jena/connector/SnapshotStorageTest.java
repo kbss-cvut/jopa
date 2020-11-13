@@ -50,7 +50,6 @@ public class SnapshotStorageTest {
         generateTestData(tdbDataset);
         tdbDataset.commit();
         final SnapshotStorage storage = new SnapshotStorage(createConfiguration(storageDir.getAbsolutePath()));
-        storage.initialize();
         storage.addCentralData(tdbDataset);
         final Model defaultGraph = storage.getDefaultGraph();
         assertTrue(defaultGraph.contains(createResource(SUBJECT), RDF.type, (RDFNode) null));

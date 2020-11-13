@@ -349,7 +349,7 @@ public class ChangeTrackingStorageConnectorTest {
     @Test
     public void unwrapPassesCallToUnderlyingSharedConnector() {
         final Dataset dataset = connector.unwrap(Dataset.class);
-        assertSame(centralConnector.storage.dataset, dataset);
+        assertSame(centralConnector.storage.getDataset(), dataset);
     }
 
     @Test
