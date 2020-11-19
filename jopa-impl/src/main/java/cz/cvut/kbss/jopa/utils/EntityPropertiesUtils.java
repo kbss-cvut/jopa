@@ -138,7 +138,7 @@ public class EntityPropertiesUtils {
      * @param et         Entity type
      */
     public static <T> void setIdentifier(Object identifier, T entity, EntityType<T> et) {
-        final Identifier id = et.getIdentifier();
+        final Identifier<? super T, ?> id = et.getIdentifier();
         final Field idField = id.getJavaField();
         try {
             final Object assignableId = IdentifierTransformer.transformToIdentifier(identifier, idField.getType());
@@ -189,7 +189,7 @@ public class EntityPropertiesUtils {
     public static void verifyIdentifierIsGenerated(Object instance, EntityType<?> entityType) {
         if (!entityType.getIdentifier().isGenerated()) {
             throw new IdentifierNotSetException(
-                    "The id for entity " + instance + " is null and it is not specified as \'generated\' ");
+                    "The id for entity " + instance + " is null and it is not specified as 'generated'.");
         }
     }
 

@@ -35,7 +35,7 @@
                     <tarLongFileMode>gnu</tarLongFileMode>
                     <descriptors>
                         <descriptor>
-                            jopa-sesame-bin.xml
+                            jopa-assembly-bin.xml
                         </descriptor>
                     </descriptors>
                 </configuration>
@@ -52,7 +52,6 @@
     </build>
 
     <dependencies>
-
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-all</artifactId>
@@ -107,24 +106,5 @@
             <artifactId>jopa-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-integration-tests</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-integration-tests-sesame</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-integration-tests-owlapi</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
     </dependencies>
 </project>
