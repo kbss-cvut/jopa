@@ -1,6 +1,9 @@
 # JOPA - Release Notes
 
 
+## 0.16.2 - November 19, 2020
+- [JOPA] Prioritize transient configuration over property mapping in setter/getter aspects (Bug #80).
+
 ## 0.16.1 - November 13, 2020
 - [Jena OntoDriver] Support connecting to Jena Fuseki server (Feature #76).
 - Dependency updates: RDF4J 3.4.4, OWL API 5.1.17.
