@@ -49,7 +49,7 @@ class MetamodelImplTest {
     @Mock
     private PersistenceUnitClassFinder classFinderMock;
 
-    private Configuration conf = new Configuration(PROPERTIES);
+    private final Configuration conf = new Configuration(PROPERTIES);
 
     @BeforeEach
     void setUp() {

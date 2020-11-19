@@ -22,7 +22,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -31,8 +31,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends ListValueDescriptor> {
@@ -82,7 +82,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     abstract V createDescriptor();
 
     @Test
-    public void updateListToEmptyClearsList() throws Exception {
+    public void updateListToEmptyClearsList() {
         final List<URI> origList = LIST_ITEMS.subList(0, 5);
         origList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
         listHandler.persistList(valueDescriptor);
@@ -95,7 +95,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     }
 
     @Test
-    public void updateEmptyListWithNonEmptyPersistsNewOne() throws Exception {
+    public void updateEmptyListWithNonEmptyPersistsNewOne() {
         final List<URI> updated = LIST_ITEMS.subList(0, 5);
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
@@ -113,7 +113,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     }
 
     @Test
-    public void updateListByRemovingElementsFromTheEnd() throws Exception {
+    public void updateListByRemovingElementsFromTheEnd() {
         testHelper.persistList(LIST_ITEMS);
         final List<URI> subList = LIST_ITEMS.subList(0, 5);
         subList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
@@ -124,7 +124,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     }
 
     @Test
-    public void updateListByReplacingSomeElementsButKeepingSize() throws Exception {
+    public void updateListByReplacingSomeElementsButKeepingSize() {
         final List<URI> origList = LIST_ITEMS.subList(0, 6);
         testHelper.persistList(origList);
 
@@ -139,7 +139,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     }
 
     @Test
-    public void updateListByReplacingSomeElementsAndAddingNewOnes() throws Exception {
+    public void updateListByReplacingSomeElementsAndAddingNewOnes() {
         final List<URI> origList = LIST_ITEMS.subList(0, 6);
         testHelper.persistList(origList);
         final List<URI> updated = new ArrayList<>(origList);
@@ -154,7 +154,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     }
 
     @Test
-    public void updateListByReplacingSomeElementsAndRemovingSome() throws Exception {
+    public void updateListByReplacingSomeElementsAndRemovingSome() {
         final List<URI> origList = LIST_ITEMS.subList(0, 6);
         testHelper.persistList(origList);
         final List<URI> updated = new ArrayList<>(origList);

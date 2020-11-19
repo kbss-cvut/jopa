@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.query;
 
@@ -20,28 +18,24 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.StatementHolder;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.QueryFactory;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class JenaPreparedStatementTest {
 
     private static final String QUERY = "SELECT * WHERE { ?x ?y ?z . }";
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private StatementExecutor executor;
@@ -51,7 +45,7 @@ public class JenaPreparedStatementTest {
 
     private JenaPreparedStatement statement;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
@@ -74,9 +68,10 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void constructorThrowsIllegalArgumentForEmptyQuery() {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage(containsString("Statement cannot be empty"));
-        this.statement = new JenaPreparedStatement(executor, "");
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> this.statement = new JenaPreparedStatement(executor, ""));
+        assertThat(ex.getMessage(), containsString("Statement cannot be empty"));
+
     }
 
     @Test
@@ -90,11 +85,11 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void setParameterThrowsIllegalStateOnClosedStatement() throws Exception {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Statement is closed"));
         this.statement = new JenaPreparedStatement(executor, QUERY);
         statement.close();
-        statement.setObject("y", "rdf:type");
+        final IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> statement.setObject("y", "rdf:type"));
+        assertThat(ex.getMessage(), containsString("Statement is closed"));
     }
 
     @Test
@@ -110,11 +105,10 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void executeQueryThrowsIllegalStateForClosedStatement() throws Exception {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Statement is closed"));
         this.statement = new JenaPreparedStatement(executor, QUERY);
         statement.close();
-        statement.executeQuery();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> statement.executeQuery());
+        assertThat(ex.getMessage(), containsString("Statement is closed"));
     }
 
     @Test
@@ -130,12 +124,11 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void executeUpdateThrowsIllegalStateForClosedStatement() throws Exception {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Statement is closed"));
         final String update = "INSERT DATA { _:a1 a ?type . }";
         this.statement = new JenaPreparedStatement(executor, update);
         statement.close();
-        statement.executeUpdate();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> statement.executeUpdate());
+        assertThat(ex.getMessage(), containsString("Statement is closed"));
     }
 
     @Test
@@ -151,12 +144,11 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void clearParametersThrowsIllegalStateForClosedStatement() throws Exception {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Statement is closed"));
         this.statement = new JenaPreparedStatement(executor, QUERY);
         final String value = "<" + Vocabulary.RDF_TYPE + ">";
         statement.setObject("y", value);
         statement.close();
-        statement.clearParameters();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> statement.clearParameters());
+        assertThat(ex.getMessage(), containsString("Statement is closed"));
     }
 }

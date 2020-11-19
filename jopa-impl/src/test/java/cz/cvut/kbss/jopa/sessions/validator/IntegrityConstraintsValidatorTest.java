@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.validator;
 
@@ -29,19 +27,21 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IntegrityConstraintsValidatorTest {
 
     private MetamodelImpl metamodel;
 
-    private IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
+    private final IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final Configuration config = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment"));
@@ -79,10 +79,11 @@ public class IntegrityConstraintsValidatorTest {
         validator.validate(obj, metamodel.entity(OWLClassL.class), false);
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void missingRequiredAttributeOnObjectFailsValidation() {
         final OWLClassN n = createInstanceWithMissingRequiredField();
-        validator.validate(n, metamodel.entity(OWLClassN.class), false);
+        assertThrows(IntegrityConstraintViolatedException.class,
+                () -> validator.validate(n, metamodel.entity(OWLClassN.class), false));
     }
 
     private OWLClassN createInstanceWithMissingRequiredField() {
@@ -91,7 +92,7 @@ public class IntegrityConstraintsValidatorTest {
         return n;
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void missingRequiredAttributeInChangeSetFailsValidation() throws Exception {
         final OWLClassN clone = createInstanceWithMissingRequiredField();
         final OWLClassN orig = createInstanceWithMissingRequiredField();
@@ -100,27 +101,29 @@ public class IntegrityConstraintsValidatorTest {
                 metamodel.entity(OWLClassN.class).getFieldSpecification(OWLClassN.getStringAttributeField().getName()),
                 null));
 
-        validator.validate(changeSet, metamodel);
+        assertThrows(IntegrityConstraintViolatedException.class, () -> validator.validate(changeSet, metamodel));
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void missingRequiredFieldValueFailsValidation() throws Exception {
         final OWLClassN n = createInstanceWithMissingRequiredField();
         final Attribute<?, ?> att = metamodel.entity(OWLClassN.class)
                                              .getDeclaredAttribute(OWLClassN.getStringAttributeField().getName());
-        validator.validate(n.getId(), att, n.getStringAttribute());
+        assertThrows(IntegrityConstraintViolatedException.class,
+                () -> validator.validate(n.getId(), att, n.getStringAttribute()));
     }
 
-    @Test(expected = CardinalityConstraintViolatedException.class)
-    public void violatedMinimumCardinalityConstraintFailsValidation() throws Exception {
+    @Test
+    public void violatedMinimumCardinalityConstraintFailsValidation() {
         final OWLClassL obj = new OWLClassL();
         obj.setSimpleList(Collections.singletonList(new OWLClassA()));
         obj.setSingleA(new OWLClassA());
 
-        validator.validate(obj, metamodel.entity(OWLClassL.class), false);
+        assertThrows(CardinalityConstraintViolatedException.class,
+                () -> validator.validate(obj, metamodel.entity(OWLClassL.class), false));
     }
 
-    @Test(expected = CardinalityConstraintViolatedException.class)
+    @Test
     public void violatedMaximumCardinalityConstraintFailsValidation() throws Exception {
         final OWLClassL orig = new OWLClassL();
         final OWLClassL clone = new OWLClassL();
@@ -138,24 +141,26 @@ public class IntegrityConstraintsValidatorTest {
                                               .getFieldSpecification(OWLClassL.getReferencedListField().getName()),
                         clone.getReferencedList()));
 
-        validator.validate(changeSet, metamodel);
+        assertThrows(CardinalityConstraintViolatedException.class, () -> validator.validate(changeSet, metamodel));
     }
 
-    @Test(expected = CardinalityConstraintViolatedException.class)
+    @Test
     public void validationDetectsICViolationsInMappedSuperclass() {
         final OWLClassQ q = new OWLClassQ();
-        validator.validate(q, metamodel.entity(OWLClassQ.class), false);
+        assertThrows(CardinalityConstraintViolatedException.class,
+                () -> validator.validate(q, metamodel.entity(OWLClassQ.class), false));
     }
 
-    @Test(expected = CardinalityConstraintViolatedException.class)
+    @Test
     public void violatedNonEmptyConstraintOnPluralAttributeFailsValidationOfObject() {
         final OWLClassJ j = new OWLClassJ();
         j.setUri(Generators.createIndividualIdentifier());
         j.setOwlClassA(Collections.emptySet()); // This violates the nonEmpty constraint
-        validator.validate(j, metamodel.entity(OWLClassJ.class), false);
+        assertThrows(CardinalityConstraintViolatedException.class,
+                () -> validator.validate(j, metamodel.entity(OWLClassJ.class), false));
     }
 
-    @Test(expected = CardinalityConstraintViolatedException.class)
+    @Test
     public void violatedNonEmptyConstraintOnPluralAttributeFailsValidationOfChangeSet() throws Exception {
         final OWLClassJ original = new OWLClassJ(Generators.createIndividualIdentifier());
         original.setOwlClassA(Collections.singleton(new OWLClassA()));
@@ -166,6 +171,6 @@ public class IntegrityConstraintsValidatorTest {
         changeSet.addChangeRecord(new ChangeRecordImpl(
                 metamodel.entity(OWLClassJ.class).getFieldSpecification(OWLClassJ.getOwlClassAField().getName()),
                 clone.getOwlClassA()));
-        validator.validate(changeSet, metamodel);
+        assertThrows(CardinalityConstraintViolatedException.class, () -> validator.validate(changeSet, metamodel));
     }
 }

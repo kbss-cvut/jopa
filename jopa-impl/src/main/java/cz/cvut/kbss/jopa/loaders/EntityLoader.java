@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  */
 class EntityLoader implements Consumer<Class<?>> {
 
-    private Set<Class<?>> entities = new HashSet<>();
+    private final Set<Class<?>> entities = new HashSet<>();
 
     public Set<Class<?>> getEntities() {
         return entities;

@@ -51,7 +51,7 @@ class EpistemicAxiomRemoverTest {
     private OwlapiAdapter adapterMock;
 
     private OWLNamedIndividual individual;
-    private AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+    private final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
 
     private EpistemicAxiomRemover axiomRemover;
 

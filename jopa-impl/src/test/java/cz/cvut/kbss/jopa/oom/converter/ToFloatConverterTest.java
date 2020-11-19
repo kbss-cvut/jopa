@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ToFloatConverterTest {
 
-    private ToFloatConverter converter = new ToFloatConverter();
+    private final ToFloatConverter converter = new ToFloatConverter();
 
     @Test
     public void toAttributeSupportsWideningIntegerConversion() {

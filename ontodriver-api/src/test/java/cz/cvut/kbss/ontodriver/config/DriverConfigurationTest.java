@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DriverConfigurationTest {
 
-    private DriverConfiguration configuration = new DriverConfiguration(
+    private final DriverConfiguration configuration = new DriverConfiguration(
             OntologyStorageProperties.driver("cz.cvut.kbss.ontodriver.sesame.SesameDataSource")
                                      .physicalUri("memory-store").build());
 

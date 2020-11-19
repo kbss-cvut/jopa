@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.query;
 
@@ -21,10 +19,8 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -34,15 +30,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 public class SelectResultSetTest {
 
     private static final List<String> BINDINGS = Arrays.asList("x", "y", "z");
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private TupleQueryResult resultMock;
@@ -51,11 +44,11 @@ public class SelectResultSetTest {
     @Mock
     private Statement statementMock;
 
-    private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     private ResultSet resultSet;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(resultMock.getBindingNames()).thenReturn(BINDINGS);
@@ -70,7 +63,7 @@ public class SelectResultSetTest {
         final String x = "String";
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(x));
         when(bindingSetMock.getValue("y")).thenReturn(valueFactory.createLiteral(false));
-        final Integer z = 117;
+        final int z = 117;
         when(bindingSetMock.getValue("z")).thenReturn(valueFactory.createLiteral(z));
 
         resultSet.next();
@@ -142,9 +135,7 @@ public class SelectResultSetTest {
         when(bindingSetMock.getBindingNames()).thenReturn(new HashSet<>(Arrays.asList("x", "y")));
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(117));
         resultSet.next();
-        thrown.expect(VariableNotBoundException.class);
-        thrown.expectMessage("Variable \"y\" is not bound in the current result row.");
-        resultSet.getObject("y");
+        assertThrows(VariableNotBoundException.class, () -> resultSet.getObject("y"));
     }
 
     @Test
@@ -152,8 +143,6 @@ public class SelectResultSetTest {
         when(bindingSetMock.getBindingNames()).thenReturn(new HashSet<>(Arrays.asList("x", "y")));
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(117));
         resultSet.next();
-        thrown.expect(VariableNotBoundException.class);
-        thrown.expectMessage("Variable at index 1 is not bound in the current result row.");
-        resultSet.getInt(1);
+        assertThrows(VariableNotBoundException.class, () -> resultSet.getInt(1));
     }
 }

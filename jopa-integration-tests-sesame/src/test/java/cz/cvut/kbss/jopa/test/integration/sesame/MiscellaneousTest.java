@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MiscellaneousTest {
 
-    private SesamePersistenceFactory persistenceFactory;
+    private final SesamePersistenceFactory persistenceFactory;
 
     MiscellaneousTest() {
         this.persistenceFactory = new SesamePersistenceFactory();

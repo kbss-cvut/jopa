@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultPersistenceProviderResolverTest {
 
-    private DefaultPersistenceProviderResolver resolver = new DefaultPersistenceProviderResolver();
+    private final DefaultPersistenceProviderResolver resolver = new DefaultPersistenceProviderResolver();
 
     @AfterEach
     void tearDown() throws Exception {

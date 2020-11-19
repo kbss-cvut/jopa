@@ -63,8 +63,8 @@ public class PropertiesHandlerTest {
     private PropertiesHandler propertiesHandler;
 
 
-    private Set<Object> dataValues = new HashSet<>();
-    private Set<Object> objectValues = new HashSet<>();
+    private final Set<Object> dataValues = new HashSet<>();
+    private final Set<Object> objectValues = new HashSet<>();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -255,10 +255,10 @@ public class PropertiesHandlerTest {
                 dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLAnnotationProperty(IRI.create(OP_ONE)))));
 
         propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
-        verifyAddedAnnotationtPropertyAxioms(values);
+        verifyAddedAnnotationPropertyAxioms(values);
     }
 
-    private void verifyAddedAnnotationtPropertyAxioms(Collection<Value<?>> expectedValues) {
+    private void verifyAddedAnnotationPropertyAxioms(Collection<Value<?>> expectedValues) {
         final Set<Object> directValues = expectedValues.stream().map(Value::getValue).collect(Collectors.toSet());
         ontology.annotationAssertionAxioms(IRI.create(PK.toString())).forEach(
                 ax -> assertTrue(directValues

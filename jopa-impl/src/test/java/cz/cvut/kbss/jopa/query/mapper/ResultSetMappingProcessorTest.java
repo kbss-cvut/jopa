@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.mapper;
 
@@ -22,17 +20,17 @@ import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,22 +38,19 @@ public class ResultSetMappingProcessorTest {
 
     private static final String MAPPING_NAME = "testMapping";
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Mock
     private MetamodelBuilder builderMock;
 
     private ResultSetMappingProcessor processor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.processor = new ResultSetMappingProcessor(builderMock);
     }
 
     @Test
-    public void buildMapperCreatesRowMapperWithVariableMappersConfiguredInMappingAnnotation() throws Exception {
+    public void buildMapperCreatesRowMapperWithVariableMappersConfiguredInMappingAnnotation() {
         processor.buildMapper(getMapping(WithVariableMapping.class));
         final ResultSetMappingManager manager = processor.getManager();
         final SparqlResultMapper mapper = manager.getMapper(MAPPING_NAME);
@@ -166,19 +161,20 @@ public class ResultSetMappingProcessorTest {
         when(etA.getFieldSpecification("uri")).thenReturn(idField);
         final String msg = "Unknown field stringAttribute.";
         when(etA.getFieldSpecification("stringAttribute")).thenThrow(new IllegalArgumentException(msg));
-        thrown.expect(SparqlResultMappingException.class);
-        thrown.expectMessage(msg);
 
-        processor.buildMapper(getMapping(WithEntityMapping.class));
+        final SparqlResultMappingException ex = assertThrows(SparqlResultMappingException.class,
+                () -> processor.buildMapper(getMapping(WithEntityMapping.class)));
+        assertThat(ex.getMessage(), containsString(msg));
+
     }
 
     @Test
     public void buildMapperThrowsMappingExceptionWhenEntityMappingTargetClassIsNotEntity() {
         when(builderMock.entity(OWLClassA.class)).thenReturn(null);
-        thrown.expect(SparqlResultMappingException.class);
-        thrown.expectMessage("Type " + OWLClassA.class +
-                " is not a known entity type and cannot be used as @EntityResult target class.");
-        processor.buildMapper(getMapping(WithEntityMapping.class));
+        final SparqlResultMappingException ex = assertThrows(SparqlResultMappingException.class,
+                () -> processor.buildMapper(getMapping(WithEntityMapping.class)));
+        assertEquals("Type " + OWLClassA.class +
+                " is not a known entity type and cannot be used as @EntityResult target class.", ex.getMessage());
     }
 
     @Test

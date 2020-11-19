@@ -28,7 +28,7 @@ import java.util.Objects;
 
 public abstract class IntegrityConstraintsValidator {
 
-    private static IntegrityConstraintsValidator generalValidator = initGeneralValidator();
+    private static final IntegrityConstraintsValidator generalValidator = initGeneralValidator();
 
     private static IntegrityConstraintsValidator initGeneralValidator() {
         final GeneralIntegrityConstraintsValidator validator = new GeneralIntegrityConstraintsValidator();

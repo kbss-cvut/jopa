@@ -23,8 +23,8 @@ public class TypesSpecificationImpl<X, Y> implements TypesSpecification<X, Y> {
     private final ManagedType<X> declaringType;
     private final FetchType fetchType;
     private final Field javaField;
-    private Class<Y> elementType;
-    private boolean inferred;
+    private final Class<Y> elementType;
+    private final boolean inferred;
 
     public TypesSpecificationImpl(final ManagedType<X> declaringType,
                                   final FetchType fetchType, final Field javaField,

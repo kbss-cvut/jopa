@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 
 class EntityLifecycleListenerManagerTest {
 
-    private EntityLifecycleListenerManager manager = new EntityLifecycleListenerManager();
+    private final EntityLifecycleListenerManager manager = new EntityLifecycleListenerManager();
 
     @Test
     void listenerInvocationInvokesCorrectCallback() throws Exception {

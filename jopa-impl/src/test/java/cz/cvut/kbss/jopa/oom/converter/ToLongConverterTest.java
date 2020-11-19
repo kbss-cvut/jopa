@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ToLongConverterTest {
 
-    private ToLongConverter converter = new ToLongConverter();
+    private final ToLongConverter converter = new ToLongConverter();
 
     @Test
     public void toAttributeSupportsWideningIntegerConversion() {

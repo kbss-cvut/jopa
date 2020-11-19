@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
@@ -21,10 +19,8 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.list.JenaLists;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -34,23 +30,19 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class JenaConnectionTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Mock
     private JenaAdapter adapterMock;
 
     private JenaConnection connection;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.connection = new JenaConnection(adapterMock);
@@ -59,20 +51,13 @@ public class JenaConnectionTest {
     @Test
     public void setAutoCommitThrowsIllegalStateForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.setAutoCommit(false);
-    }
-
-    private void expectClosedException() {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("connection is closed"));
+        assertThrows(IllegalStateException.class, () -> connection.setAutoCommit(false));
     }
 
     @Test
     public void isAutoCommitThrowsIllegalStateForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.isAutoCommit();
+        assertThrows(IllegalStateException.class, () -> connection.isAutoCommit());
     }
 
     @Test
@@ -98,8 +83,7 @@ public class JenaConnectionTest {
     @Test
     public void commitThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.commit();
+        assertThrows(IllegalStateException.class, () -> connection.commit());
     }
 
     @Test
@@ -118,8 +102,7 @@ public class JenaConnectionTest {
     @Test
     public void rollbackThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.rollback();
+        assertThrows(IllegalStateException.class, () -> connection.rollback());
     }
 
     @Test
@@ -143,8 +126,7 @@ public class JenaConnectionTest {
     public void persistThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         connection.close();
-        expectClosedException();
-        connection.persist(descriptor);
+        assertThrows(IllegalStateException.class, () -> connection.persist(descriptor));
     }
 
     @Test
@@ -170,8 +152,7 @@ public class JenaConnectionTest {
     @Test
     public void unwrapThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.unwrap(StorageConnector.class);
+        assertThrows(IllegalStateException.class, () -> connection.unwrap(StorageConnector.class));
     }
 
     @Test
@@ -189,8 +170,7 @@ public class JenaConnectionTest {
                 new Value<>(NamedResource.create(Generator.generateUri())));
         final URI context = Generator.generateUri();
         connection.close();
-        expectClosedException();
-        connection.contains(axiom, Collections.singleton(context));
+        assertThrows(IllegalStateException.class, () -> connection.contains(axiom, Collections.singleton(context)));
     }
 
     @Test
@@ -205,9 +185,8 @@ public class JenaConnectionTest {
     @Test
     public void getContextsThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
         try {
-            connection.getContexts();
+            assertThrows(IllegalStateException.class, () -> connection.getContexts());
         } finally {
             verify(adapterMock, never()).getContext();
         }
@@ -225,8 +204,7 @@ public class JenaConnectionTest {
     @Test
     public void generateIdentifierThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.generateIdentifier(Generator.generateUri());
+        assertThrows(IllegalStateException.class, () -> connection.generateIdentifier(Generator.generateUri()));
     }
 
     @Test
@@ -239,9 +217,8 @@ public class JenaConnectionTest {
     @Test
     public void findThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
-        connection.find(descriptor);
+        assertThrows(IllegalStateException.class, () -> connection.find(descriptor));
     }
 
     @Test
@@ -287,8 +264,7 @@ public class JenaConnectionTest {
     @Test
     public void updateThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.update(new AxiomValueDescriptor(SUBJECT));
+        assertThrows(IllegalStateException.class, () -> connection.update(new AxiomValueDescriptor(SUBJECT)));
     }
 
     @Test
@@ -312,8 +288,7 @@ public class JenaConnectionTest {
     @Test
     public void createStatementThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.createStatement();
+        assertThrows(IllegalStateException.class, () -> connection.createStatement());
     }
 
     @Test
@@ -326,8 +301,7 @@ public class JenaConnectionTest {
     @Test
     public void prepareStatementThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.prepareStatement("SELECT * WHERE { ?x ?y ?z . }");
+        assertThrows(IllegalStateException.class, () -> connection.prepareStatement("SELECT * WHERE { ?x ?y ?z . }"));
     }
 
     @Test
@@ -339,7 +313,6 @@ public class JenaConnectionTest {
     @Test
     public void isConsistentThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
-        expectClosedException();
-        connection.isConsistent(Generator.generateUri());
+        assertThrows(IllegalStateException.class, () -> connection.isConsistent(Generator.generateUri()));
     }
 }

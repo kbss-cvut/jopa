@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.query;
 
@@ -19,28 +17,24 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Query;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class JenaStatementTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private StatementExecutor executor;
 
     private JenaStatement statement;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.statement = new JenaStatement(executor);
@@ -87,18 +81,15 @@ public class JenaStatementTest {
 
     @Test
     public void executeQueryThrowsIllegalStateExceptionForClosedStatement() throws JenaDriverException {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Statement is closed.");
         statement.close();
-        statement.executeQuery("SELECT * WHERE { ?x ?y ?z .}");
+        assertThrows(IllegalStateException.class, () -> statement.executeQuery("SELECT * WHERE { ?x ?y ?z .}"));
     }
 
     @Test
-    public void executeQueryThrowsJenaDriverExceptionForMalformedQuery() throws JenaDriverException {
+    public void executeQueryThrowsJenaDriverExceptionForMalformedQuery() {
         final String query = "SELECT * WHERE { ?x ?y df .}";
-        thrown.expect(JenaDriverException.class);
-        thrown.expectMessage(containsString("Unable to parse query "));
-        statement.executeQuery(query);
+        final JenaDriverException ex = assertThrows(JenaDriverException.class, () -> statement.executeQuery(query));
+        assertThat(ex.getMessage(), containsString("Unable to parse query "));
     }
 
     @Test
@@ -121,10 +112,9 @@ public class JenaStatementTest {
 
     @Test
     public void executeUpdateThrowsIllegalStateExceptionForClosedStatement() throws JenaDriverException {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Statement is closed.");
         statement.close();
-        statement.executeUpdate("INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }");
+        assertThrows(IllegalStateException.class,
+                () -> statement.executeUpdate("INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }"));
     }
 
     @Test

@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ToDoubleConverterTest {
 
-    private ToDoubleConverter converter = new ToDoubleConverter();
+    private final ToDoubleConverter converter = new ToDoubleConverter();
 
     @Test
     void toAttributeSupportsWideningIntegerConversion() {

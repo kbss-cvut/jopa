@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ToIntegerConverterTest {
 
-    private ToIntegerConverter converter = new ToIntegerConverter();
+    private final ToIntegerConverter converter = new ToIntegerConverter();
 
     @Test
     void toAttributeSupportsWideningIntegerConversion() {

@@ -33,7 +33,7 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
 
     private final OWLClass subjClass;
 
-    private IntegrityConstraintFactory integrityConstraintFactory = new IntegrityConstraintFactoryImpl();
+    private final IntegrityConstraintFactory integrityConstraintFactory = new IntegrityConstraintFactoryImpl();
 
     public IntegrityConstraintClassParser(final OWLClass subjClass) {
         this.subjClass = subjClass;

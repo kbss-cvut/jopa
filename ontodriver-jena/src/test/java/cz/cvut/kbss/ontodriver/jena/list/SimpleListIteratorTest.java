@@ -21,8 +21,8 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
@@ -31,13 +31,15 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListIterator, SimpleListDescriptor> {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         super.setUp();
@@ -85,11 +87,13 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         when(connectorMock.find(createResource(nodeUri), HAS_NEXT, null, Collections.emptySet())).thenReturn(
                 Collections.singletonList(createStatement(createResource(nodeUri), HAS_NEXT, createTypedLiteral(117))));
         final SimpleListIterator iterator = new SimpleListIterator(descriptor(null), connectorMock);
-        thrown.expect(ListProcessingException.class);
-        thrown.expectMessage("Expected successor of node " + nodeUri + " to be a named resource.");
-        while (iterator.hasNext()) {
-            iterator.nextAxiom();
-        }
+        final ListProcessingException ex = assertThrows(ListProcessingException.class, () -> {
+            while (iterator.hasNext()) {
+                iterator.nextAxiom();
+            }
+        });
+        assertThat(ex.getMessage(),
+                containsString("Expected successor of node " + nodeUri + " to be a named resource."));
     }
 
     @Test

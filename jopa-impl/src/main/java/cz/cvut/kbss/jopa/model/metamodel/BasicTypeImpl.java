@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 public class BasicTypeImpl<X> implements BasicType<X> {
 
-    private Class<X> c;
+    private final Class<X> c;
 
     BasicTypeImpl(Class<X> c) {
         this.c = c;
