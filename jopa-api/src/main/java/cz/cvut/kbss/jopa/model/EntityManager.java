@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
@@ -278,6 +279,15 @@ public interface EntityManager {
     Query createQuery(String qlString);
 
     // TODO JPA 2.0 TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
+    /**
+     * Creates an instance of query for executing Java persistence query language statement.
+     *
+     * @param criteriaQuery criteria query
+     * @param resultClass result type
+     * @return the new query instance
+     */
+    @NonJPA
+    <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery, Class<T> resultClass);
 
     /**
      * Creates an instance of query for executing Java persistence query language statement.
