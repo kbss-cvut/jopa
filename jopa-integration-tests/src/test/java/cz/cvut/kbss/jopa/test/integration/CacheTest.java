@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.integration;
 
@@ -19,6 +17,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -35,13 +34,13 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class CacheTest extends IntegrationTestBase {
 
@@ -127,5 +126,41 @@ class CacheTest extends IntegrationTestBase {
         em.persist(newA);
         em.getTransaction().commit();
         assertFalse(emf.getCache().contains(OWLClassF.class, entityF.getUri(), descriptor));
+    }
+
+    // Bug #81
+    @Test
+    void updateReferencedEntitySynchronizesCacheContent() throws Exception {
+        final URI idA = Generators.generateUri();
+        final URI idD = Generators.generateUri();
+        final Collection<Axiom<?>> axiomsForA = axiomsForA(idA);
+        final Collection<Axiom<?>> axiomsForD = Arrays
+                .asList(new AxiomImpl<>(NamedResource.create(idD), Assertion.createClassAssertion(false),
+                                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_D))),
+                        new AxiomImpl<>(NamedResource.create(idD), Assertion
+                                .createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false),
+                                new Value<>(NamedResource.create(idA))));
+        doAnswer(a -> {
+            final AxiomDescriptor axDescriptor = a.getArgument(0);
+            if (axDescriptor.getSubject().getIdentifier().equals(idA)) {
+                return axiomsForA;
+            } else {
+                return axiomsForD;
+            }
+        }).when(connectionMock).find(any());
+        final OWLClassD d = em.find(OWLClassD.class, idD);
+        assertNotNull(d);
+        assertNotNull(d.getOwlClassA());
+        em.clear();
+        final String updatedString = "newString";
+        final OWLClassA update = new OWLClassA(idA);
+        update.setStringAttribute(updatedString);
+        em.getTransaction().begin();
+        em.merge(update);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassD result = em.find(OWLClassD.class, idD);
+        assertEquals(updatedString, result.getOwlClassA().getStringAttribute());
     }
 }
