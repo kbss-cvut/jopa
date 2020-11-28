@@ -324,6 +324,13 @@ public interface ManagedType<X> extends Type<X> {
     MapAttribute<X, ?, ?> getDeclaredMap(String name);
 
     /**
+     * Return the query based attributes of the managed type.
+     *
+     * @return query based attributes of the managed type
+     */
+    Set<QueryAttribute<? super X, ?>> getQueryAttributes();
+
+    /**
      * Returns types attribute specified by this managed type.
      *
      * @return Types specification attribute, {@code null} if there are no types present in this managed type
@@ -343,8 +350,8 @@ public interface ManagedType<X> extends Type<X> {
     /**
      * Gets specification of a field with the specified name.
      * <p>
-     * In contrast to {@link #getAttribute(String)}, calling this method can also return field specification for a types
-     * or properties field.
+     * In contrast to {@link #getAttribute(String)}, calling this method can also return field specification for
+     * a query based attribute, types or properties field.
      *
      * @param fieldName Name of the field
      * @return Field specification
@@ -356,7 +363,7 @@ public interface ManagedType<X> extends Type<X> {
     /**
      * Gets all field specifications of this entity type.
      * <p>
-     * In contrast to {@link #getAttributes()}, this method returns also specifications of types and properties (if
+     * In contrast to {@link #getAttributes()}, this method returns also specifications of query based attributes, types and properties (if
      * present).
      *
      * @return Field specifications

@@ -15,10 +15,10 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 class EntityConstructor {
 
@@ -64,6 +65,7 @@ class EntityConstructor {
         final T instance = createEntityInstance(identifier, et);
         mapper.registerInstance(identifier, instance);
         populateAttributes(instance, et, descriptor, axioms);
+        populateQueryAttributes(instance, et, descriptor);
         validateIntegrityConstraints(instance, et);
 
         return instance;
@@ -152,6 +154,23 @@ class EntityConstructor {
             loaders.put(att, FieldStrategy.createFieldStrategy(et, att, desc, mapper));
         }
         return loaders.get(att);
+    }
+
+    private <T> void populateQueryAttributes(final T instance, EntityType<T> et, Descriptor entityDescriptor) { //TODO work on this
+        final SparqlQueryFactory sparqlQueryFactory = mapper.getUow().getQueryFactory();
+        final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
+
+        for (QueryAttribute<? super T, ?> queryAttribute : queryAttributes) {
+            TypedQueryImpl<?> typedQuery = sparqlQueryFactory.createNativeQuery(
+                    queryAttribute.getQuery(), queryAttribute.getJavaType());
+
+            if (! queryAttribute.isCollection()) {
+                Object querySingleResult = typedQuery.getSingleResult();
+                //TODO make own fs
+            } else {
+                //TODO plural attribute
+            }
+        }
     }
 
     private <T> void validateIntegrityConstraints(T entity, EntityType<T> et) {

@@ -82,7 +82,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final MergeManager mergeManager;
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
-    private final SparqlQueryFactory queryFactory;//TODO get into strategy
+    private final SparqlQueryFactory queryFactory; //TODO get into ET
     private final IndirectWrapperHelper indirectWrapperHelper;
     /**
      * This is a shortcut for the second level cache.
@@ -1137,5 +1137,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return cls.cast(this);
         }
         return storage.unwrap(cls);
+    }
+
+    public SparqlQueryFactory getQueryFactory() {
+        return queryFactory;
     }
 }

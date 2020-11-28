@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.utils;
 
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 
 import java.util.*;
@@ -47,7 +48,7 @@ public final class CollectionFactory {
      * @param collectionType Type of the collection to create
      * @return Collection implementation instance
      */
-    public static <T> Collection<T> createDefaultCollection(PluralAttribute.CollectionType collectionType) {
+    public static <T> Collection<T> createDefaultCollection(CollectionType collectionType) {
         switch (collectionType) {
             case LIST:
                 return new ArrayList<>();

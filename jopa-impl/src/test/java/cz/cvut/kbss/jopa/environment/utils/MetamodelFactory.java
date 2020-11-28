@@ -161,7 +161,7 @@ public class MetamodelFactory {
         String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
                                         .ClassOWLListIRI();
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
-        when(simpleListMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
         String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
                                      .ObjectPropertyHasNextIRI();
@@ -180,7 +180,7 @@ public class MetamodelFactory {
         hasListAttIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ClassOWLListIRI();
         when(refListMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
-        when(refListMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(refListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(refListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
         when(refListMock.getName()).thenReturn(OWLClassC.getRefListField().getName());
         when(etMock.getFieldSpecification(refListMock.getName())).thenReturn(refListMock);
@@ -282,7 +282,7 @@ public class MetamodelFactory {
         when(setAMock.getJavaType()).thenReturn(Set.class);
         when(setAMock.getJavaField()).thenReturn(OWLClassF.getSimpleSetField());
         when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
-        when(setAMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(setAMock.getCollectionType()).thenReturn(CollectionType.SET);
         when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
@@ -392,7 +392,7 @@ public class MetamodelFactory {
         when(setAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(setAMock.getJavaType()).thenReturn(Set.class);
         when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
-        when(setAMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(setAMock.getCollectionType()).thenReturn(CollectionType.SET);
         when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
@@ -450,7 +450,7 @@ public class MetamodelFactory {
                 IRI.create(OWLClassL.getReferencedListField().getAnnotation(OWLObjectProperty.class).iri()));
         when(refListMock.getConstraints()).thenReturn(
                 OWLClassL.getReferencedListField().getAnnotation(ParticipationConstraints.class).value());
-        when(refListMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(refListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
         when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(refListMock.isCollection()).thenReturn(true);
@@ -469,7 +469,7 @@ public class MetamodelFactory {
                 IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
         when(simpleListMock.getConstraints()).thenReturn(
                 OWLClassL.getSimpleListField().getAnnotation(ParticipationConstraints.class).value());
-        when(simpleListMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
         when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(simpleListMock.isCollection()).thenReturn(true);
@@ -486,7 +486,7 @@ public class MetamodelFactory {
                 IRI.create(OWLClassL.getSetField().getAnnotation(OWLObjectProperty.class).iri()));
         when(setMock.getConstraints()).thenReturn(
                 OWLClassL.getSetField().getAnnotation(ParticipationConstraints.class).value());
-        when(setMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(setMock.getCollectionType()).thenReturn(CollectionType.SET);
         when(setMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setMock.isCollection()).thenReturn(true);
         when(etMock.getFieldSpecification(OWLClassL.getSetField().getName())).thenReturn(setMock);
@@ -613,7 +613,7 @@ public class MetamodelFactory {
         when(intSetAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_IntegerSet));
         when(intSetAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(intSetAtt.isCollection()).thenReturn(true);
-        when(intSetAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(intSetAtt.getCollectionType()).thenReturn(CollectionType.SET);
         when(intSetAtt.getDeclaringType()).thenReturn(etMock);
         when(intSetAtt.getConverter()).thenReturn(new ToIntegerConverter());
         final Type typeMock = mock(Type.class);
@@ -713,7 +713,7 @@ public class MetamodelFactory {
         when(pluralAnnotationAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         when(pluralAnnotationAtt.isCollection()).thenReturn(true);
         when(pluralAnnotationAtt.getBindableJavaType()).thenReturn(String.class);
-        when(pluralAnnotationAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(pluralAnnotationAtt.getCollectionType()).thenReturn(CollectionType.SET);
         final Type elemType = mock(Type.class);
         when(elemType.getJavaType()).thenReturn(String.class);
         when(pluralAnnotationAtt.getElementType()).thenReturn(elemType);
@@ -799,7 +799,7 @@ public class MetamodelFactory {
         when(urlsAtt.isCollection()).thenReturn(true);
         when(urlsAtt.getDeclaringType()).thenReturn(et);
         when(urlsAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(urlsAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(urlsAtt.getCollectionType()).thenReturn(CollectionType.SET);
         when(urlsAtt.getBindableJavaType()).thenReturn(URL.class);
         when(urlsAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri()));
@@ -808,7 +808,7 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(OWLClassP.getSimpleListField().getName())).thenReturn(simpleListAtt);
         when(simpleListAtt.isCollection()).thenReturn(true);
         when(simpleListAtt.getDeclaringType()).thenReturn(et);
-        when(simpleListAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(simpleListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListAtt.getBindableJavaType()).thenReturn(URI.class);
         when(simpleListAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(simpleListAtt.getSequenceType()).thenReturn(SequenceType.simple);
@@ -825,7 +825,7 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(OWLClassP.getReferencedListField().getName())).thenReturn(refListAtt);
         when(refListAtt.isCollection()).thenReturn(true);
         when(refListAtt.getDeclaringType()).thenReturn(et);
-        when(refListAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(refListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
         when(refListAtt.getBindableJavaType()).thenReturn(URI.class);
         when(refListAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(refListAtt.getSequenceType()).thenReturn(SequenceType.referenced);
@@ -1165,7 +1165,7 @@ public class MetamodelFactory {
         when(et.getAttribute(OWLClassU.getPluralStringAttField().getName())).thenReturn(pluralStringAtt);
         when(pluralStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(pluralStringAtt.isCollection()).thenReturn(true);
-        when(pluralStringAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(pluralStringAtt.getCollectionType()).thenReturn(CollectionType.SET);
         when(pluralStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
         when(pluralStringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassU.getPluralStringAttField().getAnnotation(OWLDataProperty.class).iri()));

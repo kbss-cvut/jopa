@@ -17,6 +17,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class ClassFieldMetamodelProcessor<X> {
 
@@ -74,7 +72,10 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        //TODO process sparql query here
+        if(isQueryAttribute(field)) {
+            createQueryAttribute(field, fieldValueCls);
+            return;
+        }
 
         final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator, context);
         propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
@@ -146,6 +147,34 @@ class ClassFieldMetamodelProcessor<X> {
                                            .javaType(fieldValueCls).inferred(inference.inferred)
                                            .propertyIdType(paramsResolver.getPropertyIdentifierType())
                                            .propertyValueType(paramsResolver.getPropertyValueType()).build());
+    }
+
+    private static boolean isQueryAttribute(Field field) {
+        return field.getAnnotation(Sparql.class) != null;
+    }
+
+    private void createQueryAttribute(Field field, Class<?> fieldValueCls) {
+        Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
+        String query = sparqlAnnotation.query();
+
+        final AbstractQueryAttribute<X, ?> a;
+        if (field.getType().isAssignableFrom(Collection.class)) {
+            //TODO collection attribute
+            a = null;
+        } else if (field.getType().isAssignableFrom(List.class)) {
+            //TODO list attribute
+            a = null;
+        } else if (field.getType().isAssignableFrom(Set.class)) {
+            //TODO set attribute
+            a = null;
+        } else if (field.getType().isAssignableFrom(Map.class)) {
+            throw new IllegalArgumentException("NOT YET SUPPORTED");
+        } else {
+            a = new SingularQueryAttributeImpl<>(
+                    query, field, et, BasicTypeImpl.get(fieldValueCls), new ParticipationConstraint[]{});
+        }
+
+        et.addDeclaredQueryAttribute(field.getName(), a);
     }
 
     private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {

@@ -324,4 +324,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public Configuration getConfiguration() {
         return uow.getConfiguration();
     }
+
+    public UnitOfWorkImpl getUow() {
+        return uow;
+    }
 }

@@ -55,7 +55,7 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
     }
 
     @Override
-    public cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType getCollectionType() {
+    public cz.cvut.kbss.jopa.model.metamodel.CollectionType getCollectionType() {
         if (getJavaType().isAssignableFrom(Collection.class)) {
             return CollectionType.COLLECTION;
         } else if (getJavaType().isAssignableFrom(Map.class)) {
