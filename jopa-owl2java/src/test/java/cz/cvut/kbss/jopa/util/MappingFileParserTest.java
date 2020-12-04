@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,7 @@ class MappingFileParserTest {
         for (int i = 0; i < uris.size(); i++) {
             final URI file = mappings.get(uris.get(i));
             final String filePath = files.get(i);
-            if (filePath.startsWith("/")) {
+            if (Paths.get(filePath).isAbsolute()) {
                 assertEquals(new File(filePath).toURI(), file);
             } else {
                 assertEquals(new File(mappingFile.getParent() + "/" + filePath).toURI(), file);
