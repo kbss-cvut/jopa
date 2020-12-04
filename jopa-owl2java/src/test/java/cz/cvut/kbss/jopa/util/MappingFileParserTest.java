@@ -58,7 +58,8 @@ class MappingFileParserTest {
     @Test
     public void mappingFileSupportsAbsolutePaths() throws Exception {
         final String ontUri = "http://krizik.felk.cvut.cz/ontologies/test";
-        final String targetPath = "/tmp/jopa/file.owl";
+        final String targetPath =
+                System.getProperty("java.io.tmpdir") + File.separator + "jopa" + File.separator + "file.owl";
         final String content = ontUri + " " + DEFAULT_DELIMITER + " " + targetPath;
         final File mappingFile = createMappingFile(content);
         final Map<URI, URI> mappings = MappingFileParser.getMappings(mappingFile);
@@ -139,7 +140,9 @@ class MappingFileParserTest {
         final List<String> files = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             if (absolute) {
-                files.add("/tmp/jopa/file_" + i + ".owl");
+                files.add(
+                        System.getProperty("java.io.tmpdir") + File.separator + "jopa" + File.separator + "file_" + i +
+                                ".owl");
             } else {
                 files.add("file_" + i + ".owl");
             }
