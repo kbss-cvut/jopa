@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.CriteriaFactory;
 import cz.cvut.kbss.jopa.model.query.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -434,6 +435,13 @@ public interface EntityManager {
     List<URI> getContexts();
 
     // TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
+
+    /**
+     * Return the criteriaFactory for making CriteriaQuery.
+     *
+     * @return CriteriaFactory instance
+     */
+    CriteriaFactory getCriteriaFactory();
 
     /**
      * Return an instance of Metamodel interface for access to the metamodel of the persistence unit.
