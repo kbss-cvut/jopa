@@ -28,6 +28,12 @@ import java.util.stream.Stream;
  */
 public interface CriteriaQuery<X> extends Query {
 
+    //TODO Javadoc for selectAll method
+    CriteriaQuery<X> selectAll();
+
+    //TODO Javadoc for selectAll method
+    CriteriaQuery<X> select(Selection<? extends X> selection);
+
     /**
      * {@inheritDoc}
      */
