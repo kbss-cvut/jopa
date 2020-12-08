@@ -34,6 +34,12 @@ public interface CriteriaQuery<X> extends Query {
     //TODO PRO - Javadoc for selectAll method
     CriteriaQuery<X> select(Selection<? extends X> selection);
 
+    //TODO PRO - Javadoc for where method
+    CriteriaQuery<X> where(Expression<Boolean> expression);
+
+    //TODO PRO - Javadoc for where method
+    CriteriaQuery<X> where(Predicate... expression);
+
     /**
      * {@inheritDoc}
      */
