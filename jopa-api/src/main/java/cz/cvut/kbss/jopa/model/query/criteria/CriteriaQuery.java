@@ -12,9 +12,11 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.model.query;
+package cz.cvut.kbss.jopa.model.query.criteria;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.query.Parameter;
+import cz.cvut.kbss.jopa.model.query.Query;
 
 import java.util.List;
 import java.util.stream.Stream;
