@@ -279,7 +279,6 @@ public interface EntityManager {
     @NonJPA
     Query createQuery(String qlString);
 
-    // TODO JPA 2.0 TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
     /**
      * Creates an instance of query for executing Java persistence query language statement.
      *
@@ -433,8 +432,6 @@ public interface EntityManager {
      */
     @NonJPA
     List<URI> getContexts();
-
-    // TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
 
     /**
      * Return the criteriaFactory for making CriteriaQuery.

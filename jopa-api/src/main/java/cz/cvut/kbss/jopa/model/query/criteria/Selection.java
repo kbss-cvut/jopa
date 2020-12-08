@@ -1,5 +1,5 @@
 package cz.cvut.kbss.jopa.model.query.criteria;
 
-//TODO selection interface - methods
+//TODO PRO - selection interface - methods
 public interface Selection<X> {
 }
