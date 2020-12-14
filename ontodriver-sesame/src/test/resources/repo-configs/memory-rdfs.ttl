@@ -7,7 +7,7 @@
 
 
 [] a rep:Repository ;
-   rep:repositoryID "urn:test" ;
+   rep:repositoryID "test" ;
    rdfs:label "Memory store with RDF Schema inferencing" ;
    rep:repositoryImpl [
       rep:repositoryType "openrdf:SailRepository" ;

@@ -132,7 +132,7 @@ class RepositoryConnectorInitializer {
     private Repository createRepositoryFromConfig() {
         LOG.trace("Creating local repository from repository config file.");
         final RepositoryConfig repoConfig = loadRepositoryConfig();
-        this.manager = new LocalRepositoryManager(getRepositoryManagerBaseDir().map(File::new).orElse(null));
+        this.manager = RepositoryProvider.getRepositoryManager(getRepositoryManagerBaseDir().orElse(""));
         manager.addRepositoryConfig(repoConfig);
         return manager.getRepository(getRepositoryId());
     }
