@@ -34,9 +34,8 @@
         <dependency>
             <groupId>com.github.marcel-zec.jopa</groupId>
             <artifactId>jopa-api</artifactId>
-            <version>5a7bb9e1bbdec812910c646bd8628d2b95353c3d</version>
+            <version>31633b66ec99440c324ff0d38d80b14499953a46</version>
         </dependency>
-
 <!--        <dependency>-->
 <!--            <groupId>cz.cvut.kbss.jopa</groupId>-->
 <!--            <artifactId>jopa-api</artifactId>-->
