@@ -19,6 +19,9 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaFactory;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
@@ -441,6 +444,12 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         return q;
     }
 
+    //TODO PRO - implementation of createQuery(CriteriaQuery<T> criteriaQuery)
+    @Override
+    public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery, Class<T> aClass) {
+        return null;
+    }
+
     @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         ensureOpen();
@@ -508,6 +517,12 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public List<URI> getContexts() {
         ensureOpen();
         return getCurrentPersistenceContext().getContexts();
+    }
+
+    // TODO PRO - getCriteriaFactory - FINISHED
+    @Override
+    public CriteriaFactory getCriteriaFactory() {
+        return getCurrentPersistenceContext().criteriaFactory();
     }
 
     @Override

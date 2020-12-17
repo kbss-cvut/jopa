@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaFactory;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
@@ -83,6 +84,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
     private final SparqlQueryFactory queryFactory;
+    private final CriteriaFactory criteriaFactory;
     private final IndirectWrapperHelper indirectWrapperHelper;
     /**
      * This is a shortcut for the second level cache.
@@ -103,6 +105,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
+        this.criteriaFactory = new CriteriaFactory(this, storage);
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
         this.useTransactionalOntology = true;
@@ -1007,6 +1010,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     public SparqlQueryFactory sparqlQueryFactory() {
         return queryFactory;
+    }
+
+    public CriteriaFactory criteriaFactory() {
+        return criteriaFactory;
     }
 
     /**
