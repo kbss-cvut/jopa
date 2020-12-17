@@ -20,13 +20,13 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
-import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 
 import java.util.List;
 
 public class CriteriaQueryImpl<X> extends QueryImpl implements CriteriaQuery<X> {
-    public CriteriaQueryImpl(final QueryHolder query, final ConnectionWrapper connection) {
+    public CriteriaQueryImpl(final CriteriaQueryHolder query, final ConnectionWrapper connection) {
         super(query, connection);
     }
 
