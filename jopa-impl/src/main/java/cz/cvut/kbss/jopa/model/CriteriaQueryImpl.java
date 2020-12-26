@@ -14,109 +14,85 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.Procedure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
 
-public class CriteriaQueryImpl<X> extends QueryImpl implements CriteriaQuery<X> {
-    public CriteriaQueryImpl(final CriteriaQueryHolder query, final ConnectionWrapper connection) {
-        super(query, connection);
+import java.util.Objects;
+
+//TODO PRO - CriteriaQueryImpl methods implementation
+public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractQuery.class);
+
+    final CriteriaQueryHolder<T> query;
+    private final ConnectionWrapper connection;
+
+    private boolean useBackupOntology = false;
+
+    private Procedure rollbackOnlyMarker;
+    private Procedure ensureOpenProcedure;
+
+
+    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, ConnectionWrapper connection) {
+        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
+    }
+
+
+    @Override
+    public CriteriaQuery<T> selectAll() {
+        query.setSelection(null);
+        return this;
     }
 
     @Override
-    public CriteriaQuery<X> selectAll() {
+    public CriteriaQuery<T> select(Selection<? extends T> selection) {
+        query.setSelection(selection);
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> where(Expression<Boolean> expression) {
         return null;
     }
 
     @Override
-    public CriteriaQuery<X> select(Selection<? extends X> selection) {
+    public CriteriaQuery<T> where(Predicate... predicates) {
         return null;
     }
 
     @Override
-    public CriteriaQuery<X> where(Expression<Boolean> expression) {
+    public Class<T> getResultType() {
         return null;
     }
 
     @Override
-    public CriteriaQuery<X> where(Predicate... predicates) {
-        return null;
+    public CriteriaQuery<T> distinct(boolean b) {
+        query.setDistinct(b);
+        return this;
     }
 
     @Override
-    public List<X> getResultList() {
-        return null;
+    public boolean isDistinct() {
+        return query.isDistinct();
     }
 
     @Override
-    public X getSingleResult() {
-        return null;
+    public Selection<T> getSelection() {
+        return query.getSelection();
     }
 
     @Override
-    public CriteriaQuery<X> setMaxResults(int i) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setFirstResult(int i) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setParameter(int i, Object o) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setParameter(int i, String s, String s1) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setParameter(String s, Object o) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setParameter(String s, String s1, String s2) {
-        return null;
-    }
-
-    @Override
-    public <T> CriteriaQuery<X> setParameter(Parameter<T> parameter, T t) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setParameter(Parameter<String> parameter, String s, String s1) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setUntypedParameter(int i, Object o) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setUntypedParameter(String s, Object o) {
-        return null;
-    }
-
-    @Override
-    public <T> CriteriaQuery<X> setUntypedParameter(Parameter<T> parameter, T t) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<X> setDescriptor(Descriptor descriptor) {
+    public Predicate getRestriction() {
         return null;
     }
 }

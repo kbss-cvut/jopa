@@ -1,83 +1,83 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
+import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 
 import java.util.Set;
 
-public class CriteriaQueryHolder implements QueryHolder {
-    @Override
-    public String getQuery() {
-        return null;
+//TODO PRO - CriteriaQueryHolder implementation
+public class CriteriaQueryHolder<T> {
+
+    private final Class<T> type;
+    private Selection<? extends T> selection;
+    private boolean distinct;
+
+    public CriteriaQueryHolder(Class<T> type) {
+        this.type = type;
+        this.distinct = false;
     }
 
-    @Override
+    public Selection<T> getSelection() {
+        return (Selection<T>) selection;
+    }
+
+    public void setSelection(Selection<? extends T> selection) {
+        this.selection = selection;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
     public Set<Parameter<?>> getParameters() {
         return null;
     }
 
-    @Override
     public Parameter<?> getParameter(String name) {
         return null;
     }
 
-    @Override
     public Parameter<?> getParameter(int position) {
         return null;
     }
 
-    @Override
     public Object getParameterValue(Parameter<?> parameter) {
         return null;
     }
 
-    @Override
     public <T> void setParameter(Parameter<T> parameter, Object value) {
 
     }
 
-    @Override
     public <T> void setParameter(Parameter<T> parameter, String value, String language) {
 
     }
 
-    @Override
     public <T> void setUntypedParameter(Parameter<T> parameter, Object value) {
 
     }
 
-    @Override
-    public void setFirstResult(int startPosition) {
-
-    }
-
-    @Override
-    public int getFirstResult() {
-        return 0;
-    }
-
-    @Override
-    public void setMaxResults(int maxResults) {
-
-    }
-
-    @Override
-    public int getMaxResults() {
-        return 0;
-    }
-
-    @Override
     public void clearParameter(Parameter<?> parameter) {
 
     }
 
-    @Override
     public void clearParameters() {
 
     }
 
-    @Override
     public String assembleQuery() {
-        return null;
+        final StringBuilder query = new StringBuilder();
+        final String alias = type.toString().substring(0,1);
+        query.append("SELECT " + (distinct ? "DISTINCT" : ""));
+        //TODO PRO difficult select
+        query.append(alias);
+
+        query.append(" FROM " + type + " " + alias);
+        return query.toString();
     }
 }
