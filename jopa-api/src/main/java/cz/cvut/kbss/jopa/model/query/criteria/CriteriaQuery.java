@@ -14,131 +14,68 @@
  */
 package cz.cvut.kbss.jopa.model.query.criteria;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.query.Parameter;
-import cz.cvut.kbss.jopa.model.query.Query;
-
-import java.util.List;
-import java.util.stream.Stream;
-
 /**
  * Interface used to control the execution of typed queries.
  *
  * @param <X> Query result type
  */
-public interface CriteriaQuery<X> extends Query {
-
-    //TODO PRO - Javadoc for selectAll method
-    CriteriaQuery<X> selectAll();
-
-    //TODO PRO - Javadoc for selectAll method
-    CriteriaQuery<X> select(Selection<? extends X> selection);
-
-    //TODO PRO - Javadoc for where method
-    CriteriaQuery<X> where(Expression<Boolean> expression);
-
-    //TODO PRO - Javadoc for where method
-    CriteriaQuery<X> where(Predicate... expression);
+public interface CriteriaQuery<T>{
 
     /**
-     * {@inheritDoc}
+     * Specify that all instances are to be returned in the query result. Replaces the previously specified selection(s), if any.
+     * @return the modified query
      */
-    @Override
-    List<X> getResultList();
+    CriteriaQuery<T> selectAll();
 
     /**
-     * {@inheritDoc}
+     * Specify the item that is to be returned in the query result. Replaces the previously specified selection(s), if any.
+     * @param selection - selection specifying the item that is to be returned in the query result
+     * @return the modified query
      */
-    @Override
-    default Stream<X> getResultStream() {
-        return getResultList().stream();
-    }
+    CriteriaQuery<T> select(Selection<? extends T> selection);
 
     /**
-     * {@inheritDoc}
+     * Modify the query to restrict the query result according to the specified boolean expression. Replaces the previously added restriction(s), if any.
+     * @param expression - a simple or compound boolean expression
+     * @return the modified query
      */
-    @Override
-    X getSingleResult();
+    CriteriaQuery<T> where(Expression<Boolean> expression);
 
     /**
-     * {@inheritDoc}
+     * Modify the query to restrict the query result according to the conjunction of the specified restriction predicates. Replaces the previously added restriction(s), if any. If no restrictions are specified, any previously added restrictions are simply removed.
+     * @param predicates - zero or more restriction predicates
+     * @return
      */
-    @Override
-    CriteriaQuery<X> setMaxResults(int maxResult);
+    CriteriaQuery<T> where(Predicate... predicates);
+
+    Class<T> getResultType();
 
     /**
-     * {@inheritDoc}
+     * Specify whether duplicate query results will be eliminated. A true value will cause duplicates to be eliminated. A false value will cause duplicates to be retained. If distinct has not been specified, duplicate results must be retained.
+     * @param distinct - boolean value specifying whether duplicate results must be eliminated from the query result or whether they must be retained
+     * @return the modified query
      */
-    @Override
-    CriteriaQuery<X> setFirstResult(int startPosition);
+    CriteriaQuery<T> distinct(boolean distinct);
 
     /**
-     * {@inheritDoc}
+     * Return whether duplicate query results must be eliminated or retained.
+     * @return boolean indicating whether duplicate query results must be eliminated
      */
-    @Override
-    CriteriaQuery<X> setParameter(int position, Object value);
+    boolean isDistinct();
 
     /**
-     * {@inheritDoc}
+     * Return the selection of the query, or null if no selection has been set.
+     * @return selection item
      */
-    @Override
-    CriteriaQuery<X> setParameter(int position, String value, String language);
+    Selection<T> getSelection();
 
     /**
-     * {@inheritDoc}
+     * Return the predicate that corresponds to the where clause restriction(s), or null if no restrictions have been specified.
+     * @return where clause predicate
      */
-    @Override
-    CriteriaQuery<X> setParameter(String name, Object value);
+    Predicate getRestriction();
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    CriteriaQuery<X> setParameter(String name, String value, String language);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    <T> CriteriaQuery<X> setParameter(Parameter<T> parameter, T value);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    CriteriaQuery<X> setParameter(Parameter<String> parameter, String value, String language);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    CriteriaQuery<X> setUntypedParameter(int position, Object value);
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    CriteriaQuery<X> setUntypedParameter(String name, Object value);
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    <T> CriteriaQuery<X> setUntypedParameter(Parameter<T> parameter, T value);
-
-    /**
-     * Sets descriptor to use with this query.
-     * <p>
-     * The descriptor may specify contexts and languages for the retrieved query results. Note that the descriptor
-     * applies only to results of managed types, i.e. when the result type of the query is a managed type. Otherwise,
-     * the descriptor is ignored.
-     * <p>
-     * Use of descriptor may lead to additional result filtering, e.g. when the individual, which is a result of the
-     * query, does not match criteria in the descriptor (it is in a different context, for instance), it is not returned
-     * by {@link #getResultList()} and {@link #getSingleResult()}.
-     *
-     * @param descriptor The descriptor to use
-     * @return This query instance
-     */
-    CriteriaQuery<X> setDescriptor(Descriptor descriptor);
 }
