@@ -73,7 +73,7 @@ public class CriteriaQueryHolder<T> {
     public String assembleQuery() {
         final StringBuilder query = new StringBuilder();
         final String alias = type.toString().substring(0,1);
-        query.append("SELECT " + (distinct ? "DISTINCT" : ""));
+        query.append("SELECT " + (distinct ? "DISTINCT " : ""));
         //TODO PRO difficult select
         query.append(alias);
 
