@@ -16,8 +16,9 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,7 +156,7 @@ class ClassFieldMetamodelProcessor<X> {
 
     private void createQueryAttribute(Field field, Class<?> fieldValueCls) {
         Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
-        String query = sparqlAnnotation.query();
+        String query = sparqlAnnotation.value();
 
         final AbstractQueryAttribute<X, ?> a;
         if (field.getType().isAssignableFrom(Collection.class)) {
@@ -170,8 +171,16 @@ class ClassFieldMetamodelProcessor<X> {
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
+            cz.cvut.kbss.jopa.model.metamodel.Type<?> type = BasicTypeImpl.get(fieldValueCls);
+            Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
+            ConverterWrapper<?, ?> converterWrapper = null;
+
+            if (optionalConverterWrapper.isPresent()) {
+                converterWrapper = optionalConverterWrapper.get();
+            }
+
             a = new SingularQueryAttributeImpl<>(
-                    query, field, et, BasicTypeImpl.get(fieldValueCls), new ParticipationConstraint[]{});
+                    query, field, et, type, new ParticipationConstraint[]{}, converterWrapper);
         }
 
         et.addDeclaredQueryAttribute(field.getName(), a);

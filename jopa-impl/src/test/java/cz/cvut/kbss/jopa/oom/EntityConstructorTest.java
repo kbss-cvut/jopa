@@ -635,4 +635,20 @@ class EntityConstructorTest {
                 .setFieldValue(instance, OWLClassL.getSingleAField(), Collections.emptyList(),
                         mocks.forOwlClassL().entityType(), descriptor));
     }
+
+    @Test
+    void testReconstructEntityWithQueryAttribute() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassWithQueryAttr.getClassIri()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassWithQueryAttr.getStrAttField()));
+
+        //TODO mock query factory, typed query
+
+        final OWLClassWithQueryAttr res = constructor.reconstructEntity(PK, mocks.forOwlClassWithQueryAttr().entityType(), descriptor, axioms);
+        assertNotNull(res);
+        assertEquals(PK, res.getUri());
+        assertEquals(STRING_ATT, res.getStringAttribute());
+        assertEquals(STRING_ATT, res.getStringQueryAttribute());
+        verify(mapperMock).registerInstance(PK, res);
+    }
 }

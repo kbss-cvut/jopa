@@ -11,14 +11,13 @@ import java.lang.annotation.*;
  *
  * <p>
  *
- * Example on method: //TODO change to field
+ * Example:
  * <pre>
  *     <code>
- * &#64;Sparql("PREFIX foo:&lt;http://example.com/resources/&gt;\n" +
- *                "SELECT ?person WHERE {?person foo:name $name}")
- *        public Person findPersonByName(@Bind("name") String name) {
- *            return null;
- *        }
+ * &#64;Sparql("PREFIX jopa:&lt;http://krizik.felk.cvut.cz/ontologies/jopa/&gt;\n" +
+ *             "SELECT ?stringAttribute WHERE {" +
+ *             "$this jopa:attributes#B-stringAttribute ?stringAttribute}")
+ *        private String stringQueryAttribute;
  *     </code>
  * </pre>
  */
@@ -30,5 +29,5 @@ public @interface Sparql {
     /**
      * SPARQL query including any prefixes and parameters.
      */
-    String query();
+    String value();
 }

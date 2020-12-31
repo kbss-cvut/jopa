@@ -251,6 +251,15 @@ public class MetamodelMocks {
     @Mock
     private AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt;
 
+    @Mock
+    private EntityTypeImpl<OWLClassWithQueryAttr> etQA;
+    @Mock
+    private Identifier idQA;
+    @Mock
+    private SingularQueryAttributeImpl<OWLClassWithQueryAttr, String> qaStringQueryAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassWithQueryAttr, String> qaStringAtt;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
@@ -279,6 +288,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, idU);
+        MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, idQA);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -304,6 +314,7 @@ public class MetamodelMocks {
         etMap.put(OWLClassS.class, etS);
         etMap.put(OWLClassT.class, etT);
         etMap.put(OWLClassU.class, etU);
+        etMap.put(OWLClassWithQueryAttr.class, etQA);
         when(metamodel.entity(any())).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
@@ -385,6 +396,10 @@ public class MetamodelMocks {
 
     public OWLClassUMetamodel forOwlClassU() {
         return new OWLClassUMetamodel();
+    }
+
+    public OWLClassWithQueryAttrMetamodel forOwlClassWithQueryAttr() {
+        return new OWLClassWithQueryAttrMetamodel();
     }
 
     public class OWLClassAMetamodel {
@@ -806,6 +821,24 @@ public class MetamodelMocks {
 
         public AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt() {
             return MetamodelMocks.this.uPluralStringAtt;
+        }
+    }
+
+    public class OWLClassWithQueryAttrMetamodel {
+        public EntityTypeImpl<OWLClassWithQueryAttr> entityType() {
+            return MetamodelMocks.this.etQA;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idQA;
+        }
+
+        public AbstractAttribute<OWLClassWithQueryAttr, String> stringAttribute() {
+            return MetamodelMocks.this.qaStringAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassWithQueryAttr, String> stringQueryAttribute() {
+            return MetamodelMocks.this.qaStringQueryAtt;
         }
     }
 }

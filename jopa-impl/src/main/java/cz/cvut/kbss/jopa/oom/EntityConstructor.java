@@ -15,10 +15,17 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
+import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
+import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
+import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.QueryParser;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryParser;
+import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -28,10 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class EntityConstructor {
 
@@ -65,7 +69,7 @@ class EntityConstructor {
         final T instance = createEntityInstance(identifier, et);
         mapper.registerInstance(identifier, instance);
         populateAttributes(instance, et, descriptor, axioms);
-        populateQueryAttributes(instance, et, descriptor);
+        populateQueryAttributes(instance, et);
         validateIntegrityConstraints(instance, et);
 
         return instance;
@@ -156,20 +160,39 @@ class EntityConstructor {
         return loaders.get(att);
     }
 
-    private <T> void populateQueryAttributes(final T instance, EntityType<T> et, Descriptor entityDescriptor) { //TODO work on this
-        final SparqlQueryFactory sparqlQueryFactory = mapper.getUow().getQueryFactory();
+    private <T> void populateQueryAttributes(final T instance, EntityType<T> et)
+            throws IllegalAccessException {
+        final QueryParser queryParser = new SparqlQueryParser(new ParameterValueFactory(mapper.getUow())); //TODO parsing should be done in the factory/typed query
+        final QueryFactory queryFactory = mapper.getUow().getQueryFactory();
+
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
+        final Set<QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T>>
+                fieldLoaders = new HashSet<>(queryAttributes.size());
 
         for (QueryAttribute<? super T, ?> queryAttribute : queryAttributes) {
-            TypedQueryImpl<?> typedQuery = sparqlQueryFactory.createNativeQuery(
+            //QueryHolder queryHolder = queryParser.parseQuery(queryAttribute.getQuery()); //TODO make own query parser for $this param
+
+            TypedQuery<?> typedQuery = queryFactory.createNativeQuery(
                     queryAttribute.getQuery(), queryAttribute.getJavaType());
 
-            if (! queryAttribute.isCollection()) {
-                Object querySingleResult = typedQuery.getSingleResult();
-                //TODO make own fs
-            } else {
-                //TODO plural attribute
-            }
+            QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs = getQueryFieldLoader(et, queryAttribute);
+
+            fieldLoaders.add(qfs);
+            qfs.addValueFromTypedQuery(typedQuery);
+            qfs.buildInstanceFieldValue(instance);
+        }
+    }
+
+    private <T> QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> getQueryFieldLoader(
+            EntityType<T> et, QueryAttribute<? super T, ?> queryAttribute) {
+        if (queryAttribute == null) {
+            return null;
+        }
+
+        if (! queryAttribute.isCollection()) {
+            return new SingularQueryAttributeStrategy<>(et, (AbstractQueryAttribute<? super T, ?>) queryAttribute);
+        } else {
+            return new PluralQueryAttributeStrategy<>(et, (AbstractPluralQueryAttribute<? super T, ?, ?>) queryAttribute);
         }
     }
 

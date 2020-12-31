@@ -217,7 +217,7 @@ public class MetamodelFactory {
                 Collections.<Attribute<? super OWLClassE, ?>>singleton(strAttMock));
         when(etMock.getFieldSpecifications())
                 .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassE, ?>>asList(strAttMock, idMock)));
-        when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
+        when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField()); //TODO mistake with OWLClassB here :)
         final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
                                              .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
@@ -1174,5 +1174,43 @@ public class MetamodelFactory {
         when(pluralStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(pluralStringAtt.hasLanguage()).thenReturn(false);
         when(pluralStringAtt.getLanguage()).thenReturn(null);
+    }
+
+    static void initOWLClassWithQueryAttrMocks(EntityTypeImpl<OWLClassWithQueryAttr> etMock,
+                                               AbstractQueryAttribute strQueryAttMock, AbstractAttribute strAttMock,
+                                               Identifier idMock) throws NoSuchFieldException {
+        when(etMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.class);
+        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassWithQueryAttr.getClassIri()));
+        when(etMock.getAttribute(OWLClassWithQueryAttr.getStrAttField().getName())).thenReturn(strAttMock);
+        when(etMock.getQueryAttribute(OWLClassWithQueryAttr.getStrQueryAttField().getName())).thenReturn(strQueryAttMock);
+        when(etMock.getAttributes()).thenReturn(
+                Collections.<Attribute<? super OWLClassWithQueryAttr, ?>>singleton(strAttMock));
+        when(etMock.getQueryAttributes()).thenReturn(
+                Collections.<QueryAttribute<? super OWLClassWithQueryAttr, ?>>singleton(strQueryAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(
+                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassWithQueryAttr, ?>>asList(strAttMock, strQueryAttMock, idMock)));
+
+        when(strAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getStrAttField());
+        when(strAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getStrAttField().getType());
+        final String stringAttIri = OWLClassWithQueryAttr.getStrAttField().getAnnotation(OWLDataProperty.class).iri();
+        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
+        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(strAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getStrAttField().getName());
+        when(strAttMock.getDeclaringType()).thenReturn(etMock);
+        when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(strAttMock.hasLanguage()).thenReturn(true);
+        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
+        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
+        when(etMock.getFieldSpecification(strQueryAttMock.getName())).thenReturn(strQueryAttMock);
+        when(strQueryAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField());
+        when(strQueryAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField().getName());
+        when(strQueryAttMock.getDeclaringType()).thenReturn(etMock);
+        when(strQueryAttMock.getQuery()).thenReturn(
+                OWLClassWithQueryAttr.getStrQueryAttField().getAnnotation(Sparql.class).value());
+
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.class.getDeclaredField("uri"));
+        when(idMock.getDeclaringType()).thenReturn(etMock);
+        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 }

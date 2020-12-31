@@ -331,6 +331,18 @@ public interface ManagedType<X> extends Type<X> {
     Set<QueryAttribute<? super X, ?>> getQueryAttributes();
 
     /**
+     * Return the query based attribute of the managed type that corresponds to the
+     * specified name.
+     *
+     * @param name the name of the represented attribute
+     * @return attribute with given name
+     * @throws IllegalArgumentException if attribute of the given
+     *                                  <p>
+     *                                  name is not present in the managed type
+     */
+    QueryAttribute<? super X, ?> getQueryAttribute(String name);
+
+    /**
      * Returns types attribute specified by this managed type.
      *
      * @return Types specification attribute, {@code null} if there are no types present in this managed type

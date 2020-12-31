@@ -155,6 +155,18 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
+    public AbstractQueryAttribute<? super X, ?> getQueryAttribute(String name) {
+        Objects.requireNonNull(name);
+        if (declaredQueryAttributes.containsKey(name)) {
+            return declaredQueryAttributes.get(name);
+        }
+        if (supertype != null) {
+            return supertype.getQueryAttribute(name);
+        }
+        throw new IllegalArgumentException("Query attribute " + name + " is not present in type " + this.toString());
+    }
+
+    @Override
     public CollectionAttribute<? super X, ?> getCollection(String name) {
         return getCollection(name, Object.class);
     }

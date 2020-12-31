@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -16,11 +17,15 @@ public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, 
 
     private final ParticipationConstraint[] constraints;
 
-    public AbstractQueryAttribute(String query, Field field, ManagedType<X> declaringType, ParticipationConstraint[] constraints) {
+    private final ConverterWrapper converter;
+
+    public AbstractQueryAttribute(String query, Field field, ManagedType<X> declaringType,
+                                  ParticipationConstraint[] constraints, ConverterWrapper converter) {
         this.query = query;
         this.field = field;
         this.declaringType = declaringType;
         this.constraints = constraints;
+        this.converter = converter;
     }
 
     @Override
@@ -81,5 +86,14 @@ public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, 
     @Override
     public boolean isCollection() {
         return false;
+    }
+
+    public ConverterWrapper getConverter() {
+        return converter;
+    }
+
+    @Override
+    public String toString() {
+        return declaringType.getJavaType().getSimpleName() + "." + getName();
     }
 }
