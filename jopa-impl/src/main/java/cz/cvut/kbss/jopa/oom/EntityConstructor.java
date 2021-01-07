@@ -21,10 +21,6 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
-import cz.cvut.kbss.jopa.query.QueryHolder;
-import cz.cvut.kbss.jopa.query.QueryParser;
-import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.SparqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -162,7 +158,6 @@ class EntityConstructor {
 
     private <T> void populateQueryAttributes(final T instance, EntityType<T> et)
             throws IllegalAccessException {
-        final QueryParser queryParser = new SparqlQueryParser(new ParameterValueFactory(mapper.getUow())); //TODO parsing should be done in the factory/typed query
         final QueryFactory queryFactory = mapper.getUow().getQueryFactory();
 
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
@@ -170,10 +165,28 @@ class EntityConstructor {
                 fieldLoaders = new HashSet<>(queryAttributes.size());
 
         for (QueryAttribute<? super T, ?> queryAttribute : queryAttributes) {
-            //QueryHolder queryHolder = queryParser.parseQuery(queryAttribute.getQuery()); //TODO make own query parser for $this param
+            TypedQuery<?> typedQuery;
+            try {
+                typedQuery = queryFactory.createNativeQuery(
+                        queryAttribute.getQuery(), queryAttribute.getJavaType());
+            } catch (Exception e) { //TODO catch a better exception
+                LOG.error("Could not create native query from the parameter given in annotation @Sparql:\n{}" +
+                        "\nAttribute '{}' will be skipped.", queryAttribute.getQuery(),
+                        queryAttribute.getJavaMember().getName(), e);
+                continue;
+            }
 
-            TypedQuery<?> typedQuery = queryFactory.createNativeQuery(
-                    queryAttribute.getQuery(), queryAttribute.getJavaType());
+            // set value of parameter "this", if it is present in the query, with the instance
+            try {
+                typedQuery.getParameter("this");
+                typedQuery.setParameter("this", instance);
+            } catch (IllegalArgumentException e1) {
+                // parameter "this" is not present in the query, no need to set it
+            } catch (RuntimeException e2) {
+                LOG.error("Unable to set query parameter 'this' with the instance" +
+                        "\nAttribute '{}' will be skipped.", queryAttribute.getJavaMember().getName(), e2);
+                continue;
+            }
 
             QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs = getQueryFieldLoader(et, queryAttribute);
 

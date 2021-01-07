@@ -82,7 +82,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final MergeManager mergeManager;
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
-    private final SparqlQueryFactory queryFactory; //TODO get into ET
+    private final SparqlQueryFactory queryFactory;
     private final IndirectWrapperHelper indirectWrapperHelper;
     /**
      * This is a shortcut for the second level cache.

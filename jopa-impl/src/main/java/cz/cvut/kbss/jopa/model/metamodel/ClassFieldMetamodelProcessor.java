@@ -161,13 +161,13 @@ class ClassFieldMetamodelProcessor<X> {
         final AbstractQueryAttribute<X, ?> a;
         if (field.getType().isAssignableFrom(Collection.class)) {
             //TODO collection attribute
-            a = null;
+            throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else if (field.getType().isAssignableFrom(List.class)) {
             //TODO list attribute
-            a = null;
+            throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else if (field.getType().isAssignableFrom(Set.class)) {
             //TODO set attribute
-            a = null;
+            throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {

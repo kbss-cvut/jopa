@@ -22,7 +22,7 @@ public class PluralQueryAttributeStrategy<X> extends QueryFieldStrategy<Abstract
 
     @Override
     public void addValueFromTypedQuery(TypedQuery<?> typedQuery) {
-        Stream<?> queryResultList = typedQuery.getResultStream();
+        Stream<?> queryResultStream = typedQuery.getResultStream();
         //TODO
     }
 
