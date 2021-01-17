@@ -13,6 +13,9 @@ public class OWLClassWithQueryAttr {
 
     private static final String STR_ATT_FIELD = "stringAttribute";
     private static final String STR_QUERY_ATT_FIELD = "stringQueryAttribute";
+    private static final String QUERY = "PREFIX jopa:<http://krizik.felk.cvut.cz/ontologies/jopa/>\n" +
+                                        "SELECT ?stringAttribute\n" +
+                                        "WHERE {$this jopa:attributes#B-stringAttribute ?stringAttribute}";
 
     @Id
     private URI uri;
@@ -20,9 +23,7 @@ public class OWLClassWithQueryAttr {
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute")
     private String stringAttribute;
 
-    @Sparql("PREFIX jopa:<http://krizik.felk.cvut.cz/ontologies/jopa/>\n" +
-            "SELECT ?stringAttribute\n" +
-            "WHERE {$this jopa:attributes#B-stringAttribute ?stringAttribute}")
+    @Sparql(QUERY)
     private String stringQueryAttribute;
 
     public OWLClassWithQueryAttr() {
@@ -72,6 +73,10 @@ public class OWLClassWithQueryAttr {
 
     public static Field getStrQueryAttField() throws NoSuchFieldException {
         return OWLClassWithQueryAttr.class.getDeclaredField(STR_QUERY_ATT_FIELD);
+    }
+
+    public static String getSparqlQuery() {
+        return QUERY;
     }
 
     @Override

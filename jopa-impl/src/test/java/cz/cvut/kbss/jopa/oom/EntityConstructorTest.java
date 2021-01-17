@@ -19,12 +19,15 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -53,6 +56,12 @@ class EntityConstructorTest {
 
     @Mock
     private ObjectOntologyMapperImpl mapperMock;
+    @Mock
+    private UnitOfWorkImpl uowMock;
+    @Mock
+    private SparqlQueryFactory queryFactoryMock;
+    @Mock
+    private TypedQueryImpl typedQueryMock;
 
     private MetamodelMocks mocks;
     private Descriptor descriptor;
@@ -642,7 +651,19 @@ class EntityConstructorTest {
         axioms.add(getClassAssertionAxiomForType(OWLClassWithQueryAttr.getClassIri()));
         axioms.add(getStringAttAssertionAxiom(OWLClassWithQueryAttr.getStrAttField()));
 
-        //TODO mock query factory, typed query
+        when(mapperMock.getUow()).thenReturn(uowMock);
+        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
+        //when(queryFactoryMock.createNativeQuery(any(String.class),
+          //      (Class<?>) any(Class.class)))
+            //    .thenReturn(typedQueryMock);
+        doReturn(typedQueryMock)
+                .when(queryFactoryMock).createNativeQuery(any(String.class),
+                (Class<?>) any(Class.class));
+        doReturn(typedQueryMock)
+                .when(typedQueryMock).setParameter(any(String.class), any());
+        doReturn(STRING_ATT).when(typedQueryMock).getSingleResult();
+        //when(typedQueryMock.setParameter(eq("this"), any())).thenReturn(typedQueryMock);
+        //when(typedQueryMock.getSingleResult()).thenReturn(STRING_ATT);
 
         final OWLClassWithQueryAttr res = constructor.reconstructEntity(PK, mocks.forOwlClassWithQueryAttr().entityType(), descriptor, axioms);
         assertNotNull(res);

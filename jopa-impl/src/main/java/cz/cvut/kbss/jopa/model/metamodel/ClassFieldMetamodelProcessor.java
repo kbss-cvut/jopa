@@ -171,7 +171,7 @@ class ClassFieldMetamodelProcessor<X> {
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            cz.cvut.kbss.jopa.model.metamodel.Type<?> type = BasicTypeImpl.get(fieldValueCls);
+            cz.cvut.kbss.jopa.model.metamodel.Type<?> type = BasicTypeImpl.get(fieldValueCls); //TODO Entity types
             Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
             ConverterWrapper<?, ?> converterWrapper = null;
 

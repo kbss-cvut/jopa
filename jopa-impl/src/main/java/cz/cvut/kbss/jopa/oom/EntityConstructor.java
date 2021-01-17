@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
-import cz.cvut.kbss.jopa.sessions.QueryFactory;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -31,7 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 class EntityConstructor {
 
@@ -156,29 +159,34 @@ class EntityConstructor {
         return loaders.get(att);
     }
 
+    /**
+     * Populate all query based attributes in the given instance.
+     *
+     * @param instance the entity, whose attributes are to be populated
+     * @param et the entity class representation in the metamodel
+     * @param <T> the entity class
+     * @throws IllegalAccessException
+     */
     private <T> void populateQueryAttributes(final T instance, EntityType<T> et)
             throws IllegalAccessException {
-        final QueryFactory queryFactory = mapper.getUow().getQueryFactory();
+        final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
 
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
-        final Set<QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T>>
-                fieldLoaders = new HashSet<>(queryAttributes.size());
 
         for (QueryAttribute<? super T, ?> queryAttribute : queryAttributes) {
             TypedQuery<?> typedQuery;
             try {
                 typedQuery = queryFactory.createNativeQuery(
                         queryAttribute.getQuery(), queryAttribute.getJavaType());
-            } catch (Exception e) { //TODO catch a better exception
+            } catch (RuntimeException e) {
                 LOG.error("Could not create native query from the parameter given in annotation @Sparql:\n{}" +
                         "\nAttribute '{}' will be skipped.", queryAttribute.getQuery(),
                         queryAttribute.getJavaMember().getName(), e);
                 continue;
             }
 
-            // set value of parameter "this", if it is present in the query, with the instance
+            // set value of parameter "this", if it is present in the query, with the entity instance
             try {
-                typedQuery.getParameter("this");
                 typedQuery.setParameter("this", instance);
             } catch (IllegalArgumentException e1) {
                 // parameter "this" is not present in the query, no need to set it
@@ -188,9 +196,9 @@ class EntityConstructor {
                 continue;
             }
 
-            QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs = getQueryFieldLoader(et, queryAttribute);
+            QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs =
+                    getQueryFieldLoader(et, queryAttribute);
 
-            fieldLoaders.add(qfs);
             qfs.addValueFromTypedQuery(typedQuery);
             qfs.buildInstanceFieldValue(instance);
         }
