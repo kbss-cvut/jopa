@@ -90,6 +90,7 @@ public class SparqlQueryParser implements QueryParser {
                 case '>':
                 case ',':
                 case '\n':
+                case '\r':
                 case ')':
                 case ' ':
                 case '.':
