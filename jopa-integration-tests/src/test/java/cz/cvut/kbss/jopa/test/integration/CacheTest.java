@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -84,13 +85,17 @@ class CacheTest extends IntegrationTestBase {
     }
 
     private Collection<Axiom<?>> axiomsForA(URI identifier) {
+        return axiomsForA(identifier, "stringAttribute");
+    }
+
+    private Collection<Axiom<?>> axiomsForA(URI identifier, String stringAttribute) {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         final NamedResource nr = NamedResource.create(identifier);
         axioms.add(new AxiomImpl<>(nr, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_A))));
         axioms.add(new AxiomImpl<>(nr,
                 Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false),
-                new Value<>("stringAttribute")));
+                new Value<>(stringAttribute)));
         return axioms;
     }
 
@@ -148,6 +153,7 @@ class CacheTest extends IntegrationTestBase {
                 return axiomsForD;
             }
         }).when(connectionMock).find(any());
+        when(connectionMock.contains(new AxiomImpl<>(NamedResource.create(idA), Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_A))), Collections.emptySet())).thenReturn(true);
         final OWLClassD d = em.find(OWLClassD.class, idD);
         assertNotNull(d);
         assertNotNull(d.getOwlClassA());
@@ -159,6 +165,15 @@ class CacheTest extends IntegrationTestBase {
         em.merge(update);
         em.getTransaction().commit();
         em.clear();
+        final Collection<Axiom<?>> newAxiomsForA = axiomsForA(idA, updatedString);
+        doAnswer(a -> {
+            final AxiomDescriptor axDescriptor = a.getArgument(0);
+            if (axDescriptor.getSubject().getIdentifier().equals(idA)) {
+                return newAxiomsForA;
+            } else {
+                return axiomsForD;
+            }
+        }).when(connectionMock).find(any());
 
         final OWLClassD result = em.find(OWLClassD.class, idD);
         assertEquals(updatedString, result.getOwlClassA().getStringAttribute());
