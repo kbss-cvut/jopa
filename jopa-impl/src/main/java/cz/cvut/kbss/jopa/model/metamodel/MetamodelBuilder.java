@@ -188,7 +188,7 @@ public class MetamodelBuilder {
         typeReferenceMap.addReference(referencedType, referringType);
     }
 
-    TypeReferenceMap getTypeReferenceMap() {
+    public TypeReferenceMap getTypeReferenceMap() {
         return typeReferenceMap;
     }
 }
