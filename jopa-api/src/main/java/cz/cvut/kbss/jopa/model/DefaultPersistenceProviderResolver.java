@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -54,19 +52,11 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
     }
 
     private static List<PersistenceProvider> initProviders() {
-        final List<Class<? extends PersistenceProvider>> providerTypes = new ArrayList<>(PROVIDER_TYPES);
-        providerTypes.addAll(resolveProviders());
-        final List<PersistenceProvider> providerList = new ArrayList<>(providerTypes.size());
-        for (Class<? extends PersistenceProvider> cls : providerTypes) {
-            try {
-                providerList.add(cls.newInstance());
-            } catch (InstantiationException | IllegalAccessException e) {
-                LOG.error("Unable to instantiate PersistenceProvider {}.", cls, e);
-            }
-        }
+        final List<PersistenceProvider> providerList = resolveProviders();
         if (providerList.isEmpty()) {
             LOG.warn("No persistence provider implementations found on classpath.");
         }
+        LOG.info("Found persistence providers: {}", providerList);
         return providerList;
     }
 
@@ -87,20 +77,15 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         PROVIDER_TYPES.add(cls);
     }
 
-    private static List<Class<? extends PersistenceProvider>> resolveProviders() {
+    private static List<PersistenceProvider> resolveProviders() {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        final List<Class<? extends PersistenceProvider>> providerTypes = new ArrayList<>();
-        try {
-            final Enumeration<URL> configs = classLoader.getResources(PROVIDER_FILE);
+        final List<PersistenceProvider> providers = new ArrayList<>();
 
-            while (configs.hasMoreElements()) {
-                final URL config = configs.nextElement();
-                resolveProvider(config).ifPresent(providerTypes::add);
-            }
-        } catch (IOException e) {
-            LOG.error("Unable to read persistence provider configuration files from classpath.", e);
+        // See https://github.com/javaee/jpa-spec/blob/master/javax.persistence-api/src/main/java/javax/persistence/spi/PersistenceProviderResolverHolder.java
+        for (PersistenceProvider pp : ServiceLoader.load(PersistenceProvider.class, classLoader)) {
+            providers.add(pp);
         }
-        return providerTypes;
+        return providers;
     }
 
     private static Optional<Class<? extends PersistenceProvider>> resolveProvider(URL file) {

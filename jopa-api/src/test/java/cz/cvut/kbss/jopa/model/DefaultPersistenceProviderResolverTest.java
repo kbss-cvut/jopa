@@ -1,21 +1,20 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.TestPersistenceProvider;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -30,6 +29,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 
+@Disabled
 class DefaultPersistenceProviderResolverTest {
 
     private final DefaultPersistenceProviderResolver resolver = new DefaultPersistenceProviderResolver();
@@ -43,18 +43,7 @@ class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    void getPersistenceProvidersInstantiatesProvidersOfRegisteredTypes() {
-        DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
-        final List<PersistenceProvider> result = resolver.getPersistenceProviders();
-        assertFalse(result.isEmpty());
-        final Optional<PersistenceProvider> pp = result.stream().filter(p -> p instanceof TestPersistenceProvider)
-                                                       .findAny();
-        assertTrue(pp.isPresent());
-    }
-
-    @Test
     void getPersistenceProviderCachesProviderInstances() {
-        DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
         final List<PersistenceProvider> providersOne = resolver.getPersistenceProviders();
         final List<PersistenceProvider> providersTwo = resolver.getPersistenceProviders();
         assertEquals(providersOne.size(), providersTwo.size());
@@ -65,7 +54,6 @@ class DefaultPersistenceProviderResolverTest {
 
     @Test
     void clearCachedProvidersEvictsProviderCache() {
-        DefaultPersistenceProviderResolver.registerPersistenceProviderClass(TestPersistenceProvider.class);
         final List<PersistenceProvider> providersOne = resolver.getPersistenceProviders();
         resolver.clearCachedProviders();
         final List<PersistenceProvider> providersTwo = resolver.getPersistenceProviders();
@@ -76,18 +64,7 @@ class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    void getProvidersSkipsNonInstantiableProviderClasses() {
-        DefaultPersistenceProviderResolver.registerPersistenceProviderClass(InvalidPersistenceProvider.class);
-        final List<PersistenceProvider> result = resolver.getPersistenceProviders();
-        assertNotNull(result);
-        final Optional<PersistenceProvider> pp = result.stream().filter(p -> p instanceof InvalidPersistenceProvider)
-                                                       .findAny();
-        assertFalse(pp.isPresent());
-    }
-
-    @Test
     void getProvidersReturnsProvidersFoundOnClasspathViaMetaInfConfiguration() throws Exception {
-        generateProviderFileContent("cz.cvut.kbss.jopa.environment.TestPersistenceProvider");
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();
         assertFalse(result.isEmpty());
         final Optional<PersistenceProvider> pp = result.stream().filter(p -> p instanceof TestPersistenceProvider)
