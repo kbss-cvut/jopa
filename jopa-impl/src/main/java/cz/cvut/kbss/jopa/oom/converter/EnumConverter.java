@@ -37,7 +37,7 @@ public class EnumConverter<E extends Enum<E>> implements ConverterWrapper<E, Obj
 
     @Override
     public Object convertToAxiomValue(E value) {
-        return value.toString();
+        return value != null ? value.toString() : null;
     }
 
     @Override
