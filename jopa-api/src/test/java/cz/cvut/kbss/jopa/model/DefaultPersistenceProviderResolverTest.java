@@ -18,13 +18,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,10 +33,7 @@ class DefaultPersistenceProviderResolverTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        final Field typesField = DefaultPersistenceProviderResolver.class.getDeclaredField("PROVIDER_TYPES");
-        typesField.setAccessible(true);
-        ((Set) typesField.get(null)).clear();
-        generateProviderFileContent("");    // Clear the file content
+        generateProviderFileContent(TestPersistenceProvider.class.getName());    // Clear the file content
     }
 
     @Test
@@ -64,11 +58,11 @@ class DefaultPersistenceProviderResolverTest {
     }
 
     @Test
-    void getProvidersReturnsProvidersFoundOnClasspathViaMetaInfConfiguration() throws Exception {
+    void getProvidersReturnsProvidersFoundOnClasspathViaMetaInfConfiguration() {
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();
         assertFalse(result.isEmpty());
         final Optional<PersistenceProvider> pp = result.stream().filter(p -> p instanceof TestPersistenceProvider)
-                                                       .findAny();
+                .findAny();
         assertTrue(pp.isPresent());
     }
 
@@ -80,34 +74,7 @@ class DefaultPersistenceProviderResolverTest {
     }
 
     private void generateProviderFileContent(String content) throws Exception {
-        final File file = new File(Thread.currentThread().getContextClassLoader()
-                                         .getResource(DefaultPersistenceProviderResolver.PROVIDER_FILE).getFile());
+        final File file = new File(Thread.currentThread().getContextClassLoader().getResource("META-INF" + File.separator + "services" + File.separator + PersistenceProperties.JPA_PERSISTENCE_PROVIDER).getFile());
         Files.write(file.toPath(), content.getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-    }
-
-    @Test
-    void registerProviderClassSkipsClassConfiguredOnClasspathAndNotPersistenceProviderImplementation()
-            throws Exception {
-        generateProviderFileContent(DefaultPersistenceProviderResolver.class.getName());
-        final List<PersistenceProvider> result = resolver.getPersistenceProviders();
-        assertNotNull(result);
-        result.forEach(r -> assertFalse(r instanceof DefaultPersistenceProviderResolver));
-    }
-
-    public static class InvalidPersistenceProvider implements PersistenceProvider {
-
-        public InvalidPersistenceProvider(String puName) {
-            // This will not work
-        }
-
-        @Override
-        public EntityManagerFactory createEntityManagerFactory(String emName, Map<String, String> map) {
-            return null;
-        }
-
-        @Override
-        public ProviderUtil getProviderUtil() {
-            return null;
-        }
     }
 }
