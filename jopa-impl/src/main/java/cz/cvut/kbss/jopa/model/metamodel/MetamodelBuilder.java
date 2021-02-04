@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.TypeReferenceMap;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
@@ -36,6 +37,8 @@ public class MetamodelBuilder {
 
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
+
+    private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
 
     private final ConverterResolver converterResolver;
 
@@ -167,5 +170,25 @@ public class MetamodelBuilder {
             processOWLClass(cls);
         }
         return (ManagedType<X>) typeMap.get(cls);
+    }
+
+    /**
+     * Checks whether the specified class represents a managed type already processed by the metamodel builder.
+     *
+     * @param cls Class to check
+     * @return Managed type existence status
+     */
+    boolean hasManagedType(Class<?> cls) {
+        return typeMap.containsKey(cls);
+    }
+
+    void registerTypeReference(Class<?> referencedType, Class<?> referringType) {
+        assert hasManagedType(referencedType);
+        assert hasManagedType(referringType);
+        typeReferenceMap.addReference(referencedType, referringType);
+    }
+
+    public TypeReferenceMap getTypeReferenceMap() {
+        return typeReferenceMap;
     }
 }

@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Objects;
 import java.util.Set;
 
 @SparqlResultSetMappings({@SparqlResultSetMapping(name = OWLClassA.VARIABLE_MAPPING, variables = {
@@ -95,6 +96,19 @@ public class OWLClassA {
 
     public Set<String> getTypes() {
         return types;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OWLClassA owlClassA = (OWLClassA) o;
+        return Objects.equals(uri, owlClassA.uri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uri);
     }
 
     @Override

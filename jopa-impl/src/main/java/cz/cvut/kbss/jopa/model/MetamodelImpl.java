@@ -36,6 +36,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     private Map<Class<?>, ManagedType<?>> typeMap;
     private Map<Class<?>, EntityType<?>> entities;
     private Set<Class<?>> inferredClasses;
+    private TypeReferenceMap typeReferenceMap;
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
@@ -72,6 +73,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
+        this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
     }
 
     /**
@@ -167,5 +169,15 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     public boolean isEntityType(Class<?> cls) {
         Objects.requireNonNull(cls);
         return entities.containsKey(cls);
+    }
+
+    /**
+     * Gets types which contain an attribute of the specified type.
+     *
+     * @param cls Type referred to
+     * @return Set of referring types, possibly empty
+     */
+    public Set<Class<?>> getReferringTypes(Class<?> cls) {
+        return typeReferenceMap.getReferringTypes(cls);
     }
 }

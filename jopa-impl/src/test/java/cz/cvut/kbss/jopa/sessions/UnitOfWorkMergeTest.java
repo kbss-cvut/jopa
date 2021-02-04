@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,10 +14,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassF;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,14 +95,14 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         assertEquals(2, objectChanges.getChanges().size());
         final String strAttName = OWLClassA.getStrAttField().getName();
         final Optional<ChangeRecord> rOne = objectChanges.getChanges().stream()
-                                                         .filter(ch -> ch.getAttribute().getName().equals(strAttName))
-                                                         .findAny();
+                .filter(ch -> ch.getAttribute().getName().equals(strAttName))
+                .findAny();
         assertTrue(rOne.isPresent());
         assertEquals(clone.getStringAttribute(), rOne.get().getNewValue());
         final String typesAttName = OWLClassA.getTypesField().getName();
         final Optional<ChangeRecord> rTwo = objectChanges.getChanges().stream()
-                                                         .filter(ch -> ch.getAttribute().getName().equals(typesAttName))
-                                                         .findAny();
+                .filter(ch -> ch.getAttribute().getName().equals(typesAttName))
+                .findAny();
         assertTrue(rTwo.isPresent());
         assertEquals(clone.getTypes(), rTwo.get().getNewValue());
     }
@@ -192,5 +189,22 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         toMerge.setSecondStringAttribute("different-value");
         when(transactionMock.isActive()).thenReturn(true);
         assertThrows(InferredAttributeModifiedException.class, () -> uow.mergeDetached(toMerge, descriptor));
+    }
+
+    @Test
+    void mergeDetachedEvictsClassesPossiblyReferencingMergedTypeFromCache() {
+        when(metamodelMock.getReferringTypes(OWLClassA.class)).thenReturn(new HashSet<>(Arrays.asList(OWLClassD.class, OWLClassC.class)));
+        final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        final OWLClassA detached = new OWLClassA(managed.getUri());
+        detached.setTypes(new HashSet<>(managed.getTypes()));
+        final String detachedString = "detachedStringAttribute";
+        detached.setStringAttribute(detachedString);
+        when(storageMock.contains(managed.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
+
+        final OWLClassA result = uow.mergeDetached(detached, descriptor);
+        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
+        verify(cacheManagerMock).evict(OWLClassD.class);
+        verify(cacheManagerMock).evict(OWLClassC.class);
     }
 }
