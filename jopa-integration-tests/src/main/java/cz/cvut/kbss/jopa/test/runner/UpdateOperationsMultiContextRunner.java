@@ -236,7 +236,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
         final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri(), cDescriptor);
         assertEquals(entityC.getReferencedList().size() - removed.size(), resC.getReferencedList()
-                                                                              .size());
+                .size());
         for (OWLClassA a : removed) {
             final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), lstDescriptor);
             assertNotNull(resA);
@@ -312,8 +312,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         });
 
         assertTrue(em.createNativeQuery("ASK { GRAPH ?g { ?s ?p ?o. }}", Boolean.class).setParameter("g", CONTEXT_TWO)
-                     .setParameter("s", entityD.getUri()).setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
-                     .setParameter("o", newA.getUri()).getSingleResult());
+                .setParameter("s", entityD.getUri()).setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                .setParameter("o", newA.getUri()).getSingleResult());
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(result.getOwlClassA());
         assertEquals(newA.getUri(), result.getOwlClassA().getUri());
@@ -333,7 +333,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         entityF.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
-                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+                .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
         transactional(() -> em.merge(entityF, descriptor));
 
         final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
@@ -347,13 +347,11 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         this.em = getEntityManager("updateSupportsObjectPropertyWithMultipleContexts", true);
         final OWLClassF entityF = new OWLClassF(Generators.generateUri());
         final OWLClassA entityA2 = new OWLClassA(Generators.generateUri(), "another a");
-        transactional(() -> {
-            em.persist(entityF);
-        });
+        transactional(() -> em.persist(entityF));
 
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
-                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+                .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
         transactional(() -> {
             final OWLClassF toUpdate = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
             toUpdate.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));

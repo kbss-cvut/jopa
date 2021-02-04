@@ -48,7 +48,7 @@ class ResultSetTest {
         final ResultSet sut = mock(ResultSet.class);
         when(sut.iterator()).thenCallRealMethod();
         when(sut.isOpen()).thenReturn(false);
-        final IllegalStateException result = assertThrows(IllegalStateException.class, () -> sut.iterator());
+        final IllegalStateException result = assertThrows(IllegalStateException.class, sut::iterator);
         assertThat(result.getMessage(), containsString("result set is closed"));
     }
 
@@ -66,7 +66,7 @@ class ResultSetTest {
         final ResultSet sut = mock(ResultSet.class);
         when(sut.spliterator()).thenCallRealMethod();
         when(sut.isOpen()).thenReturn(false);
-        final IllegalStateException result = assertThrows(IllegalStateException.class, () -> sut.spliterator());
+        final IllegalStateException result = assertThrows(IllegalStateException.class, sut::spliterator);
         assertThat(result.getMessage(), containsString("result set is closed"));
     }
 
