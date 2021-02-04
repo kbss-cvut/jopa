@@ -218,9 +218,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      *
      * @param instance The instance to receive the field value
      * @throws IllegalArgumentException Access error
-     * @throws IllegalAccessException   Access error
      */
-    abstract void buildInstanceFieldValue(Object instance) throws IllegalAccessException;
+    abstract void buildInstanceFieldValue(Object instance);
 
     /**
      * Extracts values of field represented by this strategy from the specified instance.
@@ -228,10 +227,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * @param instance     The instance to extract values from
      * @param valueBuilder Builder into which the attribute value(s) are extracted
      * @throws IllegalArgumentException Access error
-     * @throws IllegalAccessException   Access error
      */
-    abstract void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
-            throws IllegalAccessException;
+    abstract void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder);
 
     /**
      * Creates property assertion appropriate for the attribute represented by this strategy.

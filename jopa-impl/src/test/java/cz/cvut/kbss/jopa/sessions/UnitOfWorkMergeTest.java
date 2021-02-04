@@ -202,7 +202,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         when(storageMock.contains(managed.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
         when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
 
-        final OWLClassA result = uow.mergeDetached(detached, descriptor);
+        uow.mergeDetached(detached, descriptor);
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
         verify(cacheManagerMock).evict(OWLClassD.class);
         verify(cacheManagerMock).evict(OWLClassC.class);

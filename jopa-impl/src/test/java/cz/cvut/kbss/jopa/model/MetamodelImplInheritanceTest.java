@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -117,7 +117,7 @@ class MetamodelImplInheritanceTest {
     void buildingMetamodelSetsSubtypesOfMappedSuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final IdentifiableType<? super OWLClassQ> supertype = metamodel.entity(OWLClassQ.class).getSupertype();
-        assertTrue(supertype instanceof AbstractIdentifiableType);
+        assertNotNull(supertype);
         final AbstractIdentifiableType<? super OWLClassQ> mappedSupertype = (AbstractIdentifiableType<? super OWLClassQ>) supertype;
         assertTrue(mappedSupertype.hasSubtypes());
         assertTrue(mappedSupertype.getSubtypes().contains(metamodel.entity(OWLClassQ.class)));

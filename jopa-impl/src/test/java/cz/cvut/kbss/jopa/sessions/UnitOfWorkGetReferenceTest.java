@@ -241,7 +241,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         when(storageMock.contains(owner.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
         toMerge.setOwlClassA(ref);
 
-        final OWLClassD result = uow.mergeDetached(toMerge, descriptor);
+        uow.mergeDetached(toMerge, descriptor);
 
         final ObjectChangeSet changeSet = uow.getUowChangeSet().getExistingObjectChanges(owner);
         assertFalse(changeSet.getChanges().isEmpty());

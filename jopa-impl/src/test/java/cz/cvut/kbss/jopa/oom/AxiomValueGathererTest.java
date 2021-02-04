@@ -62,7 +62,7 @@ class AxiomValueGathererTest {
     private AxiomValueGatherer sut;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
         when(connectionMock.lists()).thenReturn(listsMock);
         when(connectionMock.types()).thenReturn(typesMock);

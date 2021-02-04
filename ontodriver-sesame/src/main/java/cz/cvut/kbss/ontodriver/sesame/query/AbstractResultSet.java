@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,9 +14,9 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.query;
 
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.util.NoSuchElementException;
 import java.util.Observer;
@@ -42,19 +42,19 @@ abstract class AbstractResultSet implements ResultSet {
     }
 
     @Override
-    public int getRowIndex() throws OntoDriverException {
+    public int getRowIndex() {
         ensureOpen();
         return index;
     }
 
     @Override
-    public Statement getStatement() throws OntoDriverException {
+    public Statement getStatement() {
         ensureOpen();
         return statement;
     }
 
     @Override
-    public boolean isFirst() throws OntoDriverException {
+    public boolean isFirst() {
         ensureOpen();
         return index == 0;
     }
@@ -71,18 +71,18 @@ abstract class AbstractResultSet implements ResultSet {
     }
 
     @Override
-    public void first() throws OntoDriverException {
+    public void first() {
         throw new UnsupportedOperationException(
                 "Returning to the first row is not supported by this result set.");
     }
 
     @Override
-    public void previous() throws OntoDriverException {
+    public void previous() {
         throw new UnsupportedOperationException("Going back is not supported by this result set.");
     }
 
     @Override
-    public void registerObserver(Observer observer) throws OntoDriverException {
+    public void registerObserver(Observer observer) {
         // TODO Auto-generated method stub
 
     }

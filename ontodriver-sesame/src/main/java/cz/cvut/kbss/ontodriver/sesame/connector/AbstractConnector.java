@@ -20,7 +20,7 @@ import cz.cvut.kbss.ontodriver.util.Transaction;
 
 abstract class AbstractConnector implements Connector {
 
-    protected Transaction transaction;
+    protected final Transaction transaction;
     protected boolean open;
 
     protected AbstractConnector() {

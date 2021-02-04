@@ -21,9 +21,9 @@ import java.util.Objects;
 
 public class MergeManagerImpl implements MergeManager {
 
-    protected UnitOfWorkImpl uow;
+    private final UnitOfWorkImpl uow;
 
-    protected CloneBuilder builder;
+    private final CloneBuilder builder;
 
     MergeManagerImpl(UnitOfWorkImpl session) {
         this.uow = session;
