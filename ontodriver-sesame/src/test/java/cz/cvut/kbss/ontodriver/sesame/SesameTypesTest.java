@@ -38,7 +38,7 @@ public class SesameTypesTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(adapterMock.getTypesHandler()).thenReturn(handlerMock);
 
         this.types = new SesameTypes(adapterMock, () -> {

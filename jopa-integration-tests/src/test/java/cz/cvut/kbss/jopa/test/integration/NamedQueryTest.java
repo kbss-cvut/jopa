@@ -41,7 +41,7 @@ public class NamedQueryTest extends IntegrationTestBase {
 
     @BeforeEach
     protected void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
         when(connectionMock.createStatement()).thenReturn(statementMock);
         when(resultSetMock.iterator()).thenReturn(mock(Iterator.class));

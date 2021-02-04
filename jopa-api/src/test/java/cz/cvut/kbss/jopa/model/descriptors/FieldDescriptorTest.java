@@ -44,7 +44,7 @@ class FieldDescriptorTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
     }
 

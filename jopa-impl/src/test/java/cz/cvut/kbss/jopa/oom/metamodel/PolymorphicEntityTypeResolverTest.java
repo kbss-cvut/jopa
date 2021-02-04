@@ -49,7 +49,7 @@ public class PolymorphicEntityTypeResolverTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etS = metamodelMock.entity(OWLClassS.class);

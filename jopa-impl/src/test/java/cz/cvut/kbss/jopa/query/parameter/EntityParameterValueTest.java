@@ -38,7 +38,7 @@ class EntityParameterValueTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
         when(metamodelProvider.getMetamodel()).thenReturn(metamodel);

@@ -44,7 +44,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
         testUtil.setHasContent(HAS_CONTENT);
     }

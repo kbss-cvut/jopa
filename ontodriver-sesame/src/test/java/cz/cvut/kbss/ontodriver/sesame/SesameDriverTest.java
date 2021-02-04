@@ -55,7 +55,7 @@ public class SesameDriverTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.driver = new SesameDriver(storageProperties, Collections.emptyMap());
         when(connectorFactoryMock.isOpen()).thenReturn(Boolean.TRUE);
         when(connectorFactoryMock.createStorageConnector(new DriverConfiguration(storageProperties)))

@@ -61,7 +61,7 @@ class EntityConstructorTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         this.mocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();

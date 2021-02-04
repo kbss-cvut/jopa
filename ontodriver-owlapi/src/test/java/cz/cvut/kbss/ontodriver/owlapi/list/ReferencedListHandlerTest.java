@@ -43,7 +43,7 @@ public class ReferencedListHandlerTest
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
         this.descriptor = new ReferencedListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         this.valueDescriptor = createDescriptor();

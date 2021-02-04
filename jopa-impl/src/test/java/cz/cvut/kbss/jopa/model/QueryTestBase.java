@@ -71,7 +71,7 @@ abstract class QueryTestBase {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(connectionWrapperMock.createStatement()).thenReturn(statementMock);
         when(statementMock.executeQuery(any())).thenReturn(resultSetMock);
         doAnswer((invocationOnMock) -> {

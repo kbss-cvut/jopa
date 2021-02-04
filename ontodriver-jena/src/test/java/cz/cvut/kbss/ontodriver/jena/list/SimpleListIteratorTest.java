@@ -41,7 +41,7 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
     }
 

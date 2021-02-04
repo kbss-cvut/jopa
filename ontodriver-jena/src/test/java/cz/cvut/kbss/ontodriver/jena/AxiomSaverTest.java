@@ -51,7 +51,7 @@ public class AxiomSaverTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.saver = new AxiomSaver(connectorMock);
     }
 

@@ -48,7 +48,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         MetamodelMocks mocks = new MetamodelMocks();
 
         this.entity = new OWLClassB();

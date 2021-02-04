@@ -41,7 +41,7 @@ public class OwlapiPreparedStatementTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
         when(executorMock.executeQuery(anyString(), any())).thenReturn(resultSetMock);
     }

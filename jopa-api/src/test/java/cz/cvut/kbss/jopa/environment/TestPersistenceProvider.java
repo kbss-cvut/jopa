@@ -24,8 +24,8 @@ public class TestPersistenceProvider implements PersistenceProvider {
 
     private static TestPersistenceProvider instance;
 
-    private EntityManagerFactory emfMock = mock(EntityManagerFactory.class);
-    private ProviderUtil providerUtilMock = mock(ProviderUtil.class);
+    private final EntityManagerFactory emfMock = mock(EntityManagerFactory.class);
+    private final ProviderUtil providerUtilMock = mock(ProviderUtil.class);
 
     private int createEmfCalled = 0;
     private int getProviderUtilCalled = 0;

@@ -43,7 +43,7 @@ public class EpistemicAxiomRemoverTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.remover = new EpistemicAxiomRemover(connectorMock);
     }
 

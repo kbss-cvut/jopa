@@ -52,7 +52,7 @@ public class ManagedTypeValueMergerTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         when(uow.getMetamodel()).thenReturn(metamodel);

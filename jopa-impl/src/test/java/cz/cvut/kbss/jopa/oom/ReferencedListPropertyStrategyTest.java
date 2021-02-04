@@ -53,7 +53,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
         this.refListMock = mocks.forOwlClassC().referencedListAtt();
         this.strategy = new ReferencedListPropertyStrategy<>(mocks.forOwlClassC().entityType(), refListMock, descriptor,

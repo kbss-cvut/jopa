@@ -24,7 +24,7 @@ class DataPropertyFieldStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.metamodelMocks = new MetamodelMocks();
         descriptor = spy(descriptor);
     }

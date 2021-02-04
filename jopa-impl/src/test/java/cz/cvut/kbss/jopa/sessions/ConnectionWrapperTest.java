@@ -43,7 +43,7 @@ class ConnectionWrapperTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.connectionWrapper = new ConnectionWrapper(connectionMock);
         final Field oomField = ConnectionWrapper.class.getDeclaredField("mapper");
         oomField.setAccessible(true);

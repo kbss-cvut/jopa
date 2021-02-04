@@ -36,7 +36,7 @@ public class EntityTransactionImplTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(wrapperMock.getEntityManager()).thenReturn(emMock);
         when(wrapperMock.getTransactionUOW()).thenReturn(uowMock);
         this.transaction = new EntityTransactionImpl(wrapperMock);

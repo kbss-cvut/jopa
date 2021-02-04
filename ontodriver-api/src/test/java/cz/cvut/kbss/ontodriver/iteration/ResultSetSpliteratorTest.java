@@ -40,7 +40,7 @@ class ResultSetSpliteratorTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.sut = new ResultSetSpliterator(resultSet);
     }
 

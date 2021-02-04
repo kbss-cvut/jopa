@@ -54,7 +54,7 @@ public class JenaListsTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final JenaAdapter adapterMock = mock(JenaAdapter.class);
         when(adapterMock.simpleListHandler()).thenReturn(simpleListHandlerMock);
         when(adapterMock.referencedListHandler()).thenReturn(referencedListHandlerMock);

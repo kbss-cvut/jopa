@@ -41,7 +41,7 @@ public class SoqlQueryParserTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         MetamodelMocks mocks =new MetamodelMocks();
         mocks.setMocks(metamodel);
         final MetamodelProvider mpp = mock(MetamodelProvider.class);

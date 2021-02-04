@@ -63,7 +63,7 @@ class OwlapiAdapterTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = spy(snapshot.getOntology());
         this.factory = snapshot.getDataFactory();

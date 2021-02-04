@@ -67,7 +67,7 @@ public abstract class UnitOfWorkTestBase {
     protected UnitOfWorkImpl uow;
 
     protected void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         this.serverSessionStub = spy(new ServerSessionStub(storageMock));
         when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);

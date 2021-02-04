@@ -63,7 +63,7 @@ class SesameAdapterTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(connectorMock.getValueFactory()).thenReturn(VF);
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();

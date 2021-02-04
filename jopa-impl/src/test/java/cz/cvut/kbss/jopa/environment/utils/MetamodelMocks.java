@@ -252,7 +252,7 @@ public class MetamodelMocks {
     private AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt;
 
     public MetamodelMocks() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
         MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);

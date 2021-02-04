@@ -44,7 +44,7 @@ public class MapValueMergerTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         this.descriptor = new EntityDescriptor();

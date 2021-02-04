@@ -50,7 +50,7 @@ public class JenaPropertiesTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final JenaAdapter adapterMock = mock(JenaAdapter.class);
         when(adapterMock.propertiesHandler()).thenReturn(propertiesHandler);
         this.properties = new JenaProperties(adapterMock, beforeMock, afterMock);

@@ -63,7 +63,7 @@ public class AxiomSaverTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = spy(snapshot.getOntology());
         this.manager = spy(snapshot.getOntologyManager());

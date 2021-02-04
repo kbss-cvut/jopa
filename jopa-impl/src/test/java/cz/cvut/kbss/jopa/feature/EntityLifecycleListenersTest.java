@@ -68,7 +68,7 @@ public class EntityLifecycleListenersTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.descriptor = new EntityDescriptor();
         final ServerSessionStub serverSessionStub = spy(new ServerSessionStub(storageMock));
         when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);

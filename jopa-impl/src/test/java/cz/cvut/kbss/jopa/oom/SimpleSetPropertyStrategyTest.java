@@ -60,7 +60,7 @@ class SimpleSetPropertyStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         this.gatherer = new AxiomValueGatherer(NamedResource.create(PK), null);
         this.mocks = new MetamodelMocks();

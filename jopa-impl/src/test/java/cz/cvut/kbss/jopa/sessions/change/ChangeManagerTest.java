@@ -67,7 +67,7 @@ public class ChangeManagerTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         initInstances();
         manager = new ChangeManagerImpl(providerMock);
         when(providerMock.isEntityType(any(Class.class))).thenAnswer(invocation -> {

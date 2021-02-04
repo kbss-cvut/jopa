@@ -57,7 +57,7 @@ class EpistemicAxiomRemoverTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(null);
         this.ontology = spy(snapshot.getOntology());
         this.manager = spy(snapshot.getOntologyManager());

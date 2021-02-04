@@ -57,7 +57,7 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER, descriptor);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);

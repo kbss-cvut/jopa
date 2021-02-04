@@ -56,7 +56,7 @@ class IndirectMapTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         this.map = new HashMap<>();
         map.putAll(backupMap);

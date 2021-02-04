@@ -43,7 +43,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
         this.descriptor = new SimpleListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT);
         this.valueDescriptor = createDescriptor();
