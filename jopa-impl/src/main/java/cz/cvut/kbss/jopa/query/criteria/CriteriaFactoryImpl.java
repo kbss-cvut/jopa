@@ -25,7 +25,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     @Override
     public <X> CriteriaQuery<X> from(Class<X> resultClass) {
         CriteriaQueryHolder<X> criteriaQueryHolder = new CriteriaQueryHolder<X>(resultClass);
-        return new CriteriaQueryImpl<X>(criteriaQueryHolder, connection);
+        return new CriteriaQueryImpl<X>(criteriaQueryHolder);
     }
 
 }

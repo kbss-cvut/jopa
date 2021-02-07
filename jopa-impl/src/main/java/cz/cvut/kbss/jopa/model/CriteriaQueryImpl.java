@@ -31,20 +31,24 @@ import java.util.Objects;
 //TODO PRO - CriteriaQueryImpl methods implementation
 public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractQuery.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CriteriaQuery.class);
 
     final CriteriaQueryHolder<T> query;
-    private final ConnectionWrapper connection;
+//    private final ConnectionWrapper connection;
 
-    private boolean useBackupOntology = false;
+//    private boolean useBackupOntology = false;
+//
+//    private Procedure rollbackOnlyMarker;
+//    private Procedure ensureOpenProcedure;
 
-    private Procedure rollbackOnlyMarker;
-    private Procedure ensureOpenProcedure;
 
-
-    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, ConnectionWrapper connection) {
+    public CriteriaQueryImpl(CriteriaQueryHolder<T> query /*,ConnectionWrapper connection*/) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
-        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
+//        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
+    }
+
+    public String getSoqlQuery(){
+        return query.assembleSoqlQuery();
     }
 
 

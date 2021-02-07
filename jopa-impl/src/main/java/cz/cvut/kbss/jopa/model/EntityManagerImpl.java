@@ -444,10 +444,15 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         return q;
     }
 
-    //TODO PRO - implementation of createQuery(CriteriaQuery<T> criteriaQuery)
+    //TODO PRO - test implementation
     @Override
-    public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery, Class<T> aClass) {
-        return null;
+    public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery, Class<T> resultClass) {
+        ensureOpen();
+        CriteriaQueryImpl<T> query = (CriteriaQueryImpl<T>) criteriaQuery;
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query.getSoqlQuery(), resultClass);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
+        return q;
     }
 
     @Override
