@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 public class ResultSetMappingLoaderTest {
 
-    private ResultSetMappingLoader loader = new ResultSetMappingLoader();
+    private final ResultSetMappingLoader loader = new ResultSetMappingLoader();
 
     @Test
     public void doesNothingWhenClassWithoutResultSetMappingIsPassedIn() {

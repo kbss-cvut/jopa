@@ -31,7 +31,7 @@ class IndirectMultilingualStringTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.translations = new HashMap<>();
         translations.put("en", "building");
         translations.put("cs", "stavba");
@@ -115,5 +115,10 @@ class IndirectMultilingualStringTest {
     @Test
     void toStringInvokesToStringOfReferencedInstance() {
         assertEquals(referencedString.toString(), sut.toString());
+    }
+
+    @Test
+    void equalsWorksFromNormalToIndirectMultilingualString() {
+        assertEquals(referencedString, sut);
     }
 }

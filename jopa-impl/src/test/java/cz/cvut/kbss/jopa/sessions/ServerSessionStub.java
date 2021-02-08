@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 public class ServerSessionStub extends ServerSession {
 
-    private ConnectionWrapper connection;
+    private final ConnectionWrapper connection;
 
     public ServerSessionStub(ConnectionWrapper conn) {
         this.connection = conn;

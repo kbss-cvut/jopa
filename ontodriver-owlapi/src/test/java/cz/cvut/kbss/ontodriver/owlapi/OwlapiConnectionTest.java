@@ -42,7 +42,7 @@ public class OwlapiConnectionTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.connection = new OwlapiConnection(adapterMock);
     }
 

@@ -41,7 +41,7 @@ class EntityResultMapperTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.mapper = new EntityResultMapper<>(etMock);
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
     }

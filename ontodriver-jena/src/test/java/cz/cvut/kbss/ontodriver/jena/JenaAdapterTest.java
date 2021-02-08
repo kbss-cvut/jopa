@@ -56,7 +56,7 @@ class JenaAdapterTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.adapter = new JenaAdapter(connectorMock, inferredConnectorMock);
     }
 

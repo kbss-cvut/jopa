@@ -617,9 +617,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             unregisterObject(clone);
             throw e;
         }
-        if (cacheManager.contains(et.getJavaType(), idUri, descriptor)) {
-            cacheManager.evict(et.getJavaType(), idUri, descriptor.getSingleContext().orElse(null));
-        }
+        evictAfterMerge(et, idUri, descriptor);
         setHasChanges();
         checkForIndirectObjects(clone);
         return et.getJavaType().cast(clone);
@@ -641,6 +639,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final ObjectChangeSet newChangeSet = ChangeSetFactory.createObjectChangeSet(original, clone, descriptor);
         changeSet.getChanges().forEach(newChangeSet::addChangeRecord);
         return newChangeSet;
+    }
+
+    private void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
+        if (cacheManager.contains(et.getJavaType(), identifier, descriptor)) {
+            cacheManager.evict(et.getJavaType(), identifier, descriptor.getSingleContext().orElse(null));
+        }
+        getMetamodel().getReferringTypes(et.getJavaType()).forEach(cacheManager::evict);
     }
 
     private void registerEntityWithPersistenceContext(Object entity) {
@@ -976,7 +981,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-               LoadState.UNKNOWN;
+                LoadState.UNKNOWN;
     }
 
     @Override

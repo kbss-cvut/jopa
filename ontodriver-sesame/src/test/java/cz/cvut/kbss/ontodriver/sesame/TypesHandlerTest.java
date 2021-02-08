@@ -57,7 +57,7 @@ public class TypesHandlerTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.handler = new TypesHandler(connectorMock, vf);
     }
 

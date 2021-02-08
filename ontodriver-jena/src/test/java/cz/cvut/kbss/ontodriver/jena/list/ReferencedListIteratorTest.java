@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.list;
 
@@ -24,8 +22,8 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
@@ -34,7 +32,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -42,9 +42,9 @@ import static org.mockito.Mockito.when;
 
 public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedListIterator, ReferencedListDescriptor> {
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
         testUtil.setHasContent(HAS_CONTENT);
     }
@@ -90,11 +90,13 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(
                 Collections.singletonList(createStatement(RESOURCE, HAS_LIST, createTypedLiteral(117))));
         final ReferencedListIterator iterator = iterator();
-        thrown.expect(ListProcessingException.class);
-        thrown.expectMessage("Expected successor of node " + RESOURCE + " to be a named resource.");
-        while (iterator.hasNext()) {
-            iterator.nextAxiom();
-        }
+        final ListProcessingException ex = assertThrows(ListProcessingException.class, () -> {
+            while (iterator.hasNext()) {
+                iterator.nextAxiom();
+            }
+        });
+        assertThat(ex.getMessage(),
+                containsString("Expected successor of node " + RESOURCE + " to be a named resource."));
     }
 
     @Test
@@ -107,11 +109,13 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
                 createStatement(node, HAS_CONTENT, createResource(list.get(index).toString()))
         ));
         final ReferencedListIterator iterator = iterator();
-        thrown.expect(IntegrityConstraintViolatedException.class);
-        thrown.expectMessage("Encountered multiple content values of list node " + node.getURI());
-        while (iterator.hasNext()) {
-            iterator.nextAxiom();
-        }
+        final IntegrityConstraintViolatedException ex = assertThrows(IntegrityConstraintViolatedException.class, () -> {
+            while (iterator.hasNext()) {
+                iterator.nextAxiom();
+            }
+        });
+        assertThat(ex.getMessage(),
+                containsString("Encountered multiple content values of list node " + node.getURI()));
     }
 
     @Test
@@ -121,11 +125,12 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         final Resource node = testUtil.getReferencedListNodes().get(index);
         when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(Collections.emptyList());
         final ReferencedListIterator iterator = iterator();
-        thrown.expect(IntegrityConstraintViolatedException.class);
-        thrown.expectMessage("No content found for list node " + node.getURI());
-        while (iterator.hasNext()) {
-            iterator.nextAxiom();
-        }
+        final IntegrityConstraintViolatedException ex = assertThrows(IntegrityConstraintViolatedException.class, () -> {
+            while (iterator.hasNext()) {
+                iterator.nextAxiom();
+            }
+        });
+        assertThat(ex.getMessage(), containsString("No content found for list node " + node.getURI()));
     }
 
     @Test

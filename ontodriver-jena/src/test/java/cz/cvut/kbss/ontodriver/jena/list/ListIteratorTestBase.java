@@ -21,9 +21,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.net.URI;
@@ -32,7 +30,8 @@ import java.util.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 public abstract class ListIteratorTestBase<T extends AbstractListIterator, D extends ListDescriptor> {
@@ -41,9 +40,6 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
     static final Property HAS_LIST = ResourceFactory.createProperty(Generator.generateUri().toString());
     static final Property HAS_NEXT = ResourceFactory.createProperty(Generator.generateUri().toString());
     static final Property HAS_CONTENT = ResourceFactory.createProperty(Generator.generateUri().toString());
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     StorageConnector connectorMock;
@@ -71,8 +67,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
     public void nextThrowsNoSuchElementWhenNoMoreElementsExist() {
         final AbstractListIterator iterator = iterator();
         assertFalse(iterator.hasNext());
-        thrown.expect(NoSuchElementException.class);
-        iterator.nextAxiom();
+        assertThrows(NoSuchElementException.class, iterator::nextAxiom);
     }
 
     @Test
@@ -94,28 +89,27 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
                 Arrays.asList(createStatement(RESOURCE, HAS_LIST, createResource()),
                         createStatement(RESOURCE, HAS_LIST, createResource())));
         final AbstractListIterator iterator = iterator();
-        thrown.expect(IntegrityConstraintViolatedException.class);
-        thrown.expectMessage("Encountered multiple successors of list node " + RESOURCE.getURI());
-        iterator.nextAxiom();
+        final IntegrityConstraintViolatedException ex = assertThrows(IntegrityConstraintViolatedException.class,
+                iterator::nextAxiom);
+        assertThat(ex.getMessage(),
+                containsString("Encountered multiple successors of list node " + RESOURCE.getURI()));
     }
 
     @Test
     public void removeWithoutReconnectThrowsIllegalStateExceptionWhenNextWasNotCalledBefore() {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Cannot call remove before calling next."));
         generateList();
         final AbstractListIterator iterator = iterator();
-        iterator.removeWithoutReconnect();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, iterator::removeWithoutReconnect);
+        assertThat(ex.getMessage(), containsString("Cannot call remove before calling next."));
     }
 
     @Test
     public void removeWithoutReconnectThrowsIllegalStateExceptionWhenRemoveIsCalledTwiceOnElement() {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage(containsString("Cannot call remove multiple times on one element."));
         generateList();
         final AbstractListIterator iterator = iterator();
         iterator.nextValue();
         iterator.removeWithoutReconnect();
-        iterator.removeWithoutReconnect();
+        final IllegalStateException ex = assertThrows(IllegalStateException.class, iterator::removeWithoutReconnect);
+        assertThat(ex.getMessage(), containsString("Cannot call remove multiple times on one element."));
     }
 }

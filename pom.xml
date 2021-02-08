@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>10</version>
+    <version>0.16.3</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -38,13 +38,13 @@
 
         <org.slf4j.version>1.7.30</org.slf4j.version>
         <junit.version>4.12</junit.version>
-        <org.junit.jupiter.version>5.6.2</org.junit.jupiter.version>
-        <org.mockito.version>2.28.2</org.mockito.version>
+        <org.junit.jupiter.version>5.7.0</org.junit.jupiter.version>
+        <org.mockito.version>3.7.7</org.mockito.version>
         <org.aspectj.version>1.9.6</org.aspectj.version>
         <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
 
         <!-- We use OWLAPI in multiple modules, so let's keep them in sync -->
-        <net.sourceforge.owlapi.version>5.1.16</net.sourceforge.owlapi.version>
+        <net.sourceforge.owlapi.version>5.1.17</net.sourceforge.owlapi.version>
 
         <maven.aspectj.plugin.version>1.11</maven.aspectj.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>

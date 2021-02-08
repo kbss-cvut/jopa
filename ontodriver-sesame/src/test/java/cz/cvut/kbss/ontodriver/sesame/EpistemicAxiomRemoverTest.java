@@ -48,7 +48,7 @@ public class EpistemicAxiomRemoverTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.vf = SimpleValueFactory.getInstance();
         this.descriptor = new AxiomDescriptor(SUBJECT);
 

@@ -20,15 +20,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ToShortConverterTest {
 
-    private ToShortConverter converter = new ToShortConverter();
+    private final ToShortConverter converter = new ToShortConverter();
 
     @Test
     void toAttributeSupportsWideningIntegerConversion() {
-        assertEquals(Short.valueOf((short) 11), converter.convertToAttribute(Byte.valueOf((byte) 11)));
+        assertEquals(Short.valueOf((short) 11), converter.convertToAttribute((byte) 11));
     }
 
     @Test
     void toAttributeSupportsIdentityConversion() {
-        assertEquals(Short.valueOf((short) 11), converter.convertToAttribute(Short.valueOf((short) 11)));
+        assertEquals(Short.valueOf((short) 11), converter.convertToAttribute((short) 11));
     }
 }

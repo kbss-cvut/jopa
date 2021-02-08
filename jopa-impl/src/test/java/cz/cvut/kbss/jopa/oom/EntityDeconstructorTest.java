@@ -83,7 +83,7 @@ class EntityDeconstructorTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.mocks = new MetamodelMocks();
         when(oomMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
         when(oomMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));

@@ -40,4 +40,10 @@ public class EnumConverterTest {
         final EnumConverter<OWLClassM.Severity> sut = new EnumConverter<>(OWLClassM.Severity.class);
         assertThrows(UnsupportedTypeTransformation.class, () -> sut.convertToAttribute("test"));
     }
+
+    @Test
+    void convertToAxiomValueHandlesNullValue() {
+        final EnumConverter<OWLClassM.Severity> sut = new EnumConverter<>(OWLClassM.Severity.class);
+        assertNull(sut.convertToAxiomValue(null));
+    }
 }

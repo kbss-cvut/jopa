@@ -44,7 +44,7 @@ class JenaDriver implements Closeable, ConnectionListener {
 
     private final Set<JenaConnection> openConnections;
 
-    private boolean autoCommit;
+    private final boolean autoCommit;
 
     JenaDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {
         assert properties != null;

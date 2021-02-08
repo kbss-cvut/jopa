@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -20,43 +18,36 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class SesameDataSourceTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private SesameDriver driverMock;
 
     private SesameDataSource dataSource;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.dataSource = new SesameDataSource();
         TestUtils.setMock("driver", dataSource, driverMock);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testSesameDataSourceSetNullStorageProperties() {
         final SesameDataSource ds = new SesameDataSource();
-        ds.setStorageProperties(null);
-        fail("This line should not have been reached.");
-        assert ds == null;
+        assertThrows(NullPointerException.class, () -> ds.setStorageProperties(null));
     }
 
     @Test
@@ -78,19 +69,17 @@ public class SesameDataSourceTest {
         assertNull(res);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetConnectionWithoutInitialization() throws Exception {
-        final Connection res = dataSource.getConnection();
-        // This shouldn't be reached
-        assert res == null;
+    @Test
+    public void testGetConnectionWithoutInitialization() {
+        assertThrows(IllegalStateException.class, () -> dataSource.getConnection());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetConnectionOnClosed() throws Exception {
         dataSource.close();
         assertFalse(dataSource.isOpen());
         try {
-            dataSource.getConnection();
+            assertThrows(IllegalStateException.class, () -> dataSource.getConnection());
         } finally {
             verify(driverMock, never()).acquireConnection();
         }
@@ -102,7 +91,6 @@ public class SesameDataSourceTest {
         connected.setAccessible(true);
         connected.set(dataSource, true);
         final Repository repo = new SailRepository(new MemoryStore());
-        repo.initialize();
         try {
             dataSource.setRepository(repo);
             verify(driverMock).setRepository(repo);
@@ -117,8 +105,8 @@ public class SesameDataSourceTest {
         connected.setAccessible(true);
         connected.set(dataSource, true);
         doThrow(new IllegalStateException()).when(driverMock).setRepository(any());
-        thrown.expect(SesameDriverException.class);
-        thrown.expectCause(CoreMatchers.isA(IllegalStateException.class));
-        dataSource.setRepository(null);
+        final SesameDriverException ex = assertThrows(SesameDriverException.class,
+                () -> dataSource.setRepository(null));
+        assertThat(ex.getCause(), instanceOf(IllegalStateException.class));
     }
 }

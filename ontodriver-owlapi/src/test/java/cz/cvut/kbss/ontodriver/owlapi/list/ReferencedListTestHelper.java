@@ -24,7 +24,7 @@ import java.util.List;
 
 public class ReferencedListTestHelper extends ListTestHelper {
 
-    static String SEQUENCE_NODE_SUFFIX = "-SEQ_";
+    static final String SEQUENCE_NODE_SUFFIX = "-SEQ_";
 
     private final String baseUri;
 
@@ -42,7 +42,7 @@ public class ReferencedListTestHelper extends ListTestHelper {
         final OWLObjectProperty hasContent = dataFactory.getOWLObjectProperty(
                 IRI.create(HAS_CONTENT_PROPERTY));
         int i = 0;
-        final String sequenceNodeBase = baseUri + "-SEQ_";
+        final String sequenceNodeBase = baseUri + SEQUENCE_NODE_SUFFIX;
         OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
         manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasList, individual, node));
         manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContent, node,

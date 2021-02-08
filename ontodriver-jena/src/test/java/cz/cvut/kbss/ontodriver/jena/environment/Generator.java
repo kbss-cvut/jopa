@@ -24,7 +24,7 @@ public class Generator {
     private static final Random RANDOM = new Random();
 
     public static URI generateUri() {
-        return URI.create(URI_BASE + "instance" + Integer.toString(RANDOM.nextInt()));
+        return URI.create(URI_BASE + "instance" + RANDOM.nextInt());
     }
 
     public static int randomInt() {

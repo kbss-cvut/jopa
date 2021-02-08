@@ -48,7 +48,7 @@ public class PropertiesHandlerTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.handler = new PropertiesHandler(connectorMock);
     }
 

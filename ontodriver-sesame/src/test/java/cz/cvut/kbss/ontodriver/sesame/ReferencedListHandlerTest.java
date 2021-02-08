@@ -54,7 +54,7 @@ public class ReferencedListHandlerTest
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final Assertion listProperty = Assertion.createObjectPropertyAssertion(
                 java.net.URI.create(LIST_PROPERTY), false);
         final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(

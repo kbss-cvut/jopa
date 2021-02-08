@@ -103,8 +103,8 @@ public class MetamodelFactory {
      */
     public static void initOWLClassBMocks(EntityTypeImpl<OWLClassB> etMock, AbstractAttribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-            NoSuchFieldException,
-            SecurityException {
+                                                                                                NoSuchFieldException,
+                                                                                                SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -213,12 +213,11 @@ public class MetamodelFactory {
         when(etMock.getJavaType()).thenReturn(OWLClassE.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassE.getClassIri()));
         when(etMock.getAttribute(OWLClassE.getStrAttField().getName())).thenReturn(strAttMock);
-        when(etMock.getAttributes()).thenReturn(
-                Collections.<Attribute<? super OWLClassE, ?>>singleton(strAttMock));
+        when(etMock.getAttributes()).thenReturn(Collections.singleton(strAttMock));
         when(etMock.getFieldSpecifications())
                 .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassE, ?>>asList(strAttMock, idMock)));
-        when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField()); //TODO mistake with OWLClassB here :)
-        final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
+        when(strAttMock.getJavaField()).thenReturn(OWLClassE.getStrAttField());
+        final String stringAttIri = OWLClassE.getStrAttField().getAnnotation(OWLDataProperty.class)
                                              .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -757,7 +756,7 @@ public class MetamodelFactory {
                                          PropertiesSpecification props,
                                          SingularAttribute uriAtt, PluralAttribute urlsAtt,
                                          ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
-            Exception {
+                                                                                                                Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));

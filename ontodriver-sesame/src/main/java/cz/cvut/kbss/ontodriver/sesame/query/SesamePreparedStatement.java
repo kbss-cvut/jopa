@@ -26,7 +26,7 @@ import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 public class SesamePreparedStatement extends SesameStatement implements PreparedStatement {
 
-    private StatementHolder statementHolder;
+    private final StatementHolder statementHolder;
 
     public SesamePreparedStatement(StatementExecutor executor, String statement) {
         super(executor);

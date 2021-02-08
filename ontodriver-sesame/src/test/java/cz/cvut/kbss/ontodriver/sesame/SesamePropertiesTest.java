@@ -57,7 +57,7 @@ class SesamePropertiesTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.vf = SimpleValueFactory.getInstance();
         this.subject = vf.createIRI(SUBJECT.getIdentifier().toString());
         final SesameAdapter adapterMock = mock(SesameAdapter.class);

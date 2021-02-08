@@ -22,20 +22,20 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 public class TypesFieldStrategyTest {
 
-    private static URI PK = Generators.createIndividualIdentifier();
+    private static final URI IDENTIFIER = Generators.createIndividualIdentifier();
 
     @Mock
     private EntityMappingHelper mapperMock;
@@ -46,17 +46,17 @@ public class TypesFieldStrategyTest {
 
     private OWLClassA entityA;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         this.mocks = new MetamodelMocks();
         this.entityA = new OWLClassA();
-        entityA.setUri(PK);
+        entityA.setUri(IDENTIFIER);
 
 
-        this.gatherer = new AxiomValueGatherer(NamedResource.create(PK), null);
-        gatherer.addValue(Assertion.createClassAssertion(false), new Value<>(PK), null);
+        this.gatherer = new AxiomValueGatherer(NamedResource.create(IDENTIFIER), null);
+        gatherer.addValue(Assertion.createClassAssertion(false), new Value<>(IDENTIFIER), null);
     }
 
     private <T> TypesFieldStrategy<T> strategy(EntityType<T> et, TypesSpecification<T, ?> typesSpec) {
@@ -110,7 +110,7 @@ public class TypesFieldStrategyTest {
 
     private OWLClassA createOriginal() {
         final OWLClassA a = new OWLClassA();
-        a.setUri(PK);
+        a.setUri(IDENTIFIER);
         if (entityA.getTypes() != null) {
             a.setTypes(new HashSet<>(entityA.getTypes()));
         }
@@ -248,7 +248,7 @@ public class TypesFieldStrategyTest {
     }
 
     @Test
-    public void buildsStringBasedTypesFieldValueFromAxioms() throws Exception {
+    public void buildsStringBasedTypesFieldValueFromAxioms() {
         final TypesFieldStrategy<OWLClassA> strategy =
                 strategy(mocks.forOwlClassA().entityType(), mocks.forOwlClassA().typesSpec());
         final List<Axiom<URI>> axioms = generateClassAssertionAxioms(OWLClassA.getClassIri());
@@ -264,7 +264,7 @@ public class TypesFieldStrategyTest {
 
     private List<Axiom<URI>> generateClassAssertionAxioms(String javaClassIri) {
         final List<Axiom<URI>> axioms = new ArrayList<>();
-        final NamedResource subject = NamedResource.create(PK);
+        final NamedResource subject = NamedResource.create(IDENTIFIER);
         axioms.add(
                 new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(URI.create(javaClassIri))));
         final Set<URI> types = Generators.generateUriTypes(Generators.DEFAULT_SIZE);
@@ -273,7 +273,7 @@ public class TypesFieldStrategyTest {
     }
 
     @Test
-    public void buildsUriBasedTypesFieldValueFromAxioms() throws Exception {
+    public void buildsUriBasedTypesFieldValueFromAxioms() {
         final TypesFieldStrategy<OWLClassP> strategy =
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().types());
         final List<Axiom<URI>> axioms = generateClassAssertionAxioms(OWLClassP.getClassIri());
@@ -288,11 +288,11 @@ public class TypesFieldStrategyTest {
     }
 
     @Test
-    public void buildInstanceFieldLeavesFieldNullWhenNoAxiomsAreLoaded() throws Exception {
+    public void buildInstanceFieldLeavesFieldNullWhenNoAxiomsAreLoaded() {
         final TypesFieldStrategy<OWLClassP> strategy =
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().types());
         final List<Axiom<URI>> axioms = Collections.singletonList(
-                new AxiomImpl<>(NamedResource.create(PK), Assertion.createClassAssertion(false),
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
                         new Value<>(URI.create(OWLClassP.getClassIri()))));
         axioms.forEach(strategy::addValueFromAxiom);
 

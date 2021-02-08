@@ -38,7 +38,7 @@ public class EntityLifecycleListenerManager {
 
     private Map<Object, Map<LifecycleEvent, Method>> entityListenerCallbacks;
 
-    private Map<Object, Object> instancesBeingProcessed = new IdentityHashMap<>();
+    private final Map<Object, Object> instancesBeingProcessed = new IdentityHashMap<>();
 
     /**
      * Gets default instance of this manager, which contains no listeners and does nothing on invocation.

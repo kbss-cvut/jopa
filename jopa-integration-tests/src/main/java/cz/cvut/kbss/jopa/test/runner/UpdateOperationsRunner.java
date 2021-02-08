@@ -1332,4 +1332,34 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(1, result.getACollection().size());
         assertEquals(newA.getUri(), result.getACollection().iterator().next().getUri());
     }
+
+    // Bug #81
+    @Test
+    void updateReferencedEntitySynchronizesCacheContent() {
+        this.em = getEntityManager("updateReferencedEntitySynchronizesCacheContent", true);
+        final OWLClassZ z = new OWLClassZ();
+        z.setUri(Generators.generateUri());
+        final OWLClassZChild root = new OWLClassZChild();
+        root.setId(Generators.generateUri());
+        root.setName("root");
+        z.setRoot(root);
+        final OWLClassZChild child = new OWLClassZChild();
+        final String originalString = "child";
+        child.setId(Generators.generateUri());
+        child.setName(originalString);
+        root.getChildren().add(child);
+        transactional(() -> em.persist(z));
+
+        final OWLClassZ zVerify = em.find(OWLClassZ.class, z.getUri());
+        assertNotNull(zVerify);
+        assertEquals(originalString, zVerify.getRoot().getChildren().iterator().next().getName());
+        em.clear();
+
+        final String updatedString = "newChild";
+        child.setName(updatedString);
+        transactional(() -> em.merge(child));
+
+        final OWLClassZ result = em.find(OWLClassZ.class, z.getUri());
+        assertEquals(updatedString, result.getRoot().getChildren().iterator().next().getName());
+    }
 }

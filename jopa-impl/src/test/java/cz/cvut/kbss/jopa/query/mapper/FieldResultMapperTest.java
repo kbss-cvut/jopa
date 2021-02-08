@@ -45,7 +45,7 @@ class FieldResultMapperTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @SparqlResultSetMapping(name = "test", entities = {

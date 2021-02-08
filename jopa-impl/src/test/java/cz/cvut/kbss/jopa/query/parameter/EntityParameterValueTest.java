@@ -30,8 +30,6 @@ import static org.mockito.Mockito.when;
 
 class EntityParameterValueTest {
 
-    private MetamodelMocks metamodelMocks;
-
     @Mock
     private MetamodelProvider metamodelProvider;
 
@@ -40,8 +38,8 @@ class EntityParameterValueTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        this.metamodelMocks = new MetamodelMocks();
+        MockitoAnnotations.openMocks(this);
+        final MetamodelMocks metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
         when(metamodelProvider.getMetamodel()).thenReturn(metamodel);
     }

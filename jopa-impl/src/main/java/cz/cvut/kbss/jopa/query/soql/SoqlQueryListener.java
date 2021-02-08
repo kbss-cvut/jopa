@@ -445,9 +445,6 @@ public class SoqlQueryListener implements SoqlListener {
     private String getOperators(ParserRuleContext ctx) {
         String operator = "";
         switch (ctx.getChildCount()) {
-            case 1:
-                attrPointer.setNot(false);
-                break;
             case 2:
                 if (ctx.getChild(0).getChildCount() > 0) {
                     operator = ctx.getChild(0).getChild(0).getText();
@@ -510,7 +507,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private void setAllNodesIris(EntityTypeImpl<?> entityType, SoqlNode node) {
-        SingularAttributeImpl abstractAttribute = (SingularAttributeImpl) entityType.getAttribute(node.getValue());
+        SingularAttributeImpl<?, ?> abstractAttribute = (SingularAttributeImpl<?, ?>) entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
         if (node.hasNextChild()) {

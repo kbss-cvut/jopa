@@ -45,7 +45,7 @@ public class IntegrationTestBase {
 
     @BeforeEach
     protected void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.emf = PersistenceFactory.initPersistence(Collections.emptyMap());
         this.em = emf.createEntityManager();
 

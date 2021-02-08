@@ -1,6 +1,20 @@
 # JOPA - Release Notes
 
 
+## 0.16.3 - February 4, 2021
+- [JOPA] Fix issues with cached references becoming stale after merge (Bug #81).
+- [JOPA] Fix missing support for Windows-like newline characters (CRLF) in queries (Bug #82).
+- Fix project build issues on Windows.
+- Simplify `PersistenceProvider` implementation discovery (based on JPA spec implementation now).
+- Dependency updates: RDF4J 3.5.1, Jena 3.17.0.
+
+## 0.16.2 - November 19, 2020
+- [JOPA] Prioritize transient configuration over property mapping in setter/getter aspects (Bug #80).
+
+## 0.16.1 - November 13, 2020
+- [Jena OntoDriver] Support connecting to Jena Fuseki server (Feature #76).
+- Dependency updates: RDF4J 3.4.4, OWL API 5.1.17.
+
 ## 0.16.0 - October 12, 2020
 - Support using multiple contexts for entity/attribute (Enhancement #73).
 - Dependency updates: RDF4J 3.4.3.

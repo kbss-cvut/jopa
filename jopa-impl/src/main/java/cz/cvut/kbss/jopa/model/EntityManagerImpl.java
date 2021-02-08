@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -39,13 +37,13 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     private static final Object MAP_VALUE = new Object();
 
-    private EntityManagerFactoryImpl emf;
+    private final EntityManagerFactoryImpl emf;
+    private final ServerSession serverSession;
 
     private boolean open;
 
     private TransactionWrapper transaction;
     private UnitOfWorkImpl persistenceContext;
-    private ServerSession serverSession;
     private final Configuration configuration;
 
     private Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
@@ -250,12 +248,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
                     registerProcessedInstance(object);
                     // Intentional fall-through
                 case REMOVED:
-                    new SimpleOneLevelCascadeExplorer() {
-                        @Override
-                        protected void runCascadedForEach(Object ox2) {
-                            remove(ox2);
-                        }
-                    }.start(this, object, CascadeType.REMOVE);
+                    new SimpleOneLevelCascadeExplorer(this::remove).start(this, object, CascadeType.REMOVE);
                     break;
                 default:
                     throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
@@ -347,12 +340,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
             checkClassIsValidEntity(entity.getClass());
 
             this.getCurrentPersistenceContext().refreshObject(entity);
-            new SimpleOneLevelCascadeExplorer() {
-                @Override
-                protected void runCascadedForEach(Object ox2) {
-                    refresh(ox2);
-                }
-            }.start(this, entity, CascadeType.REFRESH);
+            new SimpleOneLevelCascadeExplorer(this::refresh).start(this, entity, CascadeType.REFRESH);
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
@@ -379,12 +367,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
                 case MANAGED_NEW:
                 case MANAGED:
                     getCurrentPersistenceContext().unregisterObject(entity);
-                    new SimpleOneLevelCascadeExplorer() {
-                        @Override
-                        protected void runCascadedForEach(Object ox2) {
-                            detach(ox2);
-                        }
-                    }.start(this, entity, CascadeType.DETACH);
+                    new SimpleOneLevelCascadeExplorer(this::detach).start(this, entity, CascadeType.DETACH);
                     break;
                 default:
                     break;

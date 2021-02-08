@@ -1,17 +1,3 @@
-/**
- * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
@@ -20,107 +6,140 @@ import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.jena.sparql.core.Transactional;
 
 import java.util.List;
 
-abstract class Storage {
+/**
+ * Represents underlying Jena storage.
+ */
+interface Storage {
 
-    static final Logger LOG = LoggerFactory.getLogger(Storage.class);
-
-    private final boolean defaultAsUnion;
-
-    Dataset dataset;
-
-    Storage(DriverConfiguration configuration) {
-        this.defaultAsUnion = configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
+    /**
+     * Synchronize changes with the storage (e.g., disk).
+     * <p>
+     * Does nothing by default.
+     *
+     * @throws JenaDriverException Indicates that changes could not be written out
+     */
+    default void writeChanges() throws JenaDriverException {
     }
 
-    void writeChanges() throws JenaDriverException {
-        // Do nothing by default
-    }
+    /**
+     * Gets a transactional representation of the underlying storage.
+     * <p>
+     * The results can be used by the {@link org.apache.jena.system.Txn} utility class.
+     *
+     * @return Jena {@code Transactional} instance
+     */
+    Transactional getTransactional();
 
-    abstract void initialize();
+    /**
+     * Gets the dataset to which this instance is connected.
+     *
+     * @return Jena {@code Dataset}
+     */
+    Dataset getDataset();
 
-    Dataset getDataset() {
-        return dataset;
-    }
+    /**
+     * Gets the default graph from this storage's dataset.
+     *
+     * @return Default graph
+     */
+    Model getDefaultGraph();
 
-    Model getDefaultGraph() {
-        return defaultAsUnion ? ModelFactory.createUnion(dataset.getUnionModel(), dataset.getDefaultModel()) :
-                dataset.getDefaultModel();
-    }
+    /**
+     * Gets a named graph with the specified identifier.
+     *
+     * @param ctx Context identifier
+     * @return Named graph
+     */
+    Model getNamedGraph(String ctx);
 
-    Model getNamedGraph(String ctx) {
-        return dataset.getNamedModel(ctx);
-    }
+    /**
+     * Begins a transaction.
+     *
+     * @param readWrite Transaction read/write mode
+     */
+    void begin(ReadWrite readWrite);
 
-    void begin(ReadWrite readWrite) {
-        dataset.begin(readWrite);
-    }
+    /**
+     * Commits the current transaction.
+     */
+    void commit();
 
-    void commit() {
-        dataset.commit();
-    }
+    /**
+     * Rolls back the current transaction.
+     */
+    void rollback();
 
-    void rollback() {
-        dataset.abort();
-    }
+    /**
+     * Closes this storage.
+     */
+    void close();
 
-    void close() {
-        dataset.close();
-    }
+    /**
+     * Adds the specified statements to the specified context (can be {@code null}).
+     *
+     * @param statements Statements to add
+     * @param context    Context identifier, possibly {@code null} indicating default context
+     */
+    void add(List<Statement> statements, String context);
 
-    void add(List<Statement> statements, String context) {
-        if (context != null) {
-            dataset.getNamedModel(context).add(statements);
-        } else {
-            dataset.getDefaultModel().add(statements);
-        }
-    }
+    /**
+     * Removes the specified statements from the specified context (can be {@code null}).
+     *
+     * @param statements Statements to remove
+     * @param context    Context identifier, possibly {@code null} indicating default context
+     */
+    void remove(List<Statement> statements, String context);
 
-    void remove(List<Statement> statements, String context) {
-        if (context != null) {
-            dataset.getNamedModel(context).remove(statements);
-        } else {
-            dataset.getDefaultModel().remove(statements);
-            if (defaultAsUnion) {
-                dataset.listNames().forEachRemaining(n -> dataset.getNamedModel(n).remove(statements));
-            }
-        }
-    }
+    /**
+     * Removes the specified statements from the specified context (can be {@code null}).
+     *
+     * @param iterator Statement iterator
+     * @param context  Context identifier, possibly {@code null} indicating default context
+     */
+    void remove(StmtIterator iterator, String context);
 
-    void remove(StmtIterator iterator, String context) {
-        if (context != null) {
-            dataset.getNamedModel(context).remove(iterator);
-        } else {
-            iterator.forEachRemaining(statement -> {
-                dataset.getDefaultModel().remove(statement);
-                if (defaultAsUnion) {
-                    dataset.listNames().forEachRemaining(n -> dataset.getNamedModel(n).remove(statement));
-                }
-            });
-        }
-    }
+    /**
+     * Creates a query execution which can be run.
+     *
+     * @param query Query to prepare execution for
+     * @return {@code QueryExecution}
+     */
+    QueryExecution prepareQuery(Query query);
 
-    void reload() {
-        // Do nothing by default
+    /**
+     * Executes the specified SPARQL update.
+     *
+     * @param update SPARQL update to execute
+     */
+    void executeUpdate(String update);
+
+    /**
+     * Reloads data from the underlying storage (if applicable).
+     * <p>
+     * Default implementation does nothing.
+     */
+    default void reload() {
     }
 
     /**
      * Sets the dataset on this storage.
+     * <p>
+     * Note that by default this method throws {@link UnsupportedOperationException}, because such an operation is
+     * supported only by the in-memory storage.
      *
-     * Note that by default this method throws {@link UnsupportedOperationException}, because such an operation is supported
-     * only by the in-memory storage.
      * @param dataset The new dataset
      */
-    void setDataset(Dataset dataset) {
+    default void setDataset(Dataset dataset) {
         throw new UnsupportedOperationException("Cannot set dataset on storage of type " + getClass().getSimpleName());
     }
 
@@ -133,23 +152,19 @@ abstract class Storage {
      */
     static Storage create(DriverConfiguration configuration) {
         final String type = configuration.getProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
-        final Storage storage;
         switch (type) {
             case JenaOntoDriverProperties.IN_MEMORY:
-                storage = new MemoryStorage(configuration);
-                break;
+                return new MemoryStorage(configuration);
             case JenaOntoDriverProperties.FILE:
-                storage = new FileStorage(configuration);
-                break;
+                return new FileStorage(configuration);
             case JenaOntoDriverProperties.TDB:
-                storage = new TDBStorage(configuration);
-                break;
+                return new TDBStorage(configuration);
+            case JenaOntoDriverProperties.FUSEKI:
+                return new FusekiStorage(configuration);
             case JenaOntoDriverProperties.SDB:
                 throw new UnsupportedOperationException("Not implemented, yet.");
             default:
-                throw new OntoDriverInitializationException("Unsupported storage type \'" + type + "\'.");
+                throw new OntoDriverInitializationException("Unsupported storage type '" + type + "'.");
         }
-        storage.initialize();
-        return storage;
     }
 }

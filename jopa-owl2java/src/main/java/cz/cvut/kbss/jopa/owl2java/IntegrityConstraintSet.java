@@ -22,9 +22,9 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import java.util.*;
 
 public class IntegrityConstraintSet {
-    private Map<OWLClass, List<IntegrityConstraint>> cConstraints = new HashMap<>();
-    private Map<OWLClass, Map<OWLObjectProperty, Collection<IntegrityConstraint>>> opConstraints = new HashMap<>();
-    private Map<OWLClass, Map<OWLDataProperty, Collection<IntegrityConstraint>>> dpConstraints = new HashMap<>();
+    private final Map<OWLClass, List<IntegrityConstraint>> cConstraints = new HashMap<>();
+    private final Map<OWLClass, Map<OWLObjectProperty, Collection<IntegrityConstraint>>> opConstraints = new HashMap<>();
+    private final Map<OWLClass, Map<OWLDataProperty, Collection<IntegrityConstraint>>> dpConstraints = new HashMap<>();
 
     private static <K, V> void addToMap(final K key, final V value, final Map<K, Collection<V>> map) {
         if (!map.containsKey(key)) {
@@ -91,11 +91,7 @@ public class IntegrityConstraintSet {
     }
 
     public List<IntegrityConstraint> getClassIntegrityConstraints(final OWLClass cls) {
-        if (cConstraints.containsKey(cls)) {
-            return cConstraints.get(cls);
-        } else {
-            return Collections.emptyList();
-        }
+        return cConstraints.getOrDefault(cls, Collections.emptyList());
     }
 
     public Collection<IntegrityConstraint> getClassObjectIntegrityConstraints(

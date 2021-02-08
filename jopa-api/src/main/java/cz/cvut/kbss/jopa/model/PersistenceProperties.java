@@ -19,7 +19,7 @@ public class PersistenceProperties {
     /**
      * Persistence provider class.
      */
-    public static final String JPA_PERSISTENCE_PROVIDER = "javax.persistence.provider";
+    public static final String JPA_PERSISTENCE_PROVIDER = "cz.cvut.kbss.jopa.model.PersistenceProvider";
 
     PersistenceProperties() {
         throw new AssertionError();

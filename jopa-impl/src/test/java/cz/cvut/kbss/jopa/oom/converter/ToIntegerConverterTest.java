@@ -20,12 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ToIntegerConverterTest {
 
-    private ToIntegerConverter converter = new ToIntegerConverter();
+    private final ToIntegerConverter converter = new ToIntegerConverter();
 
     @Test
     void toAttributeSupportsWideningIntegerConversion() {
-        assertEquals(Integer.valueOf(11), converter.convertToAttribute(Byte.valueOf((byte) 11)));
-        assertEquals(Integer.valueOf(117), converter.convertToAttribute(Short.valueOf((short) 117)));
+        assertEquals(Integer.valueOf(11), converter.convertToAttribute((byte) 11));
+        assertEquals(Integer.valueOf(117), converter.convertToAttribute((short) 117));
     }
 
     @Test

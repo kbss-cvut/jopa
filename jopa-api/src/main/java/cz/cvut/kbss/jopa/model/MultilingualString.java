@@ -172,7 +172,7 @@ public class MultilingualString implements Serializable {
             return false;
         }
         MultilingualString that = (MultilingualString) o;
-        return value.equals(that.value);
+        return value.equals(that.getValue());
     }
 
     @Override

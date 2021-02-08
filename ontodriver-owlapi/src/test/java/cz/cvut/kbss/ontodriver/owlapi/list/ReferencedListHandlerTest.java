@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
@@ -22,8 +20,8 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.*;
@@ -33,8 +31,7 @@ import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 import java.net.URI;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyList;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ReferencedListHandlerTest
@@ -44,9 +41,9 @@ public class ReferencedListHandlerTest
     private OWLObjectProperty hasNextProperty;
     private OWLObjectProperty hasContentProperty;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         super.setUp();
         this.descriptor = new ReferencedListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         this.valueDescriptor = createDescriptor();
@@ -89,11 +86,11 @@ public class ReferencedListHandlerTest
         }
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void loadingListWithItemWithMultipleSuccessorsThrowsException() {
         testHelper.persistList(LIST_ITEMS.subList(0, 5));
         addExtraPropertyValue(ListTestHelper.HAS_NEXT_PROPERTY, LIST_ITEMS.get(8));
-        listHandler.loadList(descriptor);
+        assertThrows(IntegrityConstraintViolatedException.class, () -> listHandler.loadList(descriptor));
     }
 
     private void addExtraPropertyValue(String property, URI value) {
@@ -106,11 +103,11 @@ public class ReferencedListHandlerTest
                         dataFactory.getOWLNamedIndividual(IRI.create(value))));
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void loadingListWithNodeWithMultipleContentElementsThrowsException() {
         testHelper.persistList(LIST_ITEMS.subList(0, 8));
         addExtraPropertyValue(ListTestHelper.HAS_CONTENT_PROPERTY, LIST_ITEMS.get(0));
-        listHandler.loadList(descriptor);
+        assertThrows(IntegrityConstraintViolatedException.class, () -> listHandler.loadList(descriptor));
     }
 
     @Test

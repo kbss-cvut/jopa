@@ -53,7 +53,7 @@ public class IdentifierFieldStrategyTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final Configuration configuration = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.LANG, "en"));
         when(mapperMock.getConfiguration()).thenReturn(configuration);

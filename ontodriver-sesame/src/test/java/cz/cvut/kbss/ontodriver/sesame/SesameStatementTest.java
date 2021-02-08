@@ -42,7 +42,7 @@ public class SesameStatementTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.statement = new SesameStatement(executorMock);
     }
 

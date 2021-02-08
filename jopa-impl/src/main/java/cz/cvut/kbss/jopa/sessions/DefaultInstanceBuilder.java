@@ -89,9 +89,6 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                 c = getDeclaredConstructorFor(javaClass, args);
                 if (c != null) {
                     Object[] params = new Object[args.length];
-                    for (int i = 0; i < params.length; i++) {
-                        params[i] = null;
-                    }
                     try {
                         newInstance = c.newInstance(params);
                     } catch (SecurityException e) {
@@ -169,7 +166,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                     }
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                LOG.trace("Class does not have suitable no-arg constructor. {}", e);
+                LOG.trace("Class {} does not have a suitable no-arg constructor.", javaClass);
                 // Do nothing
             }
         }

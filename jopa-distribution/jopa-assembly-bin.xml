@@ -29,16 +29,12 @@
 	</dependencySets>
 	<fileSets>
 		<fileSet>
-			<directory>.</directory>
+			<directory>..</directory>
 			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>license</include>
-				<include>readme</include>
+				<include>README.md</include>
 			</includes>
-		</fileSet>
-		<fileSet>
-			<directory>examples</directory>
-			<outputDirectory>/examples</outputDirectory>
 		</fileSet>
 	</fileSets>
 	<files>
@@ -47,7 +43,7 @@
 			<outputDirectory>/</outputDirectory>
 		</file-->
 		<file>
-			
+
 			<source>../jopa-owl2java/target/classes/owl2java.sh</source>
 			<outputDirectory>/</outputDirectory>
 		</file>

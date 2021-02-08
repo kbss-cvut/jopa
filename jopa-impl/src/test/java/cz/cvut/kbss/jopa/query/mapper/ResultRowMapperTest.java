@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,18 +41,18 @@ class ResultRowMapperTest {
     @Mock
     private UnitOfWorkImpl uowMock;
 
-    private ResultRowMapper rowMapper = new ResultRowMapper("testMapping");
+    private final ResultRowMapper rowMapper = new ResultRowMapper("testMapping");
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void mapInvokesAllSubMappers() {
         final List<SparqlResultMapper> mappers = IntStream.range(0, 5).mapToObj(i -> mock(SparqlResultMapper.class))
                                                           .collect(Collectors.toList());
-        mappers.forEach(m -> rowMapper.addMapper(m));
+        mappers.forEach(rowMapper::addMapper);
         rowMapper.map(resultRow, uowMock);
         final InOrder inOrder = Mockito.inOrder(mappers.toArray());
         mappers.forEach(m -> inOrder.verify(m).map(resultRow, uowMock));

@@ -261,7 +261,7 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassWithQueryAttr, String> qaStringAtt;
 
     public MetamodelMocks() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
         MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);

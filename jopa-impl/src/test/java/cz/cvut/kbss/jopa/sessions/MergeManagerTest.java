@@ -64,7 +64,7 @@ class MergeManagerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.uowChangeSet = new UnitOfWorkChangeSetImpl();
         when(uow.getMetamodel()).thenReturn(metamodel);
         when(uow.getCloneBuilder()).thenReturn(cloneBuilder);

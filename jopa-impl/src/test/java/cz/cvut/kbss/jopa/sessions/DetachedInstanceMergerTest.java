@@ -50,7 +50,7 @@ public class DetachedInstanceMergerTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
         when(uow.getMetamodel()).thenReturn(metamodel);

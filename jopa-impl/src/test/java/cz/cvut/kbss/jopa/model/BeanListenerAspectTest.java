@@ -1,35 +1,32 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassF;
-import cz.cvut.kbss.jopa.environment.OWLClassM;
-import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkTestBase;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -118,5 +115,56 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
         entityM.initializeTestValues(true);
         final OWLClassM clone = (OWLClassM) sut.registerExistingObject(entityM, descriptor);
         assertThrows(AttributeModificationForbiddenException.class, () -> clone.setLexicalForm("value"));
+    }
+
+    @Test
+    void setterAspectIgnoresTransientMappedFieldSet() throws Exception {
+        final WithTransientMappedField instance = new WithTransientMappedField();
+        when(transactionMock.isActive()).thenReturn(true);
+        final EntityTypeImpl<WithTransientMappedField> et = mock(EntityTypeImpl.class);
+        doReturn(et).when(metamodelMock).entity(WithTransientMappedField.class);
+        final Identifier identifier = mock(Identifier.class);
+        when(identifier.getJavaField()).thenReturn(WithTransientMappedField.class.getDeclaredField("id"));
+        when(et.getIdentifier()).thenReturn(identifier);
+        when(et.getFieldSpecification(any())).thenThrow(IllegalArgumentException.class);
+        final WithTransientMappedField clone = (WithTransientMappedField) sut
+                .registerExistingObject(instance, descriptor);
+        clone.setLabel("Test");
+        verify(sut, never()).attributeChanged(any(), any());
+    }
+
+    @OWLClass(iri = Vocabulary.c_OwlClassA)
+    public static class WithTransientMappedField {
+
+        @Id
+        private URI id;
+
+        @Transient
+        @OWLDataProperty(iri = RDFS.LABEL)
+        private String label;
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+    }
+
+    @Test
+    void getterAspectIgnoresTransientMappedFieldGet() throws Exception {
+        final WithTransientMappedField instance = new WithTransientMappedField();
+        when(transactionMock.isActive()).thenReturn(true);
+        final EntityTypeImpl<WithTransientMappedField> et = mock(EntityTypeImpl.class);
+        doReturn(et).when(metamodelMock).entity(WithTransientMappedField.class);
+        final Identifier identifier = mock(Identifier.class);
+        when(identifier.getJavaField()).thenReturn(WithTransientMappedField.class.getDeclaredField("id"));
+        when(et.getIdentifier()).thenReturn(identifier);
+        when(et.getFieldSpecification(any())).thenThrow(IllegalArgumentException.class);
+        final WithTransientMappedField clone = (WithTransientMappedField) sut
+                .registerExistingObject(instance, descriptor);
+        assertNull(clone.getLabel());
+        verify(sut, never()).loadEntityField(any(), any());
     }
 }

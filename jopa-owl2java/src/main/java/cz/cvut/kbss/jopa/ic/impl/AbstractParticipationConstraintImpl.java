@@ -22,15 +22,15 @@ import org.semanticweb.owlapi.model.OWLProperty;
 abstract class AbstractParticipationConstraintImpl<P extends OWLProperty, O extends OWLObject>
     implements ParticipationConstraint<P, O> {
 
-    private OWLClass subject;
+    private final OWLClass subject;
 
-    private P predicate;
+    private final P predicate;
 
-    private O object;
+    private final O object;
 
-    private int min;
+    private final int min;
 
-    private int max;
+    private final int max;
 
     public AbstractParticipationConstraintImpl(final OWLClass subject,
                                                final P predicate, final O object, final int min, final int max) {

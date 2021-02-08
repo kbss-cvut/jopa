@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.model.IRI;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;

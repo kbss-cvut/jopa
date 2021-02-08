@@ -39,7 +39,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
     private final DriverConfiguration configuration;
     private volatile boolean open = true;
 
-    private ConnectorFactory connectorFactory;
+    private final ConnectorFactory connectorFactory;
     private final Set<OwlapiConnection> openConnections = new HashSet<>();
 
     OwlapiDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {

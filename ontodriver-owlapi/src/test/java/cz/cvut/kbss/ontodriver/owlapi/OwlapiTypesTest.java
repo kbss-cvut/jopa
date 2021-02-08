@@ -44,7 +44,7 @@ public class OwlapiTypesTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(adapterMock.getTypesHandler()).thenReturn(typesHandlerMock);
         this.types = new OwlapiTypes(adapterMock, beforeMock, () -> {
         });

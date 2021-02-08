@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,8 +22,8 @@ import cz.cvut.kbss.jopa.exceptions.InvalidAssertionIdentifierException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -31,7 +31,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 public class StringPropertiesFieldStrategyTest {
@@ -46,9 +46,9 @@ public class StringPropertiesFieldStrategyTest {
 
     private OWLClassB entity;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         MetamodelMocks mocks = new MetamodelMocks();
 
         this.entity = new OWLClassB();
@@ -154,13 +154,13 @@ public class StringPropertiesFieldStrategyTest {
         return original;
     }
 
-    @Test(expected = InvalidAssertionIdentifierException.class)
-    public void throwsExceptionWhenPropertyIsNotAValidURI() throws Exception {
+    @Test
+    public void throwsExceptionWhenPropertyIsNotAValidURI() {
         entity.setProperties(Generators.generateStringProperties(1, 1));
         entity.getProperties().put("blabla^", Collections.emptySet());
         when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
-        strategy.buildAxiomValuesFromInstance(entity, gatherer);
+        assertThrows(InvalidAssertionIdentifierException.class, () -> strategy.buildAxiomValuesFromInstance(entity, gatherer));
     }
 
     @Test
@@ -331,7 +331,7 @@ public class StringPropertiesFieldStrategyTest {
     }
 
     @Test
-    public void buildsInstanceFieldFroAxiomValues() throws Exception {
+    public void buildsInstanceFieldFroAxiomValues() {
         final Map<String, Set<String>> properties = Generators.generateStringProperties();
         final Collection<Axiom<?>> axioms = createAxiomsForProperties(properties);
         axioms.forEach(ax -> strategy.addValueFromAxiom(ax));
@@ -344,9 +344,9 @@ public class StringPropertiesFieldStrategyTest {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         for (Map.Entry<String, Set<String>> e : data.entrySet()) {
             axioms.addAll(e.getValue().stream()
-                           .map(val -> new AxiomImpl<>(subject,
-                                   Assertion.createPropertyAssertion(URI.create(e.getKey()), false), new Value<>(val)))
-                           .collect(Collectors.toList()));
+                    .map(val -> new AxiomImpl<>(subject,
+                            Assertion.createPropertyAssertion(URI.create(e.getKey()), false), new Value<>(val)))
+                    .collect(Collectors.toList()));
         }
         return axioms;
     }

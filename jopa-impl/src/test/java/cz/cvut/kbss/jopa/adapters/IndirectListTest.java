@@ -56,7 +56,7 @@ class IndirectListTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         target = new IndirectList<>(owner, ownerField, uow, list);
         list.clear();

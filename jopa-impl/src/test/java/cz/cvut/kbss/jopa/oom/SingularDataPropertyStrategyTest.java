@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -29,9 +30,12 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SingularDataPropertyStrategyTest {
@@ -47,7 +51,7 @@ class SingularDataPropertyStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.mocks = new MetamodelMocks();
     }
 
@@ -174,5 +178,21 @@ class SingularDataPropertyStrategyTest {
         sut.addValueFromAxiom(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(value.toString(), m.getLexicalForm());
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceHandlesNullEnumAttributeValue() throws Exception {
+        final SingularDataPropertyStrategy<OWLClassM> sut =
+                new SingularDataPropertyStrategy<>(mocks.forOwlClassM().entityType(),
+                        mocks.forOwlClassM().enumAttribute(), descriptor, mapperMock);
+        final OWLClassM m = new OWLClassM();
+        m.setKey(PK.toString());
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+
+        sut.buildAxiomValuesFromInstance(m, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        final Assertion a = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_enumAttribute), Generators.LANG, false);
+        assertThat(valueDescriptor.getAssertions(), hasItem(a));
+        assertEquals(Collections.singletonList(Value.nullValue()), valueDescriptor.getAssertionValues(a));
     }
 }

@@ -73,7 +73,7 @@ class EntityManagerImplTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final ServerSessionStub serverSessionMock = spy(new ServerSessionStub(connectorMock));
         when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionMock.getLiveObjectCache()).thenReturn(new DisabledCacheManager());

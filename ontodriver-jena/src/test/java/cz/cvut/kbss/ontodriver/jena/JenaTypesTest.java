@@ -48,7 +48,7 @@ public class JenaTypesTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.types = new JenaTypes(adapterMock, beforeMock, afterMock);
         when(adapterMock.typesHandler()).thenReturn(typesHandlerMock);
     }

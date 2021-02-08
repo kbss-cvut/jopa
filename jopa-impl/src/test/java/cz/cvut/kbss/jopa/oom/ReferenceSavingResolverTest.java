@@ -46,7 +46,7 @@ class ReferenceSavingResolverTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.metamodelMocks = new MetamodelMocks();
         this.resolver = new ReferenceSavingResolver(mapperMock);
     }

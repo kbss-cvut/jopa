@@ -51,13 +51,13 @@ class EpistemicAxiomRemoverTest {
     private OwlapiAdapter adapterMock;
 
     private OWLNamedIndividual individual;
-    private AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+    private final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
 
     private EpistemicAxiomRemover axiomRemover;
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(null);
         this.ontology = spy(snapshot.getOntology());
         this.manager = spy(snapshot.getOntologyManager());

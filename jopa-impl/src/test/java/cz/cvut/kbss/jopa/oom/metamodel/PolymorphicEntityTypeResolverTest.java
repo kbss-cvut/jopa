@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom.metamodel;
 
@@ -24,10 +22,8 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -35,16 +31,14 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class PolymorphicEntityTypeResolverTest {
 
     private static final NamedResource INDIVIDUAL = NamedResource.create(Generators.createIndividualIdentifier());
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private MetamodelImpl metamodelMock;
@@ -52,9 +46,9 @@ public class PolymorphicEntityTypeResolverTest {
     private EntityTypeImpl<OWLClassS> etS;
     private EntityTypeImpl<OWLClassR> etR;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etS = metamodelMock.entity(OWLClassS.class);
@@ -101,13 +95,14 @@ public class PolymorphicEntityTypeResolverTest {
                 Arrays.<AbstractIdentifiableType<? extends OWLClassS>>asList(etR, extraEt));
         when(etS.getSubtypes()).thenReturn(subtypes);
         final Collection<Axiom<URI>> types = getTypeAxioms(etR.getIRI().toString(), extraEtIri.toString());
-        thrown.expect(AmbiguousEntityTypeException.class);
-        thrown.expectMessage("Unable to determine unique entity type for loading individual " + INDIVIDUAL +
-                ". Matching types are ");
-        thrown.expectMessage(etR.toString());
-        thrown.expectMessage(extraEt.toString());
 
-        execute(etS, types);
+        final AmbiguousEntityTypeException ex = assertThrows(AmbiguousEntityTypeException.class,
+                () -> execute(etS, types));
+        assertThat(ex.getMessage(),
+                containsString("Unable to determine unique entity type for loading individual " + INDIVIDUAL +
+                        ". Matching types are "));
+        assertThat(ex.getMessage(), containsString(etR.toString()));
+        assertThat(ex.getMessage(), containsString(extraEt.toString()));
     }
 
     private EntityTypeImpl generateEntityType(IRI etIri) {
@@ -160,13 +155,13 @@ public class PolymorphicEntityTypeResolverTest {
         final Collection<Axiom<URI>> types =
                 getTypeAxioms(mostSpecificEtOne.getIRI().toString(), mostSpecificEtTwo.getIRI().toString());
 
-        thrown.expect(AmbiguousEntityTypeException.class);
-        thrown.expectMessage("Unable to determine unique entity type for loading individual " + INDIVIDUAL +
-                ". Matching types are ");
-        thrown.expectMessage(mostSpecificEtOne.toString());
-        thrown.expectMessage(mostSpecificEtTwo.toString());
-
-        execute(etS, types);
+        final AmbiguousEntityTypeException ex = assertThrows(AmbiguousEntityTypeException.class,
+                () -> execute(etS, types));
+        assertThat(ex.getMessage(),
+                containsString("Unable to determine unique entity type for loading individual " + INDIVIDUAL +
+                        ". Matching types are "));
+        assertThat(ex.getMessage(), containsString(mostSpecificEtOne.toString()));
+        assertThat(ex.getMessage(), containsString(mostSpecificEtTwo.toString()));
     }
 
     @Test
