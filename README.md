@@ -1,3 +1,8 @@
+# Bachelor thesis - Semantic CriteriaAPI
+I am developing API for creating queries similar to JPA CriteriaAPI. This API should be part of framework JOPA.
+
+
+original README
 # JOPA - Java OWL Persistence API
 
 [![Build Status](https://kbss.felk.cvut.cz/jenkins/buildStatus/icon?job=jopa-stable)](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable)
