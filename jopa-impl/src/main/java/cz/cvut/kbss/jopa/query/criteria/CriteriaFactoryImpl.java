@@ -14,20 +14,20 @@ import java.util.Objects;
 
 public class CriteriaFactoryImpl implements CriteriaFactory {
 
-    private final EntityManager em;
+    private final UnitOfWorkImpl uow;
 //    private final ConnectionWrapper connection;
 
-    public CriteriaFactoryImpl(EntityManager em) {
+    public CriteriaFactoryImpl(UnitOfWorkImpl uow) {
 //        assert uow != null;
 //        assert connection != null;
 //        this.uow = uow;
 //        this.connection = connection;
-        this.em = em;
+        this.uow = uow;
     }
 
     @Override
     public <T> CriteriaQueryModel<T> getCriteriaQueryModel(Class<T> queryModelType) {
-        return new CriteriaQueryModelImpl<T>(queryModelType,em);
+        return new CriteriaQueryModelImpl<T>(queryModelType, uow);
     }
 
     @Override

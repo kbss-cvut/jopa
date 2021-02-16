@@ -1,10 +1,9 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,17 +11,17 @@ import java.util.List;
 public class CriteriaQueryModelImpl<T> implements CriteriaQueryModel<T> {
 
     protected final Class<T> type;
-    private final EntityManager em;
+    private final UnitOfWorkImpl uow;
 
-    public CriteriaQueryModelImpl(Class<T> type, EntityManager em) {
+    public CriteriaQueryModelImpl(Class<T> type, UnitOfWorkImpl uow) {
         this.type = type;
-        this.em = em;
+        this.uow = uow;
     }
 
     @Override
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
         System.out.println("attribute name was:" + attributeName);
-        EntityType<T> meta = em.getMetamodel().entity(type);
+        EntityType<T> meta = uow.getMetamodel().entity(type);
         meta.getAttributes().forEach(atr -> System.out.println(atr.getName()));
         Attribute attribute = meta.getAttribute(attributeName);
         if (attribute != null) {
