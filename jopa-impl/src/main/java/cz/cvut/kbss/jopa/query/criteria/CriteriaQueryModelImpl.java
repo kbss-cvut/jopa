@@ -2,6 +2,8 @@ package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 
 import java.util.Collection;
@@ -19,12 +21,16 @@ public class CriteriaQueryModelImpl<T> implements CriteriaQueryModel<T> {
 
     @Override
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
-        Attribute attribute = em.getMetamodel().entity(type).getAttribute(attributeName);
         System.out.println("attribute name was:" + attributeName);
-        System.out.println("attribute founded name:" + attribute.getName());
-        System.out.println("attribute founded IRI:" + attribute.getIRI());
-        System.out.println("attribute founded JavaType simple name:" + attribute.getJavaType().getSimpleName());
-        System.out.println("attribute.getDeclaringType().toString():" + attribute.getDeclaringType().toString());
+        EntityType<T> meta = em.getMetamodel().entity(type);
+        meta.getAttributes().forEach(atr -> System.out.println(atr.getName()));
+        Attribute attribute = meta.getAttribute(attributeName);
+        if (attribute != null) {
+            System.out.println("attribute founded name:" + attribute.getName());
+            System.out.println("attribute founded IRI:" + attribute.getIRI());
+            System.out.println("attribute founded JavaType simple name:" + attribute.getJavaType().getSimpleName());
+            System.out.println("attribute.getDeclaringType().toString():" + attribute.getDeclaringType().toString());
+        }
         return null;
     }
 
