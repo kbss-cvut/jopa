@@ -105,7 +105,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
-        this.criteriaFactory = new CriteriaFactoryImpl(this, storage);
+        this.criteriaFactory = new CriteriaFactoryImpl(entityManager);
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
         this.useTransactionalOntology = true;
