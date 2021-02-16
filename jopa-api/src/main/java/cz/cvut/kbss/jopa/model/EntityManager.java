@@ -434,7 +434,7 @@ public interface EntityManager {
     List<URI> getContexts();
 
     /**
-     * Return the criteriaFactory for making CriteriaQuery.
+     * Return a criteriaFactory for making CriteriaQuery.
      *
      * @return CriteriaFactory instance
      */
