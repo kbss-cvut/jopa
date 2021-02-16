@@ -28,16 +28,16 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>com.github.marcel-zec.jopa</groupId>
-            <artifactId>jopa-api</artifactId>
-            <version>be3fdc0e8fe3579bd99aa00b7b1ed6d9c970f0a3</version>
-        </dependency>
 <!--        <dependency>-->
-<!--            <groupId>cz.cvut.kbss.jopa</groupId>-->
+<!--            <groupId>com.github.marcel-zec.jopa</groupId>-->
 <!--            <artifactId>jopa-api</artifactId>-->
-<!--            <version>${project.version}</version>-->
+<!--            <version>be3fdc0e8fe3579bd99aa00b7b1ed6d9c970f0a3</version>-->
 <!--        </dependency>-->
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>ontodriver-api</artifactId>
