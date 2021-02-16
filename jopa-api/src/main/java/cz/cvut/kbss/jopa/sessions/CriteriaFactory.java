@@ -10,7 +10,7 @@ public interface CriteriaFactory {
      * Return a criteriaQueryModel.
      * @return criteriaQueryModel
      */
-    CriteriaQueryModel<?> getCriteriaQueryModel(Class<?> queryModelType);
+    <T> CriteriaQueryModel<T> getCriteriaQueryModel(Class<T> queryModelType);
 
     <X> CriteriaQuery<X> from(Class<X> entityClass);
 }

@@ -26,8 +26,8 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     }
 
     @Override
-    public CriteriaQueryModel<?> getCriteriaQueryModel(Class<?> queryModelType) {
-        return new CriteriaQueryModelImpl<>(queryModelType,em);
+    public <T> CriteriaQueryModel<T> getCriteriaQueryModel(Class<T> queryModelType) {
+        return new CriteriaQueryModelImpl<T>(queryModelType,em);
     }
 
     @Override
