@@ -3,8 +3,8 @@ package cz.cvut.kbss.jopa.query.criteria;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.QueryImpl;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaModel;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQueryModel;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -26,8 +26,8 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     }
 
     @Override
-    public <T> CriteriaQueryModel<T> getCriteriaQueryModel(Class<T> queryModelType) {
-        return new CriteriaQueryModelImpl<T>(queryModelType, uow);
+    public <T> CriteriaModel<T> getCriteriaQueryModel(Class<T> queryModelType) {
+        return new CriteriaModelImpl<T>(queryModelType, uow);
     }
 
     @Override
