@@ -5,14 +5,23 @@ import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 import java.util.List;
 
-public class SelectionImpl<T, X> implements Selection<T> {
+public class SelectionImpl<T> implements Selection<T> {
 
-//    protected final Class<T> type;
-//    protected Attribute<T, X> attribute;
-//
-//    public SelectionImpl(Class<T> type, Attribute attribute) {
-//        this.type = type;
+    protected final Attribute<T, ?> attribute;
+    //    protected final Class<T> selectAll;
+
+    public SelectionImpl(Attribute<T, ?> attribute) {
+        this.attribute = attribute;
+    }
+
+//    public <X> SelectionImpl(Attribute<T, X> attribute) {
 //        this.attribute = attribute;
+//        this.selectAll = null;
+//    }
+//
+//    public <X> SelectionImpl(Class<T> selectAll) {
+//        this.attribute = null;
+//        this.selectAll = selectAll;
 //    }
 
     @Override
@@ -26,7 +35,7 @@ public class SelectionImpl<T, X> implements Selection<T> {
     }
 
     @Override
-    public Selection alias(String name) {
+    public Selection<T> alias(String name) {
         return null;
     }
 }
