@@ -11,7 +11,7 @@ import java.util.Map;
 @StaticMetamodel(OWLClassB.class)
 public class OWLClassB_ {
 
-    public static volatile Identifier<OWLClassB, URI> id;
+    public static volatile Identifier<OWLClassB, URI> uri;
 
     public static volatile SingularAttribute<OWLClassB, String> stringAttribute;
 

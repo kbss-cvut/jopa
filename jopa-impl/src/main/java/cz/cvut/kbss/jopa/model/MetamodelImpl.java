@@ -88,14 +88,13 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <X> EntityTypeImpl<X> entity(Class<X> cls) {
-        if (!entities.containsKey(cls)) {
+        if (!isEntityType(cls)) {
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         }
-        return (EntityTypeImpl<X>) typeMap.get(cls);
+        return (EntityTypeImpl<X>) entities.get(cls);
     }
 
     @Override
