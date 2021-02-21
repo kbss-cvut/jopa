@@ -59,11 +59,18 @@ public class StaticMetamodelInitializer {
         final String staticName = et.getJavaType().getName() + STATIC_METAMODEL_CLASS_SUFFIX;
         try {
             final Class<?> smClass = Class.forName(staticName);
+            if (isNotStaticMetamodelForType(smClass, et.getJavaType())) {
+                return Optional.empty();
+            }
             return Optional.of(smClass);
         } catch (ClassNotFoundException e) {
             // Swallow the exception, this just means there is no static metamodel type for the specified entity
             return Optional.empty();
         }
+    }
+
+    private static boolean isNotStaticMetamodelForType(Class<?> smClass, Class<?> metamodelClass) {
+        return smClass.getAnnotation(StaticMetamodel.class) == null || !smClass.getAnnotation(StaticMetamodel.class).value().equals(metamodelClass);
     }
 
     private <T> void initStaticMembers(EntityType<T> et, Class<?> smClass) throws IllegalAccessException {
@@ -74,7 +81,7 @@ public class StaticMetamodelInitializer {
         }
     }
 
-    private void setFieldValue(Field field, Object value) throws IllegalAccessException {
+    private static void setFieldValue(Field field, Object value) throws IllegalAccessException {
         if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers())) {
             throw new StaticMetamodelInitializationException("Static metamodel field " + field + " must be public static.");
         }
@@ -91,8 +98,11 @@ public class StaticMetamodelInitializer {
     }
 
     private <T> Optional<FieldSpecification<T, ?>> getDeclaredIdentifier(Field field, EntityType<T> et) {
-        // TODO Declaring class check
-        return Objects.equals(field.getName(), et.getIdentifier().getJavaField().getName()) ? Optional.of((Identifier<T, ?>) et.getIdentifier()) : Optional.empty();
+        return Objects.equals(field.getName(), et.getIdentifier().getJavaField().getName()) && isDeclaredInClass(et.getIdentifier(), et.getJavaType()) ? Optional.of((Identifier<T, ?>) et.getIdentifier()) : Optional.empty();
+    }
+
+    private boolean isDeclaredInClass(FieldSpecification<?, ?> fs, Class<?> cls) {
+        return fs.getJavaField().getDeclaringClass().equals(cls);
     }
 
     private <T> Optional<FieldSpecification<T, ?>> getDeclaredAttribute(Field field, EntityType<T> et) {
@@ -104,12 +114,10 @@ public class StaticMetamodelInitializer {
     }
 
     private <T> Optional<FieldSpecification<T, ?>> getDeclaredTypes(Field field, EntityType<T> et) {
-        // TODO Declaring class check
-        return et.getTypes() != null && Objects.equals(field.getName(), et.getTypes().getJavaField().getName()) ? Optional.of((TypesSpecification<T, ?>) et.getTypes()) : Optional.empty();
+        return et.getTypes() != null && Objects.equals(field.getName(), et.getTypes().getJavaField().getName()) && isDeclaredInClass(et.getTypes(), et.getJavaType()) ? Optional.of((TypesSpecification<T, ?>) et.getTypes()) : Optional.empty();
     }
 
     private <T> Optional<FieldSpecification<T, ?>> getDeclaredProperties(Field field, EntityType<T> et) {
-        // TODO Declaring class check
-        return et.getProperties() != null && Objects.equals(field.getName(), et.getProperties().getJavaField().getName()) ? Optional.of((PropertiesSpecification<T, ?, ?, ?>) et.getProperties()) : Optional.empty();
+        return et.getProperties() != null && Objects.equals(field.getName(), et.getProperties().getJavaField().getName()) && isDeclaredInClass(et.getProperties(), et.getJavaType()) ? Optional.of((PropertiesSpecification<T, ?, ?, ?>) et.getProperties()) : Optional.empty();
     }
 }
