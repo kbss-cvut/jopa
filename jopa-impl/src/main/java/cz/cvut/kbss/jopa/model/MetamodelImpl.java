@@ -74,6 +74,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
         this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
+        new StaticMetamodelInitializer(this).initializeStaticMetamodel();
     }
 
     /**
