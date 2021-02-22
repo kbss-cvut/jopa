@@ -95,16 +95,21 @@ public class StaticMetamodelInitializer {
     private <T> void initStaticMembers(ManagedType<T> et, Class<?> smClass) throws IllegalAccessException {
         final Field[] fields = smClass.getDeclaredFields();
         for (Field f : fields) {
+            if (!isCanonicalMetamodelField(f)) {
+                LOG.debug("Skipping field {}, it is not canonical (public static).", f);
+                continue;
+            }
             final FieldSpecification<T, ?> att = getMetamodelMember(f, et);
             setFieldValue(f, att);
         }
     }
 
+    private static boolean isCanonicalMetamodelField(Field field) {
+        return Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers());
+    }
+
     private static void setFieldValue(Field field, Object value) throws IllegalAccessException {
-        if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers())) {
-            throw new StaticMetamodelInitializationException(
-                    "Static metamodel field " + field + " must be public static.");
-        }
+        assert isCanonicalMetamodelField(field);
         field.set(null, value);
     }
 

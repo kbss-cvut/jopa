@@ -246,4 +246,33 @@ class StaticMetamodelInitializerTest {
     public static class SubClass_ {
         public static volatile SingularAttribute<SubClass, String> label;
     }
+
+    @Test
+    void initializeStaticMetamodelSkipsFieldsWhichAreNotPublicStaticVolatile() throws Exception {
+        final EntityType<SimpleClass> et = mock(EntityType.class);
+        final Identifier id = mock(Identifier.class);
+        when(id.getJavaField()).thenReturn(SimpleClass.class.getDeclaredField("uri"));
+        when(et.getIdentifier()).thenReturn(id);
+        when(et.getJavaType()).thenReturn(SimpleClass.class);
+        when(et.getDeclaredAttribute(anyString())).thenThrow(IllegalArgumentException.class);
+        when(metamodel.getEntities()).thenReturn(Collections.singleton(et));
+        sut.initializeStaticMetamodel();
+        assertEquals(id, SimpleClass_.uri);
+        assertNull(SimpleClass_.test);
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "SimpleClass")
+    public static class SimpleClass {
+
+        @Id
+        private URI uri;
+    }
+
+    @StaticMetamodel(SimpleClass.class)
+    public static class SimpleClass_ {
+
+        public static volatile Identifier<SimpleClass, URI> uri;
+
+        private static String test;
+    }
 }
