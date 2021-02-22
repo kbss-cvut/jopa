@@ -1,29 +1,22 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA_;
-import cz.cvut.kbss.jopa.environment.OWLClassB_;
-import cz.cvut.kbss.jopa.environment.OWLClassC_;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.StaticMetamodelInitializationException;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class StaticMetamodelInitializerTest {
 
@@ -70,7 +63,8 @@ class StaticMetamodelInitializerTest {
     }
 
     @Test
-    void initializeStaticMetamodelThrowsStaticMetamodelInitializationExceptionWhenStaticMetamodelFieldHasNoMetamodelCounterpart() throws Exception {
+    void initializeStaticMetamodelThrowsStaticMetamodelInitializationExceptionWhenStaticMetamodelFieldHasNoMetamodelCounterpart()
+            throws Exception {
         final EntityType<NoMatching> et = mock(EntityType.class);
         final Identifier id = mock(Identifier.class);
         when(id.getJavaField()).thenReturn(NoMatching.class.getDeclaredField("uri"));
@@ -198,5 +192,58 @@ class StaticMetamodelInitializerTest {
     @StaticMetamodel(WithInheritedProperties.class)
     public static class WithInheritedProperties_ {
         public static volatile PropertiesSpecification<WithInheritedProperties, Set<String>, String, String> properties;
+    }
+
+    @Test
+    void initializeStaticMetamodelInitializesMetamodelForMappedSuperclasses() {
+        when(metamodel.getEntities()).thenReturn(Collections.singleton(metamodelMocks.forOwlClassQ().entityType()));
+        doReturn(new HashSet<>(Arrays.asList(metamodelMocks.forOwlClassQ().entityType(),
+                metamodelMocks.forOwlClassQ().entityType().getSupertype()))).when(metamodel).getManagedTypes();
+        sut.initializeStaticMetamodel();
+        assertEquals(metamodelMocks.forOwlClassQ().identifier(), QMappedSuperclass_.uri);
+        assertEquals(metamodelMocks.forOwlClassQ().qLabelAtt(), QMappedSuperclass_.label);
+        assertEquals(metamodelMocks.forOwlClassQ().qParentStringAtt(), QMappedSuperclass_.parentString);
+        assertEquals(metamodelMocks.forOwlClassQ().qOwlClassAAtt(), QMappedSuperclass_.owlClassA);
+        assertEquals(metamodelMocks.forOwlClassQ().qStringAtt(), OWLClassQ_.stringAttribute);
+    }
+
+    @Test
+    void initializeStaticMetamodelChecksThatModelSubclassHasDeclaredSuperclassInStaticMetamodelAsWell()
+            throws Exception {
+        final EntityType<SubClass> et = mock(EntityType.class);
+        final SingularAttribute labelAtt = mock(SingularAttribute.class);
+        when(labelAtt.getJavaField()).thenReturn(SubClass.class.getDeclaredField("label"));
+        when(labelAtt.getDeclaringType()).thenReturn(et);
+        when(et.getDeclaredAttribute("label")).thenReturn(labelAtt);
+        when(et.getJavaType()).thenReturn(SubClass.class);
+        final Identifier id = mock(Identifier.class);
+        when(id.getJavaField()).thenReturn(SuperClass.class.getDeclaredField("uri"));
+        when(et.getIdentifier()).thenReturn(id);
+        final MappedSuperclassType<SuperClass> superType = mock(MappedSuperclassType.class);
+        when(superType.getIdentifier()).thenReturn(id);
+        when(superType.getJavaType()).thenReturn(SuperClass.class);
+        when(et.getSupertype()).thenReturn((IdentifiableType) superType);
+        when(metamodel.getEntities()).thenReturn(Collections.singleton(et));
+        doReturn(new HashSet<>(Arrays.asList(et, superType))).when(metamodel).getManagedTypes();
+
+        assertThrows(StaticMetamodelInitializationException.class, () -> sut.initializeStaticMetamodel());
+    }
+
+    @MappedSuperclass
+    public static class SuperClass {
+        @Id
+        private URI uri;
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "SubClass")
+    public static class SubClass extends SuperClass {
+
+        @OWLAnnotationProperty(iri = RDFS.LABEL)
+        private String label;
+    }
+
+    @StaticMetamodel(SubClass.class)
+    public static class SubClass_ {
+        public static volatile SingularAttribute<SubClass, String> label;
     }
 }

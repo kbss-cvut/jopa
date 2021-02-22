@@ -8,12 +8,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Initializes static metamodel based on the provided runtime metamodel.
  * <p>
- * Static metamodel initialization involves going through all managed types in the metamodel, finding a corresponding static metamodel class (if exists)
- * and populating its attributes with values from the actual runtime metamodel.
+ * Static metamodel initialization involves going through all managed types in the metamodel, finding a corresponding
+ * static metamodel class (if exists) and populating its attributes with values from the actual runtime metamodel.
  */
 public class StaticMetamodelInitializer {
 
@@ -36,30 +37,34 @@ public class StaticMetamodelInitializer {
     public void initializeStaticMetamodel() {
         LOG.debug("Initializing static metamodel.");
         processEntities();
-        // TODO process mapped superclasses
+        processManagedTypes();
     }
 
     private void processEntities() {
-        metamodel.getEntities().forEach(et -> {
-            final Optional<Class<?>> smClass = tryFindingClass(et);
-            if (!smClass.isPresent()) {
-                LOG.trace("No static metamodel type found for {}.", et);
-                return;
-            }
-            LOG.debug("Processing static metamodel class {} corresponding to {}.", smClass.get(), et);
-            try {
-                initStaticMembers(et, smClass.get());
-            } catch (IllegalAccessException e) {
-                throw new StaticMetamodelInitializationException("Unable to initialize static metamodel class " + smClass, e);
-            }
-        });
+        metamodel.getEntities().forEach(this::processType);
     }
 
-    private Optional<Class<?>> tryFindingClass(EntityType<?> et) {
-        final String staticName = et.getJavaType().getName() + STATIC_METAMODEL_CLASS_SUFFIX;
+    private void processType(ManagedType<?> mt) {
+        final Optional<Class<?>> smClass = tryFindingClass(mt);
+        if (!smClass.isPresent()) {
+            LOG.trace("No static metamodel type found for {}.", mt);
+            return;
+        }
+        LOG.debug("Processing static metamodel class {} corresponding to {}.", smClass.get(), mt);
+        verifyParent(smClass.get(), mt);
+        try {
+            initStaticMembers(mt, smClass.get());
+        } catch (IllegalAccessException e) {
+            throw new StaticMetamodelInitializationException("Unable to initialize static metamodel class " + smClass,
+                    e);
+        }
+    }
+
+    private static Optional<Class<?>> tryFindingClass(ManagedType<?> type) {
+        final String staticName = type.getJavaType().getName() + STATIC_METAMODEL_CLASS_SUFFIX;
         try {
             final Class<?> smClass = Class.forName(staticName);
-            if (isNotStaticMetamodelForType(smClass, et.getJavaType())) {
+            if (isNotStaticMetamodelForType(smClass, type.getJavaType())) {
                 return Optional.empty();
             }
             return Optional.of(smClass);
@@ -70,10 +75,24 @@ public class StaticMetamodelInitializer {
     }
 
     private static boolean isNotStaticMetamodelForType(Class<?> smClass, Class<?> metamodelClass) {
-        return smClass.getAnnotation(StaticMetamodel.class) == null || !smClass.getAnnotation(StaticMetamodel.class).value().equals(metamodelClass);
+        return smClass.getAnnotation(StaticMetamodel.class) == null ||
+                !smClass.getAnnotation(StaticMetamodel.class).value().equals(metamodelClass);
     }
 
-    private <T> void initStaticMembers(EntityType<T> et, Class<?> smClass) throws IllegalAccessException {
+    private static void verifyParent(Class<?> smClass, ManagedType<?> type) {
+        if (type instanceof IdentifiableType<?>) {
+            final IdentifiableType<?> idType = (IdentifiableType<?>) type;
+            if (idType.getSupertype() != null) {
+                final Optional<Class<?>> supertypeSm = tryFindingClass(idType.getSupertype());
+                if (!supertypeSm.isPresent() || !Objects.equals(smClass.getSuperclass(), supertypeSm.get())) {
+                    throw new StaticMetamodelInitializationException("Managed type " + type +
+                            " has a managed supertype. A corresponding relationship must exist between static metamodel classes.");
+                }
+            }
+        }
+    }
+
+    private <T> void initStaticMembers(ManagedType<T> et, Class<?> smClass) throws IllegalAccessException {
         final Field[] fields = smClass.getDeclaredFields();
         for (Field f : fields) {
             final FieldSpecification<T, ?> att = getMetamodelMember(f, et);
@@ -83,41 +102,62 @@ public class StaticMetamodelInitializer {
 
     private static void setFieldValue(Field field, Object value) throws IllegalAccessException {
         if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers())) {
-            throw new StaticMetamodelInitializationException("Static metamodel field " + field + " must be public static.");
+            throw new StaticMetamodelInitializationException(
+                    "Static metamodel field " + field + " must be public static.");
         }
         field.set(null, value);
     }
 
-    private <T> FieldSpecification<T, ?> getMetamodelMember(Field field, EntityType<T> et) {
+    private <T> FieldSpecification<T, ?> getMetamodelMember(Field field, ManagedType<T> type) {
         LOG.trace("Finding metamodel member for static metamodel field {}.", field);
-        return getDeclaredIdentifier(field, et)
-                .orElseGet(() -> getDeclaredAttribute(field, et)
-                        .orElseGet(() -> getDeclaredTypes(field, et)
-                                .orElseGet(() -> getDeclaredProperties(field, et)
-                                        .orElseThrow(() -> new StaticMetamodelInitializationException("No corresponding metamodel member found for static metamodel field " + field)))));
+        return getDeclaredIdentifier(field, type)
+                .orElseGet(() -> getDeclaredAttribute(field, type)
+                        .orElseGet(() -> getDeclaredTypes(field, type)
+                                .orElseGet(() -> getDeclaredProperties(field, type)
+                                        .orElseThrow(() -> new StaticMetamodelInitializationException(
+                                                "No corresponding metamodel member found for static metamodel field " +
+                                                        field)))));
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredIdentifier(Field field, EntityType<T> et) {
-        return Objects.equals(field.getName(), et.getIdentifier().getJavaField().getName()) && isDeclaredInClass(et.getIdentifier(), et.getJavaType()) ? Optional.of((Identifier<T, ?>) et.getIdentifier()) : Optional.empty();
+    private <T> Optional<FieldSpecification<T, ?>> getDeclaredIdentifier(Field field, ManagedType<T> type) {
+        if (!(type instanceof IdentifiableType)) {
+            return Optional.empty();
+        }
+        final IdentifiableType<T> mt = (IdentifiableType<T>) type;
+        return Objects.equals(field.getName(), mt.getIdentifier().getJavaField().getName()) &&
+                       isDeclaredInClass(mt.getIdentifier(), type.getJavaType()) ?
+               Optional.of((Identifier<T, ?>) mt.getIdentifier()) : Optional.empty();
     }
 
     private boolean isDeclaredInClass(FieldSpecification<?, ?> fs, Class<?> cls) {
         return fs.getJavaField().getDeclaringClass().equals(cls);
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredAttribute(Field field, EntityType<T> et) {
+    private <T> Optional<FieldSpecification<T, ?>> getDeclaredAttribute(Field field, ManagedType<T> type) {
         try {
-            return Optional.of(et.getDeclaredAttribute(field.getName()));
+            return Optional.of(type.getDeclaredAttribute(field.getName()));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredTypes(Field field, EntityType<T> et) {
-        return et.getTypes() != null && Objects.equals(field.getName(), et.getTypes().getJavaField().getName()) && isDeclaredInClass(et.getTypes(), et.getJavaType()) ? Optional.of((TypesSpecification<T, ?>) et.getTypes()) : Optional.empty();
+    private <T> Optional<FieldSpecification<T, ?>> getDeclaredTypes(Field field, ManagedType<T> type) {
+        return type.getTypes() != null &&
+                       Objects.equals(field.getName(), type.getTypes().getJavaField().getName()) &&
+                       isDeclaredInClass(type.getTypes(), type.getJavaType()) ?
+               Optional.of((TypesSpecification<T, ?>) type.getTypes()) : Optional.empty();
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredProperties(Field field, EntityType<T> et) {
-        return et.getProperties() != null && Objects.equals(field.getName(), et.getProperties().getJavaField().getName()) && isDeclaredInClass(et.getProperties(), et.getJavaType()) ? Optional.of((PropertiesSpecification<T, ?, ?, ?>) et.getProperties()) : Optional.empty();
+    private <T> Optional<FieldSpecification<T, ?>> getDeclaredProperties(Field field, ManagedType<T> type) {
+        return type.getProperties() != null &&
+                       Objects.equals(field.getName(), type.getProperties().getJavaField().getName()) &&
+                       isDeclaredInClass(type.getProperties(), type.getJavaType()) ?
+               Optional.of((PropertiesSpecification<T, ?, ?, ?>) type.getProperties()) : Optional.empty();
+    }
+
+    private void processManagedTypes() {
+        final Set<ManagedType<?>> managedTypes = metamodel.getManagedTypes();
+        managedTypes.removeAll(metamodel.getEntities());
+        managedTypes.forEach(this::processType);
     }
 }

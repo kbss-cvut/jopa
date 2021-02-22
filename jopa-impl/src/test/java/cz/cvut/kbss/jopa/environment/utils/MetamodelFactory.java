@@ -175,12 +175,12 @@ public class MetamodelFactory {
         when(simpleListMock.getName()).thenReturn(OWLClassC.getSimpleListField().getName());
         when(etMock.getFieldSpecification(simpleListMock.getName())).thenReturn(simpleListMock);
         String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                .ClassOWLListIRI();
+                                        .ClassOWLListIRI();
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
         when(simpleListMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
         when(simpleListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
         String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI();
+                                     .ObjectPropertyHasNextIRI();
         when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
         when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(simpleListMock.getPersistentAttributeType())
@@ -201,10 +201,10 @@ public class MetamodelFactory {
         when(refListMock.getName()).thenReturn(OWLClassC.getRefListField().getName());
         when(etMock.getFieldSpecification(refListMock.getName())).thenReturn(refListMock);
         hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI();
+                              .ObjectPropertyHasNextIRI();
         when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
         final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasContentsIRI();
+                                           .ObjectPropertyHasContentsIRI();
         when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(contentIri));
         attIri = OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri();
         when(refListMock.getIRI()).thenReturn(IRI.create(attIri));
@@ -243,7 +243,7 @@ public class MetamodelFactory {
                 .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassE, ?>>asList(strAttMock, idMock)));
         when(strAttMock.getJavaField()).thenReturn(OWLClassE.getStrAttField());
         final String stringAttIri = OWLClassE.getStrAttField().getAnnotation(OWLDataProperty.class)
-                .iri();
+                                             .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
@@ -270,7 +270,7 @@ public class MetamodelFactory {
         when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsAIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
         when(clsAMock.getName()).thenReturn(OWLClassD.getOwlClassAField().getName());
@@ -317,7 +317,7 @@ public class MetamodelFactory {
         when(strAttMock.getJavaType()).thenReturn(OWLClassF.getStrAttField().getType());
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
         final String stringAttIri = OWLClassF.getStrAttField().getAnnotation(OWLDataProperty.class)
-                .iri();
+                                             .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getName()).thenReturn(OWLClassF.getStrAttField().getName());
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -346,7 +346,7 @@ public class MetamodelFactory {
         when(clsHMock.getJavaField()).thenReturn(OWLClassG.getOwlClassHField());
         when(clsHMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsHIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsHMock.getIRI()).thenReturn(IRI.create(clsHIri));
         when(clsHMock.getJavaType()).thenReturn(OWLClassH.class);
         when(clsHMock.getName()).thenReturn(OWLClassG.getOwlClassHField().getName());
@@ -373,7 +373,7 @@ public class MetamodelFactory {
         when(clsAMock.getJavaField()).thenReturn(OWLClassH.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsAIri = OWLClassH.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
         when(clsAMock.getName()).thenReturn(OWLClassH.getOwlClassAField().getName());
@@ -384,7 +384,7 @@ public class MetamodelFactory {
         when(clsGMock.getJavaField()).thenReturn(OWLClassH.getOwlClassGField());
         when(clsGMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsGIri = OWLClassH.getOwlClassGField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsGMock.getIRI()).thenReturn(IRI.create(clsGIri));
         when(clsGMock.getJavaType()).thenReturn(OWLClassG.class);
         when(clsGMock.getName()).thenReturn(OWLClassH.getOwlClassGField().getName());
@@ -412,7 +412,7 @@ public class MetamodelFactory {
         when(setAMock.getCascadeTypes())
                 .thenReturn(OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).cascade());
         final String clsAIri = OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(setAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(setAMock.getJavaType()).thenReturn(Set.class);
         when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
@@ -437,7 +437,7 @@ public class MetamodelFactory {
         when(clsEMock.getJavaField()).thenReturn(OWLClassK.getOwlClassEField());
         when(clsEMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsEIri = OWLClassK.getOwlClassEField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsEMock.getIRI()).thenReturn(IRI.create(clsEIri));
         when(clsEMock.getJavaType()).thenReturn(OWLClassE.class);
         when(clsEMock.getDeclaringType()).thenReturn(etMock);
@@ -874,7 +874,7 @@ public class MetamodelFactory {
         when(et.getJavaType()).thenReturn(OWLClassQ.class);
         when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
         when(idQ.isGenerated()).thenReturn(true);
-        when(idQ.getDeclaringType()).thenReturn(et);
+        when(idQ.getDeclaringType()).thenReturn(superclassType);
         when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
         when(et.getSupertype()).thenReturn((AbstractIdentifiableType) superclassType);
         when(superclassType.getSubtypes()).thenReturn(Collections.singleton(et));
@@ -913,7 +913,7 @@ public class MetamodelFactory {
         when(qParentStringAtt.getBindableJavaType()).thenReturn(String.class);
         when(qParentStringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getParentStringField().getAnnotation(OWLDataProperty.class).iri()));
-        when(qParentStringAtt.getDeclaringType()).thenReturn(et);
+        when(qParentStringAtt.getDeclaringType()).thenReturn(superclassType);
         when(qParentStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(qParentStringAtt.hasLanguage()).thenReturn(true);
         when(qParentStringAtt.getLanguage()).thenReturn(Generators.LANG);
@@ -928,7 +928,7 @@ public class MetamodelFactory {
         when(qLabelAtt.getBindableJavaType()).thenReturn(String.class);
         when(qLabelAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getLabelField().getAnnotation(OWLAnnotationProperty.class).iri()));
-        when(qLabelAtt.getDeclaringType()).thenReturn(et);
+        when(qLabelAtt.getDeclaringType()).thenReturn(superclassType);
         when(qLabelAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(qLabelAtt.hasLanguage()).thenReturn(true);
         when(qLabelAtt.getLanguage()).thenReturn(Generators.LANG);
@@ -941,11 +941,31 @@ public class MetamodelFactory {
         when(qOwlClassAAtt.getName()).thenReturn(OWLClassQ.getOwlClassAField().getName());
         when(qOwlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(qOwlClassAAtt.getFetchType()).thenReturn(FetchType.EAGER);
-        when(qOwlClassAAtt.getDeclaringType()).thenReturn(et);
+        when(qOwlClassAAtt.getDeclaringType()).thenReturn(superclassType);
         when(qOwlClassAAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(qOwlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(et.getFieldSpecification(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
         when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(et.getDeclaredAttribute(anyString())).thenAnswer(arg -> {
+            if (Objects.equals(arg.getArgument(0), qStringAtt.getName())) {
+                return qStringAtt;
+            }
+            throw new IllegalArgumentException();
+        });
+        initQMappedSuperclassMock(superclassType, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
+    }
+
+    private static void initQMappedSuperclassMock(MappedSuperclassTypeImpl<QMappedSuperclass> superclassType,
+                                                  SingularAttributeImpl qParentStringAtt,
+                                                  SingularAttributeImpl qLabelAtt,
+                                                  SingularAttributeImpl qOwlClassAAtt, Identifier idQ) {
+        when(superclassType.getJavaType()).thenReturn(QMappedSuperclass.class);
+        when(superclassType.getDeclaredAttribute(qParentStringAtt.getName())).thenReturn(qParentStringAtt);
+        when(superclassType.getDeclaredAttribute(qLabelAtt.getName())).thenReturn(qLabelAtt);
+        when(superclassType.getDeclaredAttribute(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
+        when(superclassType.getIdentifier()).thenReturn(idQ);
+        when(superclassType.getDeclaredAttributes())
+                .thenReturn(new HashSet<>(Arrays.asList(qLabelAtt, qParentStringAtt, qOwlClassAAtt)));
     }
 
     public static void initOwlClassSMock(EntityTypeImpl<OWLClassS> et, SingularAttributeImpl sNameAtt,
