@@ -7,14 +7,28 @@ import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
 
+    public PathImpl(Class<X> type) {
+        super(type, new ExpressionEntityImpl<>(type));
+    }
 
-    public <Y> PathImpl(Attribute<X, Y> attribute, ExpressionType expressionType, X value) {
-        super(attribute, expressionType, value);
+    public PathImpl(String attributeName) {
+        super(null, new ExpressionAttributeImpl<>(attributeName));
+    }
+
+    public PathImpl(String attributeName, Expression expression){
+        super(null, new ExpressionAttributeImpl<>(attributeName, expression));
+    }
+
+
+    protected String getQueryPart() {
+        return null;
     }
 
     @Override
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
-        return null;
+        Path<Y> nextExpression = new PathImpl<Y>(attributeName, this.expression);
+        this.expression = nextExpression;
+        return nextExpression;
     }
 
     @Override

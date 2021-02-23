@@ -10,19 +10,15 @@ import java.util.List;
 
 public class CriteriaModelImpl<T> extends PathImpl<T> implements CriteriaModel<T> {
 
-    protected final Class<T> type;
     private final UnitOfWorkImpl uow;
 
     public CriteriaModelImpl(Class<T> type, UnitOfWorkImpl uow) {
-        super(null,null,null);
-
-        this.type = type;
+        super(type);
         this.uow = uow;
     }
 
     @Override
     public Predicate attrEquals(Expression<?> x, Expression<?> y) {
-
         return null;
     }
 

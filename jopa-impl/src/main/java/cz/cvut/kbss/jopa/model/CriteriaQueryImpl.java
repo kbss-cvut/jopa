@@ -34,17 +34,10 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     private static final Logger LOG = LoggerFactory.getLogger(CriteriaQuery.class);
 
     final CriteriaQueryHolder<T> query;
-//    private final ConnectionWrapper connection;
-
-//    private boolean useBackupOntology = false;
-//
-//    private Procedure rollbackOnlyMarker;
-//    private Procedure ensureOpenProcedure;
 
 
-    public CriteriaQueryImpl(CriteriaQueryHolder<T> query /*,ConnectionWrapper connection*/) {
+    public CriteriaQueryImpl(CriteriaQueryHolder<T> query) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
-//        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
     }
 
     public String getSoqlQuery(){
@@ -60,6 +53,11 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> select(Selection<? extends T> selection) {
+        if (selection.isCompoundedSelection()){
+            //TODO - compounded selection
+        } else {
+
+        }
         query.setSelection(selection);
         return this;
     }

@@ -1,21 +1,29 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.query.Parameter;
+import cz.cvut.kbss.jopa.model.query.criteria.Expression;
+import cz.cvut.kbss.jopa.model.query.criteria.Order;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
-import cz.cvut.kbss.jopa.query.QueryHolder;
 
+import java.util.List;
 import java.util.Set;
 
 //TODO PRO - CriteriaQueryHolder implementation
 public class CriteriaQueryHolder<T> {
 
-    private final Class<T> type;
-    private Selection<? extends T> selection;
+    protected final Class<T> resultType;
+    protected final EntityType<T> entityMetamodel;
+    protected Selection<? extends T> selection;
     private boolean distinct;
+    protected Expression<Boolean> where;
+    protected List<Order> orderBy;
 
-    public CriteriaQueryHolder(Class<T> type) {
-        this.type = type;
+    public CriteriaQueryHolder(EntityType<T> entityMetamodel, Class<T> resultType) {
+        this.entityMetamodel = entityMetamodel;
+        this.resultType = resultType;
         this.distinct = false;
+        this.selection = new ExpressionEntityImpl<>(resultType);
     }
 
     public Selection<T> getSelection() {
@@ -72,13 +80,13 @@ public class CriteriaQueryHolder<T> {
 
     public String assembleSoqlQuery() {
         final StringBuilder query = new StringBuilder();
-        final String alias = type.toString().substring(0,1);
+        final String alias = resultType.toString().substring(0,1);
         query.append("SELECT " + (distinct ? "DISTINCT " : ""));
 
         //TODO PRO difficult select
         query.append(alias);
 
-        query.append(" FROM " + type + " " + alias);
+        query.append(" FROM " + resultType + " " + alias);
         return query.toString();
     }
 }

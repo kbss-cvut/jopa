@@ -1,21 +1,19 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 
 import java.util.Collection;
 
-public class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<Y> {
+abstract class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
-    protected final ExpressionType expressionType;
-    protected final Y value;
-
-    public <X> ExpressionImpl(Attribute<Y, X> attribute, ExpressionType expressionType, Y value) {
-        super(attribute);
-        this.expressionType = expressionType;
-        this.value = value;
+    public ExpressionImpl(Class<Y> type, Expression expression) {
+        super(type,expression);
     }
+
+    protected String getQueryPart(){
+        return null;
+    };
 
     @Override
     public Predicate in(Collection<?> values) {
@@ -55,12 +53,6 @@ public class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<Y>
     @Override
     public boolean isNegated() {
         return false;
-    }
-
-    protected enum ExpressionType{
-        EQUALS,
-        NOTEQUALS,
-        LESSTHAN,
     }
 }
 
