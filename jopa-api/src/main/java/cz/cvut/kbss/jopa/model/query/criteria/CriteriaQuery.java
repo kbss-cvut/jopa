@@ -22,17 +22,11 @@ package cz.cvut.kbss.jopa.model.query.criteria;
 public interface CriteriaQuery<T>{
 
     /**
-     * Specify that all instances are to be returned in the query result. Replaces the previously specified selection(s), if any.
-     * @return the modified query
-     */
-    CriteriaQuery<T> selectAll();
-
-    /**
      * Specify the item that is to be returned in the query result. Replaces the previously specified selection(s), if any.
      * @param selection - selection specifying the item that is to be returned in the query result
      * @return the modified query
      */
-    CriteriaQuery<T> select(Selection<? extends T> selection);
+    CriteriaQuery<T> select(Selection<? extends T> selection) throws Exception;
 
     /**
      * Modify the query to restrict the query result according to the specified boolean expression. Replaces the previously added restriction(s), if any.
