@@ -4,7 +4,7 @@ import java.util.List;
 
 //TODO PRO - selection interface - methods
 public interface Selection<X> {
-    boolean CompoundedSelection();
+    boolean isCompoundedSelection();
     List<Selection<?>> getCompoundedSelectionItems();
     Selection<X> alias(String name);
 }

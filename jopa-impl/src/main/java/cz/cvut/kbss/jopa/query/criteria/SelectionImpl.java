@@ -1,31 +1,35 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.query.TupleElement;
+import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 import java.util.List;
 
-public class SelectionImpl<T> implements Selection<T> {
+public class SelectionImpl<T> implements Selection<T>, TupleElement<T> {
+    protected final Class<T> type;
+    protected Expression expression;
+    protected String alias;
 
-    protected final Attribute<T, ?> attribute;
-    //    protected final Class<T> selectAll;
-
-    public SelectionImpl(Attribute<T, ?> attribute) {
-        this.attribute = attribute;
+    public SelectionImpl(Class<T> type, Expression expression) {
+        this.type = type;
+        this.expression = expression;
     }
 
-//    public <X> SelectionImpl(Attribute<T, X> attribute) {
-//        this.attribute = attribute;
-//        this.selectAll = null;
-//    }
-//
-//    public <X> SelectionImpl(Class<T> selectAll) {
-//        this.attribute = null;
-//        this.selectAll = selectAll;
-//    }
+    protected String getQuery(){
+        return null;
+    };
+
+    protected void setExpression(ExpressionEntityImpl<T> expression){
+        this.expression = expression;
+    };
+
+    protected void setExpression(ExpressionAttributeImpl<T> expression){
+        this.expression = expression;
+    };
 
     @Override
-    public boolean CompoundedSelection() {
+    public boolean isCompoundedSelection() {
         return false;
     }
 
@@ -36,6 +40,17 @@ public class SelectionImpl<T> implements Selection<T> {
 
     @Override
     public Selection<T> alias(String name) {
-        return null;
+        this.alias = name;
+        return this;
+    }
+
+    @Override
+    public Class<? extends T> getJavaType() {
+        return this.type;
+    }
+
+    @Override
+    public String getAlias() {
+        return this.alias;
     }
 }
