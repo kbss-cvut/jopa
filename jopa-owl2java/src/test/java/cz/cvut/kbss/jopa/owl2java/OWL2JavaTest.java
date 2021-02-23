@@ -43,15 +43,10 @@ public class OWL2JavaTest {
     private File targetDir;
 
     @BeforeEach
-    public void setUp() {
-        this.mappingFilePath = resolveMappingFilePath();
+    public void setUp() throws Exception {
+        this.mappingFilePath = TestUtils.resolveMappingFilePath();
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
-    }
-
-    private String resolveMappingFilePath() {
-        final File mf = new File(getClass().getClassLoader().getResource(MAPPING_FILE_NAME).getFile());
-        return mf.getAbsolutePath();
     }
 
     @AfterEach
