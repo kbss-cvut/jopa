@@ -79,14 +79,15 @@ public class CriteriaQueryHolder<T> {
     }
 
     public String assembleSoqlQuery() {
-        final StringBuilder query = new StringBuilder();
-        final String alias = resultType.toString().substring(0,1);
-        query.append("SELECT " + (distinct ? "DISTINCT " : ""));
-
-        //TODO PRO difficult select
-        query.append(alias);
-
-        query.append(" FROM " + resultType + " " + alias);
-        return query.toString();
+//        final StringBuilder query = new StringBuilder();
+//        query.append("SELECT " + (distinct ? "DISTINCT " : ""));
+//
+//        //TODO PRO difficult select
+//        selection.
+//        query.append(alias);
+//
+//        query.append(" FROM " + resultType + " " + alias);
+//        return query.toString();
+        return "0";
     }
 }

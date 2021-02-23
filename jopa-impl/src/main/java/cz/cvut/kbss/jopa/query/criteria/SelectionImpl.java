@@ -16,8 +16,12 @@ public class SelectionImpl<T> implements Selection<T>, TupleElement<T> {
         this.expression = expression;
     }
 
-    protected String getQuery(){
-        return null;
+    public String getQuery(){
+        return "I am here";
+    };
+
+    public String getExpr(){
+        return "Expression " + expression.hashCode();
     };
 
     protected void setExpression(ExpressionEntityImpl<T> expression){

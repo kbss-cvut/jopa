@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaQueryHolder;
+import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.jopa.utils.Procedure;
@@ -44,21 +45,16 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return query.assembleSoqlQuery();
     }
 
-
     @Override
-    public CriteriaQuery<T> selectAll() {
-        query.setSelection(null);
-        return this;
-    }
-
-    @Override
-    public CriteriaQuery<T> select(Selection<? extends T> selection) {
+    public CriteriaQuery<T> select(Selection<? extends T> selection) throws Exception {
+        SelectionImpl sel = (SelectionImpl) selection;
+        sel.getQuery();
         if (selection.isCompoundedSelection()){
             //TODO - compounded selection
+            throw new Exception("Not implemented yet");
         } else {
-
+            query.setSelection(selection);
         }
-        query.setSelection(selection);
         return this;
     }
 
