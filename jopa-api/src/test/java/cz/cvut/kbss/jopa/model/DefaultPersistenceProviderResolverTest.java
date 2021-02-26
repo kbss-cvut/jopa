@@ -73,8 +73,7 @@ class DefaultPersistenceProviderResolverTest {
 
     private void generateProviderFileContent(String content) throws Exception {
         final File file = new File(Thread.currentThread().getContextClassLoader().getResource(
-                "META-INF" + File.separator + "services" + File.separator +
-                        PersistenceProperties.JPA_PERSISTENCE_PROVIDER).getFile());
+                "META-INF/services/" + PersistenceProperties.JPA_PERSISTENCE_PROVIDER).getFile());
         Files.write(file.toPath(), content.getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
     }
 }
