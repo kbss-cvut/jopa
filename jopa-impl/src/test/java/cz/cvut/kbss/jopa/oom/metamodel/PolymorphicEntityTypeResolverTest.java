@@ -17,7 +17,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
-import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.*;
@@ -49,7 +48,7 @@ public class PolymorphicEntityTypeResolverTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etS = metamodelMock.entity(OWLClassS.class);

@@ -36,7 +36,7 @@ public class JenaStatementTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.statement = new JenaStatement(executor);
     }
 

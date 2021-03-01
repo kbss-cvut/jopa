@@ -46,7 +46,7 @@ public class NamedParameterSparqlQueryHolderTest {
     private SparqlQueryHolder holder;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         final Map<String, QueryParameter<?>> paramsByName = new HashMap<>();
         for (String n : PARAM_NAMES) {
             paramsByName.put(n, new QueryParameter<>(n, paramValueFactory));

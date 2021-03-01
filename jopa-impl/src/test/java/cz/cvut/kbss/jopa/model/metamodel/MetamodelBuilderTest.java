@@ -12,10 +12,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassM;
-import cz.cvut.kbss.jopa.environment.OWLClassT;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
@@ -34,6 +31,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +48,7 @@ class MetamodelBuilderTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -271,5 +269,23 @@ class MetamodelBuilderTest {
 
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "collectionObjectProperty")
         private Collection<OWLClassA> collectionObjectProperty;
+    }
+
+    @Test
+    void buildMetamodelRegistersReferencesBetweenClassesOnSingularAttributes() {
+        when(finderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(OWLClassA.class, OWLClassD.class)));
+        builder.buildMetamodel(finderMock);
+
+        assertThat(builder.getTypeReferenceMap().getReferringTypes(OWLClassA.class), hasItem(OWLClassD.class));
+        assertTrue(builder.getTypeReferenceMap().getReferringTypes(OWLClassD.class).isEmpty());
+    }
+
+    @Test
+    void buildMetamodelRegistersReferencesBetweenClassesOnPluralAttributes() {
+        when(finderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(OWLClassA.class, OWLClassC.class)));
+        builder.buildMetamodel(finderMock);
+
+        assertThat(builder.getTypeReferenceMap().getReferringTypes(OWLClassA.class), hasItem(OWLClassC.class));
+        assertTrue(builder.getTypeReferenceMap().getReferringTypes(OWLClassD.class).isEmpty());
     }
 }

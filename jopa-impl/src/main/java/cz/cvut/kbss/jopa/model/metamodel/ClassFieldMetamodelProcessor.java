@@ -78,7 +78,8 @@ class ClassFieldMetamodelProcessor<X> {
         propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
-            createAttribute(field, inference, propertyAtt);
+            final AbstractAttribute<X, ?> a = createAttribute(field, inference, propertyAtt);
+            registerTypeReference(a);
         } else if (!isAspectIntegrationField(field)) {
             final boolean success = processIdentifierField(field);
             if (!success) {
@@ -146,7 +147,8 @@ class ClassFieldMetamodelProcessor<X> {
                                            .propertyValueType(paramsResolver.getPropertyValueType()).build());
     }
 
-    private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {
+    private AbstractAttribute<X, ?> createAttribute(Field field, InferenceInfo inference,
+                                                    PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
         if (field.getType().isAssignableFrom(Collection.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
@@ -175,6 +177,7 @@ class ClassFieldMetamodelProcessor<X> {
             a = (AbstractAttribute<X, ?>) builder.build();
         }
         et.addDeclaredAttribute(field.getName(), a);
+        return a;
     }
 
     private AbstractAttribute<X, ?> createListAttribute(Field field,
@@ -194,6 +197,14 @@ class ClassFieldMetamodelProcessor<X> {
                                  .sequenceType(os.type());
         context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
+    }
+
+    private void registerTypeReference(Attribute<X, ?> attribute) {
+        final Class<?> type = attribute.isCollection() ? ((PluralAttribute<X, ?, ?>) attribute).getBindableJavaType() :
+                              attribute.getJavaType();
+        if (metamodelBuilder.hasManagedType(type)) {
+            metamodelBuilder.registerTypeReference(type, et.getJavaType());
+        }
     }
 
     private boolean processIdentifierField(Field field) {

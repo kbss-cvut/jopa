@@ -38,7 +38,7 @@ public class SesamePreparedStatementTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(executorMock.executeSelectQuery(any(String.class))).thenReturn(resultMock);
     }
 

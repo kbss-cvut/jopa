@@ -48,7 +48,7 @@ public class OwlapiPropertiesTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(adapterMock.getPropertiesHandler()).thenReturn(handlerMock);
         this.properties = new OwlapiProperties(adapterMock, beforeMock, afterMock);
     }

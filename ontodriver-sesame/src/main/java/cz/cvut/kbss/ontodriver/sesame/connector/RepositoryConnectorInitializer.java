@@ -25,7 +25,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
-import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
@@ -132,7 +131,7 @@ class RepositoryConnectorInitializer {
     private Repository createRepositoryFromConfig() {
         LOG.trace("Creating local repository from repository config file.");
         final RepositoryConfig repoConfig = loadRepositoryConfig();
-        this.manager = new LocalRepositoryManager(getRepositoryManagerBaseDir().map(File::new).orElse(null));
+        this.manager = RepositoryProvider.getRepositoryManager(getRepositoryManagerBaseDir().orElse(""));
         manager.addRepositoryConfig(repoConfig);
         return manager.getRepository(getRepositoryId());
     }

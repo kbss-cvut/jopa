@@ -91,11 +91,7 @@ public class IntegrityConstraintSet {
     }
 
     public List<IntegrityConstraint> getClassIntegrityConstraints(final OWLClass cls) {
-        if (cConstraints.containsKey(cls)) {
-            return cConstraints.get(cls);
-        } else {
-            return Collections.emptyList();
-        }
+        return cConstraints.getOrDefault(cls, Collections.emptyList());
     }
 
     public Collection<IntegrityConstraint> getClassObjectIntegrityConstraints(

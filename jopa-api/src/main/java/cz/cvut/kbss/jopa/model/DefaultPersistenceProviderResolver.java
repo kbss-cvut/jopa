@@ -1,137 +1,239 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Default implementation of the {@link PersistenceProviderResolver}, threadsafe.
  * <p>
- * It gets persistence providers by scanning the classpath, looking for {@link #PROVIDER_FILE} containing fully
- * qualified name of a {@link PersistenceProvider} implementation.
+ * Uses service loading mechanism ({@link ServiceLoader#load(Class, ClassLoader)} using the current context thread's class loader) to discover {@link PersistenceProvider} implementations on the classpath.
+ * <p>
+ * Code based on JPA specification implementation.
  */
 public class DefaultPersistenceProviderResolver implements PersistenceProviderResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultPersistenceProviderResolver.class);
 
     /**
-     * Configuration file of the persistence provider implementations.
+     * Cached list of available providers cached by CacheKey to ensure
+     * there is not potential for provider visibility issues.
      */
-    public static final String PROVIDER_FILE = "META-INF/services/" + PersistenceProperties.JPA_PERSISTENCE_PROVIDER;
-    private static final Pattern nonCommentPattern = Pattern.compile("^([^#]+)");
+    private final HashMap<CacheKey, PersistenceProviderReference> providers = new HashMap<>();
 
-    private static final Set<Class<? extends PersistenceProvider>> PROVIDER_TYPES = new LinkedHashSet<>(4);
+    /**
+     * Queue for reference objects referring to class loaders or persistence providers.
+     */
+    private static final ReferenceQueue<?> referenceQueue = new ReferenceQueue<>();
 
-    private List<PersistenceProvider> providers = null;
+    public List<PersistenceProvider> getPersistenceProviders() {
+        // Before we do the real loading work, see whether we need to
+        // do some cleanup: If references to class loaders or
+        // persistence providers have been nulled out, remove all related
+        // information from the cache.
+        processQueue();
 
-    @Override
-    public synchronized List<PersistenceProvider> getPersistenceProviders() {
-        if (providers == null) {
-            this.providers = initProviders();
+        final ClassLoader loader = getContextClassLoader();
+        final CacheKey cacheKey = new CacheKey(loader);
+        PersistenceProviderReference providersReferent = providers.get(cacheKey);
+
+        if (providersReferent != null) {
+            return providersReferent.get();
         }
-        return Collections.unmodifiableList(providers);
-    }
 
-    private static List<PersistenceProvider> initProviders() {
-        final List<Class<? extends PersistenceProvider>> providerTypes = new ArrayList<>(PROVIDER_TYPES);
-        providerTypes.addAll(resolveProviders());
-        final List<PersistenceProvider> providerList = new ArrayList<>(providerTypes.size());
-        for (Class<? extends PersistenceProvider> cls : providerTypes) {
-            try {
-                providerList.add(cls.newInstance());
-            } catch (InstantiationException | IllegalAccessException e) {
-                LOG.error("Unable to instantiate PersistenceProvider {}.", cls, e);
+        List<PersistenceProvider> loadedProviders = new ArrayList<>();
+        Iterator<PersistenceProvider> ipp = ServiceLoader.load(PersistenceProvider.class, loader).iterator();
+        try {
+            while (ipp.hasNext()) {
+                try {
+                    PersistenceProvider pp = ipp.next();
+                    loadedProviders.add(pp);
+                } catch (ServiceConfigurationError sce) {
+                    LOG.trace("Unable to load PersistenceProvider implementation via service loader.", sce);
+                }
             }
+        } catch (ServiceConfigurationError sce) {
+            LOG.trace("Unable to load PersistenceProvider implementation via service loader.", sce);
         }
-        if (providerList.isEmpty()) {
-            LOG.warn("No persistence provider implementations found on classpath.");
-        }
-        return providerList;
-    }
 
-    @Override
-    public synchronized void clearCachedProviders() {
-        this.providers = null;
+        if (loadedProviders.isEmpty()) {
+            LOG.warn("No valid providers found.");
+        }
+
+        providersReferent = new PersistenceProviderReference(loadedProviders, referenceQueue, cacheKey);
+
+        providers.put(cacheKey, providersReferent);
+
+        return loadedProviders;
     }
 
     /**
-     * Registers the specified class so that {@link PersistenceProvider} instances can be created by this resolver.
-     * <p>
-     * This allows to programmatically specify additional persistence providers. Providers registered via this method
-     * are instantiated first by the resolver instance.
-     *
-     * @param cls The class to register
+     * Remove garbage collected cache keys & providers.
      */
-    public static synchronized void registerPersistenceProviderClass(Class<? extends PersistenceProvider> cls) {
-        PROVIDER_TYPES.add(cls);
-    }
-
-    private static List<Class<? extends PersistenceProvider>> resolveProviders() {
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        final List<Class<? extends PersistenceProvider>> providerTypes = new ArrayList<>();
-        try {
-            final Enumeration<URL> configs = classLoader.getResources(PROVIDER_FILE);
-
-            while (configs.hasMoreElements()) {
-                final URL config = configs.nextElement();
-                resolveProvider(config).ifPresent(providerTypes::add);
-            }
-        } catch (IOException e) {
-            LOG.error("Unable to read persistence provider configuration files from classpath.", e);
+    private void processQueue() {
+        CacheKeyReference ref;
+        while ((ref = (CacheKeyReference) referenceQueue.poll()) != null) {
+            providers.remove(ref.getCacheKey());
         }
-        return providerTypes;
     }
 
-    private static Optional<Class<? extends PersistenceProvider>> resolveProvider(URL file) {
-        try (final BufferedReader in = new BufferedReader(new InputStreamReader(file.openStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                line = line.trim();
-                Matcher m = nonCommentPattern.matcher(line);
-                if (m.find()) {
-                    final String providerClass = m.group().trim();
-                    return getPersistenceProviderClass(providerClass);
+    /**
+     * Wraps <code>Thread.currentThread().getContextClassLoader()</code> into a doPrivileged block if security manager is present
+     */
+    private static ClassLoader getContextClassLoader() {
+        if (System.getSecurityManager() == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> Thread.currentThread().getContextClassLoader());
+        }
+    }
+
+    /**
+     * Clear all cached providers
+     */
+    public void clearCachedProviders() {
+        providers.clear();
+    }
+
+
+    /**
+     * The common interface to get a CacheKey implemented by
+     * LoaderReference and PersistenceProviderReference.
+     */
+    private interface CacheKeyReference {
+        CacheKey getCacheKey();
+    }
+
+    /**
+     * Key used for cached persistence providers. The key checks
+     * the class loader to determine if the persistence providers
+     * is a match to the requested one. The loader may be null.
+     */
+    private class CacheKey implements Cloneable {
+
+        /* Weak Reference to ClassLoader */
+        private LoaderReference loaderRef;
+
+        /* Cached Hashcode */
+        private int hashCodeCache;
+
+        CacheKey(ClassLoader loader) {
+            if (loader == null) {
+                this.loaderRef = null;
+            } else {
+                loaderRef = new LoaderReference(loader, referenceQueue, this);
+            }
+            calculateHashCode();
+        }
+
+        ClassLoader getLoader() {
+            return (loaderRef != null) ? loaderRef.get() : null;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (other == null || !Objects.equals(CacheKey.class, other.getClass())) {
+                return false;
+            }
+            final CacheKey otherEntry = (CacheKey) other;
+            // quick check to see if they are not equal
+            if (hashCodeCache != otherEntry.hashCodeCache) {
+                return false;
+            }
+            // are refs (both non-null) or (both null)?
+            if (loaderRef == null) {
+                return otherEntry.loaderRef == null;
+            }
+            ClassLoader loader = loaderRef.get();
+            // With a null reference we can no longer find out which class loader was referenced; so treat it as unequal
+            return (otherEntry.loaderRef != null) && (loader != null) && (loader == otherEntry.loaderRef.get());
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCodeCache;
+        }
+
+        private void calculateHashCode() {
+            ClassLoader loader = getLoader();
+            if (loader != null) {
+                hashCodeCache = loader.hashCode();
+            }
+        }
+
+        public Object clone() {
+            try {
+                CacheKey clone = (CacheKey) super.clone();
+                if (loaderRef != null) {
+                    clone.loaderRef = new LoaderReference(loaderRef.get(), referenceQueue, clone);
                 }
+                return clone;
+            } catch (CloneNotSupportedException e) {
+                // this should never happen
+                throw new InternalError();
             }
-            return Optional.empty();
-        } catch (IOException e) {
-            LOG.error("Unable to read persistence provider implementation from file {}.", file, e);
         }
-        return Optional.empty();
+
+        public String toString() {
+            return "CacheKey[" + getLoader() + ")]";
+        }
     }
 
-    private static Optional<Class<? extends PersistenceProvider>> getPersistenceProviderClass(String className) {
-        try {
-            final Class<?> cls = Class.forName(className);
-            if (!PersistenceProvider.class.isAssignableFrom(cls)) {
-                LOG.error("The registered type {} is not a PersistenceProvider implementation.", className);
-                return Optional.empty();
-            }
-            return Optional.of((Class<? extends PersistenceProvider>) cls);
-        } catch (ClassNotFoundException e) {
-            LOG.error("Persistence provider type {} not found.", className, e);
-            return Optional.empty();
+    /**
+     * References to class loaders are weak references, so that they can be
+     * garbage collected when nobody else is using them. The DefaultPersistenceProviderResolver
+     * class has no reason to keep class loaders alive.
+     */
+    private class LoaderReference extends WeakReference<ClassLoader> implements CacheKeyReference {
+        private final CacheKey cacheKey;
+
+        @SuppressWarnings("unchecked")
+        LoaderReference(ClassLoader referent, ReferenceQueue q, CacheKey key) {
+            super(referent, q);
+            cacheKey = key;
+        }
+
+        public CacheKey getCacheKey() {
+            return cacheKey;
+        }
+    }
+
+    /**
+     * References to persistence provider are soft references so that they can be garbage
+     * collected when they have no hard references.
+     */
+    private class PersistenceProviderReference extends SoftReference<List<PersistenceProvider>> implements CacheKeyReference {
+        private final CacheKey cacheKey;
+
+        @SuppressWarnings("unchecked")
+        PersistenceProviderReference(List<PersistenceProvider> referent, ReferenceQueue q, CacheKey key) {
+            super(referent, q);
+            cacheKey = key;
+        }
+
+        public CacheKey getCacheKey() {
+            return cacheKey;
         }
     }
 }

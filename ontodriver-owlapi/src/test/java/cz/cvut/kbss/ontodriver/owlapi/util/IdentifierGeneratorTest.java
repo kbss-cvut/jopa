@@ -40,7 +40,7 @@ class IdentifierGeneratorTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.generator = new IdentifierGenerator(ontologyMock);
     }
 

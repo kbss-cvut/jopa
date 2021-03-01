@@ -44,7 +44,7 @@ public class JenaConnectionTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.connection = new JenaConnection(adapterMock);
     }
 

@@ -62,7 +62,7 @@ public class TypesHandlerTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.dataFactory = new OWLDataFactoryImpl();
         final OntologySnapshot snapshot = new OntologySnapshot(ontologyMock, managerMock, dataFactory,
                 reasonerMock);

@@ -39,8 +39,8 @@ public class ServerSessionTest {
     private ServerSession session;
 
     @BeforeEach
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
         OntologyStorageProperties storageProperties = OntologyStorageProperties.ontologyUri(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
                 URI.create("file://tmp/jopa")).driver(DataSourceStub.class.getCanonicalName()).build();

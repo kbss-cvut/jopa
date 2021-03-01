@@ -65,7 +65,7 @@ class MainAxiomLoaderTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = snapshot.getOntology();
         this.manager = snapshot.getOntologyManager();

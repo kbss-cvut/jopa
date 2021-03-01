@@ -41,7 +41,7 @@ public class LiveOntologyStatementExecutorTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.executor = new LiveOntologyStatementExecutor(connectorMock);
     }
 

@@ -62,7 +62,7 @@ class IndirectSetTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         target = new IndirectSet<>(owner, ownerField, uow, set);
         set.clear();

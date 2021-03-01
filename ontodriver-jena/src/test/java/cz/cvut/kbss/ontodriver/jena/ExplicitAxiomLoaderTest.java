@@ -45,7 +45,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock);
     }
 

@@ -47,7 +47,7 @@ public class JenaPreparedStatementTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
         when(executor.executeAskQuery(any(), any())).thenReturn(resultSet);
     }

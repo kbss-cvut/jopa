@@ -45,7 +45,7 @@ class EntityDescriptorTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
         when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(intAtt.getJavaField()).thenReturn(TestClass.intAttField());

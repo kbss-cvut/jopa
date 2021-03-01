@@ -50,7 +50,7 @@ public class RefreshInstanceMergerTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.merger = new RefreshInstanceMerger(new IndirectWrapperHelper(uowMock));
     }
 

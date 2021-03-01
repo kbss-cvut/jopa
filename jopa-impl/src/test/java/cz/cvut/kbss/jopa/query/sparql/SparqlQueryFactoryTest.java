@@ -49,7 +49,7 @@ public class SparqlQueryFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(uowMock.useBackupOntologyForQueryProcessing()).thenReturn(Boolean.FALSE);
         when(uowMock.useTransactionalOntologyForQueryProcessing()).thenReturn(Boolean.TRUE);
         when(uowMock.getNamedQueryManager()).thenReturn(namedQueryManagerMock);

@@ -20,7 +20,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")
+@OWLClass(iri = Vocabulary.c_OwlClassC)
 public class OWLClassC {
 
     private static final String REF_LIST_FIELD = "referencedList";

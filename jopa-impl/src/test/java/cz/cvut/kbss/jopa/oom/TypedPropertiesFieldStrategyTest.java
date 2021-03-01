@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,8 +22,8 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -31,7 +31,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,9 +47,9 @@ public class TypedPropertiesFieldStrategyTest {
 
     private OWLClassP entity;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         MetamodelMocks mocks = new MetamodelMocks();
 
         this.entity = new OWLClassP();
@@ -231,7 +231,7 @@ public class TypedPropertiesFieldStrategyTest {
     }
 
     @Test
-    public void buildsInstanceFieldFromTypedAxiomValues() throws Exception {
+    public void buildsInstanceFieldFromTypedAxiomValues() {
         final Map<URI, Set<Object>> properties = Generators.generateTypedProperties();
         final Collection<Axiom<?>> axioms = createAxiomsForProperties(properties);
         axioms.forEach(ax -> strategy.addValueFromAxiom(ax));
@@ -244,20 +244,20 @@ public class TypedPropertiesFieldStrategyTest {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         for (Map.Entry<URI, Set<Object>> e : data.entrySet()) {
             axioms.addAll(e.getValue().stream()
-                           .map(val -> new AxiomImpl<>(subject, Assertion.createPropertyAssertion(e.getKey(), false),
-                                   new Value<>(val))).collect(Collectors.toList()));
+                    .map(val -> new AxiomImpl<>(subject, Assertion.createPropertyAssertion(e.getKey(), false),
+                            new Value<>(val))).collect(Collectors.toList()));
         }
         return axioms;
     }
 
     @Test
-    public void buildInstanceFieldFromEmptyAxiomsLeavesItNull() throws Exception {
+    public void buildInstanceFieldFromEmptyAxiomsLeavesItNull() {
         strategy.buildInstanceFieldValue(entity);
         assertNull(entity.getProperties());
     }
 
     @SuppressWarnings("unchecked")
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void buildInstanceFieldFromAxiomsWithIncompatibleValueTypeThrowsIllegalArgumentException() throws Exception {
         final PropertiesSpecification<OWLClassP, ?, URI, Integer> spec = mock(PropertiesSpecification.class);
         when(spec.getPropertyIdentifierType()).thenReturn(URI.class);
@@ -268,6 +268,6 @@ public class TypedPropertiesFieldStrategyTest {
         MetamodelMocks mocks = new MetamodelMocks();
         final PropertiesFieldStrategy<OWLClassP> s = new PropertiesFieldStrategy<>(mocks.forOwlClassP().entityType(),
                 spec, new EntityDescriptor(), mapperMock);
-        s.addValueFromAxiom(axiom);
+        assertThrows(IllegalArgumentException.class, () -> s.addValueFromAxiom(axiom));
     }
 }

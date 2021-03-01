@@ -36,6 +36,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     private Map<Class<?>, ManagedType<?>> typeMap;
     private Map<Class<?>, EntityType<?>> entities;
     private Set<Class<?>> inferredClasses;
+    private TypeReferenceMap typeReferenceMap;
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
@@ -72,6 +73,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
+        this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
+        new StaticMetamodelInitializer(this).initializeStaticMetamodel();
     }
 
     /**
@@ -86,14 +89,13 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <X> EntityTypeImpl<X> entity(Class<X> cls) {
-        if (!entities.containsKey(cls)) {
+        if (!isEntityType(cls)) {
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         }
-        return (EntityTypeImpl<X>) typeMap.get(cls);
+        return (EntityTypeImpl<X>) entities.get(cls);
     }
 
     @Override
@@ -167,5 +169,15 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     public boolean isEntityType(Class<?> cls) {
         Objects.requireNonNull(cls);
         return entities.containsKey(cls);
+    }
+
+    /**
+     * Gets types which contain an attribute of the specified type.
+     *
+     * @param cls Type referred to
+     * @return Set of referring types, possibly empty
+     */
+    public Set<Class<?>> getReferringTypes(Class<?> cls) {
+        return typeReferenceMap.getReferringTypes(cls);
     }
 }

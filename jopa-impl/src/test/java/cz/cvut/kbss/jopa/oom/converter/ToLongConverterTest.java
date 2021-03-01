@@ -22,8 +22,8 @@ public class ToLongConverterTest {
 
     @Test
     public void toAttributeSupportsWideningIntegerConversion() {
-        assertEquals(Long.valueOf(11), converter.convertToAttribute(Byte.valueOf((byte) 11)));
-        assertEquals(Long.valueOf(117), converter.convertToAttribute(Short.valueOf((short) 117)));
+        assertEquals(Long.valueOf(11), converter.convertToAttribute((byte) 11));
+        assertEquals(Long.valueOf(117), converter.convertToAttribute((short) 117));
         assertEquals(Long.valueOf(117), converter.convertToAttribute(117));
     }
 

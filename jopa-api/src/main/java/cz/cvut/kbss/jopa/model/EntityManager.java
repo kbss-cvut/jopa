@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -413,17 +413,6 @@ public interface EntityManager {
      * @since JPA 2.0
      */
     EntityManagerFactory getEntityManagerFactory();
-
-//	/**
-//	 * Returns a label for the given IRI. The label is returned with the
-//	 * following preference: 1) label in the language specified for the entity
-//	 * manager 2) label without language tag 3) any (unspecified) label
-//	 *
-//	 * @param iri
-//	 * @return
-//	 */
-//	@NonJPA
-//	public String getLabel(final String iri);
 
     /**
      * Returns a list of repository contexts available to this entity manager.

@@ -58,7 +58,7 @@ class SelectResultSetTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.model = ModelFactory.createDefaultModel();
     }
 

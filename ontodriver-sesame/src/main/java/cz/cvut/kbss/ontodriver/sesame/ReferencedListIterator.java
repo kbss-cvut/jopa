@@ -90,7 +90,7 @@ class ReferencedListIterator extends AbstractSesameIterator {
     }
 
     @Override
-    public Resource currentContent() throws SesameDriverException {
+    public Resource currentContent() {
         assert currentContent.getObject() instanceof Resource;
         return (Resource) currentContent.getObject();
     }

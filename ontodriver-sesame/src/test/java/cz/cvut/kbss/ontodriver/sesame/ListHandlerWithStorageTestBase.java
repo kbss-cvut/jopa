@@ -16,7 +16,6 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
@@ -30,13 +29,13 @@ import static org.junit.Assert.assertEquals;
 
 abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extends ListValueDescriptor> {
 
-    static NamedResource OWNER = NamedResource
+    static final NamedResource OWNER = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#EntityC");
 
     static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasListProperty";
     static final String NEXT_NODE_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasNext";
 
-    TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
+    final TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
     protected Connector connector;
 

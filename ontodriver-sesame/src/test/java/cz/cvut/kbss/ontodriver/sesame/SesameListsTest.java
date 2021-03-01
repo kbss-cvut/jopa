@@ -46,7 +46,7 @@ public class SesameListsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
+		MockitoAnnotations.openMocks(this);
 		when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
 		when(adapterMock.getReferencedListHandler()).thenReturn(referencedListHandlerMock);
 

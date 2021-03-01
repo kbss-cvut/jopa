@@ -57,7 +57,7 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     void testPersistDataPropertyIntoContext() {
         this.em = getEntityManager("MultiPersistDataPropertyIntoContext", false);
         final Descriptor aDescriptor = new EntityDescriptor();
-        aDescriptor.addAttributeContext(fieldSpecification(OWLClassA.class, "stringAttribute"), CONTEXT_ONE);
+        aDescriptor.addAttributeContext(OWLClassA_.stringAttribute, CONTEXT_ONE);
         transactional(() -> em.persist(entityA, aDescriptor));
 
         final OWLClassA res = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
@@ -328,7 +328,7 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     void persistEntityIntoContextAndAttributeIntoDefaultWorksCorrectly() {
         this.em = getEntityManager("persistEntityIntoContextAndAttributeIntoDefaultWorksCorrectly", false);
-        cOneDescriptor.addAttributeContext(fieldSpecification(OWLClassA.class, "stringAttribute"), null);
+        cOneDescriptor.addAttributeContext(OWLClassA_.stringAttribute, null);
         transactional(() -> em.persist(entityA, cOneDescriptor));
 
         transactional(() -> {

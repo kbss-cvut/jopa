@@ -39,7 +39,7 @@ public class SesameDataSourceTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.dataSource = new SesameDataSource();
         TestUtils.setMock("driver", dataSource, driverMock);
     }

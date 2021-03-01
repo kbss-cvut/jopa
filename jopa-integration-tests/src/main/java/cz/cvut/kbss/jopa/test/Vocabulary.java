@@ -36,6 +36,8 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_W = CLASS_IRI_BASE + "OWLClassW";
     public static final String C_OWL_CLASS_X = CLASS_IRI_BASE + "OWLClassX";
     public static final String C_OWL_CLASS_Y = CLASS_IRI_BASE + "OWLClassY";
+    public static final String C_OWL_CLASS_Z = CLASS_IRI_BASE + "OWLClassZ";
+    public static final String C_OWL_CLASS_Z_CHILD = CLASS_IRI_BASE + "OWLClassZChild";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";

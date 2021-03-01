@@ -8,12 +8,12 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.16.2</version>
+        <version>0.16.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
-        <rdf4j.version>3.4.4</rdf4j.version>
+        <rdf4j.version>3.6.0</rdf4j.version>
     </properties>
 
     <dependencies>

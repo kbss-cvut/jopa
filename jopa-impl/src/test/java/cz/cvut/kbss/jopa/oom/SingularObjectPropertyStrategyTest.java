@@ -57,7 +57,7 @@ class SingularObjectPropertyStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.metamodelMocks = new MetamodelMocks();
         this.gatherer = spy(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), null));
         this.descriptor = spy(new EntityDescriptor());

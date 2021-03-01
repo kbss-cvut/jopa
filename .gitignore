@@ -9,3 +9,7 @@
 **/node_modules
 build.out
 **/catalog-v001.xml
+.project
+.classpath
+org.*
+.factorypath

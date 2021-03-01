@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -44,37 +44,20 @@ public final class AxiomImpl<T> implements Axiom<T> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((assertion == null) ? 0 : assertion.hashCode());
-        result = prime * result + ((subject == null) ? 0 : subject.hashCode());
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        AxiomImpl<?> axiom = (AxiomImpl<?>) o;
+        return subject.equals(axiom.subject) && assertion.equals(axiom.assertion) && value.equals(axiom.value);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AxiomImpl<?> other = (AxiomImpl<?>) obj;
-        if (assertion == null) {
-            if (other.assertion != null)
-                return false;
-        } else if (!assertion.equals(other.assertion))
-            return false;
-        if (subject == null) {
-            if (other.subject != null)
-                return false;
-        } else if (!subject.equals(other.subject))
-            return false;
-        if (value == null) {
-            return other.value == null;
-        } else return value.equals(other.value);
+    public int hashCode() {
+        return Objects.hash(subject, assertion, value);
     }
 
     @Override

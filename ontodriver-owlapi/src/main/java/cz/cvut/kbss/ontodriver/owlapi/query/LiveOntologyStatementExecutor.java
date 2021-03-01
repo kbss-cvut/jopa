@@ -52,7 +52,7 @@ public class LiveOntologyStatementExecutor implements StatementExecutor {
     }
 
     @Override
-    public void executeUpdate(final String update) throws OwlapiDriverException {
+    public void executeUpdate(final String update) {
         connector.executeWrite(snapshot -> {
             if (snapshot.getReasoner() == null) {
                 throw new ReasonerNotAvailableException("Cannot execute query without a reasoner.");

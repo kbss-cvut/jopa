@@ -40,7 +40,7 @@ class EntityManagerFactoryImplTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         final Map<String, String> props = new HashMap<>();
         props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName());
         props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,

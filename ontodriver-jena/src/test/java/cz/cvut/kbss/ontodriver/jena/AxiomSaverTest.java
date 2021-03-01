@@ -35,8 +35,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 
@@ -51,7 +51,7 @@ public class AxiomSaverTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.saver = new AxiomSaver(connectorMock);
     }
 

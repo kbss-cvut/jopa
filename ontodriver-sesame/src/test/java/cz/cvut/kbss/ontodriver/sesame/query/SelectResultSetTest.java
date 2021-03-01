@@ -50,7 +50,7 @@ public class SelectResultSetTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(resultMock.getBindingNames()).thenReturn(BINDINGS);
         when(resultMock.next()).thenReturn(bindingSetMock);
         when(resultMock.hasNext()).thenReturn(true);

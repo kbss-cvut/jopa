@@ -46,9 +46,9 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 
     @Override
     public boolean add(E arg0) {
-        final boolean res = internalList.add(arg0);
+        internalList.add(arg0);
         persistChange();    // There is always a change
-        return res;
+        return true;
     }
 
     @Override

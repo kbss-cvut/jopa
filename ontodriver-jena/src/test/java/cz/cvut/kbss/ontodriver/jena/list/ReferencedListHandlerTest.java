@@ -47,7 +47,7 @@ public class ReferencedListHandlerTest
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.handler = new ReferencedListHandler(connectorMock);
         super.setUp();
         listUtil.setHasContent(HAS_CONTENT_PROPERTY);

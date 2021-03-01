@@ -25,10 +25,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -252,7 +249,7 @@ public class MetamodelMocks {
     private AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt;
 
     public MetamodelMocks() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
         MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);
@@ -317,6 +314,7 @@ public class MetamodelMocks {
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         });
+        when(metamodel.getEntities()).thenReturn(new HashSet<>(etMap.values()));
     }
 
     public OWLClassAMetamodel forOwlClassA() {

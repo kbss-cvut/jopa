@@ -41,7 +41,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.handler = new SimpleListHandler(connectorMock);
         super.setUp();
     }

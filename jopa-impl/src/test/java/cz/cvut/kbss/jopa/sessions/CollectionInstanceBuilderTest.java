@@ -49,7 +49,7 @@ public class CollectionInstanceBuilderTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         CloneBuilderImpl cloneBuilder = new CloneBuilderImpl(uowMock);
         this.builder = new CollectionInstanceBuilder(cloneBuilder, uowMock);
         when(uowMock.createIndirectCollection(any(), any(), any(Field.class))).thenAnswer(invocation -> {

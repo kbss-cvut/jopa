@@ -31,7 +31,7 @@ class IndirectMultilingualStringTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.translations = new HashMap<>();
         translations.put("en", "building");
         translations.put("cs", "stavba");

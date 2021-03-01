@@ -60,7 +60,7 @@ public class PoolingStorageConnectorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.vf = SimpleValueFactory.getInstance();
         this.connector = new PoolingStorageConnector(centralMock);
         final Field transactionField = AbstractConnector.class.getDeclaredField("transaction");

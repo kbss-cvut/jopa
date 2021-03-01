@@ -298,4 +298,17 @@ public class SparqlQueryParserTest {
         assertNotNull(holder.getParameter("hasQuestion"));
         assertNotNull(holder.getParameter("part"));
     }
+
+    @Test
+    void parseQuerySupportsWindowsLikeLineEnds() {
+        final String query = "SELECT * WHERE {\r\n" +
+                "   GRAPH ?contextUri\r\n" +
+                "        {  ?s ?p ?o . }\r" +
+                "}";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertNotNull(holder.getParameter("contextUri"));
+        assertNotNull(holder.getParameter("s"));
+        assertNotNull(holder.getParameter("p"));
+        assertNotNull(holder.getParameter("o"));
+    }
 }

@@ -40,7 +40,7 @@ public class SesameConnectionTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.connection = new SesameConnection(adapterMock);
     }
 

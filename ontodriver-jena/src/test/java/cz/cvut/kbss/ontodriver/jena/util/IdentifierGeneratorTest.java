@@ -42,7 +42,7 @@ public class IdentifierGeneratorTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.generator = new IdentifierGenerator(connectorMock);
     }
 

@@ -48,7 +48,7 @@ public class TypesFieldStrategyTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         this.mocks = new MetamodelMocks();
         this.entityA = new OWLClassA();

@@ -98,7 +98,7 @@ class ObjectOntologyMapperTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         when(uowMock.getMetamodel()).thenReturn(metamodelMock);
         when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
         when(uowMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
