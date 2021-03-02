@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 
 public class PredicateImpl extends ExpressionImpl<Boolean> implements Predicate {
-    public PredicateImpl(Class<Boolean> type, Expression expression) {
+    public PredicateImpl(Class<Boolean> type, ExpressionImpl expression) {
         super(type, expression);
     }
 

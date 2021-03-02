@@ -17,7 +17,8 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public <T> CriteriaModel<T> getCriteriaQueryModel(Class<T> queryModelType) {
-        return new CriteriaModelImpl<T>(queryModelType, uow);
+        EntityType<T> entityMetamodel = uow.getMetamodel().entity(queryModelType);
+        return new CriteriaModelImpl<T>(entityMetamodel, queryModelType, uow);
     }
 
     @Override

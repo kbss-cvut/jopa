@@ -41,31 +41,31 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
     }
 
-    public String getSoqlQuery(){
-        return query.assembleSoqlQuery();
-    }
-
     @Override
     public CriteriaQuery<T> select(Selection<? extends T> selection) throws Exception {
-        SelectionImpl sel = (SelectionImpl) selection;
-        sel.getQuery();
-        if (selection.isCompoundedSelection()){
-            //TODO - compounded selection
-            throw new Exception("Not implemented yet");
-        } else {
-            query.setSelection(selection);
-        }
+        SelectionImpl<T> sel = (SelectionImpl<T>) selection;
+        query.setSelection(selection);
         return this;
+    }
+
+    protected String getSoqlQueryRepresentation() {
+        query.getSelection();
+        query.isDistinct();
+        query.getWhere();
+        query.getOrderBy();
+        return null;
     }
 
     @Override
     public CriteriaQuery<T> where(Expression<Boolean> expression) {
-        return null;
+        query.setWhere(expression);
+        return this;
     }
 
     @Override
     public CriteriaQuery<T> where(Predicate... predicates) {
-        return null;
+
+        return this;
     }
 
     @Override

@@ -1,22 +1,24 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
 
-    public PathImpl(Class<X> type) {
+    private final ManagedType<X> managedType;
+
+    public PathImpl(ManagedType<X> managedType, Class<X> type) {
         super(type, new ExpressionEntityImpl<>(type));
+        this.managedType = managedType;
     }
 
-    public PathImpl(String attributeName) {
-        super(null, new ExpressionAttributeImpl<>(attributeName));
-    }
-
-    public PathImpl(String attributeName, Expression expression){
-        super(null, new ExpressionAttributeImpl<>(attributeName, expression));
+    public PathImpl(Attribute attribute, ExpressionImpl expression){
+        super(null, new ExpressionAttributeImpl(attribute, expression));
+        //TODO - how to get type "department" in this example -> person.getAttr("department").getAttr("name")
+        this.managedType = null;
     }
 
 
@@ -26,8 +28,9 @@ public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
 
     @Override
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
-        Path<Y> nextExpression = new PathImpl<Y>(attributeName, this.expression);
-        this.expression = nextExpression;
+        Attribute attribute = managedType.getAttribute(attributeName);
+        Path<Y> nextExpression = new PathImpl<Y>(attribute, this.expression);
+        this.expression = (ExpressionImpl) nextExpression;
         return nextExpression;
     }
 

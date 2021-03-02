@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
@@ -12,8 +13,9 @@ public class CriteriaModelImpl<T> extends PathImpl<T> implements CriteriaModel<T
 
     private final UnitOfWorkImpl uow;
 
-    public CriteriaModelImpl(Class<T> type, UnitOfWorkImpl uow) {
-        super(type);
+
+    public CriteriaModelImpl(ManagedType<T> managedType, Class<T> type, UnitOfWorkImpl uow) {
+        super(managedType,type);
         this.uow = uow;
     }
 
@@ -76,4 +78,6 @@ public class CriteriaModelImpl<T> extends PathImpl<T> implements CriteriaModel<T
     public <Y extends Comparable<? super Y>> Predicate attrLessOrEqual(Expression<? extends Y> x, Y y) {
         return null;
     }
+
+
 }

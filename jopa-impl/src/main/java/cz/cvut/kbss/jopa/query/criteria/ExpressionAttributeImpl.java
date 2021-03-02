@@ -1,18 +1,22 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 
 public class ExpressionAttributeImpl<Y> extends ExpressionImpl<Y>{
 
     protected String attributeName;
+    protected Attribute attribute;
 
-    public ExpressionAttributeImpl(String attributeName) {
+    public ExpressionAttributeImpl(Attribute attribute) {
         super(null,null);
-        this.attributeName = attributeName;
+        this.attribute = attribute;
+        this.attributeName = attribute.getName();
     }
 
-    public ExpressionAttributeImpl(String attributeName, Expression expression) {
+    public ExpressionAttributeImpl(Attribute attribute, ExpressionImpl expression) {
         super(null,expression);
-        this.attributeName = attributeName;
+        this.attribute = attribute;
+        this.attributeName = attribute.getName();
     }
 }

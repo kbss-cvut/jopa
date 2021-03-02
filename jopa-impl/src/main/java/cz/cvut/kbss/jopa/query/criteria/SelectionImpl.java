@@ -8,21 +8,13 @@ import java.util.List;
 
 public class SelectionImpl<T> implements Selection<T>, TupleElement<T> {
     protected final Class<T> type;
-    protected Expression expression;
+    protected ExpressionImpl expression;
     protected String alias;
 
-    public SelectionImpl(Class<T> type, Expression expression) {
+    public SelectionImpl(Class<T> type, ExpressionImpl expression) {
         this.type = type;
         this.expression = expression;
     }
-
-    public String getQuery(){
-        return "I am here";
-    };
-
-    public String getExpr(){
-        return "Expression " + expression.hashCode();
-    };
 
     protected void setExpression(ExpressionEntityImpl<T> expression){
         this.expression = expression;

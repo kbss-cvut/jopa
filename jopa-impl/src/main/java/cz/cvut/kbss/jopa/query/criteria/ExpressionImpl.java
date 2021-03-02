@@ -7,13 +7,9 @@ import java.util.Collection;
 
 abstract class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
-    public ExpressionImpl(Class<Y> type, Expression expression) {
-        super(type,expression);
+    public ExpressionImpl(Class<Y> type, ExpressionImpl expression) {
+        super(type, expression);
     }
-
-    protected String getQueryPart(){
-        return null;
-    };
 
     @Override
     public Predicate in(Collection<?> values) {
