@@ -70,9 +70,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>com.nickwongdev</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>${maven.aspectj.plugin.version}</version>
                 <configuration combine.self="override">
                     <complianceLevel>${jdk.version}</complianceLevel>
                     <source>${jdk.version}</source>
