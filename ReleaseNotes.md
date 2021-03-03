@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.16.4 - March 3, 2021
+- [JOPA] Support for initialization of static metamodel (has to be created manually for now) (Feature #83).
+- Fix issues with building and using the project on Windows (path-related).
+- Dependency updates: RDF4J 3.6.0, switched to a different fork of the maven-aspectj-plugin allowing to build the project under JDK 11.
 
 ## 0.16.3 - February 4, 2021
 - [JOPA] Fix issues with cached references becoming stale after merge (Bug #81).
