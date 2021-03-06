@@ -2,18 +2,21 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaModel;
+import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
 
-//TODO PRO - CriteriaFactory methods
-public interface CriteriaFactory {
+public interface CriteriaFactory extends PredicateFactory {
 
     /**
-     * Return a criteriaQueryModel.
-     * @return criteriaQueryModel
+     * Create a CriteriaQuery object.
+     * @return criteria query object
      */
-    <T> CriteriaModel<T> getCriteriaQueryModel(Class<T> queryModelType);
+    CriteriaQuery<Object> createQuery();
 
-    <X> CriteriaQuery<X> from(Class<X> entityClass);
+    /**
+     * Create a CriteriaQuery object with the specified result type.
+     * @param resultClass type of the query result
+     * @return criteria query object
+     */
+    <T> CriteriaQuery<T> createQuery(Class<T> resultClass);
 
-    <X> CriteriaQuery<X> from(EntityType<X> entity);
 }
