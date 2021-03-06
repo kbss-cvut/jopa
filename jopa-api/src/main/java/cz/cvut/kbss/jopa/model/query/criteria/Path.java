@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.model.query.criteria;
 
-// TODO PRO - Javadoc
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+
 public interface Path<X> extends Expression<X>{
 
     /**
@@ -12,7 +13,16 @@ public interface Path<X> extends Expression<X>{
      */
     <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException;
 
-    Path<?> getParentPath();
+    /**
+     * Create a path corresponding to the referenced single-valued attribute.
+     * @param attribute single-valued attribute
+     * @return path corresponding to the referenced attribute
+     */
+    <Y> Path<Y> getAttr(SingularAttribute<? super X,Y> attribute);
 
-    Expression<Class<? extends X>> type();
+    /**
+     * Return the parent "node" in the path or null if no parent.
+     * @return parent
+     */
+    Path<?> getParentPath();
 }

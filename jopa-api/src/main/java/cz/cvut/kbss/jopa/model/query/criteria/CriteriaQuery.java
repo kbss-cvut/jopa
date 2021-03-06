@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.model.query.criteria;
 /**
  * Interface used to control the execution of typed queries.
  *
- * @param <X> Query result type
+ * @param <T> Query result type
  */
 public interface CriteriaQuery<T>{
 
@@ -26,7 +26,7 @@ public interface CriteriaQuery<T>{
      * @param selection - selection specifying the item that is to be returned in the query result
      * @return the modified query
      */
-    CriteriaQuery<T> select(Selection<? extends T> selection) throws Exception;
+    CriteriaQuery<T> select(Selection<? extends T> selection);
 
     /**
      * Modify the query to restrict the query result according to the specified boolean expression. Replaces the previously added restriction(s), if any.
@@ -68,8 +68,4 @@ public interface CriteriaQuery<T>{
      * @return where clause predicate
      */
     Predicate getRestriction();
-
-
-
-
 }
