@@ -14,12 +14,28 @@
  */
 package cz.cvut.kbss.jopa.model.query.criteria;
 
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+
 /**
  * Interface used to control the execution of typed queries.
  *
  * @param <T> Query result type
  */
 public interface CriteriaQuery<T>{
+
+    /**
+     * <X> Root<X> from(EntityType<X> entity)
+     * @param entityClass the entity class
+     * @return query root corresponding to the given entity
+     */
+    <X> Root<X> from(Class<X> entityClass);
+
+    /**
+     * Create and add a query root corresponding to the given entity
+     * @param entity metamodel entity representing the entity of type X
+     * @return query root corresponding to the given entity
+     */
+    <X> Root<X> from(EntityType<X> entity);
 
     /**
      * Specify the item that is to be returned in the query result. Replaces the previously specified selection(s), if any.

@@ -17,38 +17,23 @@ abstract class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<
     }
 
     @Override
-    public Predicate in(Expression<?> values) {
+    public Predicate in(Expression<?>... values) {
         return null;
     }
 
     @Override
-    public Predicate and(Expression<Boolean> x, Expression<Boolean> y) {
+    public Predicate in(Object... values) {
         return null;
     }
 
     @Override
-    public Predicate and(Predicate... restrictions) {
+    public Predicate isNotNull() {
         return null;
     }
 
     @Override
-    public Predicate or(Expression<Boolean> x, Expression<Boolean> y) {
+    public Predicate isNull() {
         return null;
-    }
-
-    @Override
-    public Predicate or(Predicate... restrictions) {
-        return null;
-    }
-
-    @Override
-    public Predicate not() {
-        return null;
-    }
-
-    @Override
-    public boolean isNegated() {
-        return false;
     }
 }
 

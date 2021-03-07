@@ -1,24 +1,22 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
 
-    private final ManagedType<X> managedType;
+    private final Metamodel metamodel;
 
-    public PathImpl(ManagedType<X> managedType, Class<X> type) {
+    public PathImpl(Metamodel metamodel, Class<X> type) {
         super(type, new ExpressionEntityImpl<>(type));
-        this.managedType = managedType;
+        this.metamodel = metamodel;
     }
 
-    public PathImpl(Attribute attribute, ExpressionImpl expression){
+    public PathImpl(Metamodel metamodel, Attribute attribute, ExpressionImpl expression) {
         super(null, new ExpressionAttributeImpl(attribute, expression));
-        //TODO - how to get type "department" in this example -> person.getAttr("department").getAttr("name")
-        this.managedType = null;
+        this.metamodel = metamodel;
     }
 
 
@@ -28,19 +26,21 @@ public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
 
     @Override
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
-        Attribute attribute = managedType.getAttribute(attributeName);
-        Path<Y> nextExpression = new PathImpl<Y>(attribute, this.expression);
+        Attribute attribute = metamodel.entity(type).getAttribute(attributeName);
+        Path<Y> nextExpression = new PathImpl<Y>(this.metamodel, attribute, this.expression);
+        this.expression = (ExpressionImpl) nextExpression;
+        return nextExpression;
+    }
+
+    @Override
+    public <Y> Path<Y> getAttr(SingularAttribute<? super X, Y> attribute) {
+        Path<Y> nextExpression = new PathImpl<Y>(this.metamodel, attribute, this.expression);
         this.expression = (ExpressionImpl) nextExpression;
         return nextExpression;
     }
 
     @Override
     public Path<?> getParentPath() {
-        return null;
-    }
-
-    @Override
-    public Expression<Class<? extends X>> type() {
         return null;
     }
 }

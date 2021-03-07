@@ -14,15 +14,12 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.Expression;
-import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.model.query.criteria.Selection;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaQueryHolder;
-import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
-import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
+import cz.cvut.kbss.jopa.query.criteria.RootImpl;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.jopa.utils.Procedure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +31,29 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(CriteriaQuery.class);
 
-    final CriteriaQueryHolder<T> query;
+    private final CriteriaQueryHolder<T> query;
+    private final Metamodel metamodel;
 
 
-    public CriteriaQueryImpl(CriteriaQueryHolder<T> query) {
+    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        this.metamodel = metamodel;
     }
 
     @Override
-    public CriteriaQuery<T> select(Selection<? extends T> selection) throws Exception {
-        SelectionImpl<T> sel = (SelectionImpl<T>) selection;
+    public <X> Root<X> from(Class<X> entityClass) {
+        RootImpl<X> root = new RootImpl<>(metamodel, entityClass);
+        query.setRoot(root);
+        return null;
+    }
+
+    @Override
+    public <X> Root<X> from(EntityType<X> entity) {
+        return null;
+    }
+
+    @Override
+    public CriteriaQuery<T> select(Selection<? extends T> selection){
         query.setSelection(selection);
         return this;
     }
@@ -86,7 +96,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public Selection<T> getSelection() {
-        return query.getSelection();
+        return (Selection<T>) query.getSelection();
     }
 
     @Override
