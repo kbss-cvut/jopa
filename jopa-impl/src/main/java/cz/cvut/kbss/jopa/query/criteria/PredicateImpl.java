@@ -4,9 +4,16 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 
+import java.util.List;
+
 public class PredicateImpl extends ExpressionImpl<Boolean> implements Predicate {
     public PredicateImpl(Class<Boolean> type, ExpressionImpl expression) {
         super(type, expression);
+    }
+
+    @Override
+    public List<Expression<Boolean>> getExpressions() {
+        return null;
     }
 
     @Override
@@ -14,15 +21,13 @@ public class PredicateImpl extends ExpressionImpl<Boolean> implements Predicate 
         return null;
     }
 
-//    final protected Predicate.BooleanOperator booleanOperator;
-//
-//    public <X> PredicateImpl(Attribute<Boolean, X> attribute, ExpressionType expressionType, Boolean value, BooleanOperator booleanOperator) {
-//        super(attribute, expressionType, value);
-//        this.booleanOperator = booleanOperator;
-//    }
-//
-//    @Override
-//    public BooleanOperator getOperator() {
-//        return null;
-//    }
+    @Override
+    public Predicate not() {
+        return null;
+    }
+
+    @Override
+    public boolean isNegated() {
+        return false;
+    }
 }

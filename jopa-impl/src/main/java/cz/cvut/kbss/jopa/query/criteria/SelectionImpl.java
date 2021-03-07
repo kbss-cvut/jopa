@@ -6,21 +6,21 @@ import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 import java.util.List;
 
-public class SelectionImpl<T> implements Selection<T>, TupleElement<T> {
-    protected final Class<T> type;
+public class SelectionImpl<X> implements Selection<X>, TupleElement<X> {
+    protected final Class<X> type;
     protected ExpressionImpl expression;
     protected String alias;
 
-    public SelectionImpl(Class<T> type, ExpressionImpl expression) {
+    public SelectionImpl(Class<X> type, ExpressionImpl expression) {
         this.type = type;
         this.expression = expression;
     }
 
-    protected void setExpression(ExpressionEntityImpl<T> expression){
+    protected void setExpression(ExpressionEntityImpl<X> expression){
         this.expression = expression;
     };
 
-    protected void setExpression(ExpressionAttributeImpl<T> expression){
+    protected void setExpression(ExpressionAttributeImpl<X> expression){
         this.expression = expression;
     };
 
@@ -35,13 +35,13 @@ public class SelectionImpl<T> implements Selection<T>, TupleElement<T> {
     }
 
     @Override
-    public Selection<T> alias(String name) {
+    public Selection<X> alias(String name) {
         this.alias = name;
         return this;
     }
 
     @Override
-    public Class<? extends T> getJavaType() {
+    public Class<? extends X> getJavaType() {
         return this.type;
     }
 
