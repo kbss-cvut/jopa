@@ -17,8 +17,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
-import cz.cvut.kbss.jopa.query.criteria.CriteriaQueryHolder;
-import cz.cvut.kbss.jopa.query.criteria.RootImpl;
+import cz.cvut.kbss.jopa.query.criteria.*;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(CriteriaQuery.class);
 
-    private final CriteriaQueryHolder<T> query;
+    protected final CriteriaQueryHolder<T> query;
     private final Metamodel metamodel;
 
 
@@ -44,7 +43,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     public <X> Root<X> from(Class<X> entityClass) {
         RootImpl<X> root = new RootImpl<>(metamodel, entityClass);
         query.setRoot(root);
-        return null;
+        return root;
     }
 
     @Override
@@ -54,17 +53,11 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> select(Selection<? extends T> selection){
-        query.setSelection(selection);
+        query.setSelection((SelectionImpl<? extends T>) selection);
         return this;
     }
 
-    protected String getSoqlQueryRepresentation() {
-        query.getSelection();
-        query.isDistinct();
-        query.getWhere();
-        query.getOrderBy();
-        return null;
-    }
+
 
     @Override
     public CriteriaQuery<T> where(Expression<Boolean> expression) {
@@ -102,5 +95,24 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     @Override
     public Predicate getRestriction() {
         return null;
+    }
+
+    public String translateQuery(){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("SELECT ");
+        translateSelection(query.getSelection().getExpression(), stringBuilder,false);
+        stringBuilder.append(" FROM ");
+        String className = query.getRoot().getModel().getJavaType().getSimpleName();
+        stringBuilder.append(className + " ");
+        stringBuilder.append(className.toLowerCase());
+        return stringBuilder.toString();
+    }
+
+    private void translateSelection(ExpressionImpl expression, StringBuilder stringBuilder, boolean nextExpression){
+        if (expression.getExpression() != null) {
+            translateSelection(expression.getExpression(), stringBuilder, true);
+        }
+        stringBuilder.append(expression.getString());
+        if (nextExpression) stringBuilder.append(".");
     }
 }
