@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 
 import java.util.Collection;
 
-abstract class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<Y> {
+abstract public class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
     public ExpressionImpl(Class<Y> type, ExpressionImpl expression) {
         super(type, expression);
@@ -35,6 +35,8 @@ abstract class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<
     public Predicate isNull() {
         return null;
     }
+
+    abstract public String getString();
 }
 
 

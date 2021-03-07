@@ -19,4 +19,9 @@ public class ExpressionAttributeImpl<Y> extends ExpressionImpl<Y>{
         this.attribute = attribute;
         this.attributeName = attribute.getName();
     }
+
+    @Override
+    public String getString() {
+        return attributeName;
+    }
 }

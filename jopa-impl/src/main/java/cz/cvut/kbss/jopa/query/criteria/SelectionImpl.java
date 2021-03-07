@@ -24,6 +24,7 @@ public class SelectionImpl<X> implements Selection<X>, TupleElement<X> {
         this.expression = expression;
     };
 
+
     @Override
     public boolean isCompoundedSelection() {
         return false;
@@ -48,5 +49,9 @@ public class SelectionImpl<X> implements Selection<X>, TupleElement<X> {
     @Override
     public String getAlias() {
         return this.alias;
+    }
+
+    public ExpressionImpl getExpression(){
+        return expression;
     }
 }

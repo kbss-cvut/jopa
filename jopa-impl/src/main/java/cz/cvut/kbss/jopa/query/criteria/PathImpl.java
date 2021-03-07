@@ -7,7 +7,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
 
-    private final Metamodel metamodel;
+    protected final Metamodel metamodel;
 
     public PathImpl(Metamodel metamodel, Class<X> type) {
         super(type, new ExpressionEntityImpl<>(type));
@@ -42,5 +42,10 @@ public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
     @Override
     public Path<?> getParentPath() {
         return null;
+    }
+
+    @Override
+    public String getString() {
+        return expression.getString();
     }
 }

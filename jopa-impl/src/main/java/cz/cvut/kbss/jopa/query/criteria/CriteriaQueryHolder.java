@@ -16,11 +16,11 @@ public class CriteriaQueryHolder<T> {
 
     protected final Class<T> resultType;
     protected final ManagedType<T> managedResultType;
-    protected Selection<? extends T> selection;
+    protected SelectionImpl<? extends T> selection;
     private boolean distinct;
     protected Expression<Boolean> where;
     protected List<Order> orderBy;
-    protected Root<?> root;
+    protected RootImpl<?> root;
 
     public CriteriaQueryHolder(EntityType<T> managedResultType, Class<T> resultType) {
         this.managedResultType = managedResultType;
@@ -28,11 +28,11 @@ public class CriteriaQueryHolder<T> {
         this.distinct = false;
     }
 
-    public Root<?> getRoot() {
+    public RootImpl<?> getRoot() {
         return root;
     }
 
-    public void setRoot(Root<?> root) {
+    public void setRoot(RootImpl<?> root) {
         this.root = root;
     }
 
@@ -52,11 +52,11 @@ public class CriteriaQueryHolder<T> {
         this.orderBy = orderBy;
     }
 
-    public Selection<? extends T> getSelection() {
+    public SelectionImpl<? extends T> getSelection() {
         return selection;
     }
 
-    public void setSelection(Selection<? extends T> selection) {
+    public void setSelection(SelectionImpl<? extends T> selection) {
         this.selection = selection;
     }
 

@@ -15,6 +15,6 @@ public class RootImpl<X> extends PathImpl<X> implements Root<X> {
 
     @Override
     public EntityType<X> getModel() {
-        return null;
+        return metamodel.entity(type);
     }
 }

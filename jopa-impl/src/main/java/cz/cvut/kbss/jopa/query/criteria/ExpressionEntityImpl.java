@@ -6,4 +6,9 @@ public class ExpressionEntityImpl<Y> extends ExpressionImpl<Y> {
     public ExpressionEntityImpl(Class<Y> type) {
         super(type,null);
     }
+
+    @Override
+    public String getString() {
+        return type.getSimpleName().toLowerCase();
+    }
 }
