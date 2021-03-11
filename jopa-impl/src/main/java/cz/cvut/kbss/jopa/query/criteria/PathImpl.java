@@ -45,7 +45,7 @@ public class PathImpl<X> extends ExpressionImpl<X> implements Path<X> {
     }
 
     @Override
-    public String getString() {
-        return expression.getString();
+    public void setExpressionToQuery(StringBuilder query) {
+        return;
     }
 }

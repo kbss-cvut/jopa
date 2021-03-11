@@ -20,8 +20,14 @@ public class ExpressionAttributeImpl<Y> extends ExpressionImpl<Y>{
         this.attributeName = attribute.getName();
     }
 
+
     @Override
-    public String getString() {
-        return attributeName;
+    public void setExpressionToQuery(StringBuilder query) {
+        if (this.expression != null){
+            this.expression.setExpressionToQuery(query);
+            query.append("." + attributeName);
+        } else {
+            query.append(attributeName);
+        }
     }
 }

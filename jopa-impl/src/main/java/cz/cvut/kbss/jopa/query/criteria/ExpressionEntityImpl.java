@@ -8,7 +8,14 @@ public class ExpressionEntityImpl<Y> extends ExpressionImpl<Y> {
     }
 
     @Override
-    public String getString() {
-        return type.getSimpleName().toLowerCase();
+    public void setExpressionToQuery(StringBuilder query) {
+        if (this.expression != null){
+            this.expression.setExpressionToQuery(query);
+            query.append("." + type.getSimpleName().toLowerCase());
+        } else {
+            query.append(type.getSimpleName().toLowerCase());
+        }
     }
 }
+
+

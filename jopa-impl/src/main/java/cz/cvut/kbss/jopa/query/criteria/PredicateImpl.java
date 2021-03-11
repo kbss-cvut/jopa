@@ -12,8 +12,8 @@ public class PredicateImpl extends ExpressionImpl<Boolean> implements Predicate 
     }
 
     @Override
-    public String getString() {
-        return expression.getString();
+    public void setExpressionToQuery(StringBuilder query) {
+        return;
     }
 
     @Override

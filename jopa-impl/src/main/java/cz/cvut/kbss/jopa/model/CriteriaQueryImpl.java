@@ -100,19 +100,9 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     public String translateQuery(){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
-        translateSelection(query.getSelection().getExpression(), stringBuilder,false);
+        query.getSelection().getExpression().setExpressionToQuery(stringBuilder);
         stringBuilder.append(" FROM ");
-        String className = query.getRoot().getModel().getJavaType().getSimpleName();
-        stringBuilder.append(className + " ");
-        stringBuilder.append(className.toLowerCase());
+        query.getRoot().setExpressionToQuery(stringBuilder);
         return stringBuilder.toString();
-    }
-
-    private void translateSelection(ExpressionImpl expression, StringBuilder stringBuilder, boolean nextExpression){
-        if (expression.getExpression() != null) {
-            translateSelection(expression.getExpression(), stringBuilder, true);
-        }
-        stringBuilder.append(expression.getString());
-        if (nextExpression) stringBuilder.append(".");
     }
 }

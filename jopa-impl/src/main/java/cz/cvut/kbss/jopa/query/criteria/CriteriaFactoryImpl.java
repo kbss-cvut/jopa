@@ -29,6 +29,11 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     }
 
     @Override
+    public Expression<Long> count(Expression<?> x) {
+        return null;
+    }
+
+    @Override
     public Predicate and(Expression<Boolean> x, Expression<Boolean> y) {
         return null;
     }

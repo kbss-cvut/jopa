@@ -36,7 +36,7 @@ abstract public class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expr
         return null;
     }
 
-    abstract public String getString();
+    abstract public void setExpressionToQuery(StringBuilder query);
 }
 
 

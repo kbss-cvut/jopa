@@ -17,4 +17,10 @@ public class RootImpl<X> extends PathImpl<X> implements Root<X> {
     public EntityType<X> getModel() {
         return metamodel.entity(type);
     }
+
+    @Override
+    public void setExpressionToQuery(StringBuilder query) {
+        String className = getModel().getJavaType().getSimpleName();
+        query.append(className + " " + className.toLowerCase());
+    }
 }
