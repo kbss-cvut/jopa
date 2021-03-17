@@ -1,14 +1,15 @@
-package cz.cvut.kbss.jopa.query.criteria;
+package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
 
 import java.util.Collection;
 
-abstract public class ExpressionImpl<Y> extends SelectionImpl<Y> implements Expression<Y> {
+abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
-    public ExpressionImpl(Class<Y> type, ExpressionImpl expression) {
-        super(type, expression);
+    public AbstractExpression(Class<Y> type) {
+        super(type);
     }
 
     @Override

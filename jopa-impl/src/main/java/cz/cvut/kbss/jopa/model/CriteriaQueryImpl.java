@@ -18,6 +18,9 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.*;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionFromImpl;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +44,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public <X> Root<X> from(Class<X> entityClass) {
-        RootImpl<X> root = new RootImpl<>(metamodel, entityClass);
+        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionFromImpl<>(entityClass, null, metamodel), entityClass);
         query.setRoot(root);
         return root;
     }
@@ -61,7 +64,8 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> where(Expression<Boolean> expression) {
-        query.setWhere(expression);
+        AbstractExpression<Boolean> abstractExpression = (AbstractExpression<Boolean>) expression;
+//        query.setWhere(abstractExpression.getExpression());
         return this;
     }
 
@@ -100,7 +104,9 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     public String translateQuery(){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
-        query.getSelection().getExpression().setExpressionToQuery(stringBuilder);
+        PathImpl selection = (PathImpl) query.getSelection();
+        AbstractPathExpression expression = (AbstractPathExpression) selection.getParentPath();
+        expression.setExpressionToQuery(stringBuilder);
         stringBuilder.append(" FROM ");
         query.getRoot().setExpressionToQuery(stringBuilder);
         return stringBuilder.toString();

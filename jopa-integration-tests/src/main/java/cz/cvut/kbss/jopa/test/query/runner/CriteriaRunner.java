@@ -25,22 +25,29 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
     @Test
     public void debug() {
-//        final OWLClassD expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassD.class));
-////        CriteriaModel<OWLClassD> model = getEntityManager().getCriteriaFactory().getCriteriaQueryModel(OWLClassD.class);
-//
+//        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
 //
 //        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
-//        CriteriaQuery<OWLClassD> query = factory.createQuery(OWLClassD.class);
-//        Root<OWLClassD> root = query.from(OWLClassD.class);
-//        query.select(root);
-//        TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query, OWLClassD.class);
-//        tq.getResultList();
-////        final OWLClassD result = getEntityManager()
-////                .createQuery("SELECT d FROM OWLClassD d WHERE d.owlClassA.stringAttribute = :stringAtt",
-////                        OWLClassD.class)
-////                .setParameter("stringAtt", expected.getOwlClassA().getStringAttribute(), "en").getSingleResult();
-////        assertEquals(expected.getUri(), result.getUri());
-////        assertEquals(expected.getOwlClassA().getUri(), result.getOwlClassA().getUri());
+//        CriteriaQuery<OWLClassA> query = factory.createQuery(OWLClassA.class);
+//        Root<OWLClassA> root = query.from(OWLClassA.class);
+//        query.select(root.getAttr("stringAttribute"));
+//        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+//
+//        final List<OWLClassA> result = tq.getResultList();
+//
+//        assertEquals(expected.size(), result.size());
+//        for (OWLClassA a : result) {
+//            assertNotNull(a.getStringAttribute());
+//            assertTrue(expected.stream().anyMatch(aa -> aa.getUri().equals(a.getUri())));
+//        }
+
+        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
+        CriteriaQuery<String> query = factory.createQuery(String.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root.getAttr("stringAttribute"));
+        TypedQuery<String> tq = getEntityManager().createQuery(query, String.class);
+
+        final List<String> result = tq.getResultList();
     }
 
     @Test
@@ -62,13 +69,21 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         }
     }
 
-//    @Test
-//    public void testSimpleCount() {
-//        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-//        final Object result = getEntityManager().createQuery("SELECT DISTINCT COUNT(a) FROM OWLClassA a")
-//                                                .getSingleResult();
-//        assertEquals(expected.size(), result);
-//    }
+
+
+    @Test
+    public void testSimpleCount() {
+        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
+        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
+        CriteriaQuery<Long> query = factory.createQuery(Long.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(factory.count(root));
+        TypedQuery<Long> tq = getEntityManager().createQuery(query, Long.class);
+
+        final Long result = tq.getSingleResult();
+
+        assertEquals(expected.size(), result);
+    }
 //
 //    @Test
 //    public void testFindByDataPropertyAttribute() {

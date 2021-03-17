@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
 
 public interface CriteriaFactory extends PredicateFactory {
@@ -18,5 +19,12 @@ public interface CriteriaFactory extends PredicateFactory {
      * @return criteria query object
      */
     <T> CriteriaQuery<T> createQuery(Class<T> resultClass);
+
+    /**
+     * Create an aggregate expression applying the count operation.
+     * @param x expression representing input value to count operation
+     * @return count expression
+     */
+    Expression<Long> count(Expression<?> x);
 
 }

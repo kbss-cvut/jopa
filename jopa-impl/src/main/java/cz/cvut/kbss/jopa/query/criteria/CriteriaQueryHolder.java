@@ -1,12 +1,8 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.query.Parameter;
-import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Order;
-import cz.cvut.kbss.jopa.model.query.criteria.Root;
-import cz.cvut.kbss.jopa.model.query.criteria.Selection;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 
 import java.util.List;
 import java.util.Set;
@@ -15,15 +11,13 @@ import java.util.Set;
 public class CriteriaQueryHolder<T> {
 
     protected final Class<T> resultType;
-    protected final ManagedType<T> managedResultType;
     protected SelectionImpl<? extends T> selection;
     private boolean distinct;
-    protected Expression<Boolean> where;
+    protected AbstractExpression<Boolean> where;
     protected List<Order> orderBy;
     protected RootImpl<?> root;
 
-    public CriteriaQueryHolder(EntityType<T> managedResultType, Class<T> resultType) {
-        this.managedResultType = managedResultType;
+    public CriteriaQueryHolder(Class<T> resultType) {
         this.resultType = resultType;
         this.distinct = false;
     }
@@ -36,11 +30,11 @@ public class CriteriaQueryHolder<T> {
         this.root = root;
     }
 
-    public Expression<Boolean> getWhere() {
+    public AbstractExpression<Boolean> getWhere() {
         return where;
     }
 
-    public void setWhere(Expression<Boolean> where) {
+    public void setWhere(AbstractExpression<Boolean> where) {
         this.where = where;
     }
 
