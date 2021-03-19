@@ -1,13 +1,15 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.exception.MissingChildExpressionException;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.query.criteria.expressions.*;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+
+import java.util.Arrays;
 
 public class CriteriaFactoryImpl implements CriteriaFactory {
 
@@ -17,7 +19,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         this.uow = uow;
     }
 
-    //TODO - query without resultClass
+
     @Override
     public CriteriaQuery<Object> createQuery() {
         return null;
@@ -37,47 +39,54 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     }
 
     @Override
+    public <T> ParameterExpression<T> parameter(Class<T> paramClass) {
+        return new ParameterExpressionImpl<>(paramClass, null);
+    }
+
+    @Override
+    public <T> ParameterExpression<T> parameter(Class<T> paramClass, String name) {
+        return new ParameterExpressionImpl<>(paramClass, name);
+    }
+
+        @Override
     public Predicate and(Expression<Boolean> x, Expression<Boolean> y) {
-        return null;
+        return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(x,y));
     }
 
     @Override
     public Predicate and(Predicate... restrictions) {
-        return null;
+        return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(restrictions));
     }
 
     @Override
     public Predicate or(Expression<Boolean> x, Expression<Boolean> y) {
-        return null;
+        return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(x,y));
     }
 
     @Override
     public Predicate or(Predicate... restrictions) {
-        return null;
+        return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions));
     }
 
     @Override
     public Predicate equals(Expression<?> x, Expression<?> y) {
-//        return new PredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<Boolean>((AbstractExpression<?>)x,(AbstractExpression<?>)y,this));
     }
 
     @Override
     public Predicate equals(Expression<?> x, Object y) {
-//        return new PredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>)x, y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<Boolean>((AbstractExpression<?>) x, y,this));
     }
 
     @Override
     public Predicate notEquals(Expression<?> x, Expression<?> y) {
-//        return new PredicateImpl(new ExpressionNotEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this));
     }
 
     @Override
     public Predicate notEquals(Expression<?> x, Object y) {
-//        return new PredicateImpl(new ExpressionNotEqualsImpl<>((AbstractExpression<?>)x,y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,y,this));
+
     }
 
     @Override

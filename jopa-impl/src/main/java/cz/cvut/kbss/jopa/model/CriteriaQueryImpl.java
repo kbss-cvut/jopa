@@ -20,12 +20,13 @@ import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
-import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionFromImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionEntityImpl;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import java.util.Arrays;
 import java.util.Objects;
 
 //TODO PRO - CriteriaQueryImpl methods implementation
@@ -44,7 +45,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public <X> Root<X> from(Class<X> entityClass) {
-        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionFromImpl<>(entityClass, null, metamodel), entityClass);
+        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entityClass, null, metamodel), entityClass);
         query.setRoot(root);
         return root;
     }
@@ -64,14 +65,14 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> where(Expression<Boolean> expression) {
-        AbstractExpression<Boolean> abstractExpression = (AbstractExpression<Boolean>) expression;
-//        query.setWhere(abstractExpression.getExpression());
+//        AbstractExpression<Boolean> abstractExpression = (AbstractExpression<Boolean>) expression;
+        query.setWhere((AbstractExpression<Boolean>) expression);
         return this;
     }
 
     @Override
     public CriteriaQuery<T> where(Predicate... predicates) {
-
+        query.setWhere(new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(predicates)));
         return this;
     }
 
@@ -109,6 +110,8 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         expression.setExpressionToQuery(stringBuilder);
         stringBuilder.append(" FROM ");
         query.getRoot().setExpressionToQuery(stringBuilder);
+        stringBuilder.append(" WHERE ");
+        query.getWhere().setExpressionToQuery(stringBuilder);
         return stringBuilder.toString();
     }
 }
