@@ -2,10 +2,10 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
-public class ExpressionFromImpl<Y> extends AbstractPathExpression<Y> {
+public class ExpressionEntityImpl<Y> extends AbstractPathExpression<Y> {
 
 
-    public ExpressionFromImpl(Class<Y> type, AbstractPathExpression pathSource, Metamodel metamodel) {
+    public ExpressionEntityImpl(Class<Y> type, AbstractPathExpression pathSource, Metamodel metamodel) {
         super(type, pathSource, metamodel);
     }
 
