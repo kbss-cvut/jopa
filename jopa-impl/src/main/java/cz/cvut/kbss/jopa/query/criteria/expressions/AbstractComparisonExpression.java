@@ -23,7 +23,7 @@ abstract public class AbstractComparisonExpression<Y> extends AbstractExpression
         this.left = x;
         this.factory = factory;
         this.right = null;
-        this.literal = factory.parameter(Object.class);
+        this.literal = (ExpressionLiteralImpl) factory.literal(y);
     }
 
     @Override

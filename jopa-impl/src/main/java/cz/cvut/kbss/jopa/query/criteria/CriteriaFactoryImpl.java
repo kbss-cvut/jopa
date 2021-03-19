@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
+import com.sun.javafx.fxml.expression.LiteralExpression;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
@@ -38,6 +39,8 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return null;
     }
 
+
+
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass) {
         return new ParameterExpressionImpl<>(paramClass, null);
@@ -48,7 +51,13 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new ParameterExpressionImpl<>(paramClass, name);
     }
 
-        @Override
+    @Override
+    public <T> Expression<T> literal(T value) throws IllegalArgumentException{
+        if (value == null) throw new IllegalArgumentException("Literal expression cannot be null.");
+        return new ExpressionLiteralImpl<>(value);
+    }
+
+    @Override
     public Predicate and(Expression<Boolean> x, Expression<Boolean> y) {
         return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(x,y));
     }

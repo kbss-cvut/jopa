@@ -28,7 +28,27 @@ public interface CriteriaFactory extends PredicateFactory {
      */
     Expression<Long> count(Expression<?> x);
 
+    /**
+     * Create a parameter expression.
+     * @param paramClass - parameter class
+     * @return parameter expression
+     */
     <T> ParameterExpression<T> parameter(Class<T> paramClass);
 
+    /**
+     * Create a parameter expression with the given name.
+     * @param paramClass - parameter class
+     * @param name - name that can be used to refer to the parameter
+     * @return parameter expression
+     */
     <T> ParameterExpression<T> parameter(Class<T> paramClass, String name);
+
+    /**
+     * Create an expression for a literal.
+     *
+     * @param value - value represented by the expression
+     * @return expression literal
+     * @throws IllegalArgumentException - if value is null
+     */
+    <T> Expression<T> literal(T value) throws IllegalArgumentException;
 }
