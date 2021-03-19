@@ -7,7 +7,6 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import java.util.List;
 import java.util.Set;
 
-//TODO PRO - CriteriaQueryHolder implementation
 public class CriteriaQueryHolder<T> {
 
     protected final Class<T> resultType;

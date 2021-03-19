@@ -84,17 +84,26 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
         assertEquals(expected.size(), result);
     }
-//
-//    @Test
-//    public void testFindByDataPropertyAttribute() {
-//        final OWLClassA expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+
+    @Test
+    public void testFindByDataPropertyAttribute() {
+        final OWLClassA expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+
+
+        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
+        CriteriaQuery<OWLClassA> query = factory.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(factory.equals(root.getAttr("stringAttribute"), expected.getStringAttribute()));
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        final OWLClassA result = tq.getSingleResult();
+
 //        final OWLClassA result = getEntityManager()
 //                .createQuery("SELECT a FROM OWLClassA a WHERE a.stringAttribute = :str", OWLClassA.class)
 //                .setParameter("str", expected.getStringAttribute(), "en").getSingleResult();
-//        assertEquals(expected.getUri(), result.getUri());
-//        assertEquals(expected.getStringAttribute(), result.getStringAttribute());
-//        assertEquals(expected.getTypes(), result.getTypes());
-//    }
+        assertEquals(expected.getUri(), result.getUri());
+        assertEquals(expected.getStringAttribute(), result.getStringAttribute());
+        assertEquals(expected.getTypes(), result.getTypes());
+    }
 //
 //    @Test
 //    public void testFindByDataNotPropertyAttribute() {
