@@ -102,16 +102,18 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return null;
     }
 
-    public String translateQuery(){
+    public String translateQuery(CriteriaParameterFiller parameterFiller){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
         PathImpl selection = (PathImpl) query.getSelection();
         AbstractPathExpression expression = (AbstractPathExpression) selection.getParentPath();
-        expression.setExpressionToQuery(stringBuilder);
+        expression.setExpressionToQuery(stringBuilder, parameterFiller);
         stringBuilder.append(" FROM ");
-        query.getRoot().setExpressionToQuery(stringBuilder);
-        stringBuilder.append(" WHERE ");
-        query.getWhere().setExpressionToQuery(stringBuilder);
+        query.getRoot().setExpressionToQuery(stringBuilder, parameterFiller);
+        if (query.getWhere() != null){
+            stringBuilder.append(" WHERE ");
+            query.getWhere().setExpressionToQuery(stringBuilder, parameterFiller);
+        }
         return stringBuilder.toString();
     }
 }
