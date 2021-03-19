@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
 
 import java.util.Collection;
@@ -37,7 +38,7 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
         return null;
     }
 
-    abstract public void setExpressionToQuery(StringBuilder query);
+    abstract public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller);
 }
 
 

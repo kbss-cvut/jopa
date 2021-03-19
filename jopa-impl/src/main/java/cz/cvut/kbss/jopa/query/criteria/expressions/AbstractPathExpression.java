@@ -17,7 +17,7 @@ abstract public class AbstractPathExpression<X> extends AbstractExpression<X> im
         this.metamodel = metamodel;
     }
 
-    //TODO - konzultacia - generika
+    //TODO - BAKALARKA - konzultacia - generika
     // new ExpressionAttributeImpl<>
 //     Note: Applications using the string-based API may need to specify the type resulting from the get operation in order to avoid the use of Path variables.
 //     For example:

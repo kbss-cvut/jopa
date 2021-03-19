@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 
 public class ExpressionAttributeImpl<Y> extends AbstractPathExpression<Y> {
 
@@ -16,9 +17,9 @@ public class ExpressionAttributeImpl<Y> extends AbstractPathExpression<Y> {
 
 
     @Override
-    public void setExpressionToQuery(StringBuilder query) {
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         if (this.pathSource != null){
-            this.pathSource.setExpressionToQuery(query);
+            this.pathSource.setExpressionToQuery(query, parameterFiller);
             query.append("." + attributeName);
         } else {
             query.append(attributeName);

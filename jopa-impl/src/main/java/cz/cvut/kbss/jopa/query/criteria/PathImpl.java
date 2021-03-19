@@ -11,7 +11,7 @@ public class PathImpl<X> extends AbstractPathExpression<X> implements Path<X> {
     }
 
     @Override
-    public void setExpressionToQuery(StringBuilder query) {
-        this.pathSource.setExpressionToQuery(query);
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
+        this.pathSource.setExpressionToQuery(query, parameterFiller);
     }
 }

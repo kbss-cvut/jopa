@@ -39,7 +39,7 @@ public class CompoundedPredicateImpl extends AbstractPredicate{
     }
 
     @Override
-    public void setExpressionToQuery(StringBuilder query) {
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
 
     }
 }

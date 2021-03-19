@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -449,7 +450,10 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery, Class<T> resultClass) {
         ensureOpen();
         CriteriaQueryImpl<T> query = (CriteriaQueryImpl<T>) criteriaQuery;
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query.translateQuery(), resultClass);
+        CriteriaParameterFiller parameterFiller = new CriteriaParameterFiller();
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query.translateQuery(parameterFiller), resultClass);
+        parameterFiller.setValuesToRegisteredParameters(q);
+
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         return q;

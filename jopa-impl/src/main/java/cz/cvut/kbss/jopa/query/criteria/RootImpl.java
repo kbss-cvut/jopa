@@ -17,8 +17,8 @@ public class RootImpl<X> extends PathImpl<X> implements Root<X> {
     }
 
     @Override
-    public void setExpressionToQuery(StringBuilder query) {
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         query.append(type.getSimpleName() + " ");
-        this.pathSource.setExpressionToQuery(query);
+        this.pathSource.setExpressionToQuery(query, parameterFiller);
     }
 }

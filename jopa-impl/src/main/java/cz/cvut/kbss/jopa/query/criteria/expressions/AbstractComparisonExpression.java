@@ -1,13 +1,14 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.query.criteria.CriteriaFactoryImpl;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
 abstract public class AbstractComparisonExpression<Y> extends AbstractExpression<Y> {
 
     protected AbstractExpression<?> right;
     protected AbstractExpression<?> left;
-    protected Object literal;
+    protected ExpressionLiteralImpl literal;
     protected final CriteriaFactory factory;
 
     public AbstractComparisonExpression(AbstractExpression<Y> x, AbstractExpression<?> y, CriteriaFactory factory) {
@@ -27,13 +28,13 @@ abstract public class AbstractComparisonExpression<Y> extends AbstractExpression
     }
 
     @Override
-    public void setExpressionToQuery(StringBuilder query) {
-        this.left.setExpressionToQuery(query);
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
+        this.left.setExpressionToQuery(query, parameterFiller);
         query.append(this.getComparisonOperator());
         if (right != null){
-            this.right.setExpressionToQuery(query);
+            this.right.setExpressionToQuery(query, parameterFiller);
         } else {
-            query.append(this.literal.toString());
+            query.append(parameterFiller.registerParameter(literal));
         }
     }
 

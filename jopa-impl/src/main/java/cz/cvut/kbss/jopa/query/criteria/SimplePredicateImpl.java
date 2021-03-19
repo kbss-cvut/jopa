@@ -45,7 +45,7 @@ public class SimplePredicateImpl extends AbstractPredicate{
     }
 
     @Override
-    public void setExpressionToQuery(StringBuilder query) {
-        expression.setExpressionToQuery(query);
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
+        expression.setExpressionToQuery(query, parameterFiller);
     }
 }

@@ -34,7 +34,7 @@ abstract public class AbstractPredicate extends AbstractExpression<Boolean> impl
     }
 
     @Override
-    public void setExpressionToQuery(StringBuilder query) {
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
 
     }
 }

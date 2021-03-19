@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 
 public class ParameterExpressionImpl<T> extends AbstractExpression<T> implements ParameterExpression<T> {
     private final String name;
@@ -25,8 +26,9 @@ public class ParameterExpressionImpl<T> extends AbstractExpression<T> implements
         return type;
     }
 
-    @Override
-    public void setExpressionToQuery(StringBuilder query) {
 
+    @Override
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
+        query.append(parameterFiller.registerParameter(this));
     }
 }
