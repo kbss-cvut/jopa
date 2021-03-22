@@ -33,10 +33,15 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Expression<Long> count(Expression<?> x) {
+        if (x instanceof AbstractPathExpression){
+            return new ExpressionCountImpl(null,(AbstractPathExpression) x);
+        }
+        throw new IllegalArgumentException("Aggregate function can be applied only to path expressions.");
+
 //        AbstractExpression<?> expression = (AbstractExpression<?>) x;
 //        if (expression.getExpression() == null) throw new MissingChildExpressionException("Expression representing COUNT method is missing child expression.");
 //        return new FunctionExpressionImpl<>(new ExpressionCountImpl<>(expression.getExpression()));
-        return null;
+//        return null;
     }
 
 
