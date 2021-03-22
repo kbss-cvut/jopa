@@ -68,4 +68,18 @@ public final class CollectionFactory {
     public static Map<Object, Object> createDefaultMap() {
         return new HashMap<>();
     }
+
+    public static CollectionType resolveCollectionType(Class<?> javaType) {
+        if (List.class.isAssignableFrom(javaType)) {
+            return CollectionType.LIST;
+        } else if (Set.class.isAssignableFrom(javaType)) {
+            return CollectionType.SET;
+        } else if (Collection.class.isAssignableFrom(javaType)) {
+            return CollectionType.COLLECTION;
+        } else if (Map.class.isAssignableFrom(javaType)) {
+            return CollectionType.MAP;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
 }

@@ -15,9 +15,9 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
@@ -174,7 +174,7 @@ class EntityConstructor {
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
 
         for (QueryAttribute<? super T, ?> queryAttribute : queryAttributes) {
-            TypedQuery<?> typedQuery;
+            TypedQueryImpl<?> typedQuery;
             try {
                 typedQuery = queryFactory.createNativeQuery(
                         queryAttribute.getQuery(), queryAttribute.getJavaType());
@@ -213,7 +213,7 @@ class EntityConstructor {
         if (! queryAttribute.isCollection()) {
             return new SingularQueryAttributeStrategy<>(et, (AbstractQueryAttribute<? super T, ?>) queryAttribute);
         } else {
-            return new PluralQueryAttributeStrategy<>(et, (AbstractPluralQueryAttribute<? super T, ?, ?>) queryAttribute);
+            return new PluralQueryAttributeStrategy<>(et, (PluralQueryAttributeImpl<? super T, ?, ?>) queryAttribute);
         }
     }
 

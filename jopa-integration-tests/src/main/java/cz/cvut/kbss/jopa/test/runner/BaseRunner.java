@@ -55,6 +55,11 @@ public abstract class BaseRunner {
     protected OWLClassP entityP;
     // Mapped superclass
     protected OWLClassQ entityQ;
+    // Query based attribute
+    protected OWLClassWithQueryAttr entityWithQueryAttr;
+    protected OWLClassWithQueryAttr2 entityWithQueryAttr2;
+    protected OWLClassWithQueryAttr3 entityWithQueryAttr3;
+    protected OWLClassWithQueryAttr4 entityWithQueryAttr4;
 
     protected final DataAccessor dataAccessor;
     protected final PersistenceFactory persistenceFactory;
@@ -120,6 +125,17 @@ public abstract class BaseRunner {
         entityQ.setParentString("entityQParentStringAttribute");
         entityQ.setLabel("entityQLabel");
         entityQ.setOwlClassA(entityA);
+        this.entityWithQueryAttr = new OWLClassWithQueryAttr();
+        entityWithQueryAttr.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr"));
+        entityWithQueryAttr.setStringAttribute("EntityWithQueryAttrStringAttribute");
+        this.entityWithQueryAttr2 = new OWLClassWithQueryAttr2();
+        entityWithQueryAttr2.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr2"));
+        entityWithQueryAttr2.setEntityAttribute(entityA);
+        this.entityWithQueryAttr3 = new OWLClassWithQueryAttr3();
+        entityWithQueryAttr3.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr3"));
+        this.entityWithQueryAttr4 = new OWLClassWithQueryAttr4();
+        entityWithQueryAttr4.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr4"));
+        entityWithQueryAttr4.setStringAttribute("EntityWithQueryAttrStringAttribute4");
     }
 
     @AfterEach

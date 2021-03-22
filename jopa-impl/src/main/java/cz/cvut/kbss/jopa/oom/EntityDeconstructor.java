@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
@@ -42,6 +43,10 @@ class EntityDeconstructor {
         final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(identifier, descriptor);
         try {
             for (FieldSpecification<? super T, ?> att : et.getFieldSpecifications()) {
+                if (att instanceof QueryAttribute) {
+                    // Skip query based attributes, they are not mapped to axioms
+                    continue;
+                }
                 addAssertions(entity, et, att, descriptor, valueBuilder);
             }
 

@@ -1,38 +1,29 @@
-package cz.cvut.kbss.jopa.environment;
+package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.Sparql;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 
-@OWLClass(iri = Vocabulary.c_OwlClassWithQueryAttr)
+@OWLClass(iri = Vocabulary.C_OwlClassWithQueryAttr)
 public class OWLClassWithQueryAttr {
 
     private static final String STR_ATT_FIELD = "stringAttribute";
     private static final String STR_QUERY_ATT_FIELD = "stringQueryAttribute";
-    private static final String ENTITY_ATT_FIELD = "entityAttribute";
-    private static final String ENTITY_QUERY_ATT_FIELD = "entityQueryAttribute";
-
-    private static final String QUERY = "PREFIX jopa:<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#>\n" +
-                                        "SELECT ?stringAttribute\n" +
-                                        "WHERE {?this jopa:B-stringAttribute ?stringAttribute}";
-    private static final String QUERY_ENTITY = "SELECT ?entityAttribute\n" +
-                                               "WHERE {?this <" + Vocabulary.P_HAS_A + "> ?entityAttribute}";
+    private static final String QUERY = "SELECT ?stringAttribute\n" +
+                                        "WHERE {?this <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?stringAttribute}";
 
     @Id
     private URI uri;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute")
+    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute", simpleLiteral = true)
     private String stringAttribute;
 
     @Sparql(query=QUERY)
     private String stringQueryAttribute;
-
-    @OWLObjectProperty(iri = Vocabulary.P_HAS_A, fetch = FetchType.EAGER)
-    private OWLClassA entityAttribute;
-
-    @Sparql(query=QUERY_ENTITY)
-    private OWLClassA entityQueryAttribute;
 
     public OWLClassWithQueryAttr() {
     }
@@ -71,22 +62,6 @@ public class OWLClassWithQueryAttr {
         this.stringQueryAttribute = stringQueryAttribute;
     }
 
-    public OWLClassA getEntityAttribute() {
-        return entityAttribute;
-    }
-
-    public void setEntityAttribute(OWLClassA entityAttribute) {
-        this.entityAttribute = entityAttribute;
-    }
-
-    public OWLClassA getEntityQueryAttribute() {
-        return entityQueryAttribute;
-    }
-
-    public void setEntityQueryAttribute(OWLClassA entityQueryAttribute) {
-        this.entityQueryAttribute = entityQueryAttribute;
-    }
-
     public static String getClassIri() {
         return OWLClassWithQueryAttr.class.getAnnotation(OWLClass.class).iri();
     }
@@ -97,14 +72,6 @@ public class OWLClassWithQueryAttr {
 
     public static Field getStrQueryAttField() throws NoSuchFieldException {
         return OWLClassWithQueryAttr.class.getDeclaredField(STR_QUERY_ATT_FIELD);
-    }
-
-    public static Field getEntityAttField() throws NoSuchFieldException {
-        return OWLClassWithQueryAttr.class.getDeclaredField(ENTITY_ATT_FIELD);
-    }
-
-    public static Field getEntityQueryAttField() throws NoSuchFieldException {
-        return OWLClassWithQueryAttr.class.getDeclaredField(ENTITY_QUERY_ATT_FIELD);
     }
 
     public static String getSparqlQuery() {

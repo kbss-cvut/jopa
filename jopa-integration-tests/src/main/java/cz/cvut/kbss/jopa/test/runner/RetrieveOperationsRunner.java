@@ -435,4 +435,31 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertFalse(result.getStringCollection().isEmpty());
         assertThat(result.getStringCollection(), hasItems("value", "valueTwo"));
     }
+
+    @Test
+    void testRetrieveEntityWithQueryAttr() {
+        this.em = getEntityManager("RetrieveWithQueryAttr", false);
+
+        persist(entityWithQueryAttr);
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        final OWLClassWithQueryAttr res = findRequired(OWLClassWithQueryAttr.class, entityWithQueryAttr.getUri());
+        assertEquals(entityWithQueryAttr.getUri(), res.getUri());
+        assertEquals(entityWithQueryAttr.getStringAttribute(), res.getStringAttribute());
+        assertEquals(entityWithQueryAttr.getStringAttribute(), res.getStringQueryAttribute());
+        assertTrue(em.contains(res));
+    }
+
+    @Test
+    void testRetrieveEntityWithManagedTypeQueryAttr() {
+        this.em = getEntityManager("RetrieveWithManagedTypeQueryAttr", false);
+
+        persist(entityWithQueryAttr2, entityA);
+
+        final OWLClassWithQueryAttr2 res = findRequired(OWLClassWithQueryAttr2.class, entityWithQueryAttr2.getUri());
+        assertEquals(entityWithQueryAttr2.getUri(), res.getUri());
+        assertEquals(entityWithQueryAttr2.getEntityAttribute(), res.getEntityAttribute());
+        assertEquals(entityWithQueryAttr2.getEntityAttribute(), res.getEntityQueryAttribute());
+        assertTrue(em.contains(res));
+    }
 }

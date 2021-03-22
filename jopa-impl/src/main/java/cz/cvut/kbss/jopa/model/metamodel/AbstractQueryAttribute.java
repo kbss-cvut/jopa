@@ -15,15 +15,18 @@ public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, 
 
     private final ManagedType<X> declaringType;
 
+    private final FetchType fetchType;
+
     private final ParticipationConstraint[] constraints;
 
     private final ConverterWrapper converter;
 
-    public AbstractQueryAttribute(String query, Field field, ManagedType<X> declaringType,
+    public AbstractQueryAttribute(String query, Field field, ManagedType<X> declaringType, FetchType fetchType,
                                   ParticipationConstraint[] constraints, ConverterWrapper converter) {
         this.query = query;
         this.field = field;
         this.declaringType = declaringType;
+        this.fetchType = fetchType;
         this.constraints = constraints;
         this.converter = converter;
     }
@@ -55,7 +58,7 @@ public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, 
 
     @Override
     public FetchType getFetchType() {
-        return null;
+        return fetchType;
     }
 
     /**

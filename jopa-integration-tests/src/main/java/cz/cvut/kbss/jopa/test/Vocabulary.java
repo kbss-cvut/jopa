@@ -38,6 +38,10 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_Y = CLASS_IRI_BASE + "OWLClassY";
     public static final String C_OWL_CLASS_Z = CLASS_IRI_BASE + "OWLClassZ";
     public static final String C_OWL_CLASS_Z_CHILD = CLASS_IRI_BASE + "OWLClassZChild";
+    public static final String C_OwlClassWithQueryAttr = CLASS_IRI_BASE + "OWLClassWithQueryAttr";
+    public static final String C_OwlClassWithQueryAttr2 = CLASS_IRI_BASE + "OWLClassWithQueryAttr2";
+    public static final String C_OwlClassWithQueryAttr3 = CLASS_IRI_BASE + "OWLClassWithQueryAttr3";
+    public static final String C_OwlClassWithQueryAttr4 = CLASS_IRI_BASE + "OWLClassWithQueryAttr4";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";

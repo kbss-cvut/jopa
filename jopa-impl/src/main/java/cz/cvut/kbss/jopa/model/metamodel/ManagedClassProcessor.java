@@ -98,7 +98,7 @@ class ManagedClassProcessor {
         return null;
     }
 
-    private static boolean isManagedType(Class<?> cls) {
+    static boolean isManagedType(Class<?> cls) {
         return isEntityType(cls) || isMappedSuperclassType(cls);
     }
 

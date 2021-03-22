@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
@@ -9,9 +10,9 @@ public class SingularQueryAttributeImpl<X, Y> extends AbstractQueryAttribute<X, 
 
     private final Type<Y> type;
 
-    public SingularQueryAttributeImpl(String query, Field field, ManagedType<X> declaringType, Type<Y> type,
-                                      ParticipationConstraint[] constraints, ConverterWrapper converter) {
-        super(query, field, declaringType, constraints, converter);
+    public SingularQueryAttributeImpl(String query, Field field, ManagedType<X> declaringType, FetchType fetchType,
+                                      Type<Y> type, ParticipationConstraint[] constraints, ConverterWrapper converter) {
+        super(query, field, declaringType, fetchType, constraints, converter);
         this.type = type;
     }
 

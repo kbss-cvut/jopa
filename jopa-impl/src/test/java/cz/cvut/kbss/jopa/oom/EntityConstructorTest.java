@@ -672,4 +672,50 @@ class EntityConstructorTest {
         assertEquals(STRING_ATT, res.getStringQueryAttribute());
         verify(mapperMock).registerInstance(PK, res);
     }
+
+    @Test
+    void testReconstructEntityWithManagedTypeQueryAttribute() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassWithQueryAttr.getClassIri()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassWithQueryAttr.getStrAttField()));
+
+        final URI assertionUri = URI.create(OWLClassWithQueryAttr.getEntityAttField()
+                .getAnnotation(OWLObjectProperty.class).iri());
+        final Axiom<NamedResource> opAssertion = new AxiomImpl<>(NamedResource.create(PK),
+                Assertion.createObjectPropertyAssertion(assertionUri, false),
+                new Value<>(NamedResource.create(PK_TWO)));
+        axioms.add(opAssertion);
+
+        final Descriptor fieldDesc = new EntityDescriptor();
+        descriptor.addAttributeDescriptor(mocks.forOwlClassWithQueryAttr().entityAttribute(), fieldDesc);
+        final OWLClassA entityA = new OWLClassA();
+        entityA.setUri(PK_TWO);
+        entityA.setStringAttribute(STRING_ATT);
+
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDesc))
+                .thenReturn(entityA);
+
+        when(mapperMock.getUow()).thenReturn(uowMock);
+        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
+        doReturn(typedQueryMock)
+                .when(queryFactoryMock).createNativeQuery(any(String.class),
+                (Class<?>) any(Class.class));
+        doReturn(typedQueryMock)
+                .when(typedQueryMock).setParameter(any(String.class), any());
+        doReturn(entityA).when(typedQueryMock).getSingleResult();
+
+        final OWLClassWithQueryAttr res = constructor.reconstructEntity(PK, mocks.forOwlClassWithQueryAttr().entityType(), descriptor, axioms);
+        assertNotNull(res);
+        assertEquals(PK, res.getUri());
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDesc);
+        assertNotNull(res.getEntityAttribute());
+        assertEquals(PK_TWO, res.getEntityAttribute().getUri());
+        assertEquals(STRING_ATT, res.getEntityAttribute().getStringAttribute());
+
+        assertNotNull(res.getEntityQueryAttribute());
+        assertEquals(PK_TWO, res.getEntityQueryAttribute().getUri());
+        assertEquals(STRING_ATT, res.getEntityQueryAttribute().getStringAttribute());
+
+        verify(mapperMock).registerInstance(PK, res);
+    }
 }

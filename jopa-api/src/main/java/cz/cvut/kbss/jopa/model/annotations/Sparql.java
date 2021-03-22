@@ -29,5 +29,7 @@ public @interface Sparql {
     /**
      * SPARQL query including any prefixes and parameters.
      */
-    String value();
+    String query();
+
+    FetchType fetchType() default FetchType.LAZY;
 }

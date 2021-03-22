@@ -1,20 +1,22 @@
 package cz.cvut.kbss.jopa.oom.query;
 
-import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralQueryAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PluralQueryAttributeImpl;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.util.Collection;
-import java.util.stream.Stream;
 
-public class PluralQueryAttributeStrategy<X> extends QueryFieldStrategy<AbstractPluralQueryAttribute<? super X, ?, ?>, X> {
+public class PluralQueryAttributeStrategy<X> extends QueryFieldStrategy<PluralQueryAttributeImpl<? super X, ?, ?>, X> {
 
     private final Class<?> elementType;
 
     private final Collection<Object> values;
 
-    public PluralQueryAttributeStrategy(EntityType<X> et, AbstractPluralQueryAttribute<? super X, ?, ?> attribute) {
+    public PluralQueryAttributeStrategy(EntityType<X> et, PluralQueryAttributeImpl<? super X, ?, ?> attribute) {
         super(et, attribute);
         this.values = CollectionFactory.createDefaultCollection(attribute.getCollectionType());
         this.elementType = attribute.getElementType().getJavaType();
@@ -22,8 +24,20 @@ public class PluralQueryAttributeStrategy<X> extends QueryFieldStrategy<Abstract
 
     @Override
     public void addValueFromTypedQuery(TypedQuery<?> typedQuery) {
-        Stream<?> queryResultStream = typedQuery.getResultStream();
-        //TODO
+        typedQuery.getResultStream()
+                .forEach(value -> {
+                    if (isValidRange(value)) {
+                        values.add(toAttributeValue(value));
+                    } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) { //TODO test if works
+                        values.add(IdentifierTransformer
+                                .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value), elementType));
+                    }
+                });
+    }
+
+    @Override
+    boolean isValidRange(Object value) {
+        return elementType.isAssignableFrom(value.getClass()) || canBeConverted(value);
     }
 
     @Override

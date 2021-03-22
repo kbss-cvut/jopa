@@ -52,7 +52,7 @@ abstract class AbstractQuery implements Query {
     private boolean useBackupOntology = false;
 
     private Procedure rollbackOnlyMarker;
-    private Procedure ensureOpenProcedure;
+    private Procedure ensureOpenProcedure = () -> {};
 
     AbstractQuery(QueryHolder query, ConnectionWrapper connection) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));

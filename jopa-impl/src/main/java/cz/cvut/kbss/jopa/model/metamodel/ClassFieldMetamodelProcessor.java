@@ -157,31 +157,35 @@ class ClassFieldMetamodelProcessor<X> {
 
     private void createQueryAttribute(Field field, Class<?> fieldValueCls) {
         Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
-        String query = sparqlAnnotation.value();
+        String query = sparqlAnnotation.query();
+        FetchType fetchType = sparqlAnnotation.fetchType();
+
+        ParticipationConstraint[] participationConstraints = field.getAnnotationsByType(ParticipationConstraint.class);
 
         final AbstractQueryAttribute<X, ?> a;
-        if (field.getType().isAssignableFrom(Collection.class)) {
-            //TODO collection attribute
-            throw new IllegalArgumentException("NOT YET SUPPORTED");
-        } else if (field.getType().isAssignableFrom(List.class)) {
-            //TODO list attribute
-            throw new IllegalArgumentException("NOT YET SUPPORTED");
-        } else if (field.getType().isAssignableFrom(Set.class)) {
-            //TODO set attribute
-            throw new IllegalArgumentException("NOT YET SUPPORTED");
-        } else if (field.getType().isAssignableFrom(Map.class)) {
+
+        cz.cvut.kbss.jopa.model.metamodel.Type<?> type;
+
+        if (ManagedClassProcessor.isManagedType(fieldValueCls)) {
+            type = metamodelBuilder.getEntityClass(fieldValueCls);
+        } else {
+            type = BasicTypeImpl.get(fieldValueCls);
+        }
+
+        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
+        ConverterWrapper<?, ?> converterWrapper = null;
+
+        if (optionalConverterWrapper.isPresent()) {
+            converterWrapper = optionalConverterWrapper.get();
+        }
+
+        if (Collection.class.isAssignableFrom(field.getType())) {
+            a = new PluralQueryAttributeImpl<>(query, field, et, fetchType, participationConstraints, type, field.getType(), converterWrapper);
+        } else if (Map.class.isAssignableFrom(field.getType())) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            cz.cvut.kbss.jopa.model.metamodel.Type<?> type = BasicTypeImpl.get(fieldValueCls); //TODO Entity types
-            Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
-            ConverterWrapper<?, ?> converterWrapper = null;
-
-            if (optionalConverterWrapper.isPresent()) {
-                converterWrapper = optionalConverterWrapper.get();
-            }
-
             a = new SingularQueryAttributeImpl<>(
-                    query, field, et, type, new ParticipationConstraint[]{}, converterWrapper);
+                    query, field, et, fetchType, type, participationConstraints, converterWrapper);
         }
 
         et.addDeclaredQueryAttribute(field.getName(), a);

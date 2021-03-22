@@ -259,6 +259,10 @@ public class MetamodelMocks {
     private SingularQueryAttributeImpl<OWLClassWithQueryAttr, String> qaStringQueryAtt;
     @Mock
     private SingularAttributeImpl<OWLClassWithQueryAttr, String> qaStringAtt;
+    @Mock
+    private SingularQueryAttributeImpl<OWLClassWithQueryAttr, OWLClassA> qaEntityQueryAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassWithQueryAttr, OWLClassA> qaEntityAtt;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.openMocks(this);
@@ -288,7 +292,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, idU);
-        MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, idQA);
+        MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt, qaEntityAtt, idQA);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -839,6 +843,14 @@ public class MetamodelMocks {
 
         public AbstractQueryAttribute<OWLClassWithQueryAttr, String> stringQueryAttribute() {
             return MetamodelMocks.this.qaStringQueryAtt;
+        }
+
+        public AbstractAttribute<OWLClassWithQueryAttr, OWLClassA> entityAttribute() {
+            return MetamodelMocks.this.qaEntityAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassWithQueryAttr, OWLClassA> entityQueryAttribute() {
+            return MetamodelMocks.this.qaEntityQueryAtt;
         }
     }
 }
