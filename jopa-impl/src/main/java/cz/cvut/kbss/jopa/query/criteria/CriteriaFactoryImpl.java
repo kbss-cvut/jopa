@@ -31,6 +31,10 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel());
     }
 
+    //TODO - BAKALARKA - konzultacia
+    // (x instanceof AbstractPathExpression) vyhodnoti sa spravne?
+    // nechat taketo obmedzenie? alebo prepustit akykolvek expression a nasledne pri generovani query to padne?
+    // zatial je pri vyhodnocovaní výnimka na expression == null
     @Override
     public Expression<Long> count(Expression<?> x) {
         if (x instanceof AbstractPathExpression){

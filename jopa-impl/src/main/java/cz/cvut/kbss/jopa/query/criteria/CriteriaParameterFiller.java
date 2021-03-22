@@ -32,7 +32,7 @@ public class CriteriaParameterFiller {
     //    Predicate predicate = cb.equal(root.get("username"), stringParameter);
     //                              "WHERE person.name = :parameter1"
     //    tq.setParameter(stringParameter,"Milan");
-    //    ako TypedQuery nastavi tento parameter?
+    //    ako TypedQuery spracuje nepomenovaný parameter? aký nazov parametru mám nastaviť?
     /**
      * Register parameter expression as query parameter. Return real name if exists, generated name otherwise.
      * @param parameter - parameter expression
