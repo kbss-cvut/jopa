@@ -38,7 +38,7 @@ public interface PredicateFactory {
      * @param y expression
      * @return equality predicate
      */
-    Predicate equals(Expression<?> x, Expression<?> y);
+    Predicate equal(Expression<?> x, Expression<?> y);
 
     /**
      * Create a predicate for testing the arguments for equality.
@@ -46,7 +46,7 @@ public interface PredicateFactory {
      * @param y object
      * @return equality predicate
      */
-    Predicate equals(Expression<?> x, Object y);
+    Predicate equal(Expression<?> x, Object y);
 
     /**
      * Create a predicate for testing the arguments for equality.
@@ -55,7 +55,7 @@ public interface PredicateFactory {
      * @param languageTag string
      * @return equality predicate
      */
-    Predicate equals(Expression<?> x, String y, String languageTag);
+    Predicate equal(Expression<?> x, String y, String languageTag);
 
     /**
      * Create a predicate for testing the arguments for inequality.
@@ -63,7 +63,7 @@ public interface PredicateFactory {
      * @param y expression
      * @return inequality predicate
      */
-    Predicate notEquals(Expression<?> x, Expression<?> y);
+    Predicate notEqual(Expression<?> x, Expression<?> y);
 
     /**
      * Create a predicate for testing the arguments for inequality.
@@ -71,7 +71,7 @@ public interface PredicateFactory {
      * @param y object
      * @return inequality predicate
      */
-    Predicate notEquals(Expression<?> x, Object y);
+    Predicate notEqual(Expression<?> x, Object y);
 
     /**
      * Create a predicate for testing whether the first argument is greater than the second.

@@ -87,28 +87,28 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     }
 
     @Override
-    public Predicate equals(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y,this));
+    public Predicate equal(Expression<?> x, Expression<?> y) {
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
     }
 
     @Override
-    public Predicate equals(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, y,this));
+    public Predicate equal(Expression<?> x, Object y) {
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y)));
     }
 
     @Override
-    public Predicate equals(Expression<?> x, String y, String languageTag) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, y, languageTag, this));
+    public Predicate equal(Expression<?> x, String y, String languageTag) {
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,languageTag)));
     }
 
     @Override
-    public Predicate notEquals(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this));
+    public Predicate notEqual(Expression<?> x, Expression<?> y) {
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y));
     }
 
     @Override
-    public Predicate notEquals(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,y,this));
+    public Predicate notEqual(Expression<?> x, Object y) {
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x, new ExpressionLiteralImpl<>(y)));
 
     }
 
