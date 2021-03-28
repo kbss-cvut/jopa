@@ -2,10 +2,7 @@ package cz.cvut.kbss.jopa.query.criteria;
 
 import com.sun.javafx.fxml.expression.LiteralExpression;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.Expression;
-import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
-import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.expressions.*;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -31,21 +28,18 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel());
     }
 
-    //TODO - BAKALARKA - konzultacia
-    // (x instanceof AbstractPathExpression) vyhodnoti sa spravne?
-    // nechat taketo obmedzenie? alebo prepustit akykolvek expression a nasledne pri generovani query to padne?
-    // zatial je pri vyhodnocovaní výnimka na expression == null
     @Override
     public Expression<Long> count(Expression<?> x) {
+        if (x == null) throw new IllegalArgumentException("Aggregate function cannot be applied to null expression.");
         if (x instanceof AbstractPathExpression){
-            return new ExpressionCountImpl(null,(AbstractPathExpression) x);
+            if (x instanceof RootImpl) {
+                RootImpl root = (RootImpl) x;
+                return new ExpressionCountImpl(null,(AbstractPathExpression) root.getParentPath());
+            } else{
+                return new ExpressionCountImpl(null,(AbstractPathExpression) x);
+            }
         }
         throw new IllegalArgumentException("Aggregate function can be applied only to path expressions.");
-
-//        AbstractExpression<?> expression = (AbstractExpression<?>) x;
-//        if (expression.getExpression() == null) throw new MissingChildExpressionException("Expression representing COUNT method is missing child expression.");
-//        return new FunctionExpressionImpl<>(new ExpressionCountImpl<>(expression.getExpression()));
-//        return null;
     }
 
 
@@ -64,6 +58,12 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     public <T> Expression<T> literal(T value) throws IllegalArgumentException{
         if (value == null) throw new IllegalArgumentException("Literal expression cannot be null.");
         return new ExpressionLiteralImpl<>(value);
+    }
+
+    @Override
+    public Expression<String> literal(String value, String languageTag) throws IllegalArgumentException{
+        if (value == null) throw new IllegalArgumentException("Literal expression cannot be null.");
+        return new ExpressionLiteralImpl<>(value,languageTag);
     }
 
     @Override
@@ -88,12 +88,17 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Predicate equals(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<Boolean>((AbstractExpression<?>)x,(AbstractExpression<?>)y,this));
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y,this));
     }
 
     @Override
     public Predicate equals(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<Boolean>((AbstractExpression<?>) x, y,this));
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, y,this));
+    }
+
+    @Override
+    public Predicate equals(Expression<?> x, String y, String languageTag) {
+        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, y, languageTag, this));
     }
 
     @Override

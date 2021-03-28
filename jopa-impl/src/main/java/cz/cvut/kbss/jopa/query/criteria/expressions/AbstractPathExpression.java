@@ -17,7 +17,7 @@ abstract public class AbstractPathExpression<X> extends AbstractExpression<X> im
         this.metamodel = metamodel;
     }
 
-    //TODO - BAKALARKA - konzultacia - generika
+    //TODO - BAKALARKA - konzultacia - generika - VYRIESENE
     // new ExpressionAttributeImpl<>
 //     Note: Applications using the string-based API may need to specify the type resulting from the get operation in order to avoid the use of Path variables.
 //     For example:
@@ -35,7 +35,7 @@ abstract public class AbstractPathExpression<X> extends AbstractExpression<X> im
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
         Attribute attribute = metamodel.entity(type).getAttribute(attributeName);
         Path<Y> newPathSource = new PathImpl<Y>(this.metamodel,new ExpressionAttributeImpl(type,  this.pathSource, this.metamodel, attribute),null);
-        //TODO - BAKALARKA - konzultacia - generika
+        //TODO - BAKALARKA - konzultacia - generika - VYRIESENE
         //new ExpressionAttributeImpl< >
         return newPathSource;
     }

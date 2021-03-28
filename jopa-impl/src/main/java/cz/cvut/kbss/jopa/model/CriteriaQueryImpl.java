@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.*;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractAggregateFunctionExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionEntityImpl;
@@ -105,9 +106,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     public String translateQuery(CriteriaParameterFiller parameterFiller){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
-        PathImpl selection = (PathImpl) query.getSelection();
-        AbstractPathExpression expression = (AbstractPathExpression) selection.getParentPath();
-        expression.setExpressionToQuery(stringBuilder, parameterFiller);
+        translateSelection(stringBuilder,parameterFiller,query.getSelection());
         stringBuilder.append(" FROM ");
         query.getRoot().setExpressionToQuery(stringBuilder, parameterFiller);
         if (query.getWhere() != null){
@@ -115,5 +114,16 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
             query.getWhere().setExpressionToQuery(stringBuilder, parameterFiller);
         }
         return stringBuilder.toString();
+    }
+
+    private void translateSelection(StringBuilder stringBuilder, CriteriaParameterFiller parameterFiller, SelectionImpl<? extends T> selection) {
+        AbstractExpression expression;
+        if (selection instanceof AbstractAggregateFunctionExpression){
+            expression = (AbstractAggregateFunctionExpression) selection;
+        } else {
+            PathImpl pathSelection = (PathImpl) selection;
+            expression = (AbstractPathExpression) pathSelection.getParentPath();
+        }
+        expression.setExpressionToQuery(stringBuilder, parameterFiller);
     }
 }

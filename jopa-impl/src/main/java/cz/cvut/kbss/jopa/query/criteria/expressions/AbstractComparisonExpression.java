@@ -27,6 +27,14 @@ abstract public class AbstractComparisonExpression<Y> extends AbstractExpression
         this.literal = (ExpressionLiteralImpl) factory.literal(y);
     }
 
+    public AbstractComparisonExpression(AbstractExpression<?> x, String y, String languageTag, CriteriaFactory factory) {
+        super(null);
+        this.left = x;
+        this.factory = factory;
+        this.right = null;
+        this.literal = (ExpressionLiteralImpl) factory.literal(y,languageTag);
+    }
+
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         this.left.setExpressionToQuery(query, parameterFiller);
