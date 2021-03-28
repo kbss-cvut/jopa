@@ -49,7 +49,7 @@ public class CriteriaParameterFiller {
     public <T> void setValuesToRegisteredParameters(TypedQueryImpl<T> query) {
         for(String name: parameters.keySet()){
             ExpressionLiteralImpl parameter = parameters.get(name);
-            if(parameter.getLanguageTag() != null) query.setParameter(name, (String) parameters.get(name).getValue(),"@"+parameter.getLanguageTag());
+            if(parameter.getLanguageTag() != null) query.setParameter(name, (String) parameters.get(name).getValue(),parameter.getLanguageTag());
             else query.setParameter(name, parameters.get(name).getValue());
         }
     }
