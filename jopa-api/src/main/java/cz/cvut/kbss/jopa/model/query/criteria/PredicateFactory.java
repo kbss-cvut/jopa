@@ -49,6 +49,15 @@ public interface PredicateFactory {
     Predicate equals(Expression<?> x, Object y);
 
     /**
+     * Create a predicate for testing the arguments for equality.
+     * @param x expression
+     * @param y string
+     * @param languageTag string
+     * @return equality predicate
+     */
+    Predicate equals(Expression<?> x, String y, String languageTag);
+
+    /**
      * Create a predicate for testing the arguments for inequality.
      * @param x expression
      * @param y expression

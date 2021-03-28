@@ -4,11 +4,19 @@ import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 
 public class ExpressionLiteralImpl<T> extends AbstractExpression<T>  {
 
-    protected Object literal;
+    private final Object literal;
+    private final String languageTag;
 
     public ExpressionLiteralImpl(T literal) {
         super(determineClass(literal));
         this.literal = literal;
+        languageTag = null;
+    }
+
+    public ExpressionLiteralImpl(String literal, String languageTag) {
+        super(determineClass(literal));
+        this.literal = literal;
+        this.languageTag = languageTag;
     }
 
     @Override
@@ -22,6 +30,10 @@ public class ExpressionLiteralImpl<T> extends AbstractExpression<T>  {
 
     public Object getValue(){
         return literal;
+    }
+
+    public String getLanguageTag(){
+        return languageTag;
     }
 
 }

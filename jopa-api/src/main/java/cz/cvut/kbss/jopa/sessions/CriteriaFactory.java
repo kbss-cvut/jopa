@@ -51,4 +51,13 @@ public interface CriteriaFactory extends PredicateFactory {
      * @throws IllegalArgumentException - if value is null
      */
     <T> Expression<T> literal(T value) throws IllegalArgumentException;
+
+    /**
+     * Create an expression for a string literal with language tag.
+     * @param value - string value represented by the expression
+     * @param languageTag - string language tag
+     * @return expression literal
+     * @throws IllegalArgumentException - if value is null
+     */
+    Expression<String> literal(String value, String languageTag) throws IllegalArgumentException;
 }

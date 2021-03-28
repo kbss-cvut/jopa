@@ -13,6 +13,10 @@ public class ExpressionEqualsImpl<Y> extends AbstractComparisonExpression<Y> {
         super(x, y, factory);
     }
 
+    public ExpressionEqualsImpl(AbstractExpression<?> x, String y, String languageTag, CriteriaFactory factory) {
+        super(x, y, languageTag, factory);
+    }
+
     @Override
     protected String getComparisonOperator() {
         return " = ";
