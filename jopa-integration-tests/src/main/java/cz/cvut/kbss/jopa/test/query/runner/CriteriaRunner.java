@@ -93,7 +93,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaFactory factory = getEntityManager().getCriteriaFactory();
         CriteriaQuery<OWLClassA> query = factory.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
-        query.select(root).where(factory.equals(root.getAttr("stringAttribute"), expected.getStringAttribute()));
+        query.select(root).where(factory.equals(root.getAttr("stringAttribute"), expected.getStringAttribute(),"en"));
         TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
         final OWLClassA result = tq.getSingleResult();
 
