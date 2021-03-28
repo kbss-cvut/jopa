@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import com.sun.javafx.fxml.expression.LiteralExpression;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.expressions.*;
@@ -25,7 +24,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public <T> CriteriaQuery<T> createQuery(Class<T> resultClass) {
-        return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel());
+        return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel(), this);
     }
 
     @Override
@@ -56,13 +55,13 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public <T> Expression<T> literal(T value) throws IllegalArgumentException{
-        if (value == null) throw new IllegalArgumentException("Literal expression cannot be null.");
+        if (value == null) throw new IllegalArgumentException("Literal created by this method cannot be null. Use nullLiteral method instead.");
         return new ExpressionLiteralImpl<>(value);
     }
 
     @Override
     public Expression<String> literal(String value, String languageTag) throws IllegalArgumentException{
-        if (value == null) throw new IllegalArgumentException("Literal expression cannot be null.");
+        if (value == null) throw new IllegalArgumentException("Literal created by this method cannot be null. Use nullLiteral method instead.");
         return new ExpressionLiteralImpl<>(value,languageTag);
     }
 
@@ -73,7 +72,8 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Predicate and(Predicate... restrictions) {
-        return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(restrictions));
+        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0]);
+        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(restrictions));
     }
 
     @Override
@@ -83,7 +83,8 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Predicate or(Predicate... restrictions) {
-        return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions));
+        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0]);
+        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions));
     }
 
     @Override

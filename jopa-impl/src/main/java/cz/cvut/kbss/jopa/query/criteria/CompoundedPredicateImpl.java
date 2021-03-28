@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 public class CompoundedPredicateImpl extends AbstractPredicate{
 
-    protected BooleanOperator booleanOperator;
     protected List<Expression<Boolean>> expressions;
 
     public CompoundedPredicateImpl(BooleanOperator booleanOperator, List<Expression<Boolean>> expressions) {
@@ -40,6 +39,17 @@ public class CompoundedPredicateImpl extends AbstractPredicate{
 
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
+        for (int i = 0; i < expressions.size(); i++) {
+            AbstractExpression expression = (AbstractExpression) expressions.get(i);
+            if (expression instanceof CompoundedPredicateImpl){
+                query.append("(");
+                expression.setExpressionToQuery(query,parameterFiller);
+                query.append(")");
+            } else {
+                expression.setExpressionToQuery(query,parameterFiller);
+            }
 
+            if(i < (expressions.size()-1)) query.append(" " + this.getOperator().toString() + " ");
+        }
     }
 }

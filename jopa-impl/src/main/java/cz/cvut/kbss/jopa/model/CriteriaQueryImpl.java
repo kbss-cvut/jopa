@@ -22,12 +22,12 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractAggregateFunctionExp
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionEntityImpl;
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.util.Arrays;
 import java.util.Objects;
 
 //TODO PRO - CriteriaQueryImpl methods implementation
@@ -37,11 +37,13 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     protected final CriteriaQueryHolder<T> query;
     private final Metamodel metamodel;
+    private final CriteriaFactory factory;
 
 
-    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel) {
+    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel, CriteriaFactory factory) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
         this.metamodel = metamodel;
+        this.factory = factory;
     }
 
     @Override
@@ -63,7 +65,10 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     }
 
 
-
+    //TODO - BAKALARKA - KONZULTACIA
+    // automaticky kazdy Expression ktory nie je boolean sa pretvori na
+    // equals(expression, null)?
+    // ake to ma realne vyuzitie?
     @Override
     public CriteriaQuery<T> where(Expression<Boolean> expression) {
 //        AbstractExpression<Boolean> abstractExpression = (AbstractExpression<Boolean>) expression;
@@ -73,7 +78,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> where(Predicate... predicates) {
-        query.setWhere(new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(predicates)));
+        query.setWhere((AbstractExpression<Boolean>) factory.and(predicates));
         return this;
     }
 

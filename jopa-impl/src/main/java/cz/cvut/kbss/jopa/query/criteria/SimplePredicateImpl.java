@@ -10,15 +10,15 @@ import java.util.List;
 
 public class SimplePredicateImpl extends AbstractPredicate{
 
-    protected AbstractExpression<Boolean> expression;
+    protected Expression<Boolean> expression;
 
-    public SimplePredicateImpl(BooleanOperator booleanOperator, AbstractExpression<Boolean> expression) {
+    public SimplePredicateImpl(BooleanOperator booleanOperator, Expression<Boolean> expression) {
         super(booleanOperator);
         this.expression = expression;
     }
 
 
-    public SimplePredicateImpl(AbstractExpression<Boolean> expression) {
+    public SimplePredicateImpl(Expression<Boolean> expression) {
         super(BooleanOperator.AND);
         this.expression = expression;
     }
@@ -46,6 +46,7 @@ public class SimplePredicateImpl extends AbstractPredicate{
 
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
-        expression.setExpressionToQuery(query, parameterFiller);
+        AbstractExpression abstractExpression = (AbstractExpression) expression;
+        abstractExpression.setExpressionToQuery(query, parameterFiller);
     }
 }
