@@ -65,6 +65,11 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new ExpressionLiteralImpl<>(value,languageTag);
     }
 
+    //TODO - BAKALARKA - pridat do verejneho rozhrania
+    public <T> Expression<T> nullLiteral(Class<T> resultClass){
+        return new ExpressionLiteralImpl<>(resultClass);
+    };
+
     @Override
     public Predicate and(Expression<Boolean> x, Expression<Boolean> y) {
         return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(x,y));

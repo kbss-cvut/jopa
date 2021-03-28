@@ -19,6 +19,12 @@ public class ExpressionLiteralImpl<T> extends AbstractExpression<T>  {
         this.languageTag = languageTag;
     }
 
+    public ExpressionLiteralImpl(Class<T> type) {
+        super(type);
+        this.literal = null;
+        languageTag = null;
+    }
+
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         query.append(parameterFiller.registerParameter(this));
