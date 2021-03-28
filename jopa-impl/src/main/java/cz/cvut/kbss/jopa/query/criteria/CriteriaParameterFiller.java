@@ -24,10 +24,10 @@ public class CriteriaParameterFiller {
     public String registerParameter(ExpressionLiteralImpl parameter){
         String name = generateParameterName();
         parameters.put(name, parameter);
-        return name;
+        return ":" + name;
     }
 
-    //TODO - BAKALARKA - konzultacia
+    //TODO - BAKALARKA - konzultacia - VYRIESENE
     //    ParameterExpression<String> stringParameter = cb.parameter(String.class);
     //    Predicate predicate = cb.equal(root.get("username"), stringParameter);
     //                              "WHERE person.name = :parameter1"
@@ -53,6 +53,6 @@ public class CriteriaParameterFiller {
     }
 
     private String generateParameterName(){
-        return ":generatedName"+ parameters.size();
+        return "generatedName"+ parameters.size();
     }
 }
