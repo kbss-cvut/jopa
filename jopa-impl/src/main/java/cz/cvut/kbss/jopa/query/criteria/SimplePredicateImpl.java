@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractComparisonExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 
 import java.util.ArrayList;
@@ -36,17 +37,19 @@ public class SimplePredicateImpl extends AbstractPredicate{
 
     @Override
     public Predicate not() {
-        return null;
-    }
-
-    @Override
-    public boolean isNegated() {
-        return false;
+        ((AbstractExpression)expression).negate();
+        super.negate();
+        return this;
     }
 
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         AbstractExpression abstractExpression = (AbstractExpression) expression;
         abstractExpression.setExpressionToQuery(query, parameterFiller);
+    }
+
+    @Override
+    public void negate(){
+        this.not();
     }
 }

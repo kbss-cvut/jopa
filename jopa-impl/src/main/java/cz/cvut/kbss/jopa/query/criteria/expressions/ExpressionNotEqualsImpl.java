@@ -1,8 +1,5 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
-
 public class ExpressionNotEqualsImpl<Y> extends AbstractComparisonExpression<Y> {
 
 
@@ -12,7 +9,7 @@ public class ExpressionNotEqualsImpl<Y> extends AbstractComparisonExpression<Y> 
 
     @Override
     protected String getComparisonOperator() {
-        return " <> ";
+        return this.isNegated() ? " = " : " <> ";
     }
 }
 

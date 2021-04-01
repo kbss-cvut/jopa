@@ -19,7 +19,7 @@ public class CompoundedPredicateImpl extends AbstractPredicate{
 
     @Override
     public List<Expression<Boolean>> getExpressions(){
-        return expressions.stream().map(exp -> (Expression<Boolean>) exp).collect(Collectors.toList());
+        return expressions;
     }
 
     @Override
@@ -29,12 +29,13 @@ public class CompoundedPredicateImpl extends AbstractPredicate{
 
     @Override
     public Predicate not() {
-        return null;
-    }
-
-    @Override
-    public boolean isNegated() {
-        return false;
+        for (Expression<Boolean> expression:expressions) {
+            AbstractExpression abstractExpression = (AbstractExpression) expression;
+            abstractExpression.negate();
+        }
+        super.negate();
+        super.negateOperator();
+        return this;
     }
 
     @Override
@@ -51,5 +52,10 @@ public class CompoundedPredicateImpl extends AbstractPredicate{
 
             if(i < (expressions.size()-1)) query.append(" " + this.getOperator().toString() + " ");
         }
+    }
+
+    @Override
+    public void negate(){
+        this.not();
     }
 }

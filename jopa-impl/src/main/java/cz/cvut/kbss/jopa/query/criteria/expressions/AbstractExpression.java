@@ -9,8 +9,11 @@ import java.util.Collection;
 
 abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
+    protected boolean negated;
+
     public AbstractExpression(Class<Y> type) {
         super(type);
+        negated = false;
     }
 
     @Override
@@ -39,6 +42,14 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
     }
 
     abstract public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller);
+
+    public boolean isNegated(){
+        return negated;
+    }
+
+    public void negate(){
+        this.negated = true;
+    }
 }
 
 

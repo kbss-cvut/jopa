@@ -24,17 +24,12 @@ abstract public class AbstractPredicate extends AbstractExpression<Boolean> impl
     }
 
     @Override
-    public Predicate not() {
-        return null;
+    abstract public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller);
+
+    protected void negateOperator(){
+        if (booleanOperator.equals(BooleanOperator.AND)) booleanOperator = BooleanOperator.OR;
+        else booleanOperator = BooleanOperator.AND;
     }
 
-    @Override
-    public boolean isNegated() {
-        return false;
-    }
 
-    @Override
-    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
-
-    }
 }
