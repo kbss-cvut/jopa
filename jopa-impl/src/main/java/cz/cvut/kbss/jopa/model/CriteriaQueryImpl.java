@@ -111,6 +111,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     public String translateQuery(CriteriaParameterFiller parameterFiller){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
+        if (query.isDistinct()) stringBuilder.append("DISTINCT ");
         translateSelection(stringBuilder,parameterFiller,query.getSelection());
         stringBuilder.append(" FROM ");
         query.getRoot().setExpressionToQuery(stringBuilder, parameterFiller);

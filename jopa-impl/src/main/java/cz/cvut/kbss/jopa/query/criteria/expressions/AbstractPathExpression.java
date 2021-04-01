@@ -34,7 +34,7 @@ abstract public class AbstractPathExpression<X> extends AbstractExpression<X> im
 //     .where(cb.isMember("joe", nicknames));
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
         Attribute attribute = metamodel.entity(type).getAttribute(attributeName);
-        Path<Y> newPathSource = new PathImpl<Y>(this.metamodel,new ExpressionAttributeImpl(type,  this.pathSource, this.metamodel, attribute),null);
+        Path<Y> newPathSource = new PathImpl<Y>(this.metamodel,new ExpressionAttributeImpl(attribute.getJavaType(),  this.pathSource, this.metamodel, attribute),attribute.getJavaType());
         //TODO - BAKALARKA - konzultacia - generika - VYRIESENE
         //new ExpressionAttributeImpl< >
         return newPathSource;
