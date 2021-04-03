@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.criteria.Order;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ public class CriteriaQueryHolder<T> {
     }
 
     public List<Order> getOrderBy() {
+        if (orderBy == null) return Collections.emptyList();
         return orderBy;
     }
 

@@ -16,6 +16,8 @@ package cz.cvut.kbss.jopa.model.query.criteria;
 
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 
+import java.util.List;
+
 /**
  * Interface used to control the execution of typed queries.
  *
@@ -84,4 +86,42 @@ public interface CriteriaQuery<T>{
      * @return where clause predicate
      */
     Predicate getRestriction();
+
+    /**
+     * Specify the expressions that are used to form groups over the query results. Replaces the previous specified grouping expressions, if any. If no grouping expressions are specified, any previously added grouping expressions are simply removed.
+     * @param grouping zero or more grouping expressions
+     * @return the modified query
+     */
+    CriteriaQuery<T> groupBy(Expression<?>... grouping);
+
+    /**
+     * Specify the expressions that are used to form groups over the query results. Replaces the previous specified grouping expressions, if any. If no grouping expressions are specified, any previously added grouping expressions are simply removed.
+     * @param grouping list of zero or more grouping expressions
+     * @return the modified query
+     */
+    CriteriaQuery<T> groupBy(List<Expression<?>> grouping);
+
+    /**
+     * Specify the ordering expressions that are used to order the query results. Replaces the previous ordering expressions, if any. If no ordering expressions are specified, the previous ordering, if any, is simply removed, and results will be returned in no particular order. The left-to-right sequence of the ordering expressions determines the precedence, whereby the leftmost has highest precedence.
+     * @param o list of zero or more ordering expressions
+     * @return the modified query
+     */
+    CriteriaQuery<T> orderBy(List<Order> o);
+
+    /**
+     * Specify the ordering expressions that are used to order the query results. Replaces the previous ordering expressions, if any. If no ordering expressions are specified, the previous ordering, if any, is simply removed, and results will be returned in no particular order. The left-to-right sequence of the ordering expressions determines the precedence, whereby the leftmost has highest precedence.
+     * @param o zero or more ordering expressions
+     * @return the modified query
+     */
+    CriteriaQuery<T> orderBy(Order... o);
+
+
+    //TODO - BAKALARKA - KONZULTACIA
+    // Modifications to the list do not affect the query.
+    // je potrebne vraciat takto? Collections.unmodifiableList(list);
+    /**
+     * Return the ordering expressions in order of precedence. Returns empty list if no ordering expressions have been specified. Modifications to the list do not affect the query.
+     * @return the list of ordering expressions
+     */
+    List<Order> getOrderList();
 }

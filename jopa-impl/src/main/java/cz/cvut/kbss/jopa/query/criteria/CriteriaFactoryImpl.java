@@ -65,6 +65,16 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new ExpressionLiteralImpl<>(value,languageTag);
     }
 
+    @Override
+    public Order asc(Expression<?> x) {
+        return new OrderImpl(x);
+    }
+
+    @Override
+    public Order desc(Expression<?> x) {
+        return new OrderImpl(x,false);
+    }
+
     //TODO - BAKALARKA - pridat do verejneho rozhrania
     public <T> Expression<T> nullLiteral(Class<T> resultClass){
         return new ExpressionLiteralImpl<>(resultClass);

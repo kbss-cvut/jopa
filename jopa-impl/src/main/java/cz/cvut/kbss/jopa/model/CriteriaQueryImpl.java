@@ -28,6 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 //TODO PRO - CriteriaQueryImpl methods implementation
@@ -108,6 +111,34 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return null;
     }
 
+    @Override
+    public CriteriaQuery<T> groupBy(Expression<?>... grouping) {
+        return null;
+    }
+
+    @Override
+    public CriteriaQuery<T> groupBy(List<Expression<?>> grouping) {
+        return null;
+    }
+
+    @Override
+    public CriteriaQuery<T> orderBy(List<Order> o) {
+        query.setOrderBy(o);
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> orderBy(Order... o) {
+        if (o != null) query.setOrderBy(Arrays.asList(o));
+        else query.setOrderBy(Collections.emptyList());
+        return this;
+    }
+
+    @Override
+    public List<Order> getOrderList() {
+        return query.getOrderBy();
+    }
+
     public String translateQuery(CriteriaParameterFiller parameterFiller){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
@@ -119,6 +150,31 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
             stringBuilder.append(" WHERE ");
             query.getWhere().setExpressionToQuery(stringBuilder, parameterFiller);
         }
+        if (!query.getOrderBy().isEmpty()){
+            stringBuilder.append(" ORDER BY ");
+            List<Order> orders = query.getOrderBy();
+            for (int i = 0; i < orders.size(); i++) {
+                //TODO - BAKALARKA - KONZULTACIA
+                // em.createQuery("SELECT s from Student s WHERE s.age >= :age ORDER BY s ASC") podciarkuje "s" ale nepadne to chybou,
+                // aj CriteriaAPI dotaz query.asc(root) je bez problemov
+                // je to validne?
+                // --
+                //  Root.setExpressionToQuery -> Student s
+                //  Root.getParentPath().setExpressionToQuery -> s
+                //  tu druhu variantu potrebujem este v select
+                //  je lepsie riesenie aby defaulte
+                //  Root.setExpressionToQuery -> s
+                //  a iba pri FROM sa pred Root.setExpressionToQuery dopise nazov triedy?
+                AbstractExpression expression = ((AbstractExpression)orders.get(i).getExpression());
+                if (expression instanceof PathImpl){
+                    ((AbstractPathExpression)((PathImpl) expression).getParentPath()).setExpressionToQuery(stringBuilder,parameterFiller);
+                } else {
+                    ((AbstractExpression)orders.get(i).getExpression()).setExpressionToQuery(stringBuilder,parameterFiller);
+                }
+                stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
+                if (orders.size() > 1 && (i+1) != orders.size()) stringBuilder.append(", ");
+            }
+        }
         return stringBuilder.toString();
     }
 
@@ -127,8 +183,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         if (selection instanceof AbstractAggregateFunctionExpression){
             expression = (AbstractAggregateFunctionExpression) selection;
         } else {
-            PathImpl pathSelection = (PathImpl) selection;
-            expression = (AbstractPathExpression) pathSelection.getParentPath();
+            expression = (AbstractPathExpression) ((PathImpl)selection).getParentPath();
         }
         expression.setExpressionToQuery(stringBuilder, parameterFiller);
     }

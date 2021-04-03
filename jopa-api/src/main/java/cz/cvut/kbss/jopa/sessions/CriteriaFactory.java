@@ -1,10 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.Expression;
-import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
-import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
+import cz.cvut.kbss.jopa.model.query.criteria.*;
 
 public interface CriteriaFactory extends PredicateFactory {
 
@@ -60,4 +56,18 @@ public interface CriteriaFactory extends PredicateFactory {
      * @throws IllegalArgumentException - if value is null
      */
     Expression<String> literal(String value, String languageTag) throws IllegalArgumentException;
+
+    /**
+     * Create an ordering by the ascending value of the expression.
+     * @param x expression used to define the ordering
+     * @return ascending ordering corresponding to the expression
+     */
+    Order asc(Expression<?> x);
+
+    /**
+     * Create an ordering by the descending value of the expression.
+     * @param x expression used to define the ordering
+     * @return descending ordering corresponding to the expression
+     */
+    Order desc(Expression<?> x);
 }
