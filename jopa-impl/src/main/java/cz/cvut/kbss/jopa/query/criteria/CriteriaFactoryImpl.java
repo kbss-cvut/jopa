@@ -109,57 +109,85 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Predicate notEqual(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y));
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
     }
 
     @Override
     public Predicate notEqual(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x, new ExpressionLiteralImpl<>(y)));
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl<>((AbstractExpression<?>)x, new ExpressionLiteralImpl<>(y)));
 
     }
 
+    @Override
+    public Predicate like(Expression<String> x, Expression<String> pattern) {
+        return new SimplePredicateImpl(new ExpressionLikeImpl<>((AbstractExpression<String>)x,(AbstractExpression<String>)pattern));
+    }
+
+    @Override
+    public Predicate like(Expression<String> x, String pattern) {
+        return new SimplePredicateImpl(new ExpressionLikeImpl<>((AbstractExpression<String>)x, new ExpressionLiteralImpl<>(pattern)));
+    }
+
+    @Override
+    public Predicate notLike(Expression<String> x, Expression<String> pattern) {
+        return new SimplePredicateImpl(new ExpressionNotLikeImpl<>((AbstractExpression<String>)x,(AbstractExpression<String>)pattern));
+    }
+
+    @Override
+    public Predicate notLike(Expression<String> x, String pattern) {
+        return new SimplePredicateImpl(new ExpressionNotLikeImpl<>((AbstractExpression<String>)x, new ExpressionLiteralImpl<>(pattern)));
+    }
+
+    //TODO - BAKALARKA - greaterThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Expression<? extends Y> y) {
 //        return new PredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
         return null;
     }
 
+    //TODO - BAKALARKA - greaterThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Y y) {
 //        return new PredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<?>)x,y));
         return null;
     }
 
+    //TODO - BAKALARKA - greaterOrEqual
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
 //        return new PredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
         return null;
     }
 
+    //TODO - BAKALARKA - greaterOrEqual
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterOrEqual(Expression<? extends Y> x, Y y) {
 //        return new PredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<?>)x,y));
         return null;
     }
 
+    //TODO - BAKALARKA - lessThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Expression<? extends Y> y) {
 //        return new PredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
         return null;
     }
 
+    //TODO - BAKALARKA - lessThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Y y) {
 //        return new PredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<?>)x,y));
         return null;
     }
 
+    //TODO - BAKALARKA - lessOrEqual
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
 //        return new PredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
         return null;
     }
 
+    //TODO - BAKALARKA - lessOrEqual
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Y y) {
 //        return new PredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<?>)x,y));

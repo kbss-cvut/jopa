@@ -260,6 +260,54 @@ public class CriteriaQueryTranslateQueryTest {
 //        assertEquals(5, holder.getParameters().size());
     }
 
+    @Test
+    public void testTranslateQueryLikeRestrictionStringBased() {
+        CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(f.like(root.getAttr("stringAttribute"),"pattern"));
+
+        final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
+        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute LIKE :generatedName0";
+        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+    }
+
+    @Test
+    public void testTranslateQueryNotLikeRestrictionStringBased() {
+        CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(f.notLike(root.getAttr("stringAttribute"),"pattern"));
+
+        final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
+        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT LIKE :generatedName0";
+        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+    }
+
+    @Test
+    public void testTranslateQueryLikeRestrictionMetamodelBased() {
+        CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(f.like(root.getAttr(OWLClassA_.stringAttribute),"pattern"));
+
+        final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
+        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute LIKE :generatedName0";
+        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+    }
+
+    @Test
+    public void testTranslateQueryNotLikeRestrictionMetamodelBased() {
+        CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(f.notLike(root.getAttr(OWLClassA_.stringAttribute),"pattern"));
+
+        final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
+        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT LIKE :generatedName0";
+        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+    }
+
     //    @Test
 //    public void testParseFindByMultipleAndAndQuery() {
 //        final String jpqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND p.gender = :gender AND p.age > :age";

@@ -136,4 +136,36 @@ public interface PredicateFactory {
      * @return lessThanOrEqual predicate
      */
     <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Y y);
+
+    /**
+     * Create a predicate for testing whether the expression satisfies the given pattern.
+     * @param x string expression
+     * @param pattern string expression
+     * @return like predicate
+     */
+    Predicate like(Expression<String> x, Expression<String> pattern);
+
+    /**
+     * Create a predicate for testing whether the expression satisfies the given pattern.
+     * @param x string expression
+     * @param pattern string
+     * @return like predicate
+     */
+    Predicate like(Expression<String> x, String pattern);
+
+    /**
+     * Create a predicate for testing whether the expression does not satisfy the given pattern.
+     * @param x string expression
+     * @param pattern string expression
+     * @return like predicate
+     */
+    Predicate notLike(Expression<String> x, Expression<String> pattern);
+
+    /**
+     * Create a predicate for testing whether the expression does not satisfy the given pattern.
+     * @param x string expression
+     * @param pattern string
+     * @return like predicate
+     */
+    Predicate notLike(Expression<String> x, String pattern);
 }
