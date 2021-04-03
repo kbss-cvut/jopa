@@ -143,13 +143,16 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
         if (query.isDistinct()) stringBuilder.append("DISTINCT ");
-        translateSelection(stringBuilder,parameterFiller,query.getSelection());
-        stringBuilder.append(" FROM ");
+        ((AbstractExpression)query.getSelection()).setExpressionToQuery(stringBuilder,parameterFiller);
+
+        stringBuilder.append(" FROM "+ query.getRoot().getJavaType().getSimpleName()+ " ");
         query.getRoot().setExpressionToQuery(stringBuilder, parameterFiller);
+
         if (query.getWhere() != null){
             stringBuilder.append(" WHERE ");
             query.getWhere().setExpressionToQuery(stringBuilder, parameterFiller);
         }
+
         if (!query.getOrderBy().isEmpty()){
             stringBuilder.append(" ORDER BY ");
             List<Order> orders = query.getOrderBy();
@@ -161,30 +164,23 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
                 // --
                 //  Root.setExpressionToQuery -> Student s
                 //  Root.getParentPath().setExpressionToQuery -> s
-                //  tu druhu variantu potrebujem este v select
-                //  je lepsie riesenie aby defaulte
+                //  bol problem s tym, ze prvu variantu potrebujem iba v FROM
+                //  prerobil som tak, ze stale
                 //  Root.setExpressionToQuery -> s
-                //  a iba pri FROM sa pred Root.setExpressionToQuery dopise nazov triedy?
-                AbstractExpression expression = ((AbstractExpression)orders.get(i).getExpression());
-                if (expression instanceof PathImpl){
-                    ((AbstractPathExpression)((PathImpl) expression).getParentPath()).setExpressionToQuery(stringBuilder,parameterFiller);
-                } else {
-                    ((AbstractExpression)orders.get(i).getExpression()).setExpressionToQuery(stringBuilder,parameterFiller);
-                }
+                //  a ked tvorim FROM tak este pre tym robim Root.getJavaClass.getSingleName
+
+//                AbstractExpression expression = ((AbstractExpression)orders.get(i).getExpression());
+//                if (expression instanceof PathImpl){
+//                    ((AbstractPathExpression)((PathImpl) expression).getParentPath()).setExpressionToQuery(stringBuilder,parameterFiller);
+//                } else {
+//                    ((AbstractExpression)orders.get(i).getExpression()).setExpressionToQuery(stringBuilder,parameterFiller);
+//                }
+
+                ((AbstractExpression)orders.get(i).getExpression()).setExpressionToQuery(stringBuilder,parameterFiller);
                 stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
                 if (orders.size() > 1 && (i+1) != orders.size()) stringBuilder.append(", ");
             }
         }
         return stringBuilder.toString();
-    }
-
-    private void translateSelection(StringBuilder stringBuilder, CriteriaParameterFiller parameterFiller, SelectionImpl<? extends T> selection) {
-        AbstractExpression expression;
-        if (selection instanceof AbstractAggregateFunctionExpression){
-            expression = (AbstractAggregateFunctionExpression) selection;
-        } else {
-            expression = (AbstractPathExpression) ((PathImpl)selection).getParentPath();
-        }
-        expression.setExpressionToQuery(stringBuilder, parameterFiller);
     }
 }
