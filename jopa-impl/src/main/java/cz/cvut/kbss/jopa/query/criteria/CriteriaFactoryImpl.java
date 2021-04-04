@@ -148,6 +148,12 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new SimplePredicateImpl(new ExpressionNotLikeImpl<>((AbstractExpression<String>)x, new ExpressionLiteralImpl<>(pattern)));
     }
 
+    @Override
+    public Predicate not(Expression<Boolean> restriction) {
+        return wrapExpressionToPredicateWithRepair(restriction).not();
+    }
+
+
     //TODO - BAKALARKA - greaterThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Expression<? extends Y> y) {
@@ -202,6 +208,26 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     public <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Y y) {
 //        return new PredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<?>)x,y));
         return null;
+    }
+
+
+
+    /**
+     * Method wraps given boolean expression to Predicate and if path expression occur, it wrap it to ExpressionEqualsImpl before.
+     * For example:
+     * Expression<Boolean> expression = factory.get("attributeName");
+     * Looks like boolean expression but in fact it is not boolean expression, so we need to fix this.
+     * @param expression - boolean or path expression
+     * @return Expression wraped in Predicate
+     */
+    public Predicate wrapExpressionToPredicateWithRepair(Expression<Boolean> expression){
+        if (expression instanceof Predicate){
+            return (Predicate)expression;
+        } else if (expression instanceof AbstractPathExpression){
+            return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<Boolean>) expression,null));
+        } else {
+            return new SimplePredicateImpl(expression);
+        }
     }
 
 }

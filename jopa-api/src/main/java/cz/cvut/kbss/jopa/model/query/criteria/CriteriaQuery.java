@@ -124,4 +124,18 @@ public interface CriteriaQuery<T>{
      * @return the list of ordering expressions
      */
     List<Order> getOrderList();
+
+    /**
+     * Specify a restriction over the groups of the query. Replaces the previous having restriction(s), if any.
+     * @param restriction a simple or compound boolean expression
+     * @return the modified query
+     */
+    CriteriaQuery<T> having(Expression<Boolean> restriction);
+
+    /**
+     * Specify restrictions over the groups of the query according the conjunction of the specified restriction predicates. Replaces the previously added having restriction(s), if any. If no restrictions are specified, any previously added restrictions are simply removed.
+     * @param restrictions zero or more restriction predicates
+     * @return the modified query
+     */
+    CriteriaQuery<T> having(Predicate... restrictions);
 }

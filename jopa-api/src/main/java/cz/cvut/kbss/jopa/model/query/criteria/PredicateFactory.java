@@ -168,4 +168,11 @@ public interface PredicateFactory {
      * @return like predicate
      */
     Predicate notLike(Expression<String> x, String pattern);
+
+    /**
+     * Create a negation of the given restriction.
+     * @param restriction restriction expression
+     * @return not predicate
+     */
+    Predicate not(Expression<Boolean> restriction);
 }
