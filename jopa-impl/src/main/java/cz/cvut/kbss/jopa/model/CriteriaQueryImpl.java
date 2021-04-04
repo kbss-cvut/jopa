@@ -205,6 +205,15 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
                 stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
                 if (orders.size() > 1 && (i+1) != orders.size()) stringBuilder.append(", ");
             }
+
+            //TODO - BAKALARKA - KONZULTACIA
+            // je potrebne pred generovanim HAVING kontrolovat napr. ci obsahuje GROUP BY?
+            // cital som ze SQL dotaz kde je HAVING ale nie je GROUP BY je validny
+            // ale CriteriaAPI od Hibernate pri vynechani GROUP BY vynechava aj HAVING
+            if (query.getHaving() != null && !getOrderList().isEmpty()){
+                stringBuilder.append(" HAVING ");
+                ((AbstractPredicate)query.getHaving()).setExpressionToQuery(stringBuilder,parameterFiller);
+            }
         }
         return stringBuilder.toString();
     }
