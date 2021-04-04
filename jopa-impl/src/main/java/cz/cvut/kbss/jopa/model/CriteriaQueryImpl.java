@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-//TODO PRO - CriteriaQueryImpl methods implementation
 public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(CriteriaQuery.class);
@@ -125,10 +124,6 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return query.getOrderBy();
     }
 
-    //TODO - BAKALARKA - KONZULTACIA
-    // je potrebne pred generovanim HAVING kontrolovat napr. ci obsahuje GROUP BY?
-    // cital som ze SQL dotaz kde je HAVING ale nie je GROUP BY je validny
-    // ale CriteriaAPI od Hibernate pri vynechani GROUP BY vynechava aj HAVING
     @Override
     public CriteriaQuery<T> groupBy(Expression<?>... grouping) {
         if (grouping != null && grouping.length > 0) query.setGroupBy(Arrays.asList(grouping));

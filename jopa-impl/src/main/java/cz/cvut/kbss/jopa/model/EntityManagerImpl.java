@@ -445,7 +445,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         return q;
     }
 
-    //TODO PRO - test implementation
     @Override
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery, Class<T> resultClass) {
         ensureOpen();
@@ -528,7 +527,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         return getCurrentPersistenceContext().getContexts();
     }
 
-    // TODO PRO - getCriteriaFactory - FINISHED
     @Override
     public CriteriaFactory getCriteriaFactory() {
         return getCurrentPersistenceContext().criteriaFactory();
