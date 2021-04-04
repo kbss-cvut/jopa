@@ -1,45 +1,61 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.query.Parameter;
-import cz.cvut.kbss.jopa.model.query.criteria.Order;
-import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
-
-import java.util.Collections;
+import cz.cvut.kbss.jopa.model.query.criteria.*;
 import java.util.List;
-import java.util.Set;
 
 public class CriteriaQueryHolder<T> {
 
     protected final Class<T> resultType;
-    protected SelectionImpl<? extends T> selection;
+    protected Selection<? extends T> selection;
     private boolean distinct;
-    protected AbstractExpression<Boolean> where;
+    protected Root<?> root;
+    protected Predicate where;
     protected List<Order> orderBy;
-    protected RootImpl<?> root;
+    protected List<Expression<?>> groupBy;
+    protected Predicate having;
 
     public CriteriaQueryHolder(Class<T> resultType) {
         this.resultType = resultType;
         this.distinct = false;
     }
 
-    public RootImpl<?> getRoot() {
+    public Class<T> getResultType() {
+        return resultType;
+    }
+
+    public Predicate getHaving() {
+        return having;
+    }
+
+    public void setHaving(Predicate having) {
+        this.having = having;
+    }
+
+    public Root<?> getRoot() {
         return root;
     }
 
-    public void setRoot(RootImpl<?> root) {
+    public void setRoot(Root<?> root) {
         this.root = root;
     }
 
-    public AbstractExpression<Boolean> getWhere() {
+    public Predicate getWhere() {
         return where;
     }
 
-    public void setWhere(AbstractExpression<Boolean> where) {
+    public void setWhere(Predicate where) {
         this.where = where;
     }
 
+    public List<Expression<?>> getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(List<Expression<?>> groupBy) {
+        this.groupBy = groupBy;
+    }
+
     public List<Order> getOrderBy() {
-        if (orderBy == null) return Collections.emptyList();
         return orderBy;
     }
 
@@ -47,11 +63,11 @@ public class CriteriaQueryHolder<T> {
         this.orderBy = orderBy;
     }
 
-    public SelectionImpl<? extends T> getSelection() {
+    public Selection<? extends T> getSelection() {
         return selection;
     }
 
-    public void setSelection(SelectionImpl<? extends T> selection) {
+    public void setSelection(Selection<? extends T> selection) {
         this.selection = selection;
     }
 
@@ -63,39 +79,4 @@ public class CriteriaQueryHolder<T> {
         this.distinct = distinct;
     }
 
-    public Set<Parameter<?>> getParameters() {
-        return null;
-    }
-
-    public Parameter<?> getParameter(String name) {
-        return null;
-    }
-
-    public Parameter<?> getParameter(int position) {
-        return null;
-    }
-
-    public Object getParameterValue(Parameter<?> parameter) {
-        return null;
-    }
-
-    public <T> void setParameter(Parameter<T> parameter, Object value) {
-
-    }
-
-    public <T> void setParameter(Parameter<T> parameter, String value, String language) {
-
-    }
-
-    public <T> void setUntypedParameter(Parameter<T> parameter, Object value) {
-
-    }
-
-    public void clearParameter(Parameter<?> parameter) {
-
-    }
-
-    public void clearParameters() {
-
-    }
 }

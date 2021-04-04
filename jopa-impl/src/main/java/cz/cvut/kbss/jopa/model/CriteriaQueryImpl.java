@@ -40,10 +40,10 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     protected final CriteriaQueryHolder<T> query;
     private final Metamodel metamodel;
-    private final CriteriaFactory factory;
+    private final CriteriaFactoryImpl factory;
 
 
-    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel, CriteriaFactory factory) {
+    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel, CriteriaFactoryImpl factory) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
         this.metamodel = metamodel;
         this.factory = factory;
@@ -62,32 +62,26 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     }
 
     @Override
-    public CriteriaQuery<T> select(Selection<? extends T> selection){
+    public CriteriaQuery<T> select(Selection<? extends T> selection) {
         query.setSelection((SelectionImpl<? extends T>) selection);
         return this;
     }
 
-
-    //TODO - BAKALARKA - KONZULTACIA
-    // automaticky kazdy Expression ktory nie je boolean sa pretvori na
-    // equals(expression, null)?
-    // ake to ma realne vyuzitie?
     @Override
     public CriteriaQuery<T> where(Expression<Boolean> expression) {
-//        AbstractExpression<Boolean> abstractExpression = (AbstractExpression<Boolean>) expression;
-        query.setWhere((AbstractExpression<Boolean>) expression);
+        query.setWhere(factory.wrapExpressionToPredicateWithRepair(expression));
         return this;
     }
 
     @Override
     public CriteriaQuery<T> where(Predicate... predicates) {
-        query.setWhere((AbstractExpression<Boolean>) factory.and(predicates));
+        query.setWhere(factory.and(predicates));
         return this;
     }
 
     @Override
     public Class<T> getResultType() {
-        return null;
+        return query.getResultType();
     }
 
     @Override
@@ -108,54 +102,85 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public Predicate getRestriction() {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<T> groupBy(Expression<?>... grouping) {
-        return null;
-    }
-
-    @Override
-    public CriteriaQuery<T> groupBy(List<Expression<?>> grouping) {
-        return null;
+        return query.getWhere();
     }
 
     @Override
     public CriteriaQuery<T> orderBy(List<Order> o) {
-        query.setOrderBy(o);
+        if (!o.isEmpty()) query.setOrderBy(o);
+        else query.setOrderBy(null);
         return this;
     }
 
     @Override
     public CriteriaQuery<T> orderBy(Order... o) {
-        if (o != null) query.setOrderBy(Arrays.asList(o));
-        else query.setOrderBy(Collections.emptyList());
+        if (o != null && o.length > 0) query.setOrderBy(Arrays.asList(o));
+        else query.setOrderBy(null);
         return this;
     }
 
     @Override
     public List<Order> getOrderList() {
+        if (query.getOrderBy() == null) return Collections.emptyList();
         return query.getOrderBy();
+    }
+
+    //TODO - BAKALARKA - KONZULTACIA
+    // je potrebne pred generovanim HAVING kontrolovat napr. ci obsahuje GROUP BY?
+    // cital som ze SQL dotaz kde je HAVING ale nie je GROUP BY je validny
+    // ale CriteriaAPI od Hibernate pri vynechani GROUP BY vynechava aj HAVING
+    @Override
+    public CriteriaQuery<T> groupBy(Expression<?>... grouping) {
+        if (grouping != null && grouping.length > 0) query.setGroupBy(Arrays.asList(grouping));
+        else query.setGroupBy(null);
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> groupBy(List<Expression<?>> grouping) {
+        if (!grouping.isEmpty()) query.setGroupBy(grouping);
+        else query.setGroupBy(null);
+        return this;
+    }
+
+    //TODO - BAKALARKA - KONZULTACIA
+    // problem s vyrazom, ktory nie je Booleanovsky ale tvary sa tak
+    // Expression<Boolean> expBool = root.get("username");
+    // riesenie?
+    // pri kazdej metode, ktorá ma akceptovat Expression<Boolean> preverím
+    // if (restriction instanceof AbstractPathExpression){
+    //      new ExpressionEquals(restriction, null)
+    // }
+    // ??
+    @Override
+    public CriteriaQuery<T> having(Expression<Boolean> restriction) {
+        factory.and(factory.wrapExpressionToPredicateWithRepair(restriction));
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> having(Predicate... restrictions) {
+        factory.and(restrictions);
+        return this;
     }
 
     public String translateQuery(CriteriaParameterFiller parameterFiller){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
-        if (query.isDistinct()) stringBuilder.append("DISTINCT ");
+        if (isDistinct()) stringBuilder.append("DISTINCT ");
         ((AbstractExpression)query.getSelection()).setExpressionToQuery(stringBuilder,parameterFiller);
 
-        stringBuilder.append(" FROM "+ query.getRoot().getJavaType().getSimpleName()+ " ");
-        query.getRoot().setExpressionToQuery(stringBuilder, parameterFiller);
+        stringBuilder.append(" FROM "+ ((RootImpl)query.getRoot()).getJavaType().getSimpleName()+ " ");
+        ((RootImpl)query.getRoot()).setExpressionToQuery(stringBuilder, parameterFiller);
 
         if (query.getWhere() != null){
             stringBuilder.append(" WHERE ");
-            query.getWhere().setExpressionToQuery(stringBuilder, parameterFiller);
+            ((AbstractPredicate)query.getWhere()).setExpressionToQuery(stringBuilder, parameterFiller);
         }
 
-        if (!query.getOrderBy().isEmpty()){
+        if (!getOrderList().isEmpty()){
             stringBuilder.append(" ORDER BY ");
-            List<Order> orders = query.getOrderBy();
+            List<Order> orders = getOrderList();
             for (int i = 0; i < orders.size(); i++) {
                 //TODO - BAKALARKA - KONZULTACIA
                 // em.createQuery("SELECT s from Student s WHERE s.age >= :age ORDER BY s ASC") podciarkuje "s" ale nepadne to chybou,
