@@ -138,24 +138,15 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return this;
     }
 
-    //TODO - BAKALARKA - KONZULTACIA
-    // problem s vyrazom, ktory nie je Booleanovsky ale tvary sa tak
-    // Expression<Boolean> expBool = root.get("username");
-    // riesenie?
-    // pri kazdej metode, ktorá ma akceptovat Expression<Boolean> preverím
-    // if (restriction instanceof AbstractPathExpression){
-    //      new ExpressionEquals(restriction, null)
-    // }
-    // ??
     @Override
     public CriteriaQuery<T> having(Expression<Boolean> restriction) {
-        factory.and(factory.wrapExpressionToPredicateWithRepair(restriction));
+        query.setHaving(factory.and(factory.wrapExpressionToPredicateWithRepair(restriction)));
         return this;
     }
 
     @Override
     public CriteriaQuery<T> having(Predicate... restrictions) {
-        factory.and(restrictions);
+        query.setHaving(factory.and(restrictions));
         return this;
     }
 
@@ -173,41 +164,25 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
             ((AbstractPredicate)query.getWhere()).setExpressionToQuery(stringBuilder, parameterFiller);
         }
 
+        if (query.getGroupBy() != null && !query.getGroupBy().isEmpty()){
+            stringBuilder.append(" GROUP BY ");
+            for (Expression groupBy:query.getGroupBy()) {
+                ((AbstractExpression)groupBy).setExpressionToQuery(stringBuilder,parameterFiller);
+            }
+        }
+
+        if (query.getHaving() != null){
+            stringBuilder.append(" HAVING ");
+            ((AbstractPredicate)query.getHaving()).setExpressionToQuery(stringBuilder,parameterFiller);
+        }
+
         if (!getOrderList().isEmpty()){
             stringBuilder.append(" ORDER BY ");
             List<Order> orders = getOrderList();
             for (int i = 0; i < orders.size(); i++) {
-                //TODO - BAKALARKA - KONZULTACIA
-                // em.createQuery("SELECT s from Student s WHERE s.age >= :age ORDER BY s ASC") podciarkuje "s" ale nepadne to chybou,
-                // aj CriteriaAPI dotaz query.asc(root) je bez problemov
-                // je to validne?
-                // --
-                //  Root.setExpressionToQuery -> Student s
-                //  Root.getParentPath().setExpressionToQuery -> s
-                //  bol problem s tym, ze prvu variantu potrebujem iba v FROM
-                //  prerobil som tak, ze stale
-                //  Root.setExpressionToQuery -> s
-                //  a ked tvorim FROM tak este pre tym robim Root.getJavaClass.getSingleName
-
-//                AbstractExpression expression = ((AbstractExpression)orders.get(i).getExpression());
-//                if (expression instanceof PathImpl){
-//                    ((AbstractPathExpression)((PathImpl) expression).getParentPath()).setExpressionToQuery(stringBuilder,parameterFiller);
-//                } else {
-//                    ((AbstractExpression)orders.get(i).getExpression()).setExpressionToQuery(stringBuilder,parameterFiller);
-//                }
-
                 ((AbstractExpression)orders.get(i).getExpression()).setExpressionToQuery(stringBuilder,parameterFiller);
                 stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
                 if (orders.size() > 1 && (i+1) != orders.size()) stringBuilder.append(", ");
-            }
-
-            //TODO - BAKALARKA - KONZULTACIA
-            // je potrebne pred generovanim HAVING kontrolovat napr. ci obsahuje GROUP BY?
-            // cital som ze SQL dotaz kde je HAVING ale nie je GROUP BY je validny
-            // ale CriteriaAPI od Hibernate pri vynechani GROUP BY vynechava aj HAVING
-            if (query.getHaving() != null && !getOrderList().isEmpty()){
-                stringBuilder.append(" HAVING ");
-                ((AbstractPredicate)query.getHaving()).setExpressionToQuery(stringBuilder,parameterFiller);
             }
         }
         return stringBuilder.toString();

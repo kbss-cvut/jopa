@@ -27,6 +27,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel(), this);
     }
 
+    //TODO - BAKALARKA - prerobit na integer
     @Override
     public Expression<Long> count(Expression<?> x) {
         if (x == null) throw new IllegalArgumentException("Aggregate function cannot be applied to null expression.");

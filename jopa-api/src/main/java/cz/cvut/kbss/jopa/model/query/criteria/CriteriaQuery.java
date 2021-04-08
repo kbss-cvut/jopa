@@ -116,7 +116,7 @@ public interface CriteriaQuery<T>{
     CriteriaQuery<T> orderBy(Order... o);
 
 
-    //TODO - BAKALARKA - KONZULTACIA
+    //TODO - BAKALARKA - KONZULTACIA - bolo by to fajn
     // Modifications to the list do not affect the query.
     // je potrebne vraciat takto? Collections.unmodifiableList(list);
     /**
