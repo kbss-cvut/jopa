@@ -48,7 +48,7 @@ public class CriteriaQueryTranslateQueryTest {
     private CriteriaParameterFiller criteriaParameterFiller;
 
     @BeforeAll
-    static void init(){
+    static void init() {
         f = mock(CriteriaFactoryImpl.class);
     }
 
