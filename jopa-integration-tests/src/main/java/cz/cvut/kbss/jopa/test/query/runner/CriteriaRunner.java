@@ -1,10 +1,7 @@
 package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.model.query.criteria.Root;
-import cz.cvut.kbss.jopa.model.query.criteria.Selection;
+import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -185,5 +182,24 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
         assertEquals(expected.getUri(), result.getUri());
         assertEquals(expected.getOwlClassA().getUri(), result.getOwlClassA().getUri());
+    }
+
+    @Test
+    public void testFindByParameterExpression() {
+        final OWLClassA expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
+        CriteriaQuery<OWLClassA> query = factory.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        final ParameterExpression<String> strAtt = factory.parameter(String.class, "pOne");
+        Predicate restriction = factory.equal(root.getAttr(OWLClassA_.stringAttribute), strAtt);
+        query.select(root).where(restriction);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        tq.setParameter(strAtt, expected.getStringAttribute(), "en");
+
+        final OWLClassA result = tq.getSingleResult();
+
+        assertEquals(expected.getUri(), result.getUri());
+        assertEquals(expected.getStringAttribute(), result.getStringAttribute());
+        assertEquals(expected.getTypes(), result.getTypes());
     }
 }
