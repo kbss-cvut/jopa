@@ -40,8 +40,6 @@ import static org.mockito.Mockito.when;
 
 public class CriteriaQueryTranslateQueryTest {
 
-    @Mock
-    private MetamodelImpl metamodel;
 
     @Mock
     private UnitOfWorkImpl uowMock;
@@ -77,8 +75,7 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(root);
 
-        final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
     }
@@ -89,8 +86,7 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(root).distinct(true);
 
-        final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT DISTINCT owlclassa FROM OWLClassA owlclassa";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
     }
@@ -101,8 +97,7 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(f.count(root));
 
-        final CriteriaQueryImpl<Long> criteriaQuery = (CriteriaQueryImpl<Long>) query;
-        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<Long>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT COUNT(owlclassa) FROM OWLClassA owlclassa";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
     }
@@ -113,8 +108,7 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(f.count(root)).distinct(true);
 
-        final CriteriaQueryImpl<Long> criteriaQuery = (CriteriaQueryImpl<Long>) query;
-        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<Long>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT DISTINCT COUNT(owlclassa) FROM OWLClassA owlclassa";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
     }
@@ -125,35 +119,32 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(root).orderBy(f.desc(root));
 
-        final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa ORDER BY owlclassa DESC";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
     }
 
 
     @Nested
-    class StringBasedPropertyQueryTests{
+    class StringBasedPropertyQueryTests {
         @Test
         public void testTranslateQuerySelectProperty() {
             CriteriaQuery<String> query = f.createQuery(String.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root.getAttr("stringAttribute"));
 
-            final CriteriaQueryImpl<String> criteriaQuery = (CriteriaQueryImpl<String>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa.stringAttribute FROM OWLClassA owlclassa";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
         @Test
         public void testTranslateQuerySelectPropertyPath() {
-            CriteriaQuery<OWLClassD> query = f.createQuery(OWLClassD.class);
+            CriteriaQuery<String> query = f.createQuery(String.class);
             Root<OWLClassD> root = query.from(OWLClassD.class);
             query.select(root.getAttr("owlClassA").getAttr("stringAttribute"));
 
-            final CriteriaQueryImpl<OWLClassD> criteriaQuery = (CriteriaQueryImpl<OWLClassD>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassd.owlClassA.stringAttribute FROM OWLClassD owlclassd";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
@@ -162,19 +153,18 @@ public class CriteriaQueryTranslateQueryTest {
         public void testTranslateQueryOneRestriction() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.equal(root.getAttr("stringAttribute"),"value"));
+            query.select(root).where(f.equal(root.getAttr("stringAttribute"), "value"));
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
         @Test
-        public void testTranslateQueryOneNegatedRestriction() {
+        public void testTranslateQueryNegatedRestriction() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.equal(root.getAttr("stringAttribute"),"value").not());
+            query.select(root).where(f.equal(root.getAttr("stringAttribute"), "value").not());
 
             final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
             final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
@@ -186,72 +176,96 @@ public class CriteriaQueryTranslateQueryTest {
         public void testTranslateQueryMultipleOrRestrictions() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            Predicate restrictions = f.or(f.equal(root.getAttr("stringAttribute"),"value"), f.equal(root.getAttr("stringAttribute"),"value"), f.equal(root.getAttr("stringAttribute"),"value"));
+            Predicate restrictions = f.or(
+                    f.equal(root.getAttr("stringAttribute"), "valueOne"),
+                    f.equal(root.getAttr("stringAttribute"), "valueTwo"),
+                    f.equal(root.getAttr("stringAttribute"), "valueTree")
+            );
             query.select(root).where(restrictions);
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0 OR owlclassa.stringAttribute = :generatedName1 OR owlclassa.stringAttribute = :generatedName2";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
         @Test
-        public void testTranslateQueryMultipleOrRestrictionsNegated() {
+        public void testTranslateQueryMultipleAndRestrictions() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            Predicate restrictions = f.and(
+                    f.equal(root.getAttr("intAttribute"), 0),
+                    f.equal(root.getAttr("doubleAttribute"), 1.1),
+                    f.equal(root.getAttr("booleanAttribute"), true)
+            );
+            query.select(root).where(restrictions);
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute = :generatedName0 AND owlclassm.doubleAttribute = :generatedName1 AND owlclassm.booleanAttribute = :generatedName2";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+
+        @Test
+        public void testTranslateQueryMultipleOrAndRestrictions() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.or(
+                    f.and(
+                            f.equal(root.getAttr("doubleAttribute"), 1.1),
+                            f.equal(root.getAttr("intAttribute"), 1)
+                    ),
+                    f.and(
+                            f.equal(root.getAttr("doubleAttribute"), 2.2),
+                            f.equal(root.getAttr("intAttribute"), 2)
+                    ))
+            );
+
+            final CriteriaQueryImpl<OWLClassM> criteriaQuery = (CriteriaQueryImpl<OWLClassM>) query;
+            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute = :generatedName0 AND owlclassm.intAttribute = :generatedName1) OR (owlclassm.doubleAttribute = :generatedName2 AND owlclassm.intAttribute = :generatedName3)";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryNegatedMultipleRestrictionsByNotMethod() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            Predicate restrictions = f.or(f.equal(root.getAttr("stringAttribute"),"value"), f.equal(root.getAttr("stringAttribute"),"value"), f.equal(root.getAttr("stringAttribute"),"value"));
+            Predicate restrictions = f.or(
+                    f.equal(root.getAttr("stringAttribute"), "value"),
+                    f.equal(root.getAttr("stringAttribute"), "value"),
+                    f.equal(root.getAttr("stringAttribute"), "value")
+            );
             query.select(root).where(restrictions.not());
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0 AND owlclassa.stringAttribute <> :generatedName1 AND owlclassa.stringAttribute <> :generatedName2";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
-        //TODO - BAKALARKA - KONZULTACIA
-        // nemozem pristupovat ku atributom OwlClassM
         @Test
-        public void testTranslateQueryMultipleAndRestrictions() {
-
-//        CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
-//        Root<OWLClassM> root = query.from(OWLClassM.class);
-//        Predicate predicate1 = f.equal(root.getAttr("intAttribute"),0);
-//        Predicate predicate2 = f.equal(root.getAttr("booleanAttribute"),true);
-//        query.select(root).where(f.equal(root.getAttr("intAttribute"),0));
-
-//        final CriteriaQueryImpl<OWLClassM> criteriaQuery = (CriteriaQueryImpl<OWLClassM>) query;
-//        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-//        final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
-//        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
-            fail();
-        }
-
-        //TODO - BAKALARKA - KONZULTACIA
-        // dotaz sam o sebe nedava zmysel pretoze su podmienky totozne, chcel som vyuzit OwlClassM ale hadze to nejaky error
-        @Test
-        public void testTranslateQueryMultipleOrAndRestrictions() {
-
+        public void testTranslateQueryNegatedMultipleRestrictionsByFactory() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            Predicate predicateOr1 = f.or(f.equal(root.getAttr("stringAttribute"),"value"),f.equal(root.getAttr("stringAttribute"),"value"));
-            Predicate predicateOr2 = f.or(f.equal(root.getAttr("stringAttribute"),"value"),f.equal(root.getAttr("stringAttribute"),"value"));
-            Predicate predicateAnd = f.and(predicateOr1,predicateOr2);
-            query.select(root).where(predicateAnd.not());
+            Predicate restrictions = f.or(
+                    f.equal(root.getAttr("stringAttribute"), "value"),
+                    f.equal(root.getAttr("stringAttribute"), "value"),
+                    f.equal(root.getAttr("stringAttribute"), "value")
+            );
+            query.select(root).where(f.not(restrictions));
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE (owlclassa.stringAttribute <> :generatedName0 AND owlclassa.stringAttribute <> :generatedName1) OR (owlclassa.stringAttribute <> :generatedName2 AND owlclassa.stringAttribute <> :generatedName3)";
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0 AND owlclassa.stringAttribute <> :generatedName1 AND owlclassa.stringAttribute <> :generatedName2";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
+
 
         @Test
         public void testTranslateQueryLikeRestriction() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.like(root.getAttr("stringAttribute"),"pattern"));
+            query.select(root).where(f.like(root.getAttr("stringAttribute"), "pattern"));
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute LIKE :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
@@ -260,10 +274,9 @@ public class CriteriaQueryTranslateQueryTest {
         public void testTranslateQueryNotLikeRestriction() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.notLike(root.getAttr("stringAttribute"),"pattern"));
+            query.select(root).where(f.notLike(root.getAttr("stringAttribute"), "pattern"));
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT LIKE :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
@@ -274,109 +287,51 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).orderBy(f.desc(root.getAttr("stringAttribute")));
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa ORDER BY owlclassa.stringAttribute DESC";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
-        //TODO - BAKALARKA - KONZULTACIA
-        // trieda s dvoma atributmi alebo moze byt na testovanie pouzity "nespravny" dotaz s tym istym atributom?
         @Test
         public void testTranslateQueryOrderByTwoPropertiesAscAndDesc() {
-            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
-            Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).orderBy(f.asc(root.getAttr("stringAttribute")),f.desc(root.getAttr("stringAttribute")));
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).orderBy(
+                    f.asc(root.getAttr("intAttribute")),
+                    f.desc(root.getAttr("doubleAttribute"))
+            );
 
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa ORDER BY owlclassa.stringAttribute ASC, owlclassa.stringAttribute DESC";
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm ORDER BY owlclassm.intAttribute ASC, owlclassm.doubleAttribute DESC";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
     }
 
     @Nested
-    class MetamodelBasedPropertyQueryTests{
+    class MetamodelBasedPropertyQueryTests {
         @Test
         public void testTranslateQuerySelectProperty() {
             CriteriaQuery<String> query = f.createQuery(String.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root.getAttr(OWLClassA_.stringAttribute));
 
-            final CriteriaQueryImpl<String> criteriaQuery = (CriteriaQueryImpl<String>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa.stringAttribute FROM OWLClassA owlclassa";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
-        //TODO - BAKALARKA - KONZULATACIA
-        // ako vytvoriť metamodel pre OWLClassD aby bolo možne pristupovat ku OWLClassD_.owlClassA
-        // je následne takto tranzitivne pristupovat pomocou metamodelu? nepodarilo sa mi nájsť takéto použitie
-        // root.getAttr(OWLClassD_.owlClassA).getAttr(OWLClassA_.stringAttribute)
         @Test
         public void testTranslateQuerySelectPropertyPath() {
-//        CriteriaQuery<OWLClassD> query = f.createQuery(OWLClassD.class);
-//        Root<OWLClassD> root = query.from(OWLClassD.class);
-//        query.select(root.getAttr(OWLClassD_.owlClassA).getAttr(OWLClassA_.stringAttribute));
+        CriteriaQuery<String> query = f.createQuery(String.class);
+        Root<OWLClassD> root = query.from(OWLClassD.class);
+        query.select(root.getAttr(OWLClassD_.owlClassA).getAttr(OWLClassA_.stringAttribute));
 
-//        final CriteriaQueryImpl<OWLClassD> criteriaQuery = (CriteriaQueryImpl<OWLClassD>) query;
-//        final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-//        final String expectedJpqlQuery = "SELECT owlclassd.owlClassA.stringAttribute FROM OWLClassD owlclassd";
-//        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
-            fail();
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
+        final String expectedJpqlQuery = "SELECT owlclassd.owlClassA.stringAttribute FROM OWLClassD owlclassd";
+        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
-        //TODO - BAKALARKA - KONZULATACIA
-        // treba nejako mockovat metamodel?
-        @Test
-        public void testTranslateQueryOneRestriction() {
-            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
-            Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.equal(root.getAttr(OWLClassA_.stringAttribute),"value"));
-
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
-            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
-        }
-
-        @Test
-        public void testTranslateQueryOneNegatedRestriction() {
-            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
-            Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.equal(root.getAttr(OWLClassA_.stringAttribute),"value").not());
-
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0";
-            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
-        }
-
-        @Test
-        public void testTranslateQueryLikeRestriction() {
-            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
-            Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.like(root.getAttr(OWLClassA_.stringAttribute),"pattern"));
-
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute LIKE :generatedName0";
-            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
-        }
-
-        @Test
-        public void testTranslateQueryNotLikeRestriction() {
-            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
-            Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(f.notLike(root.getAttr(OWLClassA_.stringAttribute),"pattern"));
-
-            final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
-            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT LIKE :generatedName0";
-            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
-        }
     }
-
 
 
     //    @Test
