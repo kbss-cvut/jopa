@@ -576,6 +576,7 @@ public class MetamodelFactory {
         when(booleanAtt.hasLanguage()).thenReturn(true);
         when(booleanAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
+        when(etMock.getAttribute(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
 
         when(intAtt.getJavaField()).thenReturn(OWLClassM.getIntAttributeField());
         when(intAtt.getName()).thenReturn(OWLClassM.getIntAttributeField().getName());
@@ -589,6 +590,8 @@ public class MetamodelFactory {
         when(intAtt.hasLanguage()).thenReturn(true);
         when(intAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
+        when(etMock.getAttribute(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
+
 
         when(longAtt.getJavaField()).thenReturn(OWLClassM.getLongAttributeField());
         when(longAtt.getName()).thenReturn(OWLClassM.getLongAttributeField().getName());
@@ -603,6 +606,7 @@ public class MetamodelFactory {
         when(longAtt.hasLanguage()).thenReturn(true);
         when(longAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
+        when(etMock.getAttribute(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
 
         when(doubleAtt.getJavaField()).thenReturn(OWLClassM.getDoubleAttributeField());
         when(doubleAtt.getName()).thenReturn(OWLClassM.getDoubleAttributeField().getName());
@@ -616,6 +620,7 @@ public class MetamodelFactory {
         when(doubleAtt.hasLanguage()).thenReturn(true);
         when(doubleAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
+        when(etMock.getAttribute(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
 
         when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
         when(dateAtt.getName()).thenReturn(OWLClassM.getDateAttributeField().getName());
@@ -628,6 +633,7 @@ public class MetamodelFactory {
         when(dateAtt.hasLanguage()).thenReturn(true);
         when(dateAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
+        when(etMock.getAttribute(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
 
         when(enumAtt.getJavaField()).thenReturn(OWLClassM.getEnumAttributeField());
         when(enumAtt.getName()).thenReturn(OWLClassM.getEnumAttributeField().getName());
@@ -641,6 +647,7 @@ public class MetamodelFactory {
         when(enumAtt.hasLanguage()).thenReturn(true);
         when(enumAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
+        when(etMock.getAttribute(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
 
         when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
         when(intSetAtt.getName()).thenReturn(OWLClassM.getIntegerSetField().getName());

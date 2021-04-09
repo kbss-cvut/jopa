@@ -202,4 +202,23 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         assertEquals(expected.getStringAttribute(), result.getStringAttribute());
         assertEquals(expected.getTypes(), result.getTypes());
     }
+
+    @Test
+    public void testFindByParameterExpressionUnnamed() {
+        final OWLClassA expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
+        CriteriaQuery<OWLClassA> query = factory.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        final ParameterExpression<String> strAtt = factory.parameter(String.class);
+        Predicate restriction = factory.equal(root.getAttr(OWLClassA_.stringAttribute), strAtt);
+        query.select(root).where(restriction);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        tq.setParameter(strAtt, expected.getStringAttribute(), "en");
+
+        final OWLClassA result = tq.getSingleResult();
+
+        assertEquals(expected.getUri(), result.getUri());
+        assertEquals(expected.getStringAttribute(), result.getStringAttribute());
+        assertEquals(expected.getTypes(), result.getTypes());
+    }
 }
