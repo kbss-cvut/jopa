@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.query.criteria;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionLiteralImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,9 +12,11 @@ import java.util.List;
 //TODO - BAKALARKA - doimplementovat registraciu parametrov
 public class CriteriaParameterFiller {
     private HashMap<String, ExpressionLiteralImpl> parameters;
+    private int counter;
 
     public CriteriaParameterFiller() {
         this.parameters = new HashMap<>();
+        this.counter = 0;
     }
 
     /**
@@ -33,7 +36,11 @@ public class CriteriaParameterFiller {
      * @return String - real name for query if exists, generated name for query otherwise
      */
     public String registerParameter(ParameterExpression parameter){
-        return "";
+        if (parameter.getName() == null){
+            String name = generateParameterName();
+            ((ParameterExpressionImpl)parameter).setNameIfUnnamed(name);
+        }
+        return ":" + parameter.getName();
     }
 
     /**
@@ -49,6 +56,6 @@ public class CriteriaParameterFiller {
     }
 
     private String generateParameterName(){
-        return "generatedName"+ parameters.size();
+        return "generatedName"+ this.counter++;
     }
 }

@@ -4,11 +4,15 @@ import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 
 public class ParameterExpressionImpl<T> extends AbstractExpression<T> implements ParameterExpression<T> {
-    private final String name;
+    private String name;
 
     public ParameterExpressionImpl(Class<T> type, String name) {
         super(type);
         this.name = name;
+    }
+
+    public void setNameIfUnnamed(String name) {
+        if (this.name == null) this.name = name;
     }
 
     @Override
