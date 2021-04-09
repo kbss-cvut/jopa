@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
@@ -329,6 +330,29 @@ public class CriteriaQueryTranslateQueryTest {
         final String generatedJpqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT owlclassd.owlClassA.stringAttribute FROM OWLClassD owlclassd";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryRestrictionWithLiteral() {
+            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).where(f.equal(root.getAttr(OWLClassA_.stringAttribute),f.literal("value")));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryRestrictionWithParameterExpression() {
+            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            ParameterExpression<String> parameter = f.parameter(String.class);
+            query.select(root).where(f.equal(root.getAttr(OWLClassA_.stringAttribute),parameter));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
     }
