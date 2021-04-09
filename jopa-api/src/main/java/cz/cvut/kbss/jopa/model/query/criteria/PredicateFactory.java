@@ -95,7 +95,7 @@ public interface PredicateFactory {
      * @param y expression
      * @return greaterThanOrEqual predicate
      */
-    <Y extends Comparable<? super Y>> Predicate greaterOrEqual(Expression<? extends Y> x, Expression<? extends Y> y);
+    <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y);
 
     /**
      * Create a predicate for testing whether the first argument is greater than or equal to the second.
@@ -103,7 +103,7 @@ public interface PredicateFactory {
      * @param y value
      * @return greaterThanOrEqual predicate
      */
-    <Y extends Comparable<? super Y>> Predicate greaterOrEqual(Expression<? extends Y> x, Y y);
+    <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Y y);
 
     /**
      * Create a predicate for testing whether the first argument is less than the second.
@@ -127,7 +127,7 @@ public interface PredicateFactory {
      * @param y expression
      * @return lessThanOrEqual predicate
      */
-    <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Expression<? extends Y> y);
+    <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y);
 
     /**
      * Create a predicate for testing whether the first argument is less than or equal to the second.
@@ -135,7 +135,7 @@ public interface PredicateFactory {
      * @param y value
      * @return lessThanOrEqual predicate
      */
-    <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Y y);
+    <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Y y);
 
     /**
      * Create a predicate for testing whether the expression satisfies the given pattern.

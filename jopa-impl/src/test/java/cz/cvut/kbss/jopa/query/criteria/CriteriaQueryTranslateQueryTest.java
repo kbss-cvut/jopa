@@ -151,13 +151,112 @@ public class CriteriaQueryTranslateQueryTest {
         }
 
         @Test
-        public void testTranslateQueryOneRestriction() {
+        public void testTranslateQueryEqualRestriction() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).where(f.equal(root.getAttr("stringAttribute"), "value"));
 
             final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryNotEqualRestriction() {
+            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).where(f.notEqual(root.getAttr("stringAttribute"), "value"));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryGreaterThanRestriction() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.greaterThan(root.getAttr("intAttribute"), 1));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute > :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryGreaterThanNegated() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.greaterThan(root.getAttr("intAttribute"), 1).not());
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute <= :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryGreaterThanOrEqualRestriction() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.greaterThanOrEqual(root.getAttr("intAttribute"), 1));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute >= :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryGreaterOrEqualNegated() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.greaterThanOrEqual(root.getAttr("intAttribute"), 1).not());
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryLessThanRestriction() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.lessThan(root.getAttr("intAttribute"), 1));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryLessThanNegated() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.lessThan(root.getAttr("intAttribute"), 1).not());
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute >= :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryLessOrEqualRestriction() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.lessThanOrEqual(root.getAttr("intAttribute"), 1));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute <= :generatedName0";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryLessOrEqualNegated() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.lessThanOrEqual(root.getAttr("intAttribute"), 1).not());
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute > :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 

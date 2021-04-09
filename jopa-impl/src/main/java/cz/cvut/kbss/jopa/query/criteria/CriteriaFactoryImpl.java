@@ -154,61 +154,44 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return wrapExpressionToPredicateWithRepair(restriction).not();
     }
 
-
-    //TODO - BAKALARKA - greaterThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Expression<? extends Y> y) {
-//        return new PredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
     }
 
-    //TODO - BAKALARKA - greaterThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Y y) {
-//        return new PredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<?>)x,y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
     }
 
-    //TODO - BAKALARKA - greaterOrEqual
     @Override
-    public <Y extends Comparable<? super Y>> Predicate greaterOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
-//        return new PredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
-        return null;
+    public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
+        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
     }
 
-    //TODO - BAKALARKA - greaterOrEqual
     @Override
-    public <Y extends Comparable<? super Y>> Predicate greaterOrEqual(Expression<? extends Y> x, Y y) {
-//        return new PredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<?>)x,y));
-        return null;
+    public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Y y) {
+        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
     }
 
-    //TODO - BAKALARKA - lessThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Expression<? extends Y> y) {
-//        return new PredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
     }
 
-    //TODO - BAKALARKA - lessThan
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Y y) {
-//        return new PredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<?>)x,y));
-        return null;
+        return new SimplePredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
     }
 
-    //TODO - BAKALARKA - lessOrEqual
     @Override
-    public <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
-//        return new PredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
-        return null;
+    public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
+        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
     }
 
-    //TODO - BAKALARKA - lessOrEqual
     @Override
-    public <Y extends Comparable<? super Y>> Predicate lessOrEqual(Expression<? extends Y> x, Y y) {
-//        return new PredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<?>)x,y));
-        return null;
+    public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Y y) {
+        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
     }
 
 
