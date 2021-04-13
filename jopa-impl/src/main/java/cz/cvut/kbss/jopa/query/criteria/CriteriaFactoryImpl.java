@@ -151,7 +151,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public <T> In<T> in(Expression<? extends T> expression) {
-        return null;
+        return new ExpressionInImpl<>(expression,this);
     }
 
     @Override
