@@ -18,24 +18,13 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.*;
-import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractAggregateFunctionExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
-import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionEntityImpl;
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CriteriaQuery.class);
 
     protected final CriteriaQueryHolder<T> query;
     private final Metamodel metamodel;
@@ -62,7 +51,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> select(Selection<? extends T> selection) {
-        query.setSelection((SelectionImpl<? extends T>) selection);
+        query.setSelection(selection);
         return this;
     }
 
@@ -121,7 +110,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     @Override
     public List<Order> getOrderList() {
         if (query.getOrderBy() == null) return Collections.emptyList();
-        return query.getOrderBy();
+        return new ArrayList<>(query.getOrderBy());
     }
 
     @Override
@@ -150,6 +139,11 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return this;
     }
 
+    /**
+     * Method translates criteria query to SOQL query and returns its string representation.
+     * @param parameterFiller
+     * @return string representation of SOQL query
+     */
     public String translateQuery(CriteriaParameterFiller parameterFiller){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");

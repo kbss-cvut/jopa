@@ -116,11 +116,8 @@ public interface CriteriaQuery<T>{
     CriteriaQuery<T> orderBy(Order... o);
 
 
-    //TODO - BAKALARKA - KONZULTACIA - bolo by to fajn
-    // Modifications to the list do not affect the query.
-    // je potrebne vraciat takto? Collections.unmodifiableList(list);
     /**
-     * Return the ordering expressions in order of precedence. Returns empty list if no ordering expressions have been specified. Modifications to the list do not affect the query.
+     * Return the ordering expressions in order of precedence. Returns empty list if no ordering expressions have been specified.
      * @return the list of ordering expressions
      */
     List<Order> getOrderList();
