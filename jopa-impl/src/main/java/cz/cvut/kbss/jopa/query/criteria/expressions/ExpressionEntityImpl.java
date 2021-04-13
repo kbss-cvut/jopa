@@ -2,12 +2,13 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
 public class ExpressionEntityImpl<Y> extends AbstractPathExpression<Y> {
 
 
-    public ExpressionEntityImpl(Class<Y> type, AbstractPathExpression pathSource, Metamodel metamodel) {
-        super(type, pathSource, metamodel);
+    public ExpressionEntityImpl(Class<Y> type, AbstractPathExpression pathSource, Metamodel metamodel, CriteriaFactory factory) {
+        super(type, pathSource, metamodel, factory);
     }
 
     @Override

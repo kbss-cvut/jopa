@@ -1,12 +1,13 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-public class ExpressionLikeImpl<Y> extends AbstractComparisonExpression<Y> {
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+
+public class ExpressionLikeImpl extends AbstractComparisonExpression {
 
 
-    public ExpressionLikeImpl(AbstractExpression<?> x, AbstractExpression<?> y) {
-        super(x, y);
+    public ExpressionLikeImpl(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaFactory factory) {
+        super(x, y,factory);
     }
-
 
     @Override
     protected String getComparisonOperator() {

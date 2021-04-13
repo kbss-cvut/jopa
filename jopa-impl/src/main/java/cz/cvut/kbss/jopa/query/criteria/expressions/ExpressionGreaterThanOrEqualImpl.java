@@ -1,10 +1,12 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 
-public class ExpressionGreaterThanOrEqualImpl<Y> extends AbstractComparisonExpression<Y> {
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
-    public ExpressionGreaterThanOrEqualImpl(AbstractExpression<?> x, AbstractExpression<?> y) {
-        super(x, y);
+public class ExpressionGreaterThanOrEqualImpl extends AbstractComparisonExpression {
+
+    public ExpressionGreaterThanOrEqualImpl(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaFactory factory) {
+        super(x, y, factory);
     }
 
     @Override

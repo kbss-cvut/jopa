@@ -1,14 +1,15 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
-abstract public class AbstractComparisonExpression<Y> extends AbstractExpression<Y> {
+abstract public class AbstractComparisonExpression extends AbstractExpression<Boolean> {
 
     protected AbstractExpression<?> right;
     protected AbstractExpression<?> left;
 
-    public AbstractComparisonExpression(AbstractExpression<?> x, AbstractExpression<?> y) {
-        super(null);
+    public AbstractComparisonExpression(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaFactory factory) {
+        super(Boolean.class, factory);
         this.left = x;
         this.right = y;
     }
@@ -17,13 +18,7 @@ abstract public class AbstractComparisonExpression<Y> extends AbstractExpression
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         this.left.setExpressionToQuery(query, parameterFiller);
         query.append(this.getComparisonOperator());
-        //TODO - BAKALARKA - KONZULTACIA
-        // instanceof alebo radsej nech maju expressions napr. metodu isLiteral()?
-        if (right instanceof ExpressionLiteralImpl){
-            query.append(parameterFiller.registerParameter((ExpressionLiteralImpl) right));
-        } else{
-            this.right.setExpressionToQuery(query, parameterFiller);
-        }
+        this.right.setExpressionToQuery(query, parameterFiller);
     }
 
     abstract protected String getComparisonOperator();

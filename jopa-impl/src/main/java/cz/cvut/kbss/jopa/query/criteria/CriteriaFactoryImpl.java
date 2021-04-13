@@ -33,9 +33,9 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         if (x instanceof AbstractPathExpression){
             if (x instanceof RootImpl) {
                 RootImpl root = (RootImpl) x;
-                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) root.getParentPath());
+                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) root.getParentPath(),this);
             } else{
-                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) x);
+                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) x,this);
             }
         }
         throw new IllegalArgumentException("Aggregate function can be applied only to path expressions.");
@@ -45,24 +45,24 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass) {
-        return new ParameterExpressionImpl<>(paramClass, null);
+        return new ParameterExpressionImpl<>(paramClass, null,this);
     }
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass, String name) {
-        return new ParameterExpressionImpl<>(paramClass, name);
+        return new ParameterExpressionImpl<>(paramClass, name,this);
     }
 
     @Override
     public <T> Expression<T> literal(T value) throws IllegalArgumentException{
         if (value == null) throw new IllegalArgumentException("Literal created by this method cannot be null. Use nullLiteral method instead.");
-        return new ExpressionLiteralImpl<>(value);
+        return new ExpressionLiteralImpl<>(value,this);
     }
 
     @Override
     public Expression<String> literal(String value, String languageTag) throws IllegalArgumentException{
         if (value == null) throw new IllegalArgumentException("Literal created by this method cannot be null. Use nullLiteral method instead.");
-        return new ExpressionLiteralImpl<>(value,languageTag);
+        return new ExpressionLiteralImpl<>(value,languageTag,this);
     }
 
     @Override
@@ -78,70 +78,70 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Predicate and(Expression<Boolean> x, Expression<Boolean> y) {
-        return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(x,y));
+        return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(x,y),this);
     }
 
     @Override
     public Predicate and(Predicate... restrictions) {
-        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0]);
-        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(restrictions));
+        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0],this);
+        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(restrictions),this);
     }
 
     @Override
     public Predicate or(Expression<Boolean> x, Expression<Boolean> y) {
-        return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(x,y));
+        return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(x,y),this);
     }
 
     @Override
     public Predicate or(Predicate... restrictions) {
-        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0]);
-        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions));
+        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0],this);
+        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions),this);
     }
 
     @Override
     public Predicate equal(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
+        return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this),this);
     }
 
     @Override
     public Predicate equal(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y)));
+        return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,this),this),this);
     }
 
     @Override
     public Predicate equal(Expression<?> x, String y, String languageTag) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,languageTag)));
+        return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,languageTag,this),this),this);
     }
 
     @Override
     public Predicate notEqual(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl<>((AbstractExpression<?>)x,(AbstractExpression<?>)y));
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this),this);
     }
 
     @Override
     public Predicate notEqual(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl<>((AbstractExpression<?>)x, new ExpressionLiteralImpl<>(y)));
+        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x, new ExpressionLiteralImpl<>(y,this),this),this);
 
     }
 
     @Override
     public Predicate like(Expression<String> x, Expression<String> pattern) {
-        return new SimplePredicateImpl(new ExpressionLikeImpl<>((AbstractExpression<String>)x,(AbstractExpression<String>)pattern));
+        return new SimplePredicateImpl(new ExpressionLikeImpl((AbstractExpression<String>)x,(AbstractExpression<String>)pattern,this),this);
     }
 
     @Override
     public Predicate like(Expression<String> x, String pattern) {
-        return new SimplePredicateImpl(new ExpressionLikeImpl<>((AbstractExpression<String>)x, new ExpressionLiteralImpl<>(pattern)));
+        return new SimplePredicateImpl(new ExpressionLikeImpl((AbstractExpression<String>)x, new ExpressionLiteralImpl<>(pattern,this),this),this);
     }
 
     @Override
     public Predicate notLike(Expression<String> x, Expression<String> pattern) {
-        return new SimplePredicateImpl(new ExpressionNotLikeImpl<>((AbstractExpression<String>)x,(AbstractExpression<String>)pattern));
+        return new SimplePredicateImpl(new ExpressionNotLikeImpl((AbstractExpression<String>)x,(AbstractExpression<String>)pattern,this),this);
     }
 
     @Override
     public Predicate notLike(Expression<String> x, String pattern) {
-        return new SimplePredicateImpl(new ExpressionNotLikeImpl<>((AbstractExpression<String>)x, new ExpressionLiteralImpl<>(pattern)));
+        return new SimplePredicateImpl(new ExpressionNotLikeImpl((AbstractExpression<String>)x, new ExpressionLiteralImpl<>(pattern,this),this),this);
     }
 
     @Override
@@ -150,43 +150,48 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     }
 
     @Override
+    public <T> In<T> in(Expression<? extends T> expression) {
+        return null;
+    }
+
+    @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
+        return new SimplePredicateImpl(new ExpressionGreaterThanImpl((AbstractExpression<Y>)x, (AbstractExpression<Y>)y,this),this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
+        return new SimplePredicateImpl(new ExpressionGreaterThanImpl((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y,this),this),this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
+        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl((AbstractExpression<Y>)x, (AbstractExpression<Y>)y, this),this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
+        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y,this),this),this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
+        return new SimplePredicateImpl(new ExpressionLessThanImpl((AbstractExpression<Y>)x, (AbstractExpression<Y>)y,this),this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionLessThanImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
+        return new SimplePredicateImpl(new ExpressionLessThanImpl((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y,this),this),this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<Y>)x, (AbstractExpression<Y>)y));
+        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl((AbstractExpression<Y>)x, (AbstractExpression<Y>)y,this),this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl<>((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y)));
+        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl((AbstractExpression<Y>)x, new ExpressionLiteralImpl<>(y,this),this),this);
     }
 
 
@@ -203,9 +208,9 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         if (expression instanceof Predicate){
             return (Predicate)expression;
         } else if (expression instanceof AbstractPathExpression){
-            return new SimplePredicateImpl(new ExpressionEqualsImpl<>((AbstractExpression<Boolean>) expression,null));
+            return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression) expression,(AbstractExpression) this.literal(true),this),this);
         } else {
-            return new SimplePredicateImpl(expression);
+            return new SimplePredicateImpl(expression, this);
         }
     }
 

@@ -1,10 +1,12 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 
-public class ExpressionLessThanImpl<Y> extends AbstractComparisonExpression<Y> {
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
-    public ExpressionLessThanImpl(AbstractExpression<?> x, AbstractExpression<?> y) {
-        super(x, y);
+public class ExpressionLessThanImpl extends AbstractComparisonExpression {
+
+    public ExpressionLessThanImpl(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaFactory factory) {
+        super(x, y, factory);
     }
 
     @Override

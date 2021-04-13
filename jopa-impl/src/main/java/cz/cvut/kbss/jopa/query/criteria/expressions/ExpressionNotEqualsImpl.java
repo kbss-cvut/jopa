@@ -1,10 +1,12 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-public class ExpressionNotEqualsImpl<Y> extends AbstractComparisonExpression<Y> {
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+
+public class ExpressionNotEqualsImpl extends AbstractComparisonExpression {
 
 
-    public ExpressionNotEqualsImpl(AbstractExpression<?> x, AbstractExpression<?> y) {
-        super(x, y);
+    public ExpressionNotEqualsImpl(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaFactory factory) {
+        super(x, y, factory);
     }
 
     @Override

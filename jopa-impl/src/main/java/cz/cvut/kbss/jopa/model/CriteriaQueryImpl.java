@@ -39,7 +39,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public <X> Root<X> from(Class<X> entityClass) {
-        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entityClass, null, metamodel), entityClass);
+        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entityClass, null, metamodel, this.factory), entityClass, this.factory);
         query.setRoot(root);
         return root;
     }
@@ -113,6 +113,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return new ArrayList<>(query.getOrderBy());
     }
 
+
     @Override
     public CriteriaQuery<T> groupBy(Expression<?>... grouping) {
         if (grouping != null && grouping.length > 0) query.setGroupBy(Arrays.asList(grouping));
@@ -144,39 +145,39 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
      * @param parameterFiller
      * @return string representation of SOQL query
      */
-    public String translateQuery(CriteriaParameterFiller parameterFiller){
+    public String translateQuery(CriteriaParameterFiller parameterFiller) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
         if (isDistinct()) stringBuilder.append("DISTINCT ");
-        ((AbstractExpression)query.getSelection()).setExpressionToQuery(stringBuilder,parameterFiller);
+        ((AbstractExpression) query.getSelection()).setExpressionToQuery(stringBuilder, parameterFiller);
 
-        stringBuilder.append(" FROM "+ ((RootImpl)query.getRoot()).getJavaType().getSimpleName()+ " ");
-        ((RootImpl)query.getRoot()).setExpressionToQuery(stringBuilder, parameterFiller);
+        stringBuilder.append(" FROM " + ((RootImpl) query.getRoot()).getJavaType().getSimpleName() + " ");
+        ((RootImpl) query.getRoot()).setExpressionToQuery(stringBuilder, parameterFiller);
 
-        if (query.getWhere() != null){
+        if (query.getWhere() != null) {
             stringBuilder.append(" WHERE ");
-            ((AbstractPredicate)query.getWhere()).setExpressionToQuery(stringBuilder, parameterFiller);
+            ((AbstractPredicate) query.getWhere()).setExpressionToQuery(stringBuilder, parameterFiller);
         }
 
-        if (query.getGroupBy() != null && !query.getGroupBy().isEmpty()){
+        if (query.getGroupBy() != null && !query.getGroupBy().isEmpty()) {
             stringBuilder.append(" GROUP BY ");
-            for (Expression groupBy:query.getGroupBy()) {
-                ((AbstractExpression)groupBy).setExpressionToQuery(stringBuilder,parameterFiller);
+            for (Expression groupBy : query.getGroupBy()) {
+                ((AbstractExpression) groupBy).setExpressionToQuery(stringBuilder, parameterFiller);
             }
         }
 
-        if (query.getHaving() != null){
+        if (query.getHaving() != null) {
             stringBuilder.append(" HAVING ");
-            ((AbstractPredicate)query.getHaving()).setExpressionToQuery(stringBuilder,parameterFiller);
+            ((AbstractPredicate) query.getHaving()).setExpressionToQuery(stringBuilder, parameterFiller);
         }
 
-        if (!getOrderList().isEmpty()){
+        if (!getOrderList().isEmpty()) {
             stringBuilder.append(" ORDER BY ");
             List<Order> orders = getOrderList();
             for (int i = 0; i < orders.size(); i++) {
-                ((AbstractExpression)orders.get(i).getExpression()).setExpressionToQuery(stringBuilder,parameterFiller);
+                ((AbstractExpression) orders.get(i).getExpression()).setExpressionToQuery(stringBuilder, parameterFiller);
                 stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
-                if (orders.size() > 1 && (i+1) != orders.size()) stringBuilder.append(", ");
+                if (orders.size() > 1 && (i + 1) != orders.size()) stringBuilder.append(", ");
             }
         }
         return stringBuilder.toString();

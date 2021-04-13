@@ -3,14 +3,15 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
 import java.util.Objects;
 
 public class ParameterExpressionImpl<T> extends AbstractExpression<T> implements ParameterExpression<T> {
     private String name;
 
-    public ParameterExpressionImpl(Class<T> type, String name) {
-        super(type);
+    public ParameterExpressionImpl(Class<T> type, String name, CriteriaFactory factory) {
+        super(type, factory);
         this.name = name;
     }
 

@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractComparisonExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,14 +14,14 @@ public class SimplePredicateImpl extends AbstractPredicate{
 
     protected Expression<Boolean> expression;
 
-    public SimplePredicateImpl(BooleanOperator booleanOperator, Expression<Boolean> expression) {
-        super(booleanOperator);
+    public SimplePredicateImpl(BooleanOperator booleanOperator, Expression<Boolean> expression, CriteriaFactory factory) {
+        super(booleanOperator, factory);
         this.expression = expression;
     }
 
 
-    public SimplePredicateImpl(Expression<Boolean> expression) {
-        super(BooleanOperator.AND);
+    public SimplePredicateImpl(Expression<Boolean> expression, CriteriaFactory factory) {
+        super(BooleanOperator.AND, factory);
         this.expression = expression;
     }
 

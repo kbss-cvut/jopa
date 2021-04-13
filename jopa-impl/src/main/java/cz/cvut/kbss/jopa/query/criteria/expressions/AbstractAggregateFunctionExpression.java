@@ -1,13 +1,14 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
+import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 
 abstract public class AbstractAggregateFunctionExpression<X> extends AbstractExpression<X> {
 
     protected AbstractPathExpression internExpression;
 
-    public AbstractAggregateFunctionExpression(Class<X> type, AbstractPathExpression internExpression) {
-        super(type);
+    public AbstractAggregateFunctionExpression(Class<X> type, AbstractPathExpression internExpression, CriteriaFactory factory) {
+        super(type, factory);
         this.internExpression = internExpression;
     }
 
