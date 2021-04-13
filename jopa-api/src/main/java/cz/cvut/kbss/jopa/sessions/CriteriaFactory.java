@@ -22,7 +22,7 @@ public interface CriteriaFactory extends PredicateFactory {
      * @param x expression representing input value to count operation
      * @return count expression
      */
-    Expression<Long> count(Expression<?> x);
+    Expression<Integer> count(Expression<?> x);
 
     /**
      * Create a parameter expression.

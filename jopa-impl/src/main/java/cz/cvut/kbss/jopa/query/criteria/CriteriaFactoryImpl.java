@@ -27,16 +27,15 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel(), this);
     }
 
-    //TODO - BAKALARKA - prerobit na integer
     @Override
-    public Expression<Long> count(Expression<?> x) {
+    public Expression<Integer> count(Expression<?> x) {
         if (x == null) throw new IllegalArgumentException("Aggregate function cannot be applied to null expression.");
         if (x instanceof AbstractPathExpression){
             if (x instanceof RootImpl) {
                 RootImpl root = (RootImpl) x;
-                return new ExpressionCountImpl(null,(AbstractPathExpression) root.getParentPath());
+                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) root.getParentPath());
             } else{
-                return new ExpressionCountImpl(null,(AbstractPathExpression) x);
+                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) x);
             }
         }
         throw new IllegalArgumentException("Aggregate function can be applied only to path expressions.");

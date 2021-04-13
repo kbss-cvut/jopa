@@ -94,22 +94,22 @@ public class CriteriaQueryTranslateQueryTest {
 
     @Test
     public void testTranslateQueryCount() {
-        CriteriaQuery<Long> query = f.createQuery(Long.class);
+        CriteriaQuery<Integer> query = f.createQuery(Integer.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(f.count(root));
 
-        final String generatedJpqlQuery = ((CriteriaQueryImpl<Long>) query).translateQuery(criteriaParameterFiller);
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<Integer>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT COUNT(owlclassa) FROM OWLClassA owlclassa";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
     }
 
     @Test
     public void testTranslateQueryDistinctCount() {
-        CriteriaQuery<Long> query = f.createQuery(Long.class);
+        CriteriaQuery<Integer> query = f.createQuery(Integer.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(f.count(root)).distinct(true);
 
-        final String generatedJpqlQuery = ((CriteriaQueryImpl<Long>) query).translateQuery(criteriaParameterFiller);
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<Integer>) query).translateQuery(criteriaParameterFiller);
         final String expectedJpqlQuery = "SELECT DISTINCT COUNT(owlclassa) FROM OWLClassA owlclassa";
         assertEquals(expectedJpqlQuery, generatedJpqlQuery);
     }
