@@ -175,4 +175,38 @@ public interface PredicateFactory {
      * @return not predicate
      */
     Predicate not(Expression<Boolean> restriction);
+
+    /**
+     * Create predicate to test whether given expression is contained in a list of values.
+     * @param expression - to be tested against list of values
+     * @return in predicate
+     */
+    <T> PredicateFactory.In<T> in(Expression<? extends T> expression);
+
+    /**
+     * Interface used to build in predicates.
+     * @param <T>
+     */
+    interface In<T> extends Predicate {
+
+        /**
+         * Return the expression to be tested against the list of values.
+         * @return expression
+         */
+        Expression<T> getExpression();
+
+        /**
+         * Add to list of values to be tested against.
+         * @param value - value
+         * @return in predicate
+         */
+        PredicateFactory.In<T> value(T value);
+
+        /**
+         * Add to list of values to be tested against.
+         * @param value - value
+         * @return in predicate
+         */
+        PredicateFactory.In<T> value(Expression<? extends T> value);
+    }
 }

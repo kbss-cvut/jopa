@@ -24,17 +24,4 @@ public interface Expression<X> extends Selection<X>{
      * @return predicate testing for membership
      */
     Predicate in(Object... values);
-
-    /**
-     * Create a predicate to test whether the expression is not null.
-     * @return predicate testing whether the expression is not null
-     */
-    Predicate isNotNull();
-
-    /**
-     * Create a predicate to test whether the expression is null.
-     * @return predicate testing whether the expression is null
-     */
-    Predicate isNull();
-
 }

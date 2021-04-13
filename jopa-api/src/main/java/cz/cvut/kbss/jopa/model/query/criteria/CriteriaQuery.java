@@ -56,7 +56,7 @@ public interface CriteriaQuery<T>{
     /**
      * Modify the query to restrict the query result according to the conjunction of the specified restriction predicates. Replaces the previously added restriction(s), if any. If no restrictions are specified, any previously added restrictions are simply removed.
      * @param predicates - zero or more restriction predicates
-     * @return
+     * @return the modified query
      */
     CriteriaQuery<T> where(Predicate... predicates);
 

@@ -7,12 +7,10 @@ import java.util.List;
 
 abstract public class SelectionImpl<X> implements Selection<X>, TupleElement<X> {
     protected final Class<X> type;
-    protected String alias;
 
     public SelectionImpl(Class<X> type) {
         this.type = type;
     }
-
 
     @Override
     public boolean isCompoundedSelection() {
@@ -21,13 +19,7 @@ abstract public class SelectionImpl<X> implements Selection<X>, TupleElement<X> 
 
     @Override
     public List<Selection<?>> getCompoundedSelectionItems() {
-        return null;
-    }
-
-    @Override
-    public Selection<X> alias(String name) {
-        this.alias = name;
-        return this;
+        throw new IllegalStateException();
     }
 
     @Override
@@ -37,6 +29,6 @@ abstract public class SelectionImpl<X> implements Selection<X>, TupleElement<X> 
 
     @Override
     public String getAlias() {
-        return this.alias;
+        return null;
     }
 }
