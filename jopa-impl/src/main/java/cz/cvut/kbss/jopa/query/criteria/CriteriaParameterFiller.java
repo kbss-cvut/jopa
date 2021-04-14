@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-//TODO - BAKALARKA - doimplementovat registraciu parametrov
 public class CriteriaParameterFiller {
     private HashMap<String, ExpressionLiteralImpl> parameters;
     private int counter;

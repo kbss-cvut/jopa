@@ -55,13 +55,13 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public <T> Expression<T> literal(T value) throws IllegalArgumentException{
-        if (value == null) throw new IllegalArgumentException("Literal created by this method cannot be null. Use nullLiteral method instead.");
+        if (value == null) throw new IllegalArgumentException("Literal cannot be null.");
         return new ExpressionLiteralImpl<>(value,this);
     }
 
     @Override
     public Expression<String> literal(String value, String languageTag) throws IllegalArgumentException{
-        if (value == null) throw new IllegalArgumentException("Literal created by this method cannot be null. Use nullLiteral method instead.");
+        if (value == null) throw new IllegalArgumentException("Literal cannot be null.");
         return new ExpressionLiteralImpl<>(value,languageTag,this);
     }
 
@@ -100,27 +100,27 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Predicate equal(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this),this);
+        return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this),this);
     }
 
     @Override
     public Predicate equal(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,this),this),this);
+        return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,this),this),this);
     }
 
     @Override
     public Predicate equal(Expression<?> x, String y, String languageTag) {
-        return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,languageTag,this),this),this);
+        return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y,languageTag,this),this),this);
     }
 
     @Override
     public Predicate notEqual(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this),this);
+        return new SimplePredicateImpl(new ExpressionNotEqualImpl((AbstractExpression<?>)x,(AbstractExpression<?>)y,this),this);
     }
 
     @Override
     public Predicate notEqual(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualsImpl((AbstractExpression<?>)x, new ExpressionLiteralImpl<>(y,this),this),this);
+        return new SimplePredicateImpl(new ExpressionNotEqualImpl((AbstractExpression<?>)x, new ExpressionLiteralImpl<>(y,this),this),this);
 
     }
 
@@ -208,7 +208,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
         if (expression instanceof Predicate){
             return (Predicate)expression;
         } else if (expression instanceof AbstractPathExpression){
-            return new SimplePredicateImpl(new ExpressionEqualsImpl((AbstractExpression) expression,(AbstractExpression) this.literal(true),this),this);
+            return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression) expression,(AbstractExpression) this.literal(true),this),this);
         } else {
             return new SimplePredicateImpl(expression, this);
         }

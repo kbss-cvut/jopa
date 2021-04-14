@@ -11,6 +11,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * Parent of all other types of expressions. It offers its children the implementation of methods for IN expression as prescribed by the Expression interface.
+ * Prescribes an abstract method for expressing an expression to string builder representing the query.
+ */
 abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
     protected final CriteriaFactory factory;
