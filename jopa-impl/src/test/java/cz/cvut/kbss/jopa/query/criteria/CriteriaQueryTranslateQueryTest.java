@@ -82,6 +82,16 @@ public class CriteriaQueryTranslateQueryTest {
     }
 
     @Test
+    public void testTranslateUntypedQuerySelectAll() {
+        CriteriaQuery query = f.createQuery();
+        query.select(query.from(OWLClassA.class));
+
+        final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+        final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa";
+        assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+    }
+
+    @Test
     public void testTranslateQuerySelectDistinctAll() {
         CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);

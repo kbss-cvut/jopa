@@ -19,7 +19,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public CriteriaQuery<Object> createQuery() {
-        return null;
+        return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(Object.class), uow.getMetamodel(), this);
     }
 
     @Override
