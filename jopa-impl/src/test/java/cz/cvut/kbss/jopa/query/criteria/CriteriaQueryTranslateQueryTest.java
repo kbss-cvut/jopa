@@ -168,7 +168,7 @@ public class CriteriaQueryTranslateQueryTest {
             query.select(root).where(f.notEqual(root.getAttr("stringAttribute"), "value"));
 
             final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0";
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
@@ -268,7 +268,7 @@ public class CriteriaQueryTranslateQueryTest {
 
             final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
             final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0";
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
@@ -338,7 +338,7 @@ public class CriteriaQueryTranslateQueryTest {
             query.select(root).where(restrictions.not());
 
             final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0 AND owlclassa.stringAttribute <> :generatedName1 AND owlclassa.stringAttribute <> :generatedName2";
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0 AND owlclassa.stringAttribute != :generatedName1 AND owlclassa.stringAttribute != :generatedName2";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
@@ -354,7 +354,7 @@ public class CriteriaQueryTranslateQueryTest {
             query.select(root).where(f.not(restrictions));
 
             final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0 AND owlclassa.stringAttribute <> :generatedName1 AND owlclassa.stringAttribute <> :generatedName2";
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0 AND owlclassa.stringAttribute != :generatedName1 AND owlclassa.stringAttribute != :generatedName2";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 
