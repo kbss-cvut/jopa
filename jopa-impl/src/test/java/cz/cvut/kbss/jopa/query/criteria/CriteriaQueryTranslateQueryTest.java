@@ -345,9 +345,9 @@ public class CriteriaQueryTranslateQueryTest {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
             Predicate restrictions = f.or(
-                    f.equal(root.getAttr("stringAttribute"), "value"),
-                    f.equal(root.getAttr("stringAttribute"), "value"),
-                    f.equal(root.getAttr("stringAttribute"), "value")
+                    f.equal(root.getAttr("stringAttribute"), "valueOne"),
+                    f.equal(root.getAttr("stringAttribute"), "valueTwo"),
+                    f.equal(root.getAttr("stringAttribute"), "valueTree")
             );
             query.select(root).where(restrictions.not());
 
@@ -363,9 +363,9 @@ public class CriteriaQueryTranslateQueryTest {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
             Predicate restrictions = f.or(
-                    f.equal(root.getAttr("stringAttribute"), "value"),
-                    f.equal(root.getAttr("stringAttribute"), "value"),
-                    f.equal(root.getAttr("stringAttribute"), "value")
+                    f.equal(root.getAttr("stringAttribute"), "valueOne"),
+                    f.equal(root.getAttr("stringAttribute"), "valueTwo"),
+                    f.equal(root.getAttr("stringAttribute"), "valueTree")
             );
             query.select(root).where(f.not(restrictions));
 
@@ -373,6 +373,29 @@ public class CriteriaQueryTranslateQueryTest {
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0 AND NOT owlclassa.stringAttribute = :generatedName1 AND NOT owlclassa.stringAttribute = :generatedName2";
             //TODO - replace expetedJpqlQuery when SOQL will support equal negation as != or <>
             //final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0 AND owlclassa.stringAttribute != :generatedName1 AND owlclassa.stringAttribute != :generatedName2";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryLessThanAndGreaterEqualOrNegatedGreaterThanAndEqual() {
+            CriteriaQuery<OWLClassM> query = f.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root).where(f.or(
+                    f.and(
+                            f.lessThan(root.getAttr("doubleAttribute"), 1.1),
+                            f.greaterThanOrEqual(root.getAttr("intAttribute"), 1)
+                    ),
+                    f.and(
+                            f.greaterThan(root.getAttr("doubleAttribute"), 2.2),
+                            f.equal(root.getAttr("intAttribute"), 2)
+                    ).not())
+            );
+
+            final CriteriaQueryImpl<OWLClassM> criteriaQuery = (CriteriaQueryImpl<OWLClassM>) query;
+            final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute < :generatedName0 AND owlclassm.intAttribute >= :generatedName1) OR (owlclassm.doubleAttribute <= :generatedName2 OR NOT owlclassm.intAttribute = :generatedName3)";
+            //TODO - replace expetedJpqlQuery when SOQL will support equal negation as != or <>
+            //final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute < :generatedName0 AND owlclassm.intAttribute >= :generatedName1) OR (owlclassm.doubleAttribute <= :generatedName2 OR owlclassm.intAttribute != :generatedName3)";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
 

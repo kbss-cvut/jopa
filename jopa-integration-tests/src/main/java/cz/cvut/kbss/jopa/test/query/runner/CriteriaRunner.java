@@ -1,13 +1,11 @@
 package cz.cvut.kbss.jopa.test.query.runner;
 
-import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -85,44 +83,43 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         assertEquals(expected.getTypes(), result.getTypes());
     }
 
-//    @Test
-//    public void testFindByDataNotPropertyAttribute() {
-//        final OWLClassA unexpected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
-//        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
-//        CriteriaQuery<OWLClassA> query = factory.createQuery(OWLClassA.class);
-//        Root<OWLClassA> root = query.from(OWLClassA.class);
-//        Predicate restriction = factory.equal(root.getAttr(OWLClassA_.stringAttribute), unexpected.getStringAttribute(),"en");
-//        query.select(root).where(factory.not(restriction));
-//        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
-//        final List<OWLClassA> result = tq.getResultList();
-//
-//        for (OWLClassA item : result) {
-//            assertNotEquals(unexpected.getUri(), item.getUri());
-//            assertNotEquals(unexpected.getStringAttribute(), item.getStringAttribute());
-//        }
-//    }
+    @Test
+    public void testFindByDataNotPropertyAttribute() {
+        final OWLClassA unexpected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
+        CriteriaQuery<OWLClassA> query = factory.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        Predicate restriction = factory.equal(root.getAttr(OWLClassA_.stringAttribute), unexpected.getStringAttribute(),"en");
+        query.select(root).where(factory.not(restriction));
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        final List<OWLClassA> result = tq.getResultList();
 
-//    @Test
-//    public void testFindByDataNotPropertyAttributeAndPropertyAttribute() {
-//        final OWLClassT unexpected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
-//        final int intThreshold = QueryTestEnvironment.getData(OWLClassT.class).size() / 2;
-//        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
-//        CriteriaQuery<OWLClassT> query = factory.createQuery(OWLClassT.class);
-//        Root<OWLClassT> root = query.from(OWLClassT.class);
-//        Predicate firstRestriction = factory.equal(root.getAttr("owlClassA"), unexpected.getOwlClassA().getUri());
-//        Predicate secondRestriction = factory.lessThan(root.getAttr("intAttribute"), intThreshold);
-//        Predicate thirdRestriction = factory.greaterThan(root.getAttr("intAttribute"), 2);
-//        Predicate restrictions = factory.and(firstRestriction,secondRestriction,thirdRestriction);
-//        query.select(root).where(factory.not(restrictions));
-//        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query, OWLClassT.class);
-//        final List<OWLClassT> result = tq.getResultList();
-//
-//        assertFalse(result.isEmpty());
-//        for (OWLClassT item : result) {
-//            assertNotEquals(unexpected.getUri(), item.getUri());
-//            assertTrue(intThreshold > item.getIntAttribute());
-//        }
-//    }
+        for (OWLClassA item : result) {
+            assertNotEquals(unexpected.getUri(), item.getUri());
+            assertNotEquals(unexpected.getStringAttribute(), item.getStringAttribute());
+        }
+    }
+
+    @Test
+    public void testFindByDataNotPropertyAttributeAndPropertyAttribute() {
+        final OWLClassT unexpected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
+        final int intThreshold = QueryTestEnvironment.getData(OWLClassT.class).size() / 2;
+        CriteriaFactory factory = getEntityManager().getCriteriaFactory();
+        CriteriaQuery<OWLClassT> query = factory.createQuery(OWLClassT.class);
+        Root<OWLClassT> root = query.from(OWLClassT.class);
+        Predicate firstRestriction = factory.not(factory.equal(root.getAttr("owlClassA"), unexpected.getOwlClassA().getUri()));
+        Predicate secondRestriction = factory.lessThan(root.getAttr("intAttribute"), intThreshold);
+        Predicate restrictions = factory.and(firstRestriction,secondRestriction);
+        query.select(root).where(restrictions);
+        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query, OWLClassT.class);
+        final List<OWLClassT> result = tq.getResultList();
+
+        assertFalse(result.isEmpty());
+        for (OWLClassT item : result) {
+            assertNotEquals(unexpected.getUri(), item.getUri());
+            assertTrue(intThreshold > item.getIntAttribute());
+        }
+    }
 
     @Test
     public void testFindByObjectPropertyAttribute() {
