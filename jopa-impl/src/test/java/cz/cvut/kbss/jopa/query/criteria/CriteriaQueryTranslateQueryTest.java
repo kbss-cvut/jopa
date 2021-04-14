@@ -445,6 +445,17 @@ public class CriteriaQueryTranslateQueryTest {
         }
 
         @Test
+        public void testTranslateQueryNotInRestriction() {
+            CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).where(f.notIn(root.getAttr("stringAttribute")).value("value").value("anotherValue"));
+
+            final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN(:generatedName0, :generatedName1)";
+            assertEquals(expectedJpqlQuery, generatedJpqlQuery);
+        }
+
+        @Test
         public void testTranslateQueryOrderByOnePropertyDesc() {
             CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);

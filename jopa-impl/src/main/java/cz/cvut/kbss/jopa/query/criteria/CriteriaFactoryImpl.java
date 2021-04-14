@@ -157,6 +157,13 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
     }
 
     @Override
+    public <T> In<T> notIn(Expression<? extends T> expression) {
+        In<T> inExpression = new ExpressionInImpl<>(expression,this);
+        inExpression.not();
+        return inExpression;
+    }
+
+    @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Expression<? extends Y> y) {
         return new SimplePredicateImpl(new ExpressionGreaterThanImpl((AbstractExpression<Y>)x, (AbstractExpression<Y>)y,this),this);
     }

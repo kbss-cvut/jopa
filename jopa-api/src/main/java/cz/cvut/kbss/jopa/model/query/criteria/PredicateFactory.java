@@ -184,6 +184,13 @@ public interface PredicateFactory {
     <T> PredicateFactory.In<T> in(Expression<? extends T> expression);
 
     /**
+     * Create predicate to test whether given expression is not contained in a list of values.
+     * @param expression  - to be tested against list of values
+     * @return not in predicate
+     */
+    <T> In<T> notIn(Expression<? extends T> expression);
+
+    /**
      * Interface used to build in predicates.
      * @param <T>
      */
