@@ -45,11 +45,13 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass) {
+        if (paramClass == null) throw new IllegalArgumentException("Class must be defined.");
         return new ParameterExpressionImpl<>(paramClass, null,this);
     }
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass, String name) {
+        if (paramClass == null) throw new IllegalArgumentException("Class must be defined.");
         return new ParameterExpressionImpl<>(paramClass, name,this);
     }
 
@@ -94,7 +96,7 @@ public class CriteriaFactoryImpl implements CriteriaFactory {
 
     @Override
     public Predicate or(Predicate... restrictions) {
-        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0],this);
+        if (restrictions.length == 1) return new SimplePredicateImpl(Predicate.BooleanOperator.OR,restrictions[0],this);
         else return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions),this);
     }
 
