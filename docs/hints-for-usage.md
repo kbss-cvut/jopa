@@ -9,10 +9,9 @@ In JOPA, inferred attributes are not writable. However, sometimes one wants to b
 An example would be the property skos:exactMatch. It might be both edited by an application (e.g. a SKOS editor) and inferred (e.g. because it is symmetric).
 
 ### Workaround
-![image](https://user-images.githubusercontent.com/1140626/115024435-63310b00-9ec0-11eb-94cb-db4edda5b628.png)
+![image](https://user-images.githubusercontent.com/1140626/115027430-fddf1900-9ec3-11eb-90db-f5541bf7bd45.png)
 
-1. Let's have a property `Q` . This property should be writable, e.g. `skos:exactMatch`.
-2. Define a fresh property `P` in Your preferred namespace, e.g. `https://example.org/exactMatchInferred`. This one will be read-only.
-3. Ensure `a P b` is inferred whenever `a Q b`. In case GraphDB is used as a JOPA backend storage, you can either add a statement `Q rdfs:subPropertyOf P` and benefit 
-   from an existing RDFS inference rule set, or define your custom inference rule, as per https://graphdb.ontotext.com/documentation/standard/reasoning.html. 
-4. Now, you can use the `exactMatchesInferred` JOPA field for reading the values (asserted and inferred) and `exactMatches` field for updating those which are not inferred.
+1. Let's have a property `Q`, e.g. `skos:exactMatch`.
+2. Define a fresh property `P` in Your preferred namespace, e.g. `https://example.org/exactMatchInferred`. This one will be writeable, leaving `Q` read-only.
+3. Ensure `a Q b` is inferred whenever `a P b`. In case GraphDB is used as a JOPA backend storage, you can either add a statement `P rdfs:subPropertyOf Q` and benefit from an existing RDFS inference rule set, or define your custom inference rule, as per https://graphdb.ontotext.com/documentation/standard/reasoning.html. 
+4. Now, you can use the `exactMatchesAsserted` JOPA field for updating the non-inferred values, and `exactMatches` field for reading all the values (asserted and inferred).
