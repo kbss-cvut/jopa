@@ -9,7 +9,7 @@ In JOPA, inferred attributes are not writable. However, sometimes one wants to b
 An example would be the property `skos:exactMatch`. It might be both edited by an application (e.g. a SKOS editor) and inferred (e.g. because it is symmetric).
 
 ### Workaround
-![image](https://user-images.githubusercontent.com/1140626/115122818-44af3a80-9fba-11eb-9d8e-13a351266825.png)
+![image](https://user-images.githubusercontent.com/1140626/115122855-80e29b00-9fba-11eb-80ef-f9d214f820b1.png)
 
 1. Let's have a property `Q`, e.g. `skos:exactMatch`.
 2. Define a fresh property `P` in Your preferred namespace, e.g. `https://example.org/exactMatchAsserted`. This one will be writeable, leaving `Q` read-only.
