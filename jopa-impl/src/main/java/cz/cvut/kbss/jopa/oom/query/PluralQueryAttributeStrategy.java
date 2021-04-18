@@ -25,19 +25,8 @@ public class PluralQueryAttributeStrategy<X> extends QueryFieldStrategy<PluralQu
     @Override
     public void addValueFromTypedQuery(TypedQuery<?> typedQuery) {
         typedQuery.getResultStream()
-                .forEach(value -> {
-                    if (isValidRange(value)) {
-                        values.add(toAttributeValue(value));
-                    } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) { //TODO test if works
-                        values.add(IdentifierTransformer
-                                .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value), elementType));
-                    }
-                });
-    }
-
-    @Override
-    boolean isValidRange(Object value) {
-        return elementType.isAssignableFrom(value.getClass()) || canBeConverted(value);
+                .map(this::toAttributeValue)
+                .forEach(values::add);
     }
 
     @Override

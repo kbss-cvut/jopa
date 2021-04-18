@@ -12,12 +12,12 @@ import java.util.Set;
 public class OWLClassWithQueryAttr3 {
 
     private static final String QUERY = "SELECT ?pluralAttribute\n" +
-                                        "WHERE {?this <" + Vocabulary.P_HAS_SIMPLE_LIST + "> ?stringAttribute}";
+                                        "WHERE {?this <" + Vocabulary.P_HAS_SIMPLE_LIST + "> ?pluralAttribute}";
 
     @Id
     private URI uri;
 
-    @OWLDataProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST)
+    @OWLDataProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST, simpleLiteral = true)
     private Set<String> pluralAttribute;
 
     @Sparql(query=QUERY)
@@ -71,7 +71,7 @@ public class OWLClassWithQueryAttr3 {
     @Override
     public String toString() {
         String out = "OWLClassWithQueryAttr: uri = " + uri;
-        out += ", stringAttribute = " + pluralAttribute;
+        out += ", pluralAttribute = " + pluralAttribute;
         return out;
     }
 }

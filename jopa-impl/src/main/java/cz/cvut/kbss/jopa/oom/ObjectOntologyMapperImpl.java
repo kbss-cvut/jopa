@@ -17,10 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
@@ -145,6 +142,16 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI primaryKey = EntityPropertiesUtils.getIdentifier(entity, et);
+
+        if (et.hasQueryAttribute(field.getName())) {
+            QueryAttribute<? super T, ?> queryAttribute = et.getQueryAttribute(field.getName());
+            try {
+                entityBuilder.setQueryAttributeFieldValue(entity, queryAttribute, et);
+            } catch (IllegalAccessException e) {
+                throw new EntityReconstructionException(e);
+            }
+            return;
+        }
 
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
                 field, descriptor, et);

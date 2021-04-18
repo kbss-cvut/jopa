@@ -60,6 +60,8 @@ public abstract class BaseRunner {
     protected OWLClassWithQueryAttr2 entityWithQueryAttr2;
     protected OWLClassWithQueryAttr3 entityWithQueryAttr3;
     protected OWLClassWithQueryAttr4 entityWithQueryAttr4;
+    protected OWLClassWithQueryAttr5 entityWithQueryAttr5;
+    protected OWLClassWithQueryAttr6 entityWithQueryAttr6;
 
     protected final DataAccessor dataAccessor;
     protected final PersistenceFactory persistenceFactory;
@@ -136,6 +138,10 @@ public abstract class BaseRunner {
         this.entityWithQueryAttr4 = new OWLClassWithQueryAttr4();
         entityWithQueryAttr4.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr4"));
         entityWithQueryAttr4.setStringAttribute("EntityWithQueryAttrStringAttribute4");
+        this.entityWithQueryAttr5 = new OWLClassWithQueryAttr5();
+        entityWithQueryAttr5.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr5"));
+        this.entityWithQueryAttr6 = new OWLClassWithQueryAttr6();
+        entityWithQueryAttr6.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr6"));
     }
 
     @AfterEach

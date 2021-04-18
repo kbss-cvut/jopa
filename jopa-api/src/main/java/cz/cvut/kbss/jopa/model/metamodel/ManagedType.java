@@ -331,6 +331,15 @@ public interface ManagedType<X> extends Type<X> {
     Set<QueryAttribute<? super X, ?>> getQueryAttributes();
 
     /**
+     * Check if a query based attribute of the managed type that corresponds to the
+     * specified name exists.
+     *
+     * @param name the name of the represented attribute
+     * @return {@code true} if the query attribute exists
+     */
+    boolean hasQueryAttribute(String name);
+
+    /**
      * Return the query based attribute of the managed type that corresponds to the
      * specified name.
      *
