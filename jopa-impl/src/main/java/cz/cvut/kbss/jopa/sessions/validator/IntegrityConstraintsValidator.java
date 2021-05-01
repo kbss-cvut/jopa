@@ -54,7 +54,7 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(et, ErrorUtils.getNPXMessageSupplier("et"));
 
         final Object id = EntityPropertiesUtils.getIdentifier(instance, et);
-        for (Attribute<? super T, ?> att : et.getAttributes()) {
+        for (FieldSpecification<? super T, ?> att : et.getFieldSpecifications()) {
             if (skipLazy && att.getFetchType() == FetchType.LAZY) {
                 continue;
             }
