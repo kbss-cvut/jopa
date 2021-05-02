@@ -3,16 +3,16 @@ package cz.cvut.kbss.jopa.query.criteria;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.expressions.*;
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Arrays;
 
-public class CriteriaFactoryImpl implements CriteriaFactory {
+public class CriteriaBuilderImpl implements CriteriaBuilder {
 
     private final UnitOfWorkImpl uow;
 
-    public CriteriaFactoryImpl(UnitOfWorkImpl uow) {
+    public CriteriaBuilderImpl(UnitOfWorkImpl uow) {
         this.uow = uow;
     }
 

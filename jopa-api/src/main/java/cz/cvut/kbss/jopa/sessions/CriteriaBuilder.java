@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 
-public interface CriteriaFactory extends PredicateFactory {
+public interface CriteriaBuilder extends PredicateFactory {
 
     /**
      * Create a CriteriaQuery object.

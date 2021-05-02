@@ -28,18 +28,18 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     protected final CriteriaQueryHolder<T> query;
     private final Metamodel metamodel;
-    private final CriteriaFactoryImpl factory;
+    private final CriteriaBuilderImpl cb;
 
 
-    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel, CriteriaFactoryImpl factory) {
+    public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel, CriteriaBuilderImpl cb) {
         this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
         this.metamodel = metamodel;
-        this.factory = factory;
+        this.cb = cb;
     }
 
     @Override
     public <X> Root<X> from(Class<X> entityClass) {
-        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entityClass, null, metamodel, this.factory), entityClass, this.factory);
+        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entityClass, null, metamodel, this.cb), entityClass, this.cb);
         query.setRoot(root);
         return root;
     }
@@ -57,13 +57,13 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> where(Expression<Boolean> expression) {
-        query.setWhere(factory.wrapExpressionToPredicateWithRepair(expression));
+        query.setWhere(cb.wrapExpressionToPredicateWithRepair(expression));
         return this;
     }
 
     @Override
     public CriteriaQuery<T> where(Predicate... predicates) {
-        query.setWhere(factory.and(predicates));
+        query.setWhere(cb.and(predicates));
         return this;
     }
 
@@ -130,13 +130,13 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> having(Expression<Boolean> restriction) {
-        query.setHaving(factory.and(factory.wrapExpressionToPredicateWithRepair(restriction)));
+        query.setHaving(cb.and(cb.wrapExpressionToPredicateWithRepair(restriction)));
         return this;
     }
 
     @Override
     public CriteriaQuery<T> having(Predicate... restrictions) {
-        query.setHaving(factory.and(restrictions));
+        query.setHaving(cb.and(restrictions));
         return this;
     }
 

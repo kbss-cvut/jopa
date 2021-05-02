@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,13 +17,13 @@ import java.util.Collections;
  */
 abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
-    protected final CriteriaFactory factory;
+    protected final CriteriaBuilder cb;
 
     protected boolean negated;
 
-    public AbstractExpression(Class<Y> type, CriteriaFactory factory) {
+    public AbstractExpression(Class<Y> type, CriteriaBuilder cb) {
         super(type);
-        this.factory = factory;
+        this.cb = cb;
         negated = false;
     }
 
@@ -31,12 +31,12 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
     // da sa Collection<?> spracovat lepsie?
     @Override
     public Predicate in(Collection<?> values) {
-        PredicateFactory.In<Y> predicate = factory.in(this);
+        PredicateFactory.In<Y> predicate = cb.in(this);
         for (Object value : values) {
             if (value instanceof AbstractExpression) {
                 predicate.value((Expression<? extends Y>) value);
             } else {
-                predicate.value(factory.literal((Y) value));
+                predicate.value(cb.literal((Y) value));
             }
         }
         return predicate;
@@ -46,7 +46,7 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
     // da sa spracovat lepsie?
     @Override
     public Predicate in(Expression<?>... values) {
-        PredicateFactory.In<Y> predicate = factory.in(this);
+        PredicateFactory.In<Y> predicate = cb.in(this);
         for (Expression value : values) {
                 predicate.value((Expression<? extends Y>) value);
         }

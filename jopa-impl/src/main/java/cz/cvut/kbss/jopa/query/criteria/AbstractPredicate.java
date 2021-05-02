@@ -3,7 +3,7 @@ package cz.cvut.kbss.jopa.query.criteria;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
 import java.util.List;
 
@@ -11,8 +11,8 @@ abstract public class AbstractPredicate extends AbstractExpression<Boolean> impl
 
     protected BooleanOperator booleanOperator;
 
-    public AbstractPredicate(BooleanOperator booleanOperator, CriteriaFactory factory) {
-        super(Boolean.class, factory);
+    public AbstractPredicate(BooleanOperator booleanOperator, CriteriaBuilder cb) {
+        super(Boolean.class, cb);
         this.booleanOperator = booleanOperator;
     }
 

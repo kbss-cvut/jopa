@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,12 +45,12 @@ public class CriteriaQueryTranslateQueryTest {
     @Mock
     private UnitOfWorkImpl uowMock;
 
-    private static CriteriaFactory f;
+    private static CriteriaBuilder f;
     private CriteriaParameterFiller criteriaParameterFiller;
 
     @BeforeAll
     static void init() {
-        f = mock(CriteriaFactoryImpl.class);
+        f = mock(CriteriaBuilderImpl.class);
     }
 
     @BeforeEach
@@ -66,7 +66,7 @@ public class CriteriaQueryTranslateQueryTest {
         when(metamodel.getEntities()).thenReturn(Collections.emptySet());
         when(mpp.isEntityType(any())).thenAnswer(inv -> metamodel.isEntityType(inv.getArgument(0)));
 
-        f = new CriteriaFactoryImpl(uowMock);
+        f = new CriteriaBuilderImpl(uowMock);
         criteriaParameterFiller = new CriteriaParameterFiller();
     }
 

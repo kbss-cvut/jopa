@@ -1,15 +1,15 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
 abstract public class AbstractComparisonExpression extends AbstractExpression<Boolean> {
 
     protected AbstractExpression<?> right;
     protected AbstractExpression<?> left;
 
-    public AbstractComparisonExpression(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaFactory factory) {
-        super(Boolean.class, factory);
+    public AbstractComparisonExpression(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaBuilder cb) {
+        super(Boolean.class, cb);
         this.left = x;
         this.right = y;
     }

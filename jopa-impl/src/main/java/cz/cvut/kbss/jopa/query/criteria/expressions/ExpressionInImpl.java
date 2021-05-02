@@ -6,7 +6,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
 import cz.cvut.kbss.jopa.query.criteria.AbstractPredicate;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.sessions.CriteriaFactory;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +16,8 @@ public class ExpressionInImpl<Y> extends AbstractPredicate implements PredicateF
     private Expression<Y> expression;
     private List<Expression<? extends Y>> values;
 
-    public ExpressionInImpl(Expression<? extends Y> expression, CriteriaFactory factory) {
-        super(BooleanOperator.AND, factory);
+    public ExpressionInImpl(Expression<? extends Y> expression, CriteriaBuilder cb) {
+        super(BooleanOperator.AND, cb);
         this.expression = (Expression<Y>) expression;
     }
 
@@ -29,7 +29,7 @@ public class ExpressionInImpl<Y> extends AbstractPredicate implements PredicateF
     @Override
     public PredicateFactory.In<Y> value(Y value) {
         if (values == null) values = new ArrayList<>();
-        values.add(super.factory.literal(value));
+        values.add(super.cb.literal(value));
         return this;
     }
 
