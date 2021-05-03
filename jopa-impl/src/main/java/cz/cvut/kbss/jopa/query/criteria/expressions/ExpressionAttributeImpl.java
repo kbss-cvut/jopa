@@ -5,12 +5,12 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
-public class ExpressionAttributeImpl<Y> extends AbstractPathExpression<Y> {
+public class ExpressionAttributeImpl<X> extends AbstractPathExpression<X> {
 
     protected String attributeName;
-    protected Attribute attribute;
+    protected Attribute<?,X> attribute;
 
-    public ExpressionAttributeImpl(Class<Y> type, AbstractPathExpression pathSource, Metamodel metamodel, Attribute attribute, CriteriaBuilder cb) {
+    public ExpressionAttributeImpl(Class<X> type, AbstractPathExpression pathSource, Metamodel metamodel, Attribute<?,X> attribute, CriteriaBuilder cb) {
         super(type, pathSource, metamodel, cb);
         this.attribute = attribute;
         this.attributeName = attribute.getName();

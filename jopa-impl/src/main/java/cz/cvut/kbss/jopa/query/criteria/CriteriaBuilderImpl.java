@@ -33,9 +33,9 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         if (x instanceof AbstractPathExpression){
             if (x instanceof RootImpl) {
                 RootImpl root = (RootImpl) x;
-                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) root.getParentPath(),this);
+                return new ExpressionCountImpl<>(Integer.class, (AbstractPathExpression) root.getParentPath(), this);
             } else{
-                return new ExpressionCountImpl(Integer.class,(AbstractPathExpression) x,this);
+                return new ExpressionCountImpl<>(Integer.class,(AbstractPathExpression) x,this);
             }
         }
         throw new IllegalArgumentException("Aggregate function can be applied only to path expressions.");
