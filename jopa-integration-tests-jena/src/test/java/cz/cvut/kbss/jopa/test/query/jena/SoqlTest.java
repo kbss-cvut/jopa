@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class SoqlTest extends SoqlRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SoqlTest.class);
 
     private static EntityManager em;
 

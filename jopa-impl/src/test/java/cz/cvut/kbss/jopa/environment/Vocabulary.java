@@ -21,6 +21,7 @@ public class Vocabulary {
 
     public static final String c_OwlClassA = CLASS_BASE + "OWLClassA";
     public static final String c_OwlClassB = CLASS_BASE + "OWLClassB";
+    public static final String c_OwlClassC = CLASS_BASE + "OWLClassC";
     public static final String c_OwlClassD = CLASS_BASE + "OWLClassD";
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
     public static final String c_OwlClassN = CLASS_BASE + "OWLClassN";

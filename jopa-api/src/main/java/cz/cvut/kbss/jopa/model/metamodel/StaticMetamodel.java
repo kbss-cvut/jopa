@@ -20,9 +20,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The StaticMetamodel annotation specifies that the class is a metamodel class
- * that represents the entity, mapped superclass, or embeddable class designated
- * by the value element.
+ * Specifies that the annotated class is a metamodel class that represents the entity or mapped superclass designated by the value element.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -170,7 +170,7 @@ public class JenaDriverTest {
         final File storage = Files.createTempFile("jena-driver-test", ".ttl").toFile();
         storage.deleteOnExit();
         this.storageProps = OntologyStorageProperties.driver(JenaDataSource.class.getName())
-                                                     .physicalUri(URI.create(storage.getAbsolutePath())).build();
+                                                     .physicalUri(storage.toURI()).build();
         this.driver = new JenaDriver(storageProps, properties);
 
         final JenaConnection con = driver.acquireConnection();

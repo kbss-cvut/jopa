@@ -61,15 +61,10 @@ public class OWL2JavaTransformerTest {
     private File targetDir;
 
     @BeforeEach
-    public void setUp() {
-        this.mappingFilePath = resolveMappingFilePath();
+    public void setUp() throws Exception {
+        this.mappingFilePath = TestUtils.resolveMappingFilePath();
         this.dataFactory = new OWLDataFactoryImpl();
         this.transformer = new OWL2JavaTransformer();
-    }
-
-    private String resolveMappingFilePath() {
-        final File mf = new File(getClass().getClassLoader().getResource(MAPPING_FILE_NAME).getFile());
-        return mf.getAbsolutePath();
     }
 
     @AfterEach

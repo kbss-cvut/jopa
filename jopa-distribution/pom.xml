@@ -6,13 +6,21 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.16.3</version>
+        <version>0.16.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>jopa-distribution</artifactId>
     <packaging>pom</packaging>
     <name>JOPA distribution assembly</name>
+
+    <repositories>
+        <repository>
+            <id>kbss</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://kbss.felk.cvut.cz/m2repo</url>
+        </repository>
+    </repositories>
 
     <!-- On recommendation of http://books.sonatype.com/mvnref-book/reference/assemblies-sect-best-practices.html -->
 

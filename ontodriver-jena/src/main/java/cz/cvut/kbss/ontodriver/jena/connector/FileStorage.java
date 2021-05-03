@@ -30,7 +30,8 @@ import java.io.IOException;
 /**
  * File storage accessor.
  * <p>
- * Note that currently this accessor does not support working with datasets. Only single graph can be present in the file.
+ * Note that currently this accessor does not support working with datasets. Only single graph can be present in the
+ * file.
  */
 class FileStorage extends LocalStorage {
 
@@ -38,7 +39,7 @@ class FileStorage extends LocalStorage {
 
     FileStorage(DriverConfiguration configuration) {
         super(configuration);
-        this.location = configuration.getStorageProperties().getPhysicalURI().toString();
+        this.location = configuration.getStorageProperties().getPhysicalURI().getSchemeSpecificPart();
         initialize();
     }
 

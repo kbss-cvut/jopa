@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.loaders;
 
@@ -20,10 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -58,7 +55,7 @@ class ClasspathScanner {
             while (urls.hasMoreElements()) {
                 final URL url = urls.nextElement();
                 if (isJar(url.toString())) {
-                    processJarFile(url, scanPath);
+                    processJarFile(sanitizePath(url), scanPath);
                 } else {
                     processDirectory(new File(getUrlAsUri(url).getPath()), scanPath);
                 }
@@ -68,11 +65,21 @@ class ClasspathScanner {
             while (resources.hasMoreElements()) {
                 URL resourceURL = resources.nextElement();
                 if (isJar(resourceURL.toString()))
-                    processJarFile(resourceURL, scanPath);
+                    processJarFile(sanitizePath(resourceURL), scanPath);
             }
         } catch (IOException e) {
             throw new OWLPersistenceException("Unable to scan packages for entity classes.", e);
         }
+    }
+
+    /**
+     * Handles possible non-ascii character encoding in the specified URL.
+     * @param url Resource URL (presumably leading to a local file)
+     * @return Decoded argument
+     * @throws UnsupportedEncodingException Should not happen, using standard UTF-8 encoding
+     */
+    private static String sanitizePath(URL url) throws UnsupportedEncodingException {
+        return URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.toString());
     }
 
     private static boolean isJar(String filePath) {
@@ -89,9 +96,9 @@ class ClasspathScanner {
         }
     }
 
-    private void processJarFile(URL jarResource, String packageName) {
+    private void processJarFile(String jarResource, String packageName) {
         final String relPath = packageName.replace('.', '/');
-        final String jarPath = jarResource.getPath().replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
+        final String jarPath = jarResource.replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
                                           .replaceFirst("file:", "");
 
         LOG.trace("Scanning jar file {} for entity classes.", jarPath);
@@ -125,7 +132,7 @@ class ClasspathScanner {
     }
 
     private void processDirectory(File dir, String packageName)
-            throws MalformedURLException {
+            throws MalformedURLException, UnsupportedEncodingException {
         LOG.trace("Scanning directory {} for entity classes.", dir);
         // Get the list of the files contained in the package
         final String[] files = dir.list();
@@ -146,7 +153,7 @@ class ClasspathScanner {
             if (subDir.isDirectory()) {
                 processDirectory(subDir, packageName + (!packageName.isEmpty() ? '.' : "") + fileName);
             } else if (isJar(subDir.getAbsolutePath())) {
-                processJarFile(subDir.toURI().toURL(), packageName);
+                processJarFile(sanitizePath(subDir.toURI().toURL()), packageName);
             }
         }
     }

@@ -14,7 +14,6 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.TestPersistenceProvider;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -26,7 +25,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-@Disabled
 class DefaultPersistenceProviderResolverTest {
 
     private final DefaultPersistenceProviderResolver resolver = new DefaultPersistenceProviderResolver();
@@ -62,7 +60,7 @@ class DefaultPersistenceProviderResolverTest {
         final List<PersistenceProvider> result = resolver.getPersistenceProviders();
         assertFalse(result.isEmpty());
         final Optional<PersistenceProvider> pp = result.stream().filter(p -> p instanceof TestPersistenceProvider)
-                .findAny();
+                                                       .findAny();
         assertTrue(pp.isPresent());
     }
 
@@ -74,7 +72,8 @@ class DefaultPersistenceProviderResolverTest {
     }
 
     private void generateProviderFileContent(String content) throws Exception {
-        final File file = new File(Thread.currentThread().getContextClassLoader().getResource("META-INF" + File.separator + "services" + File.separator + PersistenceProperties.JPA_PERSISTENCE_PROVIDER).getFile());
+        final File file = new File(Thread.currentThread().getContextClassLoader().getResource(
+                "META-INF/services/" + PersistenceProperties.JPA_PERSISTENCE_PROVIDER).getFile());
         Files.write(file.toPath(), content.getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
     }
 }
