@@ -27,8 +27,6 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
         negated = false;
     }
 
-    //TODO - BAKALARKA - KONZULTACIA
-    // da sa Collection<?> spracovat lepsie?
     @Override
     public Predicate in(Collection<?> values) {
         PredicateFactory.In<Y> predicate = cb.in(this);
@@ -42,8 +40,6 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
         return predicate;
     }
 
-    //TODO - BAKALARKA - KONZULTACIA
-    // da sa spracovat lepsie?
     @Override
     public Predicate in(Expression<?>... values) {
         PredicateFactory.In<Y> predicate = cb.in(this);
