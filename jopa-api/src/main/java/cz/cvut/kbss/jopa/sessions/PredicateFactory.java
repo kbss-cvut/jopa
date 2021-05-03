@@ -1,4 +1,7 @@
-package cz.cvut.kbss.jopa.model.query.criteria;
+package cz.cvut.kbss.jopa.sessions;
+
+import cz.cvut.kbss.jopa.model.query.criteria.Expression;
+import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 
 public interface PredicateFactory {
 

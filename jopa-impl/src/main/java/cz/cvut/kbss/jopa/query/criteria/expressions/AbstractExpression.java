@@ -2,14 +2,13 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
+import cz.cvut.kbss.jopa.sessions.PredicateFactory;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Parent of all other types of expressions. It offers its children the implementation of methods for IN expression as prescribed by the Expression interface.

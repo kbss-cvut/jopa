@@ -19,6 +19,7 @@ public interface CriteriaBuilder extends PredicateFactory {
 
     /**
      * Create an aggregate expression applying the count operation.
+     * Return type of count function in SPARQL is xsd:integer which JOPA internally represents as Integer.
      * @param x expression representing input value to count operation
      * @return count expression
      */
