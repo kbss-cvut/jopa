@@ -25,8 +25,7 @@ abstract public class AbstractPathExpression<X> extends AbstractExpression<X> im
     }
 
     public <Y> Path<Y> getAttr(SingularAttribute<? super X, Y> attribute) {
-        Path<Y> newPathSource = new PathImpl<Y>(this.metamodel, new ExpressionAttributeImpl(attribute.getJavaType(),  this.pathSource, this.metamodel, attribute, this.cb),attribute.getJavaType(),this.cb);
-        return newPathSource;
+        return new PathImpl<>(this.metamodel, new ExpressionAttributeImpl<>(attribute.getJavaType(),  this.pathSource, this.metamodel, attribute, this.cb),attribute.getJavaType(), this.cb);
     }
 
 
