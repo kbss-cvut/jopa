@@ -280,14 +280,13 @@ public interface EntityManager {
     Query createQuery(String qlString);
 
     /**
-     * Creates an instance of query for executing Java persistence query language statement.
+     * Create an instance of TypedQuery for executing a criteria query.
      *
-     * @param criteriaQuery criteria query
-     * @param resultClass result type
+     * @param criteriaQuery criteria query object
      * @return the new query instance
      */
     @NonJPA
-    <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery, Class<T> resultClass);
+    <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery);
 
     /**
      * Creates an instance of query for executing Java persistence query language statement.

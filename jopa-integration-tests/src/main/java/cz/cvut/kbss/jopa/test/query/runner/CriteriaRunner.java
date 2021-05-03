@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.test.query.runner;
 
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
@@ -29,7 +30,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(root);
-        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         final List<OWLClassA> result = tq.getResultList();
 
         assertEquals(expected.size(), result.size());
@@ -45,13 +46,14 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery query = cb.createQuery();
         query.select(query.from(OWLClassA.class));
-        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
-        final List<OWLClassA> result = tq.getResultList();
+        TypedQuery tq = getEntityManager().createQuery(query);
+        final List result = tq.getResultList();
 
         assertEquals(expected.size(), result.size());
-        for (OWLClassA a : result) {
-            assertNotNull(a.getStringAttribute());
-            assertTrue(expected.stream().anyMatch(aa -> aa.getUri().equals(a.getUri())));
+        for (Object a : result) {
+            //TODO - BAKALARKA - org.eclipse.rdf4j.sail.memory.model.MemIRI cannot be cast to cz.cvut.kbss.jopa.test.OWLClassA
+            assertNotNull(((OWLClassA)a).getStringAttribute());
+            assertTrue(expected.stream().anyMatch(aa -> aa.getUri().equals(((OWLClassA)a).getUri())));
         }
     }
 
@@ -62,7 +64,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaQuery<Integer> query = cb.createQuery(Integer.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(cb.count(root));
-        final Integer result = getEntityManager().createQuery(query, Integer.class).getSingleResult();
+        final Integer result = getEntityManager().createQuery(query).getSingleResult();
 
         assertEquals(expected.size(), result);
     }
@@ -75,7 +77,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute),expected.getStringAttribute(),"en");
         query.select(root).where(restriction);
-        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         final OWLClassA result = tq.getSingleResult();
 
         assertEquals(expected.getUri(), result.getUri());
@@ -91,7 +93,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute), unexpected.getStringAttribute(),"en");
         query.select(root).where(cb.not(restriction));
-        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         final List<OWLClassA> result = tq.getResultList();
 
         for (OWLClassA item : result) {
@@ -111,7 +113,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Predicate secondRestriction = cb.lessThan(root.getAttr("intAttribute"), intThreshold);
         Predicate restrictions = cb.and(firstRestriction,secondRestriction);
         query.select(root).where(restrictions);
-        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query, OWLClassT.class);
+        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
 
         assertFalse(result.isEmpty());
@@ -129,7 +131,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Root<OWLClassD> root = query.from(OWLClassD.class);
         Predicate restriction = cb.equal(root.getAttr("owlClassA"),expected.getOwlClassA().getUri());
         query.select(root).where(restriction);
-        TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query, OWLClassD.class);
+        TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query);
         final OWLClassD result = tq.getSingleResult();
 
         assertEquals(expected.getUri(), result.getUri());
@@ -145,7 +147,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Predicate firstRestriction = cb.equal(root.getAttr("owlClassA"),sample.getOwlClassA().getUri());
         Predicate secondRestriction = cb.lessThanOrEqual(root.getAttr("intAttribute"),sample.getIntAttribute());
         query.select(root).where(firstRestriction,secondRestriction);
-        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query, OWLClassT.class);
+        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
 
         assertFalse(result.isEmpty());
@@ -163,7 +165,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaQuery<OWLClassT> query = cb.createQuery(OWLClassT.class);
         Root<OWLClassT> root = query.from(OWLClassT.class);
         query.select(root).orderBy(cb.asc(root.getAttr("intAttribute")));
-        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query, OWLClassT.class);
+        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
 
         assertEquals(expected.size(), result.size());
@@ -181,7 +183,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Predicate firstRestriction = cb.equal(root.getAttr("owlClassA"),sample.getOwlClassA().getUri());
         Predicate secondRestriction = cb.lessThanOrEqual(root.getAttr("intAttribute"),sample.getIntAttribute());
         query.select(root).where(cb.or(firstRestriction,secondRestriction));
-        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query, OWLClassT.class);
+        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
 
         assertFalse(result.isEmpty());
@@ -200,7 +202,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Root<OWLClassD> root = query.from(OWLClassD.class);
         Predicate restrictions = cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"), expected.getOwlClassA().getStringAttribute(),"en");
         query.select(root).where(restrictions);
-        TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query, OWLClassD.class);
+        TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query);
         final OWLClassD result = tq.getSingleResult();
 
         assertEquals(expected.getUri(), result.getUri());
@@ -216,7 +218,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final ParameterExpression<String> strAtt = cb.parameter(String.class, "pOne");
         Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute), strAtt);
         query.select(root).where(restriction);
-        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         tq.setParameter(strAtt, expected.getStringAttribute(), "en");
         final OWLClassA result = tq.getSingleResult();
 
@@ -234,7 +236,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final ParameterExpression<String> strAtt = cb.parameter(String.class);
         Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute), strAtt);
         query.select(root).where(restriction);
-        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         tq.setParameter(strAtt, expected.getStringAttribute(), "en");
         final OWLClassA result = tq.getSingleResult();
 
@@ -251,7 +253,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute), cb.literal(expected.getStringAttribute(),"en"));
         query.select(root).where(restriction);
-        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query, OWLClassA.class);
+        TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         final OWLClassA result = tq.getSingleResult();
 
         assertEquals(expected.getUri(), result.getUri());
