@@ -2,12 +2,9 @@ package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractComparisonExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
-
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class SimplePredicateImpl extends AbstractPredicate{
@@ -27,9 +24,8 @@ public class SimplePredicateImpl extends AbstractPredicate{
 
     @Override
     public List<Expression<Boolean>> getExpressions(){
-//        return new ArrayList<Expression<Boolean>>(expression);
-        return null;
-    };
+        return Collections.emptyList();
+    }
 
     @Override
     public BooleanOperator getOperator() {
