@@ -44,9 +44,12 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         return root;
     }
 
+    //TODO - BAKALARKA - entity.getBindableJavaType() -> Class ?
     @Override
     public <X> Root<X> from(EntityType<X> entity) {
-        return null;
+        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entity.getBindableJavaType(), null, metamodel, this.cb), entity.getBindableJavaType(), this.cb);
+        query.setRoot(root);
+        return root;
     }
 
     @Override

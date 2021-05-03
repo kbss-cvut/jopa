@@ -1,9 +1,8 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
-import cz.cvut.kbss.jopa.model.query.criteria.Order;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
+import cz.cvut.kbss.jopa.sessions.PredicateFactory;
 import cz.cvut.kbss.jopa.query.criteria.AbstractPredicate;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
