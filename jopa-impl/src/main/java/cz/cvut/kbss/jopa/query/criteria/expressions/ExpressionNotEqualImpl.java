@@ -14,9 +14,7 @@ public class ExpressionNotEqualImpl extends AbstractComparisonExpression {
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         if (!this.negated) query.append("NOT ");
-        this.left.setExpressionToQuery(query, parameterFiller);
-        query.append(this.getComparisonOperator());
-        this.right.setExpressionToQuery(query, parameterFiller);
+        super.setExpressionToQuery(query, parameterFiller);
     }
 
     @Override
