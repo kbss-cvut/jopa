@@ -6,6 +6,12 @@ import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 import java.lang.reflect.Field;
 
+/**
+ * Singular query attributes contain a single value or reference, ie. they are not collections.
+ *
+ * @param <X> The represented type that contains the attribute
+ * @param <Y> The type of the represented attribute
+ */
 public class SingularQueryAttributeImpl<X, Y> extends AbstractQueryAttribute<X, Y> implements SingularQueryAttribute<X, Y> {
 
     private final Type<Y> type;

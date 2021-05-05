@@ -31,5 +31,9 @@ public @interface Sparql {
      */
     String query();
 
+    /**
+     * If {@code FetchType.LAZY} is specified the attribute will not be initialized during entity construction
+     * but rather only when it is required by a getter method.
+     */
     FetchType fetchType() default FetchType.EAGER;
 }

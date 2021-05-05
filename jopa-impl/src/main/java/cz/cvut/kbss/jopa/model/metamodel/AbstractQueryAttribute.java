@@ -7,6 +7,12 @@ import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 
+/**
+ * A common class to all attributes defined by a query
+ *
+ * @param <X> The represented type that contains the attribute
+ * @param <Y> The type of the represented attribute
+ */
 public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, Y> {
 
     private final String query;
