@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
-import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionEntityImpl;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import java.util.*;
 
@@ -39,15 +38,14 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public <X> Root<X> from(Class<X> entityClass) {
-        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entityClass, null, metamodel, this.cb), entityClass, this.cb);
+        RootImpl<X> root = new RootImpl<>(metamodel, null, entityClass, this.cb);
         query.setRoot(root);
         return root;
     }
 
-    //TODO - BAKALARKA - entity.getBindableJavaType() -> Class ?
     @Override
     public <X> Root<X> from(EntityType<X> entity) {
-        RootImpl<X> root = new RootImpl<>(metamodel, new ExpressionEntityImpl<>(entity.getBindableJavaType(), null, metamodel, this.cb), entity.getBindableJavaType(), this.cb);
+        RootImpl<X> root = new RootImpl<>(metamodel, null, entity.getBindableJavaType(), this.cb);
         query.setRoot(root);
         return root;
     }

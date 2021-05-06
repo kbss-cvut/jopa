@@ -31,12 +31,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public Expression<Integer> count(Expression<?> x) {
         if (x == null) throw new IllegalArgumentException("Aggregate function cannot be applied to null expression.");
         if (x instanceof AbstractPathExpression){
-            if (x instanceof RootImpl) {
-                RootImpl root = (RootImpl) x;
-                return new ExpressionCountImpl<>(Integer.class, (AbstractPathExpression) root.getParentPath(), this);
-            } else{
-                return new ExpressionCountImpl<>(Integer.class,(AbstractPathExpression) x,this);
-            }
+            return new ExpressionCountImpl<>(Integer.class,(AbstractPathExpression) x,this);
         }
         throw new IllegalArgumentException("Aggregate function can be applied only to path expressions.");
     }

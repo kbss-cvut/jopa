@@ -20,12 +20,12 @@ abstract public class AbstractPathExpression<X> extends AbstractExpression<X> im
 
     public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
         Attribute attribute = metamodel.entity(type).getAttribute(attributeName);
-        Path<Y> newPathSource = new PathImpl<Y>(this.metamodel,new ExpressionAttributeImpl(attribute.getJavaType(),  this.pathSource, this.metamodel, attribute,this.cb),attribute.getJavaType(),this.cb);
+        Path<Y> newPathSource = new PathImpl<Y>(this.metamodel,this, attribute, this.cb);
         return newPathSource;
     }
 
     public <Y> Path<Y> getAttr(SingularAttribute<? super X, Y> attribute) {
-        return new PathImpl<>(this.metamodel, new ExpressionAttributeImpl<>(attribute.getJavaType(),  this.pathSource, this.metamodel, attribute, this.cb),attribute.getJavaType(), this.cb);
+        return new PathImpl<>(this.metamodel, this, attribute, this.cb);
     }
 
 
