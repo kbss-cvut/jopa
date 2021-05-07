@@ -10,7 +10,7 @@ public class ExpressionEqualImpl extends AbstractComparisonExpression {
         super(x, y, cb);
     }
 
-    //TODO - remove this override implementation when SOQL will support equal negation as != or <>
+    //TODO - remove this override method when SOQL supports equal negation as != or <>
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         if (this.negated) query.append("NOT ");
@@ -19,7 +19,7 @@ public class ExpressionEqualImpl extends AbstractComparisonExpression {
 
     @Override
     protected String getComparisonOperator() {
-        //TODO - change when SOQL will support equal negation as != or <>
+        //TODO - change when SOQL supports equal negation as != or <>
         //return this.isNegated() ? " != " : " = ";
         return " = ";
     }

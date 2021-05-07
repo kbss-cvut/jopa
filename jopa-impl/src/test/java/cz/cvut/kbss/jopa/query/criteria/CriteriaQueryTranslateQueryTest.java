@@ -179,7 +179,7 @@ public class CriteriaQueryTranslateQueryTest {
 
             final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0";
-            //TODO - replace expetedJpqlQuery when SOQL will support equal negation as != or <>
+            //TODO - replace expetedJpqlQuery when SOQL supports equal negation as != or <>
             //final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
@@ -281,7 +281,7 @@ public class CriteriaQueryTranslateQueryTest {
             final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
             final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0";
-            //TODO - replace expetedJpqlQuery when SOQL will support equal negation as != or <>
+            //TODO - replace expetedJpqlQuery when SOQL supports equal negation as != or <>
             //final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
@@ -353,7 +353,7 @@ public class CriteriaQueryTranslateQueryTest {
 
             final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0 AND NOT owlclassa.stringAttribute = :generatedName1 AND NOT owlclassa.stringAttribute = :generatedName2";
-            //TODO - replace expetedJpqlQuery when SOQL will support equal negation as != or <>
+            //TODO - replace expetedJpqlQuery when SOQL supports equal negation as != or <>
             //final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0 AND owlclassa.stringAttribute != :generatedName1 AND owlclassa.stringAttribute != :generatedName2";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
@@ -371,7 +371,7 @@ public class CriteriaQueryTranslateQueryTest {
 
             final String generatedJpqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0 AND NOT owlclassa.stringAttribute = :generatedName1 AND NOT owlclassa.stringAttribute = :generatedName2";
-            //TODO - replace expetedJpqlQuery when SOQL will support equal negation as != or <>
+            //TODO - replace expetedJpqlQuery when SOQL supports equal negation as != or <>
             //final String expectedJpqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0 AND owlclassa.stringAttribute != :generatedName1 AND owlclassa.stringAttribute != :generatedName2";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
@@ -394,7 +394,7 @@ public class CriteriaQueryTranslateQueryTest {
             final CriteriaQueryImpl<OWLClassM> criteriaQuery = (CriteriaQueryImpl<OWLClassM>) query;
             final String generatedJpqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
             final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute < :generatedName0 AND owlclassm.intAttribute >= :generatedName1) OR (owlclassm.doubleAttribute <= :generatedName2 OR NOT owlclassm.intAttribute = :generatedName3)";
-            //TODO - replace expetedJpqlQuery when SOQL will support equal negation as != or <>
+            //TODO - replace expetedJpqlQuery when SOQL supports equal negation as != or <>
             //final String expectedJpqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute < :generatedName0 AND owlclassm.intAttribute >= :generatedName1) OR (owlclassm.doubleAttribute <= :generatedName2 OR owlclassm.intAttribute != :generatedName3)";
             assertEquals(expectedJpqlQuery, generatedJpqlQuery);
         }
