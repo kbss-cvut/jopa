@@ -80,6 +80,11 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     }
 
     @Override
+    public CriteriaQuery<T> distinct() {
+        return this.distinct(true);
+    }
+
+    @Override
     public boolean isDistinct() {
         return query.isDistinct();
     }

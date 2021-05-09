@@ -70,6 +70,12 @@ public interface CriteriaQuery<T>{
     CriteriaQuery<T> distinct(boolean distinct);
 
     /**
+     * Specify that duplicates query results will be eliminated.
+     * @return the modified query
+     */
+    CriteriaQuery<T> distinct();
+
+    /**
      * Return whether duplicate query results must be eliminated or retained.
      * @return boolean indicating whether duplicate query results must be eliminated
      */

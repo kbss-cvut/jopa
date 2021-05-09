@@ -450,7 +450,9 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         ensureOpen();
         CriteriaQueryImpl<T> query = (CriteriaQueryImpl<T>) criteriaQuery;
         CriteriaParameterFiller parameterFiller = new CriteriaParameterFiller();
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query.translateQuery(parameterFiller), query.getResultType());
+        String soqlQuery = query.translateQuery(parameterFiller);
+        LOG.debug("CriteriaQuery translate to SOQL query: " + soqlQuery);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(soqlQuery, query.getResultType());
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         parameterFiller.setValuesToRegisteredParameters(q);
