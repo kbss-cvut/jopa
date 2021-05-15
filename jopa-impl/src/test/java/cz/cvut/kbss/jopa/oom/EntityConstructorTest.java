@@ -653,17 +653,12 @@ class EntityConstructorTest {
 
         when(mapperMock.getUow()).thenReturn(uowMock);
         when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
-        //when(queryFactoryMock.createNativeQuery(any(String.class),
-          //      (Class<?>) any(Class.class)))
-            //    .thenReturn(typedQueryMock);
         doReturn(typedQueryMock)
                 .when(queryFactoryMock).createNativeQuery(any(String.class),
                 (Class<?>) any(Class.class));
         doReturn(typedQueryMock)
                 .when(typedQueryMock).setParameter(any(String.class), any());
         doReturn(STRING_ATT).when(typedQueryMock).getSingleResult();
-        //when(typedQueryMock.setParameter(eq("this"), any())).thenReturn(typedQueryMock);
-        //when(typedQueryMock.getSingleResult()).thenReturn(STRING_ATT);
 
         final OWLClassWithQueryAttr res = constructor.reconstructEntity(PK, mocks.forOwlClassWithQueryAttr().entityType(), descriptor, axioms);
         assertNotNull(res);
