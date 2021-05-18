@@ -69,6 +69,11 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     }
 
     @Override
+    public CriteriaQuery<T> where(List<Predicate> predicates) {
+        return this.where(predicates.toArray(new Predicate[0]));
+    }
+
+    @Override
     public Class<T> getResultType() {
         return query.getResultType();
     }

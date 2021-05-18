@@ -10,6 +10,7 @@ import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -130,6 +131,26 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Predicate firstRestriction = cb.equal(root.getAttr("owlClassA"),sample.getOwlClassA().getUri());
         Predicate secondRestriction = cb.lessThanOrEqual(root.getAttr("intAttribute"),sample.getIntAttribute());
         query.select(root).where(firstRestriction,secondRestriction);
+        TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
+        final List<OWLClassT> result = tq.getResultList();
+
+        assertFalse(result.isEmpty());
+        for (OWLClassT item : result) {
+            assertEquals(sample.getOwlClassA().getUri(), item.getOwlClassA().getUri());
+            assertThat(item.getIntAttribute(), lessThanOrEqualTo(sample.getIntAttribute()));
+        }
+    }
+
+    @Test
+    public void testFindByConjunctionOfAttributesInList() {
+        final OWLClassT sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<OWLClassT> query = cb.createQuery(OWLClassT.class);
+        Root<OWLClassT> root = query.from(OWLClassT.class);
+        List<Predicate> restrictions = new ArrayList<>();
+        restrictions.add(cb.equal(root.getAttr("owlClassA"),sample.getOwlClassA().getUri()));
+        restrictions.add(cb.lessThanOrEqual(root.getAttr("intAttribute"),sample.getIntAttribute()));
+        query.select(root).where(restrictions);
         TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
 

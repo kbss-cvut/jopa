@@ -31,7 +31,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -301,6 +303,21 @@ public class CriteriaQueryTranslateQueryTest {
                     cb.equal(root.getAttr("doubleAttribute"), 1.1),
                     cb.equal(root.getAttr("booleanAttribute"), true)
             );
+            query.select(root).where(restrictions);
+
+            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute = :generatedName0 AND owlclassm.doubleAttribute = :generatedName1 AND owlclassm.booleanAttribute = :generatedName2";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryMultipleRestrictionsWithList() {
+            CriteriaQuery<OWLClassM> query = cb.createQuery(OWLClassM.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            List<Predicate> restrictions = new ArrayList<>();
+            restrictions.add(cb.equal(root.getAttr("intAttribute"), 0));
+            restrictions.add(cb.equal(root.getAttr("doubleAttribute"), 1.1));
+            restrictions.add(cb.equal(root.getAttr("booleanAttribute"), true));
             query.select(root).where(restrictions);
 
             final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
