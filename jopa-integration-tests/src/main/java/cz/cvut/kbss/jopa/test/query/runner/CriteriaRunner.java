@@ -41,23 +41,6 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void testSimpleFindAllWithUntypedCriteriaQuery() {
-        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        CriteriaQuery query = cb.createQuery();
-        query.select(query.from(OWLClassA.class));
-        TypedQuery tq = getEntityManager().createQuery(query);
-        final List result = tq.getResultList();
-
-        assertEquals(expected.size(), result.size());
-        for (Object a : result) {
-            //TODO - BAKALARKA - org.eclipse.rdf4j.sail.memory.model.MemIRI cannot be cast to cz.cvut.kbss.jopa.test.OWLClassA
-            assertNotNull(((OWLClassA)a).getStringAttribute());
-            assertTrue(expected.stream().anyMatch(aa -> aa.getUri().equals(((OWLClassA)a).getUri())));
-        }
-    }
-
-    @Test
     public void testSimpleCount() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();

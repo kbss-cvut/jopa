@@ -16,12 +16,6 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         this.uow = uow;
     }
 
-
-    @Override
-    public CriteriaQuery<Object> createQuery() {
-        return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(Object.class), uow.getMetamodel(), this);
-    }
-
     @Override
     public <T> CriteriaQuery<T> createQuery(Class<T> resultClass) {
         return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel(), this);

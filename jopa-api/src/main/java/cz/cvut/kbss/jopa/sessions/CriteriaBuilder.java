@@ -4,11 +4,6 @@ import cz.cvut.kbss.jopa.model.query.criteria.*;
 
 public interface CriteriaBuilder extends PredicateFactory {
 
-    /**
-     * Create a CriteriaQuery object.
-     * @return criteria query object
-     */
-    CriteriaQuery<Object> createQuery();
 
     /**
      * Create a CriteriaQuery object with the specified result type.

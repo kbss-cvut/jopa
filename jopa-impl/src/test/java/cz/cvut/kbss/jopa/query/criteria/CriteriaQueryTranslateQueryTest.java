@@ -82,16 +82,6 @@ public class CriteriaQueryTranslateQueryTest {
     }
 
     @Test
-    public void testTranslateUntypedQuerySelectAll() {
-        CriteriaQuery query = cb.createQuery();
-        query.select(query.from(OWLClassA.class));
-
-        final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-        final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa";
-        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
-    }
-
-    @Test
     public void testTranslateQuerySelectDistinctAll() {
         CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
