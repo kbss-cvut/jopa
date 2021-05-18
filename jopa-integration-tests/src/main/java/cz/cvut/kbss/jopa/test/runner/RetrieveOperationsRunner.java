@@ -1,14 +1,12 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. You should have received a
+ * copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -310,7 +308,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
                 "<owl:Ontology rdf:about=\"http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine\"></owl:Ontology>" +
                 "</rdf:RDF>";
         Files.write(storage.toPath(), initialContent.getBytes());
-        props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, storage.getAbsolutePath());
+        props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, storage.toURI().toString());
         props.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine");
         props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.toString(false));
         addFileStorageProperties(props);
@@ -320,7 +318,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         em.getTransaction().begin();
         final TypedQuery<Boolean> query =
                 em.createNativeQuery("ASK { ?x a ?y . }", Boolean.class).setParameter("x", URI.create(subject))
-                  .setParameter("y", URI.create(type));
+                        .setParameter("y", URI.create(type));
         assertFalse(query.getSingleResult());
         replaceFileContents(storage);
 

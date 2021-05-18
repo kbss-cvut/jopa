@@ -15,7 +15,7 @@ import java.util.Collections;
 
 public class SoqlTest extends SoqlRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TypedQueryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SoqlTest.class);
 
     private static EntityManager em;
 
