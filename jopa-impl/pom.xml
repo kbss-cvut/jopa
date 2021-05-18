@@ -18,21 +18,7 @@
         <org.antlr4.version>4.8-1</org.antlr4.version>
     </properties>
 
-
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <dependencies>
-
-<!--        <dependency>-->
-<!--            <groupId>com.github.marcel-zec.jopa</groupId>-->
-<!--            <artifactId>jopa-api</artifactId>-->
-<!--            <version>be3fdc0e8fe3579bd99aa00b7b1ed6d9c970f0a3</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-api</artifactId>
