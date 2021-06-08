@@ -26,8 +26,14 @@ import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -64,7 +70,7 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
     void getterAspectIsCalledForFieldsInMappedSuperclass() throws Exception {
         final OWLClassQ entityQ = new OWLClassQ();
         entityQ.setUri(Generators.createIndividualIdentifier());
-        final FieldSpecification aSpec = metamodelMock.entity(OWLClassQ.class).getFieldSpecification("owlClassA");
+        final FieldSpecification<? super OWLClassQ, ?> aSpec = metamodelMock.entity(OWLClassQ.class).getFieldSpecification("owlClassA");
         when(aSpec.getFetchType()).thenReturn(FetchType.LAZY);
         final OWLClassQ clone = (OWLClassQ) sut.registerExistingObject(entityQ, descriptor);
         clone.getOwlClassA();
@@ -166,5 +172,20 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
                 .registerExistingObject(instance, descriptor);
         assertNull(clone.getLabel());
         verify(sut, never()).loadEntityField(any(), any());
+    }
+
+    @Test
+    void manageableInstancesAreSerializable() throws Exception {
+        final BeanListenerAspect.ManageableImpl sut = new BeanListenerAspect.ManageableImpl();
+        sut.setPersistenceContext(this.sut);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(sut);
+        oos.close();
+        final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        Object result = ois.readObject();
+        assertThat(result, instanceOf(BeanListenerAspect.ManageableImpl.class));
+        assertNull(((BeanListenerAspect.ManageableImpl) result).getPersistenceContext());
     }
 }

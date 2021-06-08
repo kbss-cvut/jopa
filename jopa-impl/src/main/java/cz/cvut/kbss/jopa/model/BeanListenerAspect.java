@@ -24,6 +24,7 @@ import org.aspectj.lang.reflect.FieldSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 
 @Aspect
@@ -37,7 +38,7 @@ public class BeanListenerAspect {
         UnitOfWorkImpl getPersistenceContext();
     }
 
-    public static class ManageableImpl implements Manageable {
+    public static class ManageableImpl implements Manageable, Serializable {
         private transient UnitOfWorkImpl persistenceContext;
 
         @Override
