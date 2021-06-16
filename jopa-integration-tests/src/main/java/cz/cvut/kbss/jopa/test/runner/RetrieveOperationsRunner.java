@@ -433,4 +433,54 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertFalse(result.getStringCollection().isEmpty());
         assertThat(result.getStringCollection(), hasItems("value", "valueTwo"));
     }
+
+    @Test
+    void testRetrieveEntityWithQueryAttr() {
+        this.em = getEntityManager("RetrieveWithQueryAttr", false);
+
+        persist(entityWithQueryAttr);
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        final OWLClassWithQueryAttr res = findRequired(OWLClassWithQueryAttr.class, entityWithQueryAttr.getUri());
+        assertEquals(entityWithQueryAttr.getUri(), res.getUri());
+        assertEquals(entityWithQueryAttr.getStringAttribute(), res.getStringAttribute());
+        assertEquals(entityWithQueryAttr.getStringAttribute(), res.getStringQueryAttribute());
+        assertTrue(em.contains(res));
+    }
+
+    @Test
+    void testRetrieveEntityWithManagedTypeQueryAttr() {
+        this.em = getEntityManager("RetrieveWithManagedTypeQueryAttr", false);
+
+        persist(entityWithQueryAttr2, entityA);
+
+        final OWLClassWithQueryAttr2 res = findRequired(OWLClassWithQueryAttr2.class, entityWithQueryAttr2.getUri());
+        assertEquals(entityWithQueryAttr2.getUri(), res.getUri());
+        assertEquals(entityWithQueryAttr2.getEntityAttribute(), res.getEntityAttribute());
+        assertEquals(entityWithQueryAttr2.getEntityAttribute(), res.getEntityQueryAttribute());
+        assertTrue(em.contains(res));
+    }
+
+    @Test
+    void testRetrieveWithLazyQueryAttribute() throws Exception {
+        this.em = getEntityManager("RetrieveLazyQueryAttr", false);
+
+        Set<OWLClassA> simpleSet = Generators.createSimpleSet(20);
+        entityWithQueryAttr6.setPluralAttribute(simpleSet);
+
+        persist(entityWithQueryAttr6);
+
+        final OWLClassWithQueryAttr6 res = findRequired(OWLClassWithQueryAttr6.class, entityWithQueryAttr6.getUri());
+        final Field f = OWLClassWithQueryAttr6.class.getDeclaredField("pluralQueryAttribute");
+        f.setAccessible(true);
+        Object value = f.get(res);
+        assertNull(value);
+        assertNotNull(res.getPluralQueryAttribute());
+        value = f.get(res);
+        assertNotNull(value);
+        assertEquals(entityWithQueryAttr6.getPluralAttribute(), res.getPluralQueryAttribute());
+        for (OWLClassA classA : res.getPluralQueryAttribute()) {
+            assertTrue(em.contains(classA));
+        }
+    }
 }

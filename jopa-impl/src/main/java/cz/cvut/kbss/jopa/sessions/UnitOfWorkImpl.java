@@ -1143,4 +1143,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         }
         return storage.unwrap(cls);
     }
+
+    public SparqlQueryFactory getQueryFactory() {
+        return queryFactory;
+    }
 }

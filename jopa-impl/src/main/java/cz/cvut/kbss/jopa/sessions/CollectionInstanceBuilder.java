@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -228,7 +229,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     private static Collection<Object> createDefaultCollection(Class<?> cls) {
-        return CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.fromClass(cls));
+        return CollectionFactory.createDefaultCollection(CollectionType.fromClass(cls));
     }
 
     @Override

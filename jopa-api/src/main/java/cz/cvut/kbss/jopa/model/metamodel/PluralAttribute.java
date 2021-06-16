@@ -14,11 +14,6 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Instances of the type PluralAttribute represent persistent collection-valued
  * attributes.
@@ -31,25 +26,6 @@ import java.util.Set;
  *            The element type of the represented collection
  */
 public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
-
-    enum CollectionType {
-        SET(Set.class), LIST(List.class), COLLECTION(Collection.class), MAP(Map.class);
-
-        private final Class<?> collectionClass;
-
-        CollectionType(Class<?> cls) {
-            this.collectionClass = cls;
-        }
-
-        public static CollectionType fromClass(Class<?> cls) {
-            for (CollectionType type : values()) {
-                if (type.collectionClass.isAssignableFrom(cls)) {
-                    return type;
-                }
-            }
-            throw new IllegalArgumentException("Unsupported collection class " + cls);
-        }
-    }
 
     /**
      * Return the collection type.

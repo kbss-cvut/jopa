@@ -648,4 +648,120 @@ public abstract class CreateOperationsRunner extends BaseRunner {
                 URI.create(Vocabulary.p_m_StringCollection), s, "en")).collect(
                 Collectors.toSet()), em);
     }
+
+    @Test
+    void testPersistEntityWithQueryAttr() {
+        this.em = getEntityManager("PersistWithQueryAttr", false);
+
+        em.getTransaction().begin();
+        em.persist(entityWithQueryAttr);
+        assertTrue(em.contains(entityWithQueryAttr));
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassWithQueryAttr resultEntity = findRequired(OWLClassWithQueryAttr.class, entityWithQueryAttr.getUri());
+        assertEquals(entityWithQueryAttr.getUri(), resultEntity.getUri());
+        assertEquals(entityWithQueryAttr.getStringAttribute(), resultEntity.getStringAttribute());
+        assertEquals(entityWithQueryAttr.getStringAttribute(), resultEntity.getStringQueryAttribute());
+    }
+
+    @Test
+    void testPersistEntityWithManagedTypeQueryAttr() {
+        this.em = getEntityManager("PersistWithManagedTypeQueryAttr", false);
+
+        persist(entityA);
+
+        em.clear();
+        em.getTransaction().begin();
+        em.persist(entityWithQueryAttr2);
+        assertTrue(em.contains(entityWithQueryAttr2));
+        em.getTransaction().commit();
+
+        final OWLClassWithQueryAttr2 resultEntity = findRequired(OWLClassWithQueryAttr2.class, entityWithQueryAttr2.getUri());
+        assertEquals(entityWithQueryAttr2.getUri(), resultEntity.getUri());
+        assertNotNull(resultEntity.getEntityAttribute());
+        assertNotNull(resultEntity.getEntityQueryAttribute());
+        assertEquals(entityWithQueryAttr2.getEntityAttribute(), resultEntity.getEntityAttribute());
+        assertEquals(entityWithQueryAttr2.getEntityAttribute(), resultEntity.getEntityQueryAttribute());
+    }
+
+    @Test
+    void testPersistEntityWithPluralQueryAttr() {
+        this.em = getEntityManager("PersistWithPluralQueryAttr", false);
+
+        Set<String> pluralAttribute = new HashSet<>();
+        pluralAttribute.add("a");
+        pluralAttribute.add("b");
+        pluralAttribute.add("c");
+
+        entityWithQueryAttr3.setPluralAttribute(pluralAttribute);
+
+        em.getTransaction().begin();
+        em.persist(entityWithQueryAttr3);
+        assertTrue(em.contains(entityWithQueryAttr3));
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassWithQueryAttr3 resultEntity = findRequired(OWLClassWithQueryAttr3.class, entityWithQueryAttr3.getUri());
+        assertEquals(entityWithQueryAttr3.getUri(), resultEntity.getUri());
+        assertEquals(entityWithQueryAttr3.getPluralAttribute(), resultEntity.getPluralAttribute());
+        assertEquals(entityWithQueryAttr3.getPluralAttribute(), resultEntity.getPluralQueryAttribute());
+    }
+
+    @Test
+    void testPersistEntityWithPluralManagedTypeQueryAttr() {
+        this.em = getEntityManager("PersistEntityWithPluralManagedTypeQueryAttr", false);
+
+        entityWithQueryAttr5.setPluralAttribute(Collections.singleton(entityA));
+
+        em.getTransaction().begin();
+        em.persist(entityWithQueryAttr5);
+        assertTrue(em.contains(entityWithQueryAttr5));
+        assertTrue(em.contains(entityA));
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassWithQueryAttr5 resultEntity = findRequired(OWLClassWithQueryAttr5.class, entityWithQueryAttr5.getUri());
+        assertEquals(entityWithQueryAttr5.getUri(), resultEntity.getUri());
+        assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralAttribute());
+        assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralQueryAttribute());
+    }
+
+    @Test
+    void testPersistEntityWithPluralMultipleManagedTypesQueryAttr() {
+        this.em = getEntityManager("PersistEntityWithPluralMultipleManagedTypesQueryAttr", false);
+
+        Set<OWLClassA> simpleSet = Generators.createSimpleSet(20);
+        entityWithQueryAttr5.setPluralAttribute(simpleSet);
+
+        em.getTransaction().begin();
+        em.persist(entityWithQueryAttr5);
+        assertTrue(em.contains(entityWithQueryAttr5));
+        for (OWLClassA e : simpleSet) {
+            assertTrue(em.contains(e));
+        }
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassWithQueryAttr5 resultEntity = findRequired(OWLClassWithQueryAttr5.class, entityWithQueryAttr5.getUri());
+        assertEquals(entityWithQueryAttr5.getUri(), resultEntity.getUri());
+        assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralAttribute());
+        assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralQueryAttribute());
+    }
+
+    @Test
+    void testPersistEntityWithASKQueryAttr() {
+        this.em = getEntityManager("PersistWithASKQueryAttr", false);
+
+        em.getTransaction().begin();
+        em.persist(entityWithQueryAttr4);
+        assertTrue(em.contains(entityWithQueryAttr4));
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassWithQueryAttr4 resultEntity = findRequired(OWLClassWithQueryAttr4.class, entityWithQueryAttr4.getUri());
+        assertEquals(entityWithQueryAttr4.getUri(), resultEntity.getUri());
+        assertEquals(entityWithQueryAttr4.getStringAttribute(), resultEntity.getStringAttribute());
+        assertEquals(true, resultEntity.getAskQueryAttribute());
+    }
 }

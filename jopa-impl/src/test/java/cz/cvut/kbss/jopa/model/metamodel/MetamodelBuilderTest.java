@@ -250,13 +250,13 @@ class MetamodelBuilderTest {
         assertNotNull(dataAtt);
         assertThat(dataAtt, instanceOf(CollectionAttribute.class));
         assertEquals(Vocabulary.ATTRIBUTE_BASE + "collectionDataProperty", dataAtt.getIRI().toString());
-        assertEquals(PluralAttribute.CollectionType.COLLECTION, dataAtt.getCollectionType());
+        assertEquals(CollectionType.COLLECTION, dataAtt.getCollectionType());
         final PluralAttribute<WithCollectionAttributes, Collection<OWLClassA>, OWLClassA> objectAtt = (PluralAttribute<WithCollectionAttributes, Collection<OWLClassA>, OWLClassA>) et
                 .getAttribute("collectionObjectProperty");
         assertNotNull(objectAtt);
         assertThat(objectAtt, instanceOf(CollectionAttribute.class));
         assertEquals(Vocabulary.ATTRIBUTE_BASE + "collectionObjectProperty", objectAtt.getIRI().toString());
-        assertEquals(PluralAttribute.CollectionType.COLLECTION, objectAtt.getCollectionType());
+        assertEquals(CollectionType.COLLECTION, objectAtt.getCollectionType());
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithCollectionAttributes")

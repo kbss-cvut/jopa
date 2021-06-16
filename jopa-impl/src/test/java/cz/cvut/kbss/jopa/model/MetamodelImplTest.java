@@ -191,13 +191,13 @@ class MetamodelImplTest {
         assertNotNull(att);
         checkPluralAttribute(att, et, setField.getName(), Attribute.PersistentAttributeType.OBJECT, setField,
                 FetchType.LAZY, false, setField.getAnnotation(OWLObjectProperty.class).iri(),
-                OWLClassA.class, PluralAttribute.CollectionType.SET, new CascadeType[]{CascadeType.ALL});
+                OWLClassA.class, CollectionType.SET, new CascadeType[]{CascadeType.ALL});
     }
 
     private void checkPluralAttribute(FieldSpecification<?, ?> attribute, EntityType<?> declaringType, String name,
                                       Attribute.PersistentAttributeType type, Field field, FetchType fetch,
                                       boolean inferred, String iri, Class<?> bindableJavaType,
-                                      PluralAttribute.CollectionType collectionType, CascadeType[] cascadeTypes) {
+                                      CollectionType collectionType, CascadeType[] cascadeTypes) {
         assertTrue(attribute instanceof PluralAttribute);
         final PluralAttribute<?, ?, ?> pluralAttribute = (PluralAttribute<?, ?, ?>) attribute;
         assertTrue(pluralAttribute.isCollection());  // it is plural
@@ -221,7 +221,7 @@ class MetamodelImplTest {
         final Sequence simpleListSequence = simpleListField.getAnnotation(Sequence.class);
         checkPluralListAttribute(simpleListAtt, et, simpleListField.getName(), Attribute.PersistentAttributeType.OBJECT,
                 simpleListField, simpleListProperty.fetch(), false, simpleListProperty.iri(),
-                OWLClassA.class, PluralAttribute.CollectionType.LIST, simpleListProperty.cascade(), SequenceType.simple,
+                OWLClassA.class, CollectionType.LIST, simpleListProperty.cascade(), SequenceType.simple,
                 simpleListSequence.ClassOWLListIRI(), simpleListSequence.ObjectPropertyHasContentsIRI(),
                 simpleListSequence.ObjectPropertyHasNextIRI());
     }
@@ -229,7 +229,7 @@ class MetamodelImplTest {
     private void checkPluralListAttribute(FieldSpecification<?, ?> attribute, EntityType<?> declaringType, String name,
                                           Attribute.PersistentAttributeType type, Field field, FetchType fetch,
                                           boolean inferred, String iri, Class<?> bindableJavaType,
-                                          PluralAttribute.CollectionType collectionType, CascadeType[] cascadeTypes,
+                                          CollectionType collectionType, CascadeType[] cascadeTypes,
                                           SequenceType sequenceType, String owlListClass, String hasContents,
                                           String hasNext) {
         checkPluralAttribute(attribute, declaringType, name, type, field, fetch, inferred, iri, bindableJavaType,
@@ -255,7 +255,7 @@ class MetamodelImplTest {
         final Sequence referencedListSequence = referencedListField.getAnnotation(Sequence.class);
         checkPluralListAttribute(referencedListAtt, et, referencedListField.getName(),
                 Attribute.PersistentAttributeType.OBJECT, referencedListField, referencedListProperty.fetch(), false,
-                referencedListProperty.iri(), OWLClassA.class, PluralAttribute.CollectionType.LIST,
+                referencedListProperty.iri(), OWLClassA.class, CollectionType.LIST,
                 referencedListProperty.cascade(), SequenceType.referenced, referencedListSequence.ClassOWLListIRI(),
                 referencedListSequence.ObjectPropertyHasContentsIRI(),
                 referencedListSequence.ObjectPropertyHasNextIRI());
@@ -532,7 +532,7 @@ class MetamodelImplTest {
         assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
         assertArrayEquals(new CascadeType[0], att.getCascadeTypes());
         assertEquals(URL.class, ((PluralAttribute) att).getBindableJavaType());
-        assertEquals(PluralAttribute.CollectionType.SET, ((PluralAttribute) att).getCollectionType());
+        assertEquals(CollectionType.SET, ((PluralAttribute) att).getCollectionType());
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithOPUri")
