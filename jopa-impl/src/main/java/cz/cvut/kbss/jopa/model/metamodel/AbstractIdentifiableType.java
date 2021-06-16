@@ -402,7 +402,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public Set<FieldSpecification<? super X, ?>> getFieldSpecifications() { //TODO add here
+    public Set<FieldSpecification<? super X, ?>> getFieldSpecifications() {
         final Set<FieldSpecification<? super X, ?>> specs = new HashSet<>(getAttributes());
         specs.addAll(getQueryAttributes());
         final TypesSpecification<? super X, ?> types = getTypes();

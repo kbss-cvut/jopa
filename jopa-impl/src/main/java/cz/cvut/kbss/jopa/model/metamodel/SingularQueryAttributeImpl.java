@@ -31,4 +31,9 @@ public class SingularQueryAttributeImpl<X, Y> extends AbstractQueryAttribute<X, 
     public Class<Y> getJavaType() {
         return type.getJavaType();
     }
+
+    @Override
+    public boolean isCollection() {
+        return false;
+    }
 }

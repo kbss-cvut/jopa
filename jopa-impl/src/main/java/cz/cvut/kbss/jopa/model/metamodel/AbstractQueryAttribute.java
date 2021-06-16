@@ -89,13 +89,11 @@ public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, 
 
     @Override
     public String getName() {
-        return null;
+        return field.getName();
     }
 
     @Override
-    public boolean isCollection() {
-        return false;
-    }
+    public abstract boolean isCollection();
 
     public ConverterWrapper getConverter() {
         return converter;
