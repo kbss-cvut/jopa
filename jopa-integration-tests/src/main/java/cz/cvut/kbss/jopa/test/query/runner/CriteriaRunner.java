@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.test.query.runner;
 
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;

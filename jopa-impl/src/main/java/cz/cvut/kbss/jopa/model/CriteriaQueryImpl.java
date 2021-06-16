@@ -106,36 +106,50 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> orderBy(List<Order> o) {
-        if (!o.isEmpty()) query.setOrderBy(o);
-        else query.setOrderBy(null);
+        if (!o.isEmpty()){
+            query.setOrderBy(o);
+        } else {
+            query.setOrderBy(null);
+        }
         return this;
     }
 
     @Override
     public CriteriaQuery<T> orderBy(Order... o) {
-        if (o != null && o.length > 0) query.setOrderBy(Arrays.asList(o));
-        else query.setOrderBy(null);
+        if (o != null && o.length > 0){
+            query.setOrderBy(Arrays.asList(o));
+        } else {
+            query.setOrderBy(null);
+        }
         return this;
     }
 
     @Override
     public List<Order> getOrderList() {
-        if (query.getOrderBy() == null) return Collections.emptyList();
+        if (query.getOrderBy() == null) {
+            return Collections.emptyList();
+        }
         return new ArrayList<>(query.getOrderBy());
     }
 
 
     @Override
     public CriteriaQuery<T> groupBy(Expression<?>... grouping) {
-        if (grouping != null && grouping.length > 0) query.setGroupBy(Arrays.asList(grouping));
-        else query.setGroupBy(null);
+        if (grouping != null && grouping.length > 0){
+            query.setGroupBy(Arrays.asList(grouping));
+        } else {
+            query.setGroupBy(null);
+        }
         return this;
     }
 
     @Override
     public CriteriaQuery<T> groupBy(List<Expression<?>> grouping) {
-        if (!grouping.isEmpty()) query.setGroupBy(grouping);
-        else query.setGroupBy(null);
+        if (!grouping.isEmpty()){
+            query.setGroupBy(grouping);
+        } else {
+            query.setGroupBy(null);
+        }
         return this;
     }
 
@@ -159,7 +173,9 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     public String translateQuery(CriteriaParameterFiller parameterFiller) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
-        if (isDistinct()) stringBuilder.append("DISTINCT ");
+        if (isDistinct()){
+            stringBuilder.append("DISTINCT ");
+        }
         ((AbstractExpression) query.getSelection()).setExpressionToQuery(stringBuilder, parameterFiller);
 
         stringBuilder.append(" FROM " + ((RootImpl) query.getRoot()).getJavaType().getSimpleName() + " ");
@@ -188,7 +204,9 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
             for (int i = 0; i < orders.size(); i++) {
                 ((AbstractExpression) orders.get(i).getExpression()).setExpressionToQuery(stringBuilder, parameterFiller);
                 stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
-                if (orders.size() > 1 && (i + 1) != orders.size()) stringBuilder.append(", ");
+                if (orders.size() > 1 && (i + 1) != orders.size()){
+                    stringBuilder.append(", ");
+                }
             }
         }
         return stringBuilder.toString();

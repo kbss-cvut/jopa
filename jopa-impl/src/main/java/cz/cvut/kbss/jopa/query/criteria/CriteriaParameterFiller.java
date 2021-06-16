@@ -4,10 +4,7 @@ import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionLiteralImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class CriteriaParameterFiller {
     private HashMap<String, ExpressionLiteralImpl> literalParameters;
@@ -49,8 +46,11 @@ public class CriteriaParameterFiller {
     public <T> void setValuesToRegisteredParameters(TypedQueryImpl<T> query) {
         for(String name: literalParameters.keySet()){
             ExpressionLiteralImpl<?> parameter = literalParameters.get(name);
-            if(parameter.getLanguageTag() != null) query.setParameter(name, (String) literalParameters.get(name).getValue(), parameter.getLanguageTag());
-            else query.setParameter(name, literalParameters.get(name).getValue());
+            if(parameter.getLanguageTag() != null){
+                query.setParameter(name, (String) literalParameters.get(name).getValue(), parameter.getLanguageTag());
+            } else {
+                query.setParameter(name, literalParameters.get(name).getValue());
+            }
         }
     }
 

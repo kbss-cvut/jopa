@@ -59,7 +59,9 @@ public class ExpressionInImpl<Y> extends AbstractPredicate implements PredicateF
         query.append(negated ? " NOT IN(" : " IN(");
         for (int i = 0; i < values.size(); i++) {
             ((AbstractExpression) values.get(i)).setExpressionToQuery(query, parameterFiller);
-            if (values.size() > 1 && (i + 1) != values.size()) query.append(", ");
+            if (values.size() > 1 && (i + 1) != values.size()){
+                query.append(", ");
+            }
         }
         query.append(")");
     }

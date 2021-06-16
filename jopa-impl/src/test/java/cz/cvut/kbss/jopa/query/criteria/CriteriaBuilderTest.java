@@ -40,7 +40,6 @@ public class CriteriaBuilderTest {
     private UnitOfWorkImpl uowMock;
 
     private static CriteriaBuilder f;
-    private CriteriaParameterFiller criteriaParameterFiller;
 
     @BeforeAll
     static void init() {
@@ -61,7 +60,6 @@ public class CriteriaBuilderTest {
         when(mpp.isEntityType(any())).thenAnswer(inv -> metamodel.isEntityType(inv.getArgument(0)));
 
         f = new CriteriaBuilderImpl(uowMock);
-//        criteriaParameterFiller = new CriteriaParameterFiller();
     }
 
     @Test
