@@ -72,6 +72,8 @@ class EntityConstructorTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
+        when(mapperMock.getUow()).thenReturn(uowMock);
+        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
         this.mocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
         this.constructor = new EntityConstructor(mapperMock);
@@ -222,7 +224,7 @@ class EntityConstructorTest {
 
     private Assertion getClassDObjectPropertyAssertion() throws NoSuchFieldException {
         final URI assertionUri = URI.create(OWLClassD.getOwlClassAField()
-                                                     .getAnnotation(OWLObjectProperty.class).iri());
+                .getAnnotation(OWLObjectProperty.class).iri());
         return Assertion.createObjectPropertyAssertion(assertionUri, false);
     }
 
@@ -363,7 +365,7 @@ class EntityConstructorTest {
             final URI property = URI.create(e.getKey());
             axioms.addAll(e.getValue().stream().map(val -> new AxiomImpl<>(PK_RESOURCE, Assertion
                     .createPropertyAssertion(property, false), new Value<>(URI.create(val))))
-                           .collect(Collectors.toList()));
+                    .collect(Collectors.toList()));
         }
         return axioms;
     }
@@ -400,7 +402,7 @@ class EntityConstructorTest {
     private Collection<Axiom<?>> initAxiomsForReferencedSet(Set<OWLClassA> as) throws Exception {
         final Set<Axiom<?>> axioms = new HashSet<>();
         final URI property = URI.create(OWLClassJ.getOwlClassAField()
-                                                 .getAnnotation(OWLObjectProperty.class).iri());
+                .getAnnotation(OWLObjectProperty.class).iri());
         for (OWLClassA a : as) {
             final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(PK),
                     Assertion.createObjectPropertyAssertion(property, false),
@@ -651,8 +653,6 @@ class EntityConstructorTest {
         axioms.add(getClassAssertionAxiomForType(OWLClassWithQueryAttr.getClassIri()));
         axioms.add(getStringAttAssertionAxiom(OWLClassWithQueryAttr.getStrAttField()));
 
-        when(mapperMock.getUow()).thenReturn(uowMock);
-        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
         doReturn(typedQueryMock)
                 .when(queryFactoryMock).createNativeQuery(any(String.class),
                 (Class<?>) any(Class.class));
@@ -690,8 +690,6 @@ class EntityConstructorTest {
         when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDesc))
                 .thenReturn(entityA);
 
-        when(mapperMock.getUow()).thenReturn(uowMock);
-        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
         doReturn(typedQueryMock)
                 .when(queryFactoryMock).createNativeQuery(any(String.class),
                 (Class<?>) any(Class.class));

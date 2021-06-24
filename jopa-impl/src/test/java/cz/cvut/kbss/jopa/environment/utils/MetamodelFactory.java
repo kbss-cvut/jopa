@@ -1254,6 +1254,7 @@ public class MetamodelFactory {
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassWithQueryAttr.getClassIri()));
         when(etMock.getAttribute(OWLClassWithQueryAttr.getStrAttField().getName())).thenReturn(strAttMock);
         when(etMock.getQueryAttribute(OWLClassWithQueryAttr.getStrQueryAttField().getName())).thenReturn(strQueryAttMock);
+        when(etMock.getName()).thenReturn(OWLClassWithQueryAttr.class.getSimpleName());
 
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassWithQueryAttr, ?>>asList(strAttMock, entityAttMock)));
@@ -1294,6 +1295,7 @@ public class MetamodelFactory {
         when(strQueryAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField().getType());
         when(strQueryAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField().getName());
         when(strQueryAttMock.getDeclaringType()).thenReturn(etMock);
+        when(strQueryAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(strQueryAttMock.getQuery()).thenReturn(
                 OWLClassWithQueryAttr.getStrQueryAttField().getAnnotation(Sparql.class).query());
 
@@ -1301,6 +1303,7 @@ public class MetamodelFactory {
         when(entityQueryAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getEntityQueryAttField().getType());
         when(entityQueryAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getEntityQueryAttField().getName());
         when(entityQueryAttMock.getDeclaringType()).thenReturn(etMock);
+        when(entityQueryAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(entityQueryAttMock.getQuery()).thenReturn(
                 OWLClassWithQueryAttr.getEntityQueryAttField().getAnnotation(Sparql.class).query());
 
