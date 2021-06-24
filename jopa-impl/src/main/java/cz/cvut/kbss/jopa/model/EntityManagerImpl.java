@@ -19,6 +19,10 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
@@ -442,6 +446,21 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
+    public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery) {
+        ensureOpen();
+        CriteriaQueryImpl<T> query = (CriteriaQueryImpl<T>) criteriaQuery;
+        CriteriaParameterFiller parameterFiller = new CriteriaParameterFiller();
+        String soqlQuery = query.translateQuery(parameterFiller);
+        LOG.debug("CriteriaQuery translate to SOQL query: " + soqlQuery);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(soqlQuery, query.getResultType());
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        q.setEnsureOpenProcedure(this::ensureOpen);
+        parameterFiller.setValuesToRegisteredParameters(q);
+
+        return q;
+    }
+
+    @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         ensureOpen();
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query, resultClass);
@@ -508,6 +527,11 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public List<URI> getContexts() {
         ensureOpen();
         return getCurrentPersistenceContext().getContexts();
+    }
+
+    @Override
+    public CriteriaBuilder getCriteriaBuilder() {
+        return getCurrentPersistenceContext().criteriaFactory();
     }
 
     @Override
