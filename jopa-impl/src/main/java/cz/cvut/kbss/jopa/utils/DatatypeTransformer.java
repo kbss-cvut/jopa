@@ -74,6 +74,7 @@ public class DatatypeTransformer {
      *
      * @param value      The value to convert
      * @param targetType The type to which the specified value should be converted
+     * @param <T>        Target type
      * @return Value as the target type
      */
     public static <T> T transform(Object value, Class<T> targetType) {

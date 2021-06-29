@@ -40,6 +40,7 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
      * The context can be {@code null}, indicating the default context.
      *
      * @param context The context to use for subject
+     * @return This instance
      */
     public AxiomDescriptor addSubjectContext(URI context) {
         if (context == null) {
@@ -68,6 +69,7 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
      *
      * @param assertion The property to set context for
      * @param context   Context URI. Use {@code null} to indicate the default context
+     * @return This instance
      * @throws IllegalArgumentException If there is no such assertion in this descriptor
      * @throws NullPointerException     When {@code assertion} is {@code null}
      */

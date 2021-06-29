@@ -20,7 +20,7 @@ import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
  * Uses the default {@link Enum#valueOf(Class, String)} method to transform string-based value loaded from repository to
  * the appropriate attribute type. In the opposite direction, enum value is converted to {@code String}.
  *
- * @param <E>
+ * @param <E> Enum type
  */
 public class EnumConverter<E extends Enum<E>> implements ConverterWrapper<E, Object> {
 
