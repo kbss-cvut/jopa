@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+
 import java.util.*;
 
 
@@ -106,7 +107,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> orderBy(List<Order> o) {
-        if (!o.isEmpty()){
+        if (!o.isEmpty()) {
             query.setOrderBy(o);
         } else {
             query.setOrderBy(null);
@@ -116,7 +117,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> orderBy(Order... o) {
-        if (o != null && o.length > 0){
+        if (o != null && o.length > 0) {
             query.setOrderBy(Arrays.asList(o));
         } else {
             query.setOrderBy(null);
@@ -135,7 +136,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> groupBy(Expression<?>... grouping) {
-        if (grouping != null && grouping.length > 0){
+        if (grouping != null && grouping.length > 0) {
             query.setGroupBy(Arrays.asList(grouping));
         } else {
             query.setGroupBy(null);
@@ -145,7 +146,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public CriteriaQuery<T> groupBy(List<Expression<?>> grouping) {
-        if (!grouping.isEmpty()){
+        if (!grouping.isEmpty()) {
             query.setGroupBy(grouping);
         } else {
             query.setGroupBy(null);
@@ -167,13 +168,14 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     /**
      * Method translates criteria query to SOQL query and returns its string representation.
-     * @param parameterFiller
+     *
+     * @param parameterFiller Generator of parameter values in the query string
      * @return string representation of SOQL query
      */
     public String translateQuery(CriteriaParameterFiller parameterFiller) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("SELECT ");
-        if (isDistinct()){
+        if (isDistinct()) {
             stringBuilder.append("DISTINCT ");
         }
         ((AbstractExpression) query.getSelection()).setExpressionToQuery(stringBuilder, parameterFiller);
@@ -204,7 +206,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
             for (int i = 0; i < orders.size(); i++) {
                 ((AbstractExpression) orders.get(i).getExpression()).setExpressionToQuery(stringBuilder, parameterFiller);
                 stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
-                if (orders.size() > 1 && (i + 1) != orders.size()){
+                if (orders.size() > 1 && (i + 1) != orders.size()) {
                     stringBuilder.append(", ");
                 }
             }

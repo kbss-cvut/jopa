@@ -25,6 +25,8 @@ public class LangString implements Serializable {
 
     /**
      * Gets the lexical value of this string.
+     *
+     * @return Lexical value
      */
     public String getValue() {
         return value;
@@ -32,6 +34,8 @@ public class LangString implements Serializable {
 
     /**
      * Gets the language tag (if present).
+     *
+     * @return Optional language tag value
      */
     public Optional<String> getLanguage() {
         return Optional.ofNullable(language);

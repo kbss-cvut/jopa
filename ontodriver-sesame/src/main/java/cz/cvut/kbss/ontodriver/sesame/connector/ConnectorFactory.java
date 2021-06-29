@@ -53,6 +53,7 @@ public interface ConnectorFactory {
      *
      * @param repository    The new repository
      * @param configuration Original driver configuration. May be necessary if the factory has not been initialized, yet
+     * @throws SesameDriverException In case setting the repository fails
      */
     void setRepository(Repository repository, DriverConfiguration configuration) throws SesameDriverException;
 

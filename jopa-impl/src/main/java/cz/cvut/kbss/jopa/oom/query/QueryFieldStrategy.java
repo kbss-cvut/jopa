@@ -26,7 +26,7 @@ public abstract class QueryFieldStrategy<T extends AbstractQueryAttribute<? supe
     }
 
     /**
-     * Adds value from the specified typed query to this strategy. </p>
+     * Adds value from the specified typed query to this strategy.
      * <p>
      * The value(s) is/are then set on entity field using {@link #buildInstanceFieldValue(Object)}.
      *
@@ -45,7 +45,7 @@ public abstract class QueryFieldStrategy<T extends AbstractQueryAttribute<? supe
 
     /**
      * Sets the specified value on the specified instance, the field is taken from the attribute represented by this
-     * strategy. </p>
+     * strategy.
      * <p>
      * Note that this method assumes the value and the field are of compatible types, no check is done here.
      */

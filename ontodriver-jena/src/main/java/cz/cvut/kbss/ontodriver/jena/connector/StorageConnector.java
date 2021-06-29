@@ -32,6 +32,8 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
 
     /**
      * Commits the current transaction.
+     *
+     * @throws JenaDriverException If commit fails
      */
     void commit() throws JenaDriverException;
 
