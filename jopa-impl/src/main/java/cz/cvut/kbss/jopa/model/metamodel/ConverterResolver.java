@@ -59,4 +59,29 @@ class ConverterResolver {
         }
         return converters.getConverter(attValueType);
     }
+
+    /**
+     * Alternative method for resolving converter. Can be used when the persistent attribute type is not relevant
+     * and/or the class {@link PropertyAttributes} is not used for attribute configuration,
+     * e.g. for attributes defined by a query.
+     * <p>
+     * Determines converter which should be used for transformation of values to and from the specified type of a field.
+     * <p>
+     * Besides custom converters, the system supports a number of built-in converters, which ensure that e.g. widening
+     * conversion or mapping to Java 8 Date/Time API is supported.
+     *
+     * @param type attribute type as defined in {@link cz.cvut.kbss.jopa.model.metamodel.Type}
+     *             (not to be confused with {@link java.lang.reflect.Type})
+     * @return Possible converter instance to be used for transformation of values of the specified field. Returns empty
+     *         {@code Optional} if no suitable converter is found (or needed)
+     * @see cz.cvut.kbss.jopa.model.metamodel.QueryAttribute
+     */
+    public Optional<ConverterWrapper<?, ?>> resolveConverter(Type<?> type) {
+        final Class<?> attValueType = type.getJavaType();
+        if (attValueType.isEnum()) {
+            return Optional.of(new EnumConverter(attValueType));
+        }
+
+        return converters.getConverter(attValueType);
+    }
 }

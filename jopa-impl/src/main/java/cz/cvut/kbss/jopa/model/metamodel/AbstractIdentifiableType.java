@@ -34,6 +34,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private final Map<String, AbstractAttribute<X, ?>> declaredAttributes = new HashMap<>();
 
+    private final Map<String, AbstractQueryAttribute<X, ?>> declaredQueryAttributes = new HashMap<>();
+
     private EntityLifecycleListenerManager lifecycleListenerManager = EntityLifecycleListenerManager.empty();
 
     AbstractIdentifiableType(Class<X> javaType) {
@@ -42,6 +44,10 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     void addDeclaredAttribute(final String name, final AbstractAttribute<X, ?> a) {
         declaredAttributes.put(name, a);
+    }
+
+    void addDeclaredQueryAttribute(final String name, final AbstractQueryAttribute<X, ?> a) {
+        declaredQueryAttributes.put(name, a);
     }
 
     void setSupertype(AbstractIdentifiableType<? super X> supertype) {
@@ -128,6 +134,15 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
+    public Set<QueryAttribute<? super X, ?>> getQueryAttributes() {
+        final Set<QueryAttribute<? super X, ?>> queryAttributes = new HashSet<>(declaredQueryAttributes.values());
+        if (supertype != null) {
+            queryAttributes.addAll(supertype.getQueryAttributes());
+        }
+        return queryAttributes;
+    }
+
+    @Override
     public AbstractAttribute<? super X, ?> getAttribute(String name) {
         Objects.requireNonNull(name);
         if (declaredAttributes.containsKey(name)) {
@@ -137,6 +152,30 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
             return supertype.getAttribute(name);
         }
         throw new IllegalArgumentException("Attribute " + name + " is not present in type " + this.toString());
+    }
+
+    @Override
+    public boolean hasQueryAttribute(String name) {
+        Objects.requireNonNull(name);
+        if (declaredQueryAttributes.containsKey(name)) {
+            return true;
+        }
+        if (supertype != null) {
+            return supertype.hasQueryAttribute(name);
+        }
+        return false;
+    }
+
+    @Override
+    public AbstractQueryAttribute<? super X, ?> getQueryAttribute(String name) {
+        Objects.requireNonNull(name);
+        if (declaredQueryAttributes.containsKey(name)) {
+            return declaredQueryAttributes.get(name);
+        }
+        if (supertype != null) {
+            return supertype.getQueryAttribute(name);
+        }
+        throw new IllegalArgumentException("Query attribute " + name + " is not present in type " + this.toString());
     }
 
     @Override
@@ -365,6 +404,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public Set<FieldSpecification<? super X, ?>> getFieldSpecifications() {
         final Set<FieldSpecification<? super X, ?>> specs = new HashSet<>(getAttributes());
+        specs.addAll(getQueryAttributes());
         final TypesSpecification<? super X, ?> types = getTypes();
         if (types != null) {
             specs.add(types);
@@ -381,6 +421,9 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     public FieldSpecification<? super X, ?> getFieldSpecification(String fieldName) {
         if (declaredAttributes.containsKey(fieldName)) {
             return declaredAttributes.get(fieldName);
+        }
+        if (declaredQueryAttributes.containsKey(fieldName)) {
+            return declaredQueryAttributes.get(fieldName);
         }
         if (directTypes != null && directTypes.getName().equals(fieldName)) {
             return directTypes;

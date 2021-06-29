@@ -19,12 +19,15 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -53,6 +56,12 @@ class EntityConstructorTest {
 
     @Mock
     private ObjectOntologyMapperImpl mapperMock;
+    @Mock
+    private UnitOfWorkImpl uowMock;
+    @Mock
+    private SparqlQueryFactory queryFactoryMock;
+    @Mock
+    private TypedQueryImpl typedQueryMock;
 
     private MetamodelMocks mocks;
     private Descriptor descriptor;
@@ -63,6 +72,8 @@ class EntityConstructorTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
+        when(mapperMock.getUow()).thenReturn(uowMock);
+        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
         this.mocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
         this.constructor = new EntityConstructor(mapperMock);
@@ -213,7 +224,7 @@ class EntityConstructorTest {
 
     private Assertion getClassDObjectPropertyAssertion() throws NoSuchFieldException {
         final URI assertionUri = URI.create(OWLClassD.getOwlClassAField()
-                                                     .getAnnotation(OWLObjectProperty.class).iri());
+                .getAnnotation(OWLObjectProperty.class).iri());
         return Assertion.createObjectPropertyAssertion(assertionUri, false);
     }
 
@@ -354,7 +365,7 @@ class EntityConstructorTest {
             final URI property = URI.create(e.getKey());
             axioms.addAll(e.getValue().stream().map(val -> new AxiomImpl<>(PK_RESOURCE, Assertion
                     .createPropertyAssertion(property, false), new Value<>(URI.create(val))))
-                           .collect(Collectors.toList()));
+                    .collect(Collectors.toList()));
         }
         return axioms;
     }
@@ -391,7 +402,7 @@ class EntityConstructorTest {
     private Collection<Axiom<?>> initAxiomsForReferencedSet(Set<OWLClassA> as) throws Exception {
         final Set<Axiom<?>> axioms = new HashSet<>();
         final URI property = URI.create(OWLClassJ.getOwlClassAField()
-                                                 .getAnnotation(OWLObjectProperty.class).iri());
+                .getAnnotation(OWLObjectProperty.class).iri());
         for (OWLClassA a : as) {
             final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(PK),
                     Assertion.createObjectPropertyAssertion(property, false),
@@ -634,5 +645,70 @@ class EntityConstructorTest {
         assertThrows(IntegrityConstraintViolatedException.class, () -> constructor
                 .setFieldValue(instance, OWLClassL.getSingleAField(), Collections.emptyList(),
                         mocks.forOwlClassL().entityType(), descriptor));
+    }
+
+    @Test
+    void testReconstructEntityWithQueryAttribute() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassWithQueryAttr.getClassIri()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassWithQueryAttr.getStrAttField()));
+
+        doReturn(typedQueryMock)
+                .when(queryFactoryMock).createNativeQuery(any(String.class),
+                (Class<?>) any(Class.class));
+        doReturn(typedQueryMock)
+                .when(typedQueryMock).setParameter(any(String.class), any());
+        doReturn(STRING_ATT).when(typedQueryMock).getSingleResult();
+
+        final OWLClassWithQueryAttr res = constructor.reconstructEntity(PK, mocks.forOwlClassWithQueryAttr().entityType(), descriptor, axioms);
+        assertNotNull(res);
+        assertEquals(PK, res.getUri());
+        assertEquals(STRING_ATT, res.getStringAttribute());
+        assertEquals(STRING_ATT, res.getStringQueryAttribute());
+        verify(mapperMock).registerInstance(PK, res);
+    }
+
+    @Test
+    void testReconstructEntityWithManagedTypeQueryAttribute() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassWithQueryAttr.getClassIri()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassWithQueryAttr.getStrAttField()));
+
+        final URI assertionUri = URI.create(OWLClassWithQueryAttr.getEntityAttField()
+                .getAnnotation(OWLObjectProperty.class).iri());
+        final Axiom<NamedResource> opAssertion = new AxiomImpl<>(NamedResource.create(PK),
+                Assertion.createObjectPropertyAssertion(assertionUri, false),
+                new Value<>(NamedResource.create(PK_TWO)));
+        axioms.add(opAssertion);
+
+        final Descriptor fieldDesc = new EntityDescriptor();
+        descriptor.addAttributeDescriptor(mocks.forOwlClassWithQueryAttr().entityAttribute(), fieldDesc);
+        final OWLClassA entityA = new OWLClassA();
+        entityA.setUri(PK_TWO);
+        entityA.setStringAttribute(STRING_ATT);
+
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDesc))
+                .thenReturn(entityA);
+
+        doReturn(typedQueryMock)
+                .when(queryFactoryMock).createNativeQuery(any(String.class),
+                (Class<?>) any(Class.class));
+        doReturn(typedQueryMock)
+                .when(typedQueryMock).setParameter(any(String.class), any());
+        doReturn(entityA).when(typedQueryMock).getSingleResult();
+
+        final OWLClassWithQueryAttr res = constructor.reconstructEntity(PK, mocks.forOwlClassWithQueryAttr().entityType(), descriptor, axioms);
+        assertNotNull(res);
+        assertEquals(PK, res.getUri());
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDesc);
+        assertNotNull(res.getEntityAttribute());
+        assertEquals(PK_TWO, res.getEntityAttribute().getUri());
+        assertEquals(STRING_ATT, res.getEntityAttribute().getStringAttribute());
+
+        assertNotNull(res.getEntityQueryAttribute());
+        assertEquals(PK_TWO, res.getEntityQueryAttribute().getUri());
+        assertEquals(STRING_ATT, res.getEntityQueryAttribute().getStringAttribute());
+
+        verify(mapperMock).registerInstance(PK, res);
     }
 }

@@ -12,7 +12,7 @@
  */
 package cz.cvut.kbss.jopa.utils;
 
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -24,23 +24,23 @@ class CollectionFactoryTest {
 
     @Test
     void createDefaultCollectionReturnsListImplementationForListType() {
-        assertTrue(CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.LIST) instanceof List);
+        assertTrue(CollectionFactory.createDefaultCollection(CollectionType.LIST) instanceof List);
     }
 
     @Test
     void createDefaultCollectionReturnsSetImplementationForSetType() {
-        assertTrue(CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.SET) instanceof Set);
+        assertTrue(CollectionFactory.createDefaultCollection(CollectionType.SET) instanceof Set);
     }
 
     @Test
     void createDefaultCollectionReturnsSetImplementationForCollectionType() {
-        assertTrue(CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.COLLECTION) instanceof Set);
+        assertTrue(CollectionFactory.createDefaultCollection(CollectionType.COLLECTION) instanceof Set);
     }
 
     @Test
     void createDefaultCollectionThrowsIllegalArgumentForMapType() {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.MAP));
-        assertEquals("Collection type " + PluralAttribute.CollectionType.MAP + " is not supported.", ex.getMessage());
+                () -> CollectionFactory.createDefaultCollection(CollectionType.MAP));
+        assertEquals("Collection type " + CollectionType.MAP + " is not supported.", ex.getMessage());
     }
 }

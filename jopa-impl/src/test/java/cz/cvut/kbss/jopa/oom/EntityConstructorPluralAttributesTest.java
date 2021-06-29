@@ -19,6 +19,8 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -33,8 +35,7 @@ import java.util.Map.Entry;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class EntityConstructorPluralAttributesTest {
 
@@ -60,6 +61,9 @@ public class EntityConstructorPluralAttributesTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
+        final UnitOfWorkImpl uowMock = mock(UnitOfWorkImpl.class);
+        when(mapperMock.getUow()).thenReturn(uowMock);
+        when(uowMock.getQueryFactory()).thenReturn(mock(SparqlQueryFactory.class));
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         this.metamodelMocks = new MetamodelMocks();
         this.simpleListMock = metamodelMocks.forOwlClassC().simpleListAtt();

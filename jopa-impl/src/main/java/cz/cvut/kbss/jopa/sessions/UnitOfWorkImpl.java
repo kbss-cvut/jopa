@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
@@ -83,6 +84,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
     private final SparqlQueryFactory queryFactory;
+    private final CriteriaBuilder criteriaFactory;
     private final IndirectWrapperHelper indirectWrapperHelper;
     /**
      * This is a shortcut for the second level cache.
@@ -103,6 +105,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
+        this.criteriaFactory = new CriteriaBuilderImpl(this);
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
         this.useTransactionalOntology = true;
@@ -1014,6 +1017,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return queryFactory;
     }
 
+    public CriteriaBuilder criteriaFactory() {
+        return criteriaFactory;
+    }
+
     /**
      * Check if the specified entity contains a collection. If so, replace it with its indirect representation so that
      * changes in that collection can be tracked.
@@ -1142,5 +1149,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return cls.cast(this);
         }
         return storage.unwrap(cls);
+    }
+
+    public SparqlQueryFactory getQueryFactory() {
+        return queryFactory;
     }
 }

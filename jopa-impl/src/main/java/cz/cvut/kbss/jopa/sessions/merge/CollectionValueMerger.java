@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
@@ -45,7 +46,7 @@ class CollectionValueMerger implements ValueMerger {
         }
 
         final Collection<Object> newValue = CollectionFactory
-                .createDefaultCollection(PluralAttribute.CollectionType.fromClass(att.getJavaType()));
+                .createDefaultCollection(CollectionType.fromClass(att.getJavaType()));
         boolean elemTypeManaged = false;
         if (att instanceof PluralAttribute) {
             elemTypeManaged = uow.isEntityType(((PluralAttribute) att).getBindableJavaType());

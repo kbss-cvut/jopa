@@ -91,19 +91,17 @@ public class QueryParameter<T> implements Parameter<T> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !Parameter.class.isAssignableFrom(o.getClass())) {
             return false;
         }
 
-        QueryParameter<?> that = (QueryParameter<?>) o;
-        return Objects.equals(name, that.name) && Objects.equals(position, that.position);
+        Parameter<?> that = (Parameter<?>) o;
+        return Objects.equals(name, that.getName()) && Objects.equals(position, that.getPosition());
 
     }
 
     @Override
     public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (position != null ? position.hashCode() : 0);
-        return result;
+        return Objects.hash(getName(), getPosition());
     }
 }

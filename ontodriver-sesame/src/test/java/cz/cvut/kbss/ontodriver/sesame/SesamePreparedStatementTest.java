@@ -53,10 +53,10 @@ public class SesamePreparedStatementTest {
 
     @Test
     public void testExecuteQuery() throws Exception {
-        final String query = "SELECT ?x ?y WHERE { ?x <http://property> ?y . }";
-        final String expected = "SELECT _:subject ?y WHERE { _:subject <http://property> ?y . }";
+        final String query = "SELECT ?y WHERE { ?x <http://property> ?y . }";
+        final String expected = "SELECT ?y WHERE { <http://subject> <http://property> ?y . }";
         initStatement(query);
-        statement.setObject("x", "_:subject");
+        statement.setObject("x", "<http://subject>");
         statement.executeQuery();
         verify(executorMock).executeSelectQuery(expected);
     }

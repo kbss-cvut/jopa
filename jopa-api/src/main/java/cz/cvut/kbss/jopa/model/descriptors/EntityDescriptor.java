@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.model.descriptors;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
@@ -134,6 +135,8 @@ public class EntityDescriptor extends AbstractDescriptor {
                     return new EntityDescriptor(contexts);
                 }
             }
+        } else if (att instanceof QueryAttribute) {
+            return new EntityDescriptor(contexts);
         }
         return new FieldDescriptor(contexts, att);
     }

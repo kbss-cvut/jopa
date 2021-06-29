@@ -24,6 +24,7 @@ import org.aspectj.lang.reflect.FieldSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 
 @Aspect
@@ -37,7 +38,7 @@ public class BeanListenerAspect {
         UnitOfWorkImpl getPersistenceContext();
     }
 
-    public static class ManageableImpl implements Manageable {
+    public static class ManageableImpl implements Manageable, Serializable {
         private transient UnitOfWorkImpl persistenceContext;
 
         @Override
@@ -60,7 +61,8 @@ public class BeanListenerAspect {
             "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
             "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
             "|| cz.cvut.kbss.jopa.model.annotations.Types " +
-            "|| cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
+            "|| cz.cvut.kbss.jopa.model.annotations.Properties " +
+            "|| cz.cvut.kbss.jopa.model.annotations.Sparql) * * ) " +
             "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
     void getter() {
     }

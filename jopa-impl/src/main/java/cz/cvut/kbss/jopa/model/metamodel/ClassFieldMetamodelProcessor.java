@@ -16,7 +16,9 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class ClassFieldMetamodelProcessor<X> {
 
@@ -71,6 +70,11 @@ class ClassFieldMetamodelProcessor<X> {
         }
         if (isPropertiesField(field)) {
             processPropertiesField(field, fieldValueCls, inference);
+            return;
+        }
+
+        if(isQueryAttribute(field)) {
+            createQueryAttribute(field, fieldValueCls);
             return;
         }
 
@@ -145,6 +149,46 @@ class ClassFieldMetamodelProcessor<X> {
                                            .javaType(fieldValueCls).inferred(inference.inferred)
                                            .propertyIdType(paramsResolver.getPropertyIdentifierType())
                                            .propertyValueType(paramsResolver.getPropertyValueType()).build());
+    }
+
+    private static boolean isQueryAttribute(Field field) {
+        return field.getAnnotation(Sparql.class) != null;
+    }
+
+    private void createQueryAttribute(Field field, Class<?> fieldValueCls) {
+        Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
+        String query = sparqlAnnotation.query();
+        FetchType fetchType = sparqlAnnotation.fetchType();
+
+        ParticipationConstraint[] participationConstraints = field.getAnnotationsByType(ParticipationConstraint.class);
+
+        final AbstractQueryAttribute<X, ?> a;
+
+        cz.cvut.kbss.jopa.model.metamodel.Type<?> type;
+
+        if (ManagedClassProcessor.isManagedType(fieldValueCls)) {
+            type = metamodelBuilder.getEntityClass(fieldValueCls);
+        } else {
+            type = BasicTypeImpl.get(fieldValueCls);
+        }
+
+        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
+        ConverterWrapper<?, ?> converterWrapper = null;
+
+        if (optionalConverterWrapper.isPresent()) {
+            converterWrapper = optionalConverterWrapper.get();
+        }
+
+        if (Collection.class.isAssignableFrom(field.getType())) {
+            a = new PluralQueryAttributeImpl<>(query, field, et, fetchType, participationConstraints, type, field.getType(), converterWrapper);
+        } else if (Map.class.isAssignableFrom(field.getType())) {
+            throw new IllegalArgumentException("NOT YET SUPPORTED");
+        } else {
+            a = new SingularQueryAttributeImpl<>(
+                    query, field, et, fetchType, type, participationConstraints, converterWrapper);
+        }
+
+        et.addDeclaredQueryAttribute(field.getName(), a);
     }
 
     private AbstractAttribute<X, ?> createAttribute(Field field, InferenceInfo inference,

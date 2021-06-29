@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
@@ -57,17 +58,22 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
 
     @Override
     public void validate(Object identifier, FieldSpecification<?, ?> attribute, Object attributeValue) {
-        if (!(attribute instanceof Attribute)) {
-            // Only proper attributes can have cardinality constraints
-            return;
-        }
-        final Attribute<?, ?> att = (Attribute<?, ?>) attribute;
         final int valueCount = extractValueCount(attributeValue);
-        for (ParticipationConstraint pc : att.getConstraints()) {
-            validateParticipationConstraint(identifier, att.getJavaField(), valueCount, pc);
-        }
-        if (att.getConstraints().length == 0) {
-            validateNonEmpty(identifier, att, valueCount);
+
+        // Only proper attributes can have cardinality constraints
+        if (attribute instanceof Attribute) {
+            final Attribute<?, ?> att = (Attribute<?, ?>) attribute;
+            for (ParticipationConstraint pc : att.getConstraints()) {
+                validateParticipationConstraint(identifier, att.getJavaField(), valueCount, pc);
+            }
+            if (att.getConstraints().length == 0) {
+                validateNonEmpty(identifier, att, valueCount);
+            }
+        } else if (attribute instanceof QueryAttribute) {
+            final QueryAttribute<?, ?> queryAtt = (QueryAttribute<?, ?>) attribute;
+            for (ParticipationConstraint pc : queryAtt.getConstraints()) {
+                validateParticipationConstraint(identifier, queryAtt.getJavaField(), valueCount, pc);
+            }
         }
     }
 

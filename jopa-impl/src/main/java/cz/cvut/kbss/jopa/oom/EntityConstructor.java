@@ -15,10 +15,14 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
+import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
+import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -31,6 +35,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 class EntityConstructor {
 
@@ -64,6 +69,7 @@ class EntityConstructor {
         final T instance = createEntityInstance(identifier, et);
         mapper.registerInstance(identifier, instance);
         populateAttributes(instance, et, descriptor, axioms);
+        populateQueryAttributes(instance, et);
         validateIntegrityConstraints(instance, et);
 
         return instance;
@@ -154,6 +160,77 @@ class EntityConstructor {
         return loaders.get(att);
     }
 
+    /**
+     * Populate all query based attributes in the given instance.
+     *
+     * @param instance the entity, whose attributes are to be populated
+     * @param et the entity class representation in the metamodel
+     * @param <T> the entity class
+     * @throws IllegalAccessException
+     */
+    private <T> void populateQueryAttributes(final T instance, EntityType<T> et)
+            throws IllegalAccessException {
+        final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
+
+        final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
+
+        for (QueryAttribute<? super T, ?> queryAttribute : queryAttributes) {
+            if (queryAttribute.getFetchType() != FetchType.LAZY) {
+                populateQueryAttribute(instance, queryAttribute, queryFactory, et);
+            }
+        }
+    }
+
+    private <T> void populateQueryAttribute(T instance, QueryAttribute<? super T, ?> queryAttribute, SparqlQueryFactory queryFactory, EntityType<T> et)
+            throws IllegalAccessException {
+        TypedQueryImpl<?> typedQuery;
+        try {
+            if (queryAttribute.isCollection()) {
+                PluralQueryAttribute<? super T, ?, ?> pluralQueryAttribute = (PluralQueryAttribute<? super T, ?, ?>) queryAttribute;
+                typedQuery = queryFactory.createNativeQuery(
+                        pluralQueryAttribute.getQuery(), pluralQueryAttribute.getElementType().getJavaType());
+            } else {
+                typedQuery = queryFactory.createNativeQuery(
+                        queryAttribute.getQuery(), queryAttribute.getJavaType());
+            }
+        } catch (RuntimeException e) {
+            LOG.error("Could not create native query from the parameter given in annotation @Sparql:\n{}" +
+                            "\nAttribute '{}' will be skipped.", queryAttribute.getQuery(),
+                    queryAttribute.getJavaMember().getName(), e);
+            return;
+        }
+
+        // set value of parameter "this", if it is present in the query, with the entity instance
+        try {
+            typedQuery.setParameter("this", instance);
+        } catch (IllegalArgumentException e1) {
+            // parameter "this" is not present in the query, no need to set it
+        } catch (RuntimeException e2) {
+            LOG.error("Unable to set query parameter 'this' with the instance" +
+                    "\nAttribute '{}' will be skipped.", queryAttribute.getJavaMember().getName(), e2);
+            return;
+        }
+
+        QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs =
+                getQueryFieldLoader(et, queryAttribute);
+
+        qfs.addValueFromTypedQuery(typedQuery);
+        qfs.buildInstanceFieldValue(instance);
+    }
+
+    private <T> QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> getQueryFieldLoader(
+            EntityType<T> et, QueryAttribute<? super T, ?> queryAttribute) {
+        if (queryAttribute == null) {
+            return null;
+        }
+
+        if (! queryAttribute.isCollection()) {
+            return new SingularQueryAttributeStrategy<>(et, (AbstractQueryAttribute<? super T, ?>) queryAttribute);
+        } else {
+            return new PluralQueryAttributeStrategy<>(et, (PluralQueryAttributeImpl<? super T, ?, ?>) queryAttribute);
+        }
+    }
+
     private <T> void validateIntegrityConstraints(T entity, EntityType<T> et) {
         if (shouldSkipICValidationOnLoad()) {
             return;
@@ -187,5 +264,11 @@ class EntityConstructor {
         axioms.forEach(fs::addValueFromAxiom);
         fs.buildInstanceFieldValue(entity);
         validateIntegrityConstraints(entity, fieldSpec, et);
+    }
+
+    <T> void setQueryAttributeFieldValue(T entity, QueryAttribute<? super T, ?> queryAttribute, EntityType<T> et)
+            throws IllegalAccessException {
+        final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
+        populateQueryAttribute(entity, queryAttribute, queryFactory, et);
     }
 }

@@ -62,7 +62,7 @@ class FieldStrategyTest {
         final EntityType et = mock(EntityType.class);
         final CollectionAttributeImpl att = mock(CollectionAttributeImpl.class);
         when(att.isCollection()).thenReturn(true);
-        when(att.getCollectionType()).thenReturn(PluralAttribute.CollectionType.COLLECTION);
+        when(att.getCollectionType()).thenReturn(CollectionType.COLLECTION);
         when(att.isAssociation()).thenReturn(false);
         when(att.getBindableJavaType()).thenReturn(String.class);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(String.class));
@@ -76,7 +76,7 @@ class FieldStrategyTest {
         final EntityType et = mock(EntityType.class);
         final CollectionAttributeImpl att = mock(CollectionAttributeImpl.class);
         when(att.isCollection()).thenReturn(true);
-        when(att.getCollectionType()).thenReturn(PluralAttribute.CollectionType.COLLECTION);
+        when(att.getCollectionType()).thenReturn(CollectionType.COLLECTION);
         when(att.isAssociation()).thenReturn(true);
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.getElementType()).thenReturn(metamodelMocks.forOwlClassA().entityType());

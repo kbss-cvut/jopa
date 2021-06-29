@@ -138,7 +138,7 @@ class PluralAnnotationPropertyStrategyTest {
         final EntityTypeImpl<T> et = mock(EntityTypeImpl.class);
         final AbstractPluralAttribute<T, Set, X> att = mock(AbstractPluralAttribute.class);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(elementType));
-        when(att.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(att.getCollectionType()).thenReturn(CollectionType.SET);
         when(att.getBindableJavaType()).thenReturn(elementType);
         when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.DC_SOURCE));
@@ -264,7 +264,7 @@ class PluralAnnotationPropertyStrategyTest {
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(Object.class));
         when(att.getDeclaringType()).thenReturn(et);
-        when(att.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(att.getCollectionType()).thenReturn(CollectionType.SET);
         when(att.getName())
                 .thenReturn(ClassWithObjectAnnotation.class.getDeclaredField("pluralAnnotation").getName());
         when(att.getConverter()).thenReturn(new ObjectConverter());

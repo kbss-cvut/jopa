@@ -324,6 +324,34 @@ public interface ManagedType<X> extends Type<X> {
     MapAttribute<X, ?, ?> getDeclaredMap(String name);
 
     /**
+     * Return the query based attributes of the managed type.
+     *
+     * @return query based attributes of the managed type
+     */
+    Set<QueryAttribute<? super X, ?>> getQueryAttributes();
+
+    /**
+     * Check if a query based attribute of the managed type that corresponds to the
+     * specified name exists.
+     *
+     * @param name the name of the represented attribute
+     * @return {@code true} if the query attribute exists
+     */
+    boolean hasQueryAttribute(String name);
+
+    /**
+     * Return the query based attribute of the managed type that corresponds to the
+     * specified name.
+     *
+     * @param name the name of the represented attribute
+     * @return attribute with given name
+     * @throws IllegalArgumentException if attribute of the given
+     *                                  <p>
+     *                                  name is not present in the managed type
+     */
+    QueryAttribute<? super X, ?> getQueryAttribute(String name);
+
+    /**
      * Returns types attribute specified by this managed type.
      *
      * @return Types specification attribute, {@code null} if there are no types present in this managed type
@@ -343,8 +371,8 @@ public interface ManagedType<X> extends Type<X> {
     /**
      * Gets specification of a field with the specified name.
      * <p>
-     * In contrast to {@link #getAttribute(String)}, calling this method can also return field specification for a types
-     * or properties field.
+     * In contrast to {@link #getAttribute(String)}, calling this method can also return field specification for
+     * a query based attribute, types or properties field.
      *
      * @param fieldName Name of the field
      * @return Field specification
@@ -356,7 +384,7 @@ public interface ManagedType<X> extends Type<X> {
     /**
      * Gets all field specifications of this entity type.
      * <p>
-     * In contrast to {@link #getAttributes()}, this method returns also specifications of types and properties (if
+     * In contrast to {@link #getAttributes()}, this method returns also specifications of query based attributes, types and properties (if
      * present).
      *
      * @return Field specifications

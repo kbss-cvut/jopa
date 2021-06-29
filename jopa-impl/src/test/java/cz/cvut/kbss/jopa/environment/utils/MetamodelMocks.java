@@ -43,7 +43,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassA, String> aStringAtt;
     @Mock
-    private TypesSpecification<OWLClassA, ?> aTypes;
+    private TypesSpecification<OWLClassA, String> aTypes;
 
     @Mock
     private EntityTypeImpl<OWLClassB> etB;
@@ -200,11 +200,11 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassQ, String> qStringAtt;
     @Mock
-    private SingularAttributeImpl<OWLClassQ, String> qLabelAtt;
+    private SingularAttributeImpl<QMappedSuperclass, String> qLabelAtt;
     @Mock
-    private SingularAttributeImpl<OWLClassQ, String> qParentStringAtt;
+    private SingularAttributeImpl<QMappedSuperclass, String> qParentStringAtt;
     @Mock
-    private SingularAttributeImpl<OWLClassQ, OWLClassA> qOwlClassAAtt;
+    private SingularAttributeImpl<QMappedSuperclass, OWLClassA> qOwlClassAAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassR> etR;
@@ -248,12 +248,29 @@ public class MetamodelMocks {
     @Mock
     private AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt;
 
+    @Mock
+    private EntityTypeImpl<OWLClassWithQueryAttr> etQA;
+    @Mock
+    private Identifier idQA;
+    @Mock
+    private SingularQueryAttributeImpl<OWLClassWithQueryAttr, String> qaStringQueryAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassWithQueryAttr, String> qaStringAtt;
+    @Mock
+    private SingularQueryAttributeImpl<OWLClassWithQueryAttr, OWLClassA> qaEntityQueryAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassWithQueryAttr, OWLClassA> qaEntityAtt;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.openMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
+        MetamodelClassInitializer.initMetamodelClassOWLClassA(aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
+        MetamodelClassInitializer.initMetamodelClassOWLClassB(bStringAtt, bProperties, idB);
         MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);
+        MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, idC);
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, idD);
+        MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
         MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
         MetamodelFactory.iniOWLClassGMocks(etG, gOwlClassHAtt, idG);
@@ -270,12 +287,14 @@ public class MetamodelMocks {
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
         MetamodelFactory
                 .initOwlClassQMock(etQ, qMappedSuperclass, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
+        MetamodelClassInitializer.initMetamodelClassOWLClassQ(qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
         MetamodelFactory.initOwlClassSMock(etS, sNameAtt, sTypes, idS);
         MetamodelFactory.initOwlClassSListeners(etS, parentListenerMock);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, idU);
+        MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt, qaEntityAtt, idQA);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -301,6 +320,7 @@ public class MetamodelMocks {
         etMap.put(OWLClassS.class, etS);
         etMap.put(OWLClassT.class, etT);
         etMap.put(OWLClassU.class, etU);
+        etMap.put(OWLClassWithQueryAttr.class, etQA);
         when(metamodel.entity(any())).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
@@ -383,6 +403,10 @@ public class MetamodelMocks {
 
     public OWLClassUMetamodel forOwlClassU() {
         return new OWLClassUMetamodel();
+    }
+
+    public OWLClassWithQueryAttrMetamodel forOwlClassWithQueryAttr() {
+        return new OWLClassWithQueryAttrMetamodel();
     }
 
     public class OWLClassAMetamodel {
@@ -709,15 +733,15 @@ public class MetamodelMocks {
             return MetamodelMocks.this.qStringAtt;
         }
 
-        public SingularAttribute<OWLClassQ, String> qParentStringAtt() {
+        public SingularAttribute<QMappedSuperclass, String> qParentStringAtt() {
             return MetamodelMocks.this.qParentStringAtt;
         }
 
-        public SingularAttribute<OWLClassQ, String> qLabelAtt() {
+        public SingularAttribute<QMappedSuperclass, String> qLabelAtt() {
             return MetamodelMocks.this.qLabelAtt;
         }
 
-        public SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt() {
+        public SingularAttribute<QMappedSuperclass, OWLClassA> qOwlClassAAtt() {
             return MetamodelMocks.this.qOwlClassAAtt;
         }
     }
@@ -804,6 +828,32 @@ public class MetamodelMocks {
 
         public AbstractPluralAttribute<OWLClassU, Set, MultilingualString> uPluralStringAtt() {
             return MetamodelMocks.this.uPluralStringAtt;
+        }
+    }
+
+    public class OWLClassWithQueryAttrMetamodel {
+        public EntityTypeImpl<OWLClassWithQueryAttr> entityType() {
+            return MetamodelMocks.this.etQA;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idQA;
+        }
+
+        public AbstractAttribute<OWLClassWithQueryAttr, String> stringAttribute() {
+            return MetamodelMocks.this.qaStringAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassWithQueryAttr, String> stringQueryAttribute() {
+            return MetamodelMocks.this.qaStringQueryAtt;
+        }
+
+        public AbstractAttribute<OWLClassWithQueryAttr, OWLClassA> entityAttribute() {
+            return MetamodelMocks.this.qaEntityAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassWithQueryAttr, OWLClassA> entityQueryAttribute() {
+            return MetamodelMocks.this.qaEntityQueryAtt;
         }
     }
 }

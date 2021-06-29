@@ -648,7 +648,7 @@ public class CloneBuilderTest {
         final PluralAttribute hasB = mock(PluralAttribute.class);
         when(hasB.getJavaField()).thenReturn(A.class.getDeclaredField("b"));
         when(hasB.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(hasB.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(hasB.getCollectionType()).thenReturn(CollectionType.SET);
         when(hasB.getElementType()).thenReturn(etB);
         final Set aFieldSpecs = new HashSet<>(2);
         aFieldSpecs.add(idA);
