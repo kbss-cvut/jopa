@@ -8,6 +8,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 Notable changes:
 
+* **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
 * **0.15.0** - Support for multilingual String attributes. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Multilingual-String-Attributes) for more info
 * **0.14.0** - Support for the Semantic Object Query Language (SOQL). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Semantic-Object-Query-Language) for more info
 * **0.13.0** - Support for RDF simple literals (language-less strings), access to lexical form of literals, updated named graph handling

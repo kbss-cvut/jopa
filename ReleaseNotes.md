@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.17.0 - June 29, 2021
+- Add support for SPARQL-based entity attributes (Feature #65).
+- Add support for Criteria API (Feature #20).
+- Fix handling of ASK queries with prefixes in the Sesame Driver (Bug #89).
+- Dependency updates: AspectJ 1.9.7, RDF4J 3.7.1.
+
 ## 0.16.5 - April 28, 2021
 - Dependency updates: RDF4J 3.6.3.
 
