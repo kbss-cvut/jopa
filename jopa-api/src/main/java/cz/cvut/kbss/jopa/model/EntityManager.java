@@ -20,14 +20,15 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 public interface EntityManager {
 
@@ -266,8 +267,26 @@ public interface EntityManager {
     boolean isConsistent(URI context);
 
     // TODO JPA 2.0 public LockModeType getLockMode(Object entity)
-    // TODO JPA 2.0 setProperty
-    // TODO JPA 2.0 getProperties
+
+    /**
+     * Get the properties and hints and associated values that are in effect for the entity manager.
+     * <p>
+     * Changing the contents of the map does not change the configuration in effect.
+     *
+     * @return Map of properties and hints in effect for entity manager
+     */
+    Map<String, Object> getProperties();
+
+    /**
+     * Set an entity manager property or hint.
+     * <p>
+     * If a vendor-specific property or hint is not recognized, it is silently ignored.
+     *
+     * @param propertyName Name of property or hint
+     * @param value        Value for property or hint
+     * @throws IllegalArgumentException If the second argument is not valid for the implementation
+     */
+    void setProperty(String propertyName, Object value);
 
     /**
      * Create an instance of Query for executing a Java Persistence query language statement.

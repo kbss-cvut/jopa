@@ -638,4 +638,16 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public Configuration getConfiguration() {
         return configuration;
     }
+
+    @Override
+    public Map<String, Object> getProperties() {
+        return new HashMap<>(configuration.getProperties());
+    }
+
+    @Override
+    public void setProperty(String propertyName, Object value) {
+        Objects.requireNonNull(propertyName);
+        Objects.requireNonNull(value);
+        configuration.set(propertyName, value.toString());
+    }
 }
