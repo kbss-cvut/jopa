@@ -36,10 +36,10 @@
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
 
-        <org.slf4j.version>1.7.30</org.slf4j.version>
-        <org.junit.jupiter.version>5.7.1</org.junit.jupiter.version>
-        <org.mockito.version>3.7.7</org.mockito.version>
-        <org.aspectj.version>1.9.6</org.aspectj.version>
+        <org.slf4j.version>1.7.31</org.slf4j.version>
+        <org.junit.jupiter.version>5.7.2</org.junit.jupiter.version>
+        <org.mockito.version>3.11.2</org.mockito.version>
+        <org.aspectj.version>1.9.7</org.aspectj.version>
         <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
 
         <!-- We use OWLAPI in multiple modules, so let's keep them in sync -->
