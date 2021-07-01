@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.modelgen;
 
-import com.sun.xml.internal.ws.policy.spi.AssertionCreationException;
-
 public class Constants {
 
     public static class Options {
@@ -14,6 +12,11 @@ public class Constants {
             throw new AssertionError();
         }
     }
+
+    /**
+     * Tool version.
+     */
+    public static final String VERSION = "$VERSION$";
 
     private Constants() {
         throw new AssertionError();

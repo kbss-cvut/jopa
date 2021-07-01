@@ -2,10 +2,14 @@ package cz.cvut.kbss.jopa.modelgen;
 
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.modelgen.util.TypeUtils;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,9 +21,34 @@ import static cz.cvut.kbss.jopa.modelgen.Constants.Options.*;
  */
 public class JOPAMetamodelProcessor extends AbstractProcessor {
 
+    private Context context;
+
+    @Override
+    public void init(ProcessingEnvironment env) {
+        super.init(env);
+        context = new Context(env);
+        context.logMessage(Diagnostic.Kind.NOTE, "JOPA Static-Metamodel Generator " + Constants.VERSION);
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if ( roundEnv.processingOver() || annotations.size() == 0 ) {
+            return false;
+        }
+        Set<? extends Element> elements = roundEnv.getRootElements();
+        for ( Element element : elements ) {
+            if ( isManagedType( element ) ) {
+                context.logMessage( Diagnostic.Kind.OTHER, "Processing annotated class " + element.toString() );
+//                handleRootElementAnnotationMirrors( element );
+            }
+        }
+
+//        createMetaModelClasses();
         return false;
+    }
+
+    private boolean isManagedType(Element element) {
+        return TypeUtils.containsAnnotation(element, OWLClass.class.getCanonicalName(), MappedSuperclass.class.getCanonicalName());
     }
 
     @Override

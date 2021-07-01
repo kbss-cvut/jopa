@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.modelgen.Constants.Options;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import java.util.*;
 
 /**
@@ -82,5 +83,21 @@ public class Context {
 
     public void addMetaEntity(String qualifiedName, JClass metaEntity) {
         metaEntities.put(qualifiedName, metaEntity);
+    }
+
+    public void logMessage(Diagnostic.Kind type, String message) {
+        if ( !debug && type.equals( Diagnostic.Kind.OTHER ) ) {
+            return;
+        }
+        processingEnvironment.getMessager().printMessage( type, message );
+    }
+
+    @Override
+    public String toString() {
+        return "Context{" +
+                "debug=" + debug +
+                ", addGenerationDate=" + addGenerationDate +
+                ", addGenerated=" + addGenerated +
+                '}';
     }
 }
