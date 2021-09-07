@@ -36,7 +36,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.nickwongdev</groupId>
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
             </plugin>
 
