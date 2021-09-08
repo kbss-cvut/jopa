@@ -85,6 +85,10 @@ abstract class AbstractInstanceBuilder {
         } catch (NoSuchMethodException e) {
             // No constructor matching the argument types
             return null;
+        } catch (RuntimeException e) {
+            // Constructor cannot be resolved for some other reason
+            LOG.warn("Unable to get constructor for arguments of type {}. Got runtime exception {}.", args, e);
+            return null;
         }
         return c;
     }
