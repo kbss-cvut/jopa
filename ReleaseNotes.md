@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.17.1 - September 13, 2021
+- Switch back to the resurrected official [aspectj-maven-plugin](https://github.com/mojohaus/aspectj-maven-plugin) which allows running on JDK up to 16.
+- Dependency updates: RDF4J 3.7.2, OWL API 5.1.19.
+
 ## 0.17.0 - June 29, 2021
 - Add support for SPARQL-based entity attributes (Feature #65).
 - Add support for Criteria API (Feature #20).
