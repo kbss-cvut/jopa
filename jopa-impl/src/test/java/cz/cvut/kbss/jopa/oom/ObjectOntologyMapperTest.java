@@ -107,9 +107,8 @@ class ObjectOntologyMapperTest {
         mocks.setMocks(metamodelMock);
         this.etAMock = mocks.forOwlClassA().entityType();
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, etAMock)).thenReturn(axiomDescriptor);
-        when(
-                descriptorFactoryMock.createForFieldLoading(IDENTIFIER, OWLClassA.getTypesField(),
-                        aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
+        when(descriptorFactoryMock.createForFieldLoading(IDENTIFIER, OWLClassA.getTypesField(),
+                aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
         this.mapper = new ObjectOntologyMapperImpl(uowMock, connectionMock);
         TestEnvironmentUtils.setMock(mapper,
@@ -490,8 +489,6 @@ class ObjectOntologyMapperTest {
 
     @Test
     void removeEntityRemovesPendingReferenceWhenOwnerIsRemoved() throws Exception {
-        final OWLClassD owner = new OWLClassD(IDENTIFIER);
-        owner.setOwlClassA(entityA);
         final Assertion assertion =
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
         final Descriptor descriptor = new EntityDescriptor();
@@ -503,8 +500,9 @@ class ObjectOntologyMapperTest {
                 .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, IDENTIFIER, descriptor, true),
                         metamodelMock.entity(OWLClassD.class))).thenReturn(axiomDescriptor);
 
-        mapper.removeEntity(IDENTIFIER, OWLClassD.class, descriptor);
         final PendingReferenceRegistry registry = getPendingAssertionRegistry();
+        assertTrue(registry.getPendingResources().contains(entityA));
+        mapper.removeEntity(IDENTIFIER, OWLClassD.class, descriptor);
         assertFalse(registry.getPendingResources().contains(entityA));
     }
 

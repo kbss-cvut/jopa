@@ -31,9 +31,12 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.reflect.Whitebox;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -43,6 +46,8 @@ import java.util.concurrent.locks.Lock;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@PrepareForTest(PoolingStorageConnector.class)
 public class PoolingStorageConnectorTest {
 
     @Mock
@@ -60,14 +65,15 @@ public class PoolingStorageConnectorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.vf = SimpleValueFactory.getInstance();
         this.connector = new PoolingStorageConnector(centralMock);
         final Field transactionField = AbstractConnector.class.getDeclaredField("transaction");
         transactionField.setAccessible(true);
         this.transaction = (Transaction) transactionField.get(connector);
-        TestUtils.setMock("READ", PoolingStorageConnector.class, readLock);
-        TestUtils.setMock("WRITE", PoolingStorageConnector.class, writeLock);
+        Whitebox.setInternalState(PoolingStorageConnector.class, "READ", readLock);
+        Whitebox.setInternalState(PoolingStorageConnector.class, "WRITE", writeLock);
+//        TestUtils.setMock("READ", PoolingStorageConnector.class, readLock);
+//        TestUtils.setMock("WRITE", PoolingStorageConnector.class, writeLock);
     }
 
     @Test
@@ -333,7 +339,6 @@ public class PoolingStorageConnectorTest {
         final Resource subject = vf.createIRI(Generator.generateUri().toString());
         final IRI property = vf.createIRI(Generator.generateUri().toString());
         final RepositoryConnection conn = mock(RepositoryConnection.class);
-        when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
         when(centralMock.acquireConnection()).thenReturn(conn);
         connector.begin();
         connector
@@ -346,7 +351,6 @@ public class PoolingStorageConnectorTest {
     public void containsReturnsTrueWhenCentralConnectorsContainsStatementAndLocalDoesNot() throws Exception {
         final Resource subject = vf.createIRI(Generator.generateUri().toString());
         final IRI property = vf.createIRI(Generator.generateUri().toString());
-        when(centralMock.containsStatement(subject, property, null, false, Collections.emptySet())).thenReturn(true);
         final RepositoryConnection conn = mock(RepositoryConnection.class);
         when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
         when(centralMock.acquireConnection()).thenReturn(conn);
@@ -358,9 +362,7 @@ public class PoolingStorageConnectorTest {
     public void containsReturnsFalseWhenStatementsWasRemovedLocally() throws Exception {
         final Resource subject = vf.createIRI(Generator.generateUri().toString());
         final IRI property = vf.createIRI(Generator.generateUri().toString());
-        when(centralMock.containsStatement(subject, property, null, false, Collections.emptySet())).thenReturn(true);
         final RepositoryConnection conn = mock(RepositoryConnection.class);
-        when(conn.hasStatement(subject, property, null, false)).thenReturn(true);
         when(centralMock.acquireConnection()).thenReturn(conn);
         connector.begin();
         connector.removeStatements(

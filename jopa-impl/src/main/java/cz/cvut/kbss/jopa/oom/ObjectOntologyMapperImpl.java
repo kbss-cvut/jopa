@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
@@ -46,7 +45,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final UnitOfWorkImpl uow;
     private final CacheManager cache;
     private final Connection storageConnection;
-    private final MetamodelImpl metamodel;
 
     private final AxiomDescriptorFactory descriptorFactory;
     private final EntityConstructor entityBuilder;
@@ -61,19 +59,18 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.uow = Objects.requireNonNull(uow);
         this.cache = uow.getLiveObjectCache();
         this.storageConnection = Objects.requireNonNull(connection);
-        this.metamodel = uow.getMetamodel();
         this.descriptorFactory = new AxiomDescriptorFactory();
         this.instanceRegistry = new HashMap<>();
         this.pendingReferences = new PendingReferenceRegistry();
         this.entityBuilder = new EntityConstructor(this);
         this.entityBreaker = new EntityDeconstructor(this);
 
-        this.defaultInstanceLoader = DefaultInstanceLoader.builder().connection(storageConnection).metamodel(metamodel)
-                                                          .descriptorFactory(descriptorFactory)
-                                                          .entityBuilder(entityBuilder).cache(cache).build();
-        this.twoStepInstanceLoader = TwoStepInstanceLoader.builder().connection(storageConnection).metamodel(metamodel)
-                                                          .descriptorFactory(descriptorFactory)
-                                                          .entityBuilder(entityBuilder).cache(cache).build();
+        this.defaultInstanceLoader = DefaultInstanceLoader.builder().connection(storageConnection).metamodel(uow.getMetamodel())
+                .descriptorFactory(descriptorFactory)
+                .entityBuilder(entityBuilder).cache(cache).build();
+        this.twoStepInstanceLoader = TwoStepInstanceLoader.builder().connection(storageConnection).metamodel(uow.getMetamodel())
+                .descriptorFactory(descriptorFactory)
+                .entityBuilder(entityBuilder).cache(cache).build();
     }
 
     @Override
@@ -129,7 +126,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     @Override
     public <T> EntityTypeImpl<T> getEntityType(Class<T> cls) {
-        return metamodel.entity(cls);
+        return uow.getMetamodel().entity(cls);
     }
 
     @Override

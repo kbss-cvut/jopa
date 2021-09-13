@@ -26,9 +26,9 @@ import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -39,7 +39,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class CloneBuilderTest {
@@ -63,7 +63,7 @@ public class CloneBuilderTest {
 
     private MetamodelMocks metamodelMocks;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         initManagedTypes();
         defaultDescriptor = new EntityDescriptor();
@@ -82,7 +82,7 @@ public class CloneBuilderTest {
         managedTypes.add(OWLClassQ.class);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         when(uow.isEntityType(any())).thenAnswer(invocation -> {
@@ -117,10 +117,6 @@ public class CloneBuilderTest {
         types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityU");
         types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityX");
         entityA.setTypes(types);
-        OWLClassA t2 = new OWLClassA();
-        final URI pk2 = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAA");
-        t2.setUri(pk2);
-        t2.setStringAttribute("TEST2");
         entityB = new OWLClassB();
         entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
         entityB.setStringAttribute("someString");
@@ -147,20 +143,19 @@ public class CloneBuilderTest {
         assertEquals(entityA.getTypes(), res.getTypes());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testBuildCloneNullOriginal() {
-        builder.buildClone(null, new CloneConfiguration(defaultDescriptor));
-        fail("This line should not have been reached.");
+        assertThrows(NullPointerException.class, () -> builder.buildClone(null, new CloneConfiguration(defaultDescriptor)));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testBuildCloneNullContextUri() {
-        builder.buildClone(entityA, null);
+        assertThrows(NullPointerException.class, () -> builder.buildClone(entityA, null));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testBuildCloneNullCloneOwner() throws Exception {
-        builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor);
+    @Test
+    public void testBuildCloneNullCloneOwner() {
+        assertThrows(NullPointerException.class, () -> builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor));
     }
 
     @Test
@@ -428,7 +423,7 @@ public class CloneBuilderTest {
         assertNotNull(entityC.getReferencedList());
         for (int i = 0; i < c.getReferencedList().size(); i++) {
             assertEquals(c.getReferencedList().get(i).getUri(), entityC.getReferencedList().get(i)
-                                                                       .getUri());
+                    .getUri());
         }
     }
 

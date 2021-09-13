@@ -32,12 +32,6 @@ public class ServerSessionStub extends ServerSession {
     }
 
     @Override
-    public MetamodelImpl getMetamodel() {
-        // Just exporting API as public so that we can stub it with Mockito
-        return null;
-    }
-
-    @Override
     public boolean isEntityType(Class<?> cls) {
         return TestEnvironmentUtils.getManagedTypes().contains(cls);
     }

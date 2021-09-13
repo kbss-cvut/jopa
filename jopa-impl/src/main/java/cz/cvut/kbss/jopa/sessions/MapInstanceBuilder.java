@@ -48,7 +48,10 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         if (clone == null) {
             if (singletonMapClass.isInstance(orig)) {
                 clone = buildSingletonClone(cloneOwner, field, orig, configuration);
-            } else {
+            } else if (Collections.emptyMap().equals(orig)) {
+                clone = orig;
+            }
+            else {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
         }
