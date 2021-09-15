@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -28,7 +26,10 @@ import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +37,8 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
 
     private static OWLClassA entityA;
@@ -53,7 +56,6 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.loadingParameters = new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
@@ -65,8 +67,8 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
                         descriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
         this.instanceLoader = DefaultInstanceLoader.builder().connection(connectionMock).metamodel(metamodelMock)
-                                                   .descriptorFactory(descriptorFactoryMock).cache(cacheMock)
-                                                   .entityBuilder(entityConstructorMock).build();
+                .descriptorFactory(descriptorFactoryMock).cache(cacheMock)
+                .entityBuilder(entityConstructorMock).build();
     }
 
     @Test
@@ -168,5 +170,16 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
 
         assertThrows(StorageAccessException.class, () -> instanceLoader.loadReference(loadingParameters));
         verify(entityConstructorMock, never()).createEntityInstance(IDENTIFIER, etAMock);
+    }
+
+    @Test
+    void loadEntityReloadsQueryAttributesWhenInstanceIsRetrievedFromCache() throws Exception {
+        when(cacheMock.contains(OWLClassA.class, loadingParameters.getIdentifier(), descriptor)).thenReturn(true);
+        when(cacheMock.get(OWLClassA.class, loadingParameters.getIdentifier(), descriptor)).thenReturn(entityA);
+
+        final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
+        assertEquals(entityA, res);
+        verify(entityConstructorMock).populateQueryAttributes(entityA, etAMock);
+        verify(entityConstructorMock, never()).reconstructEntity(eq(loadingParameters.getIdentifier()), eq(etAMock), eq(descriptor), anyCollection());
     }
 }

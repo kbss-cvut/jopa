@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -48,7 +46,8 @@ class EntityConstructor {
     }
 
     /**
-     * Creates an instance of the specified {@link EntityType} with the specified identifier and populates its attributes from the specified axioms.
+     * Creates an instance of the specified {@link EntityType} with the specified identifier and populates its
+     * attributes from the specified axioms.
      *
      * @param identifier Entity identifier
      * @param et         Entity type
@@ -101,9 +100,8 @@ class EntityConstructor {
         return instance;
     }
 
-    private <T> void populateAttributes(final T instance, EntityType<T> et,
-                                        Descriptor entityDescriptor, Collection<Axiom<?>> axioms)
-            throws IllegalAccessException {
+    private <T> void populateAttributes(final T instance, EntityType<T> et, Descriptor entityDescriptor,
+                                        Collection<Axiom<?>> axioms) {
         final Map<URI, FieldSpecification<? super T, ?>> attributes = indexEntityAttributes(et);
         final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>>
                 fieldLoaders = new HashMap<>(
@@ -164,12 +162,10 @@ class EntityConstructor {
      * Populate all query based attributes in the given instance.
      *
      * @param instance the entity, whose attributes are to be populated
-     * @param et the entity class representation in the metamodel
-     * @param <T> the entity class
-     * @throws IllegalAccessException
+     * @param et       the entity class representation in the metamodel
+     * @param <T>      the entity class
      */
-    private <T> void populateQueryAttributes(final T instance, EntityType<T> et)
-            throws IllegalAccessException {
+    public <T> void populateQueryAttributes(final T instance, EntityType<T> et) {
         final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
 
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
@@ -181,8 +177,8 @@ class EntityConstructor {
         }
     }
 
-    private <T> void populateQueryAttribute(T instance, QueryAttribute<? super T, ?> queryAttribute, SparqlQueryFactory queryFactory, EntityType<T> et)
-            throws IllegalAccessException {
+    private <T> void populateQueryAttribute(T instance, QueryAttribute<? super T, ?> queryAttribute,
+                                            SparqlQueryFactory queryFactory, EntityType<T> et) {
         TypedQueryImpl<?> typedQuery;
         try {
             if (queryAttribute.isCollection()) {
@@ -224,7 +220,7 @@ class EntityConstructor {
             return null;
         }
 
-        if (! queryAttribute.isCollection()) {
+        if (!queryAttribute.isCollection()) {
             return new SingularQueryAttributeStrategy<>(et, (AbstractQueryAttribute<? super T, ?>) queryAttribute);
         } else {
             return new PluralQueryAttributeStrategy<>(et, (PluralQueryAttributeImpl<? super T, ?, ?>) queryAttribute);
@@ -243,7 +239,7 @@ class EntityConstructor {
     }
 
     <T> void validateIntegrityConstraints(T entity, FieldSpecification<? super T, ?> fieldSpec,
-                                                  EntityType<T> et) {
+                                          EntityType<T> et) {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }

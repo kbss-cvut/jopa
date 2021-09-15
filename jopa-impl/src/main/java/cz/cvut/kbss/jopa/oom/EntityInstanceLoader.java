@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -78,11 +76,11 @@ abstract class EntityInstanceLoader {
      */
     abstract <T> T loadReference(LoadingParameters<T> loadingParameters);
 
-    <T> T loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
+    <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, EntityType<U> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
         if (isCached(loadingParameters, et)) {
-            return cache.get(et.getJavaType(), identifier, descriptor);
+            return loadCached(et, identifier, descriptor);
         }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
@@ -98,6 +96,12 @@ abstract class EntityInstanceLoader {
     <T> boolean isCached(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
         return !loadingParameters.shouldBypassCache() &&
                 cache.contains(et.getJavaType(), loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
+    }
+
+    <T> T loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
+        final T cached = cache.get(et.getJavaType(), identifier, descriptor);
+        entityBuilder.populateQueryAttributes(cached, et);
+        return cached;
     }
 
     <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
