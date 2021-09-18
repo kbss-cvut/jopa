@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
@@ -43,6 +44,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
 
     private static OWLClassA entityA;
 
+    private MetamodelMocks metamodelMocks;
     private EntityType<OWLClassA> etAMock;
     private LoadingParameters<OWLClassA> loadingParameters;
 
@@ -57,14 +59,15 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
     @BeforeEach
     void setUp() throws Exception {
         this.loadingParameters = new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodelMock);
-        this.etAMock = mocks.forOwlClassA().entityType();
-        when(descriptorFactoryMock.createForEntityLoading(loadingParameters, mocks.forOwlClassA().entityType()))
+        this.metamodelMocks = new MetamodelMocks();
+        metamodelMocks.setMocks(metamodelMock);
+        this.etAMock = metamodelMocks.forOwlClassA().entityType();
+        when(descriptorFactoryMock.createForEntityLoading(loadingParameters, metamodelMocks.forOwlClassA()
+                .entityType()))
                 .thenReturn(axiomDescriptor);
         when(
                 descriptorFactoryMock.createForFieldLoading(IDENTIFIER, OWLClassA.getTypesField(),
-                        descriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
+                        descriptor, metamodelMocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
         this.instanceLoader = DefaultInstanceLoader.builder().connection(connectionMock).metamodel(metamodelMock)
                 .descriptorFactory(descriptorFactoryMock).cache(cacheMock)
@@ -181,5 +184,19 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         assertEquals(entityA, res);
         verify(entityConstructorMock).populateQueryAttributes(entityA, etAMock);
         verify(entityConstructorMock, never()).reconstructEntity(eq(loadingParameters.getIdentifier()), eq(etAMock), eq(descriptor), anyCollection());
+    }
+
+    @Test
+    void loadEntityRecursivelyReloadsQueryAttributesWhenInstanceIsRetrievedFromCache() {
+        final OWLClassD entityD = new OWLClassD(Generators.createIndividualIdentifier());
+        entityD.setOwlClassA(entityA);
+        final LoadingParameters<OWLClassD> dLoadingParameters = new LoadingParameters<>(OWLClassD.class, entityD.getUri(), descriptor);
+        when(cacheMock.contains(OWLClassD.class, dLoadingParameters.getIdentifier(), descriptor)).thenReturn(true);
+        when(cacheMock.get(OWLClassD.class, dLoadingParameters.getIdentifier(), descriptor)).thenReturn(entityD);
+
+        final OWLClassD result = instanceLoader.loadEntity(dLoadingParameters);
+        assertEquals(entityD, result);
+        verify(entityConstructorMock).populateQueryAttributes(entityD, metamodelMocks.forOwlClassD().entityType());
+        verify(entityConstructorMock).populateQueryAttributes(entityA, etAMock);
     }
 }

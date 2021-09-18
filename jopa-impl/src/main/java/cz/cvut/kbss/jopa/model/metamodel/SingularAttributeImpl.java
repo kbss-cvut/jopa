@@ -48,11 +48,6 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
     }
 
     @Override
-    public boolean isAssociation() {
-        return getPersistentAttributeType().equals(PersistentAttributeType.OBJECT);
-    }
-
-    @Override
     public boolean isCollection() {
         return false;
     }

@@ -16,6 +16,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
 import cz.cvut.kbss.jopa.environment.listener.ParentListener;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.mockito.Mock;
@@ -335,6 +336,9 @@ public class MetamodelMocks {
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         });
         when(metamodel.getEntities()).thenReturn(new HashSet<>(etMap.values()));
+        if (metamodel instanceof MetamodelImpl) {
+            etMap.keySet().forEach(cls -> when(((MetamodelImpl) metamodel).isEntityType(cls)).thenReturn(true));
+        }
     }
 
     public OWLClassAMetamodel forOwlClassA() {

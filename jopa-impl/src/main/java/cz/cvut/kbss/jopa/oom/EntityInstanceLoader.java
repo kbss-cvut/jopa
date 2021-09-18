@@ -15,10 +15,13 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -27,6 +30,8 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -100,8 +105,39 @@ abstract class EntityInstanceLoader {
 
     <T> T loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
         final T cached = cache.get(et.getJavaType(), identifier, descriptor);
-        entityBuilder.populateQueryAttributes(cached, et);
+        recursivelyReloadQueryAttributes(cached, et, new IdentityHashMap<>());
         return cached;
+    }
+
+    /**
+     * Recursively reloads query attribute values.
+     *
+     * @param instance Instance whose query attributes should be reloaded
+     * @param et       Entity type of the instance
+     * @param visited  Map of already visited objects to prevent infinite recursion
+     */
+    private void recursivelyReloadQueryAttributes(Object instance, EntityType<?> et, Map<Object, Object> visited) {
+        if (visited.containsKey(instance)) {
+            return;
+        }
+        visited.put(instance, null);
+        entityBuilder.populateQueryAttributes(instance, (EntityType<Object>) et);
+        et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
+            final Class<?> cls = att.isCollection() ? ((PluralAttribute) att).getElementType()
+                    .getJavaType() : att.getJavaType();
+            if (!metamodel.isEntityType(cls)) {
+                return;
+            }
+            final Object value = EntityPropertiesUtils.getAttributeValue(att, instance);
+            if (value != null) {
+                // Resolve the value class instead of using the attribute type, as it may be a subclass at runtime
+                if (att.isCollection()) {
+                    ((Collection<?>) value).forEach(el -> recursivelyReloadQueryAttributes(el, metamodel.entity(el.getClass()), visited));
+                } else {
+                    recursivelyReloadQueryAttributes(value, metamodel.entity(value.getClass()), visited);
+                }
+            }
+        });
     }
 
     <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {

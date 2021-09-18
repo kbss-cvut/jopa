@@ -281,6 +281,7 @@ public class MetamodelFactory {
         when(clsAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(clsAMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(clsAMock.getDeclaringType()).thenReturn(etMock);
+        when(clsAMock.isAssociation()).thenReturn(true);
         when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassD.getUriField());
