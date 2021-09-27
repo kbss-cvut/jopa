@@ -55,9 +55,14 @@ public class SparqlQueryFactory implements QueryFactory {
     @Override
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
         Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
+
+        return createQueryImpl(sparql, resultClass, queryParser);
+    }
+
+    private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
         Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
-        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(queryParser.parseQuery(sparql), resultClass, connection, uow);
+        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
         tq.setUnitOfWork(uow);
         tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return tq;
@@ -87,13 +92,7 @@ public class SparqlQueryFactory implements QueryFactory {
     @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
-        Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
-
-        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(soqlQueryParser.parseQuery(query), resultClass, connection,
-                uow);
-        tq.setUnitOfWork(uow);
-        tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
-        return tq;
+        return createQueryImpl(query, resultClass, soqlQueryParser);
     }
 
     @Override
