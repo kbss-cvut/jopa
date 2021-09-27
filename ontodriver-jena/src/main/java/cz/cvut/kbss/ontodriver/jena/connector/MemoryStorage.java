@@ -34,7 +34,7 @@ class MemoryStorage extends LocalStorage {
         if (!dataset.supportsTransactions()) {
             throw new IllegalArgumentException("The provided dataset does not support transactions.");
         }
-        synchronized (this.dataset) {
+        synchronized (this) {
             if (this.dataset.isInTransaction()) {
                 throw new IllegalStateException("Cannot replace dataset when it is in transaction.");
             }
