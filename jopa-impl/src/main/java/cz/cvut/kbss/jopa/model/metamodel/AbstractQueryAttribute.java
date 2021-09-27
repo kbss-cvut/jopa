@@ -15,6 +15,12 @@ import java.lang.reflect.Member;
  */
 public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, Y> {
 
+    /**
+     * Name of the variable which may be used in the query and would be replaced by the identifier of the entity owning
+     * this attribute.
+     */
+    public static final String THIS_PARAMETER = "this";
+
     private final String query;
 
     private final Field field;
