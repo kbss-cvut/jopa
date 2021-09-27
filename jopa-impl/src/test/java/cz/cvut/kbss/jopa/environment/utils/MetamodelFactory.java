@@ -1299,6 +1299,7 @@ public class MetamodelFactory {
         when(strQueryAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(strQueryAttMock.getQuery()).thenReturn(
                 OWLClassWithQueryAttr.getStrQueryAttField().getAnnotation(Sparql.class).query());
+        when(strQueryAttMock.enableReferencingAttributes()).thenReturn(true);
 
         when(entityQueryAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getEntityQueryAttField());
         when(entityQueryAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getEntityQueryAttField().getType());
@@ -1307,6 +1308,7 @@ public class MetamodelFactory {
         when(entityQueryAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(entityQueryAttMock.getQuery()).thenReturn(
                 OWLClassWithQueryAttr.getEntityQueryAttField().getAnnotation(Sparql.class).query());
+        when(entityQueryAttMock.enableReferencingAttributes()).thenReturn(true);
 
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.class.getDeclaredField("uri"));

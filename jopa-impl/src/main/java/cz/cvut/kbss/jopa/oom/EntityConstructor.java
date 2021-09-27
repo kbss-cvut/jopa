@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute.THIS_PARAMETER;
+
 class EntityConstructor {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityConstructor.class);
@@ -183,11 +185,10 @@ class EntityConstructor {
         try {
             if (queryAttribute.isCollection()) {
                 PluralQueryAttribute<? super T, ?, ?> pluralQueryAttribute = (PluralQueryAttribute<? super T, ?, ?>) queryAttribute;
-                typedQuery = queryFactory.createNativeQuery(
-                        pluralQueryAttribute.getQuery(), pluralQueryAttribute.getElementType().getJavaType());
+                typedQuery = queryFactory.createNativeQuery(pluralQueryAttribute.getQuery(),
+                        pluralQueryAttribute.getElementType().getJavaType());
             } else {
-                typedQuery = queryFactory.createNativeQuery(
-                        queryAttribute.getQuery(), queryAttribute.getJavaType());
+                typedQuery = queryFactory.createNativeQuery(queryAttribute.getQuery(), queryAttribute.getJavaType());
             }
         } catch (RuntimeException e) {
             LOG.error("Could not create native query from the parameter given in annotation @Sparql:\n{}" +
@@ -196,21 +197,33 @@ class EntityConstructor {
             return;
         }
 
-        // set value of parameter "this", if it is present in the query, with the entity instance
-        try {
-            if (typedQuery.hasParameter("this")) {
-                typedQuery.setParameter("this", instance);
-            }
-        } catch (RuntimeException e2) {
-            LOG.error("Unable to set query parameter 'this' with the instance" +
-                    "\nAttribute '{}' will be skipped.", queryAttribute.getJavaMember().getName(), e2);
-            return;
-        }
+        setAttributeQueryParameters(instance, queryAttribute, typedQuery, et);
 
         QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs = getQueryFieldLoader(et, queryAttribute);
 
         qfs.addValueFromTypedQuery(typedQuery);
         qfs.buildInstanceFieldValue(instance);
+    }
+
+    private <T> void setAttributeQueryParameters(T instance, QueryAttribute<? super T, ?> queryAtt,
+                                                 TypedQueryImpl<?> query, EntityType<?> et) {
+        try {
+            if (query.hasParameter(THIS_PARAMETER)) {
+                // set value of variable "this", if it is present in the query, with the entity instance
+                query.setParameter(THIS_PARAMETER, instance);
+            }
+            if (!queryAtt.enableReferencingAttributes()) {
+                return;
+            }
+            et.getAttributes().stream().filter(a -> query.hasParameter(a.getName())).forEach(a -> {
+                final Object value = EntityPropertiesUtils.getAttributeValue(a, instance);
+                if (value != null) {
+                    query.setParameter(a.getName(), value);
+                }
+            });
+        } catch (RuntimeException e) {
+            LOG.error("Unable to set query parameter ${}. Parameter will be skipped.", THIS_PARAMETER, e);
+        }
     }
 
     private <T> QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> getQueryFieldLoader(

@@ -21,6 +21,14 @@ public interface QueryAttribute<X, Y> extends FieldSpecification<X, Y> {
     String getQuery();
 
     /**
+     * Whether referencing other entity attributes is enabled.
+     *
+     * @return {@code true} when other entity attributes may be referenced from the query
+     */
+    @NonJPA
+    boolean enableReferencingAttributes();
+
+    /**
      * Return the java.lang.reflect.Member for the represented attribute.
      *
      * @return corresponding java.lang.reflect.Member

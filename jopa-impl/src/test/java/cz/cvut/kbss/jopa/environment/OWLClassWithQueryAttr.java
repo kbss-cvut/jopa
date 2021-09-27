@@ -14,10 +14,10 @@ public class OWLClassWithQueryAttr {
     private static final String ENTITY_QUERY_ATT_FIELD = "entityQueryAttribute";
 
     private static final String QUERY = "PREFIX jopa:<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#>\n" +
-                                        "SELECT ?stringAttribute\n" +
-                                        "WHERE {?this jopa:B-stringAttribute ?stringAttribute}";
+            "SELECT ?stringAttribute\n" +
+            "WHERE {?this jopa:B-stringAttribute ?stringAttribute}";
     private static final String QUERY_ENTITY = "SELECT ?entityAttribute\n" +
-                                               "WHERE {?this <" + Vocabulary.P_HAS_A + "> ?entityAttribute}";
+            "WHERE {?this <" + Vocabulary.P_HAS_A + "> ?entityAttribute}";
 
     @Id
     private URI uri;
@@ -25,13 +25,13 @@ public class OWLClassWithQueryAttr {
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute")
     private String stringAttribute;
 
-    @Sparql(query=QUERY)
+    @Sparql(query = QUERY)
     private String stringQueryAttribute;
 
     @OWLObjectProperty(iri = Vocabulary.P_HAS_A, fetch = FetchType.EAGER)
     private OWLClassA entityAttribute;
 
-    @Sparql(query=QUERY_ENTITY)
+    @Sparql(query = QUERY_ENTITY)
     private OWLClassA entityQueryAttribute;
 
     public OWLClassWithQueryAttr() {
