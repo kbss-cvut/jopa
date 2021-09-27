@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.17.2 - September 27, 2021
+- Reload SPARQL-based attribute values when object is retrieved from cache to ensure up-to-date results (#93).
+- Support referencing other entity attributes in SPARQL-based attribute queries (#94).
+- Dependency updates - RDF4J 3.7.3, SLF4J 1.7.32, Logback 1.2.6 and others.
+
 ## 0.17.1 - September 13, 2021
 - Switch back to the resurrected official [aspectj-maven-plugin](https://github.com/mojohaus/aspectj-maven-plugin) which allows running on JDK up to 16.
 - Dependency updates: RDF4J 3.7.2, OWL API 5.1.19.
