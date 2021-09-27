@@ -83,7 +83,9 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
      *
      * @return boolean indicating whether the attribute corresponds to an association
      */
-    boolean isAssociation();
+    default boolean isAssociation() {
+        return getPersistentAttributeType().equals(PersistentAttributeType.OBJECT);
+    }
 
     /**
      * Whether the attribute can be without value.

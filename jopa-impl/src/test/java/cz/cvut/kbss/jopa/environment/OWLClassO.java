@@ -91,7 +91,7 @@ public class OWLClassO {
         return finalField;
     }
 
-    public static String getClassIri() throws Exception {
+    public static String getClassIri() {
         return OWLClassO.class.getAnnotation(OWLClass.class).iri();
     }
 

@@ -35,7 +35,7 @@ class UriParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
-        return "<" + uri.toString() + ">";
+        return "<" + uri + ">";
     }
 
     @Override

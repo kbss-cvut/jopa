@@ -13,16 +13,17 @@ public class OWLClassWithQueryAttr {
 
     private static final String STR_ATT_FIELD = "stringAttribute";
     private static final String STR_QUERY_ATT_FIELD = "stringQueryAttribute";
-    private static final String QUERY = "SELECT ?stringAttribute\n" +
-                                        "WHERE {?this <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?stringAttribute}";
+    private static final String QUERY = "SELECT ?str\n" +
+            "WHERE {?this <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?str . }";
 
     @Id
     private URI uri;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute", simpleLiteral = true)
+    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute",
+                     simpleLiteral = true)
     private String stringAttribute;
 
-    @Sparql(query=QUERY)
+    @Sparql(query = QUERY)
     private String stringQueryAttribute;
 
     public OWLClassWithQueryAttr() {

@@ -53,12 +53,12 @@ public class AskResultSet extends AbstractResultSet {
     // the result is returned for any column index and column name.
 
     @Override
-    public boolean getBoolean(int columnIndex) throws OntoDriverException {
+    public boolean getBoolean(int columnIndex) {
         ensureState();
         return result;
     }
 
-    private void ensureState() throws OntoDriverException {
+    private void ensureState() {
         ensureOpen();
         if (!isFirst()) {
             throw new IllegalStateException("Must call next before getting the first value.");
@@ -66,13 +66,13 @@ public class AskResultSet extends AbstractResultSet {
     }
 
     @Override
-    public boolean getBoolean(String columnLabel) throws OntoDriverException {
+    public boolean getBoolean(String columnLabel) {
         ensureState();
         return result;
     }
 
     @Override
-    public byte getByte(int columnIndex) throws OntoDriverException {
+    public byte getByte(int columnIndex) {
         ensureState();
         throw unsupported("byte");
     }
@@ -82,55 +82,55 @@ public class AskResultSet extends AbstractResultSet {
     }
 
     @Override
-    public byte getByte(String columnLabel) throws OntoDriverException {
+    public byte getByte(String columnLabel) {
         ensureState();
         throw unsupported("byte");
     }
 
     @Override
-    public double getDouble(int columnIndex) throws OntoDriverException {
+    public double getDouble(int columnIndex) {
         ensureState();
         throw unsupported("double");
     }
 
     @Override
-    public double getDouble(String columnLabel) throws OntoDriverException {
+    public double getDouble(String columnLabel) {
         ensureState();
         throw unsupported("double");
     }
 
     @Override
-    public float getFloat(int columnIndex) throws OntoDriverException {
+    public float getFloat(int columnIndex) {
         ensureState();
         throw unsupported("float");
     }
 
     @Override
-    public float getFloat(String columnLabel) throws OntoDriverException {
+    public float getFloat(String columnLabel) {
         ensureState();
         throw unsupported("float");
     }
 
     @Override
-    public int getInt(int columnIndex) throws OntoDriverException {
+    public int getInt(int columnIndex) {
         ensureState();
         throw unsupported("int");
     }
 
     @Override
-    public int getInt(String columnLabel) throws OntoDriverException {
+    public int getInt(String columnLabel) {
         ensureState();
         throw unsupported("int");
     }
 
     @Override
-    public long getLong(int columnIndex) throws OntoDriverException {
+    public long getLong(int columnIndex) {
         ensureState();
         throw unsupported("long");
     }
 
     @Override
-    public long getLong(String columnLabel) throws OntoDriverException {
+    public long getLong(String columnLabel) {
         ensureState();
         throw unsupported("long");
     }
@@ -170,25 +170,25 @@ public class AskResultSet extends AbstractResultSet {
     }
 
     @Override
-    public short getShort(int columnIndex) throws OntoDriverException {
+    public short getShort(int columnIndex) {
         ensureState();
         throw unsupported("short");
     }
 
     @Override
-    public short getShort(String columnLabel) throws OntoDriverException {
+    public short getShort(String columnLabel) {
         ensureState();
         throw unsupported("short");
     }
 
     @Override
-    public String getString(int columnIndex) throws OntoDriverException {
+    public String getString(int columnIndex) {
         ensureState();
         return Boolean.toString(result);
     }
 
     @Override
-    public String getString(String columnLabel) throws OntoDriverException {
+    public String getString(String columnLabel) {
         ensureState();
         return Boolean.toString(result);
     }

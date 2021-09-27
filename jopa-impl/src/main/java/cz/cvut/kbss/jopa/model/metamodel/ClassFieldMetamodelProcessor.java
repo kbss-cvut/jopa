@@ -73,7 +73,7 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        if(isQueryAttribute(field)) {
+        if (isQueryAttribute(field)) {
             createQueryAttribute(field, fieldValueCls);
             return;
         }
@@ -146,9 +146,9 @@ class ClassFieldMetamodelProcessor<X> {
         final PropertiesParametersResolver paramsResolver = new PropertiesParametersResolver(field);
         et.addOtherProperties(
                 PropertiesSpecificationImpl.declaringType(et).fetchType(properties.fetchType()).javaField(field)
-                                           .javaType(fieldValueCls).inferred(inference.inferred)
-                                           .propertyIdType(paramsResolver.getPropertyIdentifierType())
-                                           .propertyValueType(paramsResolver.getPropertyValueType()).build());
+                        .javaType(fieldValueCls).inferred(inference.inferred)
+                        .propertyIdType(paramsResolver.getPropertyIdentifierType())
+                        .propertyValueType(paramsResolver.getPropertyValueType()).build());
     }
 
     private static boolean isQueryAttribute(Field field) {
@@ -156,9 +156,9 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void createQueryAttribute(Field field, Class<?> fieldValueCls) {
-        Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
-        String query = sparqlAnnotation.query();
-        FetchType fetchType = sparqlAnnotation.fetchType();
+        final Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
+        final String query = sparqlAnnotation.query();
+        final FetchType fetchType = sparqlAnnotation.fetchType();
 
         ParticipationConstraint[] participationConstraints = field.getAnnotationsByType(ParticipationConstraint.class);
 
@@ -172,7 +172,8 @@ class ClassFieldMetamodelProcessor<X> {
             type = BasicTypeImpl.get(fieldValueCls);
         }
 
-        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
+        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver()
+                .resolveConverter(type);
         ConverterWrapper<?, ?> converterWrapper = null;
 
         if (optionalConverterWrapper.isPresent()) {
@@ -180,12 +181,11 @@ class ClassFieldMetamodelProcessor<X> {
         }
 
         if (Collection.class.isAssignableFrom(field.getType())) {
-            a = new PluralQueryAttributeImpl<>(query, field, et, fetchType, participationConstraints, type, field.getType(), converterWrapper);
+            a = new PluralQueryAttributeImpl<>(query, sparqlAnnotation.enableReferencingAttributes(), field, et, fetchType, participationConstraints, type, field.getType(), converterWrapper);
         } else if (Map.class.isAssignableFrom(field.getType())) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            a = new SingularQueryAttributeImpl<>(
-                    query, field, et, fetchType, type, participationConstraints, converterWrapper);
+            a = new SingularQueryAttributeImpl<>(query, sparqlAnnotation.enableReferencingAttributes(), field, et, fetchType, type, participationConstraints, converterWrapper);
         }
 
         et.addDeclaredQueryAttribute(field.getName(), a);
@@ -197,8 +197,8 @@ class ClassFieldMetamodelProcessor<X> {
         if (field.getType().isAssignableFrom(Collection.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
                     CollectionAttributeImpl.builder(propertyAttributes).declaringType(et)
-                                           .field(field)
-                                           .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+                            .field(field)
+                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         } else if (field.getType().isAssignableFrom(List.class)) {
@@ -206,8 +206,8 @@ class ClassFieldMetamodelProcessor<X> {
         } else if (field.getType().isAssignableFrom(Set.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
                     SetAttributeImpl.builder(propertyAttributes).declaringType(et)
-                                    .field(field)
-                                    .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+                            .field(field)
+                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
@@ -215,8 +215,8 @@ class ClassFieldMetamodelProcessor<X> {
         } else {
             final SingularAttributeImpl.SingularAttributeBuilder builder =
                     SingularAttributeImpl.builder(propertyAttributes).declaringType(et)
-                                         .field(field)
-                                         .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+                            .field(field)
+                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         }
@@ -233,19 +233,19 @@ class ClassFieldMetamodelProcessor<X> {
         }
         final ListAttributeImpl.ListAttributeBuilder builder =
                 ListAttributeImpl.builder(propertyAttributes).declaringType(et)
-                                 .field(field)
-                                 .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
-                                 .owlListClass(IRI.create(os.ClassOWLListIRI()))
-                                 .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
-                                 .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
-                                 .sequenceType(os.type());
+                        .field(field)
+                        .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
+                        .owlListClass(IRI.create(os.ClassOWLListIRI()))
+                        .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
+                        .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
+                        .sequenceType(os.type());
         context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }
 
     private void registerTypeReference(Attribute<X, ?> attribute) {
         final Class<?> type = attribute.isCollection() ? ((PluralAttribute<X, ?, ?>) attribute).getBindableJavaType() :
-                              attribute.getJavaType();
+                attribute.getJavaType();
         if (metamodelBuilder.hasManagedType(type)) {
             metamodelBuilder.registerTypeReference(type, et.getJavaType());
         }

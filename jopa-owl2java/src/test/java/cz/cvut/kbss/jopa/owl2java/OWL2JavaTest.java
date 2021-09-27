@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static cz.cvut.kbss.jopa.owl2java.TestUtils.MAPPING_FILE_NAME;
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.VOCABULARY_FILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

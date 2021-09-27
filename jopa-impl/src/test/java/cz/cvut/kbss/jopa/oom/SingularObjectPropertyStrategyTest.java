@@ -26,17 +26,21 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SingularObjectPropertyStrategyTest {
 
     private static final URI IDENTIFIER = Generators.createIndividualIdentifier();
@@ -57,7 +61,6 @@ class SingularObjectPropertyStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.metamodelMocks = new MetamodelMocks();
         this.gatherer = spy(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), null));
         this.descriptor = spy(new EntityDescriptor());
@@ -105,7 +108,7 @@ class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    void buildAxiomValuesChecksWhetherReferenceCanBeSaved() throws Exception {
+    void buildAxiomValuesChecksWhetherReferenceCanBeSaved() {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         d.setOwlClassA(Generators.generateOwlClassAInstance());
@@ -119,7 +122,7 @@ class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    void buildAxiomValuesRegistersPendingChangeWhenReferenceCannotBeSavedDirectly() throws Exception {
+    void buildAxiomValuesRegistersPendingChangeWhenReferenceCannotBeSavedDirectly() {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         d.setOwlClassA(Generators.generateOwlClassAInstance());
@@ -137,7 +140,7 @@ class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    void buildAxiomValuesAddsNullValueToAxiomBuilderForNullAttributeValue() throws Exception {
+    void buildAxiomValuesAddsNullValueToAxiomBuilderForNullAttributeValue() {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         final Attribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
@@ -152,7 +155,7 @@ class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    void buildAxiomValueAddsNullValueToAxiomBuilderWhenReferenceIsRegisteredAsPending() throws Exception {
+    void buildAxiomValueAddsNullValueToAxiomBuilderWhenReferenceIsRegisteredAsPending() {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         final OWLClassA a = new OWLClassA();
@@ -170,7 +173,7 @@ class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    void buildAxiomValueAddsReferenceForPolymorphicAttribute() throws Exception {
+    void buildAxiomValueAddsReferenceForPolymorphicAttribute() {
         final OWLClassT instance = new OWLClassT();
         instance.setUri(IDENTIFIER);
         final OWLClassR r = new OWLClassR(Generators.createIndividualIdentifier());
@@ -206,7 +209,7 @@ class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    void addValueDoesNothingWhenReferenceInstanceCannotBeLoaded() throws Exception {
+    void addValueDoesNothingWhenReferenceInstanceCannotBeLoaded() {
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =
                 strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
         final OWLClassA existing = Generators.generateOwlClassAInstance();
@@ -239,7 +242,7 @@ class SingularObjectPropertyStrategyTest {
     }
 
     @Test
-    void buildAxiomValuesFromInstanceChecksForReferenceExistenceUsingTargetReferenceContext() throws Exception {
+    void buildAxiomValuesFromInstanceChecksForReferenceExistenceUsingTargetReferenceContext() {
         final EntityDescriptor aDescriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
         descriptor.addAttributeDescriptor(metamodelMocks.forOwlClassD().owlClassAAtt(), aDescriptor);
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =

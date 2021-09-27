@@ -263,7 +263,7 @@ public class JavaTransformer {
                     use = fv.annotate(ParticipationConstraints.class).paramArray("value");
                 }
                 JAnnotationUse u = use.annotate(ParticipationConstraint.class)
-                                      .param("owlObjectIRI", entities.get(ic.getObject()));
+                        .param("owlObjectIRI", entities.get(ic.getObject()));
                 setParticipationConstraintCardinality(u, ic);
             }
         }
@@ -321,7 +321,7 @@ public class JavaTransformer {
                 }
 
                 JAnnotationUse u = use.annotate(ParticipationConstraint.class)
-                                      .param("owlObjectIRI", comp.getFiller().getIRI().toString());
+                        .param("owlObjectIRI", comp.getFiller().getIRI().toString());
 
                 setParticipationConstraintCardinality(u, ic);
             }
@@ -349,12 +349,12 @@ public class JavaTransformer {
 
             final AtomicBoolean extendClass = new AtomicBoolean(false);
             context.set.getClassIntegrityConstraints(clazz).stream()
-                       .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
-                final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
-                subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology
-                ));
-                extendClass.set(true);
-            });
+                    .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
+                        final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
+                        subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology
+                        ));
+                        extendClass.set(true);
+                    });
 
             if (!extendClass.get())
                 addCommonClassFields(cm, subj, propertiesType);
@@ -404,9 +404,9 @@ public class JavaTransformer {
     private void generateOntologyIrisConstants(OWLOntologyManager ontologyManager) {
         // Get only unique ontology IRIs sorted
         final List<IRI> ontologyIris = ontologyManager.ontologies().map(o -> o.getOntologyID().getOntologyIRI())
-                                                      .filter(Optional::isPresent).map(Optional::get).distinct()
-                                                      .sorted(Comparator.comparing(IRI::getIRIString))
-                                                      .collect(Collectors.toList());
+                .filter(Optional::isPresent).map(Optional::get).distinct()
+                .sorted(Comparator.comparing(IRI::getIRIString))
+                .collect(Collectors.toList());
         ontologyIris.forEach(iri -> {
             final String fieldName = ensureUniqueIdentifier("ONTOLOGY_IRI_" + validJavaIDForIRI(iri));
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
@@ -445,15 +445,29 @@ public class JavaTransformer {
      * @param ontology  Ontology from which the model/vocabulary is being generated
      * @param owlEntity Annotated entity
      * @param javaElem  Element to document with Javadoc
+     * @return Whether the javadoc comment has been generated
      */
     private boolean generateJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {
         if (!configuration.shouldGenerateJavadoc()) {
             return false;
         }
-        final Optional<OWLAnnotation> ann = EntitySearcher.getAnnotations(owlEntity, ontology)
-                                                          .filter(a -> a.getProperty().isComment()).findFirst();
-        ann.flatMap(a -> a.getValue().asLiteral()).ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral()));
-        return ann.isPresent() && ann.get().getValue().isLiteral();
+        final List<OWLAnnotation> comments = EntitySearcher.getAnnotations(owlEntity, ontology)
+                .filter(a -> a.getProperty().isComment() && a.getValue().isLiteral()).collect(Collectors.toList());
+        final Optional<OWLAnnotation> langComment = comments.stream().filter(a -> a.getValue().asLiteral()
+                .map(l -> l.hasLang(LANGUAGE)).orElse(false)).findFirst();
+        // First try finding a comment with a matching language tag
+        if (langComment.isPresent()) {
+            langComment.flatMap(a -> a.getValue().asLiteral())
+                    .ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral()));
+            return true;
+        }
+        // If there is none such, just use the first available one
+        if (comments.size() > 0) {
+            OWLAnnotation anyComment = comments.get(0);
+            anyComment.getValue().asLiteral().ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral()));
+            return true;
+        }
+        return false;
     }
 
     private JDefinedClass create(final String pkg, final JCodeModel cm, final OWLClass clazz,
@@ -496,7 +510,7 @@ public class JavaTransformer {
         final JClass ftDescription = cm.ref(String.class);
         final JFieldVar fvDescription = addField("description", cls, ftDescription);
         fvDescription.annotate(OWLAnnotationProperty.class)
-                     .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
+                .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
 
         // @Types Set<String> types;
         final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
@@ -506,7 +520,7 @@ public class JavaTransformer {
         // @Properties public final Map<String,Set<String>> properties;
         final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
         final JClass ftProperties = cm.ref(Map.class)
-                                      .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
+                .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
         final JFieldVar fvProperties = addField("properties", cls, ftProperties);
         fvProperties.annotate(Properties.class);
 
@@ -515,8 +529,8 @@ public class JavaTransformer {
 
     private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
         final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
-                                                          .filter(a -> isJavaClassNameAnnotation(a) &&
-                                                                  a.getValue().isLiteral()).findFirst();
+                .filter(a -> isJavaClassNameAnnotation(a) &&
+                        a.getValue().isLiteral()).findFirst();
         if (res.isPresent()) {
             return res.get().getValue().asLiteral().get().getLiteral();
         } else {
@@ -554,7 +568,7 @@ public class JavaTransformer {
 
     private boolean isJavaClassNameAnnotation(OWLAnnotation a) {
         final String classNameProperty = (String) configuration.getCliParams()
-                                                               .valueOf(Option.JAVA_CLASSNAME_ANNOTATION.arg);
+                .valueOf(Option.JAVA_CLASSNAME_ANNOTATION.arg);
         return a.getProperty().getIRI()
                 .equals(IRI.create(classNameProperty != null ? classNameProperty : Constants.P_CLASS_NAME));
     }

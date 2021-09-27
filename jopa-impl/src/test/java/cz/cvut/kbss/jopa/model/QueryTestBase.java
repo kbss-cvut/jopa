@@ -177,7 +177,7 @@ abstract class QueryTestBase {
         final URI paramValue = URI.create("http://krizik.felk.cvut.cz/jopa#property");
         q.setParameter(1, paramValue);
         q.getResultList();
-        verify(statementMock).executeQuery(query.replace("$1", "<" + paramValue.toString() + ">"));
+        verify(statementMock).executeQuery(query.replace("$1", "<" + paramValue + ">"));
     }
 
     @Test

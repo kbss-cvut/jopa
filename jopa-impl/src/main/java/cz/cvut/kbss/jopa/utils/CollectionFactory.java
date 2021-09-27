@@ -13,7 +13,6 @@
 package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 
 import java.util.*;
 

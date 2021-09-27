@@ -21,10 +21,10 @@ public class PluralQueryAttributeImpl<X, C, E> extends AbstractQueryAttribute<X,
 
     private final Class<C> collectionType;
 
-    public PluralQueryAttributeImpl(String query, Field field, ManagedType<X> declaringType, FetchType fetchType,
+    public PluralQueryAttributeImpl(String query, boolean enableReferencingAttributes, Field field, ManagedType<X> declaringType, FetchType fetchType,
                                     ParticipationConstraint[] constraints, Type<E> elementType,
                                     Class<C> collectionType, ConverterWrapper converter) {
-        super(query, field, declaringType, fetchType, constraints, converter);
+        super(query, enableReferencingAttributes, field, declaringType, fetchType, constraints, converter);
         this.elementType = elementType;
         this.collectionType = collectionType;
     }

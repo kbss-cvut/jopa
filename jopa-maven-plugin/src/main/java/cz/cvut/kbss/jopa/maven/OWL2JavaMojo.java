@@ -114,17 +114,21 @@ public class OWL2JavaMojo extends AbstractMojo {
     }
 
     private void printParameterValues() {
-        getLog().info(MAPPING_FILE_PARAM + ": " + pMappingFile);
-        getLog().info(PACKAGE_PARAM + ": " + pPackage);
-        getLog().info(CONTEXT_PARAM + ": " + pContextName);
-        getLog().info(ONTOLOGY_PARAM + ": " + pOntologyIRI);
-        getLog().info(OUTPUT_PARAM + ": " + pOutputDirectory);
-        getLog().info(W_OWLAPI_PARAM + ": " + pWithOWLAPI);
-        getLog().info(ALL_IC_PARAM + ": " + pWholeOntologyAsICS);
-        getLog().info(VOCABULARY_PARAM + ": " + pVocabularyOnly);
-        getLog().info(IGNORE_FAILED_IMPORTS_PARAM + ": " + ignoreFailedImports);
-        getLog().info(PROPERTIES_TYPE + ": " + pPropertiesType);
-        getLog().info(GENERATE_JAVADOC + ": " + generateJavadoc);
-        getLog().info(PREFER_MULTILINGUAL_STRINGS + ": " + preferMultilingualStrings);
+        print(MAPPING_FILE_PARAM, pMappingFile);
+        print(PACKAGE_PARAM, pPackage);
+        print(CONTEXT_PARAM, pContextName);
+        print(ONTOLOGY_PARAM, pOntologyIRI);
+        print(OUTPUT_PARAM, pOutputDirectory);
+        print(W_OWLAPI_PARAM, pWithOWLAPI);
+        print(ALL_IC_PARAM, pWholeOntologyAsICS);
+        print(VOCABULARY_PARAM, pVocabularyOnly);
+        print(IGNORE_FAILED_IMPORTS_PARAM, ignoreFailedImports);
+        print(PROPERTIES_TYPE,pPropertiesType);
+        print(GENERATE_JAVADOC, generateJavadoc);
+        print(PREFER_MULTILINGUAL_STRINGS, preferMultilingualStrings);
+    }
+
+    private void print(String param, Object value) {
+        getLog().info(param + ": " + value);
     }
 }

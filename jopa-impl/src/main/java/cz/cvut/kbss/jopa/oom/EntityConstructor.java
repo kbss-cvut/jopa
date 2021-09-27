@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -37,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute.THIS_PARAMETER;
+
 class EntityConstructor {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityConstructor.class);
@@ -48,7 +48,8 @@ class EntityConstructor {
     }
 
     /**
-     * Creates an instance of the specified {@link EntityType} with the specified identifier and populates its attributes from the specified axioms.
+     * Creates an instance of the specified {@link EntityType} with the specified identifier and populates its
+     * attributes from the specified axioms.
      *
      * @param identifier Entity identifier
      * @param et         Entity type
@@ -101,9 +102,8 @@ class EntityConstructor {
         return instance;
     }
 
-    private <T> void populateAttributes(final T instance, EntityType<T> et,
-                                        Descriptor entityDescriptor, Collection<Axiom<?>> axioms)
-            throws IllegalAccessException {
+    private <T> void populateAttributes(final T instance, EntityType<T> et, Descriptor entityDescriptor,
+                                        Collection<Axiom<?>> axioms) {
         final Map<URI, FieldSpecification<? super T, ?>> attributes = indexEntityAttributes(et);
         final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>>
                 fieldLoaders = new HashMap<>(
@@ -164,12 +164,10 @@ class EntityConstructor {
      * Populate all query based attributes in the given instance.
      *
      * @param instance the entity, whose attributes are to be populated
-     * @param et the entity class representation in the metamodel
-     * @param <T> the entity class
-     * @throws IllegalAccessException
+     * @param et       the entity class representation in the metamodel
+     * @param <T>      the entity class
      */
-    private <T> void populateQueryAttributes(final T instance, EntityType<T> et)
-            throws IllegalAccessException {
+    public <T> void populateQueryAttributes(final T instance, EntityType<T> et) {
         final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
 
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
@@ -181,17 +179,16 @@ class EntityConstructor {
         }
     }
 
-    private <T> void populateQueryAttribute(T instance, QueryAttribute<? super T, ?> queryAttribute, SparqlQueryFactory queryFactory, EntityType<T> et)
-            throws IllegalAccessException {
+    private <T> void populateQueryAttribute(T instance, QueryAttribute<? super T, ?> queryAttribute,
+                                            SparqlQueryFactory queryFactory, EntityType<T> et) {
         TypedQueryImpl<?> typedQuery;
         try {
             if (queryAttribute.isCollection()) {
                 PluralQueryAttribute<? super T, ?, ?> pluralQueryAttribute = (PluralQueryAttribute<? super T, ?, ?>) queryAttribute;
-                typedQuery = queryFactory.createNativeQuery(
-                        pluralQueryAttribute.getQuery(), pluralQueryAttribute.getElementType().getJavaType());
+                typedQuery = queryFactory.createNativeQuery(pluralQueryAttribute.getQuery(),
+                        pluralQueryAttribute.getElementType().getJavaType());
             } else {
-                typedQuery = queryFactory.createNativeQuery(
-                        queryAttribute.getQuery(), queryAttribute.getJavaType());
+                typedQuery = queryFactory.createNativeQuery(queryAttribute.getQuery(), queryAttribute.getJavaType());
             }
         } catch (RuntimeException e) {
             LOG.error("Could not create native query from the parameter given in annotation @Sparql:\n{}" +
@@ -200,22 +197,33 @@ class EntityConstructor {
             return;
         }
 
-        // set value of parameter "this", if it is present in the query, with the entity instance
-        try {
-            typedQuery.setParameter("this", instance);
-        } catch (IllegalArgumentException e1) {
-            // parameter "this" is not present in the query, no need to set it
-        } catch (RuntimeException e2) {
-            LOG.error("Unable to set query parameter 'this' with the instance" +
-                    "\nAttribute '{}' will be skipped.", queryAttribute.getJavaMember().getName(), e2);
-            return;
-        }
+        setAttributeQueryParameters(instance, queryAttribute, typedQuery, et);
 
-        QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs =
-                getQueryFieldLoader(et, queryAttribute);
+        QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs = getQueryFieldLoader(et, queryAttribute);
 
         qfs.addValueFromTypedQuery(typedQuery);
         qfs.buildInstanceFieldValue(instance);
+    }
+
+    private <T> void setAttributeQueryParameters(T instance, QueryAttribute<? super T, ?> queryAtt,
+                                                 TypedQueryImpl<?> query, EntityType<?> et) {
+        try {
+            if (query.hasParameter(THIS_PARAMETER)) {
+                // set value of variable "this", if it is present in the query, with the entity instance
+                query.setParameter(THIS_PARAMETER, instance);
+            }
+            if (!queryAtt.enableReferencingAttributes()) {
+                return;
+            }
+            et.getAttributes().stream().filter(a -> query.hasParameter(a.getName())).forEach(a -> {
+                final Object value = EntityPropertiesUtils.getAttributeValue(a, instance);
+                if (value != null) {
+                    query.setParameter(a.getName(), value);
+                }
+            });
+        } catch (RuntimeException e) {
+            LOG.error("Unable to set query parameter ${}. Parameter will be skipped.", THIS_PARAMETER, e);
+        }
     }
 
     private <T> QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> getQueryFieldLoader(
@@ -224,7 +232,7 @@ class EntityConstructor {
             return null;
         }
 
-        if (! queryAttribute.isCollection()) {
+        if (!queryAttribute.isCollection()) {
             return new SingularQueryAttributeStrategy<>(et, (AbstractQueryAttribute<? super T, ?>) queryAttribute);
         } else {
             return new PluralQueryAttributeStrategy<>(et, (PluralQueryAttributeImpl<? super T, ?, ?>) queryAttribute);
@@ -243,7 +251,7 @@ class EntityConstructor {
     }
 
     <T> void validateIntegrityConstraints(T entity, FieldSpecification<? super T, ?> fieldSpec,
-                                                  EntityType<T> et) {
+                                          EntityType<T> et) {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }
@@ -253,7 +261,7 @@ class EntityConstructor {
     }
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
-                           Descriptor entityDescriptor) throws IllegalAccessException {
+                           Descriptor entityDescriptor) {
         final FieldSpecification<? super T, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         if (axioms.isEmpty()) {
             validateIntegrityConstraints(entity, fieldSpec, et);
@@ -266,8 +274,7 @@ class EntityConstructor {
         validateIntegrityConstraints(entity, fieldSpec, et);
     }
 
-    <T> void setQueryAttributeFieldValue(T entity, QueryAttribute<? super T, ?> queryAttribute, EntityType<T> et)
-            throws IllegalAccessException {
+    <T> void setQueryAttributeFieldValue(T entity, QueryAttribute<? super T, ?> queryAttribute, EntityType<T> et) {
         final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
         populateQueryAttribute(entity, queryAttribute, queryFactory, et);
     }

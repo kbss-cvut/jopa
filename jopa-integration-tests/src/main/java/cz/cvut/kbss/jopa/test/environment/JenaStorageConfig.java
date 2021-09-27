@@ -31,7 +31,7 @@ public class JenaStorageConfig extends StorageConfig {
         assert index >= 0;
         assert name != null;
 
-        String base = name + TYPE.toString() + index;
+        String base = name + TYPE + index;
 
         final Map<String, String> config = new HashMap<>();
         config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TYPE.getDriverClass());

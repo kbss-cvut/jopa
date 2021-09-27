@@ -272,8 +272,7 @@ class SesameAdapterTest {
         assertEquals(2, res.size());
         assertTrue(statementsCorrespondToAxiomDescriptor(ad, res));
         // This checks that the contexts are set correctly
-        for (Object s : res) {
-            final Statement stmt = (Statement) s;
+        for (Statement stmt : res) {
             if (stmt.getPredicate().stringValue().equals(dataAssertion.getIdentifier().toString())) {
                 assertEquals(propertyCtx.toString(), stmt.getContext().stringValue());
             } else {

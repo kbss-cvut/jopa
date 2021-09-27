@@ -31,7 +31,7 @@ public class SesameMemoryStorageConfig extends StorageConfig {
         assert index >= 0;
         assert name != null;
 
-        final String base = name + TYPE.toString() + index;
+        final String base = name + TYPE + index;
 
         final Map<String, String> config = new HashMap<>();
         config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TYPE.getDriverClass());

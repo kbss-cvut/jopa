@@ -21,7 +21,7 @@ public class PathImpl<X> extends AbstractPathExpression<X> implements Path<X> {
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         if (this.pathSource != null){
             this.pathSource.setExpressionToQuery(query, parameterFiller);
-            query.append("." + attributeName);
+            query.append('.').append(attributeName);
         } else {
             query.append(attributeName);
         }

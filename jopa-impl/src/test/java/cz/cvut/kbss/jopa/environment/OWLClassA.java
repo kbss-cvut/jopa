@@ -119,7 +119,7 @@ public class OWLClassA {
         String out = "OWLClassA: uri = " + uri;
         out += ", stringAttribute = " + stringAttribute;
         if (types != null) {
-            out += ", types = {" + types.toString() + "}";
+            out += ", types = {" + types + "}";
         }
         return out;
     }

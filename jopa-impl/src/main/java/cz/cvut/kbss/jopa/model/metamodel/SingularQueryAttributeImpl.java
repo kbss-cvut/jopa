@@ -16,9 +16,10 @@ public class SingularQueryAttributeImpl<X, Y> extends AbstractQueryAttribute<X, 
 
     private final Type<Y> type;
 
-    public SingularQueryAttributeImpl(String query, Field field, ManagedType<X> declaringType, FetchType fetchType,
+    public SingularQueryAttributeImpl(String query, boolean enableReferencingAttributes, Field field,
+                                      ManagedType<X> declaringType, FetchType fetchType,
                                       Type<Y> type, ParticipationConstraint[] constraints, ConverterWrapper converter) {
-        super(query, field, declaringType, fetchType, constraints, converter);
+        super(query, enableReferencingAttributes, field, declaringType, fetchType, constraints, converter);
         this.type = type;
     }
 

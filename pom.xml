@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.17.1</version>
+    <version>0.17.2</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -36,11 +36,11 @@
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
 
-        <org.slf4j.version>1.7.31</org.slf4j.version>
-        <org.junit.jupiter.version>5.7.2</org.junit.jupiter.version>
+        <org.slf4j.version>1.7.32</org.slf4j.version>
+        <org.junit.jupiter.version>5.8.0</org.junit.jupiter.version>
         <org.mockito.version>3.12.4</org.mockito.version>
         <org.aspectj.version>1.9.7</org.aspectj.version>
-        <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
+        <ch.qos.logback.version>1.2.6</ch.qos.logback.version>
 
         <!-- We use OWLAPI in multiple modules, so let's keep them in sync -->
         <net.sourceforge.owlapi.version>5.1.19</net.sourceforge.owlapi.version>
@@ -318,7 +318,7 @@
         <developer>
             <name>Petr Křemen</name>
             <email>petr.kremen@fel.cvut.cz</email>
-            <url>http://cyber.felk.cvut.cz/people</url>
+            <url>http://cs.fel.cvut.cz/en/people/kremep1</url>
             <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
             </organization>
             <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>

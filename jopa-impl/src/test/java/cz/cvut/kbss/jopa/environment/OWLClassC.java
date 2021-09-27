@@ -86,10 +86,10 @@ public class OWLClassC {
     public String toString() {
         String out = "OWLClassC: uri = " + uri;
         if (referencedList != null) {
-            out += ", referencedList = {" + referencedList.toString() + "}";
+            out += ", referencedList = {" + referencedList + "}";
         }
         if (simpleList != null) {
-            out += ", simpleList = {" + simpleList.toString() + "}";
+            out += ", simpleList = {" + simpleList + "}";
         }
         return out;
     }

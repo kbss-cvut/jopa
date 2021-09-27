@@ -17,6 +17,7 @@ import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JType;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -26,6 +27,8 @@ import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JavaTransformerTest {
@@ -176,5 +179,40 @@ class JavaTransformerTest {
         final JFieldVar resultField = resultClass.fields().get(fieldName);
         assertNotNull(resultField);
         assertEquals(String.class.getCanonicalName(), resultField.type().fullName());
+    }
+
+    @Test
+    void generateModelGeneratesJavadocWithCommentInDefaultLanguage() {
+        final String className = "TestClass";
+        final IRI iri = IRI.create(PREFIX + className);
+        final OWLClass owlClass = dataFactory.getOWLClass(iri);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(owlClass));
+        final String expectedComment = "Comment in default language";
+        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(dataFactory.getOWLAnnotationProperty(RDFS.COMMENT), owlClass.getIRI(), dataFactory.getOWLLiteral("Český komentář", "cs")));
+        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(dataFactory.getOWLAnnotationProperty(RDFS.COMMENT), owlClass.getIRI(), dataFactory.getOWLLiteral(expectedComment, Constants.LANGUAGE)));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iri));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+        assertThat(resultClass.javadoc().toString(), containsString(expectedComment));
+    }
+
+    @Test
+    void generateModelGeneratesJavadocWithCommentUsingLanguageLessAnnotationValue() {
+        final String className = "TestClass";
+        final IRI iri = IRI.create(PREFIX + className);
+        final OWLClass owlClass = dataFactory.getOWLClass(iri);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(owlClass));
+        final String expectedComment = "Comment in default language";
+        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(dataFactory.getOWLAnnotationProperty(RDFS.COMMENT), owlClass.getIRI(), dataFactory.getOWLLiteral(expectedComment)));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iri));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+        assertThat(resultClass.javadoc().toString(), containsString(expectedComment));
     }
 }

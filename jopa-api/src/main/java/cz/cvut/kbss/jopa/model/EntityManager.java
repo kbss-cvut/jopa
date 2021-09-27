@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -367,17 +365,6 @@ public interface EntityManager {
      * @return the new query instance
      */
     Query createNativeQuery(String sparqlString, String resultSetMapping);
-
-    // /**
-    // * Indicate to the EntityManager that a JTA transaction is active. This
-    // * method should be called on a JTA application managed EntityManager that
-    // * was created outside the scope of the active transaction to associate it
-    // * with the current JTA transaction.
-    // *
-    // * @throws TransactionRequiredException
-    // * if there is no transaction.
-    // */
-    // public void joinTransaction();
 
     /**
      * Return an object of the specified type to allow access to the provider-specific API. If the provider's

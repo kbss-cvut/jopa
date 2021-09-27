@@ -38,10 +38,8 @@ public abstract class QueryFieldStrategy<T extends AbstractQueryAttribute<? supe
      * Sets instance field from values gathered in this strategy.
      *
      * @param instance The instance to receive the field value
-     * @throws IllegalArgumentException Access error
-     * @throws IllegalAccessException   Access error
      */
-    public abstract void buildInstanceFieldValue(Object instance) throws IllegalAccessException;
+    public abstract void buildInstanceFieldValue(Object instance);
 
     /**
      * Sets the specified value on the specified instance, the field is taken from the attribute represented by this

@@ -18,11 +18,13 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.net.URL;
@@ -35,12 +37,14 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * Datatype specifications in the assertions are taken from the SPARQL specification.
  */
+@ExtendWith(MockitoExtension.class)
 class ParameterValueFactoryTest {
 
     @Mock
@@ -48,11 +52,6 @@ class ParameterValueFactoryTest {
 
     @InjectMocks
     private ParameterValueFactory sut;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void createStringValueWithoutLanguageTag() {
@@ -125,7 +124,7 @@ class ParameterValueFactoryTest {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/jopa#Individual");
         final ParameterValue value = sut.create(uri);
         assertEquals(uri, value.getValue());
-        assertEquals("<" + uri.toString() + ">", value.getQueryString());
+        assertEquals("<" + uri + ">", value.getQueryString());
     }
 
     @Test
@@ -133,7 +132,7 @@ class ParameterValueFactoryTest {
         final URL url = new URL("http://krizik.felk.cvut.cz/jopa#Individual");
         final ParameterValue value = sut.create(url);
         assertEquals(url.toURI(), value.getValue());    // URLs are internally transformed to URIs
-        assertEquals("<" + url.toString() + ">", value.getQueryString());
+        assertEquals("<" + url + ">", value.getQueryString());
     }
 
     @Test
@@ -157,7 +156,7 @@ class ParameterValueFactoryTest {
     void createLocalDateTimeValueCreatesDateTimeParameter() {
         final LocalDateTime localDateTime = LocalDateTime.now();
         final ParameterValue value = sut.create(localDateTime);
-        assertEquals("\"" + localDateTime.toString() + "\"^^<" + XSD.DATETIME + ">",
+        assertEquals("\"" + localDateTime + "\"^^<" + XSD.DATETIME + ">",
                 value.getQueryString());
     }
 
@@ -174,7 +173,7 @@ class ParameterValueFactoryTest {
         final ZonedDateTime zonedDateTime = ZonedDateTime.now();
         final ParameterValue value = sut.create(zonedDateTime);
         assertEquals(
-                "\"" + zonedDateTime.toOffsetDateTime().toString() + "\"^^<" + XSD.DATETIME + ">",
+                "\"" + zonedDateTime.toOffsetDateTime() + "\"^^<" + XSD.DATETIME + ">",
                 value.getQueryString());
     }
 
@@ -183,7 +182,7 @@ class ParameterValueFactoryTest {
         final OffsetDateTime offsetDateTime = OffsetDateTime.now();
         final ParameterValue value = sut.create(offsetDateTime);
         assertEquals(
-                "\"" + offsetDateTime.toString() + "\"^^<" + XSD.DATETIME + ">",
+                "\"" + offsetDateTime + "\"^^<" + XSD.DATETIME + ">",
                 value.getQueryString());
     }
 
@@ -191,7 +190,7 @@ class ParameterValueFactoryTest {
     void createLocalDateValueCreatesDateParameter() {
         final LocalDate localDate = LocalDate.now();
         final ParameterValue value = sut.create(localDate);
-        assertEquals("\"" + localDate.toString() + "\"^^<" + XSD.DATE + ">",
+        assertEquals("\"" + localDate + "\"^^<" + XSD.DATE + ">",
                 value.getQueryString());
     }
 
@@ -207,7 +206,7 @@ class ParameterValueFactoryTest {
     void createOffsetTimeValueCreatesTimeParameter() {
         final OffsetTime offsetTime = OffsetTime.now();
         final ParameterValue value = sut.create(offsetTime);
-        assertEquals("\"" + offsetTime.toString() + "\"^^<" + XSD.TIME + ">",
+        assertEquals("\"" + offsetTime + "\"^^<" + XSD.TIME + ">",
                 value.getQueryString());
     }
 
@@ -228,9 +227,11 @@ class ParameterValueFactoryTest {
     }
 
     @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
     void createCollectionValueCreatesCollectionOfUrisForEntityElements() throws Exception {
         final Collection<OWLClassA> values = Arrays
                 .asList(Generators.generateOwlClassAInstance(), Generators.generateOwlClassAInstance());
+        when(metamodelProvider.isEntityType(any())).thenReturn(false);
         when(metamodelProvider.isEntityType(OWLClassA.class)).thenReturn(true);
         final MetamodelMocks mocks = new MetamodelMocks();
         final Metamodel metamodel = mock(Metamodel.class);

@@ -201,7 +201,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
     }
 
     static final class MergeResult {
-        protected final int i;
+        final int i;
         final Resource previous;
 
         MergeResult(int i, Resource node) {

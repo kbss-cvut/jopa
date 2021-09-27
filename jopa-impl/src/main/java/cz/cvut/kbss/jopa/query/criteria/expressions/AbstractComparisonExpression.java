@@ -8,10 +8,10 @@ abstract public class AbstractComparisonExpression extends AbstractExpression<Bo
     protected AbstractExpression<?> right;
     protected AbstractExpression<?> left;
 
-    public AbstractComparisonExpression(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaBuilder cb) {
+    public AbstractComparisonExpression(AbstractExpression<?> left, AbstractExpression<?> right, CriteriaBuilder cb) {
         super(Boolean.class, cb);
-        this.left = x;
-        this.right = y;
+        this.left = left;
+        this.right = right;
     }
 
     @Override

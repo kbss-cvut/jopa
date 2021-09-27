@@ -44,7 +44,7 @@ public class IdentifierUtils {
     public static URI generateIdentifier(URI classUri) {
         Objects.requireNonNull(classUri);
         if (classUri.getFragment() != null) {
-            return URI.create(classUri.toString() + "_instance" + RANDOM.nextInt());
+            return URI.create(classUri + "_instance" + RANDOM.nextInt());
         } else {
             String base = classUri.toString();
             if (base.endsWith("/")) {

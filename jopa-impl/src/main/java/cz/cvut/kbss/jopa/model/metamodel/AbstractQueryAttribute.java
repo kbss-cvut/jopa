@@ -15,7 +15,15 @@ import java.lang.reflect.Member;
  */
 public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, Y> {
 
+    /**
+     * Name of the variable which may be used in the query and would be replaced by the identifier of the entity owning
+     * this attribute.
+     */
+    public static final String THIS_PARAMETER = "this";
+
     private final String query;
+
+    private final boolean enableReferencingAttributes;
 
     private final Field field;
 
@@ -27,9 +35,11 @@ public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, 
 
     private final ConverterWrapper converter;
 
-    public AbstractQueryAttribute(String query, Field field, ManagedType<X> declaringType, FetchType fetchType,
+    public AbstractQueryAttribute(String query, boolean enableReferencingAttributes, Field field,
+                                  ManagedType<X> declaringType, FetchType fetchType,
                                   ParticipationConstraint[] constraints, ConverterWrapper converter) {
         this.query = query;
+        this.enableReferencingAttributes = enableReferencingAttributes;
         this.field = field;
         this.declaringType = declaringType;
         this.fetchType = fetchType;
@@ -40,6 +50,11 @@ public abstract class AbstractQueryAttribute<X, Y> implements QueryAttribute<X, 
     @Override
     public String getQuery() {
         return query;
+    }
+
+    @Override
+    public boolean enableReferencingAttributes() {
+        return enableReferencingAttributes;
     }
 
     @Override

@@ -14,7 +14,7 @@ abstract public class AbstractAggregateFunctionExpression<X> extends AbstractExp
 
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
-        query.append(this.getFunctionName() + "(");
+        query.append(this.getFunctionName()).append("(");
         this.internExpression.setExpressionToQuery(query, parameterFiller);
         query.append(")");
     }

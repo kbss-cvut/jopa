@@ -1,26 +1,27 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -29,6 +30,8 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -78,11 +81,11 @@ abstract class EntityInstanceLoader {
      */
     abstract <T> T loadReference(LoadingParameters<T> loadingParameters);
 
-    <T> T loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
+    <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, EntityType<U> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
         if (isCached(loadingParameters, et)) {
-            return cache.get(et.getJavaType(), identifier, descriptor);
+            return loadCached(et, identifier, descriptor);
         }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
@@ -98,6 +101,43 @@ abstract class EntityInstanceLoader {
     <T> boolean isCached(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
         return !loadingParameters.shouldBypassCache() &&
                 cache.contains(et.getJavaType(), loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
+    }
+
+    <T> T loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
+        final T cached = cache.get(et.getJavaType(), identifier, descriptor);
+        recursivelyReloadQueryAttributes(cached, et, new IdentityHashMap<>());
+        return cached;
+    }
+
+    /**
+     * Recursively reloads query attribute values.
+     *
+     * @param instance Instance whose query attributes should be reloaded
+     * @param et       Entity type of the instance
+     * @param visited  Map of already visited objects to prevent infinite recursion
+     */
+    private void recursivelyReloadQueryAttributes(Object instance, EntityType<?> et, Map<Object, Object> visited) {
+        if (visited.containsKey(instance)) {
+            return;
+        }
+        visited.put(instance, null);
+        entityBuilder.populateQueryAttributes(instance, (EntityType<Object>) et);
+        et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
+            final Class<?> cls = att.isCollection() ? ((PluralAttribute) att).getElementType()
+                    .getJavaType() : att.getJavaType();
+            if (!metamodel.isEntityType(cls)) {
+                return;
+            }
+            final Object value = EntityPropertiesUtils.getAttributeValue(att, instance);
+            if (value != null) {
+                // Resolve the value class instead of using the attribute type, as it may be a subclass at runtime
+                if (att.isCollection()) {
+                    ((Collection<?>) value).forEach(el -> recursivelyReloadQueryAttributes(el, metamodel.entity(el.getClass()), visited));
+                } else {
+                    recursivelyReloadQueryAttributes(value, metamodel.entity(value.getClass()), visited);
+                }
+            }
+        });
     }
 
     <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {

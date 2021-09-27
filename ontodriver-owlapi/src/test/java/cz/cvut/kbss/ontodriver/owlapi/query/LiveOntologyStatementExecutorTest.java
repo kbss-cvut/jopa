@@ -18,8 +18,9 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,6 +28,7 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class LiveOntologyStatementExecutorTest {
 
     private static final String QUERY = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }";
@@ -41,7 +43,6 @@ public class LiveOntologyStatementExecutorTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.executor = new LiveOntologyStatementExecutor(connectorMock);
     }
 
@@ -61,7 +62,7 @@ public class LiveOntologyStatementExecutorTest {
     }
 
     @Test
-    public void executeUpdatePassesConsumerFunctionToConnectorForExecutionInWriteMode() throws Exception {
+    public void executeUpdatePassesConsumerFunctionToConnectorForExecutionInWriteMode() {
         executor.executeUpdate(UPDATE);
         verify(connectorMock).executeWrite(any(Consumer.class));
     }

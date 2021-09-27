@@ -7,7 +7,7 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
 import java.util.HashMap;
 
 public class CriteriaParameterFiller {
-    private HashMap<String, ExpressionLiteralImpl> literalParameters;
+    private final HashMap<String, ExpressionLiteralImpl> literalParameters;
     private int counter;
 
     public CriteriaParameterFiller() {

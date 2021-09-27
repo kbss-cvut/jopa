@@ -98,7 +98,7 @@ class MappingFileParserTest {
     public void mappingFileParserSupportsRemoteUrls() throws Exception {
         final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
         final URI mappedTo = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
-        final File mappingFile = createMappingFile(ontoUri.toString() + " > " + mappedTo.toString());
+        final File mappingFile = createMappingFile(ontoUri + " > " + mappedTo);
 
         final Map<URI, URI> mappings = MappingFileParser.getMappings(mappingFile);
         assertEquals(1, mappings.size());
@@ -109,7 +109,7 @@ class MappingFileParserTest {
     public void invalidRemoteUrlMappedByMappingFileCausesParserException() throws Exception {
         final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
         final String mappedTo = "http:// .krizik.felk.cvut.cz";
-        final File mappingFile = createMappingFile(ontoUri.toString() + " > " + mappedTo);
+        final File mappingFile = createMappingFile(ontoUri + " > " + mappedTo);
 
         assertThrows(MappingFileParserException.class, () -> MappingFileParser.getMappings(mappingFile));
     }
@@ -119,8 +119,8 @@ class MappingFileParserTest {
         final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
         final URI mappedTo = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
         final File mappingFile = createMappingFile(
-                ontoUri.toString() + " " + DEFAULT_DELIMITER + " " + mappedTo.toString() + " " + DEFAULT_DELIMITER +
-                        " " + mappedTo.toString());
+                ontoUri + " " + DEFAULT_DELIMITER + " " + mappedTo + " " + DEFAULT_DELIMITER +
+                        " " + mappedTo);
 
         final Map<URI, URI> mappings = MappingFileParser.getMappings(mappingFile);
         assertTrue(mappings.isEmpty());

@@ -34,7 +34,7 @@ public class OwlapiStorageConfig extends StorageConfig {
         assert name != null;
         assert index >= 0;
 
-        String base = name + TYPE.toString() + index;
+        String base = name + TYPE + index;
         final File url = new File(directory + File.separator + base + ".owl");
         TestEnvironment.removeOldTestFiles(url);
 

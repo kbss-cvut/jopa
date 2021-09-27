@@ -39,7 +39,7 @@ public class SingularQueryAttributeStrategy<X> extends QueryFieldStrategy<Abstra
     }
 
     @Override
-    public void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
+    public void buildInstanceFieldValue(Object instance) {
         setValueOnInstance(instance, value);
     }
 }

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ExpressionInImpl<Y> extends AbstractPredicate implements PredicateFactory.In<Y> {
 
-    private Expression<Y> expression;
+    private final Expression<Y> expression;
     private List<Expression<? extends Y>> values;
 
     public ExpressionInImpl(Expression<? extends Y> expression, CriteriaBuilder cb) {

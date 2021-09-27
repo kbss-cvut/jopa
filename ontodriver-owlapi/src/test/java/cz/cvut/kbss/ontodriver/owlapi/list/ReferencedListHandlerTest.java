@@ -122,7 +122,7 @@ public class ReferencedListHandlerTest
 
     private void initReasoner() {
         final OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(
-                IRI.create(SUBJECT.toString() + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "0"));
+                IRI.create(SUBJECT + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "0"));
         final OWLNamedIndividual owner = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
         final NodeSet<OWLNamedIndividual> nodeSet = new OWLNamedIndividualNodeSet(node);
         when(reasonerMock.getObjectPropertyValues(owner, hasListProperty)).thenReturn(nodeSet);

@@ -34,7 +34,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class EntityConstructorPluralAttributesTest {

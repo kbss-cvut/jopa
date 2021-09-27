@@ -17,8 +17,8 @@ public class OWLClassWithQueryAttr2 {
 
     public static final String MAPPING_NAME = "OWLClassWithQueryAttr2.entityMapping";
 
-    private static final String QUERY_ENTITY = "SELECT ?entityAttribute\n" +
-                                               "WHERE {?this <" + Vocabulary.P_HAS_OWL_CLASS_A + "> ?entityAttribute}";
+    private static final String QUERY_ENTITY = "SELECT ?x\n" +
+            "WHERE {?this <" + Vocabulary.P_HAS_OWL_CLASS_A + "> ?x }";
 
     @Id
     private URI uri;
@@ -26,7 +26,7 @@ public class OWLClassWithQueryAttr2 {
     @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, fetch = FetchType.EAGER)
     private OWLClassA entityAttribute;
 
-    @Sparql(query=QUERY_ENTITY)
+    @Sparql(query = QUERY_ENTITY)
     private OWLClassA entityQueryAttribute;
 
     public OWLClassWithQueryAttr2() {
