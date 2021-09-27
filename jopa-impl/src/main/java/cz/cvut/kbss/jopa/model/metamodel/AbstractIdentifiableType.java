@@ -151,7 +151,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (supertype != null) {
             return supertype.getAttribute(name);
         }
-        throw new IllegalArgumentException("Attribute " + name + " is not present in type " + this.toString());
+        throw new IllegalArgumentException("Attribute " + name + " is not present in type " + this);
     }
 
     @Override
@@ -175,7 +175,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (supertype != null) {
             return supertype.getQueryAttribute(name);
         }
-        throw new IllegalArgumentException("Query attribute " + name + " is not present in type " + this.toString());
+        throw new IllegalArgumentException("Query attribute " + name + " is not present in type " + this);
     }
 
     @Override

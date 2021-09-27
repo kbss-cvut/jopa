@@ -68,7 +68,7 @@ class LocalModel {
                                                            Model removedModel) {
         final Set<Statement> statements = new HashSet<>(toEnhance);
         statements.addAll(addedModel.listStatements(subject, property, value).toList());
-        statements.removeAll(removedModel.listStatements(subject, property, value).toList());
+        removedModel.listStatements(subject, property, value).toList().forEach(statements::remove);
         return statements;
     }
 

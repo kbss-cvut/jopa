@@ -21,7 +21,7 @@ public class RootImpl<X> extends AbstractPathExpression<X> implements Root<X> {
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         if (this.pathSource != null){
             this.pathSource.setExpressionToQuery(query, parameterFiller);
-            query.append("." + type.getSimpleName().toLowerCase());
+            query.append('.').append(type.getSimpleName().toLowerCase());
         } else {
             query.append(type.getSimpleName().toLowerCase());
         }

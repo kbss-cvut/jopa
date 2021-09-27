@@ -9,14 +9,11 @@ import java.util.Collection;
 
 public class PluralQueryAttributeStrategy<X> extends QueryFieldStrategy<PluralQueryAttributeImpl<? super X, ?, ?>, X> {
 
-    private final Class<?> elementType;
-
     private final Collection<Object> values;
 
     public PluralQueryAttributeStrategy(EntityType<X> et, PluralQueryAttributeImpl<? super X, ?, ?> attribute) {
         super(et, attribute);
         this.values = CollectionFactory.createDefaultCollection(attribute.getCollectionType());
-        this.elementType = attribute.getElementType().getJavaType();
     }
 
     @Override

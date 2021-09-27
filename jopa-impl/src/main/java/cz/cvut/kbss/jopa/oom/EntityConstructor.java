@@ -261,7 +261,7 @@ class EntityConstructor {
     }
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
-                           Descriptor entityDescriptor) throws IllegalAccessException {
+                           Descriptor entityDescriptor) {
         final FieldSpecification<? super T, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         if (axioms.isEmpty()) {
             validateIntegrityConstraints(entity, fieldSpec, et);
@@ -274,8 +274,7 @@ class EntityConstructor {
         validateIntegrityConstraints(entity, fieldSpec, et);
     }
 
-    <T> void setQueryAttributeFieldValue(T entity, QueryAttribute<? super T, ?> queryAttribute, EntityType<T> et)
-            throws IllegalAccessException {
+    <T> void setQueryAttributeFieldValue(T entity, QueryAttribute<? super T, ?> queryAttribute, EntityType<T> et) {
         final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
         populateQueryAttribute(entity, queryAttribute, queryFactory, et);
     }

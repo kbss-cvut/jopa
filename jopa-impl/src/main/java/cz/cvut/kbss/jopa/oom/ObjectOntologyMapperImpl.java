@@ -142,11 +142,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
         if (et.hasQueryAttribute(field.getName())) {
             QueryAttribute<? super T, ?> queryAttribute = et.getQueryAttribute(field.getName());
-            try {
-                entityBuilder.setQueryAttributeFieldValue(entity, queryAttribute, et);
-            } catch (IllegalAccessException e) {
-                throw new EntityReconstructionException(e);
-            }
+            entityBuilder.setQueryAttributeFieldValue(entity, queryAttribute, et);
             return;
         }
 
@@ -157,7 +153,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             entityBuilder.setFieldValue(entity, field, axioms, et, descriptor);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException e) {
             throw new EntityReconstructionException(e);
         }
     }

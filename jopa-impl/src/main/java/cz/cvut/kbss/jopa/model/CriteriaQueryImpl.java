@@ -180,7 +180,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         }
         ((AbstractExpression) query.getSelection()).setExpressionToQuery(stringBuilder, parameterFiller);
 
-        stringBuilder.append(" FROM " + ((RootImpl) query.getRoot()).getJavaType().getSimpleName() + " ");
+        stringBuilder.append(" FROM ").append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
         ((RootImpl) query.getRoot()).setExpressionToQuery(stringBuilder, parameterFiller);
 
         if (query.getWhere() != null) {

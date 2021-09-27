@@ -72,8 +72,6 @@ public class PoolingStorageConnectorTest {
         this.transaction = (Transaction) transactionField.get(connector);
         Whitebox.setInternalState(PoolingStorageConnector.class, "READ", readLock);
         Whitebox.setInternalState(PoolingStorageConnector.class, "WRITE", writeLock);
-//        TestUtils.setMock("READ", PoolingStorageConnector.class, readLock);
-//        TestUtils.setMock("WRITE", PoolingStorageConnector.class, writeLock);
     }
 
     @Test

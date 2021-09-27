@@ -32,8 +32,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -55,7 +53,7 @@ public class MetamodelFactory {
         when(etMock.getName()).thenReturn(OWLClassA.class.getSimpleName());
         when(etMock.getTypes()).thenReturn(typesMock);
         when(etMock.getAttributes()).thenReturn(
-                Collections.<Attribute<? super OWLClassA, ?>>singleton(strAttMock));
+                Collections.singleton(strAttMock));
         when(etMock.getFieldSpecifications()).thenReturn(
                 new HashSet<>(Arrays.<FieldSpecification<? super OWLClassA, ?>>asList(strAttMock, typesMock, idMock)));
 
@@ -120,7 +118,7 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
         when(etMock.getProperties()).thenReturn(propsMock);
         when(etMock.getAttributes()).thenReturn(
-                Collections.<Attribute<? super OWLClassB, ?>>singleton(strAttMock));
+                Collections.singleton(strAttMock));
         when(etMock.getFieldSpecifications()).thenReturn(
                 new HashSet<>(Arrays.<FieldSpecification<? super OWLClassB, ?>>asList(strAttMock, propsMock, idMock)));
 
@@ -268,7 +266,7 @@ public class MetamodelFactory {
         when(etMock.getName()).thenReturn(OWLClassD.class.getSimpleName());
         when(etMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(clsAMock);
         when(etMock.getAttributes()).thenReturn(
-                Collections.<Attribute<? super OWLClassD, ?>>singleton(clsAMock));
+                Collections.singleton(clsAMock));
         when(etMock.getFieldSpecifications())
                 .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassD, ?>>asList(clsAMock, idMock)));
         when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
@@ -347,7 +345,7 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassG.getOwlClassHField().getName())).thenReturn(clsHMock);
         when(etMock.getName()).thenReturn(OWLClassG.class.getSimpleName());
         when(etMock.getAttributes()).thenReturn(
-                Collections.<Attribute<? super OWLClassG, ?>>singleton(clsHMock));
+                Collections.singleton(clsHMock));
         when(etMock.getFieldSpecifications())
                 .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassG, ?>>asList(clsHMock, idMock)));
         when(clsHMock.getJavaField()).thenReturn(OWLClassG.getOwlClassHField());

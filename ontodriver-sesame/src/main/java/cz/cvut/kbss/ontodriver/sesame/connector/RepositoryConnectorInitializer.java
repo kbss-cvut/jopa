@@ -161,7 +161,7 @@ class RepositoryConnectorInitializer {
             return is;
         } else {
             try {
-                return new FileInputStream(new File(configPath));
+                return new FileInputStream(configPath);
             } catch (FileNotFoundException e) {
                 throw new RepositoryCreationException("Unable to find repository configuration file at " + configPath,
                         e);
