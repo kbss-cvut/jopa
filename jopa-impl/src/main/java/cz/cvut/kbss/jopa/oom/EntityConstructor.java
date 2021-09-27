@@ -198,17 +198,16 @@ class EntityConstructor {
 
         // set value of parameter "this", if it is present in the query, with the entity instance
         try {
-            typedQuery.setParameter("this", instance);
-        } catch (IllegalArgumentException e1) {
-            // parameter "this" is not present in the query, no need to set it
+            if (typedQuery.hasParameter("this")) {
+                typedQuery.setParameter("this", instance);
+            }
         } catch (RuntimeException e2) {
             LOG.error("Unable to set query parameter 'this' with the instance" +
                     "\nAttribute '{}' will be skipped.", queryAttribute.getJavaMember().getName(), e2);
             return;
         }
 
-        QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs =
-                getQueryFieldLoader(et, queryAttribute);
+        QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs = getQueryFieldLoader(et, queryAttribute);
 
         qfs.addValueFromTypedQuery(typedQuery);
         qfs.buildInstanceFieldValue(instance);
