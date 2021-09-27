@@ -462,7 +462,7 @@ public class JavaTransformer {
             return true;
         }
         // If there is none such, just use the first available one
-        if (comments.size() > 0) {
+        if (!comments.isEmpty()) {
             OWLAnnotation anyComment = comments.get(0);
             anyComment.getValue().asLiteral().ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral()));
             return true;
