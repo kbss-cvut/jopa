@@ -215,7 +215,7 @@ public class ResultSetMappingProcessorTest {
     public void buildMapperSkipsPluralAttributesOfTargetEntityWhenGeneratingFieldResultMappers() throws Exception {
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
         final EntityTypeImpl<OWLClassM> etM = metamodelMocks.forOwlClassM().entityType();
-        final PluralAttribute<OWLClassM, Set, Integer> pluralAtt = metamodelMocks.forOwlClassM().integerSetAttribute();
+        final PluralAttribute<OWLClassM, Set<Integer>, Integer> pluralAtt = metamodelMocks.forOwlClassM().integerSetAttribute();
         when(builderMock.entity(OWLClassM.class)).thenReturn(etM);
 
         processor.buildMapper(getMapping(WithIncompleteEntityMapping.class));
