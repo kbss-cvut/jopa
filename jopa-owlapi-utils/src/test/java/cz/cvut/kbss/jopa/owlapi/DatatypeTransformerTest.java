@@ -62,4 +62,14 @@ class DatatypeTransformerTest {
         assertEquals(ontoLiteral.getLexicalForm(), result.getLiteral());
         assertEquals(XSD.DURATION, result.getDatatype().toStringID());
     }
+
+    @Test
+    void transformOlwLiteralToObjectReturnsOntoDriverLiteralForUnknownDatatype() {
+        final OWLLiteral literal = DATA_FACTORY.getOWLLiteral("P1Y", DATA_FACTORY.getOWLDatatype(XSD.DURATION));
+        final Object result = DatatypeTransformer.transform(literal);
+        assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
+        final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
+        assertEquals(literal.getLiteral(), literalResult.getLexicalForm());
+        assertEquals(literal.getDatatype().toStringID(), literalResult.getDatatype());
+    }
 }

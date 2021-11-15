@@ -40,7 +40,7 @@ class SesameUtilsTest {
     @Test
     void enumLiteralIsReturnedAsStringValue() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString());
-        final Object result = SesameUtils.getDataPropertyValue(literal);
+        final Object result = SesameUtils.getLiteralValue(literal);
         assertEquals(Severity.LOW.toString(), result);
     }
 
@@ -100,9 +100,9 @@ class SesameUtilsTest {
     }
 
     @Test
-    void getDataPropertyValueReturnsLangStringForLangStringLiteral() {
+    void getLiteralValueReturnsLangStringForLangStringLiteral() {
         final Literal literal = vf.createLiteral("test", LANG);
-        final Object result = SesameUtils.getDataPropertyValue(literal);
+        final Object result = SesameUtils.getLiteralValue(literal);
         assertThat(result, instanceOf(LangString.class));
         final LangString lsResult = (LangString) result;
         assertEquals(literal.stringValue(), lsResult.getValue());
@@ -135,5 +135,15 @@ class SesameUtilsTest {
         final Literal result = SesameUtils.createLiteral(ontoLiteral, null, vf);
         assertEquals(ontoLiteral.getLexicalForm(), result.getLabel());
         assertEquals(XSD.DURATION, result.getDatatype());
+    }
+
+    @Test
+    void getLiteralValueReturnsOntoDriverLiteralForUnsupportedDatatype() {
+        final Literal literal = vf.createLiteral("P1Y", XSD.DURATION);
+        final Object result = SesameUtils.getLiteralValue(literal);
+        assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
+        final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
+        assertEquals(literal.getLabel(), literalResult.getLexicalForm());
+        assertEquals(literal.getDatatype().stringValue(), literalResult.getDatatype());
     }
 }

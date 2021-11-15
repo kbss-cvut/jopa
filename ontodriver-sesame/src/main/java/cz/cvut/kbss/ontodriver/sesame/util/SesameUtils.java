@@ -32,15 +32,15 @@ public final class SesameUtils {
     }
 
     /**
-     * Gets value of the specified data property literal as the corresponding Java object.
+     * Gets value of the specified literal as the corresponding Java object.
      * <p>
-     * Primitives are returned boxed.
+     * Primitives are returned boxed. If the type cannot be mapped to a corresponding Java type,
+     * it is returned as {@link cz.cvut.kbss.ontodriver.model.Literal}.
      *
-     * @param literal DataProperty value
-     * @return Java value corresponding to the XML Schema datatype
-     * @throws IllegalArgumentException If literal's datatype is not supported
+     * @param literal RDF literal value
+     * @return Java value corresponding to datatype
      */
-    public static Object getDataPropertyValue(Literal literal) {
+    public static Object getLiteralValue(Literal literal) {
         assert literal != null;
 
         final IRI datatype = literal.getDatatype();
@@ -69,7 +69,7 @@ public final class SesameUtils {
         } else if (datatype.equals(XSD.DATE) || datatype.equals(XSD.DATETIME)) {
             return literal.calendarValue().toGregorianCalendar().getTime();
         } else {
-            throw new IllegalArgumentException("Unsupported datatype " + datatype);
+            return new cz.cvut.kbss.ontodriver.model.Literal(literal.getLabel(), datatype.stringValue());
         }
     }
 
@@ -85,7 +85,7 @@ public final class SesameUtils {
     /**
      * Checks whether the language of the specified literal matches the specified assertion language.
      * <p>
-     * If the assertion does not specified a language, any literal will match. If the literal is not a string, it
+     * If the assertion does not specify a language, any literal will match. If the literal is not a string, it
      * matches as well.
      *
      * @param literal   Literal to check
@@ -196,7 +196,7 @@ public final class SesameUtils {
             return java.net.URI.create(resource.stringValue());
         } catch (IllegalArgumentException e) {
             // This shouldn't happen
-            LoggerFactory.getLogger(SesameUtils.class).error("Sesame resource is not a valid URI: " + e);
+            LoggerFactory.getLogger(SesameUtils.class).error("RDF4J resource is not a valid URI: " + e);
             return null;
         }
     }

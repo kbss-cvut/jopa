@@ -15,9 +15,8 @@ package cz.cvut.kbss.ontodriver.jena;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.apache.jena.datatypes.xsd.XSDDateTime;
-import org.apache.jena.rdf.model.*;
 import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 
 import java.net.URI;
@@ -33,7 +32,7 @@ abstract class AbstractAxiomLoader {
     /**
      * Checks whether the storage contains the specified axiom.
      *
-     * @param axiom   Axiom whose existence should be verified
+     * @param axiom    Axiom whose existence should be verified
      * @param contexts Contexts to search, optional
      * @return {@code true} if the axiom exists, {@code false} otherwise
      */
@@ -101,11 +100,7 @@ abstract class AbstractAxiomLoader {
             if (shouldSkipLiteral(assertion, object)) {
                 return Optional.empty();
             }
-            Object val = JenaUtils.literalToValue(object.asLiteral());
-            // Jena does not like java.util.Date
-            if (val instanceof XSDDateTime) {
-                val = ((XSDDateTime) val).asCalendar().getTime();
-            }
+            final Object val = JenaUtils.literalToValue(object.asLiteral());
             return Optional.of(new Value<>(val));
         }
     }

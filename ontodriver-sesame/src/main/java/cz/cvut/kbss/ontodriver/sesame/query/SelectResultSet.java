@@ -228,7 +228,7 @@ public class SelectResultSet extends AbstractResultSet {
     private static Object toObject(Value val) {
         assert val != null;
         if (val instanceof Literal) {
-            return SesameUtils.getDataPropertyValue((Literal) val);
+            return SesameUtils.getLiteralValue((Literal) val);
         } else if (val instanceof IRI) {
             return SesameUtils.toJavaUri((IRI) val);
         } else {
@@ -255,7 +255,7 @@ public class SelectResultSet extends AbstractResultSet {
         }
         Object ob = null;
         if (val instanceof Literal) {
-            ob = SesameUtils.getDataPropertyValue((Literal) val);
+            ob = SesameUtils.getLiteralValue((Literal) val);
         } else if (val instanceof IRI) {
             ob = SesameUtils.toJavaUri((IRI) val);
         }
@@ -270,12 +270,12 @@ public class SelectResultSet extends AbstractResultSet {
      * Searches for a suitable constructor and creates a new instance of class {@code cls}. </p>
      * <p>
      * The type has to have single-argument constructor, which takes either {@code Value} or its subtypes or type of
-     * instance returned by {@link SesameUtils#getDataPropertyValue(Literal)}.
+     * instance returned by {@link SesameUtils#getLiteralValue(Literal)}.
      *
      * @param cls The return type
      * @param val Raw value
      * @param ob  Either raw value (if it is a resource) or instance returned by {@link
-     *            SesameUtils#getDataPropertyValue(Literal)} on passing the literal {@code val}
+     *            SesameUtils#getLiteralValue(Literal)} on passing the literal {@code val}
      * @return The new instance
      * @throws OntoDriverException If no suitable constructor is found or the instance cannot be created
      */
@@ -332,7 +332,7 @@ public class SelectResultSet extends AbstractResultSet {
 
     private static String getStringImpl(Value val) {
         if (val instanceof Literal) {
-            return SesameUtils.getDataPropertyValue((Literal) val).toString();
+            return SesameUtils.getLiteralValue((Literal) val).toString();
         } else {
             return val.toString();
         }
@@ -363,7 +363,7 @@ public class SelectResultSet extends AbstractResultSet {
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
-        return SesameUtils.getDataPropertyValue((Literal) val);
+        return SesameUtils.getLiteralValue((Literal) val);
     }
 
     private Object getLiteralValue(String columnName) throws OntoDriverException {
@@ -371,7 +371,7 @@ public class SelectResultSet extends AbstractResultSet {
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
-        return SesameUtils.getDataPropertyValue((Literal) val);
+        return SesameUtils.getLiteralValue((Literal) val);
     }
 
     private Value getCurrent(int columnIndex) {

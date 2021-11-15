@@ -18,10 +18,14 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
+
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Utility methods for working with Jena API.
@@ -43,11 +47,20 @@ public class JenaUtils {
         final T val = value.getValue();
         if (IdentifierUtils.isResourceIdentifier(val)) {
             return ResourceFactory.createResource(value.stringValue());
-        } else if (assertion.hasLanguage()) {
-            return ResourceFactory.createLangLiteral(value.stringValue(), assertion.getLanguage());
+        } else if (val instanceof LangString) {
+            final LangString langString = (LangString) val;
+            return langString.getLanguage().map(lang -> ResourceFactory.createLangLiteral(langString.getValue(), lang))
+                    .orElseGet(() -> ResourceFactory.createTypedLiteral(langString.getValue()));
+        } else if (val instanceof String) {
+            return assertion.hasLanguage() ? ResourceFactory.createLangLiteral((String) val, assertion.getLanguage()) : ResourceFactory.createTypedLiteral(val);
         } else if (val instanceof cz.cvut.kbss.ontodriver.model.Literal) {
             return ResourceFactory.createTypedLiteral(((cz.cvut.kbss.ontodriver.model.Literal) val).getLexicalForm(),
                     TypeMapper.getInstance().getTypeByName(((cz.cvut.kbss.ontodriver.model.Literal) val).getDatatype()));
+        } else if (val instanceof Date) {
+            // Jena does not like Java Date
+            final GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime((Date) val);
+            return ResourceFactory.createTypedLiteral(cal);
         } else {
             return ResourceFactory.createTypedLiteral(val);
         }
@@ -57,7 +70,18 @@ public class JenaUtils {
         if (literal.getDatatype().equals(RDFLangString.rdfLangString)) {
             return new LangString(literal.getString(), literal.getLanguage());
         }
-        // This is because Jena returns XSD:long values as Integers, when they fit. But we don't want this.
-        return literal.getDatatype().equals(XSDDatatype.XSDlong) ? literal.getLong() : literal.getValue();
+        if (literal.getDatatype().equals(XSDDatatype.XSDlong)) {
+            // This is because Jena returns XSD:long values as Integers, when they fit. But we don't want this.
+            return literal.getLong();
+        } else if (literal.getDatatype().equals(XSDDatatype.XSDdateTime)) {
+            // Jena does not like Java Date
+            return ((XSDDateTime) literal.getValue()).asCalendar().getTime();
+        }
+        final Object result = literal.getValue();
+        if (result.getClass().getName().startsWith("org.apache.jena")) {
+            // If the result is a Jena type, it means the datatype does not have a JDK-based counterpart in Jena
+            return new cz.cvut.kbss.ontodriver.model.Literal(literal.getLexicalForm(), literal.getDatatypeURI());
+        }
+        return result;
     }
 }

@@ -75,7 +75,7 @@ public class AxiomBuilder {
                 if (!(value instanceof Literal) || !SesameUtils.doesLanguageMatch((Literal) value, assertion)) {
                     return Optional.empty();
                 }
-                return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
+                return Optional.of(new Value<>(SesameUtils.getLiteralValue((Literal) value)));
             case CLASS:
                 if (!(value instanceof Resource)) {
                     return Optional.empty();
@@ -98,7 +98,7 @@ public class AxiomBuilder {
             if (!SesameUtils.doesLanguageMatch((Literal) value, assertion)) {
                 return Optional.empty();
             }
-            return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
+            return Optional.of(new Value<>(SesameUtils.getLiteralValue((Literal) value)));
         } else {
             return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
         }

@@ -150,7 +150,7 @@ public class DatatypeTransformer {
                     break;
             }
         }
-        throw new IllegalArgumentException("Unsupported datatype: " + literal.getDatatype());
+        return new Literal(literal.getLiteral(), literal.getDatatype().toStringID());
     }
 
     /**

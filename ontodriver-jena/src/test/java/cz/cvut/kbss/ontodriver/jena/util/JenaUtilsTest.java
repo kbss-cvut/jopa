@@ -16,11 +16,21 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Value;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,5 +69,40 @@ public class JenaUtilsTest {
         assertThat(result, instanceOf(Literal.class));
         assertEquals(ontoLiteral.getLexicalForm(), result.asLiteral().getLexicalForm());
         assertEquals(XSD.duration.getURI(), result.asLiteral().getDatatype().getURI());
+    }
+
+    @Test
+    void literalToValueTransformsXSDDatetimeToJavaUtilDate() {
+        final Date date = new Date();
+        final Calendar cal = GregorianCalendar.getInstance();
+        cal.setTime(date);
+        final Literal literal = ResourceFactory.createTypedLiteral(cal);
+        assertEquals(XSD.dateTime.getURI(), literal.getDatatype().getURI());
+        final Object result = JenaUtils.literalToValue(literal);
+        assertEquals(date, result);
+    }
+
+    @Test
+    void literalToValueTransformsCustomDatatypeLiteralToOntoDriverLiteral() {
+        final Literal literal = ResourceFactory.createTypedLiteral("P1Y", TypeMapper.getInstance().getTypeByName(XSD.duration.getURI()));
+        final Object result = JenaUtils.literalToValue(literal);
+        assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
+        final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
+        assertEquals(literal.getLexicalForm(), literalResult.getLexicalForm());
+        assertEquals(literal.getDatatype().getURI(), literalResult.getDatatype());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesXsdDateTimeFromJavaUtilDateInstance() {
+        final Instant instant = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        final Date date = Date.from(instant);
+        final Assertion a = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        final RDFNode result = JenaUtils.valueToRdfNode(a, new Value<>(date));
+        assertThat(result, instanceOf(Literal.class));
+        final TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        df.setTimeZone(tz);
+        assertEquals(df.format(date), result.asLiteral().getLexicalForm());
+        assertEquals(XSD.dateTime.getURI(), result.asLiteral().getDatatype().getURI());
     }
 }
