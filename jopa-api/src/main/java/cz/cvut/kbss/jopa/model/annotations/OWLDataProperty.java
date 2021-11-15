@@ -68,5 +68,5 @@ public @interface OWLDataProperty {
      *
      * @return Datatype IRI
      */
-    String datatype();
+    String datatype() default "";
 }
