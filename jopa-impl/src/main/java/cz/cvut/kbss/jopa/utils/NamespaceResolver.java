@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,8 @@ package cz.cvut.kbss.jopa.utils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +30,8 @@ import java.util.Objects;
  * Prefixes for RDF (rdf:), RDFS (rdfs:) and XSD (xsd:) are pre-registered.
  */
 public class NamespaceResolver {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NamespaceResolver.class);
 
     private final Map<String, String> namespaces = new HashMap<>();
 
@@ -63,11 +67,12 @@ public class NamespaceResolver {
     public String resolveFullIri(String iri) {
         Objects.requireNonNull(iri);
         final int colonIndex = iri.indexOf(':');
-        if (colonIndex == -1 || colonIndex > iri.length()) {
+        if (colonIndex == -1) {
             return iri;
         }
         final String prefix = iri.substring(0, colonIndex);
         if (!namespaces.containsKey(prefix)) {
+            LOG.warn("Namespace for prefix '{}' not registered. Prefixed IRI '{}' will not be resolved.", prefix, iri);
             return iri;
         }
         final String localName = iri.substring(colonIndex + 1);

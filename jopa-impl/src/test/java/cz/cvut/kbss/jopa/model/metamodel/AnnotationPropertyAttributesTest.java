@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -113,5 +113,16 @@ class AnnotationPropertyAttributesTest {
     private static class WithExplicitDatatype {
         @OWLAnnotationProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.DURATION)
         private String explicitDatatype;
+
+        @OWLAnnotationProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = "xsd:time")
+        private String explicitDatatypeNamespaced;
+    }
+
+    @Test
+    void resolveSupportsNamespaceResolutionForExplicitDatatypeMapping() throws Exception {
+        final AnnotationPropertyAttributes sut = initSystemUnderTest();
+        when(typeBuilderContext.resolveNamespace("xsd:time")).thenReturn(XSD.TIME);
+        sut.resolve(WithExplicitDatatype.class.getDeclaredField("explicitDatatypeNamespaced"), metamodelBuilder, String.class);
+        assertEquals(XSD.TIME, sut.getDatatype());
     }
 }
