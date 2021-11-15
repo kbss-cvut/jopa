@@ -18,11 +18,9 @@ import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -33,24 +31,10 @@ class SesameUtilsTest {
 
     private static final String LANG = "en";
 
-    private static ValueFactory vf;
-
-    private static MemoryStore memoryStore;
+    private static final ValueFactory vf = SimpleValueFactory.getInstance();
 
     private enum Severity {
         LOW, MEDIUM
-    }
-
-    @BeforeAll
-    static void setUpBeforeClass() {
-        memoryStore = new MemoryStore();
-        memoryStore.initialize();
-        vf = memoryStore.getValueFactory();
-    }
-
-    @AfterAll
-    static void tearDownAfterClass() {
-        memoryStore.shutDown();
     }
 
     @Test
@@ -90,16 +74,16 @@ class SesameUtilsTest {
 
     @Test
     void enumValueIsReturnedAsStringLiteral() {
-        final Literal literal = SesameUtils.createDataPropertyLiteral(Severity.MEDIUM, LANG, vf);
+        final Literal literal = SesameUtils.createLiteral(Severity.MEDIUM, LANG, vf);
         assertNotNull(literal);
         assertEquals(Severity.MEDIUM.toString(), literal.stringValue());
         assertEquals(literal.getDatatype(), XSD.STRING);
     }
 
     @Test
-    void createDataPropertyLiteralAttachesLanguageTagToStringLiteral() {
+    void createLiteralAttachesLanguageTagToStringLiteral() {
         final String value = "literal";
-        final Literal result = SesameUtils.createDataPropertyLiteral(value, LANG, vf);
+        final Literal result = SesameUtils.createLiteral(value, LANG, vf);
         assertTrue(result.getLanguage().isPresent());
         assertEquals(LANG, result.getLanguage().get());
         assertEquals(value, result.stringValue());
@@ -107,9 +91,9 @@ class SesameUtilsTest {
     }
 
     @Test
-    void createDataPropertyLiteralCreatesStringWithoutLanguageTagWhenNullIsPassedIn() {
+    void createLiteralCreatesStringWithoutLanguageTagWhenNullIsPassedIn() {
         final String value = "literal";
-        final Literal result = SesameUtils.createDataPropertyLiteral(value, null, vf);
+        final Literal result = SesameUtils.createLiteral(value, null, vf);
         assertFalse(result.getLanguage().isPresent());
         assertEquals(value, result.stringValue());
         assertEquals(XSD.STRING, result.getDatatype());
@@ -127,9 +111,9 @@ class SesameUtilsTest {
     }
 
     @Test
-    void createDataPropertyLiteralCreatesRDFLangStringWithLanguageSpecifiedByOntoDriverLangString() {
+    void createLiteralCreatesRDFLangStringWithLanguageSpecifiedByOntoDriverLangString() {
         final LangString ls = new LangString("test", LANG);
-        final Literal result = SesameUtils.createDataPropertyLiteral(ls, null, vf);
+        final Literal result = SesameUtils.createLiteral(ls, null, vf);
         assertEquals(ls.getValue(), result.stringValue());
         assertTrue(result.getLanguage().isPresent());
         assertEquals(ls.getLanguage(), result.getLanguage());
@@ -137,11 +121,19 @@ class SesameUtilsTest {
     }
 
     @Test
-    void createDataPropertyLiteralCreatesSimpleLiteralFromOntoDriverLangStringWithoutLanguage() {
+    void createLiteralCreatesSimpleLiteralFromOntoDriverLangStringWithoutLanguage() {
         final LangString ls = new LangString("test");
-        final Literal result = SesameUtils.createDataPropertyLiteral(ls, null, vf);
+        final Literal result = SesameUtils.createLiteral(ls, null, vf);
         assertEquals(ls.getValue(), result.stringValue());
         assertFalse(result.getLanguage().isPresent());
         assertEquals(XSD.STRING, result.getDatatype());
+    }
+
+    @Test
+    void createLiteralCreatesSesameLiteralWhenOntoDriverLiteralWithLexicalFormAndDatatypeIsProvided() {
+        final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = new cz.cvut.kbss.ontodriver.model.Literal("P1Y", XSD.DURATION.stringValue());
+        final Literal result = SesameUtils.createLiteral(ontoLiteral, null, vf);
+        assertEquals(ontoLiteral.getLexicalForm(), result.getLabel());
+        assertEquals(XSD.DURATION, result.getDatatype());
     }
 }

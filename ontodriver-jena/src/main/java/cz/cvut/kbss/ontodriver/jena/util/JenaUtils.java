@@ -16,6 +16,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.rdf.model.Literal;
@@ -38,13 +39,17 @@ public class JenaUtils {
      * @param value     Value to transform
      * @return Jena RDFNode
      */
-    public static RDFNode valueToRdfNode(Assertion assertion, Value<?> value) {
-        if (IdentifierUtils.isResourceIdentifier(value.getValue())) {
+    public static <T> RDFNode valueToRdfNode(Assertion assertion, Value<T> value) {
+        final T val = value.getValue();
+        if (IdentifierUtils.isResourceIdentifier(val)) {
             return ResourceFactory.createResource(value.stringValue());
+        } else if (assertion.hasLanguage()) {
+            return ResourceFactory.createLangLiteral(value.stringValue(), assertion.getLanguage());
+        } else if (val instanceof cz.cvut.kbss.ontodriver.model.Literal) {
+            return ResourceFactory.createTypedLiteral(((cz.cvut.kbss.ontodriver.model.Literal) val).getLexicalForm(),
+                    TypeMapper.getInstance().getTypeByName(((cz.cvut.kbss.ontodriver.model.Literal) val).getDatatype()));
         } else {
-            return assertion.hasLanguage() ?
-                   ResourceFactory.createLangLiteral(value.stringValue(), assertion.getLanguage()) :
-                   ResourceFactory.createTypedLiteral(value.getValue());
+            return ResourceFactory.createTypedLiteral(val);
         }
     }
 

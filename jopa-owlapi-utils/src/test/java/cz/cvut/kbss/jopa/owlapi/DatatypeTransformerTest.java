@@ -1,6 +1,8 @@
 package cz.cvut.kbss.jopa.owlapi;
 
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLLiteral;
@@ -42,6 +44,7 @@ class DatatypeTransformerTest {
         assertEquals(ls.getValue(), result.getLiteral());
         assertEquals(ls.getLanguage().get(), result.getLang());
     }
+
     @Test
     void transformObjectToOwlLiteralReturnsSimpleLiteralForOntoDriverLangStringWithoutLanguage() {
         final LangString ls = new LangString("test");
@@ -50,5 +53,13 @@ class DatatypeTransformerTest {
         assertEquals(ls.getValue(), result.getLiteral());
         assertFalse(result.hasLang());
         assertTrue(result.getLang().isEmpty());
+    }
+
+    @Test
+    void transformObjectToOwlLiteralSupportsMappingOntoLiteralWithLexicalFormAndDatatype() {
+        final Literal ontoLiteral = new Literal("P1Y", XSD.DURATION);
+        final OWLLiteral result = DatatypeTransformer.transform(ontoLiteral, null);
+        assertEquals(ontoLiteral.getLexicalForm(), result.getLiteral());
+        assertEquals(XSD.DURATION, result.getDatatype().toStringID());
     }
 }

@@ -58,7 +58,7 @@ public class SesameDataAccessor implements DataAccessor {
     }
 
     private Value toValue(Object value, String language) {
-        return value instanceof URI ? toIri((URI) value) : SesameUtils.createDataPropertyLiteral(value, language, vf);
+        return value instanceof URI ? toIri((URI) value) : SesameUtils.createLiteral(value, language, vf);
     }
 
     @Override

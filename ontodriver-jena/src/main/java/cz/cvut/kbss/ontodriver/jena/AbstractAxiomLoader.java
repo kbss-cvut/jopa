@@ -17,6 +17,7 @@ import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.vocabulary.RDF;
 
 import java.net.URI;

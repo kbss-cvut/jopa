@@ -31,7 +31,7 @@ class SesameValueConverter {
     Value toSesameValue(Assertion assertion, cz.cvut.kbss.ontodriver.model.Value<?> val) throws SesameDriverException {
         switch (assertion.getType()) {
             case DATA_PROPERTY:
-                return SesameUtils.createDataPropertyLiteral(val.getValue(), language(assertion), vf);
+                return SesameUtils.createLiteral(val.getValue(), language(assertion), vf);
             case CLASS:
             case OBJECT_PROPERTY:
                 return getValueAsSesameUri(val);
@@ -60,7 +60,7 @@ class SesameValueConverter {
         if (SesameUtils.isResourceIdentifier(val.getValue())) {
             return vf.createIRI(val.getValue().toString());
         } else {
-            return SesameUtils.createDataPropertyLiteral(val.getValue(), language(assertion), vf);
+            return SesameUtils.createLiteral(val.getValue(), language(assertion), vf);
         }
     }
 }

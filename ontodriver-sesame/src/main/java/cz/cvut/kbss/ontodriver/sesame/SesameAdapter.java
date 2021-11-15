@@ -162,7 +162,7 @@ class SesameAdapter implements Closeable, Wrapper {
         } else {
             final String lang =
                     axiom.getAssertion().hasLanguage() ? axiom.getAssertion().getLanguage() : Constants.DEFAULT_LANG;
-            value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), lang, valueFactory);
+            value = SesameUtils.createLiteral(axiom.getValue().getValue(), lang, valueFactory);
         }
         return connector.containsStatement(
                 toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),

@@ -14,6 +14,7 @@ package cz.cvut.kbss.jopa.owlapi;
 
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.Literal;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLLiteral;
@@ -183,13 +184,16 @@ public class DatatypeTransformer {
             return DATA_FACTORY.getOWLLiteral(ls.getValue(), ls.getLanguage().orElse(null));
         } else if (value instanceof String) {
             return lang != null ? DATA_FACTORY.getOWLLiteral(value.toString(), lang) :
-                   DATA_FACTORY.getOWLLiteral(value.toString());
+                    DATA_FACTORY.getOWLLiteral(value.toString());
         } else if (value instanceof Date) {
             SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
             return DATA_FACTORY.getOWLLiteral(sdf.format((Date) value),
                     DATA_FACTORY.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
         } else if (value.getClass().isEnum()) {
             return DATA_FACTORY.getOWLLiteral(value.toString());
+        } else if (value instanceof Literal) {
+            return DATA_FACTORY.getOWLLiteral(((Literal) value).getLexicalForm(),
+                    DATA_FACTORY.getOWLDatatype(((Literal) value).getDatatype()));
         } else {
             throw new IllegalArgumentException("Unsupported value " + value + " of type " + value.getClass());
         }

@@ -83,7 +83,7 @@ class SesamePropertiesTest {
             final Statement stmt = vf
                     .createStatement(subject, vf.createIRI(ax.getAssertion().getIdentifier().toString()),
                             SesameUtils
-                                    .createDataPropertyLiteral(ax.getValue().getValue(), Constants.DEFAULT_LANG, vf));
+                                    .createLiteral(ax.getValue().getValue(), Constants.DEFAULT_LANG, vf));
             assertTrue(statements.contains(stmt));
         }
     }
@@ -118,7 +118,7 @@ class SesamePropertiesTest {
             final IRI property = vf.createIRI(a.getIdentifier().toString());
             stmts.addAll(properties.get(a).stream().map(v -> vf
                     .createStatement(subject, property,
-                            SesameUtils.createDataPropertyLiteral(v.getValue(), Constants.DEFAULT_LANG, vf)))
+                            SesameUtils.createLiteral(v.getValue(), Constants.DEFAULT_LANG, vf)))
                                    .collect(Collectors.toList()));
         }
         return stmts;

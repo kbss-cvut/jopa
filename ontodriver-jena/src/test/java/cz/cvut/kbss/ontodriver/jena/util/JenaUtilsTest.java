@@ -12,9 +12,14 @@
  */
 package cz.cvut.kbss.ontodriver.jena.util;
 
+import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -44,5 +49,15 @@ public class JenaUtilsTest {
         assertEquals("test", ((LangString) result).getValue());
         assertTrue(((LangString) result).getLanguage().isPresent());
         assertEquals("en", ((LangString) result).getLanguage().get());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesRdfLiteralFromOntoDriverLiteralWithLexicalFormAndDatatype() {
+        final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = new cz.cvut.kbss.ontodriver.model.Literal("P1Y", XSD.duration.getURI());
+        final Assertion a = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
+        final RDFNode result = JenaUtils.valueToRdfNode(a, new Value<>(ontoLiteral));
+        assertThat(result, instanceOf(Literal.class));
+        assertEquals(ontoLiteral.getLexicalForm(), result.asLiteral().getLexicalForm());
+        assertEquals(XSD.duration.getURI(), result.asLiteral().getDatatype().getURI());
     }
 }

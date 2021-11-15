@@ -109,7 +109,7 @@ public final class SesameUtils {
     }
 
     /**
-     * Creates Sesame literal from the specified value, which can be used as data property object.
+     * Creates Sesame literal from the specified value.
      *
      * @param value    The value to transform
      * @param language Language to add to string literals, optional
@@ -117,7 +117,7 @@ public final class SesameUtils {
      * @return Sesame Literal
      * @throws IllegalArgumentException If the type of the value is not supported
      */
-    public static Literal createDataPropertyLiteral(Object value, String language, ValueFactory vf) {
+    public static Literal createLiteral(Object value, String language, ValueFactory vf) {
         assert value != null;
 
         if (value instanceof Integer) {
@@ -127,7 +127,7 @@ public final class SesameUtils {
         } else if (value instanceof LangString) {
             final LangString ls = (LangString) value;
             return ls.getLanguage().isPresent() ? vf.createLiteral(ls.getValue(), ls.getLanguage().get()) :
-                   vf.createLiteral(ls.getValue());
+                    vf.createLiteral(ls.getValue());
         } else if (value instanceof Byte) {
             return vf.createLiteral((Byte) value);
         } else if (value instanceof Short) {
@@ -144,6 +144,9 @@ public final class SesameUtils {
             return vf.createLiteral((Date) value);
         } else if (value.getClass().isEnum()) {
             return vf.createLiteral(value.toString());
+        } else if (value instanceof cz.cvut.kbss.ontodriver.model.Literal) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = (cz.cvut.kbss.ontodriver.model.Literal) value;
+            return vf.createLiteral(ontoLiteral.getLexicalForm(), vf.createIRI(ontoLiteral.getDatatype()));
         } else {
             throw new IllegalArgumentException("Unsupported literal type " + value.getClass());
         }
