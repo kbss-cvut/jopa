@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -61,6 +62,9 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
     private String simpleLiteral;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.DURATION)
+    private String explicitDatatype;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -146,6 +150,14 @@ public class OWLClassM {
         this.simpleLiteral = simpleLiteral;
     }
 
+    public String getExplicitDatatype() {
+        return explicitDatatype;
+    }
+
+    public void setExplicitDatatype(String explicitDatatype) {
+        this.explicitDatatype = explicitDatatype;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -158,6 +170,7 @@ public class OWLClassM {
                 ", integerSet=" + integerSet +
                 ", lexicalForm=" + lexicalForm +
                 ", simpleLiteral=" + simpleLiteral +
+                ", explicitDatatype=" + explicitDatatype +
                 '}';
     }
 
@@ -174,6 +187,7 @@ public class OWLClassM {
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
         this.lexicalForm = "test";
         this.simpleLiteral = "test";
+        this.explicitDatatype = "P1Y";
     }
 
     public static String getClassIri() {
@@ -218,5 +232,9 @@ public class OWLClassM {
 
     public static Field getSimpleLiteralField() throws Exception {
         return OWLClassM.class.getDeclaredField("simpleLiteral");
+    }
+
+    public static Field getExplicitDatatypeField() throws Exception {
+        return OWLClassM.class.getDeclaredField("explicitDatatype");
     }
 }

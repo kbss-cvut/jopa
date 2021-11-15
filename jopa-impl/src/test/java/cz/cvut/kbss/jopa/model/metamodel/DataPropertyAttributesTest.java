@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -45,45 +45,54 @@ class DataPropertyAttributesTest {
 
     @Test
     void resolveInvokesDataPropertyFieldValidation() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
-        sut.typeBuilderContext = typeBuilderContext;
+        final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
         verify(validator)
                 .validateDataPropertyField(OWLClassA.getStrAttField(), OWLClassA.getStrAttField().getAnnotation(
                         OWLDataProperty.class));
     }
 
-    @Test
-    void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
+    private DataPropertyAttributes initSystemUnderTest() {
         final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
         sut.typeBuilderContext = typeBuilderContext;
+        return sut;
+    }
+
+    @Test
+    void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
+        final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassM.getLexicalFormField(), metamodelBuilder, OWLClassM.getLexicalFormField().getType());
         assertTrue(sut.isLexicalForm());
     }
 
     @Test
     void resolveResolvesSimpleLiteralConfigurationFromAnnotation() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
-        sut.typeBuilderContext = typeBuilderContext;
+        final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassM.getSimpleLiteralField(), metamodelBuilder, OWLClassM.getSimpleLiteralField().getType());
         assertTrue(sut.isSimpleLiteral());
     }
 
     @Test
     void resolveSetsLanguageFromPersistenceUnitLanguageConfiguration() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
+        final DataPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.typeBuilderContext = typeBuilderContext;
         sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
         assertEquals("en", sut.getLanguage());
     }
 
     @Test
     void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
+        final DataPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.typeBuilderContext = typeBuilderContext;
         sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
+    }
+
+    @Test
+    void resolveSetsDatatypeToValueSpecifiedInAnnotation() throws Exception {
+        final DataPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(OWLClassM.getExplicitDatatypeField(), metamodelBuilder, String.class);
+        assertNotNull(sut.getDatatype());
+        assertEquals(OWLClassM.getExplicitDatatypeField().getAnnotation(OWLDataProperty.class).datatype(), sut.getDatatype());
     }
 }

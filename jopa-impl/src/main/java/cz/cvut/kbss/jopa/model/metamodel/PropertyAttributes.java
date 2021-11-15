@@ -33,7 +33,7 @@ abstract class PropertyAttributes {
     FetchType fetchType = FetchType.EAGER;
     boolean lexicalForm = false;
     boolean simpleLiteral = false;
-    String datatype;
+    String datatype = "";
     String language;
     private boolean nonEmpty = false;
     private ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};

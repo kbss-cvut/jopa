@@ -37,6 +37,7 @@ class DataPropertyAttributes extends PropertyAttributes {
         this.type = BasicTypeImpl.get(fieldValueCls);
         this.lexicalForm = odp.lexicalForm();
         this.simpleLiteral = odp.simpleLiteral();
+        this.datatype = odp.datatype();
         this.language = resolveLanguage(fieldValueCls);
         validator.validateDataPropertyField(field, odp);
     }

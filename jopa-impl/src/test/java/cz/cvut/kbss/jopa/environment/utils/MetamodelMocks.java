@@ -40,7 +40,7 @@ public class MetamodelMocks {
     @Mock
     private EntityTypeImpl<OWLClassA> etA;
     @Mock
-    private Identifier idA;
+    private Identifier<OWLClassA, URI> idA;
     @Mock
     private SingularAttributeImpl<OWLClassA, String> aStringAtt;
     @Mock
@@ -133,7 +133,7 @@ public class MetamodelMocks {
     @Mock
     private EntityTypeImpl<OWLClassM> etM;
     @Mock
-    private Identifier idM;
+    private Identifier<OWLClassM, String> idM;
     @Mock
     private SingularAttributeImpl<OWLClassM, Boolean> mBooleanAtt;
     @Mock
@@ -152,6 +152,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassM, String> mLexicalFormAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, String> mSimpleLiteralAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassM, String> mExplicitDatatypeAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassN> etN;
@@ -280,7 +282,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
-                mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt, idM);
+                mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt, mExplicitDatatypeAtt, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
                 nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
@@ -418,7 +420,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.etA;
         }
 
-        public Identifier identifier() {
+        public Identifier<OWLClassA, URI> identifier() {
             return MetamodelMocks.this.idA;
         }
 
@@ -605,7 +607,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.etM;
         }
 
-        public Identifier identifier() {
+        public Identifier<OWLClassM, String> identifier() {
             return MetamodelMocks.this.idM;
         }
 
@@ -643,6 +645,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassM, String> simpleLiteralAttribute() {
             return MetamodelMocks.this.mSimpleLiteralAtt;
+        }
+
+        public AbstractAttribute<OWLClassM, String> explicitDatatypeAttribute() {
+            return MetamodelMocks.this.mExplicitDatatypeAtt;
         }
     }
 

@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassN;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -45,18 +46,22 @@ class AnnotationPropertyAttributesTest {
 
     @Test
     void resolveInvokesAnnotationPropertyFieldValidation() throws Exception {
-        final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
-        sut.typeBuilderContext = typeBuilderContext;
+        final AnnotationPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder,
                 OWLClassN.getAnnotationPropertyField().getType());
         verify(validator).validateAnnotationPropertyField(OWLClassN.getAnnotationPropertyField(),
                 OWLClassN.getAnnotationPropertyField().getAnnotation(OWLAnnotationProperty.class));
     }
 
-    @Test
-    void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
+    private AnnotationPropertyAttributes initSystemUnderTest() {
         final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
         sut.typeBuilderContext = typeBuilderContext;
+        return sut;
+    }
+
+    @Test
+    void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
+        final AnnotationPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(WithLexicalForm.class.getDeclaredField("lexicalForm"), metamodelBuilder, String.class);
         assertTrue(sut.isLexicalForm());
     }
@@ -69,8 +74,7 @@ class AnnotationPropertyAttributesTest {
 
     @Test
     void resolveResolvesSimpleLiteralConfigurationFromAnnotation() throws Exception {
-        final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
-        sut.typeBuilderContext = typeBuilderContext;
+        final AnnotationPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(WithSimpleLiteral.class.getDeclaredField("simpleLiteral"), metamodelBuilder, String.class);
         assertTrue(sut.isSimpleLiteral());
     }
@@ -83,19 +87,31 @@ class AnnotationPropertyAttributesTest {
 
     @Test
     void resolveSetsLanguageFromPersistenceUnitLanguageConfiguration() throws Exception {
-        final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
+        final AnnotationPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.typeBuilderContext = typeBuilderContext;
         sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder, OWLClassN.getAnnotationPropertyField().getType());
         assertEquals("en", sut.getLanguage());
     }
 
     @Test
     void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
-        final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
+        final AnnotationPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.typeBuilderContext = typeBuilderContext;
         sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
+    }
+
+    @Test
+    void resolveSetsDatatypeToValueSpecifiedInAnnotation() throws Exception {
+        final AnnotationPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(WithExplicitDatatype.class.getDeclaredField("explicitDatatype"), metamodelBuilder, String.class);
+        assertNotNull(sut.getDatatype());
+        assertEquals(XSD.DURATION, sut.getDatatype());
+    }
+
+    @SuppressWarnings("unused")
+    private static class WithExplicitDatatype {
+        @OWLAnnotationProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.DURATION)
+        private String explicitDatatype;
     }
 }
