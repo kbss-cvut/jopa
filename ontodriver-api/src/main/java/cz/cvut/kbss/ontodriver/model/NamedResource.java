@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.Objects;
 
 /**
- * Represents named resources, i. e. resources identified by an URI.
+ * Represents named resources, i.e. resources identified by a URI.
  */
 public class NamedResource implements Serializable {
 
@@ -32,7 +32,7 @@ public class NamedResource implements Serializable {
     }
 
     /**
-     * Gets identifier of this resource.
+     * Gets the identifier of this resource.
      *
      * @return URI
      */
