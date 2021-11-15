@@ -45,6 +45,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final boolean simpleLiteral;
 
+    private final String datatype;
+
     private final String language;
 
     private final ParticipationConstraint[] constraints;
@@ -66,6 +68,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         this.lexicalForm = builder.lexicalForm;
         this.simpleLiteral = builder.simpleLiteral;
         this.language = builder.language;
+        this.datatype = builder.datatype;
     }
 
     @Override
@@ -157,6 +160,11 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return declaringType.getJavaType().getSimpleName() + "." + getName();
     }
 
+    @Override
+    public String getDatatype() {
+        return datatype;
+    }
+
     abstract static class AbstractAttributeBuilder<X, Y> {
         private Field field;
         private ManagedType<X> declaringType;
@@ -169,6 +177,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean nonEmpty = false;
         private boolean lexicalForm = false;
         private boolean simpleLiteral = false;
+        private String datatype;
         private String language;
         private ParticipationConstraint[] constraints;
         private ConverterWrapper converter;
@@ -181,7 +190,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             this.nonEmpty = config.isNonEmpty();
             this.fetchType = config.getFetchType();
             this.lexicalForm = config.isLexicalForm();
-            this.simpleLiteral = config.simpleLiteral;
+            this.simpleLiteral = config.isSimpleLiteral();
+            this.datatype = config.getDatatype();
             this.language = config.getLanguage();
             return this;
         }

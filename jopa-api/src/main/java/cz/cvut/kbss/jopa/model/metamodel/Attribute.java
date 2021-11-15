@@ -100,13 +100,22 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
     /**
      * Does the attribute contain values in lexical form.
      * <p>
-     * Note that lexical form attributes are effectively read only.
-     * <p>
      * Applies only to datatype and annotation properties, object properties cannot be in lexical form.
      *
      * @return Boolean indicating whether the attribute contains values in lexical form
      */
     boolean isLexicalForm();
+
+    /**
+     * Gets the explicitly specified identifier of the attribute datatype.
+     * <p>
+     * Note that the returned value may be {@code null} in case the datatype is not explicitly specified and automatic
+     * datatype resolution provided by the underlying OntoDriver is used. {@code null} is also returned for object property
+     * attributes, as this does not apply to them.
+     *
+     * @return Datatype identifier, possibly {@code null}
+     */
+    String getDatatype();
 
     /**
      * Does the attribute represent simple literals.
