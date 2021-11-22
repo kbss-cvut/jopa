@@ -191,7 +191,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             this.fetchType = config.getFetchType();
             this.lexicalForm = config.isLexicalForm();
             this.simpleLiteral = config.isSimpleLiteral();
-            this.datatype = config.getDatatype().isEmpty() ? null : config.getDatatype();
+            this.datatype = config.hasDatatype() ? config.getDatatype() : null;
             this.language = config.getLanguage();
             return this;
         }

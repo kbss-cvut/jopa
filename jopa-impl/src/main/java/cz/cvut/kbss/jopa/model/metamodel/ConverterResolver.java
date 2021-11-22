@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.EnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -53,6 +54,9 @@ class ConverterResolver {
         final Class<?> attValueType = config.getType().getJavaType();
         if (attValueType.isEnum()) {
             return Optional.of(new EnumConverter(attValueType));
+        }
+        if (config.hasDatatype()) {
+            return Optional.of(new ToRdfLiteralConverter(config.getDatatype()));
         }
         if (config.isLexicalForm()) {
             return Optional.of(new ToLexicalFormConverter());

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class MultilingualAttributesTest extends MultilingualAttributesTestRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CreateOperationsTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MultilingualAttributesTest.class);
 
     public MultilingualAttributesTest() {
         super(LOG, new OwlapiPersistenceFactory(), new OwlapiDataAccessor());

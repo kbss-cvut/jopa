@@ -82,6 +82,10 @@ abstract class PropertyAttributes {
         return datatype;
     }
 
+    public boolean hasDatatype() {
+        return !datatype.isEmpty();
+    }
+
     String getLanguage() {
         return language;
     }

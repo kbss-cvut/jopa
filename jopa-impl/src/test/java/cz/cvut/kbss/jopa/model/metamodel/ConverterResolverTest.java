@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.oom.converter.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -26,8 +27,9 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ConverterResolverTest {
@@ -142,5 +144,18 @@ class ConverterResolverTest {
         assertTrue(result.get() instanceof ObjectConverter);
         final ObjectConverter objectConverter = (ObjectConverter) result.get();
         assertTrue(objectConverter.doesPreferMultilingualString());
+    }
+
+    @Test
+    void resolveConverterReturnsToRdfLiteralConverterForAttributeWithExplicitDatatypeMapping() throws Exception {
+        final Field field = OWLClassM.getExplicitDatatypeField();
+        final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
+        when(pa.hasDatatype()).thenReturn(true);
+        when(pa.getDatatype()).thenReturn(XSD.DURATION);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertThat(result.get(), instanceOf(ToRdfLiteralConverter.class));
     }
 }

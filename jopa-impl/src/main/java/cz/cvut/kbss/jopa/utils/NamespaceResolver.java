@@ -70,6 +70,10 @@ public class NamespaceResolver {
         if (colonIndex == -1) {
             return iri;
         }
+        if (iri.charAt(colonIndex + 1) == '/') {
+            // iri is hierarchical
+            return iri;
+        }
         final String prefix = iri.substring(0, colonIndex);
         if (!namespaces.containsKey(prefix)) {
             LOG.warn("Namespace for prefix '{}' not registered. Prefixed IRI '{}' will not be resolved.", prefix, iri);

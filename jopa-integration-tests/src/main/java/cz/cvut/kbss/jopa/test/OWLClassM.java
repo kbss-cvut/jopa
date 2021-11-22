@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,6 +66,9 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_StringCollection)
     private Collection<String> stringCollection;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.DURATION)
+    private String explicitDatatype;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -166,6 +170,14 @@ public class OWLClassM {
         this.stringCollection = stringCollection;
     }
 
+    public String getExplicitDatatype() {
+        return explicitDatatype;
+    }
+
+    public void setExplicitDatatype(String explicitDatatype) {
+        this.explicitDatatype = explicitDatatype;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -180,6 +192,7 @@ public class OWLClassM {
                 ", lexicalForm=" + lexicalForm +
                 ", simpleLiteral=" + simpleLiteral +
                 ", stringCollection=" + stringCollection +
+                ", explicitDatatype=" + explicitDatatype +
                 '}';
     }
 
