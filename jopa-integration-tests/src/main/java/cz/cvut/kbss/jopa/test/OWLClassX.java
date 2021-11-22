@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.net.URI;
 import java.time.Instant;
@@ -41,6 +42,9 @@ public class OWLClassX {
 
     @OWLObjectProperty(iri = Vocabulary.P_X_COLLECTION_ATTRIBUTE, cascade = CascadeType.PERSIST)
     private Collection<OWLClassA> aCollection;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.TIME)
+    private Set<String> explicitDatatypes;
 
     public URI getUri() {
         return uri;
@@ -90,6 +94,14 @@ public class OWLClassX {
         this.aCollection = aCollection;
     }
 
+    public Set<String> getExplicitDatatypes() {
+        return explicitDatatypes;
+    }
+
+    public void setExplicitDatatypes(Set<String> explicitDatatypes) {
+        this.explicitDatatypes = explicitDatatypes;
+    }
+
     @Override
     public String toString() {
         return "OWLClassX{" +
@@ -98,6 +110,8 @@ public class OWLClassX {
                 ", localDateTime=" + localDateTime +
                 ", instant=" + instant +
                 ", objectAnnotation=" + objectAnnotation +
+                ", aCollection=" + aCollection +
+                ", explicitDatatypes=" + explicitDatatypes +
                 '}';
     }
 }

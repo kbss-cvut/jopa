@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassX;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
@@ -12,7 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -66,5 +72,18 @@ public abstract class ExplicitDatatypesRunner extends BaseRunner {
         assertEquals(newValue, result.getExplicitDatatype());
     }
 
-    // TODO Test on plural as well
+    @Test
+    public void pluralAttributesWithExplicitDatatypeAreSupported() {
+        this.em = getEntityManager("pluralAttributesWithExplicitDatatypeAreSupported", false);
+        final OWLClassX entity = new OWLClassX();
+        final Set<String> values = IntStream.range(0, 5)
+                .mapToObj(i -> LocalTime.of(i + 1, i + 1).format(DateTimeFormatter.ISO_TIME))
+                .collect(Collectors.toSet());
+        entity.setExplicitDatatypes(values);
+
+        persist(entity);
+
+        final OWLClassX result = findRequired(OWLClassX.class, entity.getUri());
+        assertEquals(values, result.getExplicitDatatypes());
+    }
 }
