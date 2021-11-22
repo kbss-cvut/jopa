@@ -1362,4 +1362,27 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassZ result = em.find(OWLClassZ.class, z.getUri());
         assertEquals(updatedString, result.getRoot().getChildren().iterator().next().getName());
     }
+
+    /**
+     * Bug #97
+     */
+    @Test
+    void mergeHandlesCascadingAndReferencedObjects() {
+        this.em = getEntityManager("mergeHandlesCascadingAndReferencedObjects", true);
+        final OWLClassG entityG = new OWLClassG(Generators.generateUri());
+        final OWLClassH entityH = new OWLClassH(Generators.generateUri());
+        entityG.setOwlClassH(entityH);
+        entityH.setOwlClassA(entityA);
+        persist(entityG, entityA, entityA2);
+
+        entityG.getOwlClassH().setOwlClassA(entityA2);
+        em.clear();
+        transactional(() -> em.merge(entityG));
+
+        final OWLClassG result = findRequired(OWLClassG.class, entityG.getUri());
+        assertEquals(entityA2.getUri(), result.getOwlClassH().getOwlClassA().getUri());
+        final OWLClassA aResult = findRequired(OWLClassA.class, entityA.getUri());
+        // The incorrect merge messes up the cached value of the original entityA
+        assertEquals(entityA.getUri(), aResult.getUri());
+    }
 }

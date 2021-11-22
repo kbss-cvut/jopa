@@ -31,6 +31,13 @@ public class OWLClassH {
     // })
     private OWLClassA owlClassA;
 
+    public OWLClassH() {
+    }
+
+    public OWLClassH(URI uri) {
+        this.uri = uri;
+    }
+
     /**
      * @param uri
      *            the uri to set
