@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.oom.converter.*;
@@ -157,5 +158,16 @@ class ConverterResolverTest {
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(ToRdfLiteralConverter.class));
+    }
+
+    @Test
+    void resolveConverterThrowsInvalidFieldMappingExceptionWhenFieldWithExplicitDatatypeIsNotOfTypeString() throws Exception {
+        final Field field = OWLClassM.getIntAttributeField();
+        final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
+        when(pa.hasDatatype()).thenReturn(true);
+        when(pa.getDatatype()).thenReturn(XSD.DURATION);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        doReturn(BasicTypeImpl.get(Integer.class)).when(pa).getType();
+        assertThrows(InvalidFieldMappingException.class, () -> sut.resolveConverter(field, pa));
     }
 }
