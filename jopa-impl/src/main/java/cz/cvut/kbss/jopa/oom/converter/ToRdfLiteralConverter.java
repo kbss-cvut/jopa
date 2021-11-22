@@ -11,6 +11,10 @@ import java.util.Objects;
  * Converter for working with RDF literals with explicit datatype mapping ({@link cz.cvut.kbss.ontodriver.model.Literal}).
  * <p>
  * The attribute value then represents the lexical form of the literal and should be a {@code String}.
+ * <p>
+ * Note that the conversion to attribute value does not perform any validation regarding match between the value and the specified datatype IRI.
+ * So, for example, a value read from the repository as {@code Integer} will be mapped by this converter to an attribute with
+ * datatype {@code xsd:boolean} without any exceptions.
  */
 public class ToRdfLiteralConverter implements ConverterWrapper<String, Object> {
 
@@ -33,7 +37,6 @@ public class ToRdfLiteralConverter implements ConverterWrapper<String, Object> {
         if (value instanceof LangString) {
             return ((LangString) value).getValue();
         }
-        // TODO Verify datatype match?
         return value.toString();
     }
 
