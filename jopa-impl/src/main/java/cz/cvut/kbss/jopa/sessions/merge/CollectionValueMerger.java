@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -37,9 +38,9 @@ class CollectionValueMerger implements ValueMerger {
     }
 
     @Override
-    public void mergeValue(FieldSpecification<?, ?> att, Object target, Object originalValue, Object mergedValue,
-                           Descriptor attributeDescriptor) {
-        final Collection<?> mergedCol = (Collection<?>) mergedValue;
+    public void mergeValue(Object target, ChangeRecord changeRecord, Descriptor attributeDescriptor) {
+        final FieldSpecification<?, ?> att = changeRecord.getAttribute();
+        final Collection<?> mergedCol = (Collection<?>) changeRecord.getNewValue();
         if (mergedCol == null) {
             EntityPropertiesUtils.setFieldValue(att.getJavaField(), target, null);
             return;

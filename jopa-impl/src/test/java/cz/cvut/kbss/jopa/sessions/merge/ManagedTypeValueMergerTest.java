@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,18 +24,24 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import org.junit.Before;
-import org.junit.Test;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ManagedTypeValueMergerTest {
 
     @Mock
@@ -50,9 +56,8 @@ public class ManagedTypeValueMergerTest {
 
     private ManagedTypeValueMerger merger;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         when(uow.getMetamodel()).thenReturn(metamodel);
@@ -74,7 +79,7 @@ public class ManagedTypeValueMergerTest {
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
         when(uow.readObject(OWLClassA.class, merged.getUri(), descriptor)).thenReturn(orig);
 
-        merger.mergeValue(refASpec, target, null, merged, descriptor);
+        merger.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
         verify(uow).readObject(OWLClassA.class, merged.getUri(), descriptor);
         assertSame(orig, target.getOwlClassA());
     }
@@ -83,7 +88,7 @@ public class ManagedTypeValueMergerTest {
     public void mergeValueSetsValueDirectlyWhenItIsNull() {
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
         target.setOwlClassA(Generators.generateOwlClassAInstance());
-        merger.mergeValue(refASpec, target, target.getOwlClassA(), null, descriptor);
+        merger.mergeValue(target, new ChangeRecordImpl(refASpec, null), descriptor);
         assertNull(target.getOwlClassA());
     }
 
@@ -93,7 +98,7 @@ public class ManagedTypeValueMergerTest {
         target.setOwlClassA(Generators.generateOwlClassAInstance());
         final OWLClassA merged = Generators.generateOwlClassAInstance();
 
-        merger.mergeValue(refASpec, target, target.getOwlClassA(), merged, descriptor);
+        merger.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
         assertSame(merged, target.getOwlClassA());
     }
 
@@ -105,7 +110,7 @@ public class ManagedTypeValueMergerTest {
         merged.setUri(null);
         when(uow.readObject(any(), isNull(), any())).thenThrow(new NullPointerException());
 
-        merger.mergeValue(refASpec, target, target.getOwlClassA(), merged, descriptor);
+        merger.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
         assertSame(merged, target.getOwlClassA());
     }
 }

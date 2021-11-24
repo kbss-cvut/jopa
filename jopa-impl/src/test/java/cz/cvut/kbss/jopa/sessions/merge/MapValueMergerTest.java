@@ -20,17 +20,23 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import org.junit.Before;
-import org.junit.Test;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.HashMap;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+@ExtendWith({MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class MapValueMergerTest {
 
     @Mock
@@ -42,9 +48,8 @@ public class MapValueMergerTest {
 
     private MapValueMerger merger;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         this.descriptor = new EntityDescriptor();
@@ -67,7 +72,7 @@ public class MapValueMergerTest {
         merged.getProperties().get(newKey).add(vOne);
         merged.getProperties().get(newKey).add(vTwo);
 
-        merger.mergeValue(propertiesSpec, orig, orig.getProperties(), merged.getProperties(), descriptor);
+        merger.mergeValue(orig, new ChangeRecordImpl(propertiesSpec, merged.getProperties()), descriptor);
         assertEquals(merged.getProperties(), orig.getProperties());
     }
 
@@ -78,7 +83,7 @@ public class MapValueMergerTest {
         final OWLClassB merged = new OWLClassB(orig.getUri());
         merged.setProperties(null);
 
-        merger.mergeValue(propertiesSpec, orig, orig.getProperties(), merged.getProperties(), descriptor);
+        merger.mergeValue(orig, new ChangeRecordImpl(propertiesSpec, merged.getProperties()), descriptor);
         assertNull(orig.getProperties());
     }
 }

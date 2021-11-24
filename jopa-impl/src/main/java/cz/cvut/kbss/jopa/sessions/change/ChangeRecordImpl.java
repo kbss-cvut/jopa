@@ -21,7 +21,7 @@ public class ChangeRecordImpl implements ChangeRecord {
 
     private final FieldSpecification<?, ?> attribute;
 
-    private final Object newValue;
+    private Object newValue;
 
     private boolean preventsCaching;
 
@@ -34,6 +34,11 @@ public class ChangeRecordImpl implements ChangeRecord {
     @Override
     public Object getNewValue() {
         return newValue;
+    }
+
+    @Override
+    public void setNewValue(Object value) {
+        this.newValue = value;
     }
 
     @Override

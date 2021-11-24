@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,20 +15,20 @@
 package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 
 @FunctionalInterface
 public interface ValueMerger {
 
     /**
-     * Merges new value of the specified field into the target object.
+     * Merges new value specified by the change record into the target object.
+     * <p>
+     * Note that the change record may be modified during the merge (e.g., in case the new value is a detached instance of a managed type and
+     * a corresponding object needs to be loaded from the underlying repository).
      *
-     * @param att                 The attribute to merge
      * @param target              Target of the merge
-     * @param originalValue       Original value of the field
-     * @param mergedValue         The value to merge into the field
+     * @param changeRecord        Description of the change (including the new value)
      * @param attributeDescriptor Specifies context of the merged attribute
      */
-    void mergeValue(FieldSpecification<?, ?> att, Object target, Object originalValue, Object mergedValue,
-                    Descriptor attributeDescriptor);
+    void mergeValue(Object target, ChangeRecord changeRecord, Descriptor attributeDescriptor);
 }

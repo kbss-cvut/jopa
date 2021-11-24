@@ -15,7 +15,6 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.merge.DefaultValueMerger;
-import cz.cvut.kbss.jopa.sessions.merge.ValueMerger;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
@@ -25,7 +24,7 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
  */
 class RefreshInstanceMerger {
 
-    private final ValueMerger merger;
+    private final DefaultValueMerger merger;
 
     private final IndirectWrapperHelper indirectWrapperHelper;
 
@@ -46,12 +45,12 @@ class RefreshInstanceMerger {
             final FieldSpecification<?, ?> att = change.getAttribute();
             final Object sourceValue = EntityPropertiesUtils.getAttributeValue(att, source);
             if (sourceValue instanceof IndirectCollection) {
-                final IndirectCollection col = (IndirectCollection) sourceValue;
+                final IndirectCollection<?> col = (IndirectCollection<?>) sourceValue;
                 final Object ic = indirectWrapperHelper
                         .createIndirectWrapper(col.unwrap(), target, att.getJavaField());
-                merger.mergeValue(att, target, null, ic, null);
+                merger.mergeValue(att, target, ic);
             } else {
-                merger.mergeValue(att, target, null, sourceValue, null);
+                merger.mergeValue(att, target, sourceValue);
             }
         }
     }
