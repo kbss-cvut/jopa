@@ -57,7 +57,7 @@ public class CollectionValueMergerTest {
 
     private Descriptor descriptor;
 
-    private CollectionValueMerger merger;
+    private CollectionValueMerger sut;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -74,7 +74,7 @@ public class CollectionValueMergerTest {
         });
 
         this.descriptor = new EntityDescriptor();
-        this.merger = new CollectionValueMerger(uow, new ManagedTypeValueMerger(uow));
+        this.sut = new CollectionValueMerger(uow, new ManagedTypeValueMerger(uow));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class CollectionValueMergerTest {
         final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
         final FieldSpecification<? super OWLClassA, ?> typesSpec = et.getTypes();
 
-        merger.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
         assertTrue(orig.getTypes().contains(addedType));
         assertFalse(orig.getTypes().contains(removedType));
     }
@@ -101,7 +101,7 @@ public class CollectionValueMergerTest {
         final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
         final FieldSpecification<? super OWLClassA, ?> typesSpec = et.getTypes();
 
-        merger.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
         assertNotNull(orig.getTypes());
         assertEquals(orig.getTypes(), merge.getTypes());
     }
@@ -114,7 +114,7 @@ public class CollectionValueMergerTest {
         final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
         final FieldSpecification<? super OWLClassA, ?> typesSpec = et.getTypes();
 
-        merger.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
         assertNull(orig.getTypes());
     }
 
@@ -146,7 +146,7 @@ public class CollectionValueMergerTest {
         final FieldSpecification<? super OWLClassF, ?> att = et
                 .getFieldSpecification(OWLClassF.getSimpleSetField().getName());
 
-        merger.mergeValue(orig, new ChangeRecordImpl(att, merged.getSimpleSet()), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(att, merged.getSimpleSet()), descriptor);
         assertEquals(merged.getSimpleSet().size(), orig.getSimpleSet().size());
         merged.getSimpleSet().forEach(a -> verify(uow).readObject(OWLClassA.class, a.getUri(), descriptor));
     }
@@ -162,7 +162,7 @@ public class CollectionValueMergerTest {
         final FieldSpecification<? super OWLClassF, ?> att = et
                 .getFieldSpecification(OWLClassF.getSimpleSetField().getName());
 
-        merger.mergeValue(orig, new ChangeRecordImpl(att, merged.getSimpleSet()), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(att, merged.getSimpleSet()), descriptor);
         assertNotNull(orig.getSimpleSet());
         assertTrue(orig.getSimpleSet().isEmpty());
     }
@@ -190,7 +190,7 @@ public class CollectionValueMergerTest {
         final FieldSpecification<? super OWLClassC, ?> att = et
                 .getFieldSpecification(OWLClassC.getRefListField().getName());
 
-        merger.mergeValue(orig, new ChangeRecordImpl(att, merged.getReferencedList()), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(att, merged.getReferencedList()), descriptor);
         assertEquals(merged.getReferencedList().size(), orig.getReferencedList().size());
         merged.getReferencedList().forEach(a -> verify(uow).readObject(OWLClassA.class, a.getUri(), descriptor));
     }

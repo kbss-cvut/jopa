@@ -21,8 +21,8 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -52,9 +51,9 @@ public class ManagedTypeValueMergerTest {
 
     private Descriptor descriptor;
 
-    private FieldSpecification<? super OWLClassD, ?> refASpec;
+    private FieldSpecification<OWLClassD, OWLClassA> refASpec;
 
-    private ManagedTypeValueMerger merger;
+    private ManagedTypeValueMerger sut;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -66,10 +65,9 @@ public class ManagedTypeValueMergerTest {
             return metamodel.entity(arg) != null;
         });
 
-        final EntityType<OWLClassD> etD = metamodel.entity(OWLClassD.class);
-        this.refASpec = etD.getFieldSpecification(OWLClassD.getOwlClassAField().getName());
+        this.refASpec = mocks.forOwlClassD().owlClassAAtt();
         this.descriptor = new EntityDescriptor();
-        this.merger = new ManagedTypeValueMerger(uow);
+        this.sut = new ManagedTypeValueMerger(uow);
     }
 
     @Test
@@ -79,7 +77,7 @@ public class ManagedTypeValueMergerTest {
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
         when(uow.readObject(OWLClassA.class, merged.getUri(), descriptor)).thenReturn(orig);
 
-        merger.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
+        sut.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
         verify(uow).readObject(OWLClassA.class, merged.getUri(), descriptor);
         assertSame(orig, target.getOwlClassA());
     }
@@ -88,7 +86,7 @@ public class ManagedTypeValueMergerTest {
     public void mergeValueSetsValueDirectlyWhenItIsNull() {
         final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
         target.setOwlClassA(Generators.generateOwlClassAInstance());
-        merger.mergeValue(target, new ChangeRecordImpl(refASpec, null), descriptor);
+        sut.mergeValue(target, new ChangeRecordImpl(refASpec, null), descriptor);
         assertNull(target.getOwlClassA());
     }
 
@@ -98,7 +96,7 @@ public class ManagedTypeValueMergerTest {
         target.setOwlClassA(Generators.generateOwlClassAInstance());
         final OWLClassA merged = Generators.generateOwlClassAInstance();
 
-        merger.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
+        sut.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
         assertSame(merged, target.getOwlClassA());
     }
 
@@ -110,7 +108,22 @@ public class ManagedTypeValueMergerTest {
         merged.setUri(null);
         when(uow.readObject(any(), isNull(), any())).thenThrow(new NullPointerException());
 
-        merger.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
+        sut.mergeValue(target, new ChangeRecordImpl(refASpec, merged), descriptor);
         assertSame(merged, target.getOwlClassA());
+    }
+
+    @Test
+    void mergeReplacesNewValueInChangeRecordWhenItIsReadFromUoW() {
+        final OWLClassA orig = Generators.generateOwlClassAInstance();
+        final OWLClassA merged = Generators.generateOwlClassAInstance();
+        final OWLClassA loaded = new OWLClassA(merged);
+        final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
+        target.setOwlClassA(orig);
+        when(uow.readObject(OWLClassA.class, merged.getUri(), descriptor)).thenReturn(loaded);
+        final ChangeRecord changeRecord = new ChangeRecordImpl(refASpec, merged);
+
+        sut.mergeValue(target, changeRecord, descriptor);
+        assertEquals(loaded, target.getOwlClassA());
+        assertEquals(loaded, changeRecord.getNewValue());
     }
 }

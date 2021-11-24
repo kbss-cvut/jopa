@@ -48,15 +48,16 @@ class CollectionValueMerger implements ValueMerger {
 
         final Collection<Object> newValue = CollectionFactory
                 .createDefaultCollection(CollectionType.fromClass(att.getJavaType()));
-        boolean elemTypeManaged = false;
-        if (att instanceof PluralAttribute) {
-            elemTypeManaged = uow.isEntityType(((PluralAttribute) att).getBindableJavaType());
-        }
+        boolean elemTypeManaged = isElementTypeManaged(att);
         for (Object item : mergedCol) {
             newValue.add(elemTypeManaged ? managedTypeMerger.getValueToSet(item, attributeDescriptor) : item);
         }
         extendModuleExtractionSignature(att, newValue);
         EntityPropertiesUtils.setFieldValue(att.getJavaField(), target, newValue);
+    }
+
+    private boolean isElementTypeManaged(FieldSpecification<?, ?> att) {
+        return att instanceof PluralAttribute && uow.isEntityType(((PluralAttribute<?, ?, ?>) att).getBindableJavaType());
     }
 
     private void extendModuleExtractionSignature(FieldSpecification<?, ?> att, Collection<?> value) {

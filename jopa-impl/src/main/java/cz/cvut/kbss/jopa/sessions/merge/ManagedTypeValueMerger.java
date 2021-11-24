@@ -32,6 +32,8 @@ class ManagedTypeValueMerger implements ValueMerger {
         final Object mergedValue = changeRecord.getNewValue();
         final Object toSet = getValueToSet(mergedValue, attributeDescriptor);
         EntityPropertiesUtils.setFieldValue(changeRecord.getAttribute().getJavaField(), target, toSet);
+        // Replace the value in the change record as the mergedValue may not have been managed
+        changeRecord.setNewValue(toSet);
     }
 
     Object getValueToSet(Object mergedValue, Descriptor descriptor) {
