@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -20,12 +18,14 @@ import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class DataPropertyAttributesTest {
 
     @Mock
@@ -39,7 +39,6 @@ class DataPropertyAttributesTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         doAnswer(invocation -> invocation.getArguments()[0]).when(typeBuilderContext).resolveNamespace(anyString());
     }
 
@@ -83,7 +82,6 @@ class DataPropertyAttributesTest {
     @Test
     void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        when(typeBuilderContext.getPuLanguage()).thenReturn("en");
         sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
     }
@@ -93,6 +91,7 @@ class DataPropertyAttributesTest {
         final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassM.getExplicitDatatypeField(), metamodelBuilder, String.class);
         assertNotNull(sut.getDatatype());
-        assertEquals(OWLClassM.getExplicitDatatypeField().getAnnotation(OWLDataProperty.class).datatype(), sut.getDatatype());
+        assertEquals(OWLClassM.getExplicitDatatypeField().getAnnotation(OWLDataProperty.class)
+                .datatype(), sut.getDatatype());
     }
 }

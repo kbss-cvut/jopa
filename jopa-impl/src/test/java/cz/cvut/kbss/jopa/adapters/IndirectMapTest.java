@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.adapters;
 
@@ -20,11 +18,11 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class IndirectMapTest {
 
     private static OWLClassB owner;
@@ -49,15 +48,13 @@ class IndirectMapTest {
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
         owner = new OWLClassB();
-        owner.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityB"));
+        owner.setUri(Generators.createIndividualIdentifier());
         ownerField = OWLClassB.getPropertiesField();
         backupMap = Generators.generateStringProperties(15, 15);
     }
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         this.map = new HashMap<>();
         map.putAll(backupMap);
         this.sut = new IndirectMap<>(owner, ownerField, uow, map);
@@ -76,7 +73,8 @@ class IndirectMapTest {
 
     @Test
     void testPut() {
-        final String key = "http://krizik.felk.cvut.cz/ontologies/properties/p";
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
+        final String key = Generators.createPropertyIdentifier().toString();
         final String value = "someDataPropertyValue";
         sut.put(key, Collections.singleton(value));
         verify(uow).attributeChanged(owner, ownerField);
@@ -85,6 +83,7 @@ class IndirectMapTest {
 
     @Test
     void testRemove() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final String key = map.keySet().iterator().next();
         sut.remove(key);
         verify(uow).attributeChanged(owner, ownerField);
@@ -93,6 +92,7 @@ class IndirectMapTest {
 
     @Test
     void testPutAll() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final Map<String, Set<String>> newMap = Generators.generateStringProperties();
         sut.putAll(newMap);
         verify(uow).attributeChanged(owner, ownerField);
@@ -103,6 +103,7 @@ class IndirectMapTest {
 
     @Test
     void testClear() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.clear();
         verify(uow).attributeChanged(owner, ownerField);
         assertTrue(map.isEmpty());

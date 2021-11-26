@@ -1,6 +1,7 @@
 **/target
 **/*.iml
 **/.idea
+.gradle
 **/results
 **/testResults
 **/example02-jopa-owlapi/repository.owl

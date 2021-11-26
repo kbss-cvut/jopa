@@ -24,8 +24,10 @@ import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -38,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unused")
 class MetamodelBuilderTest {
 
@@ -45,11 +48,6 @@ class MetamodelBuilderTest {
     private PersistenceUnitClassFinder finderMock;
 
     private final MetamodelBuilder builder = new MetamodelBuilder(new Configuration());
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void buildsMetamodelOfEntityWithSingleNamespaceDeclaredOnClass() {

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -36,10 +34,13 @@ import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -49,6 +50,8 @@ import java.util.HashSet;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class EntityManagerImplTest {
 
     private static final String SELECT_QUERY = "SELECT * WHERE { ?x a <" + Vocabulary.c_OwlClassA + "> . }";
@@ -73,7 +76,6 @@ class EntityManagerImplTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final ServerSessionStub serverSessionMock = spy(new ServerSessionStub(connectorMock));
         when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionMock.getLiveObjectCache()).thenReturn(new DisabledCacheManager());
@@ -442,9 +444,9 @@ class EntityManagerImplTest {
         cTwo.one = cOne;
         metamodelForCascadingTest();
         doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
-                                                     .getState(cOne);
+                .getState(cOne);
         doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
-                                                     .getState(cTwo);
+                .getState(cTwo);
         doReturn(cOne).when(uow).mergeDetached(eq(cOne), any());
         doReturn(cTwo).when(uow).mergeDetached(eq(cTwo), any());
         doReturn(cOne).when(uow).getCloneForOriginal(cOne);
@@ -467,9 +469,9 @@ class EntityManagerImplTest {
         cloneOne.two = cloneTwo;
         cloneTwo.one = cloneOne;
         doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
-                                                 .getState(cloneOne);
+                .getState(cloneOne);
         doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
-                                                 .getState(cloneTwo);
+                .getState(cloneTwo);
         doReturn(cOne).when(uow).getOriginal(cloneOne);
         doReturn(cTwo).when(uow).getOriginal(cloneTwo);
         doNothing().when(uow).removeObject(any());
@@ -482,7 +484,7 @@ class EntityManagerImplTest {
     void isLoadedReturnsTrueForEagerlyLoadedAttributeOfManagedInstance() throws Exception {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         doAnswer((invocationOnMock) -> a).when(uow)
-                                         .readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
+                .readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
         doReturn(LoadState.LOADED).when(uow).isLoaded(a, OWLClassA.getStrAttField().getName());
         final OWLClassA found = em.find(OWLClassA.class, a.getUri());
         assertTrue(em.isLoaded(found, OWLClassA.getStrAttField().getName()));
@@ -501,7 +503,7 @@ class EntityManagerImplTest {
         inst.setUri(Generators.createIndividualIdentifier());
         inst.setOwlClassE(new OWLClassE());
         doAnswer((invocationOnMock) -> inst).when(uow)
-                                            .readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
+                .readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
         doReturn(LoadState.LOADED).when(uow).isLoaded(inst, OWLClassK.getOwlClassEField().getName());
         final OWLClassK found = em.find(OWLClassK.class, inst.getUri());
         assertTrue(em.isLoaded(found, OWLClassK.getOwlClassEField().getName()));
