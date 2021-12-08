@@ -26,10 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 
 public class CloneBuilderImpl implements CloneBuilder {
@@ -55,8 +52,10 @@ public class CloneBuilderImpl implements CloneBuilder {
     public Object buildClone(Object original, CloneConfiguration cloneConfiguration) {
         Objects.requireNonNull(original);
         Objects.requireNonNull(cloneConfiguration);
-        // TODO Replace with a lambda after migration to new SLF4J
-        LOG.trace("Cloning object {}.", stringify(original));
+        if (LOG.isTraceEnabled()) {
+            // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
+            LOG.trace("Cloning object {}.", stringify(original));
+        }
         return buildCloneImpl(null, null, original, cloneConfiguration);
     }
 
@@ -65,8 +64,10 @@ public class CloneBuilderImpl implements CloneBuilder {
         if (cloneOwner == null || original == null || descriptor == null) {
             throw new NullPointerException();
         }
-        // TODO Replace with a lambda after migration to new SLF4J
-        LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
+        if (LOG.isTraceEnabled()) {
+            // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
+            LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
+        }
         return buildCloneImpl(cloneOwner, clonedField, original, new CloneConfiguration(descriptor));
     }
 
@@ -264,8 +265,8 @@ public class CloneBuilderImpl implements CloneBuilder {
     private String stringify(Object object) {
         assert object != null;
         return isTypeManaged(object.getClass()) ?
-               object.getClass().getSimpleName() + "<" + EntityPropertiesUtils.getIdentifier(object, getMetamodel()) +
-                       ">" : object.toString();
+                object.getClass().getSimpleName() + "<" + EntityPropertiesUtils.getIdentifier(object, getMetamodel()) +
+                        ">" : object.toString();
     }
 
     private static Set<Class<?>> getImmutableTypes() {
@@ -284,8 +285,13 @@ public class CloneBuilderImpl implements CloneBuilder {
         ret.add(URL.class);
         ret.add(LocalDate.class);
         ret.add(LocalDateTime.class);
+        ret.add(LocalTime.class);
         ret.add(ZonedDateTime.class);
+        ret.add(OffsetDateTime.class);
+        ret.add(OffsetTime.class);
         ret.add(Instant.class);
+        ret.add(Duration.class);
+        ret.add(Period.class);
         return ret;
     }
 
