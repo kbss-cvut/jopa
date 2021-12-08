@@ -24,7 +24,6 @@ import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumMap;
@@ -137,15 +136,6 @@ public class DatatypeTransformer {
                     return Boolean.parseBoolean(literal.getLiteral());
                 case XSD_ANY_URI:
                     return URI.create(literal.getLiteral());
-                case XSD_DATE_TIME_STAMP:
-                case XSD_DATE_TIME:
-                    try {
-                        return new SimpleDateFormat(DATE_TIME_FORMAT).parse(literal.getLiteral());
-                    } catch (ParseException e) {
-                        throw new IllegalArgumentException(
-                                "The date time '" + literal.getLiteral() + "' cannot be parsed using format " +
-                                        DATE_TIME_FORMAT + ".");
-                    }
                 default:
                     break;
             }

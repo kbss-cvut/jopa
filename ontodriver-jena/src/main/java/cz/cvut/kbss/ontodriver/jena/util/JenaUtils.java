@@ -18,7 +18,6 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
@@ -73,9 +72,6 @@ public class JenaUtils {
         if (literal.getDatatype().equals(XSDDatatype.XSDlong)) {
             // This is because Jena returns XSD:long values as Integers, when they fit. But we don't want this.
             return literal.getLong();
-        } else if (literal.getDatatype().equals(XSDDatatype.XSDdateTime)) {
-            // Jena does not like Java Date
-            return ((XSDDateTime) literal.getValue()).asCalendar().getTime();
         }
         final Object result = literal.getValue();
         if (result.getClass().getName().startsWith("org.apache.jena")) {

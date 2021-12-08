@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.config.Constants;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
@@ -185,8 +186,10 @@ public class PropertiesHandlerTest {
     }
 
     private void verifyAddedDataPropertyAxioms(Collection<Value<?>> expectedValues) {
-        ontology.dataPropertyAssertionAxioms(dataFactory.getOWLNamedIndividual(PK.toString())).forEach(
-                ax -> assertTrue(expectedValues.contains(new Value<>(OwlapiUtils.owlLiteralToValue(ax.getObject())))));
+        expectedValues.forEach(v -> ontology.containsAxiom(dataFactory.getOWLDataPropertyAssertionAxiom(
+                dataFactory.getOWLDataProperty(IRI.create(DP_ONE)),
+                dataFactory.getOWLNamedIndividual(IRI.create(INDIVIDUAL.getIdentifier())),
+                OwlapiUtils.createOWLLiteralFromValue(v.getValue(), Constants.DEFAULT_LANGUAGE))));
     }
 
     @Test
@@ -281,7 +284,7 @@ public class PropertiesHandlerTest {
 
         propertiesHandler.removeProperties(INDIVIDUAL, toRemove);
         assertTrue(ontology.dataPropertyAssertionAxioms(dataFactory.getOWLNamedIndividual(PK.toString()))
-                           .collect(Collectors.toSet()).isEmpty());
+                .collect(Collectors.toSet()).isEmpty());
     }
 
     @Test

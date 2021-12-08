@@ -19,8 +19,10 @@ import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
+import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -55,17 +57,19 @@ class ConverterResolverTest {
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Integer.class));
-        assertTrue(result.get() instanceof ToIntegerConverter);
+        assertThat(result.get(), instanceOf(ToIntegerConverter.class));
     }
 
     @Test
-    void resolveConverterReturnsEmptyOptionalForDataPropertyWithDateTarget() throws Exception {
+    void resolveConverterReturnsBuiltInDateConverterForDataPropertyWithDateTarget() throws Exception {
         final Field field = OWLClassM.getDateAttributeField();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(Date.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
-        assertFalse(result.isPresent());
+        assertTrue(result.isPresent());
+        assertTrue(result.get().supportsAxiomValueType(Literal.class));
+        assertThat(result.get(), instanceOf(DateConverter.class));
     }
 
     @Test
@@ -76,7 +80,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(Instant.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof InstantConverter);
+        assertThat(result.get(), instanceOf(InstantConverter.class));
     }
 
     @Test
@@ -88,7 +92,7 @@ class ConverterResolverTest {
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Integer.class));
-        assertTrue(result.get() instanceof ToIntegerConverter);
+        assertThat(result.get(), instanceOf(ToIntegerConverter.class));
     }
 
     @Test
@@ -99,7 +103,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof EnumConverter);
+        assertThat(result.get(), instanceOf(EnumConverter.class));
         assertTrue(result.get().supportsAxiomValueType(String.class));
     }
 
@@ -112,7 +116,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ToLexicalFormConverter);
+        assertThat(result.get(), instanceOf(ToLexicalFormConverter.class));
     }
 
     @Test
@@ -123,7 +127,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ObjectConverter);
+        assertThat(result.get(), instanceOf(ObjectConverter.class));
     }
 
     private static class ClassWithObjectAnnotation {
@@ -142,7 +146,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ObjectConverter);
+        assertThat(result.get(), instanceOf(ObjectConverter.class));
         final ObjectConverter objectConverter = (ObjectConverter) result.get();
         assertTrue(objectConverter.doesPreferMultilingualString());
     }

@@ -66,8 +66,6 @@ public final class SesameUtils {
             return literal.shortValue();
         } else if (datatype.equals(XSD.BYTE) || datatype.equals(XSD.UNSIGNED_BYTE)) {
             return literal.byteValue();
-        } else if (datatype.equals(XSD.DATE) || datatype.equals(XSD.DATETIME)) {
-            return literal.calendarValue().toGregorianCalendar().getTime();
         } else {
             return new cz.cvut.kbss.ontodriver.model.Literal(literal.getLabel(), datatype.stringValue());
         }

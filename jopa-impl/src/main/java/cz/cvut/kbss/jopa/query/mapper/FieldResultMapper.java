@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
+import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -85,7 +85,7 @@ class FieldResultMapper {
         }
         try {
             return DatatypeTransformer.transform(queryValue, fieldSpec.getJavaType());
-        } catch (UnsupportedTypeTransformation e) {
+        } catch (UnsupportedTypeTransformationException e) {
             throw new SparqlResultMappingException(
                     String.format("Value %s cannot be assigned (or transformed) to field of type %s.", queryValue,
                             fieldSpec.getJavaType()));
