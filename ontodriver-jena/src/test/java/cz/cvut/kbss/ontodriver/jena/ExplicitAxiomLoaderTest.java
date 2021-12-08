@@ -20,12 +20,16 @@ import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.XSD;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -116,7 +120,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         assertions.forEach(a -> {
             final Property p = createProperty(a.getIdentifier().toString());
             IntStream.range(0, 2).mapToObj(i -> createResource(Generator.generateUri().toString()))
-                     .forEach(r -> result.add(createStatement(SUBJECT_RES, p, r)));
+                    .forEach(r -> result.add(createStatement(SUBJECT_RES, p, r)));
         });
         return result;
     }
@@ -475,7 +479,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    void findLoadsDataPropertyWithXSDDateTimeValueAsDate() {
+    void findLoadsDataPropertyWithXSDDateTimeValueAsRDFLiteral() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -489,7 +493,8 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
         final Axiom<?> axiom = result.iterator().next();
-        assertEquals(value, axiom.getValue().getValue());
+        assertEquals(new Literal(ZonedDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT), XSD.dateTime.getURI()),
+                axiom.getValue().getValue());
     }
 
     @Test

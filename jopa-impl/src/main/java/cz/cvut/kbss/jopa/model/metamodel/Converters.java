@@ -14,12 +14,14 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -38,6 +40,7 @@ class Converters {
         defaultConverters.put(LocalDateTime.class, new LocalDateTimeConverter());
         defaultConverters.put(Instant.class, new InstantConverter());
         defaultConverters.put(ZonedDateTime.class, new ZonedDateTimeConverter());
+        defaultConverters.put(Date.class, new DateConverter());
         defaultConverters.put(Short.class, new ToShortConverter());
         defaultConverters.put(Integer.class, new ToIntegerConverter());
         defaultConverters.put(Long.class, new ToLongConverter());

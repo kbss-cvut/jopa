@@ -29,7 +29,6 @@ import org.semanticweb.owlapi.model.OWLObject;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -421,15 +420,13 @@ public class SelectResultSetTest {
 
     @Test
     public void getTypedObjectOnLiteralReturnsCastedLiteral() throws Exception {
-        final Date date = new Date();
         SelectResultSet resultSet = resultSet(
-                generator.generate(Arrays.asList("a", "b", "c", "d", "e"), Collections.singletonList(
-                        Arrays.asList("One", 117, true, 3.14D, date))));
+                generator.generate(Arrays.asList("a", "b", "c", "d"), Collections.singletonList(
+                        Arrays.asList("One", 117, true, 3.14D))));
         resultSet.next();
         assertEquals("One", resultSet.getObject(0, String.class));
         assertEquals(117, resultSet.getObject("b", Integer.class).intValue());
         assertTrue(resultSet.getObject(2, Boolean.class));
-        assertEquals(date, resultSet.getObject("e", Date.class));
     }
 
     @Test

@@ -12,7 +12,7 @@
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
+import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
 
 /**
  * Built-in converter for mapping to/from enum-valued attributes.
@@ -45,7 +45,7 @@ public class EnumConverter<E extends Enum<E>> implements ConverterWrapper<E, Obj
         try {
             return Enum.valueOf(enumType, ToLexicalFormConverter.INSTANCE.convertToAttribute(value));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedTypeTransformation("Unable to transform value " + value + " to enum " + enumType, e);
+            throw new UnsupportedTypeTransformationException("Unable to transform value " + value + " to enum " + enumType, e);
         }
     }
 }

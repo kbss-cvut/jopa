@@ -13,7 +13,7 @@
 package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
+import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +38,7 @@ class DatatypeTransformerTest {
     @Test
     void transformThrowsUnsupportedTypeConversionWhenNoTransformerIsFound() {
         final Integer value = 117;
-        final UnsupportedTypeTransformation ex = assertThrows(UnsupportedTypeTransformation.class,
+        final UnsupportedTypeTransformationException ex = assertThrows(UnsupportedTypeTransformationException.class,
                 () -> DatatypeTransformer.transform(value, URL.class));
         assertEquals(String.format("Cannot transform value %s of type %s to target type %s.", value, Integer.class,
                 URL.class), ex.getMessage());
@@ -68,7 +68,7 @@ class DatatypeTransformerTest {
     @Test
     void transformThrowsUnsupportedTypeConversionWhenTargetTypeDoesNotHaveMatchingConstructor() {
         final String value = "http://onto.fel.cvut.cz";
-        final UnsupportedTypeTransformation ex = assertThrows(UnsupportedTypeTransformation.class,
+        final UnsupportedTypeTransformationException ex = assertThrows(UnsupportedTypeTransformationException.class,
                 () -> DatatypeTransformer.transform(value, OWLClassA.class));
         assertEquals(String.format("Cannot transform value %s of type %s to target type %s.", value, String.class,
                 OWLClassA.class), ex.getMessage());

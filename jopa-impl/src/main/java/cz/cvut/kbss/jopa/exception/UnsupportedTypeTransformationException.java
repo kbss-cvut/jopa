@@ -19,13 +19,13 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 /**
  * Thrown when it is not possible to execute a type transformation.
  */
-public class UnsupportedTypeTransformation extends OWLPersistenceException {
+public class UnsupportedTypeTransformationException extends OWLPersistenceException {
 
-    public UnsupportedTypeTransformation(String message) {
+    public UnsupportedTypeTransformationException(String message) {
         super(message);
     }
 
-    public UnsupportedTypeTransformation(String message, Throwable cause) {
+    public UnsupportedTypeTransformationException(String message, Throwable cause) {
         super(message, cause);
     }
 }

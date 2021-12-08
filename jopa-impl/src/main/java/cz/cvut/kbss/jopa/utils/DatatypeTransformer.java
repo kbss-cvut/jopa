@@ -12,7 +12,7 @@
  */
 package cz.cvut.kbss.jopa.utils;
 
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
+import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
@@ -93,7 +93,7 @@ public class DatatypeTransformer {
             return targetType.cast(TRANSFORMERS.get(p).apply(value));
         }
         final Optional<T> result = tryConversionUsingConstructor(value, targetType);
-        return result.orElseThrow(() -> new UnsupportedTypeTransformation(
+        return result.orElseThrow(() -> new UnsupportedTypeTransformationException(
                 String.format("Cannot transform value %s of type %s to target type %s.", value, value.getClass(),
                         targetType)));
     }

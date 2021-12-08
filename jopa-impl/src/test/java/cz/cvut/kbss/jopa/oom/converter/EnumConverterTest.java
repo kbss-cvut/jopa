@@ -13,7 +13,7 @@
 package cz.cvut.kbss.jopa.oom.converter;
 
 import cz.cvut.kbss.jopa.environment.OWLClassM;
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
+import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,7 +38,7 @@ public class EnumConverterTest {
     @Test
     public void convertToAttributeValueThrowsUnsupportedTypeTransformationForUnknownEnumValue() {
         final EnumConverter<OWLClassM.Severity> sut = new EnumConverter<>(OWLClassM.Severity.class);
-        assertThrows(UnsupportedTypeTransformation.class, () -> sut.convertToAttribute("test"));
+        assertThrows(UnsupportedTypeTransformationException.class, () -> sut.convertToAttribute("test"));
     }
 
     @Test

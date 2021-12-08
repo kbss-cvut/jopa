@@ -72,14 +72,16 @@ public class JenaUtilsTest {
     }
 
     @Test
-    void literalToValueTransformsXSDDatetimeToJavaUtilDate() {
+    void literalToValueTransformsXSDDatetimeToRDFLiteralWithDateTimeType() {
         final Date date = new Date();
         final Calendar cal = GregorianCalendar.getInstance();
         cal.setTime(date);
         final Literal literal = ResourceFactory.createTypedLiteral(cal);
         assertEquals(XSD.dateTime.getURI(), literal.getDatatype().getURI());
         final Object result = JenaUtils.literalToValue(literal);
-        assertEquals(date, result);
+        assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
+        assertEquals(literal.getLexicalForm(), ((cz.cvut.kbss.ontodriver.model.Literal) result).getLexicalForm());
+        assertEquals(literal.getDatatypeURI(), ((cz.cvut.kbss.ontodriver.model.Literal) result).getDatatype());
     }
 
     @Test
