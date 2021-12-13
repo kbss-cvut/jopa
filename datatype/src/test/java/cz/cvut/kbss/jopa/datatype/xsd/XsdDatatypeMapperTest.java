@@ -6,9 +6,8 @@ import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
+import java.net.URI;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -96,5 +95,23 @@ class XsdDatatypeMapperTest {
     void mapReturnsOffsetTimeForXsdTime() {
         final OffsetTime time = OffsetTime.of(12, 45, 15, 0, ZoneOffset.UTC);
         assertEquals(time, map(Literal.from(time.format(DateTimeFormatter.ISO_TIME), XSD.TIME)));
+    }
+
+    @Test
+    void mapReturnsOffsetDateTimeForXsdDateTime() {
+        final OffsetDateTime dateTime = OffsetDateTime.of(2021, 11, 17, 12, 23, 10, 0, ZoneOffset.UTC);
+        assertEquals(dateTime, map(Literal.from(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), XSD.DATETIME)));
+    }
+
+    @Test
+    void mapReturnsDurationForXsdDuration() {
+        final Duration duration = Duration.ofHours(24).plusMinutes(15).plusSeconds(44);
+        assertEquals(duration, map(Literal.from(duration.toString(), XSD.DURATION)));
+    }
+
+    @Test
+    void mapReturnsUriForXsdAnyUri() {
+        final String uri = "https://www.w3.org/TR/xmlschema-2/#anyURI";
+        assertEquals(URI.create(uri), map(Literal.from(uri, XSD.ANY_URI)));
     }
 }

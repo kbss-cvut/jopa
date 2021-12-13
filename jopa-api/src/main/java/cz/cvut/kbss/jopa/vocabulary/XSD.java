@@ -144,6 +144,11 @@ public final class XSD {
      */
     public static final String NORMALIZED_STRING = NAMESPACE + "normalizedString";
 
+    /**
+     * {@code anyURI} XML Schema data type.
+     */
+    public static final String ANY_URI = NAMESPACE + "anyURI";
+
     private XSD() {
         throw new AssertionError();
     }

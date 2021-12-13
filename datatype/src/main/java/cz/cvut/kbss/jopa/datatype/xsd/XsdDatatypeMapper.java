@@ -7,6 +7,7 @@ import cz.cvut.kbss.ontodriver.model.Literal;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -15,11 +16,7 @@ import java.util.Optional;
  * <p>
  * The mapping logic is based on the known <a href="https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html">JAXB</a>/
  * <a href="https://xmlbeans.apache.org/docs/2.0.0/guide/conXMLBeansSupportBuiltInSchemaTypes.html">Apache XML Beans</a>
- * mapping with the following exceptions:
- * <ul>
- *     <li>Java 8 date/time API is utilized</li>
- *     <li>Mapping used by libraries such as Jena/RDF4J/OWL API is taken into account</li>
- * </ul>
+ * mapping with utilization of the Java 8 Date/Time API.
  */
 public class XsdDatatypeMapper implements DatatypeMapper {
 
@@ -62,10 +59,14 @@ public class XsdDatatypeMapper implements DatatypeMapper {
                 case XSD.STRING:
                 case XSD.NORMALIZED_STRING:
                     return Optional.of(value);
+                case XSD.DATETIME:
+                    return Optional.of(XsdDateTimeMapper.map(value));
                 case XSD.DATE:
                     return Optional.of(XsdDateMapper.map(value));
                 case XSD.TIME:
                     return Optional.of(XsdTimeMapper.map(value));
+                case XSD.DURATION:
+                    return Optional.of(XsdDurationMapper.map(value));
                 case XSD.INTEGER:
                 case XSD.NON_NEGATIVE_INTEGER:
                 case XSD.NON_POSITIVE_INTEGER:
@@ -75,10 +76,12 @@ public class XsdDatatypeMapper implements DatatypeMapper {
                     return Optional.of(new BigInteger(value));
                 case XSD.DECIMAL:
                     return Optional.of(new BigDecimal(value));
+                case XSD.ANY_URI:
+                    return Optional.of(URI.create(value));
                 default:
                     return Optional.empty();
             }
-        } catch (NumberFormatException e) {
+        } catch (IllegalArgumentException e) {
             throw new DatatypeMappingException("Unable to map literal " + literal, e);
         }
     }
