@@ -10,12 +10,11 @@
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.sesame;
+package cz.cvut.kbss.ontodriver.sesame.util;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
-import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -139,7 +138,7 @@ class SesameUtilsTest {
 
     @Test
     void getLiteralValueReturnsOntoDriverLiteralForUnsupportedDatatype() {
-        final Literal literal = vf.createLiteral("P1Y", XSD.DURATION);
+        final Literal literal = vf.createLiteral("P1Y", XSD.QNAME);
         final Object result = SesameUtils.getLiteralValue(literal);
         assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
         final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;

@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.util;
 
+import cz.cvut.kbss.jopa.datatype.xsd.XsdDatatypeMapper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
@@ -46,38 +47,12 @@ public final class SesameUtils {
         final IRI datatype = literal.getDatatype();
         assert datatype != null;
 
-        if (datatype.equals(XSD.STRING) || datatype.equals(XSD.NORMALIZEDSTRING)) {
-            return literal.stringValue();
-        } else if (datatype.equals(RDF.LANGSTRING)) {
+        if (datatype.equals(RDF.LANGSTRING)) {
             return new LangString(literal.stringValue(), literal.getLanguage().orElse(null));
-        } else if (isInteger(datatype)) {
-            return literal.intValue();
-        } else if (datatype.equals(XSD.BOOLEAN)) {
-            return literal.booleanValue();
-        } else if (datatype.equals(XSD.LONG) || datatype.equals(XSD.UNSIGNED_LONG)) {
-            return literal.longValue();
-        } else if (datatype.equals(XSD.DECIMAL)) {
-            return literal.decimalValue();
-        } else if (datatype.equals(XSD.FLOAT)) {
-            return literal.floatValue();
-        } else if (datatype.equals(XSD.DOUBLE)) {
-            return literal.doubleValue();
-        } else if (datatype.equals(XSD.SHORT) || datatype.equals(XSD.UNSIGNED_SHORT)) {
-            return literal.shortValue();
-        } else if (datatype.equals(XSD.BYTE) || datatype.equals(XSD.UNSIGNED_BYTE)) {
-            return literal.byteValue();
         } else {
-            return new cz.cvut.kbss.ontodriver.model.Literal(literal.getLabel(), datatype.stringValue());
+            final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(literal.getLabel(), datatype.stringValue());
+            return XsdDatatypeMapper.getInstance().map(lit).orElse(lit);
         }
-    }
-
-    private static boolean isInteger(IRI datatype) {
-        return datatype.equals(XSD.INT) || datatype.equals(XSD.UNSIGNED_INT) ||
-                datatype.equals(XSD.INTEGER)
-                || datatype.equals(XSD.POSITIVE_INTEGER)
-                || datatype.equals(XSD.NON_NEGATIVE_INTEGER)
-                || datatype.equals(XSD.NEGATIVE_INTEGER)
-                || datatype.equals(XSD.NON_POSITIVE_INTEGER);
     }
 
     /**
