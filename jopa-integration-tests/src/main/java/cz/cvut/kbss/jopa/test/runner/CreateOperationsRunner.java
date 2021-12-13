@@ -504,7 +504,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     void persistEntityWithDatatypePropertyCollectionPersistsAllValues() {
-        // TODO
         assertFalse(entityM.getIntegerSet().isEmpty());
         this.em = getEntityManager("PersistEntityWithDatatypePropertyCollection", false);
         em.getTransaction().begin();
