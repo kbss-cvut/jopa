@@ -58,4 +58,17 @@ public class Literal implements Serializable {
     public String toString() {
         return "\"" + lexicalForm + "\"^^<" + datatype + ">";
     }
+
+    /**
+     * Creates a literal instance from the specified lexical form and datatype.
+     * <p>
+     * Convenience factory method alternative to constructor.
+     *
+     * @param lexicalForm Lexical form of the literal
+     * @param datatype    Datatype of the literal
+     * @return Literal instance
+     */
+    public static Literal from(String lexicalForm, String datatype) {
+        return new Literal(lexicalForm, datatype);
+    }
 }
