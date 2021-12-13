@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Test;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
@@ -72,21 +75,22 @@ public class JenaUtilsTest {
     }
 
     @Test
-    void literalToValueTransformsXSDDatetimeToRDFLiteralWithDateTimeType() {
+    void literalToValueTransformsXSDDatetimeToOffsetDateTime() {
         final Date date = new Date();
         final Calendar cal = GregorianCalendar.getInstance();
         cal.setTime(date);
         final Literal literal = ResourceFactory.createTypedLiteral(cal);
         assertEquals(XSD.dateTime.getURI(), literal.getDatatype().getURI());
         final Object result = JenaUtils.literalToValue(literal);
-        assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
-        assertEquals(literal.getLexicalForm(), ((cz.cvut.kbss.ontodriver.model.Literal) result).getLexicalForm());
-        assertEquals(literal.getDatatypeURI(), ((cz.cvut.kbss.ontodriver.model.Literal) result).getDatatype());
+        assertThat(result, instanceOf(OffsetDateTime.class));
+        final OffsetDateTime odtResult = (OffsetDateTime) result;
+        // UTC due to the way Jena handles creation of dateTime literals from java.util.Date
+        assertEquals(OffsetDateTime.ofInstant(date.toInstant(), ZoneId.ofOffset("UTC", ZoneOffset.UTC)), odtResult);
     }
 
     @Test
     void literalToValueTransformsCustomDatatypeLiteralToOntoDriverLiteral() {
-        final Literal literal = ResourceFactory.createTypedLiteral("P1Y", TypeMapper.getInstance().getTypeByName(XSD.duration.getURI()));
+        final Literal literal = ResourceFactory.createTypedLiteral("P1Y", TypeMapper.getInstance().getTypeByName(XSD.gMonth.getURI()));
         final Object result = JenaUtils.literalToValue(literal);
         assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
         final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;

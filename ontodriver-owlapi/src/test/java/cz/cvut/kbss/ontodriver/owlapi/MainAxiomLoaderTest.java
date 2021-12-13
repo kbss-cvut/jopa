@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,6 +30,7 @@ import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.impl.NodeFactory;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
+import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
 import java.util.Collection;
@@ -390,7 +391,10 @@ class MainAxiomLoaderTest {
         final URI dp = Generator.generateUri();
         final int value = 117;
         manager.applyChange(new AddAxiom(imported, dataFactory
-                .getOWLDataPropertyAssertionAxiom(dataFactory.getOWLDataProperty(dp.toString()), individual, value)));
+                .getOWLDataPropertyAssertionAxiom(
+                        dataFactory.getOWLDataProperty(dp.toString()),
+                        individual,
+                        dataFactory.getOWLLiteral(Integer.toString(value), OWL2Datatype.XSD_INT))));
 
         final Collection<Axiom<?>> result =
                 sut.findAxioms(descriptor(Assertion.createDataPropertyAssertion(dp, false)));
@@ -407,7 +411,7 @@ class MainAxiomLoaderTest {
         final int value = 117;
         manager.applyChange(new AddAxiom(imported, dataFactory
                 .getOWLAnnotationAssertionAxiom(dataFactory.getOWLAnnotationProperty(property.toString()),
-                        individual.getIRI(), dataFactory.getOWLLiteral(value))));
+                        individual.getIRI(), dataFactory.getOWLLiteral(Integer.toString(value), OWL2Datatype.XSD_INT))));
 
         final Collection<Axiom<?>> result =
                 sut.findAxioms(descriptor(Assertion.createAnnotationPropertyAssertion(property, false)));

@@ -27,6 +27,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -479,7 +481,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     }
 
     @Test
-    void findLoadsDataPropertyWithXSDDateTimeValueAsRDFLiteral() {
+    void findLoadsDataPropertyWithXSDDateTimeValueAsOffsetDateTime() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
         descriptor.addAssertion(assertion);
@@ -493,7 +495,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         assertEquals(1, result.size());
         final Axiom<?> axiom = result.iterator().next();
-        assertEquals(new Literal(ZonedDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT), XSD.dateTime.getURI()),
+        assertEquals(OffsetDateTime.ofInstant(value.toInstant(), ZoneId.ofOffset("UTC", ZoneOffset.UTC)),
                 axiom.getValue().getValue());
     }
 

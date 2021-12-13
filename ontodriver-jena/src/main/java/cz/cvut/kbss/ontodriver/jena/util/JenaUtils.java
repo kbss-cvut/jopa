@@ -12,12 +12,12 @@
  */
 package cz.cvut.kbss.ontodriver.jena.util;
 
+import cz.cvut.kbss.jopa.datatype.xsd.XsdDatatypeMapper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
@@ -69,15 +69,7 @@ public class JenaUtils {
         if (literal.getDatatype().equals(RDFLangString.rdfLangString)) {
             return new LangString(literal.getString(), literal.getLanguage());
         }
-        if (literal.getDatatype().equals(XSDDatatype.XSDlong)) {
-            // This is because Jena returns XSD:long values as Integers, when they fit. But we don't want this.
-            return literal.getLong();
-        }
-        final Object result = literal.getValue();
-        if (result.getClass().getName().startsWith("org.apache.jena")) {
-            // If the result is a Jena type, it means the datatype does not have a JDK-based counterpart in Jena
-            return new cz.cvut.kbss.ontodriver.model.Literal(literal.getLexicalForm(), literal.getDatatypeURI());
-        }
-        return result;
+        final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(literal.getLexicalForm(), literal.getDatatypeURI());
+        return XsdDatatypeMapper.getInstance().map(lit).orElse(lit);
     }
 }

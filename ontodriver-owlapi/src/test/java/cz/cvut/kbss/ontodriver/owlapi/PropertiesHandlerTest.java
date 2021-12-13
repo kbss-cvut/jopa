@@ -30,6 +30,7 @@ import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
+import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
 import java.net.URL;
@@ -97,9 +98,9 @@ public class PropertiesHandlerTest {
         dataValues.add(100);
         dataValues.add(1000);
         manager.applyChange(new AddAxiom(ontology, dataFactory
-                .getOWLDataPropertyAssertionAxiom(dpOne, individual, 100)));
+                .getOWLDataPropertyAssertionAxiom(dpOne, individual, dataFactory.getOWLLiteral("100", OWL2Datatype.XSD_INT))));
         manager.applyChange(new AddAxiom(ontology, dataFactory
-                .getOWLDataPropertyAssertionAxiom(dpOne, individual, 1000)));
+                .getOWLDataPropertyAssertionAxiom(dpOne, individual, dataFactory.getOWLLiteral("1000", OWL2Datatype.XSD_INT))));
         final OWLDataProperty dpTwo = dataFactory.getOWLDataProperty(IRI.create(DP_TWO));
         dataValues.add("Test");
         dataValues.add("TestTwo");
