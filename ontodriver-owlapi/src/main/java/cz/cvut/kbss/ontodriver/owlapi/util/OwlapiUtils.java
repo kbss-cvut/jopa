@@ -12,14 +12,15 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
+import cz.cvut.kbss.jopa.datatype.xsd.XsdDatatypeMapper;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.Literal;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.config.Constants;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
 import java.net.URL;
@@ -48,12 +49,17 @@ public class OwlapiUtils {
     /**
      * Transforms OWLLiteral to a plain Java object (boxed primitive or date/time).
      *
-     * @param literal The literal to transform
+     * @param owlLiteral The literal to transform
      * @return Transformed value
      * @throws IllegalArgumentException If the literal is of unsupported type
      */
-    public static Object owlLiteralToValue(final OWLLiteral literal) {
-        return DatatypeTransformer.transform(literal);
+    public static Object owlLiteralToValue(final OWLLiteral owlLiteral) {
+        final OWLDatatype datatype = owlLiteral.getDatatype();
+        if (datatype.isBuiltIn() && datatype.getBuiltInDatatype() == OWL2Datatype.RDF_LANG_STRING) {
+            return new LangString(owlLiteral.getLiteral(), owlLiteral.getLang());
+        }
+        final Literal literal = Literal.from(owlLiteral.getLiteral(), owlLiteral.getDatatype().toStringID());
+        return XsdDatatypeMapper.getInstance().map(literal).orElse(literal);
     }
 
     /**

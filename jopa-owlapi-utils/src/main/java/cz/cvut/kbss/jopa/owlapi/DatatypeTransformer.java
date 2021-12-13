@@ -101,7 +101,9 @@ public class DatatypeTransformer {
      *
      * @param literal Literal to transform
      * @return Java object corresponding to the literal
+     * @deprecated Use datatype mappers from the {@code datatype} module instead
      */
+    @Deprecated
     public static Object transform(final OWLLiteral literal) {
         if (literal.isRDFPlainLiteral()) {
             return literal.getLiteral();
