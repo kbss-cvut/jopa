@@ -38,6 +38,11 @@
             <artifactId>jopa-owlapi-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>datatype</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- OWLAPI -->
         <dependency>
