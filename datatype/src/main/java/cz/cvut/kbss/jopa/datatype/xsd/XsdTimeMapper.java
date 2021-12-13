@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 /**
- * Maps a value of {@link cz.cvut.kbss.jopa.vocabulary.XSD#TIME} to Java {@link OffsetTime}.
+ * Maps values of {@link cz.cvut.kbss.jopa.vocabulary.XSD#TIME} to Java {@link OffsetTime}.
  * <p>
  * Note that if the time does not specify offset information, system local is used.
  */

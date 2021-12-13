@@ -17,7 +17,9 @@ class XsdTimeMapperTest {
         final int minute = 11;
         final int second = 10;
         final String literal = hour + ":" + minute + ":" + second;
-        assertEquals(LocalTime.of(hour, minute, second).atOffset(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())), XsdTimeMapper.map(literal));
+        assertEquals(
+                LocalTime.of(hour, minute, second).atOffset(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())),
+                XsdTimeMapper.map(literal));
     }
 
     @Test

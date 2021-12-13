@@ -6,7 +6,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
 /**
- * Maps a value of {@link cz.cvut.kbss.jopa.vocabulary.XSD#DATE} to Java {@link LocalDate}.
+ * Maps values of {@link cz.cvut.kbss.jopa.vocabulary.XSD#DATE} to Java {@link LocalDate}.
  * <p>
  * Note that this mapping loses timezone information, if it were present in the literal.
  */
