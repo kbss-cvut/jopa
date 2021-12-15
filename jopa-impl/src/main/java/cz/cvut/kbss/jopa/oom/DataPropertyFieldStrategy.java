@@ -38,11 +38,12 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
     }
 
     Object toAttributeValue(Object value) {
+        assert value != null;
         return converter.convertToAttribute(value);
     }
 
     Object toAxiomValue(Object value) {
-        return converter.convertToAxiomValue(value);
+        return value != null ? converter.convertToAxiomValue(value) : null;
     }
 
     String getLanguage() {

@@ -1,53 +1,47 @@
 package cz.cvut.kbss.jopa.oom.converter.datetime;
 
-import cz.cvut.kbss.jopa.exception.IncompatibleDatatypeException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.datatype.xsd.XsdDateTimeMapper;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.OffsetDateTime;
 import java.util.Date;
 
 /**
- * Converts between RDF literals representing xsd:dateTime and {@link Date} instances.
- *
- * Note that when transforming to the RDF literal, UTC time zone is assumed to provide consistent results.
+ * Converts between a xsd:dateTime representation and {@link Date} instances.
+ * <p>
+ * Supported representations are {@link OffsetDateTime} and {@link Literal}.
+ * <p>
+ * Note that when transforming to axiom value, UTC time zone is assumed to provide consistent results.
  */
-public class DateConverter implements ConverterWrapper<Date, Literal> {
-
-    private static final DatatypeFactory DATATYPE_FACTORY = initDatatypeFactory();
-
-    private static DatatypeFactory initDatatypeFactory() {
-        try {
-            return DatatypeFactory.newInstance();
-        } catch (DatatypeConfigurationException e) {
-            throw new OWLPersistenceException("Fatal error, unable to resolve DatatypeFactory.", e);
-        }
-    }
+public class DateConverter implements ConverterWrapper<Date, Object> {
 
     @Override
     public Literal convertToAxiomValue(Date value) {
-        // TODO Use InstantConverter once it is implemented
-        return new Literal(ZonedDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT), XSD.DATETIME);
+        assert value != null;
+        return InstantConverter.fromInstant(value.toInstant());
     }
 
     @Override
-    public Date convertToAttribute(Literal value) {
-        if (!XSD.DATETIME.equals(value.getDatatype())) {
-            throw new IncompatibleDatatypeException("Literal " + value + " cannot be mapped to " + Date.class);
+    public Date convertToAttribute(Object value) {
+        assert value != null;
+        if (value instanceof OffsetDateTime) {
+            return offsetDateTimeToDate((OffsetDateTime) value);
+        } else {
+            assert value instanceof Literal;
+            final Literal literal = (Literal) value;
+            assert XSD.DATETIME.equals(literal.getDatatype());
+            return offsetDateTimeToDate(XsdDateTimeMapper.map(literal.getLexicalForm()));
         }
-        final XMLGregorianCalendar calendar = DATATYPE_FACTORY.newXMLGregorianCalendar(value.getLexicalForm());
-        return calendar.toGregorianCalendar().getTime();
+    }
+
+    private Date offsetDateTimeToDate(OffsetDateTime value) {
+        return new Date(value.toInstant().toEpochMilli());
     }
 
     @Override
     public boolean supportsAxiomValueType(Class<?> type) {
-        return Literal.class.isAssignableFrom(type);
+        return OffsetDateTime.class.isAssignableFrom(type) || Literal.class.isAssignableFrom(type);
     }
 }
