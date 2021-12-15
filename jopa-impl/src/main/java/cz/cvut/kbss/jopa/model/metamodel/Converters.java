@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.oom.converter.*;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.time.Instant;

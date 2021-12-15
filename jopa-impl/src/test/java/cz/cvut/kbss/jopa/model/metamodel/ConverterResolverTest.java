@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.oom.converter.*;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
