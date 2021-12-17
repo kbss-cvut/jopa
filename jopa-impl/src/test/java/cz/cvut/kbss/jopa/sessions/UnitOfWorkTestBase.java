@@ -60,6 +60,8 @@ public abstract class UnitOfWorkTestBase {
     @Mock
     protected EntityTransaction transactionMock;
 
+    protected MetamodelMocks metamodelMocks;
+
     ServerSessionStub serverSessionStub;
 
     CloneBuilder cloneBuilder;
@@ -74,8 +76,8 @@ public abstract class UnitOfWorkTestBase {
         when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
         when(serverSessionStub.acquireConnection()).thenReturn(storageMock);
         when(emMock.getTransaction()).thenReturn(transactionMock);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodelMock);
+        this.metamodelMocks = new MetamodelMocks();
+        metamodelMocks.setMocks(metamodelMock);
         uow = new UnitOfWorkImpl(serverSessionStub);
         uow.setEntityManager(emMock);
         final Field cbField = UnitOfWorkImpl.class.getDeclaredField("cloneBuilder");

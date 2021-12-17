@@ -50,7 +50,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
-import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.*;
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.getValidator;
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotInferred;
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
