@@ -21,7 +21,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -52,8 +51,8 @@ public abstract class IntegrityConstraintsValidator {
      */
     @SafeVarargs
     public final <T> void validate(T instance, EntityType<T> et, Predicate<FieldSpecification<? super T, ?>>... filters) {
-        Objects.requireNonNull(instance, ErrorUtils.getNPXMessageSupplier("instance"));
-        Objects.requireNonNull(et, ErrorUtils.getNPXMessageSupplier("et"));
+        Objects.requireNonNull(instance);
+        Objects.requireNonNull(et);
 
         final Object id = EntityPropertiesUtils.getIdentifier(instance, et);
         et.getFieldSpecifications().stream()
@@ -71,8 +70,8 @@ public abstract class IntegrityConstraintsValidator {
      * @param metamodel Metamodel of the persistence unit
      */
     public void validate(ObjectChangeSet changeSet, Metamodel metamodel) {
-        Objects.requireNonNull(changeSet, ErrorUtils.getNPXMessageSupplier("changeSet"));
-        Objects.requireNonNull(metamodel, ErrorUtils.getNPXMessageSupplier("metamodel"));
+        Objects.requireNonNull(changeSet);
+        Objects.requireNonNull(metamodel);
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
         final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getCloneObject(), et);

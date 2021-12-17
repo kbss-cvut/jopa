@@ -20,7 +20,6 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -42,7 +41,7 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
      * @param value      The value to validate
      */
     public void validate(Object identifier, Field field, Object value) {
-        Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
+        Objects.requireNonNull(field);
         final ParticipationConstraints constraints = field.getAnnotation(ParticipationConstraints.class);
         if (constraints == null) {
             return;

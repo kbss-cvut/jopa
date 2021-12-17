@@ -42,7 +42,7 @@ public class AttributeModificationValidator {
             throw new InferredAttributeModifiedException(
                     "Field " + fieldSpec + " may contain inferences and cannot be modified.");
         }
-        if (fieldSpec instanceof AbstractAttribute && ((AbstractAttribute) fieldSpec).isLexicalForm()) {
+        if (fieldSpec instanceof AbstractAttribute && ((AbstractAttribute<?, ?>) fieldSpec).isLexicalForm()) {
             throw new AttributeModificationForbiddenException("Field " + fieldSpec +
                     " is configured to contain lexical form of literals and cannot be modified.");
         }
