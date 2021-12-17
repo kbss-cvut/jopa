@@ -50,6 +50,7 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.*;
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
@@ -343,10 +344,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     private void validateIntegrityConstraints() {
-        final IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
+        final IntegrityConstraintsValidator validator = getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
-            validator.validate(changeSet.getCloneObject(),
-                    entityType((Class<Object>) changeSet.getObjectClass()), false);
+            validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()), isNotInferred());
         }
         uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }

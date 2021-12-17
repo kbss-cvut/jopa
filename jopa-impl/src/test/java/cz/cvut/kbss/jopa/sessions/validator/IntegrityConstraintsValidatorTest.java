@@ -19,9 +19,12 @@ import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
@@ -30,10 +33,16 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotInferred;
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotLazy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class IntegrityConstraintsValidatorTest {
 
@@ -53,7 +62,7 @@ public class IntegrityConstraintsValidatorTest {
     public void validationOfObjectWithoutConstraintsPasses() {
         final OWLClassA obj = new OWLClassA();
         obj.setStringAttribute("aaaa");
-        validator.validate(obj, metamodel.entity(OWLClassA.class), false);
+        validator.validate(obj, metamodel.entity(OWLClassA.class));
     }
 
     @Test
@@ -76,14 +85,14 @@ public class IntegrityConstraintsValidatorTest {
         obj.setSet(Collections.singleton(new OWLClassA()));
         obj.setSingleA(new OWLClassA());
 
-        validator.validate(obj, metamodel.entity(OWLClassL.class), false);
+        validator.validate(obj, metamodel.entity(OWLClassL.class));
     }
 
     @Test
     public void missingRequiredAttributeOnObjectFailsValidation() {
         final OWLClassN n = createInstanceWithMissingRequiredField();
         assertThrows(IntegrityConstraintViolatedException.class,
-                () -> validator.validate(n, metamodel.entity(OWLClassN.class), false));
+                () -> validator.validate(n, metamodel.entity(OWLClassN.class)));
     }
 
     private OWLClassN createInstanceWithMissingRequiredField() {
@@ -108,7 +117,7 @@ public class IntegrityConstraintsValidatorTest {
     public void missingRequiredFieldValueFailsValidation() throws Exception {
         final OWLClassN n = createInstanceWithMissingRequiredField();
         final Attribute<?, ?> att = metamodel.entity(OWLClassN.class)
-                                             .getDeclaredAttribute(OWLClassN.getStringAttributeField().getName());
+                .getDeclaredAttribute(OWLClassN.getStringAttributeField().getName());
         assertThrows(IntegrityConstraintViolatedException.class,
                 () -> validator.validate(n.getId(), att, n.getStringAttribute()));
     }
@@ -120,7 +129,7 @@ public class IntegrityConstraintsValidatorTest {
         obj.setSingleA(new OWLClassA());
 
         assertThrows(CardinalityConstraintViolatedException.class,
-                () -> validator.validate(obj, metamodel.entity(OWLClassL.class), false));
+                () -> validator.validate(obj, metamodel.entity(OWLClassL.class)));
     }
 
     @Test
@@ -138,7 +147,7 @@ public class IntegrityConstraintsValidatorTest {
         final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, new EntityDescriptor());
         changeSet.addChangeRecord(
                 new ChangeRecordImpl(metamodel.entity(OWLClassL.class)
-                                              .getFieldSpecification(OWLClassL.getReferencedListField().getName()),
+                        .getFieldSpecification(OWLClassL.getReferencedListField().getName()),
                         clone.getReferencedList()));
 
         assertThrows(CardinalityConstraintViolatedException.class, () -> validator.validate(changeSet, metamodel));
@@ -148,7 +157,7 @@ public class IntegrityConstraintsValidatorTest {
     public void validationDetectsICViolationsInMappedSuperclass() {
         final OWLClassQ q = new OWLClassQ();
         assertThrows(CardinalityConstraintViolatedException.class,
-                () -> validator.validate(q, metamodel.entity(OWLClassQ.class), false));
+                () -> validator.validate(q, metamodel.entity(OWLClassQ.class)));
     }
 
     @Test
@@ -157,7 +166,7 @@ public class IntegrityConstraintsValidatorTest {
         j.setUri(Generators.createIndividualIdentifier());
         j.setOwlClassA(Collections.emptySet()); // This violates the nonEmpty constraint
         assertThrows(CardinalityConstraintViolatedException.class,
-                () -> validator.validate(j, metamodel.entity(OWLClassJ.class), false));
+                () -> validator.validate(j, metamodel.entity(OWLClassJ.class)));
     }
 
     @Test
@@ -172,5 +181,49 @@ public class IntegrityConstraintsValidatorTest {
                 metamodel.entity(OWLClassJ.class).getFieldSpecification(OWLClassJ.getOwlClassAField().getName()),
                 clone.getOwlClassA()));
         assertThrows(CardinalityConstraintViolatedException.class, () -> validator.validate(changeSet, metamodel));
+    }
+
+    @Test
+    void validationSkipsLazyFieldsWhenConfiguredTo() {
+        final OWLClassJ instance = new OWLClassJ(Generators.createIndividualIdentifier());
+        assertDoesNotThrow(() -> validator.validate(instance, metamodel.entity(OWLClassJ.class), isNotLazy()));
+    }
+
+    @Test
+    void validationSkipsInferredFieldsWhenConfiguredTo() throws Exception {
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        instance.setStringAttribute(null);
+        final EntityType<OWLClassA> et = mock(EntityType.class);
+        final Identifier idAtt = mock(Identifier.class);
+        when(et.getIdentifier()).thenReturn(idAtt);
+        when(idAtt.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
+        final Attribute<OWLClassA, String> strAtt = mock(Attribute.class);
+        when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+        when(et.getFieldSpecifications()).thenReturn(Collections.singleton(strAtt));
+        when(strAtt.isInferred()).thenReturn(true);
+        final ParticipationConstraint pc = new ParticipationConstraint() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return ParticipationConstraint.class;
+            }
+
+            @Override
+            public String owlObjectIRI() {
+                return Vocabulary.p_a_stringAttribute;
+            }
+
+            @Override
+            public int min() {
+                return 1;
+            }
+
+            @Override
+            public int max() {
+                return 1;
+            }
+        };
+        when(strAtt.getConstraints()).thenReturn(new ParticipationConstraint[]{pc});
+        assertDoesNotThrow(() -> validator.validate(instance, et, isNotInferred()));
     }
 }

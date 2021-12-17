@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute.THIS_PARAMETER;
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotLazy;
 
 class EntityConstructor {
 
@@ -243,7 +244,7 @@ class EntityConstructor {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }
-        IntegrityConstraintsValidator.getValidator().validate(entity, et, true);
+        IntegrityConstraintsValidator.getValidator().validate(entity, et, isNotLazy());
     }
 
     private boolean shouldSkipICValidationOnLoad() {
