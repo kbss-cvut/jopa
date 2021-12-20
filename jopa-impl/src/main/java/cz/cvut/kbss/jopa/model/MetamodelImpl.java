@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
@@ -96,6 +97,14 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         }
         return (EntityTypeImpl<X>) entities.get(cls);
+    }
+
+    @Override
+    public Set<EntityType<?>> getMappedEntities(String classIri) {
+        Objects.requireNonNull(classIri);
+        return entities.values().stream()
+                       .filter(et -> Objects.equals(et.getIRI().toString(), classIri))
+                       .collect(Collectors.toSet());
     }
 
     @Override
