@@ -43,7 +43,7 @@ public class OWLClassX {
     @OWLObjectProperty(iri = Vocabulary.P_X_COLLECTION_ATTRIBUTE, cascade = CascadeType.PERSIST)
     private Collection<OWLClassA> aCollection;
 
-    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.TIME)
+    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.INT)
     private Set<String> explicitDatatypes;
 
     public URI getUri() {

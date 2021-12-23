@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,7 +42,8 @@ public abstract class ExplicitDatatypesRunner extends BaseRunner {
         this.em = getEntityManager("readSupportsValuesWithExplicitDatatype", false);
         persistTestData(Arrays.asList(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
-                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_explicitDatatype), new Literal(VALUE, XSD.DURATION))
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_explicitDatatype),
+                        new Literal(VALUE, XSD.DURATION))
         ), em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
@@ -57,7 +56,7 @@ public abstract class ExplicitDatatypesRunner extends BaseRunner {
         entityM.setExplicitDatatype(VALUE);
         persist(entityM);
 
-        final String newValue = "PT130S";
+        final String newValue = "PT55S";
         transactional(() -> {
             final OWLClassM toUpdate = findRequired(OWLClassM.class, entityM.getKey());
             toUpdate.setExplicitDatatype(newValue);
@@ -77,8 +76,8 @@ public abstract class ExplicitDatatypesRunner extends BaseRunner {
         this.em = getEntityManager("pluralAttributesWithExplicitDatatypeAreSupported", false);
         final OWLClassX entity = new OWLClassX();
         final Set<String> values = IntStream.range(0, 5)
-                .mapToObj(i -> LocalTime.of(i + 1, i + 1).format(DateTimeFormatter.ISO_TIME))
-                .collect(Collectors.toSet());
+                                            .mapToObj(Integer::toString)
+                                            .collect(Collectors.toSet());
         entity.setExplicitDatatypes(values);
 
         persist(entity);
