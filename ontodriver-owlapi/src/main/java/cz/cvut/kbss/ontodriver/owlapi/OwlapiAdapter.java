@@ -219,6 +219,8 @@ public class OwlapiAdapter {
             return cls.cast(this);
         } else if (cls.isAssignableFrom(OWLOntology.class)) {
             return cls.cast(ontologySnapshot.getOntology());
+        } else if (cls.isAssignableFrom(OWLReasoner.class)) {
+            return cls.cast(ontologySnapshot.getReasoner());
         }
         throw new OwlapiDriverException("Unsupported type " + cls);
     }

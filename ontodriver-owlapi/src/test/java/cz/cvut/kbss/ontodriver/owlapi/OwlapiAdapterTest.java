@@ -25,9 +25,10 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.search.EntitySearcher;
@@ -42,10 +43,11 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class OwlapiAdapterTest {
 
-    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
-    private static final NamedResource INDIVIDUAL = NamedResource.create(PK);
+    private static final URI ID = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
+    private static final NamedResource INDIVIDUAL = NamedResource.create(ID);
 
     @Mock
     private Connector connectorMock;
@@ -63,14 +65,11 @@ class OwlapiAdapterTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = spy(snapshot.getOntology());
         this.factory = snapshot.getDataFactory();
         this.ontologySnapshot = new OntologySnapshot(ontology, snapshot.getOntologyManager(), factory, reasonerMock);
         when(connectorMock.getOntologySnapshot()).thenReturn(ontologySnapshot);
-        when(connectorMock.getOntologyUri())
-                .thenReturn(snapshot.getOntology().getOntologyID().getOntologyIRI().get().toURI());
 
         this.adapter = spy(new OwlapiAdapter(connectorMock));
     }
@@ -122,6 +121,8 @@ class OwlapiAdapterTest {
 
     @Test
     void testGetContexts() {
+        final IRI ontologyIri = ontology.getOntologyID().getOntologyIRI().get();
+        when(connectorMock.getOntologyUri()).thenReturn(ontologyIri.toURI());
         final URI uri = getOntologyUri();
 
         final List<URI> res = adapter.getContexts();
@@ -354,5 +355,10 @@ class OwlapiAdapterTest {
     @Test
     void throwsDriverExceptionWhenUnsupportedClassIsPassedToUnwrap() {
         assertThrows(OwlapiDriverException.class, () -> adapter.unwrap(Connection.class));
+    }
+
+    @Test
+    void unwrapReturnsOwlReasonerWhenClassMatches() throws Exception {
+        assertSame(reasonerMock, adapter.unwrap(OWLReasoner.class));
     }
 }
