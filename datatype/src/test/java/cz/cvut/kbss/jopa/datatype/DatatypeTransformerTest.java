@@ -10,13 +10,13 @@
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.utils;
+package cz.cvut.kbss.jopa.datatype;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 
+import java.net.InetAddress;
 import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +32,7 @@ class DatatypeTransformerTest {
     void transformConvertsValueToTargetType() {
         final Integer value = 117;
         final Double result = DatatypeTransformer.transform(value, Double.class);
+        assertNotNull(result);
         assertEquals(value.doubleValue(), result, 0.01);
     }
 
@@ -62,16 +63,17 @@ class DatatypeTransformerTest {
     void transformSupportsConversionUsingConstructorWithParameterMatchingTransformedValueType() {
         final String value = "http://onto.fel.cvut.cz";
         final URL result = DatatypeTransformer.transform(value, URL.class);
+        assertNotNull(result);
         assertEquals(value, result.toString());
     }
 
     @Test
     void transformThrowsUnsupportedTypeConversionWhenTargetTypeDoesNotHaveMatchingConstructor() {
-        final String value = "http://onto.fel.cvut.cz";
+        final String value = "https://onto.fel.cvut.cz";
         final UnsupportedTypeTransformationException ex = assertThrows(UnsupportedTypeTransformationException.class,
-                () -> DatatypeTransformer.transform(value, OWLClassA.class));
+                () -> DatatypeTransformer.transform(value, InetAddress.class));
         assertEquals(String.format("Cannot transform value %s of type %s to target type %s.", value, String.class,
-                OWLClassA.class), ex.getMessage());
+                InetAddress.class), ex.getMessage());
     }
 
     @Test

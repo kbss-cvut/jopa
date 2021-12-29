@@ -10,24 +10,26 @@
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.utils;
+package cz.cvut.kbss.jopa.datatype;
 
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Utility containing some basic mappings for conversion between types.
+ * Utility containing transformation rules for selected basic types.
  */
 public class DatatypeTransformer {
 
@@ -63,9 +65,11 @@ public class DatatypeTransformer {
             try {
                 return ((URI) value).toURL();
             } catch (MalformedURLException e) {
-                throw new OWLPersistenceException("Unable to transform URI to URL.", e);
+                throw new DatatypeMappingException("Unable to transform URI to URL.", e);
             }
         });
+        map.put(new Pair(BigInteger.class, Integer.class), value -> ((BigInteger) value).intValueExact());
+        map.put(new Pair(BigInteger.class, Long.class), value -> ((BigInteger) value).longValueExact());
         return map;
     }
 
@@ -76,8 +80,10 @@ public class DatatypeTransformer {
      * @param targetType The type to which the specified value should be converted
      * @param <T>        Target type
      * @return Value as the target type
+     * @throws UnsupportedTypeTransformationException If the specified value cannot be transformed to the specified target type
      */
     public static <T> T transform(Object value, Class<T> targetType) {
+        Objects.requireNonNull(targetType);
         if (value == null) {
             return null;
         }
@@ -105,7 +111,7 @@ public class DatatypeTransformer {
         } catch (NoSuchMethodException e) {
             return Optional.empty();
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            throw new OWLPersistenceException("Unable to transform value using target type constructor.", e);
+            throw new DatatypeMappingException("Unable to transform value using target type constructor.", e);
         }
     }
 
@@ -124,20 +130,16 @@ public class DatatypeTransformer {
             if (this == o) {
                 return true;
             }
-            if (!(o instanceof Pair)) {
+            if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-
             Pair pair = (Pair) o;
-
             return sourceType.equals(pair.sourceType) && targetType.equals(pair.targetType);
         }
 
         @Override
         public int hashCode() {
-            int result = sourceType.hashCode();
-            result = 31 * result + targetType.hashCode();
-            return result;
+            return Objects.hash(sourceType, targetType);
         }
     }
 }

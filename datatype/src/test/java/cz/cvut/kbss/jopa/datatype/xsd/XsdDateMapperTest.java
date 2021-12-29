@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.datatype.xsd;
 
-import cz.cvut.kbss.jopa.datatype.DatatypeMappingException;
+import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
