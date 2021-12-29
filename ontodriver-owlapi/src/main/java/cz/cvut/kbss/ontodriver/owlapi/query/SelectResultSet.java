@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
+import cz.cvut.kbss.jopa.datatype.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
@@ -26,8 +27,6 @@ import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObject;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -285,39 +284,15 @@ class SelectResultSet extends AbstractResultSet {
         }
         if (owlValue instanceof OWLLiteral) {
             final Object ob = OwlapiUtils.owlLiteralToValue((OWLLiteral) owlValue);
-            if (cls.isAssignableFrom(ob.getClass())) {
-                return cls.cast(ob);
-            } else if (String.class.equals(cls)) {
-                return cls.cast(((OWLLiteral) owlValue).getLiteral());
-            }
+            return cls.cast(DatatypeTransformer.transform(ob, cls));
         } else {
             final Set<OWLEntity> sig = owlValue.signature().collect(Collectors.toSet());
             if (!sig.isEmpty()) {
                 final URI uri = URI.create(sig.iterator().next().toStringID());
-                if (cls.isAssignableFrom(uri.getClass())) {
-                    return cls.cast(uri);
-                }
-                return tryInstantiatingClassUsingConstructor(cls, uri);
+                return cls.cast(DatatypeTransformer.transform(uri, cls));
             }
         }
         throw new OwlapiDriverException("Conversion to type " + cls + " is not supported.");
-    }
-
-    private static <T> T tryInstantiatingClassUsingConstructor(Class<T> cls, URI uri) throws OwlapiDriverException {
-        try {
-            final Constructor<T> constructor = cls.getDeclaredConstructor(uri.getClass());
-            if (!constructor.isAccessible()) {
-                constructor.setAccessible(true);
-            }
-            return constructor.newInstance(uri);
-        } catch (NoSuchMethodException e) {
-            throw new OwlapiDriverException(
-                    "No constructor taking parameter of type " + uri.getClass().getName() + " found in class " + cls,
-                    e);
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new OwlapiDriverException(
-                    "Unable to create instance of class " + cls + " using constructor with argument " + uri, e);
-        }
     }
 
     @Override
