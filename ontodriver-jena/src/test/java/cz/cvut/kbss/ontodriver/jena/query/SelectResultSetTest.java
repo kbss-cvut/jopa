@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.jena.query;
 
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
@@ -25,8 +26,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.NoSuchElementException;
@@ -37,6 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class SelectResultSetTest {
 
     private static final Resource SUBJECT = createResource(Generator.generateUri().toString());
@@ -58,7 +61,6 @@ class SelectResultSetTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.model = ModelFactory.createDefaultModel();
     }
 
@@ -481,8 +483,8 @@ class SelectResultSetTest {
     public static class ResultJenaBased {
         private final Object value;
 
-        public ResultJenaBased(RDFNode node) {
-            this.value = node.isLiteral() ? node.asLiteral().getValue() : URI.create(node.asResource().getURI());
+        public ResultJenaBased(Object value) {
+            this.value = value;
         }
     }
 
@@ -522,14 +524,12 @@ class SelectResultSetTest {
     }
 
     @Test
-    void getObjectByIndexAndClassThrowsJenaDriverExceptionWhenNoMatchingConstructorIsFound() {
+    void getObjectByIndexAndClassThrowsUnsupportedTypeTransformationExceptionWhenNoMatchingConstructorIsFound() {
         model.add(SUBJECT, RDF.type, TYPE_ONE);
         this.selectResult = resultFor(QUERY);
         selectResult.next();
-        final JenaDriverException ex = assertThrows(JenaDriverException.class,
+        assertThrows(UnsupportedTypeTransformationException.class,
                 () -> selectResult.getObject(2, SelectResultSetTest.class));
-        assertEquals("No suitable constructor for value " + TYPE_ONE + " found in type " + SelectResultSetTest.class,
-                ex.getMessage());
     }
 
     @Test

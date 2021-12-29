@@ -21,8 +21,11 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -33,6 +36,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SelectResultSetTest {
 
     private static final List<String> BINDINGS = Arrays.asList("x", "y", "z");
@@ -50,7 +55,6 @@ public class SelectResultSetTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         when(resultMock.getBindingNames()).thenReturn(BINDINGS);
         when(resultMock.next()).thenReturn(bindingSetMock);
         when(resultMock.hasNext()).thenReturn(true);
@@ -74,7 +78,7 @@ public class SelectResultSetTest {
 
     @Test
     public void getObjectOnSesameUriReturnsJavaUri() throws Exception {
-        final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
+        final URI x = URI.create("https://onto.fel.cvut.cz/ontologies/jopa#John117");
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createIRI(x.toString()));
 
         resultSet.next();
@@ -91,7 +95,7 @@ public class SelectResultSetTest {
 
     @Test
     public void getObjectTypedOnUriReturnsUriWhenAskedForUri() throws Exception {
-        final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
+        final URI x = URI.create("https://onto.fel.cvut.cz/ontologies/jopa#John117");
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createIRI(x.toString()));
 
         resultSet.next();

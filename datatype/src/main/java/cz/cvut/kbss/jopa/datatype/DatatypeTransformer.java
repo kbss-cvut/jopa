@@ -106,9 +106,15 @@ public class DatatypeTransformer {
 
     private static <T> Optional<T> tryConversionUsingConstructor(Object value, Class<T> targetType) {
         try {
-            final Constructor<T> ctor = targetType.getDeclaredConstructor(value.getClass());
-            return Optional.of(targetType.cast(ctor.newInstance(value)));
-        } catch (NoSuchMethodException e) {
+            final Constructor<?>[] ctors = targetType.getDeclaredConstructors();
+            for (Constructor<?> c : ctors) {
+                if (c.getParameterCount() != 1) {
+                    continue;
+                }
+                if (c.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
+                    return Optional.of(targetType.cast(c.newInstance(value)));
+                }
+            }
             return Optional.empty();
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new DatatypeMappingException("Unable to transform value using target type constructor.", e);

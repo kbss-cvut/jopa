@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.jena.query;
 
 
+import cz.cvut.kbss.jopa.datatype.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
@@ -24,8 +25,6 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Objects;
 
@@ -197,14 +196,14 @@ public class SelectResultSet extends AbstractResultSet {
         return toObject(getCurrent(getVariableAt(variableIndex)), cls);
     }
 
-    private static <T> T toObject(RDFNode value, Class<T> cls) throws JenaDriverException {
+    private static <T> T toObject(RDFNode value, Class<T> cls) {
         Objects.requireNonNull(cls);
         if (cls.isAssignableFrom(value.getClass())) {
             return cls.cast(value);
         }
         Object objectValue;
         if (value.isLiteral()) {
-            objectValue = value.asLiteral().getValue();
+            objectValue = JenaUtils.literalToValue(value.asLiteral());
         } else {
             assert value.isResource();
             if (value.isURIResource()) {
@@ -213,35 +212,7 @@ public class SelectResultSet extends AbstractResultSet {
                 objectValue = value.asResource().getId().getLabelString();
             }
         }
-        if (objectValue == null) {
-            return null;
-        }
-        if (cls.isAssignableFrom(objectValue.getClass())) {
-            return cls.cast(objectValue);
-        } else {
-            return buildUsingConstructor(cls, value, objectValue);
-        }
-    }
-
-    private static <T> T buildUsingConstructor(Class<T> cls, RDFNode jenaValue, Object javaValue) throws
-                                                                                                  JenaDriverException {
-        final Constructor<?>[] constructors = cls.getDeclaredConstructors();
-        try {
-            for (Constructor<?> c : constructors) {
-                if (c.getParameterCount() != 1) {
-                    continue;
-                }
-                if (c.getParameterTypes()[0].isAssignableFrom(jenaValue.getClass())) {
-                    return cls.cast(c.newInstance(jenaValue));
-                }
-                if (c.getParameterTypes()[0].isAssignableFrom(javaValue.getClass())) {
-                    return cls.cast(c.newInstance(javaValue));
-                }
-            }
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            throw new JenaDriverException("Unable to instantiate class " + cls + " with value " + jenaValue, e);
-        }
-        throw new JenaDriverException("No suitable constructor for value " + jenaValue + " found in type " + cls);
+        return DatatypeTransformer.transform(objectValue, cls);
     }
 
     @Override
