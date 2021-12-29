@@ -16,12 +16,6 @@
     <description>Datatype mapping module.</description>
 
     <dependencies>
-        <!-- JOPA API for XSD constants -->
-        <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>

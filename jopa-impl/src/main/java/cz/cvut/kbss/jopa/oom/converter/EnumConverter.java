@@ -12,7 +12,7 @@
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 
 /**
  * Built-in converter for mapping to/from enum-valued attributes.

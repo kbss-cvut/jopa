@@ -13,4 +13,12 @@
     <name>JOPA - API</name>
     <artifactId>jopa-api</artifactId>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>datatype</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>

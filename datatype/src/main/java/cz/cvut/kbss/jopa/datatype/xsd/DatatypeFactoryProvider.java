@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.datatype.xsd;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
@@ -18,7 +16,7 @@ class DatatypeFactoryProvider {
         try {
             return DatatypeFactory.newInstance();
         } catch (DatatypeConfigurationException e) {
-            throw new OWLPersistenceException("Unable to initialize javax.xml.datatype.DatatypeFactory.", e);
+            throw new IllegalStateException("Unable to initialize javax.xml.datatype.DatatypeFactory.", e);
         }
     }
 

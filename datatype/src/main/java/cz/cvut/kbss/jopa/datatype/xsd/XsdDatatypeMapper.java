@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.datatype.xsd;
 
 import cz.cvut.kbss.jopa.datatype.DatatypeMapper;
-import cz.cvut.kbss.jopa.datatype.DatatypeMappingException;
+import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 

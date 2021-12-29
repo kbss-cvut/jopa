@@ -13,7 +13,7 @@
 package cz.cvut.kbss.jopa.oom.converter;
 
 import cz.cvut.kbss.jopa.environment.OWLClassM;
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformationException;
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
