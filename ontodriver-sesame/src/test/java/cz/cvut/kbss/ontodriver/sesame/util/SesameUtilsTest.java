@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.*;
+import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -133,7 +135,8 @@ class SesameUtilsTest {
 
     @Test
     void createLiteralCreatesSesameLiteralWhenOntoDriverLiteralWithLexicalFormAndDatatypeIsProvided() {
-        final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = new cz.cvut.kbss.ontodriver.model.Literal("P1Y", XSD.DURATION.stringValue());
+        final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = new cz.cvut.kbss.ontodriver.model.Literal("P1Y",
+                XSD.DURATION.stringValue());
         final Literal result = SesameUtils.createLiteral(ontoLiteral, null, vf);
         assertEquals(ontoLiteral.getLexicalForm(), result.getLabel());
         assertEquals(XSD.DURATION, result.getDatatype());
@@ -163,5 +166,31 @@ class SesameUtilsTest {
         final Literal result = SesameUtils.createLiteral(value, null, vf);
         assertEquals(value.toString(), result.getLabel());
         assertEquals(XSD.DECIMAL, result.getDatatype());
+    }
+
+    @Test
+    void createLiteralReturnsXsdDateTimeAtUTCForDate() {
+        final Date value = new Date();
+        final Literal result = SesameUtils.createLiteral(value, null, vf);
+        assertEquals(value.toInstant().toString(), result.getLabel());
+        assertEquals(XSD.DATETIME, result.getDatatype());
+    }
+
+    @Test
+    void creatLiteralCreatesDateTimeLiteralWithOffsetForLocalDateTime() {
+        final LocalDateTime value = LocalDateTime.now();
+        final Literal literal = SesameUtils.createLiteral(value, null, vf);
+        ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(value);
+        OffsetDateTime offsetDateTime = OffsetDateTime.of(value.toLocalDate(), value.toLocalTime(), offset);
+        assertEquals(offsetDateTime.toString(), literal.getLabel());
+        assertEquals(XSD.DATETIME, literal.getDatatype());
+    }
+
+    @Test
+    void createLiteralCreatesDurationLiteralForJavaDuration() {
+        final Duration value = Duration.ofSeconds(Generator.randomPositiveInt(1000));
+        final Literal literal = SesameUtils.createLiteral(value, null, vf);
+        assertEquals(value.toString(), literal.getLabel());
+        assertEquals(XSD.DURATION, literal.getDatatype());
     }
 }

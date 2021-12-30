@@ -13,6 +13,7 @@
 package cz.cvut.kbss.ontodriver.sesame.util;
 
 import cz.cvut.kbss.jopa.datatype.xsd.XsdDatatypeMapper;
+import cz.cvut.kbss.jopa.datatype.xsd.XsdTemporalMapper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
@@ -23,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
 
 /**
@@ -52,7 +55,8 @@ public final class SesameUtils {
         if (datatype.equals(RDF.LANGSTRING)) {
             return new LangString(literal.stringValue(), literal.getLanguage().orElse(null));
         } else {
-            final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(literal.getLabel(), datatype.stringValue());
+            final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(
+                    literal.getLabel(), datatype.stringValue());
             return XsdDatatypeMapper.getInstance().map(lit).orElse(lit);
         }
     }
@@ -120,15 +124,26 @@ public final class SesameUtils {
         } else if (value instanceof BigDecimal) {
             return vf.createLiteral((BigDecimal) value);
         } else if (value instanceof Date) {
-            return vf.createLiteral((Date) value);
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((Date) value).toInstant());
+            return createLiteral(vf, ontoLiteral);
+        } else if (value instanceof TemporalAccessor) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map((TemporalAccessor) value);
+            return createLiteral(vf, ontoLiteral);
+        } else if (value instanceof TemporalAmount) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map((TemporalAmount) value);
+            return createLiteral(vf, ontoLiteral);
         } else if (value.getClass().isEnum()) {
             return vf.createLiteral(value.toString());
         } else if (value instanceof cz.cvut.kbss.ontodriver.model.Literal) {
             final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = (cz.cvut.kbss.ontodriver.model.Literal) value;
-            return vf.createLiteral(ontoLiteral.getLexicalForm(), vf.createIRI(ontoLiteral.getDatatype()));
+            return createLiteral(vf, ontoLiteral);
         } else {
             throw new IllegalArgumentException("Unsupported literal type " + value.getClass());
         }
+    }
+
+    private static Literal createLiteral(ValueFactory vf, cz.cvut.kbss.ontodriver.model.Literal ontoLiteral) {
+        return vf.createLiteral(ontoLiteral.getLexicalForm(), vf.createIRI(ontoLiteral.getDatatype()));
     }
 
     /**
