@@ -22,6 +22,9 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -144,5 +147,21 @@ class SesameUtilsTest {
         final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
         assertEquals(literal.getLabel(), literalResult.getLexicalForm());
         assertEquals(literal.getDatatype().stringValue(), literalResult.getDatatype());
+    }
+
+    @Test
+    void createLiteralReturnsXsdIntegerForBigInteger() {
+        final BigInteger value = BigInteger.valueOf(System.currentTimeMillis());
+        final Literal result = SesameUtils.createLiteral(value, null, vf);
+        assertEquals(value.toString(), result.getLabel());
+        assertEquals(XSD.INTEGER, result.getDatatype());
+    }
+
+    @Test
+    void createLiteralReturnsXsdDecimalForBigDecimal() {
+        final BigDecimal value = BigDecimal.valueOf(Math.PI);
+        final Literal result = SesameUtils.createLiteral(value, null, vf);
+        assertEquals(value.toString(), result.getLabel());
+        assertEquals(XSD.DECIMAL, result.getDatatype());
     }
 }
