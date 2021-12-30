@@ -21,6 +21,8 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -113,6 +115,10 @@ public final class SesameUtils {
             return vf.createLiteral((Double) value);
         } else if (value instanceof Long) {
             return vf.createLiteral((Long) value);
+        } else if (value instanceof BigInteger) {
+            return vf.createLiteral((BigInteger) value);
+        } else if (value instanceof BigDecimal) {
+            return vf.createLiteral((BigDecimal) value);
         } else if (value instanceof Date) {
             return vf.createLiteral((Date) value);
         } else if (value.getClass().isEnum()) {
