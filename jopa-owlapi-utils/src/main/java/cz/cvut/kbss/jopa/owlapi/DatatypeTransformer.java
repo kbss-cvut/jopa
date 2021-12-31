@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.owlapi;
 
+import cz.cvut.kbss.jopa.datatype.xsd.XsdTemporalMapper;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Literal;
@@ -24,7 +25,9 @@ import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
-import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
@@ -37,8 +40,14 @@ import java.util.Objects;
  */
 public class DatatypeTransformer {
 
-    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-
+    /**
+     * Mapping between {@link OWL2Datatype}s and Java types.
+     * <p>
+     * Note that the map is incomplete (e.g., the {@link OWL2Datatype} enum does not contain constants for {@code xsd:date} and {@code xsd:time}.
+     * <p>
+     * Also, OWL API maps {@code xsd:integer} to Java {@link Integer}, which is technically not correct, since {@code xsd:integer} is unbound
+     * and may not fit, so {@link BigInteger} would be more appropriate. The same goes for other {@code xsd:integer} derivatives like {@code xsd:negativeInteger} etc.
+     */
     private static final Map<OWL2Datatype, Class<?>> DATATYPE_MAP = new EnumMap<>(OWL2Datatype.class);
 
     private static final OWLDataFactory DATA_FACTORY = new OWLDataFactoryImpl();
@@ -60,8 +69,8 @@ public class DatatypeTransformer {
         DATATYPE_MAP.put(OWL2Datatype.XSD_DOUBLE, Double.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_FLOAT, Float.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_BOOLEAN, Boolean.class);
-        DATATYPE_MAP.put(OWL2Datatype.XSD_DATE_TIME, Date.class);
-        DATATYPE_MAP.put(OWL2Datatype.XSD_DATE_TIME_STAMP, Date.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_DATE_TIME, OffsetDateTime.class);
+        DATATYPE_MAP.put(OWL2Datatype.XSD_DATE_TIME_STAMP, OffsetDateTime.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_SHORT, Short.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_UNSIGNED_SHORT, Integer.class);
         DATATYPE_MAP.put(OWL2Datatype.XSD_LONG, Long.class);
@@ -178,16 +187,25 @@ public class DatatypeTransformer {
             return lang != null ? DATA_FACTORY.getOWLLiteral(value.toString(), lang) :
                     DATA_FACTORY.getOWLLiteral(value.toString());
         } else if (value instanceof Date) {
-            SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
-            return DATA_FACTORY.getOWLLiteral(sdf.format((Date) value),
-                    DATA_FACTORY.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
+            final Literal ontoLiteral = XsdTemporalMapper.map(((Date) value).toInstant());
+            return toOwlLiteral(ontoLiteral);
+        } else if (value instanceof TemporalAccessor) {
+            final Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAccessor) value));
+            return toOwlLiteral(ontoLiteral);
+        } else if (value instanceof TemporalAmount) {
+            final Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAmount) value));
+            return toOwlLiteral(ontoLiteral);
         } else if (value.getClass().isEnum()) {
             return DATA_FACTORY.getOWLLiteral(value.toString());
         } else if (value instanceof Literal) {
-            return DATA_FACTORY.getOWLLiteral(((Literal) value).getLexicalForm(),
-                    DATA_FACTORY.getOWLDatatype(((Literal) value).getDatatype()));
+            return toOwlLiteral((Literal) value);
         } else {
             throw new IllegalArgumentException("Unsupported value " + value + " of type " + value.getClass());
         }
+    }
+
+    private static OWLLiteral toOwlLiteral(Literal ontoLiteral) {
+        return DATA_FACTORY.getOWLLiteral(ontoLiteral.getLexicalForm(),
+                DATA_FACTORY.getOWLDatatype(ontoLiteral.getDatatype()));
     }
 }
