@@ -11,7 +11,7 @@ public class DateTimeUtil {
     /**
      * System timezone offset used for transforming local datetime values to offset ones
      */
-    private static final ZoneOffset SYSTEM_OFFSET = ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now());
+    public static final ZoneOffset SYSTEM_OFFSET = ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now());
 
     private DateTimeUtil() {
         throw new AssertionError();

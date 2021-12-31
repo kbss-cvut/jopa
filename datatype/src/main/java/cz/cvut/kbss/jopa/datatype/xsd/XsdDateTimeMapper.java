@@ -4,10 +4,10 @@ import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
+import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.SYSTEM_OFFSET;
 
 /**
  * Maps values of {@link cz.cvut.kbss.jopa.vocabulary.XSD#DATETIME} to Java {@link OffsetDateTime}.
@@ -28,8 +28,7 @@ public class XsdDateTimeMapper {
         } catch (DateTimeParseException e) {
             try {
                 LocalDateTime localDateTime = LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(localDateTime);
-                return OffsetDateTime.of(localDateTime.toLocalDate(), localDateTime.toLocalTime(), offset);
+                return OffsetDateTime.of(localDateTime.toLocalDate(), localDateTime.toLocalTime(), SYSTEM_OFFSET);
             } catch (DateTimeParseException e2) {
                 throw new DatatypeMappingException("Invalid value provided as xsd:dateTime.", e2);
             }
