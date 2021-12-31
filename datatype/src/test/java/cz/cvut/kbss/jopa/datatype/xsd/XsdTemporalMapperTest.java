@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.*;
 import java.time.chrono.ThaiBuddhistDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,17 +36,17 @@ class XsdTemporalMapperTest {
     void mapTemporalAccessorReturnsXsdDateTimeWithOffsetForOffsetDateTime() {
         final OffsetDateTime value = OffsetDateTime.now();
         final Literal literal = XsdTemporalMapper.map(value);
-        assertEquals(value.toString(), literal.getLexicalForm());
+        assertEquals(value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), literal.getLexicalForm());
         assertEquals(XSD.DATETIME, literal.getDatatype());
     }
 
     @Test
     void mapTemporalAccessorReturnsXsdDateTimeWithOffsetForLocalDateTime() {
-        final LocalDateTime value = LocalDateTime.now();
+        final LocalDateTime value = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
         final Literal literal = XsdTemporalMapper.map(value);
         ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(value);
         OffsetDateTime offsetDateTime = OffsetDateTime.of(value.toLocalDate(), value.toLocalTime(), offset);
-        assertEquals(offsetDateTime.toString(), literal.getLexicalForm());
+        assertEquals(offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), literal.getLexicalForm());
         assertEquals(XSD.DATETIME, literal.getDatatype());
     }
 
@@ -53,7 +54,8 @@ class XsdTemporalMapperTest {
     void mapTemporalAccessorReturnsXsdDateTimeWithoutOffsetForInstant() {
         final Instant value = Instant.now();
         final Literal literal = XsdTemporalMapper.map(value);
-        assertEquals(value.atOffset(ZoneOffset.UTC).toString(), literal.getLexicalForm());
+        assertEquals(value.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                literal.getLexicalForm());
         assertEquals(XSD.DATETIME, literal.getDatatype());
     }
 
@@ -61,7 +63,7 @@ class XsdTemporalMapperTest {
     void mapTemporalAccessorReturnsXsdDateTimeWithOffsetForZonedDateTime() {
         final ZonedDateTime value = ZonedDateTime.now();
         final Literal literal = XsdTemporalMapper.map(value);
-        assertEquals(value.toOffsetDateTime().toString(), literal.getLexicalForm());
+        assertEquals(value.toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), literal.getLexicalForm());
         assertEquals(XSD.DATETIME, literal.getDatatype());
     }
 
@@ -73,18 +75,18 @@ class XsdTemporalMapperTest {
 
     @Test
     void mapTemporalAccessorReturnsXsdTimeForOffsetTime() {
-        final OffsetTime value = OffsetTime.now();
+        final OffsetTime value = OffsetTime.now().truncatedTo(ChronoUnit.MILLIS);
         final Literal literal = XsdTemporalMapper.map(value);
-        assertEquals(value.toString(), literal.getLexicalForm());
+        assertEquals(value.format(DateTimeFormatter.ISO_OFFSET_TIME), literal.getLexicalForm());
         assertEquals(XSD.TIME, literal.getDatatype());
     }
 
     @Test
     void mapTemporalAccessorReturnsXsdTimeWithOffsetForLocalTime() {
-        final LocalTime value = LocalTime.now();
+        final LocalTime value = LocalTime.now().truncatedTo(ChronoUnit.MILLIS);
         final Literal literal = XsdTemporalMapper.map(value);
         ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now());
-        assertEquals(value.atOffset(offset).toString(), literal.getLexicalForm());
+        assertEquals(value.atOffset(offset).format(DateTimeFormatter.ISO_OFFSET_TIME), literal.getLexicalForm());
         assertEquals(XSD.TIME, literal.getDatatype());
     }
 

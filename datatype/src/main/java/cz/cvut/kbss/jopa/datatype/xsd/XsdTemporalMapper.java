@@ -5,12 +5,14 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
 import java.util.Objects;
 
 import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.toDateTime;
 import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.toTime;
+import static java.time.format.DateTimeFormatter.*;
 
 /**
  * Maps temporal values to their corresponding XSD datatype values.
@@ -33,19 +35,19 @@ public final class XsdTemporalMapper {
      */
     public static Literal map(TemporalAccessor value) {
         if (value instanceof OffsetDateTime) {
-            return Literal.from(value.toString(), XSD.DATETIME);
+            return Literal.from(((OffsetDateTime) value).format(ISO_OFFSET_DATE_TIME), XSD.DATETIME);
         } else if (value instanceof LocalDateTime) {
-            return Literal.from(toDateTime((LocalDateTime) value).toString(), XSD.DATETIME);
+            return Literal.from(toDateTime((LocalDateTime) value).format(ISO_OFFSET_DATE_TIME), XSD.DATETIME);
         } else if (value instanceof Instant) {
-            return Literal.from(toDateTime((Instant) value).toString(), XSD.DATETIME);
+            return Literal.from(toDateTime((Instant) value).format(ISO_OFFSET_DATE_TIME), XSD.DATETIME);
         } else if (value instanceof ZonedDateTime) {
-            return Literal.from(((ZonedDateTime) value).toOffsetDateTime().toString(), XSD.DATETIME);
+            return Literal.from(((ZonedDateTime) value).toOffsetDateTime().format(ISO_OFFSET_DATE_TIME), XSD.DATETIME);
         } else if (value instanceof OffsetTime) {
-            return Literal.from(value.toString(), XSD.TIME);
+            return Literal.from(((OffsetTime) value).format(ISO_OFFSET_TIME), XSD.TIME);
         } else if (value instanceof LocalTime) {
-            return Literal.from(toTime((LocalTime) value).toString(), XSD.TIME);
+            return Literal.from(toTime((LocalTime) value).format(ISO_OFFSET_TIME), XSD.TIME);
         } else if (value instanceof LocalDate) {
-            return Literal.from(value.toString(), XSD.DATE);
+            return Literal.from(((LocalDate) value).format(ISO_DATE), XSD.DATE);
         }
         throw new DatatypeMappingException("Unsupported temporal accessor value " + value);
     }
