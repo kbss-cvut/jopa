@@ -23,24 +23,24 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
+import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.SYSTEM_OFFSET;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JenaUtilsTest {
+
+    private static final Assertion ASSERTION = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
 
     @Test
     public void literalToValueReturnsTypeRepresentedByLiteral() {
@@ -66,12 +66,12 @@ public class JenaUtilsTest {
 
     @Test
     void valueToRdfNodeCreatesRdfLiteralFromOntoDriverLiteralWithLexicalFormAndDatatype() {
-        final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = new cz.cvut.kbss.ontodriver.model.Literal("P1Y", XSD.duration.getURI());
-        final Assertion a = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
-        final RDFNode result = JenaUtils.valueToRdfNode(a, new Value<>(ontoLiteral));
-        assertThat(result, instanceOf(Literal.class));
+        final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = new cz.cvut.kbss.ontodriver.model.Literal("P1Y",
+                XSD.duration.getURI());
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(ontoLiteral));
+        assertTrue(result.isLiteral());
         assertEquals(ontoLiteral.getLexicalForm(), result.asLiteral().getLexicalForm());
-        assertEquals(XSD.duration.getURI(), result.asLiteral().getDatatype().getURI());
+        assertEquals(XSD.duration.getURI(), result.asLiteral().getDatatypeURI());
     }
 
     @Test
@@ -90,7 +90,8 @@ public class JenaUtilsTest {
 
     @Test
     void literalToValueTransformsCustomDatatypeLiteralToOntoDriverLiteral() {
-        final Literal literal = ResourceFactory.createTypedLiteral("P1Y", TypeMapper.getInstance().getTypeByName(XSD.gMonth.getURI()));
+        final Literal literal = ResourceFactory.createTypedLiteral("P1Y",
+                TypeMapper.getInstance().getTypeByName(XSD.gMonth.getURI()));
         final Object result = JenaUtils.literalToValue(literal);
         assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
         final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
@@ -100,15 +101,58 @@ public class JenaUtilsTest {
 
     @Test
     void valueToRdfNodeCreatesXsdDateTimeFromJavaUtilDateInstance() {
-        final Instant instant = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        final Instant instant = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         final Date date = Date.from(instant);
-        final Assertion a = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
-        final RDFNode result = JenaUtils.valueToRdfNode(a, new Value<>(date));
-        assertThat(result, instanceOf(Literal.class));
-        final TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        df.setTimeZone(tz);
-        assertEquals(df.format(date), result.asLiteral().getLexicalForm());
-        assertEquals(XSD.dateTime.getURI(), result.asLiteral().getDatatype().getURI());
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(date));
+        assertTrue(result.isLiteral());
+        assertEquals(instant.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                result.asLiteral().getLexicalForm());
+        assertEquals(XSD.dateTime.getURI(), result.asLiteral().getDatatypeURI());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesXsdTimeFromLocalTimeInstance() {
+        final LocalTime value = LocalTime.now().truncatedTo(ChronoUnit.MILLIS);
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(value));
+        assertTrue(result.isLiteral());
+        assertEquals(value.atOffset(SYSTEM_OFFSET).format(DateTimeFormatter.ISO_OFFSET_TIME),
+                result.asLiteral().getLexicalForm());
+        assertEquals(XSD.time.getURI(), result.asLiteral().getDatatypeURI());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesXsdDateFromLocalDateInstance() {
+        final LocalDate value = LocalDate.now();
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(value));
+        assertTrue(result.isLiteral());
+        assertEquals(value.format(DateTimeFormatter.ISO_DATE), result.asLiteral().getLexicalForm());
+        assertEquals(XSD.date.getURI(), result.asLiteral().getDatatypeURI());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesXsdDurationFromJavaPeriodInstance() {
+        final Period value = Period.ofDays(Generator.randomInt(10000));
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(value));
+        assertTrue(result.isLiteral());
+        assertEquals(value.toString(), result.asLiteral().getLexicalForm());
+        assertEquals(XSD.duration.getURI(), result.asLiteral().getDatatypeURI());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesXsdIntegerFromJavaBigInteger() {
+        final BigInteger value = BigInteger.valueOf(System.currentTimeMillis());
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(value));
+        assertTrue(result.isLiteral());
+        assertEquals(value.toString(), result.asLiteral().getLexicalForm());
+        assertEquals(XSD.integer.getURI(), result.asLiteral().getDatatypeURI());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesXsdDecimalFromJavaBigDecimal() {
+        final BigDecimal value = BigDecimal.valueOf(Math.PI);
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(value));
+        assertTrue(result.isLiteral());
+        assertEquals(value.toString(), result.asLiteral().getLexicalForm());
+        assertEquals(XSD.decimal.getURI(), result.asLiteral().getDatatypeURI());
     }
 }
