@@ -13,6 +13,7 @@
 package cz.cvut.kbss.ontodriver.jena.util;
 
 import cz.cvut.kbss.jopa.datatype.xsd.XsdDatatypeMapper;
+import cz.cvut.kbss.jopa.datatype.xsd.XsdTemporalMapper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -23,8 +24,9 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
 
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * Utility methods for working with Jena API.
@@ -49,27 +51,38 @@ public class JenaUtils {
         } else if (val instanceof LangString) {
             final LangString langString = (LangString) val;
             return langString.getLanguage().map(lang -> ResourceFactory.createLangLiteral(langString.getValue(), lang))
-                    .orElseGet(() -> ResourceFactory.createTypedLiteral(langString.getValue()));
+                             .orElseGet(() -> ResourceFactory.createTypedLiteral(langString.getValue()));
         } else if (val instanceof String) {
-            return assertion.hasLanguage() ? ResourceFactory.createLangLiteral((String) val, assertion.getLanguage()) : ResourceFactory.createTypedLiteral(val);
+            return assertion.hasLanguage() ? ResourceFactory.createLangLiteral((String) val,
+                    assertion.getLanguage()) : ResourceFactory.createTypedLiteral(val);
         } else if (val instanceof cz.cvut.kbss.ontodriver.model.Literal) {
-            return ResourceFactory.createTypedLiteral(((cz.cvut.kbss.ontodriver.model.Literal) val).getLexicalForm(),
-                    TypeMapper.getInstance().getTypeByName(((cz.cvut.kbss.ontodriver.model.Literal) val).getDatatype()));
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = (cz.cvut.kbss.ontodriver.model.Literal) val;
+            return createLiteral(ontoLiteral);
         } else if (val instanceof Date) {
-            // Jena does not like Java Date
-            final GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime((Date) val);
-            return ResourceFactory.createTypedLiteral(cal);
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((Date) val).toInstant());
+            return createLiteral(ontoLiteral);
+        } else if (val instanceof TemporalAccessor) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAccessor) val));
+            return createLiteral(ontoLiteral);
+        } else if (val instanceof TemporalAmount) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAmount) val));
+            return createLiteral(ontoLiteral);
         } else {
             return ResourceFactory.createTypedLiteral(val);
         }
+    }
+
+    private static Literal createLiteral(cz.cvut.kbss.ontodriver.model.Literal ontoLiteral) {
+        return ResourceFactory.createTypedLiteral(ontoLiteral.getLexicalForm(),
+                TypeMapper.getInstance().getTypeByName(ontoLiteral.getDatatype()));
     }
 
     public static Object literalToValue(Literal literal) {
         if (literal.getDatatype().equals(RDFLangString.rdfLangString)) {
             return new LangString(literal.getString(), literal.getLanguage());
         }
-        final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(literal.getLexicalForm(), literal.getDatatypeURI());
+        final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(
+                literal.getLexicalForm(), literal.getDatatypeURI());
         return XsdDatatypeMapper.getInstance().map(lit).orElse(lit);
     }
 }
