@@ -9,6 +9,12 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+
+import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.SYSTEM_OFFSET;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,12 +70,54 @@ class DatatypeTransformerTest {
     }
 
     @Test
-    void transformOlwLiteralToObjectReturnsOntoDriverLiteralForUnknownDatatype() {
+    void transformOwlLiteralToObjectReturnsOntoDriverLiteralForUnknownDatatype() {
         final OWLLiteral literal = DATA_FACTORY.getOWLLiteral("P1Y", DATA_FACTORY.getOWLDatatype(XSD.DURATION));
         final Object result = DatatypeTransformer.transform(literal);
         assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
         final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
         assertEquals(literal.getLiteral(), literalResult.getLexicalForm());
         assertEquals(literal.getDatatype().toStringID(), literalResult.getDatatype());
+    }
+
+    @Test
+    void transformObjectToOwlLiteralReturnsXsdDateTimeAtUTCOffsetForDate() {
+        final Instant instant = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        final Date value = Date.from(instant);
+        final OWLLiteral result = DatatypeTransformer.transform(value, null);
+        assertEquals(instant.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                result.getLiteral());
+        assertEquals(XSD.DATETIME, result.getDatatype().toStringID());
+    }
+
+    @Test
+    void transformObjectToOwlLiteralReturnsXsdDateTimeAtSystemOffsetForLocalDateTime() {
+        final LocalDateTime value = LocalDateTime.now();
+        final OWLLiteral result = DatatypeTransformer.transform(value, null);
+        assertEquals(value.atOffset(SYSTEM_OFFSET).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), result.getLiteral());
+        assertEquals(XSD.DATETIME, result.getDatatype().toStringID());
+    }
+
+    @Test
+    void transformObjectToOwlLiteralReturnsXsdTimeAtSystemOffsetForLocalTime() {
+        final LocalTime value = LocalTime.now();
+        final OWLLiteral result = DatatypeTransformer.transform(value, null);
+        assertEquals(value.atOffset(SYSTEM_OFFSET).format(DateTimeFormatter.ISO_OFFSET_TIME), result.getLiteral());
+        assertEquals(XSD.TIME, result.getDatatype().toStringID());
+    }
+
+    @Test
+    void transformObjectToOwlLiteralReturnsXsdDateForLocalDate() {
+        final LocalDate value = LocalDate.now();
+        final OWLLiteral result = DatatypeTransformer.transform(value, null);
+        assertEquals(value.format(DateTimeFormatter.ISO_DATE), result.getLiteral());
+        assertEquals(XSD.DATE, result.getDatatype().toStringID());
+    }
+
+    @Test
+    void transformObjectToOwlLiteralReturnsXsdDurationForJavaDuration() {
+        final Duration value = Duration.ofSeconds(158);
+        final OWLLiteral result = DatatypeTransformer.transform(value, null);
+        assertEquals(value.toString(), result.getLiteral());
+        assertEquals(XSD.DURATION, result.getDatatype().toStringID());
     }
 }
