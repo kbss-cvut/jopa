@@ -1,25 +1,25 @@
 /**
  * Copyright (C) 2020 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.*;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +39,7 @@ public class JenaDataAccessor implements DataAccessor {
         for (Quad t : data) {
             final Resource subject = createResource(t.getSubject().toString());
             final Property property = createProperty(t.getProperty().toString());
-            final RDFNode value = toValue(t.getValue(), t.getLanguage());
+            final RDFNode value = toValue(t);
             ds.add(Collections.singletonList(createStatement(subject, property, value)),
                     t.getContext() != null ? t.getContext().toString() : null);
         }
@@ -47,10 +47,8 @@ public class JenaDataAccessor implements DataAccessor {
         ds.commit();
     }
 
-    private RDFNode toValue(Object value, String language) {
-        return value instanceof URI ? createResource(value.toString()) :
-               (value instanceof String ? ResourceFactory.createLangLiteral(value.toString(), language) :
-                ResourceFactory.createTypedLiteral(value));
+    private RDFNode toValue(Quad quad) {
+        return JenaUtils.valueToRdfNode(Assertion.createPropertyAssertion(quad.getProperty(), quad.getLanguage(), false), new Value<>(quad.getValue()));
     }
 
     @Override
@@ -62,7 +60,7 @@ public class JenaDataAccessor implements DataAccessor {
 
     private boolean doesQuadExist(Quad quad, Model model) {
         return model.contains(createResource(quad.getSubject().toString()),
-                createProperty(quad.getProperty().toString()), toValue(quad.getValue(), quad.getLanguage()));
+                createProperty(quad.getProperty().toString()), toValue(quad));
     }
 
     @Override
