@@ -24,20 +24,22 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SingularDataPropertyStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
@@ -51,7 +53,6 @@ class SingularDataPropertyStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.mocks = new MetamodelMocks();
     }
 
@@ -84,69 +85,19 @@ class SingularDataPropertyStrategyTest {
     }
 
     @Test
-    void buildAxiomsTransformsLocalDateToJavaUtilDate() throws Exception {
-        final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
-                mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateAtt(), descriptor, mapperMock);
-        final OWLClassT t = new OWLClassT();
-        t.setUri(PK);
-        t.setLocalDate(LocalDate.now());
-
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
-        strategy.buildAxiomValuesFromInstance(t, builder);
-        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
-        assertEquals(1, valueDescriptor.getAssertions().size());
-        final List<Value<?>> values = valueDescriptor
-                .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
-        assertEquals(1, values.size());
-        final Object value = values.get(0).getValue();
-        assertTrue(value instanceof Date);
-    }
-
-    @Test
-    void buildAxiomsTransformsLocalDateTimeToJavaUtilDate() throws Exception {
-        final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
-                mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateTimeAtt(), descriptor, mapperMock);
-        final OWLClassT t = new OWLClassT();
-        t.setUri(PK);
-        t.setLocalDateTime(LocalDateTime.now());
-
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
-        strategy.buildAxiomValuesFromInstance(t, builder);
-        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
-        assertEquals(1, valueDescriptor.getAssertions().size());
-        final List<Value<?>> values = valueDescriptor
-                .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
-        assertEquals(1, values.size());
-        final Object value = values.get(0).getValue();
-        assertTrue(value instanceof Date);
-    }
-
-    @Test
-    void buildInstanceFieldValueTransformsJavaUtilDateToLocalDate() {
-        final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
-                mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateAtt(), descriptor, mapperMock);
-        final OWLClassT t = new OWLClassT();
-        t.setUri(PK);
-
-        final Axiom<Date> axiom = new AxiomImpl<>(NamedResource.create(PK), strategy.createAssertion(),
-                new Value<>(new Date()));
-        strategy.addValueFromAxiom(axiom);
-        strategy.buildInstanceFieldValue(t);
-        assertNotNull(t.getLocalDate());
-    }
-
-    @Test
-    void buildInstanceFieldValueTransformsJavaUtilDateToLocalDateTime() {
+    void buildInstanceFieldValueTransformsOffsetDateTimeToLocalDateTime() {
         final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
                 mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateTimeAtt(), descriptor, mapperMock);
         final OWLClassT t = new OWLClassT();
         t.setUri(PK);
 
-        final Axiom<Date> axiom = new AxiomImpl<>(NamedResource.create(PK), strategy.createAssertion(),
-                new Value<>(new Date()));
+        final OffsetDateTime value = OffsetDateTime.now();
+        final Axiom<OffsetDateTime> axiom = new AxiomImpl<>(NamedResource.create(PK), strategy.createAssertion(),
+                new Value<>(value));
         strategy.addValueFromAxiom(axiom);
         strategy.buildInstanceFieldValue(t);
         assertNotNull(t.getLocalDateTime());
+        assertEquals(value.toLocalDateTime(), t.getLocalDateTime());
     }
 
     @Test

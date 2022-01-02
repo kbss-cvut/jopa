@@ -5,39 +5,33 @@ import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.Date;
 
 /**
- * Converts between a xsd:dateTime representation and {@link Date} instances.
+ * Converts between Java 8 {@link LocalDateTime} and a supported xsd:dateTime representation.
  * <p>
- * Supported representations are {@link OffsetDateTime} and {@link Literal}.
- * <p>
- * Note that when transforming to axiom value, UTC time zone is assumed to provide consistent results.
+ * This converter supports {@link OffsetDateTime} and {@link cz.cvut.kbss.ontodriver.model.Literal} as date time.
  */
-public class DateConverter implements ConverterWrapper<Date, Object> {
+public class LocalDateTimeConverter implements ConverterWrapper<LocalDateTime, Object> {
 
     @Override
-    public Object convertToAxiomValue(Date value) {
+    public Object convertToAxiomValue(LocalDateTime value) {
         // Let the OntoDriver take care of conversion to a correct repository value
         return value;
     }
 
     @Override
-    public Date convertToAttribute(Object value) {
+    public LocalDateTime convertToAttribute(Object value) {
         assert value != null;
         if (value instanceof OffsetDateTime) {
-            return offsetDateTimeToDate((OffsetDateTime) value);
+            return ((OffsetDateTime) value).toLocalDateTime();
         } else {
             assert value instanceof Literal;
             final Literal literal = (Literal) value;
             assert XSD.DATETIME.equals(literal.getDatatype());
-            return offsetDateTimeToDate(XsdDateTimeMapper.map(literal.getLexicalForm()));
+            return XsdDateTimeMapper.map(literal.getLexicalForm()).toLocalDateTime();
         }
-    }
-
-    private Date offsetDateTimeToDate(OffsetDateTime value) {
-        return Date.from(value.toInstant());
     }
 
     @Override

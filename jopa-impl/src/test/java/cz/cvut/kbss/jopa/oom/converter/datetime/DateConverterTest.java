@@ -14,13 +14,6 @@ class DateConverterTest {
     private final DateConverter sut = new DateConverter();
 
     @Test
-    void convertToAxiomValueConvertsDateToLiteralAtUTC() {
-        final Date value = new Date();
-        final Literal expected = Literal.from(value.toInstant().toString(), XSD.DATETIME);
-        assertEquals(expected, sut.convertToAxiomValue(value));
-    }
-
-    @Test
     void convertToAttributeConvertsOffsetDateTimeToDate() {
         final OffsetDateTime value = OffsetDateTime.now();
         assertEquals(new Date(value.toInstant().toEpochMilli()), sut.convertToAttribute(value));
