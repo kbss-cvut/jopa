@@ -574,7 +574,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNotNull(resultD.getOwlClassA());
     }
 
-    @Disabled
     @Test
     void persistSupportsLocalDateTimeApi() {
         this.em = getEntityManager("persistSupportsLocalDateTimeApi", false);
