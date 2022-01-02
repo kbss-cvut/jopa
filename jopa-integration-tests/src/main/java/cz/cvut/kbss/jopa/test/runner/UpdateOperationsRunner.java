@@ -29,6 +29,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -499,7 +501,8 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassP p = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         final URI property = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty");
-        p.getProperties().put(property, new HashSet<>(Arrays.asList(1, "Two", new Date())));
+        p.getProperties().put(property, new HashSet<>(Arrays.asList(1, "Two", OffsetDateTime.now()
+                .truncatedTo(ChronoUnit.MILLIS))));
         em.getTransaction().commit();
 
         em.clear();

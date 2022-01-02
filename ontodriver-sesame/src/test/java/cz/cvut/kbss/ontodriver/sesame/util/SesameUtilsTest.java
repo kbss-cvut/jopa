@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -172,7 +173,8 @@ class SesameUtilsTest {
     void createLiteralReturnsXsdDateTimeAtUTCForDate() {
         final Date value = new Date();
         final Literal result = SesameUtils.createLiteral(value, null, vf);
-        assertEquals(value.toInstant().toString(), result.getLabel());
+        assertEquals(value.toInstant().atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), result.getLabel());
         assertEquals(XSD.DATETIME, result.getDatatype());
     }
 
@@ -182,7 +184,7 @@ class SesameUtilsTest {
         final Literal literal = SesameUtils.createLiteral(value, null, vf);
         ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(value);
         OffsetDateTime offsetDateTime = OffsetDateTime.of(value.toLocalDate(), value.toLocalTime(), offset);
-        assertEquals(offsetDateTime.toString(), literal.getLabel());
+        assertEquals(offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), literal.getLabel());
         assertEquals(XSD.DATETIME, literal.getDatatype());
     }
 
