@@ -70,13 +70,21 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     public static final String DISABLE_IC_VALIDATION_ON_LOAD = "cz.cvut.jopa.ic.validation.disableOnLoad";
 
     /**
-     * Indicates whether JOPA should prefer {@link MultilingualString} over {@link String} when target type is unclear from
-     * context.
-     *
-     * For example, when a field is of type {@link Object} and the value is language-tagged string, this setting will influence
-     * the actual type set on the field.
+     * Indicates whether JOPA should prefer {@link MultilingualString} over {@link String} when target type is unclear
+     * from context.
+     * <p>
+     * For example, when a field is of type {@link Object} and the value is language-tagged string, this setting will
+     * influence the actual type set on the field.
      */
     public static final String PREFER_MULTILINGUAL_STRING = "cz.cvut.jopa.preferMultilingualString";
+
+    /**
+     * Name of a custom {@link cz.cvut.kbss.jopa.loaders.ClasspathScanner} implementation used to discover entity
+     * classes.
+     * <p>
+     * The specified class must have a public no-arg constructor.
+     */
+    public static final String CLASSPATH_SCANNER_CLASS = "cz.cvut.jopa.classpathScanner";
 
     private JOPAPersistenceProperties() {
         throw new AssertionError();
