@@ -28,7 +28,7 @@ import java.util.Set;
  */
 public class PersistenceUnitClassFinder {
 
-    private final ClasspathScanner classProcessor = new ClasspathScanner();
+    private final ClasspathScanner classProcessor = new DefaultClasspathScanner();
 
     private final EntityLoader entityLoader = new EntityLoader();
     private final ResultSetMappingLoader resultSetMappingLoader = new ResultSetMappingLoader();
