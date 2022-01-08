@@ -128,13 +128,10 @@ public class DefaultClasspathScanner implements ClasspathScanner {
             while (entries.hasMoreElements()) {
                 final JarEntry entry = entries.nextElement();
                 final String entryName = entry.getName();
-                String className = null;
                 if (entryName.endsWith(CLASS_FILE_SUFFIX) && entryName.contains(pathPattern)) {
-                    className = entryName.substring(entryName.indexOf(pathPattern));
+                    String className = entryName.substring(entryName.indexOf(pathPattern));
                     className = className.replace('/', '.').replace('\\', '.');
                     className = className.substring(0, className.length() - CLASS_FILE_SUFFIX.length());
-                }
-                if (className != null) {
                     processClass(className);
                 }
             }
