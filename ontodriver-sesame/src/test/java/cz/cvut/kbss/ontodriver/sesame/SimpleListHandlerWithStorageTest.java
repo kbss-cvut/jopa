@@ -17,20 +17,20 @@ package cz.cvut.kbss.ontodriver.sesame;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SimpleListHandlerWithStorageTest
         extends ListHandlerWithStorageTestBase<SimpleListDescriptor, SimpleListValueDescriptor> {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         connector = repositoryProvider.createConnector(false);
         this.handler = new SimpleListHandler(connector, connector.getValueFactory());

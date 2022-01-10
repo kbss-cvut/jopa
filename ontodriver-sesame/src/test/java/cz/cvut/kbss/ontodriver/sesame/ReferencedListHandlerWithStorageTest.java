@@ -17,15 +17,15 @@ package cz.cvut.kbss.ontodriver.sesame;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReferencedListHandlerWithStorageTest
         extends ListHandlerWithStorageTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
@@ -33,7 +33,7 @@ public class ReferencedListHandlerWithStorageTest
     private static final String NODE_CONTENT_PROPERTY =
             "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         connector = repositoryProvider.createConnector(false);
         this.handler = new ReferencedListHandler(connector, connector.getValueFactory());

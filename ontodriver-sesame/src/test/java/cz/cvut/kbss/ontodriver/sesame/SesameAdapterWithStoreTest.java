@@ -31,16 +31,16 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SesameAdapterWithStoreTest {
 
@@ -54,7 +54,7 @@ public class SesameAdapterWithStoreTest {
     private Connector connector;
     private SesameAdapter adapter;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                                                                       .physicalUri("memory-store").build();
@@ -67,7 +67,7 @@ public class SesameAdapterWithStoreTest {
         this.vf = repo.getValueFactory();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         adapter.close();
         connector.close();

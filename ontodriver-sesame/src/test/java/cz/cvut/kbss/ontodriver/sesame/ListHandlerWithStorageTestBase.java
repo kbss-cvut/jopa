@@ -20,12 +20,12 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.environment.TestRepositoryProvider;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 
 import java.util.Collection;
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extends ListValueDescriptor> {
 
@@ -41,7 +41,7 @@ abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extend
 
     protected ListHandler<D, V> handler;
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         connector.close();
         repositoryProvider.close();
