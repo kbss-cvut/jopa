@@ -17,7 +17,8 @@ import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.*;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAmount;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
@@ -98,14 +99,12 @@ public class ParameterValueFactory {
             return new DoubleParameterValue((Double) value);
         } else if (value instanceof Float) {
             return new FloatParameterValue((Float) value);
-        } else if (isDateTime(value)) {
-            return new DateTimeParameterValue(value);
-        } else if (value instanceof ZonedDateTime) {
-            return new DateTimeParameterValue(((ZonedDateTime) value).toOffsetDateTime());
-        } else if (value instanceof LocalDate) {
-            return new DateParameterValue((LocalDate) value);
-        } else if (isTime(value)) {
-            return new TimeParameterValue(value);
+        } else if (value instanceof TemporalAccessor) {
+            return new TemporalParameterValue((TemporalAccessor) value);
+        } else if (value instanceof Date) {
+            return new TemporalParameterValue(((Date) value).toInstant());
+        } else if (value instanceof TemporalAmount) {
+            return new DurationParameterValue((TemporalAmount) value);
         } else if (metamodelProvider.isEntityType(value.getClass())) {
             return new EntityParameterValue(value, metamodelProvider);
         } else if (value instanceof Collection) {
@@ -114,15 +113,6 @@ public class ParameterValueFactory {
         } else {
             return new StringParameterValue(value.toString());
         }
-    }
-
-    private static boolean isDateTime(Object value) {
-        return value instanceof Date || value instanceof LocalDateTime || value instanceof OffsetDateTime ||
-                value instanceof Instant;
-    }
-
-    private static boolean isTime(Object value) {
-        return value instanceof LocalTime || value instanceof OffsetTime;
     }
 
     /**
