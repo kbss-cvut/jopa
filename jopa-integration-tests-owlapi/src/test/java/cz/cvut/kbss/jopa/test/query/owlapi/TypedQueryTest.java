@@ -87,4 +87,11 @@ public class TypedQueryTest extends TypedQueryRunner {
     protected void querySupportsCollectionParameters() {
         // OWL2Query does not support FILTER (?x IN ...) in queries
     }
+
+    @Disabled
+    @Test
+    @Override
+    protected void querySupportsSelectionByDate() {
+        // OWL2Query does not support filter by date and delete (used in cleanup)
+    }
 }
