@@ -17,7 +17,8 @@ package cz.cvut.kbss.jopa.test.integration.owlapi;
 import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.DeleteOperationsRunner;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,13 +30,15 @@ public class DeleteOperationsTest extends DeleteOperationsRunner {
         super(LOG, new OwlapiPersistenceFactory(), new OwlapiDataAccessor());
     }
 
-    @Ignore
+    @Disabled
+    @Test
     @Override
     public void settingDatatypeCollectionToNullRemovesAllValues() {
         // Another issue with OWL2Query, causes reasoner exception
     }
 
-    @Ignore
+    @Disabled
+    @Test
     @Override
     public void clearingDatatypeCollectionRemovesAllValues() {
         // Another issue with OWL2Query, causes reasoner exception
