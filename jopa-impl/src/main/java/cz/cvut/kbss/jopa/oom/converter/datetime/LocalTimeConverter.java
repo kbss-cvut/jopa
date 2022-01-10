@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.oom.converter.datetime;
 
+import cz.cvut.kbss.jopa.datatype.DateTimeUtil;
 import cz.cvut.kbss.jopa.datatype.xsd.XsdTimeMapper;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
@@ -17,8 +18,8 @@ public class LocalTimeConverter implements ConverterWrapper<LocalTime, Object> {
 
     @Override
     public Object convertToAxiomValue(LocalTime value) {
-        // Let the OntoDriver take care of conversion to a correct repository value
-        return value;
+        assert value != null;
+        return DateTimeUtil.toTime(value);
     }
 
     @Override

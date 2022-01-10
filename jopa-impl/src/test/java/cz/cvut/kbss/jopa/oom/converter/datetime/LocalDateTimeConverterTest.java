@@ -6,14 +6,27 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRules;
 import java.util.Date;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LocalDateTimeConverterTest {
 
     private final LocalDateTimeConverter sut = new LocalDateTimeConverter();
+
+    @Test
+    void convertToAxiomValueTransformsLocalDateTimeToOffsetDateTimeAtSystemOffset() {
+        final LocalDateTime value = LocalDateTime.now();
+        final Object result = sut.convertToAxiomValue(value);
+        assertThat(result, instanceOf(OffsetDateTime.class));
+        final ZoneRules zoneRules = ZoneId.systemDefault().getRules();
+        assertEquals(value.atOffset(zoneRules.getOffset(value)), result);
+    }
 
     @Test
     void convertToAttributeTransformsJavaOffsetDateTimeToLocalDateTime() {

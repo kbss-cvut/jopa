@@ -4,14 +4,26 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DateConverterTest {
 
     private final DateConverter sut = new DateConverter();
+
+    @Test
+    void convertToAxiomValueConvertsDateToOffsetDateTimeAtUTC() {
+        final Date value = new Date();
+        final Object result = sut.convertToAxiomValue(value);
+        assertThat(result, instanceOf(OffsetDateTime.class));
+        assertEquals(value.toInstant().atOffset(ZoneOffset.UTC), result);
+    }
 
     @Test
     void convertToAttributeConvertsOffsetDateTimeToDate() {
