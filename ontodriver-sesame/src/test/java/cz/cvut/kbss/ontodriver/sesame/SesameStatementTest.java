@@ -22,12 +22,14 @@ import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class SesameStatementTest {
 
     private static final String SELECT_ENTITY_QUERY =
@@ -42,7 +44,6 @@ public class SesameStatementTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.statement = new SesameStatement(executorMock);
     }
 

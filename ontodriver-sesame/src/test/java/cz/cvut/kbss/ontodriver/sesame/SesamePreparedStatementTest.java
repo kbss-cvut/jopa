@@ -19,16 +19,17 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class SesamePreparedStatementTest {
 
     @Mock
@@ -37,12 +38,6 @@ public class SesamePreparedStatementTest {
     private TupleQueryResult resultMock;
 
     private PreparedStatement statement;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        when(executorMock.executeSelectQuery(any(String.class))).thenReturn(resultMock);
-    }
 
     @Test
     public void testConstructorEmptyStatement() {
@@ -55,6 +50,7 @@ public class SesamePreparedStatementTest {
 
     @Test
     public void testExecuteQuery() throws Exception {
+        when(executorMock.executeSelectQuery(any(String.class))).thenReturn(resultMock);
         final String query = "SELECT ?y WHERE { ?x <http://property> ?y . }";
         final String expected = "SELECT ?y WHERE { <http://subject> <http://property> ?y . }";
         initStatement(query);
@@ -81,6 +77,7 @@ public class SesamePreparedStatementTest {
 
     @Test
     public void executeQueryClosesCurrentResultSet() throws Exception {
+        when(executorMock.executeSelectQuery(any(String.class))).thenReturn(resultMock);
         final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }";
         initStatement(query);
         final ResultSet rsOne = statement.executeQuery();

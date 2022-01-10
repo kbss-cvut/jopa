@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,108 +18,112 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class SesameListsTest {
 
-	@Mock
-	private Procedure beforeMock;
+    @Mock
+    private Procedure beforeMock;
 
-	@Mock
+    @Mock
     private Procedure afterMock;
 
-	@Mock
-	private SesameAdapter adapterMock;
+    @Mock
+    private SesameAdapter adapterMock;
 
-	@Mock
-	private SimpleListHandler simpleListHandlerMock;
+    @Mock
+    private SimpleListHandler simpleListHandlerMock;
 
-	@Mock
-	private ReferencedListHandler referencedListHandlerMock;
+    @Mock
+    private ReferencedListHandler referencedListHandlerMock;
 
-	private SesameLists lists;
+    private SesameLists lists;
 
-	@Before
-	public void setUp() throws Exception {
-		MockitoAnnotations.openMocks(this);
-		when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
-		when(adapterMock.getReferencedListHandler()).thenReturn(referencedListHandlerMock);
+    @BeforeEach
+    public void setUp() throws Exception {
+        this.lists = new SesameLists(adapterMock, beforeMock, afterMock);
+    }
 
-		this.lists = new SesameLists(adapterMock, beforeMock, afterMock);
-	}
+    @Test
+    public void testLoadSimpleList() throws Exception {
+        when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
+        final SimpleListDescriptor descriptor = mock(SimpleListDescriptor.class);
 
-	@Test
-	public void testLoadSimpleList() throws Exception {
-		final SimpleListDescriptor descriptor = mock(SimpleListDescriptor.class);
+        lists.loadSimpleList(descriptor);
 
-		lists.loadSimpleList(descriptor);
+        verify(beforeMock).execute();
+        verify(adapterMock).getSimpleListHandler();
+        verify(simpleListHandlerMock).loadList(descriptor);
+    }
 
-		verify(beforeMock).execute();
-		verify(adapterMock).getSimpleListHandler();
-		verify(simpleListHandlerMock).loadList(descriptor);
-	}
+    @Test
+    public void testPersistSimpleList() throws Exception {
+        when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
+        final SimpleListValueDescriptor descriptor = mock(SimpleListValueDescriptor.class);
 
-	@Test
-	public void testPersistSimpleList() throws Exception {
-		final SimpleListValueDescriptor descriptor = mock(SimpleListValueDescriptor.class);
+        lists.persistSimpleList(descriptor);
 
-		lists.persistSimpleList(descriptor);
+        verify(beforeMock).execute();
+        verify(adapterMock).getSimpleListHandler();
+        verify(simpleListHandlerMock).persistList(descriptor);
+        verify(afterMock).execute();
+    }
 
-		verify(beforeMock).execute();
-		verify(adapterMock).getSimpleListHandler();
-		verify(simpleListHandlerMock).persistList(descriptor);
-		verify(afterMock).execute();
-	}
+    @Test
+    public void testUpdateSimpleList() throws Exception {
+        when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
+        final SimpleListValueDescriptor descriptor = mock(SimpleListValueDescriptor.class);
 
-	@Test
-	public void testUpdateSimpleList() throws Exception {
-		final SimpleListValueDescriptor descriptor = mock(SimpleListValueDescriptor.class);
+        lists.updateSimpleList(descriptor);
 
-		lists.updateSimpleList(descriptor);
+        verify(beforeMock).execute();
+        verify(adapterMock).getSimpleListHandler();
+        verify(simpleListHandlerMock).updateList(descriptor);
+        verify(afterMock).execute();
+    }
 
-		verify(beforeMock).execute();
-		verify(adapterMock).getSimpleListHandler();
-		verify(simpleListHandlerMock).updateList(descriptor);
-		verify(afterMock).execute();
-	}
+    @Test
+    public void testLoadReferencedList() throws Exception {
+        when(adapterMock.getReferencedListHandler()).thenReturn(referencedListHandlerMock);
+        final ReferencedListDescriptor descriptor = mock(ReferencedListDescriptor.class);
 
-	@Test
-	public void testLoadReferencedList() throws Exception {
-		final ReferencedListDescriptor descriptor = mock(ReferencedListDescriptor.class);
+        lists.loadReferencedList(descriptor);
 
-		lists.loadReferencedList(descriptor);
+        verify(beforeMock).execute();
+        verify(adapterMock).getReferencedListHandler();
+        verify(referencedListHandlerMock).loadList(descriptor);
+    }
 
-		verify(beforeMock).execute();
-		verify(adapterMock).getReferencedListHandler();
-		verify(referencedListHandlerMock).loadList(descriptor);
-	}
+    @Test
+    public void testPersistReferencedList() throws Exception {
+        when(adapterMock.getReferencedListHandler()).thenReturn(referencedListHandlerMock);
+        final ReferencedListValueDescriptor descriptor = mock(ReferencedListValueDescriptor.class);
 
-	@Test
-	public void testPersistReferencedList() throws Exception {
-		final ReferencedListValueDescriptor descriptor = mock(ReferencedListValueDescriptor.class);
+        lists.persistReferencedList(descriptor);
 
-		lists.persistReferencedList(descriptor);
+        verify(beforeMock).execute();
+        verify(adapterMock).getReferencedListHandler();
+        verify(referencedListHandlerMock).persistList(descriptor);
+        verify(afterMock).execute();
+    }
 
-		verify(beforeMock).execute();
-		verify(adapterMock).getReferencedListHandler();
-		verify(referencedListHandlerMock).persistList(descriptor);
-		verify(afterMock).execute();
-	}
+    @Test
+    public void testUpdateReferencedList() throws Exception {
+        when(adapterMock.getReferencedListHandler()).thenReturn(referencedListHandlerMock);
+        final ReferencedListValueDescriptor descriptor = mock(ReferencedListValueDescriptor.class);
 
-	@Test
-	public void testUpdateReferencedList() throws Exception {
-		final ReferencedListValueDescriptor descriptor = mock(ReferencedListValueDescriptor.class);
+        lists.updateReferencedList(descriptor);
 
-		lists.updateReferencedList(descriptor);
-
-		verify(beforeMock).execute();
-		verify(adapterMock).getReferencedListHandler();
-		verify(referencedListHandlerMock).updateList(descriptor);
-		verify(afterMock).execute();
-	}
+        verify(beforeMock).execute();
+        verify(adapterMock).getReferencedListHandler();
+        verify(referencedListHandlerMock).updateList(descriptor);
+        verify(afterMock).execute();
+    }
 }

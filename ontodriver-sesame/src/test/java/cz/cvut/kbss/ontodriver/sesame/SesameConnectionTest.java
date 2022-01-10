@@ -24,8 +24,9 @@ import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
 import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.*;
@@ -33,6 +34,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class SesameConnectionTest {
 
     @Mock
@@ -42,7 +44,6 @@ public class SesameConnectionTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.connection = new SesameConnection(adapterMock);
     }
 

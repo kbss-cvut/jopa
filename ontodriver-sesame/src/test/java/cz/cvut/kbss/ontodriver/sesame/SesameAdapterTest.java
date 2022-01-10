@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -34,9 +34,10 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -45,6 +46,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class SesameAdapterTest {
 
     private static final NamedResource SUBJECT = NamedResource
@@ -65,10 +67,9 @@ class SesameAdapterTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         when(connectorMock.getValueFactory()).thenReturn(VF);
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
-                                                                      .physicalUri("memory-store").build();
+                .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         this.adapter = new SesameAdapter(connectorMock, configuration);
 
@@ -77,7 +78,7 @@ class SesameAdapterTest {
     @Test
     void testSesameAdapter() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
-                                                                      .physicalUri("memory-store").build();
+                .physicalUri("memory-store").build();
         final DriverConfiguration dc = new DriverConfiguration(sp);
         dc.setProperty(SesameConfigParam.LOAD_ALL_THRESHOLD, "1");
         this.adapter = new SesameAdapter(connectorMock, dc);
@@ -305,7 +306,7 @@ class SesameAdapterTest {
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
             assertEquals(statements.get(ax.getAssertion()).getObject().stringValue(), ax.getValue()
-                                                                                        .getValue().toString());
+                    .getValue().toString());
         }
     }
 
@@ -369,7 +370,7 @@ class SesameAdapterTest {
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
             assertEquals(statements.get(ax.getAssertion()).getObject().stringValue(), ax.getValue()
-                                                                                        .getValue().toString());
+                    .getValue().toString());
         }
     }
 
@@ -418,10 +419,6 @@ class SesameAdapterTest {
         }
         when(
                 connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(stmts);
-        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyOne), null, false))
-                .thenReturn(statements.get(asOne));
-        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyTwo), null, false))
-                .thenReturn(statements.get(asTwo));
 
         final Collection<Axiom<?>> res = adapter.find(desc);
         verify(connectorMock).findStatements(subjectIri, null, null, false);
@@ -481,10 +478,7 @@ class SesameAdapterTest {
         final Collection<Statement> inferred = new ArrayList<>();
         inferred.add(VF.createStatement(subjectIri, VF.createIRI(propertyTwo), VF.createLiteral(true)));
         statements.get(asTwo).addAll(inferred);
-        when(
-                connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(stmts);
-        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyOne), null, false, Collections.emptySet()))
-                .thenReturn(statements.get(asOne));
+        when(connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(stmts);
         when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyTwo), null, true, Collections.emptySet()))
                 .thenReturn(statements.get(asTwo));
 
@@ -533,8 +527,8 @@ class SesameAdapterTest {
         statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
                 VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
         when(
-                connectorMock.findStatements(subjectIri, VF.createIRI(propertyOne), null, false,
-                        null)).thenReturn(statements);
+                connectorMock.findStatements(eq(subjectIri), eq(VF.createIRI(propertyOne)), any(), eq(false),
+                        anyCollection())).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertTrue(res.isEmpty());
     }
@@ -552,11 +546,7 @@ class SesameAdapterTest {
         assertions.add(Assertion.createUnspecifiedPropertyAssertion(false));
         assertions.add(asOne);
         assertions.forEach(desc::addAssertion);
-        when(connectorMock
-                .findStatements(subjectIri, VF.createIRI(propertyOne), null, false))
-                .thenReturn(statements);
-        when(connectorMock.findStatements(subjectIri, null, null, false))
-                .thenReturn(statements);
+        when(connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(statements);
         final Collection<Axiom<?>> axioms = adapter.find(desc);
         assertEquals(1, axioms.size());
         final Assertion a = axioms.iterator().next().getAssertion();

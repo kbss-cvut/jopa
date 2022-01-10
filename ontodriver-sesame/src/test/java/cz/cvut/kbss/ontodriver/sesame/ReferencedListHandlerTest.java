@@ -25,18 +25,24 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ReferencedListHandlerTest
         extends ListHandlerTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
@@ -48,15 +54,14 @@ public class ReferencedListHandlerTest
     private final List<Statement> added = new ArrayList<>();
     private final List<Statement> removed = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         init();
         nodeContentProperty = vf.createIRI(NODE_CONTENT_PROPERTY);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final Assertion listProperty = Assertion.createObjectPropertyAssertion(
                 java.net.URI.create(LIST_PROPERTY), false);
         final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(
@@ -143,7 +148,7 @@ public class ReferencedListHandlerTest
         return stmts;
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void throwsICViolationWhenThereIsNoContentInHeadNode() throws Exception {
         final IRI headNode = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/SEQ0");
         when(
@@ -153,17 +158,12 @@ public class ReferencedListHandlerTest
         when(
                 connector.findStatements(eq(headNode), eq(nodeContentProperty), eq(null),
                         anyBoolean(), eq(Collections.emptySet()))).thenReturn(Collections.emptyList());
-        try {
-            final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-            assert res == null;
-            fail("This line should not have been reached.");
-        } finally {
+            assertThrows(IntegrityConstraintViolatedException.class, () -> handler.loadList(listDescriptor));
             verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
                     any(Value.class), anyBoolean());
-        }
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void throwsICViolationWhenThereIsNoContentInSomeListNode() throws Exception {
         final List<NamedResource> refList = initList();
         final List<java.net.URI> listNodes = initListNodes(refList);
@@ -172,8 +172,7 @@ public class ReferencedListHandlerTest
         when(
                 connector.findStatements(eq(elem), eq(nodeContentProperty), eq(null),
                         anyBoolean(), eq(Collections.emptySet()))).thenReturn(Collections.emptyList());
-        final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-        assert res == null;
+        assertThrows(IntegrityConstraintViolatedException.class, () -> handler.loadList(listDescriptor));
     }
 
     private Resource selectRandomNode(List<java.net.URI> nodes) {
@@ -183,7 +182,7 @@ public class ReferencedListHandlerTest
         return vf.createIRI(nodes.get(rand).toString());
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void throwsICViolationWhenThereAreMultipleSuccessorsForNode() throws Exception {
         runIcViolationTest(nextNodeProperty);
     }
@@ -196,10 +195,10 @@ public class ReferencedListHandlerTest
         final List<Statement> stmts = Arrays.asList(mock(Statement.class), mock(Statement.class));
         when(connector.findStatements(eq(node), eq(property), eq(null),
                 anyBoolean(), eq(Collections.emptySet()))).thenReturn(stmts);
-        handler.loadList(listDescriptor);
+        assertThrows(IntegrityConstraintViolatedException.class, () -> handler.loadList(listDescriptor));
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void throwsICViolationWhenThereAreMultipleReferencesInNode() throws Exception {
         runIcViolationTest(nodeContentProperty);
     }

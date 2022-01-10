@@ -25,9 +25,10 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class TypesHandlerTest {
 
     private static final String STR_PK = "http://krizik.felk.cvut.cz/ontologies/jopa/entityX";
@@ -59,7 +61,6 @@ public class TypesHandlerTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.handler = new TypesHandler(connectorMock, vf);
     }
 
@@ -112,7 +113,7 @@ public class TypesHandlerTest {
 
     @Test
     public void getsEmptyTypes() throws Exception {
-        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false))
+        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, true, Collections.emptySet()))
                 .thenReturn(Collections.emptySet());
         final Set<Axiom<java.net.URI>> res = handler
                 .getTypes(NamedResource.create(STR_PK), Collections.emptySet(), true);

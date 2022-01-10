@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,30 +27,34 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings({"unchecked"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescriptor, SimpleListValueDescriptor> {
 
     private final Collection<Statement> added = new ArrayList<>();
     private final Collection<Statement> removed = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() {
         init();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final Assertion listProperty = Assertion.createObjectPropertyAssertion(
                 java.net.URI.create(LIST_PROPERTY), false);
         final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(
@@ -97,10 +101,9 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         Resource subject = owner;
         final List<Statement> statements = new ArrayList<>(simpleList.size());
         for (NamedResource elem : simpleList) {
-            Statement stmt;
             final Resource value = vf.createIRI(elem.toString());
             final IRI property = subject == owner ? hasListProperty : nextNodeProperty;
-            stmt = vf.createStatement(subject, property, value);
+            final Statement stmt = vf.createStatement(subject, property, value);
             when(connector.findStatements(subject, property, null, false, Collections.emptySet()))
                     .thenReturn(Collections.singleton(stmt));
             statements.add(stmt);
@@ -109,29 +112,25 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         return statements;
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void throwsICViolationExceptionWhenMultipleHasListValuesFound() throws Exception {
         final Collection<Statement> stmts = new HashSet<>();
         stmts.add(mock(Statement.class));
         stmts.add(mock(Statement.class));
         when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet())).thenReturn(stmts);
 
-        try {
-            handler.loadList(listDescriptor);
-        } finally {
-            verify(connector, never())
-                    .findStatements(any(Resource.class), eq(nextNodeProperty), any(Value.class), any(Boolean.class),
-                            anyCollection());
-        }
+        assertThrows(IntegrityConstraintViolatedException.class, () -> handler.loadList(listDescriptor));
+        verify(connector, never())
+                .findStatements(any(Resource.class), eq(nextNodeProperty), any(Value.class), any(Boolean.class),
+                        anyCollection());
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void throwsICViolationExceptionWhenMultipleNodeSuccessorsAreFound() throws Exception {
         final Collection<Statement> stmts = new HashSet<>();
         stmts.add(mock(Statement.class));
         stmts.add(mock(Statement.class));
-        final Resource firstElem = vf
-                .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
+        final Resource firstElem = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
 
         when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet()))
@@ -139,17 +138,13 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         when(connector.findStatements(firstElem, nextNodeProperty, null, false, Collections.emptySet()))
                 .thenReturn(stmts);
 
-        try {
-            handler.loadList(listDescriptor);
-        } finally {
-            verify(connector).findStatements(owner, hasListProperty, null, false, Collections.emptySet());
-        }
+        assertThrows(IntegrityConstraintViolatedException.class, () -> handler.loadList(listDescriptor));
+        verify(connector).findStatements(owner, hasListProperty, null, false, Collections.emptySet());
     }
 
-    @Test(expected = IntegrityConstraintViolatedException.class)
+    @Test
     public void throwsICViolationExceptionWhenLiteralIsFoundInList() throws Exception {
-        final Resource firstElem = vf
-                .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
+        final Resource firstElem = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
         when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet()))
                 .thenReturn(Collections.singleton(firstStmt));
@@ -158,12 +153,9 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         when(connector.findStatements(firstElem, nextNodeProperty, null, false, Collections.emptySet()))
                 .thenReturn(Collections.singleton(nextStmt));
 
-        try {
-            handler.loadList(listDescriptor);
-        } finally {
-            verify(connector).findStatements(owner, hasListProperty, null, false, Collections.emptySet());
-            verify(connector).findStatements(firstElem, nextNodeProperty, null, false, Collections.emptySet());
-        }
+        assertThrows(IntegrityConstraintViolatedException.class, () -> handler.loadList(listDescriptor));
+        verify(connector).findStatements(owner, hasListProperty, null, false, Collections.emptySet());
+        verify(connector).findStatements(firstElem, nextNodeProperty, null, false, Collections.emptySet());
     }
 
     @Test

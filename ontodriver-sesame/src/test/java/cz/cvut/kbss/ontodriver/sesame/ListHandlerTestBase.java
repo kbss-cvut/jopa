@@ -24,7 +24,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends ListValueDescriptor> {
@@ -75,7 +75,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
 
     @Test
     public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-        when(connector.findStatements(owner, hasListProperty, null, false)).thenReturn(Collections.emptyList());
+        when(connector.findStatements(eq(owner), eq(hasListProperty), any(), eq(false), anyCollection())).thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assertNotNull(res);
         assertTrue(res.isEmpty());
