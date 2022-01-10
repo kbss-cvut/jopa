@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,8 +20,8 @@ import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 
@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BasicStorageConnectorTest {
 
@@ -45,7 +45,7 @@ public class BasicStorageConnectorTest {
     private OWLOntologyManager manager;
     private OWLOntology ontology;
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (connector != null) {
             connector.close();
@@ -82,12 +82,11 @@ public class BasicStorageConnectorTest {
         return targetFile.toURI();
     }
 
-    @Test(expected = InvalidOntologyIriException.class)
+    @Test
     public void throwsExceptionWhenLoadedOntologyHasDifferentIri() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet(), false);
         final URI logicalUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/different");
-        this.connector =
-                new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, logicalUri)));
+        assertThrows(InvalidOntologyIriException.class, () -> new BasicStorageConnector(new DriverConfiguration(initStorageProperties(physicalUri, logicalUri))));
     }
 
     @Test
@@ -114,24 +113,24 @@ public class BasicStorageConnectorTest {
         assertNotSame(snapshotOne.getOntology(), snapshotTwo.getOntology());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void throwsExceptionWhenTryingToGetSnapshotOfClosedConnector() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet(), false);
         this.connector = new BasicStorageConnector(
                 new DriverConfiguration(initStorageProperties(physicalUri, ONTOLOGY_URI)));
         connector.close();
         assertFalse(connector.isOpen());
-        connector.getOntologySnapshot();
+        assertThrows(IllegalStateException.class, () -> connector.getOntologySnapshot());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void throwsExceptionWhenApplyChangesCalledOnClose() throws Exception {
         final URI physicalUri = initOntology(Collections.emptySet(), false);
         this.connector = new BasicStorageConnector(
                 new DriverConfiguration(initStorageProperties(physicalUri, ONTOLOGY_URI)));
         connector.close();
         assertFalse(connector.isOpen());
-        connector.applyChanges(Collections.emptyList());
+        assertThrows(IllegalStateException.class, () -> connector.applyChanges(Collections.emptyList()));
     }
 
     @Test
@@ -207,7 +206,7 @@ public class BasicStorageConnectorTest {
         final String importedOntoLocation = "https://www.w3.org/TR/2003/PR-owl-guide-20031215/wine";
         final IRI importedOntoIri = IRI.create("http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine");
         final OWLImportsDeclaration importDecl = manager.getOWLDataFactory()
-                                                        .getOWLImportsDeclaration(IRI.create(importedOntoLocation));
+                .getOWLImportsDeclaration(IRI.create(importedOntoLocation));
         manager.applyChange(new AddImport(ontology, importDecl));
         manager.saveOntology(ontology, IRI.create(physicalUri));
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, ONTOLOGY_URI);
@@ -216,7 +215,7 @@ public class BasicStorageConnectorTest {
         final Stream<OWLOntology> imports = snapshot.getOntology().imports();
         final Optional<OWLOntology> imported =
                 imports.filter(imp -> imp.getOntologyID().getOntologyIRI().orElse(IRI.create(""))
-                                         .equals(importedOntoIri)).findAny();
+                        .equals(importedOntoIri)).findAny();
         assertTrue(imported.isPresent());
     }
 
