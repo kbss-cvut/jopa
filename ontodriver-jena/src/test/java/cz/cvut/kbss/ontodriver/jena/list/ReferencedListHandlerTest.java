@@ -23,10 +23,13 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -34,12 +37,14 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ReferencedListHandlerTest
         extends ListHandlerTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
@@ -47,9 +52,8 @@ public class ReferencedListHandlerTest
             .createObjectPropertyAssertion(Generator.generateUri(), false);
     private static final Property HAS_CONTENT_PROPERTY = createProperty(HAS_CONTENT.getIdentifier().toString());
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.handler = new ReferencedListHandler(connectorMock);
         super.setUp();
         listUtil.setHasContent(HAS_CONTENT_PROPERTY);

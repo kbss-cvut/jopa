@@ -22,20 +22,23 @@ import cz.cvut.kbss.ontodriver.model.*;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class MainAxiomLoaderTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
@@ -52,9 +55,8 @@ public class MainAxiomLoaderTest {
 
     private MainAxiomLoader axiomLoader;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.axiomLoader = new MainAxiomLoader(connectorMock, inferredConnectorMock);
     }
 

@@ -19,12 +19,13 @@ import cz.cvut.kbss.ontodriver.jena.util.Procedure;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class JenaPropertiesTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
@@ -48,9 +50,8 @@ public class JenaPropertiesTest {
 
     private JenaProperties properties;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         final JenaAdapter adapterMock = mock(JenaAdapter.class);
         when(adapterMock.propertiesHandler()).thenReturn(propertiesHandler);
         this.properties = new JenaProperties(adapterMock, beforeMock, afterMock);

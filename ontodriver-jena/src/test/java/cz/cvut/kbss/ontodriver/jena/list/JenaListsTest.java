@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,16 +20,17 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.util.Procedure;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class JenaListsTest {
 
     private static final NamedResource RESOURCE = NamedResource.create(Generator.generateUri());
@@ -50,19 +51,19 @@ public class JenaListsTest {
     @Mock
     private ReferencedListHandler referencedListHandlerMock;
 
+    @Mock
+    private JenaAdapter adapterMock;
+
     private JenaLists lists;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        final JenaAdapter adapterMock = mock(JenaAdapter.class);
-        when(adapterMock.simpleListHandler()).thenReturn(simpleListHandlerMock);
-        when(adapterMock.referencedListHandler()).thenReturn(referencedListHandlerMock);
         this.lists = new JenaLists(adapterMock, beforeMock, afterMock);
     }
 
     @Test
     public void loadSimpleListInvokesBeforeCallbackBeforeSimpleListHandler() throws Exception {
+        when(adapterMock.simpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListDescriptor descriptor = new SimpleListDescriptorImpl(RESOURCE, HAS_LIST, HAS_NEXT);
         lists.loadSimpleList(descriptor);
         final InOrder inOrder = Mockito.inOrder(beforeMock, simpleListHandlerMock);
@@ -72,6 +73,7 @@ public class JenaListsTest {
 
     @Test
     public void persistSimpleListInvokesBeforeCallbackBeforeSimpleListHandler() throws Exception {
+        when(adapterMock.simpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT);
         lists.persistSimpleList(descriptor);
         final InOrder inOrder = Mockito.inOrder(beforeMock, simpleListHandlerMock);
@@ -81,6 +83,7 @@ public class JenaListsTest {
 
     @Test
     public void persistSimpleListInvokesAfterCallbackAfterSimpleListHandler() throws Exception {
+        when(adapterMock.simpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT);
         lists.persistSimpleList(descriptor);
         final InOrder inOrder = Mockito.inOrder(simpleListHandlerMock, afterMock);
@@ -90,6 +93,7 @@ public class JenaListsTest {
 
     @Test
     public void updateSimpleListInvokesBeforeCallbackBeforeSimpleListHandler() throws Exception {
+        when(adapterMock.simpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT);
         lists.updateSimpleList(descriptor);
         final InOrder inOrder = Mockito.inOrder(beforeMock, simpleListHandlerMock);
@@ -99,6 +103,7 @@ public class JenaListsTest {
 
     @Test
     public void updateSimpleListInvokesAfterCallbackAfterSimpleListHandler() throws Exception {
+        when(adapterMock.simpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT);
         lists.updateSimpleList(descriptor);
         final InOrder inOrder = Mockito.inOrder(simpleListHandlerMock, afterMock);
@@ -108,6 +113,7 @@ public class JenaListsTest {
 
     @Test
     public void loadReferencedListExecutesBeforeCallbackBeforeReferencedListHandler() throws Exception {
+        when(adapterMock.referencedListHandler()).thenReturn(referencedListHandlerMock);
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(RESOURCE, HAS_LIST, HAS_NEXT,
                 HAS_CONTENT);
         lists.loadReferencedList(descriptor);
@@ -118,6 +124,7 @@ public class JenaListsTest {
 
     @Test
     public void persistReferencedListExecutesBeforeCallbackBeforeReferencedListHandler() throws Exception {
+        when(adapterMock.referencedListHandler()).thenReturn(referencedListHandlerMock);
         final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT,
                 HAS_CONTENT);
         lists.persistReferencedList(descriptor);
@@ -128,6 +135,7 @@ public class JenaListsTest {
 
     @Test
     public void persistReferencedListExecutesAfterCallbackAfterReferencedListHandler() throws Exception {
+        when(adapterMock.referencedListHandler()).thenReturn(referencedListHandlerMock);
         final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT,
                 HAS_CONTENT);
         lists.persistReferencedList(descriptor);
@@ -138,6 +146,7 @@ public class JenaListsTest {
 
     @Test
     public void updateReferencedListExecutesBeforeCallbackBeforeReferencedListHandler() throws Exception {
+        when(adapterMock.referencedListHandler()).thenReturn(referencedListHandlerMock);
         final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT,
                 HAS_CONTENT);
         lists.updateReferencedList(descriptor);
@@ -148,6 +157,7 @@ public class JenaListsTest {
 
     @Test
     public void updateReferencedListExecutesAfterCallbackAfterReferencedListHandler() throws Exception {
+        when(adapterMock.referencedListHandler()).thenReturn(referencedListHandlerMock);
         final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(RESOURCE, HAS_LIST, HAS_NEXT,
                 HAS_CONTENT);
         lists.updateReferencedList(descriptor);
