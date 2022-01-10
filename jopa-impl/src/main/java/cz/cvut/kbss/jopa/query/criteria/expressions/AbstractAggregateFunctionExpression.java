@@ -3,7 +3,7 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
-abstract public class AbstractAggregateFunctionExpression<X> extends AbstractExpression<X> {
+public abstract class AbstractAggregateFunctionExpression<X> extends AbstractExpression<X> {
 
     protected AbstractPathExpression internExpression;
 
@@ -19,8 +19,7 @@ abstract public class AbstractAggregateFunctionExpression<X> extends AbstractExp
         query.append(")");
     }
 
-    abstract public String getFunctionName();
-
+    public abstract String getFunctionName();
 }
 
 

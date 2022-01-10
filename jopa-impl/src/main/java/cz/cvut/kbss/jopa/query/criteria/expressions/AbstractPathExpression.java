@@ -7,7 +7,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.query.criteria.PathImpl;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
-abstract public class AbstractPathExpression<X> extends AbstractExpression<X> implements Path<X> {
+public abstract class AbstractPathExpression<X> extends AbstractExpression<X> implements Path<X> {
 
     protected AbstractPathExpression pathSource;
     protected final Metamodel metamodel;
@@ -18,7 +18,7 @@ abstract public class AbstractPathExpression<X> extends AbstractExpression<X> im
         this.metamodel = metamodel;
     }
 
-    public <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException {
+    public <Y> Path<Y> getAttr(String attributeName) {
         Attribute attribute = metamodel.entity(type).getAttribute(attributeName);
         return new PathImpl<Y>(this.metamodel, this, attribute, this.cb);
     }

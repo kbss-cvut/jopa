@@ -153,7 +153,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
             if (this == other) {
                 return true;
             }
-            if (other == null || !Objects.equals(CacheKey.class, other.getClass())) {
+            if (other == null || !getClass().equals(other.getClass())) {
                 return false;
             }
             final CacheKey otherEntry = (CacheKey) other;

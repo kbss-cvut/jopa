@@ -11,7 +11,7 @@ public interface Path<X> extends Expression<X> {
      * @return path corresponding to the referenced attribute
      * @throws IllegalArgumentException if attribute of the given name does not otherwise exist
      */
-    <Y> Path<Y> getAttr(String attributeName) throws IllegalArgumentException;
+    <Y> Path<Y> getAttr(String attributeName);
 
     /**
      * Create a path corresponding to the referenced single-valued attribute.

@@ -20,7 +20,7 @@ public class OWLClassWithQueryAttr {
     private URI uri;
 
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute",
-                     simpleLiteral = true)
+            simpleLiteral = true)
     private String stringAttribute;
 
     @Sparql(query = QUERY)
@@ -67,7 +67,7 @@ public class OWLClassWithQueryAttr {
         return OWLClassWithQueryAttr.class.getAnnotation(OWLClass.class).iri();
     }
 
-    public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
+    public static Field getStrAttField() throws NoSuchFieldException {
         return OWLClassWithQueryAttr.class.getDeclaredField(STR_ATT_FIELD);
     }
 

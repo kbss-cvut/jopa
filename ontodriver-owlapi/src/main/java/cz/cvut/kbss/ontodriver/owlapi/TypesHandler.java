@@ -62,11 +62,11 @@ class TypesHandler {
         return dataFactory.getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
     }
 
-    private Set<Axiom<URI>> owlClassesToAxioms(NamedResource subject, boolean inferred,
-                                               Collection<? extends OWLClassExpression> owlClasses) {
+    private static Set<Axiom<URI>> owlClassesToAxioms(NamedResource subject, boolean inferred,
+                                                      Collection<? extends OWLClassExpression> owlClasses) {
         return owlClasses.stream().map(expr -> new AxiomImpl<>(subject,
-                Assertion.createClassAssertion(inferred), new Value<>(expr.asOWLClass().getIRI().toURI())))
-                         .collect(Collectors.toSet());
+                        Assertion.createClassAssertion(inferred), new Value<>(expr.asOWLClass().getIRI().toURI())))
+                .collect(Collectors.toSet());
     }
 
     private Collection<? extends OWLClassExpression> inferClasses(NamedResource subject) {
@@ -79,7 +79,7 @@ class TypesHandler {
 
         final List<OWLAxiom> axioms = getOwlAxiomsForTypes(subject, types);
         final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
-                                                      .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
@@ -88,8 +88,8 @@ class TypesHandler {
         final List<OWLAxiom> axioms = new ArrayList<>(types.size());
         final OWLNamedIndividual individual = getIndividual(subject);
         axioms.addAll(types.stream().map(type -> dataFactory
-                .getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(type)), individual))
-                           .collect(Collectors.toList()));
+                        .getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(type)), individual))
+                .collect(Collectors.toList()));
         return axioms;
     }
 
@@ -98,7 +98,7 @@ class TypesHandler {
 
         final List<OWLAxiom> axioms = getOwlAxiomsForTypes(subject, types);
         final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableRemoveAxiom(ontology, axiom))
-                                                      .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }

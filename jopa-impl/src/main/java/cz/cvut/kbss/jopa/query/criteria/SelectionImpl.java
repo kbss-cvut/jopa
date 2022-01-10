@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 import java.util.List;
 
-abstract public class SelectionImpl<X> implements Selection<X>, TupleElement<X> {
+public abstract class SelectionImpl<X> implements Selection<X>, TupleElement<X> {
     protected final Class<X> type;
 
     public SelectionImpl(Class<X> type) {

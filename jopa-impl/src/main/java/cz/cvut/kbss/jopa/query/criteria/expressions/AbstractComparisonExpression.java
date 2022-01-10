@@ -3,7 +3,7 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
-abstract public class AbstractComparisonExpression extends AbstractExpression<Boolean> {
+public abstract class AbstractComparisonExpression extends AbstractExpression<Boolean> {
 
     protected AbstractExpression<?> right;
     protected AbstractExpression<?> left;
@@ -21,7 +21,7 @@ abstract public class AbstractComparisonExpression extends AbstractExpression<Bo
         this.right.setExpressionToQuery(query, parameterFiller);
     }
 
-    abstract protected String getComparisonOperator();
+    protected abstract String getComparisonOperator();
 }
 
 

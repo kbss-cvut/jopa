@@ -7,7 +7,7 @@ import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
 import java.util.List;
 
-abstract public class AbstractPredicate extends AbstractExpression<Boolean> implements Predicate {
+public abstract class AbstractPredicate extends AbstractExpression<Boolean> implements Predicate {
 
     protected BooleanOperator booleanOperator;
 
@@ -17,7 +17,7 @@ abstract public class AbstractPredicate extends AbstractExpression<Boolean> impl
     }
 
     @Override
-    abstract public List<Expression<Boolean>> getExpressions();
+    public abstract List<Expression<Boolean>> getExpressions();
 
     @Override
     public BooleanOperator getOperator() {
@@ -25,12 +25,13 @@ abstract public class AbstractPredicate extends AbstractExpression<Boolean> impl
     }
 
     @Override
-    abstract public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller);
+    public abstract void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller);
 
-    protected void negateOperator(){
-        if (booleanOperator.equals(BooleanOperator.AND)) booleanOperator = BooleanOperator.OR;
-        else booleanOperator = BooleanOperator.AND;
+    protected void negateOperator() {
+        if (booleanOperator.equals(BooleanOperator.AND)) {
+            booleanOperator = BooleanOperator.OR;
+        } else {
+            booleanOperator = BooleanOperator.AND;
+        }
     }
-
-
 }

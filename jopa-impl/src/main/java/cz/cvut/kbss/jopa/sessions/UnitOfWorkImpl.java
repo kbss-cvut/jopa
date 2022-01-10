@@ -39,7 +39,6 @@ import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.aspectj.lang.Aspects;
 
@@ -135,9 +134,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor) {
-        Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(descriptor);
 
         return readObjectInternal(cls, identifier, descriptor);
     }
@@ -387,8 +386,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @return The state of the specified entity
      */
     public State getState(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptor);
 
         if (deletedObjects.containsKey(entity)) {
             return State.REMOVED;
@@ -573,8 +572,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptor);
 
         final Object id = getIdentifier(entity);
         if (!storage.contains(id, entity.getClass(), descriptor)) {
@@ -755,8 +754,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptor);
 
         registerNewObjectInternal(entity, descriptor);
     }
@@ -913,8 +912,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public <T> void loadEntityField(T entity, Field field) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(field);
         assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
         final Descriptor entityDescriptor = getDescriptor(entity);
@@ -965,7 +964,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public void removeObjectFromCache(Object toRemove, URI context) {
-        Objects.requireNonNull(toRemove, ErrorUtils.getNPXMessageSupplier("toRemove"));
+        Objects.requireNonNull(toRemove);
 
         cacheManager.evict(toRemove.getClass(), getIdentifier(toRemove), context);
     }

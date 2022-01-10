@@ -66,7 +66,7 @@ public class OWLClassWithQueryAttr4 {
         return OWLClassWithQueryAttr4.class.getAnnotation(OWLClass.class).iri();
     }
 
-    public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
+    public static Field getStrAttField() throws NoSuchFieldException {
         return OWLClassWithQueryAttr4.class.getDeclaredField(STR_ATT_FIELD);
     }
 

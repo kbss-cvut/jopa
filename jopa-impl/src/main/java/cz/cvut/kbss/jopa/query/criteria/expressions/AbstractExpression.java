@@ -2,10 +2,10 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.sessions.PredicateFactory;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+import cz.cvut.kbss.jopa.sessions.PredicateFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,7 +14,7 @@ import java.util.Collection;
  * Parent of all other types of expressions. It offers its children the implementation of methods for IN expression as prescribed by the Expression interface.
  * Prescribes an abstract method for expressing an expression to string builder representing the query.
  */
-abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {
+public abstract class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
     protected final CriteriaBuilder cb;
 
@@ -42,8 +42,8 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
     @Override
     public Predicate in(Expression<?>... values) {
         PredicateFactory.In<Y> predicate = cb.in(this);
-        for (Expression value : values) {
-                predicate.value((Expression<? extends Y>) value);
+        for (Expression<?> value : values) {
+            predicate.value((Expression<? extends Y>) value);
         }
         return predicate;
     }
@@ -53,7 +53,7 @@ abstract public class AbstractExpression<Y> extends SelectionImpl<Y> implements 
         return this.in(Arrays.asList(values));
     }
 
-    abstract public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller);
+    public abstract void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller);
 
     public boolean isNegated() {
         return negated;
