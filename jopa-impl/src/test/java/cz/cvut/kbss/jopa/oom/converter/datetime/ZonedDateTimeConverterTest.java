@@ -9,11 +9,21 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ZonedDateTimeConverterTest {
 
     private final ZonedDateTimeConverter sut = new ZonedDateTimeConverter();
+
+    @Test
+    void convertToAxiomValueTransformsZonedDateTimeToOffsetDateTime() {
+        final ZonedDateTime value = ZonedDateTime.now();
+        final Object result = sut.convertToAxiomValue(value);
+        assertThat(result, instanceOf(OffsetDateTime.class));
+        assertEquals(result, value.toOffsetDateTime());
+    }
 
     @Test
     void convertToAttributeTransformsJavaOffsetDateTimeToZonedDateTime() {

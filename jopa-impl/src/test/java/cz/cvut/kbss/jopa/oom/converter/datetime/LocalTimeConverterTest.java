@@ -4,11 +4,13 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRules;
 import java.util.Date;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LocalTimeConverterTest {
@@ -16,7 +18,16 @@ class LocalTimeConverterTest {
     private final LocalTimeConverter sut = new LocalTimeConverter();
 
     @Test
-    void convertToAttributeTransformsJavaOffsetDateTimeToLocalDateTime() {
+    void convertToAxiomValueTransformsLocalTimeToOffsetTimeAtSystemOffset() {
+        final LocalTime value = LocalTime.now();
+        final Object result = sut.convertToAxiomValue(value);
+        assertThat(result, instanceOf(OffsetTime.class));
+        final ZoneRules zoneRules = ZoneId.systemDefault().getRules();
+        assertEquals(value.atOffset(zoneRules.getOffset(LocalDateTime.now())), result);
+    }
+
+    @Test
+    void convertToAttributeTransformsJavaOffsetTimeToLocalDateTime() {
         final OffsetTime value = OffsetTime.now();
         final LocalTime result = sut.convertToAttribute(value);
         assertEquals(value.toLocalTime(), result);
@@ -31,7 +42,7 @@ class LocalTimeConverterTest {
     }
 
     @Test
-    void supportsAxiomValueTypeReturnsTrueForOffsetDateTime() {
+    void supportsAxiomValueTypeReturnsTrueForOffsetTime() {
         assertTrue(sut.supportsAxiomValueType(OffsetTime.class));
         assertFalse(sut.supportsAxiomValueType(Date.class));
     }
@@ -40,5 +51,4 @@ class LocalTimeConverterTest {
     void supportsAxiomValueTypeReturnsTrueForLiteral() {
         assertTrue(sut.supportsAxiomValueType(Literal.class));
     }
-
 }

@@ -18,13 +18,24 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InstantConverterTest {
 
     private final InstantConverter sut = new InstantConverter();
+
+    @Test
+    void convertToAxiomValueConvertsValueToOffsetDateTimeAtUTC() {
+        final Instant value = Instant.now();
+        final Object result = sut.convertToAxiomValue(value);
+        assertThat(result, instanceOf(OffsetDateTime.class));
+        assertEquals(value.atOffset(ZoneOffset.UTC), result);
+    }
 
     @Test
     void convertToAttributeTransformsJavaOffsetDateTimeToInstant() {

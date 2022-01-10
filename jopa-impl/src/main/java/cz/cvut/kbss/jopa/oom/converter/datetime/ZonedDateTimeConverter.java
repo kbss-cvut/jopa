@@ -17,8 +17,8 @@ public class ZonedDateTimeConverter implements ConverterWrapper<ZonedDateTime, O
 
     @Override
     public Object convertToAxiomValue(ZonedDateTime value) {
-        // Let the OntoDriver take care of conversion to a correct repository value
-        return value;
+        assert value != null;
+        return value.toOffsetDateTime();
     }
 
     @Override

@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.oom.converter.datetime;
 
+import cz.cvut.kbss.jopa.datatype.DateTimeUtil;
 import cz.cvut.kbss.jopa.datatype.xsd.XsdDateTimeMapper;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
@@ -29,8 +30,8 @@ public class InstantConverter implements ConverterWrapper<Instant, Object> {
 
     @Override
     public Object convertToAxiomValue(Instant value) {
-        // Let the OntoDriver take care of conversion to a correct repository value
-        return value;
+        assert value != null;
+        return DateTimeUtil.toDateTime(value);
     }
 
     @Override
