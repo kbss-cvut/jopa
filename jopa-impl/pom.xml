@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <org.antlr4.version>4.9.2</org.antlr4.version>
+        <org.antlr4.version>4.9.3</org.antlr4.version>
     </properties>
 
     <dependencies>
