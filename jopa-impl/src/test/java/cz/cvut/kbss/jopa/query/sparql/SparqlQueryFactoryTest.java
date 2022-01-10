@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,14 +24,20 @@ import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SparqlQueryFactoryTest {
 
     private static final String QUERY = "SELECT ?x ?y ?z WHERE { ?x ?y ?z. }";
@@ -49,9 +55,8 @@ public class SparqlQueryFactoryTest {
 
     private SparqlQueryFactory factory;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         when(uowMock.useBackupOntologyForQueryProcessing()).thenReturn(Boolean.FALSE);
         when(uowMock.useTransactionalOntologyForQueryProcessing()).thenReturn(Boolean.TRUE);
         when(uowMock.getNamedQueryManager()).thenReturn(namedQueryManagerMock);
@@ -68,10 +73,9 @@ public class SparqlQueryFactoryTest {
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreateNativeQueryNull() {
-        final Query q = factory.createNativeQuery(null);
-        assert q == null;
+        assertThrows(NullPointerException.class, () -> factory.createNativeQuery(null));
     }
 
     @Test
@@ -81,16 +85,14 @@ public class SparqlQueryFactoryTest {
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreateNativeQueryTypedNullQuery() {
-        final TypedQuery<OWLClassA> q = factory.createNativeQuery(null, CLS);
-        assert q == null;
+        assertThrows(NullPointerException.class, () -> factory.createNativeQuery(null, CLS));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreateNativeQueryTypedNullType() {
-        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, (Class<OWLClassA>) null);
-        assert q == null;
+        assertThrows(NullPointerException.class, () -> factory.createNativeQuery(QUERY, (Class<OWLClassA>) null));
     }
 
     @Test
@@ -100,10 +102,9 @@ public class SparqlQueryFactoryTest {
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreateQueryNull() {
-        final Query q = factory.createQuery(null);
-        assert q == null;
+        assertThrows(NullPointerException.class, () -> factory.createQuery(null));
     }
 
     @Test
@@ -113,16 +114,14 @@ public class SparqlQueryFactoryTest {
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreateQueryTypedNullQuery() {
-        final TypedQuery<OWLClassA> q = factory.createQuery(null, CLS);
-        assert q == null;
+        assertThrows(NullPointerException.class, () -> factory.createQuery(null, CLS));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCreateQueryTypedNullType() {
-        final TypedQuery<OWLClassA> q = factory.createQuery(SOQL_QUERY, null);
-        assert q == null;
+        assertThrows(NullPointerException.class, () -> factory.createQuery(SOQL_QUERY, null));
     }
 
     @Test

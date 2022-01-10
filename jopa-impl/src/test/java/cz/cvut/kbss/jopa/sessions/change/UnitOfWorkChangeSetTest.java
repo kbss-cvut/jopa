@@ -17,10 +17,10 @@ package cz.cvut.kbss.jopa.sessions.change;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UnitOfWorkChangeSetTest {
 
@@ -29,7 +29,7 @@ public class UnitOfWorkChangeSetTest {
 
     private UnitOfWorkChangeSet uowChangeSet;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.testObject = "TEST";
         final String testClone = "TEST";
