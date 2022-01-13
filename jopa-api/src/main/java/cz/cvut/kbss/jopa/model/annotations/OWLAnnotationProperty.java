@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -43,8 +43,8 @@ public @interface OWLAnnotationProperty {
      * (Optional) Marks an attribute whose value is a lexical form of a literal value.
      * <p>
      * This parameter should be used on {@code String} attributes, as literal lexical form is always a string. Lexical
-     * form of a literal of any datatype can be loaded. However, saving the lexical form is forbidden to prevent
-     * unintentional change of the data type.
+     * form of a literal of any datatype can be loaded. Saving the lexical form is forbidden to prevent unintentional
+     * change of the data type, unless {@link #datatype()} is explicitly specified.
      * <p>
      * Note that if the value being loaded is an identifier, it will still be loaded, because it is not a literal and
      * {@code String} is a valid identifier mapping type.
@@ -62,4 +62,13 @@ public @interface OWLAnnotationProperty {
      * @return Whether the mapped value is a simple literal
      */
     boolean simpleLiteral() default false;
+
+    /**
+     * IRI of the datatype to use when storing values of this property.
+     * <p>
+     * If specified, the value of the attribute is treated as the lexical form of the literal (and should be a {@code String}).
+     *
+     * @return Datatype IRI
+     */
+    String datatype() default "";
 }

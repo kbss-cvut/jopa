@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,10 +15,8 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.merge.DetachedValueMerger;
 import cz.cvut.kbss.jopa.sessions.merge.ValueMerger;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 class DetachedInstanceMerger {
 
@@ -38,15 +36,12 @@ class DetachedInstanceMerger {
     Object mergeChangesFromDetachedToManagedInstance(ObjectChangeSet changeSet, Descriptor descriptor) {
         assert changeSet != null;
         assert changeSet.getCloneObject() != null;
-        final Object original = changeSet.getChangedObject();
-        assert original != null;
+        final Object target = changeSet.getChangedObject();
+        assert target != null;
 
         for (ChangeRecord change : changeSet.getChanges()) {
-            final FieldSpecification<?, ?> fs = change.getAttribute();
-            final Object origValue = EntityPropertiesUtils.getAttributeValue(fs, original);
-            valueMerger
-                    .mergeValue(fs, original, origValue, change.getNewValue(), descriptor.getAttributeDescriptor(fs));
+            valueMerger.mergeValue(target, change, descriptor.getAttributeDescriptor(change.getAttribute()));
         }
-        return original;
+        return target;
     }
 }

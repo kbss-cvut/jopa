@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -24,6 +26,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -309,14 +312,10 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
         entityA.setUri(uri);
         entityB.setUri(uri);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityA);
         final EntityManager emTwo = em.getEntityManagerFactory().createEntityManager();
         try {
-            emTwo.getTransaction().begin();
-            emTwo.persist(entityB);
-            emTwo.getTransaction().commit();
+            persist(entityB);
 
             assertNotNull(emTwo.find(OWLClassA.class, entityA.getUri()));
             assertNotNull(em.find(OWLClassB.class, entityB.getUri()));
@@ -368,9 +367,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     void testPersistTypedProperties() {
         this.em = getEntityManager("PersistTypedProperties", false);
         entityP.setProperties(Generators.createTypedProperties());
-        em.getTransaction().begin();
-        em.persist(entityP);
-        em.getTransaction().commit();
+        persist(entityP);
         em.clear();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
@@ -382,9 +379,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("PersistInstanceWithIdentifierObjectPropertyValue", false);
         final URI value = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#individualAAA");
         entityP.setIndividualUri(value);
-        em.getTransaction().begin();
-        em.persist(entityP);
-        em.getTransaction().commit();
+        persist(entityP);
         em.clear();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
@@ -396,9 +391,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("PersistInstanceWithPluralIdentifierObjectPropertyValue", false);
         final Set<URL> urls = Generators.createUrls();
         entityP.setIndividuals(urls);
-        em.getTransaction().begin();
-        em.persist(entityP);
-        em.getTransaction().commit();
+        persist(entityP);
         em.clear();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
@@ -409,9 +402,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     void testPersistInstanceWithSimpleListOfIdentifiers() {
         this.em = getEntityManager("PersistInstanceWithSimpleListOfIdentifiers", false);
         entityP.setSimpleList(Generators.createListOfIdentifiers());
-        em.getTransaction().begin();
-        em.persist(entityP);
-        em.getTransaction().commit();
+        persist(entityP);
         em.clear();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
@@ -422,9 +413,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     void testPersistInstanceWithReferencedListOfIdentifiers() {
         this.em = getEntityManager("PersistInstanceWithReferencedListOfIdentifiers", false);
         entityP.setReferencedList(Generators.createListOfIdentifiers());
-        em.getTransaction().begin();
-        em.persist(entityP);
-        em.getTransaction().commit();
+        persist(entityP);
         em.clear();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
@@ -438,9 +427,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final URI apUriValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue");
         entityN.setAnnotationProperty(apValue);
         entityN.setAnnotationUri(apUriValue);
-        em.getTransaction().begin();
-        em.persist(entityN);
-        em.getTransaction().commit();
+        persist(entityN);
         em.clear();
         assertNotNull(entityN.getId());
 
@@ -454,9 +441,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("PersistEntityWithNonNullGeneratedIdentifiersDoesNotRewriteIdentifier", false);
         final URI u = URI.create("http://krizik.felk.cvut.cz/ontolgoies/jopa#EntityELives");
         entityE.setUri(u);
-        em.getTransaction().begin();
-        em.persist(entityE);
-        em.getTransaction().commit();
+        persist(entityE);
 
         assertEquals(u, entityE.getUri());
         final OWLClassE res = findRequired(OWLClassE.class, u);
@@ -473,10 +458,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         entityK.setUri(uK);
         entityK.setOwlClassE(entityE);
         entityE.setUri(uE);
-        em.getTransaction().begin();
-        em.persist(entityK);
-        em.persist(entityE);
-        em.getTransaction().commit();
+        persist(entityK, entityE);
 
         assertEquals(uK, entityK.getUri());
         assertEquals(uE, entityE.getUri());
@@ -490,9 +472,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     void testPersistEntityWithUriTypes() {
         this.em = getEntityManager("PersistEntityWithUriTypes", false);
         entityP.setTypes(Generators.createUriTypes());
-        em.getTransaction().begin();
-        em.persist(entityP);
-        em.getTransaction().commit();
+        persist(entityP);
         em.clear();
 
         final OWLClassP result = findRequired(OWLClassP.class, entityP.getUri());
@@ -504,9 +484,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     void persistEntityWithDatatypePropertyCollectionPersistsAllValues() {
         assertFalse(entityM.getIntegerSet().isEmpty());
         this.em = getEntityManager("PersistEntityWithDatatypePropertyCollection", false);
-        em.getTransaction().begin();
-        em.persist(entityM);
-        em.getTransaction().commit();
+        persist(entityM);
 
         assertNotNull(entityM.getKey());
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
@@ -518,7 +496,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("persistSetsStringLiteralLanguageTagAccordingToDescriptor", false);
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class).getDeclaredAttribute("stringAttribute"), "cs");
+        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class)
+                .getDeclaredAttribute("stringAttribute"), "cs");
         em.persist(entityA, descriptor);
         em.getTransaction().commit();
 
@@ -533,9 +512,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
             throws Exception {
         this.em = getEntityManager(
                 "persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityA);
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
@@ -548,7 +525,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("persistAllowsOverridingGlobalLanguageWithLocalEmptyTag", false);
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class).getDeclaredAttribute("stringAttribute"), null);
+        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class)
+                .getDeclaredAttribute("stringAttribute"), null);
         em.persist(entityA, descriptor);
         em.getTransaction().commit();
 
@@ -567,7 +545,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         entityN.setAnnotationProperty("entity descriptor ist in Deutsch");
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage("de");
-        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassN.class).getDeclaredAttribute("stringAttribute"), "cs");
+        descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassN.class)
+                .getDeclaredAttribute("stringAttribute"), "cs");
 
         em.getTransaction().begin();
         em.persist(entityN, descriptor);
@@ -591,9 +570,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         persist(entityA);
 
         em.clear();
-        em.getTransaction().begin();
-        em.persist(entityD);
-        em.getTransaction().commit();
+        persist(entityD);
 
         final OWLClassD resultD = findRequired(OWLClassD.class, entityD.getUri());
         assertNotNull(resultD.getOwlClassA());

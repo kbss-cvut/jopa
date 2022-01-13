@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,12 +14,12 @@
  */
 package cz.cvut.kbss.jopa.query.mapper;
 
+import cz.cvut.kbss.jopa.datatype.DatatypeTransformer;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
-import cz.cvut.kbss.jopa.exception.UnsupportedTypeTransformation;
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.utils.DatatypeTransformer;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -85,7 +85,7 @@ class FieldResultMapper {
         }
         try {
             return DatatypeTransformer.transform(queryValue, fieldSpec.getJavaType());
-        } catch (UnsupportedTypeTransformation e) {
+        } catch (UnsupportedTypeTransformationException e) {
             throw new SparqlResultMappingException(
                     String.format("Value %s cannot be assigned (or transformed) to field of type %s.", queryValue,
                             fieldSpec.getJavaType()));

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -33,6 +33,7 @@ abstract class PropertyAttributes {
     FetchType fetchType = FetchType.EAGER;
     boolean lexicalForm = false;
     boolean simpleLiteral = false;
+    String datatype = "";
     String language;
     private boolean nonEmpty = false;
     private ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
@@ -75,6 +76,14 @@ abstract class PropertyAttributes {
 
     boolean isSimpleLiteral() {
         return simpleLiteral;
+    }
+
+    public String getDatatype() {
+        return datatype;
+    }
+
+    public boolean hasDatatype() {
+        return !datatype.isEmpty();
     }
 
     String getLanguage() {

@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.merge;
 
@@ -17,41 +19,30 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.HashMap;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class MapValueMergerTest {
 
-    @Mock
-    private Metamodel metamodel;
+    private MetamodelMocks metamodelMocks;
 
-    private FieldSpecification<? super OWLClassB, ?> propertiesSpec;
+    private final Descriptor descriptor = new EntityDescriptor();
 
-    private Descriptor descriptor;
+    private final MapValueMerger sut = new MapValueMerger();
 
-    private MapValueMerger merger;
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodel);
-        this.descriptor = new EntityDescriptor();
-        final EntityType<OWLClassB> et = metamodel.entity(OWLClassB.class);
-        this.propertiesSpec = et.getProperties();
-
-        this.merger = new MapValueMerger();
+        this.metamodelMocks = new MetamodelMocks();
     }
 
     @Test
@@ -67,7 +58,7 @@ public class MapValueMergerTest {
         merged.getProperties().get(newKey).add(vOne);
         merged.getProperties().get(newKey).add(vTwo);
 
-        merger.mergeValue(propertiesSpec, orig, orig.getProperties(), merged.getProperties(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(metamodelMocks.forOwlClassB().propertiesSpec(), merged.getProperties()), descriptor);
         assertEquals(merged.getProperties(), orig.getProperties());
     }
 
@@ -78,7 +69,7 @@ public class MapValueMergerTest {
         final OWLClassB merged = new OWLClassB(orig.getUri());
         merged.setProperties(null);
 
-        merger.mergeValue(propertiesSpec, orig, orig.getProperties(), merged.getProperties(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(metamodelMocks.forOwlClassB().propertiesSpec(), merged.getProperties()), descriptor);
         assertNull(orig.getProperties());
     }
 }

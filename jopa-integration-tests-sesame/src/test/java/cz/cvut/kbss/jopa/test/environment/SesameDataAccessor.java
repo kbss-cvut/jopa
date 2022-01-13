@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,8 +26,9 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import java.net.URI;
 import java.util.Collection;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class SesameDataAccessor implements DataAccessor {
 
@@ -58,7 +59,7 @@ public class SesameDataAccessor implements DataAccessor {
     }
 
     private Value toValue(Object value, String language) {
-        return value instanceof URI ? toIri((URI) value) : SesameUtils.createDataPropertyLiteral(value, language, vf);
+        return value instanceof URI ? toIri((URI) value) : SesameUtils.createLiteral(value, language, vf);
     }
 
     @Override

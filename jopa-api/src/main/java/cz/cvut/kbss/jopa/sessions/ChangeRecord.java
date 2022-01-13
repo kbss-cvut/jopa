@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -28,6 +28,13 @@ public interface ChangeRecord {
      * @return Object
      */
     Object getNewValue();
+
+    /**
+     * Sets the new value of the attribute in case this change record needs to be updated.
+     *
+     * @param value The value to set
+     */
+    void setNewValue(Object value);
 
     /**
      * Gets the attribute to which this change record is bound.

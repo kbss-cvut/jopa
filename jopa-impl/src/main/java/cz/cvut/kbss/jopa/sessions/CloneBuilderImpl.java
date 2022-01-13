@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -26,10 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 
 public class CloneBuilderImpl implements CloneBuilder {
@@ -55,8 +54,10 @@ public class CloneBuilderImpl implements CloneBuilder {
     public Object buildClone(Object original, CloneConfiguration cloneConfiguration) {
         Objects.requireNonNull(original);
         Objects.requireNonNull(cloneConfiguration);
-        // TODO Replace with a lambda after migration to new SLF4J
-        LOG.trace("Cloning object {}.", stringify(original));
+        if (LOG.isTraceEnabled()) {
+            // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
+            LOG.trace("Cloning object {}.", stringify(original));
+        }
         return buildCloneImpl(null, null, original, cloneConfiguration);
     }
 
@@ -65,8 +66,10 @@ public class CloneBuilderImpl implements CloneBuilder {
         if (cloneOwner == null || original == null || descriptor == null) {
             throw new NullPointerException();
         }
-        // TODO Replace with a lambda after migration to new SLF4J
-        LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
+        if (LOG.isTraceEnabled()) {
+            // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
+            LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
+        }
         return buildCloneImpl(cloneOwner, clonedField, original, new CloneConfiguration(descriptor));
     }
 
@@ -264,8 +267,8 @@ public class CloneBuilderImpl implements CloneBuilder {
     private String stringify(Object object) {
         assert object != null;
         return isTypeManaged(object.getClass()) ?
-               object.getClass().getSimpleName() + "<" + EntityPropertiesUtils.getIdentifier(object, getMetamodel()) +
-                       ">" : object.toString();
+                object.getClass().getSimpleName() + "<" + EntityPropertiesUtils.getIdentifier(object, getMetamodel()) +
+                        ">" : object.toString();
     }
 
     private static Set<Class<?>> getImmutableTypes() {
@@ -284,8 +287,13 @@ public class CloneBuilderImpl implements CloneBuilder {
         ret.add(URL.class);
         ret.add(LocalDate.class);
         ret.add(LocalDateTime.class);
+        ret.add(LocalTime.class);
         ret.add(ZonedDateTime.class);
+        ret.add(OffsetDateTime.class);
+        ret.add(OffsetTime.class);
         ret.add(Instant.class);
+        ret.add(Duration.class);
+        ret.add(Period.class);
         return ret;
     }
 

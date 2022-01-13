@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,40 +23,40 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.HashSet;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class DetachedInstanceMergerTest {
 
-    private Descriptor descriptor;
+    private final Descriptor descriptor = new EntityDescriptor();
 
     @Mock
     private UnitOfWorkImpl uow;
 
-    @Mock
-    private MetamodelImpl metamodel;
-
     private MetamodelMocks metamodelMocks;
 
-    private DetachedInstanceMerger merger;
+    private DetachedInstanceMerger sut;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.metamodelMocks = new MetamodelMocks();
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         metamodelMocks.setMocks(metamodel);
         when(uow.getMetamodel()).thenReturn(metamodel);
-        this.descriptor = new EntityDescriptor();
 
-        this.merger = new DetachedInstanceMerger(uow);
+        this.sut = new DetachedInstanceMerger(uow);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class DetachedInstanceMergerTest {
         final ObjectChangeSet changeSet = createChangeSet(original, detached);
         changeSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(), updatedString));
 
-        final OWLClassA result = (OWLClassA) merger.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
+        final OWLClassA result = (OWLClassA) sut.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
         assertEquals(updatedString, result.getStringAttribute());
     }
 
@@ -81,7 +81,7 @@ public class DetachedInstanceMergerTest {
         final ObjectChangeSet changeSet = createChangeSet(original, detached);
         changeSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(), null));
 
-        final OWLClassA result = (OWLClassA) merger.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
+        final OWLClassA result = (OWLClassA) sut.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
         assertNull(result.getStringAttribute());
     }
 
@@ -100,7 +100,7 @@ public class DetachedInstanceMergerTest {
         when(uow.readObject(OWLClassA.class, newRef.getUri(), descriptor)).thenReturn(newRefOrig);
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
 
-        final OWLClassD result = (OWLClassD) merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
+        final OWLClassD result = (OWLClassD) sut.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
         verify(uow).readObject(OWLClassA.class, newRef.getUri(), descriptor);
         assertNotNull(result);
         assertSame(newRefOrig, result.getOwlClassA());

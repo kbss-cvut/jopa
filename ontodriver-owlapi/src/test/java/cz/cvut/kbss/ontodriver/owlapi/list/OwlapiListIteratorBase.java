@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.net.URI;
@@ -28,8 +28,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static cz.cvut.kbss.ontodriver.owlapi.list.ListHandlerTestBase.LIST_ITEMS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 abstract class OwlapiListIteratorBase {
 
@@ -48,13 +47,13 @@ abstract class OwlapiListIteratorBase {
 
     abstract OwlapiListIterator iterator();
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void nextWithoutMoreElementsThrowsException() {
         testHelper.persistList(LIST_ITEMS);
         while (iterator.hasNext()) {
             iterator.next();
         }
-        iterator.next();
+        assertThrows(NoSuchElementException.class, () -> iterator.next());
     }
 
     @Test

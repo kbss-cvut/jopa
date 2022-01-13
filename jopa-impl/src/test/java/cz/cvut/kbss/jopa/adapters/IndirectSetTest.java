@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,30 +14,30 @@
  */
 package cz.cvut.kbss.jopa.adapters;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import cz.cvut.kbss.jopa.environment.utils.Generators;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassF;
-
+@ExtendWith(MockitoExtension.class)
 class IndirectSetTest {
 
     private static Set<OWLClassA> set;
@@ -62,8 +62,6 @@ class IndirectSetTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         target = new IndirectSet<>(owner, ownerField, uow, set);
         set.clear();
         set.addAll(backupSet);
@@ -72,12 +70,12 @@ class IndirectSetTest {
 
     @Test
     void testIndirectSetNullUoW() {
-        assertThrows(NullPointerException.class,() ->  new IndirectSet<>(owner, ownerField, null, set));
+        assertThrows(NullPointerException.class, () -> new IndirectSet<>(owner, ownerField, null, set));
     }
 
     @Test
     void testIndirectSetNullReferencedSet() {
-        assertThrows(NullPointerException.class,() ->  new IndirectSet<>(owner, ownerField, uow, null));
+        assertThrows(NullPointerException.class, () -> new IndirectSet<>(owner, ownerField, uow, null));
     }
 
     @Test
@@ -109,6 +107,7 @@ class IndirectSetTest {
 
     @Test
     void testIteratorRemove() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final Iterator<OWLClassA> it = target.iterator();
         assertTrue(it.hasNext());
         it.next();
@@ -119,9 +118,8 @@ class IndirectSetTest {
 
     @Test
     void testAdd() {
-        final OWLClassA a = new OWLClassA();
-        a.setUri(URI.create("http://newA"));
-        a.setStringAttribute("testAttribute");
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
+        final OWLClassA a = Generators.generateOwlClassAInstance();
         target.add(a);
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupSet.size() + 1, set.size());
@@ -136,6 +134,7 @@ class IndirectSetTest {
 
     @Test
     void testRemove() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final OWLClassA toRemove = set.iterator().next();
         target.remove(toRemove);
         verify(uow).attributeChanged(owner, ownerField);
@@ -144,12 +143,9 @@ class IndirectSetTest {
 
     @Test
     void testAddAll() {
-        final List<OWLClassA> toAdd = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            final OWLClassA a = new OWLClassA();
-            a.setUri(URI.create("http://addAllA" + i));
-            toAdd.add(a);
-        }
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
+        final List<OWLClassA> toAdd = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassAInstance())
+                .collect(Collectors.toList());
         target.addAll(toAdd);
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupSet.size() + toAdd.size(), set.size());
@@ -158,6 +154,7 @@ class IndirectSetTest {
 
     @Test
     void testRetainAll() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         Set<OWLClassA> toRetain = new HashSet<>();
         Iterator<OWLClassA> it = backupSet.iterator();
         for (int i = 0; i < 8; i++) {
@@ -172,6 +169,7 @@ class IndirectSetTest {
 
     @Test
     void testRemoveAll() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         Set<OWLClassA> toRemove = new HashSet<>();
         Iterator<OWLClassA> it = backupSet.iterator();
         for (int i = 0; i < 8; i++) {
@@ -190,6 +188,7 @@ class IndirectSetTest {
 
     @Test
     void testClear() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         target.clear();
         verify(uow).attributeChanged(owner, ownerField);
         assertTrue(set.isEmpty());

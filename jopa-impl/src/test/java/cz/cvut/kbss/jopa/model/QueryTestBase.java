@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -32,7 +32,6 @@ import cz.cvut.kbss.ontodriver.iteration.ResultSetIterator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.List;
@@ -71,7 +70,6 @@ abstract class QueryTestBase {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         when(connectionWrapperMock.createStatement()).thenReturn(statementMock);
         when(statementMock.executeQuery(any())).thenReturn(resultSetMock);
         doAnswer((invocationOnMock) -> {

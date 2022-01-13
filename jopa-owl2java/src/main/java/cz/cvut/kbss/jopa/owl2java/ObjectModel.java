@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,12 +14,15 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.writer.FileCodeWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Wraps the generated object model, allowing to access it in memory or write it out to the file system.
@@ -50,7 +53,9 @@ class ObjectModel {
             if (!result && !file.exists()) {
                 LOG.error("Unable to create target directory structure.");
             }
-            codeModel.build(file);
+            // Explicitly use UTF-8 encoding to prevent issues with character encoding on different platforms
+            final CodeWriter writer = new FileCodeWriter(file, false, StandardCharsets.UTF_8.toString());
+            codeModel.build(writer);
         } catch (IOException e) {
             LOG.error("Unable to write out the generated object model.", e);
         }

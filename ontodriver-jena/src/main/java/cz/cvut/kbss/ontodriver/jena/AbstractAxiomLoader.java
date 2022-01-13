@@ -1,21 +1,23 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.apache.jena.datatypes.xsd.XSDDateTime;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 
@@ -32,7 +34,7 @@ abstract class AbstractAxiomLoader {
     /**
      * Checks whether the storage contains the specified axiom.
      *
-     * @param axiom   Axiom whose existence should be verified
+     * @param axiom    Axiom whose existence should be verified
      * @param contexts Contexts to search, optional
      * @return {@code true} if the axiom exists, {@code false} otherwise
      */
@@ -100,11 +102,7 @@ abstract class AbstractAxiomLoader {
             if (shouldSkipLiteral(assertion, object)) {
                 return Optional.empty();
             }
-            Object val = JenaUtils.literalToValue(object.asLiteral());
-            // Jena does not like java.util.Date
-            if (val instanceof XSDDateTime) {
-                val = ((XSDDateTime) val).asCalendar().getTime();
-            }
+            final Object val = JenaUtils.literalToValue(object.asLiteral());
             return Optional.of(new Value<>(val));
         }
     }

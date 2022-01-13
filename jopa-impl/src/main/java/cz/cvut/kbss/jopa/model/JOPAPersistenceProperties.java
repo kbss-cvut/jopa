@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -70,13 +72,21 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     public static final String DISABLE_IC_VALIDATION_ON_LOAD = "cz.cvut.jopa.ic.validation.disableOnLoad";
 
     /**
-     * Indicates whether JOPA should prefer {@link MultilingualString} over {@link String} when target type is unclear from
-     * context.
-     *
-     * For example, when a field is of type {@link Object} and the value is language-tagged string, this setting will influence
-     * the actual type set on the field.
+     * Indicates whether JOPA should prefer {@link MultilingualString} over {@link String} when target type is unclear
+     * from context.
+     * <p>
+     * For example, when a field is of type {@link Object} and the value is language-tagged string, this setting will
+     * influence the actual type set on the field.
      */
     public static final String PREFER_MULTILINGUAL_STRING = "cz.cvut.jopa.preferMultilingualString";
+
+    /**
+     * Name of a custom {@link cz.cvut.kbss.jopa.loaders.ClasspathScanner} implementation used to discover entity
+     * classes.
+     * <p>
+     * The specified class must have a public no-arg constructor.
+     */
+    public static final String CLASSPATH_SCANNER_CLASS = "cz.cvut.jopa.classpathScanner";
 
     private JOPAPersistenceProperties() {
         throw new AssertionError();

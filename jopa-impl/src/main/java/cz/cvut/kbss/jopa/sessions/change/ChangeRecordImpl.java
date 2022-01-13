@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,7 @@ public class ChangeRecordImpl implements ChangeRecord {
 
     private final FieldSpecification<?, ?> attribute;
 
-    private final Object newValue;
+    private Object newValue;
 
     private boolean preventsCaching;
 
@@ -34,6 +34,11 @@ public class ChangeRecordImpl implements ChangeRecord {
     @Override
     public Object getNewValue() {
         return newValue;
+    }
+
+    @Override
+    public void setNewValue(Object value) {
+        this.newValue = value;
     }
 
     @Override

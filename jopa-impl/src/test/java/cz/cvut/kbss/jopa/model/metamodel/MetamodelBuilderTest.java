@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -16,19 +18,20 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
-import cz.cvut.kbss.jopa.oom.converter.LocalDateConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -38,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unused")
 class MetamodelBuilderTest {
 
@@ -45,11 +49,6 @@ class MetamodelBuilderTest {
     private PersistenceUnitClassFinder finderMock;
 
     private final MetamodelBuilder builder = new MetamodelBuilder(new Configuration());
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void buildsMetamodelOfEntityWithSingleNamespaceDeclaredOnClass() {
@@ -144,17 +143,17 @@ class MetamodelBuilderTest {
         final AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer> result =
                 (AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer>) et
                         .getDeclaredAttribute(OWLClassM.getIntegerSetField().getName());
-        assertTrue(result.getConverter() instanceof ToIntegerConverter);
+        assertThat(result.getConverter(), instanceOf(ToIntegerConverter.class));
     }
 
     @Test
-    void buildMetamodelBuildsEntityWithLocalDateConverter() throws Exception {
+    void buildMetamodelBuildsEntityWithLocalDateTimeConverter() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassT.class));
         builder.buildMetamodel(finderMock);
         final EntityTypeImpl<OWLClassT> et = (EntityTypeImpl<OWLClassT>) builder.getEntityClass(OWLClassT.class);
-        final AbstractAttribute<OWLClassT, LocalDate> result = (AbstractAttribute<OWLClassT, LocalDate>) et
-                .getDeclaredAttribute(OWLClassT.getLocalDateField().getName());
-        assertTrue(result.getConverter() instanceof LocalDateConverter);
+        final AbstractAttribute<OWLClassT, LocalDateTime> result = (AbstractAttribute<OWLClassT, LocalDateTime>) et
+                .getDeclaredAttribute(OWLClassT.getLocalDateTimeField().getName());
+        assertThat(result.getConverter(), instanceOf(LocalDateTimeConverter.class));
     }
 
     @Test

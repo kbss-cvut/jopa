@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- *
+ * Copyright (C) 2022 Czech Technical University in Prague
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,16 +21,18 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 public class EpistemicAxiomRemoverTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
@@ -41,9 +43,8 @@ public class EpistemicAxiomRemoverTest {
 
     private EpistemicAxiomRemover remover;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.remover = new EpistemicAxiomRemover(connectorMock);
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -68,6 +68,11 @@ public final class RDF {
      * {@code rdf:Property} represents those resources that are RDF properties.
      */
     public static final String PROPERTY = NAMESPACE + "Property";
+
+    /**
+     * The class {@code rdf:langString} representing language-tagged string values.
+     */
+    public static final String LANG_STRING = NAMESPACE + "langString";
 
     private RDF() {
         throw new AssertionError();

@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
@@ -111,12 +113,11 @@ class ParameterValueFactoryTest {
     }
 
     @Test
-    void createDateValue() {
+    void createCreatesTemporalParameterValueFromJavaUtilDate() {
         final Date date = new Date();
         final ParameterValue value = sut.create(date);
-        assertEquals(date, value.getValue());
-        assertEquals("\"" + date.toInstant().toString() + "\"^^<" + XSD.DATETIME + ">",
-                value.getQueryString());
+        assertEquals(date.toInstant(), value.getValue());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
@@ -153,61 +154,53 @@ class ParameterValueFactoryTest {
     }
 
     @Test
-    void createLocalDateTimeValueCreatesDateTimeParameter() {
+    void createLocalDateTimeValueCreatesTemporalParameter() {
         final LocalDateTime localDateTime = LocalDateTime.now();
         final ParameterValue value = sut.create(localDateTime);
-        assertEquals("\"" + localDateTime + "\"^^<" + XSD.DATETIME + ">",
-                value.getQueryString());
+        assertEquals(localDateTime, value.getValue());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
-    void createInstantValueCreatesDateTimeParameter() {
+    void createInstantValueCreatesTemporalParameter() {
         final Instant instant = Instant.now();
         final ParameterValue value = sut.create(instant);
-        assertEquals("\"" + instant.toString() + "\"^^<" + XSD.DATETIME + ">",
-                value.getQueryString());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
-    void createZonedDateTimeValueCreatesDateTimeParameter() {
+    void createZonedDateTimeValueCreatesTemporalParameter() {
         final ZonedDateTime zonedDateTime = ZonedDateTime.now();
         final ParameterValue value = sut.create(zonedDateTime);
-        assertEquals(
-                "\"" + zonedDateTime.toOffsetDateTime() + "\"^^<" + XSD.DATETIME + ">",
-                value.getQueryString());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
-    void createOffsetDateTimeValueCreatesDateTimeParameter() {
+    void createOffsetDateTimeValueCreatesTempralParameter() {
         final OffsetDateTime offsetDateTime = OffsetDateTime.now();
         final ParameterValue value = sut.create(offsetDateTime);
-        assertEquals(
-                "\"" + offsetDateTime + "\"^^<" + XSD.DATETIME + ">",
-                value.getQueryString());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
-    void createLocalDateValueCreatesDateParameter() {
+    void createLocalDateValueCreatesTemporalParameter() {
         final LocalDate localDate = LocalDate.now();
         final ParameterValue value = sut.create(localDate);
-        assertEquals("\"" + localDate + "\"^^<" + XSD.DATE + ">",
-                value.getQueryString());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
-    void createLocalTimeValueCreatesTimeParameter() {
+    void createLocalTimeValueCreatesTemporalParameter() {
         final LocalTime localTime = LocalTime.now();
         final ParameterValue value = sut.create(localTime);
-        assertEquals("\"" + localTime.toString() + "\"^^<" + XSD.TIME + ">",
-                value.getQueryString());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
-    void createOffsetTimeValueCreatesTimeParameter() {
+    void createOffsetTimeValueCreatesTemporalParameter() {
         final OffsetTime offsetTime = OffsetTime.now();
         final ParameterValue value = sut.create(offsetTime);
-        assertEquals("\"" + offsetTime + "\"^^<" + XSD.TIME + ">",
-                value.getQueryString());
+        assertThat(value, instanceOf(TemporalParameterValue.class));
     }
 
     @Test
@@ -240,5 +233,19 @@ class ParameterValueFactoryTest {
         final ParameterValue result = sut.create(values);
         assertEquals(values.stream().map(a -> "<" + a.getUri() + ">").collect(Collectors.joining(",")),
                 result.getQueryString());
+    }
+
+    @Test
+    void createCreatesDurationParameterValueForJavaDuration() {
+        final Duration duration = Duration.ofHours(10);
+        final ParameterValue value = sut.create(duration);
+        assertThat(value, instanceOf(DurationParameterValue.class));
+    }
+
+    @Test
+    void createCreatesDurationParameterValueForJavaPeriod() {
+        final Period period = Period.ofDays(365);
+        final ParameterValue value = sut.create(period);
+        assertThat(value, instanceOf(DurationParameterValue.class));
     }
 }

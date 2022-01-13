@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,14 +20,14 @@ import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -37,7 +37,7 @@ public class DummyInferredStorageConnectorTest {
 
     private InferredStorageConnector connector;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final SharedStorageConnector wrapped = new SharedStorageConnector(configuration);

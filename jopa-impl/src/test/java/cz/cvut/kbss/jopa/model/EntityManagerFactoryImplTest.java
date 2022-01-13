@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,8 +21,9 @@ import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Types;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EntityManagerFactoryImplTest {
 
     private EntityManagerFactoryImpl emf;
@@ -40,7 +42,6 @@ class EntityManagerFactoryImplTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         final Map<String, String> props = new HashMap<>();
         props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName());
         props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
@@ -49,11 +50,11 @@ class EntityManagerFactoryImplTest {
         this.emf = new EntityManagerFactoryImpl(props);
         emf.createEntityManager();
         emf.getServerSession().unwrap(DataSourceStub.class).setConnection(connection);
-        when(connection.types()).thenReturn(mock(Types.class));
     }
 
     @Test
     void isLoadedReturnsTrueForManagedInstance() {
+        when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
         try {
             final OWLClassA a = Generators.generateOwlClassAInstance();
@@ -66,6 +67,7 @@ class EntityManagerFactoryImplTest {
 
     @Test
     void isLoadedReturnsTrueForAttributeOfManagedInstance() throws Exception {
+        when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
         try {
             final OWLClassA a = Generators.generateOwlClassAInstance();

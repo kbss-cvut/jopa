@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -100,13 +102,22 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
     /**
      * Does the attribute contain values in lexical form.
      * <p>
-     * Note that lexical form attributes are effectively read only.
-     * <p>
      * Applies only to datatype and annotation properties, object properties cannot be in lexical form.
      *
      * @return Boolean indicating whether the attribute contains values in lexical form
      */
     boolean isLexicalForm();
+
+    /**
+     * Gets the explicitly specified identifier of the attribute datatype.
+     * <p>
+     * Note that the returned value may be {@code null} in case the datatype is not explicitly specified and automatic
+     * datatype resolution provided by the underlying OntoDriver is used. {@code null} is also returned for object property
+     * attributes, as this does not apply to them.
+     *
+     * @return Datatype identifier, possibly {@code null}
+     */
+    String getDatatype();
 
     /**
      * Does the attribute represent simple literals.

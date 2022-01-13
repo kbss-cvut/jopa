@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,8 +22,9 @@ import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -34,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class SesameDriverTest {
 
     private static OntologyStorageProperties storageProperties;
@@ -55,11 +57,7 @@ public class SesameDriverTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.driver = new SesameDriver(storageProperties, Collections.emptyMap());
-        when(connectorFactoryMock.isOpen()).thenReturn(Boolean.TRUE);
-        when(connectorFactoryMock.createStorageConnector(new DriverConfiguration(storageProperties)))
-                .thenReturn(connectorMock);
         final Field factoryField = SesameDriver.class.getDeclaredField("connectorFactory");
         factoryField.setAccessible(true);
         factoryField.set(driver, connectorFactoryMock);
@@ -75,6 +73,8 @@ public class SesameDriverTest {
 
     @Test
     public void acquiresConnection() throws Exception {
+        when(connectorFactoryMock.createStorageConnector(new DriverConfiguration(storageProperties)))
+                .thenReturn(connectorMock);
         final Connection res = driver.acquireConnection();
         assertNotNull(res);
         assertNotNull(res.lists());
@@ -84,6 +84,8 @@ public class SesameDriverTest {
 
     @Test
     public void removesClosedConnectionFromActiveConnections() throws Exception {
+        when(connectorFactoryMock.createStorageConnector(new DriverConfiguration(storageProperties)))
+                .thenReturn(connectorMock);
         final Connection conn = driver.acquireConnection();
         assertNotNull(conn);
         final Field connectionsField = SesameDriver.class.getDeclaredField("openedConnections");

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,6 +19,8 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -140,7 +142,7 @@ public abstract class Generators {
                 return ((double) propertyIndex + 1) / (valueIndex + 1);
             case 4: // date
                 // Generate date rounded to seconds to prevent issues with time rounding
-                return new Date((System.currentTimeMillis() / 1000) * 1000);
+                return OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
             case 5: // String
                 return "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
             default:

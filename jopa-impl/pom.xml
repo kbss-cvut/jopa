@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.17.2</version>
+        <version>0.18.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <org.antlr4.version>4.9.2</org.antlr4.version>
+        <org.antlr4.version>4.9.3</org.antlr4.version>
     </properties>
 
     <dependencies>
@@ -27,6 +27,11 @@
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>ontodriver-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>datatype</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

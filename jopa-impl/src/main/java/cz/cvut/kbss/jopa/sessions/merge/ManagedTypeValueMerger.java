@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -28,10 +28,12 @@ class ManagedTypeValueMerger implements ValueMerger {
     }
 
     @Override
-    public void mergeValue(FieldSpecification<?, ?> att, Object target, Object originalValue, Object mergedValue,
-                           Descriptor attributeDescriptor) {
+    public void mergeValue(Object target, ChangeRecord changeRecord, Descriptor attributeDescriptor) {
+        final Object mergedValue = changeRecord.getNewValue();
         final Object toSet = getValueToSet(mergedValue, attributeDescriptor);
-        EntityPropertiesUtils.setFieldValue(att.getJavaField(), target, toSet);
+        EntityPropertiesUtils.setFieldValue(changeRecord.getAttribute().getJavaField(), target, toSet);
+        // Replace the value in the change record as the mergedValue may not have been managed
+        changeRecord.setNewValue(toSet);
     }
 
     Object getValueToSet(Object mergedValue, Descriptor descriptor) {

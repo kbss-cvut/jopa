@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,8 +21,9 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class IndirectListTest {
 
     private static List<OWLClassA> list;
@@ -56,8 +58,6 @@ class IndirectListTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         target = new IndirectList<>(owner, ownerField, uow, list);
         list.clear();
         list.addAll(backupList);
@@ -76,6 +76,7 @@ class IndirectListTest {
 
     @Test
     void testAdd() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final OWLClassA added = new OWLClassA();
         added.setUri(URI.create("http://added"));
         owner.getReferencedList().add(added);
@@ -85,6 +86,7 @@ class IndirectListTest {
 
     @Test
     void testAddNull() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         // Adding null is possible for some list types (ArrayList in our case
         // permits them)
         owner.getReferencedList().add(null);
@@ -94,6 +96,7 @@ class IndirectListTest {
 
     @Test
     void testAddAtIndex() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final OWLClassA added = new OWLClassA();
         added.setUri(URI.create("http://added"));
         owner.getReferencedList().add(list.size() / 2, added);
@@ -103,6 +106,7 @@ class IndirectListTest {
 
     @Test
     void testAddAll() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final List<OWLClassA> toAdd = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             final OWLClassA a = new OWLClassA();
@@ -122,6 +126,7 @@ class IndirectListTest {
 
     @Test
     void testAddAllAtIndex() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final List<OWLClassA> toAdd = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             final OWLClassA a = new OWLClassA();
@@ -145,6 +150,7 @@ class IndirectListTest {
 
     @Test
     void testClear() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         owner.getReferencedList().clear();
         verify(uow).attributeChanged(owner, ownerField);
         assertTrue(target.isEmpty());
@@ -152,6 +158,7 @@ class IndirectListTest {
 
     @Test
     void testRemoveObject() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         owner.getReferencedList().remove(list.get(0));
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupList.size() - 1, target.size());
@@ -165,6 +172,7 @@ class IndirectListTest {
 
     @Test
     void testRemoveAtIndex() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         owner.getReferencedList().remove(list.size() - 1);
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupList.size() - 1, target.size());
@@ -172,6 +180,7 @@ class IndirectListTest {
 
     @Test
     void testRemoveAll() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         List<OWLClassA> toRemove = list.subList(2, 5);
         final int toRemoveSize = toRemove.size();
         owner.getReferencedList().removeAll(toRemove);
@@ -187,6 +196,7 @@ class IndirectListTest {
 
     @Test
     void testRetainAll() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         List<OWLClassA> toRetain = list.subList(2, 5);
         final int toRetainSize = toRetain.size();
         owner.getReferencedList().retainAll(toRetain);
@@ -196,6 +206,7 @@ class IndirectListTest {
 
     @Test
     void testSet() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final OWLClassA a = new OWLClassA();
         a.setUri(URI.create("http://setA"));
         owner.getReferencedList().set(0, a);
@@ -206,6 +217,7 @@ class IndirectListTest {
 
     @Test
     void testIteratorRemove() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         int cnt = 3;
         final OWLClassA toRemove = owner.getReferencedList().get(cnt);
         final Iterator<OWLClassA> it = owner.getReferencedList().iterator();
@@ -221,6 +233,7 @@ class IndirectListTest {
 
     @Test
     void testListIteratorAdd() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final OWLClassA addA = new OWLClassA();
         addA.setUri(URI.create("http://addA"));
         final ListIterator<OWLClassA> lit = owner.getReferencedList().listIterator();
@@ -237,6 +250,7 @@ class IndirectListTest {
 
     @Test
     void testListIteratorSetReverse() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final OWLClassA a = new OWLClassA();
         a.setUri(URI.create("http://setA"));
         final ListIterator<OWLClassA> lit = owner.getReferencedList().listIterator(5);
@@ -250,6 +264,7 @@ class IndirectListTest {
 
     @Test
     void testListIteratorRemove() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         int cnt = 3;
         final OWLClassA toRemove = owner.getReferencedList().get(cnt);
         final ListIterator<OWLClassA> it = owner.getReferencedList().listIterator();
@@ -294,8 +309,9 @@ class IndirectListTest {
 
     @Test
     void removeIfNotifiesUoWOfRemovedElements() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         final Set<URI> toRemove = target.stream().filter(e -> Generators.randomBoolean()).map(OWLClassA::getUri)
-                                        .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
         owner.getReferencedList().removeIf(e -> toRemove.contains(e.getUri()));
         verify(uow, times(toRemove.size())).attributeChanged(owner, ownerField);
     }

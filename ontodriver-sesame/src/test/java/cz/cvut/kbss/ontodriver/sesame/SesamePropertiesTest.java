@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -83,7 +85,7 @@ class SesamePropertiesTest {
             final Statement stmt = vf
                     .createStatement(subject, vf.createIRI(ax.getAssertion().getIdentifier().toString()),
                             SesameUtils
-                                    .createDataPropertyLiteral(ax.getValue().getValue(), Constants.DEFAULT_LANG, vf));
+                                    .createLiteral(ax.getValue().getValue(), Constants.DEFAULT_LANG, vf));
             assertTrue(statements.contains(stmt));
         }
     }
@@ -118,7 +120,7 @@ class SesamePropertiesTest {
             final IRI property = vf.createIRI(a.getIdentifier().toString());
             stmts.addAll(properties.get(a).stream().map(v -> vf
                     .createStatement(subject, property,
-                            SesameUtils.createDataPropertyLiteral(v.getValue(), Constants.DEFAULT_LANG, vf)))
+                            SesameUtils.createLiteral(v.getValue(), Constants.DEFAULT_LANG, vf)))
                                    .collect(Collectors.toList()));
         }
         return stmts;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -25,10 +25,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface RangeOf {
 
-	/**
-	 * IRI of the object property
-	 * 
-	 * @return IRI of the object property
-	 */
-	String owlPropertyIRI();
+    /**
+     * IRI of the object property
+     *
+     * @return IRI of the object property
+     */
+    String owlPropertyIRI();
 }

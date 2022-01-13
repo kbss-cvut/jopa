@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,12 @@ package cz.cvut.kbss.jopa.oom.converter;
 
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 
+/**
+ * Internal wrapper of a {@link AttributeConverter} providing addition methods.
+ *
+ * @param <X> the type of the entity attribute
+ * @param <Y> the type of the axiom/triple value
+ */
 public interface ConverterWrapper<X, Y> extends AttributeConverter<X, Y> {
 
     /**

@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -39,7 +41,6 @@ import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.aspectj.lang.Aspects;
 
@@ -50,6 +51,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.getValidator;
+import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotInferred;
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
@@ -133,9 +136,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor) {
-        Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(descriptor);
 
         return readObjectInternal(cls, identifier, descriptor);
     }
@@ -343,10 +346,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     private void validateIntegrityConstraints() {
-        final IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
+        final IntegrityConstraintsValidator validator = getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
-            validator.validate(changeSet.getCloneObject(),
-                    entityType((Class<Object>) changeSet.getObjectClass()), false);
+            validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()), isNotInferred());
         }
         uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }
@@ -386,8 +388,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @return The state of the specified entity
      */
     public State getState(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptor);
 
         if (deletedObjects.containsKey(entity)) {
             return State.REMOVED;
@@ -572,8 +574,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptor);
 
         final Object id = getIdentifier(entity);
         if (!storage.contains(id, entity.getClass(), descriptor)) {
@@ -754,8 +756,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptor);
 
         registerNewObjectInternal(entity, descriptor);
     }
@@ -912,8 +914,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public <T> void loadEntityField(T entity, Field field) {
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(field);
         assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
         final Descriptor entityDescriptor = getDescriptor(entity);
@@ -964,7 +966,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public void removeObjectFromCache(Object toRemove, URI context) {
-        Objects.requireNonNull(toRemove, ErrorUtils.getNPXMessageSupplier("toRemove"));
+        Objects.requireNonNull(toRemove);
 
         cacheManager.evict(toRemove.getClass(), getIdentifier(toRemove), context);
     }

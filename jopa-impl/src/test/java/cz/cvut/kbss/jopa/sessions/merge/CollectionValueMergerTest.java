@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.merge;
 
@@ -24,10 +26,14 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import org.junit.Before;
-import org.junit.Test;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,11 +42,13 @@ import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CollectionValueMergerTest {
 
     @Mock
@@ -51,11 +59,10 @@ public class CollectionValueMergerTest {
 
     private Descriptor descriptor;
 
-    private CollectionValueMerger merger;
+    private CollectionValueMerger sut;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         when(uow.getMetamodel()).thenReturn(metamodel);
@@ -69,7 +76,7 @@ public class CollectionValueMergerTest {
         });
 
         this.descriptor = new EntityDescriptor();
-        this.merger = new CollectionValueMerger(uow, new ManagedTypeValueMerger(uow));
+        this.sut = new CollectionValueMerger(uow, new ManagedTypeValueMerger(uow));
     }
 
     @Test
@@ -83,7 +90,7 @@ public class CollectionValueMergerTest {
         final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
         final FieldSpecification<? super OWLClassA, ?> typesSpec = et.getTypes();
 
-        merger.mergeValue(typesSpec, orig, orig.getTypes(), merge.getTypes(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
         assertTrue(orig.getTypes().contains(addedType));
         assertFalse(orig.getTypes().contains(removedType));
     }
@@ -96,7 +103,7 @@ public class CollectionValueMergerTest {
         final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
         final FieldSpecification<? super OWLClassA, ?> typesSpec = et.getTypes();
 
-        merger.mergeValue(typesSpec, orig, orig.getTypes(), merge.getTypes(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
         assertNotNull(orig.getTypes());
         assertEquals(orig.getTypes(), merge.getTypes());
     }
@@ -109,7 +116,7 @@ public class CollectionValueMergerTest {
         final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
         final FieldSpecification<? super OWLClassA, ?> typesSpec = et.getTypes();
 
-        merger.mergeValue(typesSpec, orig, orig.getTypes(), merge.getTypes(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(typesSpec, merge.getTypes()), descriptor);
         assertNull(orig.getTypes());
     }
 
@@ -117,9 +124,9 @@ public class CollectionValueMergerTest {
     public void mergeLoadsReferencesUsedInMergedCollectionFromStorage() throws Exception {
         final OWLClassF orig = new OWLClassF(Generators.createIndividualIdentifier());
         orig.setSimpleSet(IntStream.range(0, 10).mapToObj(i -> Generators.generateOwlClassAInstance())
-                                   .collect(Collectors.toSet()));
+                .collect(Collectors.toSet()));
         orig.getSimpleSet()
-            .forEach(a -> when(uow.readObject(OWLClassA.class, a.getUri(), descriptor)).thenReturn(new OWLClassA(a)));
+                .forEach(a -> when(uow.readObject(OWLClassA.class, a.getUri(), descriptor)).thenReturn(new OWLClassA(a)));
         final OWLClassF merged = new OWLClassF(orig.getUri());
         merged.setSimpleSet(new HashSet<>());
         final Iterator<OWLClassA> it = orig.getSimpleSet().iterator();
@@ -141,7 +148,7 @@ public class CollectionValueMergerTest {
         final FieldSpecification<? super OWLClassF, ?> att = et
                 .getFieldSpecification(OWLClassF.getSimpleSetField().getName());
 
-        merger.mergeValue(att, orig, orig.getSimpleSet(), merged.getSimpleSet(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(att, merged.getSimpleSet()), descriptor);
         assertEquals(merged.getSimpleSet().size(), orig.getSimpleSet().size());
         merged.getSimpleSet().forEach(a -> verify(uow).readObject(OWLClassA.class, a.getUri(), descriptor));
     }
@@ -150,14 +157,14 @@ public class CollectionValueMergerTest {
     public void mergeReplacesOriginalCollectionWithEmptyOneWhenMergedCollectionIsEmpty() throws Exception {
         final OWLClassF orig = new OWLClassF(Generators.createIndividualIdentifier());
         orig.setSimpleSet(IntStream.range(0, 10).mapToObj(i -> Generators.generateOwlClassAInstance())
-                                   .collect(Collectors.toSet()));
+                .collect(Collectors.toSet()));
         final OWLClassF merged = new OWLClassF(orig.getUri());
         merged.setSimpleSet(Collections.emptySet());
         final EntityType<OWLClassF> et = metamodel.entity(OWLClassF.class);
         final FieldSpecification<? super OWLClassF, ?> att = et
                 .getFieldSpecification(OWLClassF.getSimpleSetField().getName());
 
-        merger.mergeValue(att, orig, orig.getSimpleSet(), merged.getSimpleSet(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(att, merged.getSimpleSet()), descriptor);
         assertNotNull(orig.getSimpleSet());
         assertTrue(orig.getSimpleSet().isEmpty());
     }
@@ -166,9 +173,9 @@ public class CollectionValueMergerTest {
     public void mergeLoadsReferencesUsedInMergedListFromStorage() throws Exception {
         final OWLClassC orig = new OWLClassC(Generators.createIndividualIdentifier());
         orig.setReferencedList(IntStream.range(0, 10).mapToObj(i -> Generators.generateOwlClassAInstance())
-                                        .collect(Collectors.toList()));
+                .collect(Collectors.toList()));
         orig.getReferencedList()
-            .forEach(a -> when(uow.readObject(OWLClassA.class, a.getUri(), descriptor)).thenReturn(new OWLClassA(a)));
+                .forEach(a -> when(uow.readObject(OWLClassA.class, a.getUri(), descriptor)).thenReturn(new OWLClassA(a)));
         final OWLClassC merged = new OWLClassC(orig.getUri());
         merged.setReferencedList(new ArrayList<>());
         for (int i = 0; i < orig.getReferencedList().size(); i++) {
@@ -185,7 +192,7 @@ public class CollectionValueMergerTest {
         final FieldSpecification<? super OWLClassC, ?> att = et
                 .getFieldSpecification(OWLClassC.getRefListField().getName());
 
-        merger.mergeValue(att, orig, orig.getReferencedList(), merged.getReferencedList(), descriptor);
+        sut.mergeValue(orig, new ChangeRecordImpl(att, merged.getReferencedList()), descriptor);
         assertEquals(merged.getReferencedList().size(), orig.getReferencedList().size());
         merged.getReferencedList().forEach(a -> verify(uow).readObject(OWLClassA.class, a.getUri(), descriptor));
     }

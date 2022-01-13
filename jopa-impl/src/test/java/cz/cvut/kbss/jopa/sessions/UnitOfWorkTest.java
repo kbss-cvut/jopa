@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,13 +25,16 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
@@ -1058,5 +1061,41 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertNotNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor));
         uow.removeObject(entity);
         assertNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor));
+    }
+
+    /**
+     * Enhancement #98
+     */
+    @Test
+    void persistSkipsCardinalityConstraintValidationOfInferredAttributes() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final Attribute<OWLClassA, String> strAtt = metamodelMocks.forOwlClassA().stringAttribute();
+        when(strAtt.isInferred()).thenReturn(true);
+        final ParticipationConstraint pc = new ParticipationConstraint() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return ParticipationConstraint.class;
+            }
+
+            @Override
+            public String owlObjectIRI() {
+                return Vocabulary.p_a_stringAttribute;
+            }
+
+            @Override
+            public int min() {
+                return 1;
+            }
+
+            @Override
+            public int max() {
+                return 1;
+            }
+        };
+        when(strAtt.getConstraints()).thenReturn(new ParticipationConstraint[]{pc});
+        entityA.setStringAttribute(null);
+        uow.registerNewObject(entityA, descriptor);
+        assertDoesNotThrow(() -> uow.commit());
     }
 }

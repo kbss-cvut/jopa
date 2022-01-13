@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,9 +14,11 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.EnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -54,10 +56,21 @@ class ConverterResolver {
         if (attValueType.isEnum()) {
             return Optional.of(new EnumConverter(attValueType));
         }
+        if (config.hasDatatype()) {
+            verifyTypeIsString(field, attValueType);
+            return Optional.of(new ToRdfLiteralConverter(config.getDatatype()));
+        }
         if (config.isLexicalForm()) {
             return Optional.of(new ToLexicalFormConverter());
         }
         return converters.getConverter(attValueType);
+    }
+
+    private void verifyTypeIsString(Field field, Class<?> attValueType) {
+        if (!attValueType.equals(String.class)) {
+            throw new InvalidFieldMappingException("Attributes with explicit datatype identifier must have values of type String. " +
+                    "The provided attribute " + field + " has type " + attValueType);
+        }
     }
 
     /**
@@ -73,7 +86,7 @@ class ConverterResolver {
      * @param type attribute type as defined in {@link cz.cvut.kbss.jopa.model.metamodel.Type}
      *             (not to be confused with {@link java.lang.reflect.Type})
      * @return Possible converter instance to be used for transformation of values of the specified field. Returns empty
-     *         {@code Optional} if no suitable converter is found (or needed)
+     * {@code Optional} if no suitable converter is found (or needed)
      * @see cz.cvut.kbss.jopa.model.metamodel.QueryAttribute
      */
     public Optional<ConverterWrapper<?, ?>> resolveConverter(Type<?> type) {

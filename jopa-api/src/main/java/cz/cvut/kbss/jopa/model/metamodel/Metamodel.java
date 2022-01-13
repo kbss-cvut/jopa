@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -13,6 +13,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
+
+import cz.cvut.kbss.jopa.NonJPA;
 
 import java.net.URI;
 import java.util.Set;
@@ -30,6 +32,18 @@ public interface Metamodel {
      * @throws IllegalArgumentException if not an entity
      */
     <X> EntityType<X> entity(Class<X> cls);
+
+    /**
+     * Returns the metamodel entity types representing the specified ontological class.
+     * <p>
+     * Note that since multiple entity types can be mapped to the same ontological class, this method returns a set of
+     * entity types instead of just one.
+     *
+     * @param classIri Identifier of the ontological class
+     * @return A set of entity types mapped to the specified class IRI, possibly empty
+     */
+    @NonJPA
+    Set<EntityType<?>> getMappedEntities(String classIri);
 
     /**
      * Return the metamodel managed types.
@@ -52,6 +66,7 @@ public interface Metamodel {
      *
      * @return The set of classes with inferred attributes.
      */
+    @NonJPA
     Set<Class<?>> getInferredClasses();
 
     /**
@@ -61,6 +76,7 @@ public interface Metamodel {
      *
      * @return A set of URIs
      */
+    @NonJPA
     Set<URI> getModuleExtractionExtraSignature();
 
     /**
@@ -75,5 +91,6 @@ public interface Metamodel {
      * @param uri The URI to add
      * @throws NullPointerException If {@code uri} is {@code null}
      */
+    @NonJPA
     void addUriToModuleExtractionSignature(URI uri);
 }

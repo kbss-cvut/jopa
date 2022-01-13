@@ -6,11 +6,19 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.17.2</version>
+        <version>0.18.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <name>JOPA - API</name>
     <artifactId>jopa-api</artifactId>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>datatype</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>

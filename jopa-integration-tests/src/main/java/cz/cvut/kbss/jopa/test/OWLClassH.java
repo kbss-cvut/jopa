@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -30,6 +30,13 @@ public class OWLClassH {
     // max=1)
     // })
     private OWLClassA owlClassA;
+
+    public OWLClassH() {
+    }
+
+    public OWLClassH(URI uri) {
+        this.uri = uri;
+    }
 
     /**
      * @param uri

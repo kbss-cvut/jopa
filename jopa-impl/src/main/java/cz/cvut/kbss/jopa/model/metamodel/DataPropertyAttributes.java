@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -37,6 +37,7 @@ class DataPropertyAttributes extends PropertyAttributes {
         this.type = BasicTypeImpl.get(fieldValueCls);
         this.lexicalForm = odp.lexicalForm();
         this.simpleLiteral = odp.simpleLiteral();
+        this.datatype = typeBuilderContext.resolveNamespace(odp.datatype());
         this.language = resolveLanguage(fieldValueCls);
         validator.validateDataPropertyField(field, odp);
     }

@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,22 +14,26 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
 import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.BindingValueMismatchException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.owl2query.model.QueryResult;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.semanticweb.owlapi.model.OWLObject;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -38,17 +42,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SelectResultSetTest {
 
     @Mock
     private Statement statementMock;
 
     private final QueryResultGenerator generator = new QueryResultGenerator();
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     public void resultSetContainsCorrectMappingOfIndexesAndLabels() {
@@ -349,7 +350,7 @@ public class SelectResultSetTest {
 
     @Test
     public void getStringCanHandleOWLIndividuals() throws Exception {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
+        final URI uri = Generator.generateUri();
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(uri, uri))));
@@ -410,7 +411,7 @@ public class SelectResultSetTest {
 
     @Test
     public void getObjectOfOWLNamedIndividualReturnsItsUri() throws Exception {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
+        final URI uri = Generator.generateUri();
         SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(uri, uri))));
@@ -421,20 +422,18 @@ public class SelectResultSetTest {
 
     @Test
     public void getTypedObjectOnLiteralReturnsCastedLiteral() throws Exception {
-        final Date date = new Date();
         SelectResultSet resultSet = resultSet(
-                generator.generate(Arrays.asList("a", "b", "c", "d", "e"), Collections.singletonList(
-                        Arrays.asList("One", 117, true, 3.14D, date))));
+                generator.generate(Arrays.asList("a", "b", "c", "d"), Collections.singletonList(
+                        Arrays.asList("One", 117, true, 3.14D))));
         resultSet.next();
         assertEquals("One", resultSet.getObject(0, String.class));
         assertEquals(117, resultSet.getObject("b", Integer.class).intValue());
         assertTrue(resultSet.getObject(2, Boolean.class));
-        assertEquals(date, resultSet.getObject("e", Date.class));
     }
 
     @Test
     public void getTypedObjectOnNamedIndividualCastToUri() throws Exception {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
+        final URI uri = Generator.generateUri();
         SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
@@ -444,7 +443,7 @@ public class SelectResultSetTest {
 
     @Test
     public void getTypedObjectOnNamedIndividualCreatesInstanceWhenConstructorTakesMatchingParam() throws Exception {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
+        final URI uri = Generator.generateUri();
         SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
@@ -456,19 +455,17 @@ public class SelectResultSetTest {
 
     @Test
     public void getTypedObjectWithUnsupportedConversionThrowsDriverException() {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
+        final URI uri = Generator.generateUri();
         SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
         resultSet.next();
-        final OwlapiDriverException ex =
-                assertThrows(OwlapiDriverException.class, () -> resultSet.getObject("a", String.class));
-        assertThat(ex.getMessage(), containsString("No constructor taking parameter of type"));
+        assertThrows(UnsupportedTypeTransformationException.class, () -> resultSet.getObject("a", InetAddress.class));
     }
 
     @Test
     public void getNamedIndividualAsLiteralValueThrowsException() {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
+        final URI uri = Generator.generateUri();
         SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));

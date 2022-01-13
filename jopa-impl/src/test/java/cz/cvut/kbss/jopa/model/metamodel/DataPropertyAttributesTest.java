@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,12 +20,14 @@ import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class DataPropertyAttributesTest {
 
     @Mock
@@ -39,51 +41,59 @@ class DataPropertyAttributesTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         doAnswer(invocation -> invocation.getArguments()[0]).when(typeBuilderContext).resolveNamespace(anyString());
     }
 
     @Test
     void resolveInvokesDataPropertyFieldValidation() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
-        sut.typeBuilderContext = typeBuilderContext;
+        final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
         verify(validator)
                 .validateDataPropertyField(OWLClassA.getStrAttField(), OWLClassA.getStrAttField().getAnnotation(
                         OWLDataProperty.class));
     }
 
-    @Test
-    void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
+    private DataPropertyAttributes initSystemUnderTest() {
         final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
         sut.typeBuilderContext = typeBuilderContext;
+        return sut;
+    }
+
+    @Test
+    void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
+        final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassM.getLexicalFormField(), metamodelBuilder, OWLClassM.getLexicalFormField().getType());
         assertTrue(sut.isLexicalForm());
     }
 
     @Test
     void resolveResolvesSimpleLiteralConfigurationFromAnnotation() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
-        sut.typeBuilderContext = typeBuilderContext;
+        final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassM.getSimpleLiteralField(), metamodelBuilder, OWLClassM.getSimpleLiteralField().getType());
         assertTrue(sut.isSimpleLiteral());
     }
 
     @Test
     void resolveSetsLanguageFromPersistenceUnitLanguageConfiguration() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
+        final DataPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.typeBuilderContext = typeBuilderContext;
         sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
         assertEquals("en", sut.getLanguage());
     }
 
     @Test
     void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
-        final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
-        when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.typeBuilderContext = typeBuilderContext;
+        final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
+    }
+
+    @Test
+    void resolveSetsDatatypeToValueSpecifiedInAnnotation() throws Exception {
+        final DataPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(OWLClassM.getExplicitDatatypeField(), metamodelBuilder, String.class);
+        assertNotNull(sut.getDatatype());
+        assertEquals(OWLClassM.getExplicitDatatypeField().getAnnotation(OWLDataProperty.class)
+                .datatype(), sut.getDatatype());
     }
 }

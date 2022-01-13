@@ -1,17 +1,21 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.util;
 
+import cz.cvut.kbss.jopa.datatype.xsd.XsdDatatypeMapper;
+import cz.cvut.kbss.jopa.datatype.xsd.XsdTemporalMapper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
@@ -20,6 +24,10 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
 
 /**
@@ -32,60 +40,33 @@ public final class SesameUtils {
     }
 
     /**
-     * Gets value of the specified data property literal as the corresponding Java object.
+     * Gets value of the specified literal as the corresponding Java object.
      * <p>
-     * Primitives are returned boxed.
+     * Primitives are returned boxed. If the type cannot be mapped to a corresponding Java type,
+     * it is returned as {@link cz.cvut.kbss.ontodriver.model.Literal}.
      *
-     * @param literal DataProperty value
-     * @return Java value corresponding to the XML Schema datatype
-     * @throws IllegalArgumentException If literal's datatype is not supported
+     * @param literal RDF literal value
+     * @return Java value corresponding to datatype
      */
-    public static Object getDataPropertyValue(Literal literal) {
+    public static Object getLiteralValue(Literal literal) {
         assert literal != null;
 
         final IRI datatype = literal.getDatatype();
         assert datatype != null;
 
-        if (datatype.equals(XSD.STRING) || datatype.equals(XSD.NORMALIZEDSTRING)) {
-            return literal.stringValue();
-        } else if (datatype.equals(RDF.LANGSTRING)) {
+        if (datatype.equals(RDF.LANGSTRING)) {
             return new LangString(literal.stringValue(), literal.getLanguage().orElse(null));
-        } else if (isInteger(datatype)) {
-            return literal.intValue();
-        } else if (datatype.equals(XSD.BOOLEAN)) {
-            return literal.booleanValue();
-        } else if (datatype.equals(XSD.LONG) || datatype.equals(XSD.UNSIGNED_LONG)) {
-            return literal.longValue();
-        } else if (datatype.equals(XSD.DECIMAL)) {
-            return literal.decimalValue();
-        } else if (datatype.equals(XSD.FLOAT)) {
-            return literal.floatValue();
-        } else if (datatype.equals(XSD.DOUBLE)) {
-            return literal.doubleValue();
-        } else if (datatype.equals(XSD.SHORT) || datatype.equals(XSD.UNSIGNED_SHORT)) {
-            return literal.shortValue();
-        } else if (datatype.equals(XSD.BYTE) || datatype.equals(XSD.UNSIGNED_BYTE)) {
-            return literal.byteValue();
-        } else if (datatype.equals(XSD.DATE) || datatype.equals(XSD.DATETIME)) {
-            return literal.calendarValue().toGregorianCalendar().getTime();
         } else {
-            throw new IllegalArgumentException("Unsupported datatype " + datatype);
+            final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(
+                    literal.getLabel(), datatype.stringValue());
+            return XsdDatatypeMapper.getInstance().map(lit).orElse(lit);
         }
-    }
-
-    private static boolean isInteger(IRI datatype) {
-        return datatype.equals(XSD.INT) || datatype.equals(XSD.UNSIGNED_INT) ||
-                datatype.equals(XSD.INTEGER)
-                || datatype.equals(XSD.POSITIVE_INTEGER)
-                || datatype.equals(XSD.NON_NEGATIVE_INTEGER)
-                || datatype.equals(XSD.NEGATIVE_INTEGER)
-                || datatype.equals(XSD.NON_POSITIVE_INTEGER);
     }
 
     /**
      * Checks whether the language of the specified literal matches the specified assertion language.
      * <p>
-     * If the assertion does not specified a language, any literal will match. If the literal is not a string, it
+     * If the assertion does not specify a language, any literal will match. If the literal is not a string, it
      * matches as well.
      *
      * @param literal   Literal to check
@@ -109,7 +90,7 @@ public final class SesameUtils {
     }
 
     /**
-     * Creates Sesame literal from the specified value, which can be used as data property object.
+     * Creates Sesame literal from the specified value.
      *
      * @param value    The value to transform
      * @param language Language to add to string literals, optional
@@ -117,7 +98,7 @@ public final class SesameUtils {
      * @return Sesame Literal
      * @throws IllegalArgumentException If the type of the value is not supported
      */
-    public static Literal createDataPropertyLiteral(Object value, String language, ValueFactory vf) {
+    public static Literal createLiteral(Object value, String language, ValueFactory vf) {
         assert value != null;
 
         if (value instanceof Integer) {
@@ -127,7 +108,7 @@ public final class SesameUtils {
         } else if (value instanceof LangString) {
             final LangString ls = (LangString) value;
             return ls.getLanguage().isPresent() ? vf.createLiteral(ls.getValue(), ls.getLanguage().get()) :
-                   vf.createLiteral(ls.getValue());
+                    vf.createLiteral(ls.getValue());
         } else if (value instanceof Byte) {
             return vf.createLiteral((Byte) value);
         } else if (value instanceof Short) {
@@ -140,13 +121,31 @@ public final class SesameUtils {
             return vf.createLiteral((Double) value);
         } else if (value instanceof Long) {
             return vf.createLiteral((Long) value);
+        } else if (value instanceof BigInteger) {
+            return vf.createLiteral((BigInteger) value);
+        } else if (value instanceof BigDecimal) {
+            return vf.createLiteral((BigDecimal) value);
         } else if (value instanceof Date) {
-            return vf.createLiteral((Date) value);
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((Date) value).toInstant());
+            return createLiteral(vf, ontoLiteral);
+        } else if (value instanceof TemporalAccessor) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map((TemporalAccessor) value);
+            return createLiteral(vf, ontoLiteral);
+        } else if (value instanceof TemporalAmount) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map((TemporalAmount) value);
+            return createLiteral(vf, ontoLiteral);
         } else if (value.getClass().isEnum()) {
             return vf.createLiteral(value.toString());
+        } else if (value instanceof cz.cvut.kbss.ontodriver.model.Literal) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = (cz.cvut.kbss.ontodriver.model.Literal) value;
+            return createLiteral(vf, ontoLiteral);
         } else {
             throw new IllegalArgumentException("Unsupported literal type " + value.getClass());
         }
+    }
+
+    private static Literal createLiteral(ValueFactory vf, cz.cvut.kbss.ontodriver.model.Literal ontoLiteral) {
+        return vf.createLiteral(ontoLiteral.getLexicalForm(), vf.createIRI(ontoLiteral.getDatatype()));
     }
 
     /**
@@ -193,7 +192,7 @@ public final class SesameUtils {
             return java.net.URI.create(resource.stringValue());
         } catch (IllegalArgumentException e) {
             // This shouldn't happen
-            LoggerFactory.getLogger(SesameUtils.class).error("Sesame resource is not a valid URI: " + e);
+            LoggerFactory.getLogger(SesameUtils.class).error("RDF4J resource is not a valid URI: " + e);
             return null;
         }
     }

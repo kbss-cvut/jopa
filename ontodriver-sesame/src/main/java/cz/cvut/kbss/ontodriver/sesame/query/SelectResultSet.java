@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.query;
 
+import cz.cvut.kbss.jopa.datatype.DatatypeTransformer;
+import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exception.VariableNotBoundException;
@@ -26,8 +28,6 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
@@ -228,7 +228,7 @@ public class SelectResultSet extends AbstractResultSet {
     private static Object toObject(Value val) {
         assert val != null;
         if (val instanceof Literal) {
-            return SesameUtils.getDataPropertyValue((Literal) val);
+            return SesameUtils.getLiteralValue((Literal) val);
         } else if (val instanceof IRI) {
             return SesameUtils.toJavaUri((IRI) val);
         } else {
@@ -255,55 +255,15 @@ public class SelectResultSet extends AbstractResultSet {
         }
         Object ob = null;
         if (val instanceof Literal) {
-            ob = SesameUtils.getDataPropertyValue((Literal) val);
+            ob = SesameUtils.getLiteralValue((Literal) val);
         } else if (val instanceof IRI) {
             ob = SesameUtils.toJavaUri((IRI) val);
         }
-        if (ob != null && cls.isAssignableFrom(ob.getClass())) {
-            return cls.cast(ob);
-        }
-        ob = val;
-        return instantiateUsingConstructor(cls, val, ob);
-    }
-
-    /**
-     * Searches for a suitable constructor and creates a new instance of class {@code cls}. </p>
-     * <p>
-     * The type has to have single-argument constructor, which takes either {@code Value} or its subtypes or type of
-     * instance returned by {@link SesameUtils#getDataPropertyValue(Literal)}.
-     *
-     * @param cls The return type
-     * @param val Raw value
-     * @param ob  Either raw value (if it is a resource) or instance returned by {@link
-     *            SesameUtils#getDataPropertyValue(Literal)} on passing the literal {@code val}
-     * @return The new instance
-     * @throws OntoDriverException If no suitable constructor is found or the instance cannot be created
-     */
-    private static  <T> T instantiateUsingConstructor(Class<T> cls, Value val, Object ob)
-            throws OntoDriverException {
-        Constructor<?>[] ctors = cls.getDeclaredConstructors();
         try {
-            for (Constructor<?> c : ctors) {
-                if (c.getParameterTypes().length != 1) {
-                    continue;
-                }
-                c.setAccessible(true);
-                final Class<?> type = c.getParameterTypes()[0];
-                if (type.isAssignableFrom(ob.getClass())) {
-                    return cls.cast(c.newInstance(ob));
-                }
-                if (type.isAssignableFrom(val.getClass())) {
-                    return cls.cast(c.newInstance(val));
-                }
-                if (type.isAssignableFrom(String.class)) {
-                    return cls.cast(c.newInstance(ob.toString()));
-                }
-            }
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
-            throw new SesameDriverException("Unable to create instance of type " + cls + " with value " + val, e);
+            return cls.cast(DatatypeTransformer.transform(ob, cls));
+        } catch (UnsupportedTypeTransformationException e) {
+            throw new SesameDriverException("Unable to transform value to target object.", e);
         }
-        throw new SesameDriverException("No suitable constructor for value " + val + " found in type " + cls);
     }
 
     @Override
@@ -332,7 +292,7 @@ public class SelectResultSet extends AbstractResultSet {
 
     private static String getStringImpl(Value val) {
         if (val instanceof Literal) {
-            return SesameUtils.getDataPropertyValue((Literal) val).toString();
+            return SesameUtils.getLiteralValue((Literal) val).toString();
         } else {
             return val.toString();
         }
@@ -363,7 +323,7 @@ public class SelectResultSet extends AbstractResultSet {
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
-        return SesameUtils.getDataPropertyValue((Literal) val);
+        return SesameUtils.getLiteralValue((Literal) val);
     }
 
     private Object getLiteralValue(String columnName) throws OntoDriverException {
@@ -371,7 +331,7 @@ public class SelectResultSet extends AbstractResultSet {
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
-        return SesameUtils.getDataPropertyValue((Literal) val);
+        return SesameUtils.getLiteralValue((Literal) val);
     }
 
     private Value getCurrent(int columnIndex) {

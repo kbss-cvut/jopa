@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 
@@ -25,7 +25,7 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
 
     private ReferencedListDescriptor descriptor;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         final OWLNamedIndividual individual = snapshot.getDataFactory().getOWLNamedIndividual(IRI.create(SUBJECT));

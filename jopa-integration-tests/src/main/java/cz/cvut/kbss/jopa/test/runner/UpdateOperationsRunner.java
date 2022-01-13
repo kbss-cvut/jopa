@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -29,6 +31,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -499,7 +503,8 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassP p = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         final URI property = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty");
-        p.getProperties().put(property, new HashSet<>(Arrays.asList(1, "Two", new Date())));
+        p.getProperties().put(property, new HashSet<>(Arrays.asList(1, "Two", OffsetDateTime.now()
+                .truncatedTo(ChronoUnit.MILLIS))));
         em.getTransaction().commit();
 
         em.clear();
@@ -1361,5 +1366,28 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassZ result = em.find(OWLClassZ.class, z.getUri());
         assertEquals(updatedString, result.getRoot().getChildren().iterator().next().getName());
+    }
+
+    /**
+     * Bug #97
+     */
+    @Test
+    void mergeHandlesCascadingAndReferencedObjects() {
+        this.em = getEntityManager("mergeHandlesCascadingAndReferencedObjects", true);
+        final OWLClassG entityG = new OWLClassG(Generators.generateUri());
+        final OWLClassH entityH = new OWLClassH(Generators.generateUri());
+        entityG.setOwlClassH(entityH);
+        entityH.setOwlClassA(entityA);
+        persist(entityG, entityA, entityA2);
+
+        entityG.getOwlClassH().setOwlClassA(entityA2);
+        em.clear();
+        transactional(() -> em.merge(entityG));
+
+        final OWLClassG result = findRequired(OWLClassG.class, entityG.getUri());
+        assertEquals(entityA2.getUri(), result.getOwlClassH().getOwlClassA().getUri());
+        final OWLClassA aResult = findRequired(OWLClassA.class, entityA.getUri());
+        // The incorrect merge messes up the cached value of the original entityA
+        assertEquals(entityA.getUri(), aResult.getUri());
     }
 }

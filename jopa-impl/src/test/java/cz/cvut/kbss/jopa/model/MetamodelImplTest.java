@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,10 +24,10 @@ import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -36,10 +36,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unused")
 class MetamodelImplTest {
 
@@ -50,11 +52,6 @@ class MetamodelImplTest {
     private PersistenceUnitClassFinder classFinderMock;
 
     private final Configuration conf = new Configuration(PROPERTIES);
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void buildsSingleEntityWithSingularDataProperty() throws Exception {
@@ -84,7 +81,7 @@ class MetamodelImplTest {
                                         Attribute.PersistentAttributeType type, Field field, FetchType fetch,
                                         boolean inferred, String iri, Class<?> bindableJavaType,
                                         CascadeType[] cascadeTypes) {
-        assertTrue(attribute instanceof SingularAttributeImpl);
+        assertThat(attribute, instanceOf(SingularAttribute.class));
         final SingularAttribute<?, ?> singularAttribute = (SingularAttribute<?, ?>) attribute;
         assertFalse(singularAttribute.isId());  // it is not an id
         assertFalse(singularAttribute.isCollection());  // it is singular
@@ -135,7 +132,7 @@ class MetamodelImplTest {
         final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassE> et = metamodel.entity(OWLClassE.class);
-        final Identifier id = et.getIdentifier();
+        final Identifier<? super OWLClassE, ?> id = et.getIdentifier();
         assertTrue(id.isGenerated());
         assertEquals(OWLClassE.class.getDeclaredField("uri"), id.getJavaField());
     }
@@ -198,7 +195,7 @@ class MetamodelImplTest {
                                       Attribute.PersistentAttributeType type, Field field, FetchType fetch,
                                       boolean inferred, String iri, Class<?> bindableJavaType,
                                       CollectionType collectionType, CascadeType[] cascadeTypes) {
-        assertTrue(attribute instanceof PluralAttribute);
+        assertThat(attribute, instanceOf(PluralAttribute.class));
         final PluralAttribute<?, ?, ?> pluralAttribute = (PluralAttribute<?, ?, ?>) attribute;
         assertTrue(pluralAttribute.isCollection());  // it is plural
         assertEquals(collectionType, pluralAttribute.getCollectionType());  // correct collection type
@@ -234,7 +231,7 @@ class MetamodelImplTest {
                                           String hasNext) {
         checkPluralAttribute(attribute, declaringType, name, type, field, fetch, inferred, iri, bindableJavaType,
                 collectionType, cascadeTypes);
-        assertTrue(attribute instanceof ListAttribute);
+        assertThat(attribute, instanceOf(ListAttribute.class));
         final ListAttribute<?, ?> listAttribute = (ListAttribute<?, ?>) attribute;
         assertEquals(sequenceType, listAttribute.getSequenceType());
         assertEquals(owlListClass, listAttribute.getOWLListClass().toString());
@@ -396,8 +393,8 @@ class MetamodelImplTest {
         final EntityType<OWLClassN> et = metamodel.entity(OWLClassN.class);
         final Field strAttField = OWLClassN.getStringAttributeField();
         final FieldSpecification<? super OWLClassN, ?> att = et.getFieldSpecification(strAttField.getName());
-        assertTrue(att instanceof SingularAttribute);
-        assertTrue(((SingularAttribute) att).isNonEmpty());
+        assertThat(att, instanceOf(SingularAttribute.class));
+        assertTrue(((SingularAttribute<?, ?>) att).isNonEmpty());
     }
 
     @Test
@@ -528,11 +525,11 @@ class MetamodelImplTest {
         final Attribute<? super ClassWithPluralOPUrls, ?> att = et.getAttribute("op");
         assertNotNull(att);
         assertTrue(att.isCollection());
-        assertTrue(att instanceof PluralAttribute);
+        assertThat(att, instanceOf(PluralAttribute.class));
         assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
         assertArrayEquals(new CascadeType[0], att.getCascadeTypes());
-        assertEquals(URL.class, ((PluralAttribute) att).getBindableJavaType());
-        assertEquals(CollectionType.SET, ((PluralAttribute) att).getCollectionType());
+        assertEquals(URL.class, ((PluralAttribute<?, ?, ?>) att).getBindableJavaType());
+        assertEquals(CollectionType.SET, ((PluralAttribute<?, ?, ?>) att).getCollectionType());
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithOPUri")
@@ -662,5 +659,13 @@ class MetamodelImplTest {
         when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassQ.class));
         final MetamodelImpl metamodel = getMetamodel();
         assertFalse(metamodel.isEntityType(QMappedSuperclass.class));
+    }
+
+    @Test
+    void getMappedEntitiesReturnsSetOfEntityTypesMappingSpecifiedClassIri() {
+        when(classFinderMock.getEntities()).thenReturn(Collections.singleton(OWLClassA.class));
+        final MetamodelImpl metamodel = getMetamodel();
+        final Set<EntityType<?>> result = metamodel.getMappedEntities(Vocabulary.c_OwlClassA);
+        assertEquals(Collections.singleton(metamodel.entity(OWLClassA.class)), result);
     }
 }

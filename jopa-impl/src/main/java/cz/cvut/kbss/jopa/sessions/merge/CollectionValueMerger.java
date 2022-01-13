@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -37,9 +38,9 @@ class CollectionValueMerger implements ValueMerger {
     }
 
     @Override
-    public void mergeValue(FieldSpecification<?, ?> att, Object target, Object originalValue, Object mergedValue,
-                           Descriptor attributeDescriptor) {
-        final Collection<?> mergedCol = (Collection<?>) mergedValue;
+    public void mergeValue(Object target, ChangeRecord changeRecord, Descriptor attributeDescriptor) {
+        final FieldSpecification<?, ?> att = changeRecord.getAttribute();
+        final Collection<?> mergedCol = (Collection<?>) changeRecord.getNewValue();
         if (mergedCol == null) {
             EntityPropertiesUtils.setFieldValue(att.getJavaField(), target, null);
             return;
@@ -47,15 +48,16 @@ class CollectionValueMerger implements ValueMerger {
 
         final Collection<Object> newValue = CollectionFactory
                 .createDefaultCollection(CollectionType.fromClass(att.getJavaType()));
-        boolean elemTypeManaged = false;
-        if (att instanceof PluralAttribute) {
-            elemTypeManaged = uow.isEntityType(((PluralAttribute) att).getBindableJavaType());
-        }
+        boolean elemTypeManaged = isElementTypeManaged(att);
         for (Object item : mergedCol) {
             newValue.add(elemTypeManaged ? managedTypeMerger.getValueToSet(item, attributeDescriptor) : item);
         }
         extendModuleExtractionSignature(att, newValue);
         EntityPropertiesUtils.setFieldValue(att.getJavaField(), target, newValue);
+    }
+
+    private boolean isElementTypeManaged(FieldSpecification<?, ?> att) {
+        return att instanceof PluralAttribute && uow.isEntityType(((PluralAttribute<?, ?, ?>) att).getBindableJavaType());
     }
 
     private void extendModuleExtractionSignature(FieldSpecification<?, ?> att, Collection<?> value) {

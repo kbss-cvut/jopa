@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.query;
 
@@ -21,8 +23,11 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -33,6 +38,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SelectResultSetTest {
 
     private static final List<String> BINDINGS = Arrays.asList("x", "y", "z");
@@ -50,7 +57,6 @@ public class SelectResultSetTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         when(resultMock.getBindingNames()).thenReturn(BINDINGS);
         when(resultMock.next()).thenReturn(bindingSetMock);
         when(resultMock.hasNext()).thenReturn(true);
@@ -74,7 +80,7 @@ public class SelectResultSetTest {
 
     @Test
     public void getObjectOnSesameUriReturnsJavaUri() throws Exception {
-        final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
+        final URI x = URI.create("https://onto.fel.cvut.cz/ontologies/jopa#John117");
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createIRI(x.toString()));
 
         resultSet.next();
@@ -91,7 +97,7 @@ public class SelectResultSetTest {
 
     @Test
     public void getObjectTypedOnUriReturnsUriWhenAskedForUri() throws Exception {
-        final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
+        final URI x = URI.create("https://onto.fel.cvut.cz/ontologies/jopa#John117");
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createIRI(x.toString()));
 
         resultSet.next();

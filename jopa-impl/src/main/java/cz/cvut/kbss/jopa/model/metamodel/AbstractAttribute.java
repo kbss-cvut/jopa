@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -45,6 +47,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final boolean simpleLiteral;
 
+    private final String datatype;
+
     private final String language;
 
     private final ParticipationConstraint[] constraints;
@@ -66,6 +70,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         this.lexicalForm = builder.lexicalForm;
         this.simpleLiteral = builder.simpleLiteral;
         this.language = builder.language;
+        this.datatype = builder.datatype;
     }
 
     @Override
@@ -157,6 +162,11 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         return declaringType.getJavaType().getSimpleName() + "." + getName();
     }
 
+    @Override
+    public String getDatatype() {
+        return datatype;
+    }
+
     abstract static class AbstractAttributeBuilder<X, Y> {
         private Field field;
         private ManagedType<X> declaringType;
@@ -169,6 +179,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private boolean nonEmpty = false;
         private boolean lexicalForm = false;
         private boolean simpleLiteral = false;
+        private String datatype;
         private String language;
         private ParticipationConstraint[] constraints;
         private ConverterWrapper converter;
@@ -181,7 +192,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             this.nonEmpty = config.isNonEmpty();
             this.fetchType = config.getFetchType();
             this.lexicalForm = config.isLexicalForm();
-            this.simpleLiteral = config.simpleLiteral;
+            this.simpleLiteral = config.isSimpleLiteral();
+            this.datatype = config.hasDatatype() ? config.getDatatype() : null;
             this.language = config.getLanguage();
             return this;
         }

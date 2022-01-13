@@ -1,24 +1,31 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
+import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -26,8 +33,9 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ConverterResolverTest {
@@ -52,17 +60,19 @@ class ConverterResolverTest {
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Integer.class));
-        assertTrue(result.get() instanceof ToIntegerConverter);
+        assertThat(result.get(), instanceOf(ToIntegerConverter.class));
     }
 
     @Test
-    void resolveConverterReturnsEmptyOptionalForDataPropertyWithDateTarget() throws Exception {
+    void resolveConverterReturnsBuiltInDateConverterForDataPropertyWithDateTarget() throws Exception {
         final Field field = OWLClassM.getDateAttributeField();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(Date.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
-        assertFalse(result.isPresent());
+        assertTrue(result.isPresent());
+        assertTrue(result.get().supportsAxiomValueType(Literal.class));
+        assertThat(result.get(), instanceOf(DateConverter.class));
     }
 
     @Test
@@ -73,7 +83,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(Instant.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof InstantConverter);
+        assertThat(result.get(), instanceOf(InstantConverter.class));
     }
 
     @Test
@@ -85,7 +95,7 @@ class ConverterResolverTest {
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Integer.class));
-        assertTrue(result.get() instanceof ToIntegerConverter);
+        assertThat(result.get(), instanceOf(ToIntegerConverter.class));
     }
 
     @Test
@@ -96,7 +106,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof EnumConverter);
+        assertThat(result.get(), instanceOf(EnumConverter.class));
         assertTrue(result.get().supportsAxiomValueType(String.class));
     }
 
@@ -109,7 +119,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ToLexicalFormConverter);
+        assertThat(result.get(), instanceOf(ToLexicalFormConverter.class));
     }
 
     @Test
@@ -120,7 +130,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ObjectConverter);
+        assertThat(result.get(), instanceOf(ObjectConverter.class));
     }
 
     private static class ClassWithObjectAnnotation {
@@ -139,8 +149,32 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertTrue(result.get() instanceof ObjectConverter);
+        assertThat(result.get(), instanceOf(ObjectConverter.class));
         final ObjectConverter objectConverter = (ObjectConverter) result.get();
         assertTrue(objectConverter.doesPreferMultilingualString());
+    }
+
+    @Test
+    void resolveConverterReturnsToRdfLiteralConverterForAttributeWithExplicitDatatypeMapping() throws Exception {
+        final Field field = OWLClassM.getExplicitDatatypeField();
+        final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
+        when(pa.hasDatatype()).thenReturn(true);
+        when(pa.getDatatype()).thenReturn(XSD.DURATION);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertThat(result.get(), instanceOf(ToRdfLiteralConverter.class));
+    }
+
+    @Test
+    void resolveConverterThrowsInvalidFieldMappingExceptionWhenFieldWithExplicitDatatypeIsNotOfTypeString() throws Exception {
+        final Field field = OWLClassM.getIntAttributeField();
+        final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
+        when(pa.hasDatatype()).thenReturn(true);
+        when(pa.getDatatype()).thenReturn(XSD.DURATION);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        doReturn(BasicTypeImpl.get(Integer.class)).when(pa).getType();
+        assertThrows(InvalidFieldMappingException.class, () -> sut.resolveConverter(field, pa));
     }
 }

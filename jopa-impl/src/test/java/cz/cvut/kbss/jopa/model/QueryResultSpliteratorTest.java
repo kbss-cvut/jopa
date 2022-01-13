@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,11 +17,11 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.Spliterator;
@@ -31,6 +31,7 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked")
 class QueryResultSpliteratorTest {
 
@@ -51,11 +52,6 @@ class QueryResultSpliteratorTest {
 
     @InjectMocks
     private QueryResultSpliterator<String> sut;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void constructorCreatesSpliteratorWithOrderedNonNullAndImmutableCharacteristics() {

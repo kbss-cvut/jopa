@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,7 +18,6 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.*;
@@ -59,36 +58,23 @@ class AxiomSaver {
             case CLASS:
             case OBJECT_PROPERTY:
                 return values.stream().filter(v -> v != Value.nullValue()).map(v -> ResourceFactory
-                        .createStatement(subject, property, ResourceFactory.createResource(v.stringValue())))
-                             .collect(Collectors.toList());
+                                .createStatement(subject, property, ResourceFactory.createResource(v.stringValue())))
+                        .collect(Collectors.toList());
             case DATA_PROPERTY:
                 return dataPropertyValuesToStatements(values, subject, assertion, property);
             default:
                 return values.stream().filter(v -> v != Value.nullValue())
-                             .map(v -> ResourceFactory
-                                     .createStatement(subject, property, JenaUtils.valueToRdfNode(assertion, v)))
-                             .collect(Collectors.toList());
+                        .map(v -> ResourceFactory
+                                .createStatement(subject, property, JenaUtils.valueToRdfNode(assertion, v)))
+                        .collect(Collectors.toList());
 
         }
     }
 
     private static List<Statement> dataPropertyValuesToStatements(Collection<Value<?>> values, Resource subject, Assertion a,
-                                                           Property property) {
+                                                                  Property property) {
         return values.stream().filter(v -> v != Value.nullValue()).map(v -> {
-            final Literal value;
-            if (a.hasLanguage() && v.getValue() instanceof String) {
-                value = ResourceFactory.createLangLiteral(v.stringValue(), a.getLanguage());
-            } else if (v.getValue() instanceof LangString) {
-                final LangString ls = (LangString) v.getValue();
-                value = ResourceFactory.createLangLiteral(ls.getValue(), ls.getLanguage().orElse(null));
-            } else if (v.getValue() instanceof Date) {
-                // Jena does not like java.util.Date, it works with Calendar values
-                final GregorianCalendar cal = new GregorianCalendar();
-                cal.setTime((Date) v.getValue());
-                value = ResourceFactory.createTypedLiteral(cal);
-            } else {
-                value = ResourceFactory.createTypedLiteral(v.getValue());
-            }
+            final RDFNode value = JenaUtils.valueToRdfNode(a, v);
             return ResourceFactory.createStatement(subject, property, value);
         }).collect(Collectors.toList());
     }

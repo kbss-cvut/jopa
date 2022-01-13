@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Collection;
@@ -40,9 +41,8 @@ public class DetachedValueMerger implements ValueMerger {
     }
 
     @Override
-    public void mergeValue(FieldSpecification<?, ?> att, Object target, Object originalValue, Object mergedValue,
-                           Descriptor attributeDescriptor) {
-        getMerger(att).mergeValue(att, target, originalValue, mergedValue, attributeDescriptor);
+    public void mergeValue(Object target, ChangeRecord changeRecord, Descriptor attributeDescriptor) {
+        getMerger(changeRecord.getAttribute()).mergeValue(target, changeRecord, attributeDescriptor);
     }
 
     private ValueMerger getMerger(FieldSpecification<?, ?> att) {

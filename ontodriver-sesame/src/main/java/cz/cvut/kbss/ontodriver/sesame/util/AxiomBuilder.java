@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -75,7 +75,7 @@ public class AxiomBuilder {
                 if (!(value instanceof Literal) || !SesameUtils.doesLanguageMatch((Literal) value, assertion)) {
                     return Optional.empty();
                 }
-                return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
+                return Optional.of(new Value<>(SesameUtils.getLiteralValue((Literal) value)));
             case CLASS:
                 if (!(value instanceof Resource)) {
                     return Optional.empty();
@@ -93,12 +93,12 @@ public class AxiomBuilder {
         return Optional.empty();
     }
 
-    private Optional<Value<?>> resolveValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
+    private static Optional<Value<?>> resolveValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
         if (value instanceof Literal) {
             if (!SesameUtils.doesLanguageMatch((Literal) value, assertion)) {
                 return Optional.empty();
             }
-            return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
+            return Optional.of(new Value<>(SesameUtils.getLiteralValue((Literal) value)));
         } else {
             return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
         }

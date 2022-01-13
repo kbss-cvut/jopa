@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -42,7 +42,7 @@ public class AttributeModificationValidator {
             throw new InferredAttributeModifiedException(
                     "Field " + fieldSpec + " may contain inferences and cannot be modified.");
         }
-        if (fieldSpec instanceof AbstractAttribute && ((AbstractAttribute) fieldSpec).isLexicalForm()) {
+        if (fieldSpec instanceof AbstractAttribute && ((AbstractAttribute<?, ?>) fieldSpec).isLexicalForm()) {
             throw new AttributeModificationForbiddenException("Field " + fieldSpec +
                     " is configured to contain lexical form of literals and cannot be modified.");
         }

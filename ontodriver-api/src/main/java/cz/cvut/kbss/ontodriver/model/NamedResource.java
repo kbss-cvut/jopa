@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.Objects;
 
 /**
- * Represents named resources, i. e. resources identified by an URI.
+ * Represents named resources, i.e. resources identified by a URI.
  */
 public class NamedResource implements Serializable {
 
@@ -32,7 +32,7 @@ public class NamedResource implements Serializable {
     }
 
     /**
-     * Gets identifier of this resource.
+     * Gets the identifier of this resource.
      *
      * @return URI
      */

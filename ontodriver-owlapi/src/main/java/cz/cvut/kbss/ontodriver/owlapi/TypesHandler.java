@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
@@ -62,11 +64,11 @@ class TypesHandler {
         return dataFactory.getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
     }
 
-    private Set<Axiom<URI>> owlClassesToAxioms(NamedResource subject, boolean inferred,
-                                               Collection<? extends OWLClassExpression> owlClasses) {
+    private static Set<Axiom<URI>> owlClassesToAxioms(NamedResource subject, boolean inferred,
+                                                      Collection<? extends OWLClassExpression> owlClasses) {
         return owlClasses.stream().map(expr -> new AxiomImpl<>(subject,
-                Assertion.createClassAssertion(inferred), new Value<>(expr.asOWLClass().getIRI().toURI())))
-                         .collect(Collectors.toSet());
+                        Assertion.createClassAssertion(inferred), new Value<>(expr.asOWLClass().getIRI().toURI())))
+                .collect(Collectors.toSet());
     }
 
     private Collection<? extends OWLClassExpression> inferClasses(NamedResource subject) {
@@ -79,7 +81,7 @@ class TypesHandler {
 
         final List<OWLAxiom> axioms = getOwlAxiomsForTypes(subject, types);
         final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
-                                                      .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
@@ -88,8 +90,8 @@ class TypesHandler {
         final List<OWLAxiom> axioms = new ArrayList<>(types.size());
         final OWLNamedIndividual individual = getIndividual(subject);
         axioms.addAll(types.stream().map(type -> dataFactory
-                .getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(type)), individual))
-                           .collect(Collectors.toList()));
+                        .getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(type)), individual))
+                .collect(Collectors.toList()));
         return axioms;
     }
 
@@ -98,7 +100,7 @@ class TypesHandler {
 
         final List<OWLAxiom> axioms = getOwlAxiomsForTypes(subject, types);
         final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableRemoveAxiom(ontology, axiom))
-                                                      .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }

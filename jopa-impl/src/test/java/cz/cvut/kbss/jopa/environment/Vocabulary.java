@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -41,6 +41,7 @@ public class Vocabulary {
     public static final String p_m_IntegerSet = ATTRIBUTE_BASE + "m-pluralIntAttribute";
     public static final String p_m_lexicalForm = ATTRIBUTE_BASE + "m-lexicalForm";
     public static final String p_m_simpleLiteral = ATTRIBUTE_BASE + "m-simpleLiteral";
+    public static final String p_m_explicitDatatype = ATTRIBUTE_BASE + "m-explicitDatatype";
 
     public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
     public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";

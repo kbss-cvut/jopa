@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020 Czech Technical University in Prague
+ * Copyright (C) 2022 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,9 +21,10 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public abstract class IntegrityConstraintsValidator {
 
@@ -45,21 +46,21 @@ public abstract class IntegrityConstraintsValidator {
      *
      * @param instance The instance to validate
      * @param et       EntityType of the instance
-     * @param skipLazy Whether to skip validation of lazily loaded attributes
+     * @param filters  Filters allowing to specify attributes whose validation should be skipped
      * @param <T>      Entity class type
      */
-    public <T> void validate(T instance, EntityType<T> et, boolean skipLazy) {
-        Objects.requireNonNull(instance, ErrorUtils.getNPXMessageSupplier("instance"));
-        Objects.requireNonNull(et, ErrorUtils.getNPXMessageSupplier("et"));
+    @SafeVarargs
+    public final <T> void validate(T instance, EntityType<T> et, Predicate<FieldSpecification<? super T, ?>>... filters) {
+        Objects.requireNonNull(instance);
+        Objects.requireNonNull(et);
 
         final Object id = EntityPropertiesUtils.getIdentifier(instance, et);
-        for (FieldSpecification<? super T, ?> att : et.getFieldSpecifications()) {
-            if (skipLazy && att.getFetchType() == FetchType.LAZY) {
-                continue;
-            }
-            final Object value = EntityPropertiesUtils.getAttributeValue(att, instance);
-            validate(id, att, value);
-        }
+        et.getFieldSpecifications().stream()
+                .filter(att -> Stream.of(filters).allMatch(p -> p.test(att)))
+                .forEach(att -> {
+                    final Object value = EntityPropertiesUtils.getAttributeValue(att, instance);
+                    validate(id, att, value);
+                });
     }
 
     /**
@@ -69,8 +70,8 @@ public abstract class IntegrityConstraintsValidator {
      * @param metamodel Metamodel of the persistence unit
      */
     public void validate(ObjectChangeSet changeSet, Metamodel metamodel) {
-        Objects.requireNonNull(changeSet, ErrorUtils.getNPXMessageSupplier("changeSet"));
-        Objects.requireNonNull(metamodel, ErrorUtils.getNPXMessageSupplier("metamodel"));
+        Objects.requireNonNull(changeSet);
+        Objects.requireNonNull(metamodel);
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
         final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getCloneObject(), et);
@@ -87,4 +88,24 @@ public abstract class IntegrityConstraintsValidator {
      * @param attributeValue Value to be validated
      */
     public abstract void validate(Object identifier, FieldSpecification<?, ?> attribute, Object attributeValue);
+
+    /**
+     * Creates a predicate filtering attributes whose fetch type is {@link FetchType#LAZY}.
+     *
+     * @param <T> Entity type
+     * @return Predicate
+     */
+    public static <T> Predicate<FieldSpecification<? super T, ?>> isNotLazy() {
+        return att -> att.getFetchType() != FetchType.LAZY;
+    }
+
+    /**
+     * Creates a predicate filtering attributes that contain inferred values.
+     *
+     * @param <T> Entity type
+     * @return Predicate
+     */
+    public static <T> Predicate<FieldSpecification<? super T, ?>> isNotInferred() {
+        return att -> !att.isInferred();
+    }
 }
