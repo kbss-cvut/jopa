@@ -22,6 +22,7 @@ import java.util.Optional;
 /**
  * Maps RDF literals to Java objects.
  */
+@FunctionalInterface
 public interface DatatypeMapper {
 
     /**

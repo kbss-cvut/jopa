@@ -30,6 +30,10 @@ import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.SYSTEM_OFFSET;
  */
 public class XsdDateTimeMapper {
 
+    private XsdDateTimeMapper() {
+        throw new AssertionError();
+    }
+
     /**
      * Maps the specified value to {@link OffsetDateTime}.
      *

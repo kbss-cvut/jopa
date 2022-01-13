@@ -16,9 +16,12 @@ package cz.cvut.kbss.jopa.datatype.xsd;
 
 import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 
-import java.time.*;
+import java.time.LocalTime;
+import java.time.OffsetTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
+import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.SYSTEM_OFFSET;
 
 /**
  * Maps values of {@link cz.cvut.kbss.jopa.vocabulary.XSD#TIME} to Java {@link OffsetTime}.
@@ -27,7 +30,9 @@ import java.time.format.DateTimeParseException;
  */
 public class XsdTimeMapper {
 
-    private static final ZoneOffset LOCAL_OFFSET = ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now());
+    private XsdTimeMapper() {
+        throw new AssertionError();
+    }
 
     /**
      * Maps the specified value to {@link OffsetTime}.
@@ -40,7 +45,7 @@ public class XsdTimeMapper {
             return OffsetTime.parse(value, DateTimeFormatter.ISO_OFFSET_TIME);
         } catch (DateTimeParseException e) {
             try {
-                return LocalTime.parse(value).atOffset(LOCAL_OFFSET);
+                return LocalTime.parse(value).atOffset(SYSTEM_OFFSET);
             } catch (DateTimeParseException e2) {
                 throw new DatatypeMappingException("Invalid value provided as xsd:time.", e2);
             }

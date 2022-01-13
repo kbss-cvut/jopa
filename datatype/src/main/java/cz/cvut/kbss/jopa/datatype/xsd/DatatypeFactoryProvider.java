@@ -37,4 +37,8 @@ class DatatypeFactoryProvider {
     static DatatypeFactory getFactory() {
         return FACTORY;
     }
+
+    private DatatypeFactoryProvider() {
+        throw new AssertionError();
+    }
 }

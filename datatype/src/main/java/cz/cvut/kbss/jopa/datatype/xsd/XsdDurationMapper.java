@@ -25,6 +25,10 @@ import java.time.format.DateTimeParseException;
  */
 public class XsdDurationMapper {
 
+    private XsdDurationMapper() {
+        throw new AssertionError();
+    }
+
     /**
      * Maps the specified value to {@link Duration}.
      *
