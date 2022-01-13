@@ -1,5 +1,12 @@
 # JOPA - Release Notes
 
+## 0.18.0 - January 13, 2022
+- Implemented full support for Java 8 date/time API. It is now the preferred way of representing temporal data (#95).
+- Do not validate participation constraints on inferred attributes on persist (#98).
+- Support mapping lexical form of literals with explicit datatype (#96).
+- Allow retrieving entity classes mapping the specified class IRI from `Metamodel` (#99).
+- Dependency updates - RDF4J 3.7.4, test dependencies, plugins.
+
 ## 0.17.2 - September 27, 2021
 - Reload SPARQL-based attribute values when object is retrieved from cache to ensure up-to-date results (#93).
 - Support referencing other entity attributes in SPARQL-based attribute queries (#94).
