@@ -24,9 +24,9 @@ import java.lang.reflect.Field;
  */
 public abstract class IndirectCollection<T> implements IndirectWrapper {
 
-    protected final Object owner;
-    protected final Field field;
-    protected final UnitOfWorkImpl persistenceContext;
+    protected final transient Object owner;
+    protected final transient Field field;
+    protected final transient UnitOfWorkImpl persistenceContext;
 
     protected IndirectCollection() {
         owner = null;

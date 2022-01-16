@@ -83,8 +83,7 @@ abstract class AbstractResultSet implements ResultSet {
 
     @Override
     public void registerObserver(Observer observer) {
-        // TODO Auto-generated method stub
-
+        throw new UnsupportedOperationException("Not supported by the current version.");
     }
 
     @Override

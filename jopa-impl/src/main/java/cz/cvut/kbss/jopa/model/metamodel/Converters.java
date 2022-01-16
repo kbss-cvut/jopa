@@ -23,6 +23,9 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+/**
+ * Manages attribute converters.
+ */
 public class Converters {
 
     private static final Map<Class<?>, ConverterWrapper<?, ?>> DEFAULT_CONVERTERS = initDefaultConverters();
@@ -58,6 +61,11 @@ public class Converters {
         return Collections.unmodifiableMap(converters);
     }
 
+    /**
+     * Gets a map of default, built-in converters.
+     *
+     * @return Map of built-in converters, where the key is the target attribute type
+     */
     public static Map<Class<?>, ConverterWrapper<?, ?>> getDefaultConverters() {
         return DEFAULT_CONVERTERS;
     }
