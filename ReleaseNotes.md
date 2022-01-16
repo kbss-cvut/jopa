@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.18.1 - January 16, 2022
+- Support date/time value conversions in SPARQL result mapping.
+
 ## 0.18.0 - January 13, 2022
 - Implemented full support for Java 8 date/time API. It is now the preferred way of representing temporal data (#95).
 - Do not validate participation constraints on inferred attributes on persist (#98).
