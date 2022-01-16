@@ -20,12 +20,15 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class EntityResultMapperTest {
 
     @Mock
@@ -41,7 +44,6 @@ class EntityResultMapperTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.mapper = new EntityResultMapper<>(etMock);
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
     }

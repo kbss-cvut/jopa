@@ -20,17 +20,20 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class VariableResultMapperTest {
 
     private static final String NAME = "x";
@@ -40,11 +43,6 @@ class VariableResultMapperTest {
 
     @Mock
     private UnitOfWorkImpl uowMock;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void mapReadsValueFromResultSetByVariableNameAndReturnsIt() throws OntoDriverException {
@@ -112,7 +110,6 @@ class VariableResultMapperTest {
     @Test
     void mapReturnsNullWhenVariableIsNotBoundInResultSetButIsNotRequired() throws Exception {
         when(resultRow.isBound(NAME)).thenReturn(false);
-        when(resultRow.getObject(NAME)).thenThrow(new OntoDriverException("Error"));
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
         final Object result = mapper.map(resultRow, uowMock);
         assertNull(result);
@@ -135,6 +132,26 @@ class VariableResultMapperTest {
 
         private static VariableResult getVariableMapping() {
             return WithStringMapping.class.getDeclaredAnnotation(SparqlResultSetMapping.class).variables()[0];
+        }
+    }
+
+    @Test
+    void mapTransformsOffsetDateTimeToJavaUtilDate() throws OntoDriverException {
+        final OffsetDateTime value = OffsetDateTime.now();
+        when(resultRow.isBound(NAME)).thenReturn(true);
+        when(resultRow.getObject(NAME)).thenReturn(value);
+        final VariableResultMapper mapper = new VariableResultMapper(WithDateMapping.getVariableMapping());
+        final Object result = mapper.map(resultRow, uowMock);
+        assertEquals(new Date(value.toInstant().toEpochMilli()), result);
+    }
+
+    @SparqlResultSetMapping(name = "testMapping", variables = {
+            @VariableResult(name = NAME, type = Date.class)
+    })
+    private static class WithDateMapping {
+
+        private static VariableResult getVariableMapping() {
+            return WithDateMapping.class.getDeclaredAnnotation(SparqlResultSetMapping.class).variables()[0];
         }
     }
 }

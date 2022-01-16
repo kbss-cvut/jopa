@@ -16,25 +16,29 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.EntityResult;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class FieldResultMapperTest {
 
     @Mock
@@ -42,11 +46,6 @@ class FieldResultMapperTest {
 
     @Mock
     private UnitOfWork uowMock;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @SparqlResultSetMapping(name = "test", entities = {
             @EntityResult(entityClass = WithMapping.class, fields = {
@@ -67,16 +66,15 @@ class FieldResultMapperTest {
         when(fsMock.getJavaType()).thenReturn(Boolean.class);
         when(fsMock.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(resultRow.isBound(fieldResult.variable())).thenReturn(true);
-        when(resultRow.getObject(fieldResult.variable())).thenReturn(117);
+        final int value = 117;
+        when(resultRow.getObject(fieldResult.variable())).thenReturn(value);
 
         final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
         final OWLClassM target = new OWLClassM();
         final SparqlResultMappingException result =
                 assertThrows(SparqlResultMappingException.class, () -> mapper.map(resultRow, target, uowMock));
-        assertThat(result.getMessage(), containsString(
-                "Value " + resultRow
-                        .getObject(fieldResult.variable()) + " cannot be assigned (or transformed) to field of type " +
-                        fsMock.getJavaType()));
+        assertThat(result.getMessage(), containsString("Cannot transform value " + value));
+        assertThat(result.getMessage(), containsString("to target type " + fsMock.getJavaType()));
         assertNull(target.getBooleanAttribute());
     }
 
@@ -98,13 +96,9 @@ class FieldResultMapperTest {
     }
 
     @Test
-    void mapSkipsVariablesNotPresentInResultSet() throws Exception {
+    void mapSkipsVariablesNotPresentInResultSet() {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
-        when(fsMock.getJavaType()).thenReturn(Boolean.class);
-        final OntoDriverException e = new OntoDriverException(
-                "Result set does not contain column " + fieldResult.variable() + ".");
-        when(resultRow.getObject(fieldResult.variable())).thenThrow(e);
 
         final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
         final OWLClassM target = new OWLClassM();
@@ -113,11 +107,9 @@ class FieldResultMapperTest {
     }
 
     @Test
-    void mapSkipsFieldForWhichVariableHasNoBindingInCurrentResultRow() throws Exception {
+    void mapSkipsFieldForWhichVariableHasNoBindingInCurrentResultRow() {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
-        when(fsMock.getJavaType()).thenReturn(Boolean.class);
-        when(resultRow.getObject(fieldResult.variable())).thenReturn(null);
 
         final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
         final OWLClassM target = new OWLClassM();
@@ -139,5 +131,21 @@ class FieldResultMapperTest {
         final OWLClassA target = new OWLClassA();
         mapper.map(resultRow, target, uowMock);
         assertEquals(value.getValue(), target.getStringAttribute());
+    }
+
+    @Test
+    void mapSupportsTransformationFromOffsetDateTimeToLocalDateTime() throws Exception {
+        final FieldResult fieldResult = WithMapping.getFieldResult();
+        final FieldSpecification fsMock = mock(FieldSpecification.class);
+        when(fsMock.getJavaType()).thenReturn(LocalDateTime.class);
+        when(fsMock.getJavaField()).thenReturn(OWLClassT.getLocalDateTimeField());
+        final OffsetDateTime value = OffsetDateTime.now();
+        when(resultRow.isBound(fieldResult.variable())).thenReturn(true);
+        when(resultRow.getObject(fieldResult.variable())).thenReturn(value);
+
+        final FieldResultMapper mapper = new FieldResultMapper(fieldResult, fsMock);
+        final OWLClassT target = new OWLClassT();
+        mapper.map(resultRow, target, uowMock);
+        assertEquals(value.toLocalDateTime(), target.getLocalDateTime());
     }
 }
