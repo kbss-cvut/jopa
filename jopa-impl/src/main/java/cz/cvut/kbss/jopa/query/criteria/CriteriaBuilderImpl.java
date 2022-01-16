@@ -58,13 +58,13 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public <T> Expression<T> literal(T value) throws IllegalArgumentException {
+    public <T> Expression<T> literal(T value) {
         if (value == null) throw new IllegalArgumentException("Literal cannot be null.");
         return new ExpressionLiteralImpl<>(value, this);
     }
 
     @Override
-    public Expression<String> literal(String value, String languageTag) throws IllegalArgumentException {
+    public Expression<String> literal(String value, String languageTag) {
         if (value == null) throw new IllegalArgumentException("Literal cannot be null.");
         return new ExpressionLiteralImpl<>(value, languageTag, this);
     }

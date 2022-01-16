@@ -22,10 +22,13 @@ import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.*;
@@ -36,6 +39,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ResultSetMappingProcessorTest {
 
     private static final String MAPPING_NAME = "testMapping";
@@ -43,13 +48,8 @@ public class ResultSetMappingProcessorTest {
     @Mock
     private MetamodelBuilder builderMock;
 
+    @InjectMocks
     private ResultSetMappingProcessor processor;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        this.processor = new ResultSetMappingProcessor(builderMock);
-    }
 
     @Test
     public void buildMapperCreatesRowMapperWithVariableMappersConfiguredInMappingAnnotation() {

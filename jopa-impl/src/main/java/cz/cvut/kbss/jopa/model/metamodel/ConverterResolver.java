@@ -66,7 +66,7 @@ class ConverterResolver {
         return converters.getConverter(attValueType);
     }
 
-    private void verifyTypeIsString(Field field, Class<?> attValueType) {
+    private static void verifyTypeIsString(Field field, Class<?> attValueType) {
         if (!attValueType.equals(String.class)) {
             throw new InvalidFieldMappingException("Attributes with explicit datatype identifier must have values of type String. " +
                     "The provided attribute " + field + " has type " + attValueType);

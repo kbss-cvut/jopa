@@ -28,9 +28,9 @@ import java.util.Set;
  */
 public class IndirectMultilingualString extends MultilingualString implements IndirectWrapper {
 
-    private final Object owner;
-    private final Field field;
-    private final UnitOfWorkImpl persistenceContext;
+    private final transient Object owner;
+    private final transient Field field;
+    private final transient UnitOfWorkImpl persistenceContext;
 
     private final MultilingualString referencedString;
 

@@ -20,10 +20,10 @@ import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -33,6 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ConstructorResultMapperTest {
 
     @Mock
@@ -40,11 +41,6 @@ class ConstructorResultMapperTest {
 
     @Mock
     private UnitOfWorkImpl uowMock;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void mapRetrievesVariableValueAndUsesConstructorToCreateNewInstance() {
@@ -86,9 +82,7 @@ class ConstructorResultMapperTest {
         final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
         when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
-        when(idMapper.getTargetType()).thenAnswer(inv -> URI.class);
         mapper.addParameterMapper(idMapper);
-        when(stringMapper.map(resultRow, uowMock)).thenReturn(null);
         when(stringMapper.getTargetType()).thenAnswer(inv -> String.class);
         mapper.addParameterMapper(stringMapper);
 
@@ -162,11 +156,9 @@ class ConstructorResultMapperTest {
         final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
         when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
-        when(idMapper.getTargetType()).thenAnswer(inv -> URI.class);
         mapper.addParameterMapper(idMapper);
         final LangString strValue = new LangString("test", "en");
         when(stringMapper.map(resultRow, uowMock)).thenReturn(strValue.getValue());
-        when(stringMapper.getTargetType()).thenAnswer(inv -> String.class);
         mapper.addParameterMapper(stringMapper);
 
         final Object result = mapper.map(resultRow, uowMock);

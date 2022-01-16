@@ -26,6 +26,10 @@ import java.time.LocalDate;
  */
 public class XsdDateMapper {
 
+    private XsdDateMapper() {
+        throw new AssertionError();
+    }
+
     /**
      * Maps the specified value to {@link LocalDate}.
      *
