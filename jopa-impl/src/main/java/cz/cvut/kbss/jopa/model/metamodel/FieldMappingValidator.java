@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,9 +15,9 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -91,29 +91,33 @@ class FieldMappingValidator {
         return type instanceof Class && IdentifierTransformer.isValidIdentifierType((Class<?>) type);
     }
 
-    void validateAnnotationPropertyField(Field field, OWLAnnotationProperty config) {
-        assert field != null;
-        assert config != null;
-        validateLexicalFormField(field, config.lexicalForm());
-        validateSimpleLiteralField(field, config.simpleLiteral());
+    void validateAttributeMapping(Field field, PropertyAttributes pa) {
+        validateFieldDoesNotMapRdfType(field, pa);
     }
 
-    void validateDataPropertyField(Field field, OWLDataProperty config) {
-        assert field != null;
-        assert config != null;
-        validateLexicalFormField(field, config.lexicalForm());
-        validateSimpleLiteralField(field, config.simpleLiteral());
-    }
-
-    private static void validateLexicalFormField(Field field, boolean lexicalForm) {
-        if (lexicalForm && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
-            throw new InvalidFieldMappingException("lexicalForm mapping can be used only on fields of type String.");
+    private static void validateFieldDoesNotMapRdfType(Field field, PropertyAttributes pa) {
+        if (RDF.TYPE.equals(pa.getIri().toString())) {
+            throw new InvalidFieldMappingException(field + " - cannot use rdf:type for property mapping. Use a Set field annotated with " + Types.class.getSimpleName());
         }
     }
 
-    private static void validateSimpleLiteralField(Field field, boolean simpleLiteral) {
-        if (simpleLiteral && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
-            throw new InvalidFieldMappingException("simpleLiteral mapping can be used only on fields of type String.");
+    void validateLiteralFieldMapping(Field field, PropertyAttributes pa) {
+        assert field != null;
+        assert pa != null;
+        validateAttributeMapping(field, pa);
+        validateLexicalFormField(field, pa);
+        validateSimpleLiteralField(field, pa);
+    }
+
+    private static void validateLexicalFormField(Field field, PropertyAttributes pa) {
+        if (pa.isLexicalForm() && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
+            throw new InvalidFieldMappingException(field + " - lexicalForm mapping can be used only on fields of type String.");
+        }
+    }
+
+    private static void validateSimpleLiteralField(Field field, PropertyAttributes pa) {
+        if (pa.isSimpleLiteral() && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
+            throw new InvalidFieldMappingException(field + " - simpleLiteral mapping can be used only on fields of type String.");
         }
     }
 

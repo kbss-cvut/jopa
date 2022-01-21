@@ -50,8 +50,7 @@ class AnnotationPropertyAttributesTest {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder,
                 OWLClassN.getAnnotationPropertyField().getType());
-        verify(validator).validateAnnotationPropertyField(OWLClassN.getAnnotationPropertyField(),
-                OWLClassN.getAnnotationPropertyField().getAnnotation(OWLAnnotationProperty.class));
+        verify(validator).validateLiteralFieldMapping(OWLClassN.getAnnotationPropertyField(), sut);
     }
 
     private AnnotationPropertyAttributes initSystemUnderTest() {
