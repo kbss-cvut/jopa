@@ -1,27 +1,28 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.MultilingualString;
+import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassY;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.utils.Constants;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -104,9 +105,9 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertFalse(em.createNativeQuery("ASK { ?x ?singularString ?y . }", Boolean.class)
-                      .setParameter("x", toRemove.getUri())
-                      .setParameter("singularString", URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE))
-                      .getSingleResult());
+                .setParameter("x", toRemove.getUri())
+                .setParameter("singularString", URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE))
+                .getSingleResult());
     }
 
     @Test
@@ -214,8 +215,8 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         final Collection<Quad> quads = new ArrayList<>();
         quads.add(new Quad(individual, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_Y)));
         translations.entrySet().stream()
-                    .flatMap(e -> e.getValue().stream().map(s -> new Quad(individual, singularProperty, s, e.getKey())))
-                    .forEach(quads::add);
+                .flatMap(e -> e.getValue().stream().map(s -> new Quad(individual, singularProperty, s, e.getKey())))
+                .forEach(quads::add);
         persistTestData(quads, em);
 
         final OWLClassY result = findRequired(OWLClassY.class, individual);
@@ -229,7 +230,7 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
 
     private void verifyPluralContainsValue(OWLClassY instance, String lang, String value) {
         assertTrue(instance.getPluralString().stream()
-                           .anyMatch(ms -> ms.contains(lang) && ms.get(lang).equals(value)));
+                .anyMatch(ms -> ms.contains(lang) && ms.get(lang).equals(value)));
     }
 
     @Test
@@ -292,5 +293,30 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
 
         final OWLClassY result = findRequired(OWLClassY.class, y.getUri());
         assertThat(result.getPluralString(), anyOf(nullValue(), empty()));
+    }
+
+    @Test
+    void persistSupportsOntoDriverLangStringAttribute() throws Exception {
+        this.em = getEntityManager("persistSupportsOntoDriverLangStringAttribute", true);
+        entityM.setLangString(new LangString("testovaci hodnota", "cs"));
+        persist(entityM);
+
+        verifyStatementsPresent(Collections.singleton(new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_langString), entityM.getLangString()
+                .getValue(), entityM.getLangString().getLanguage()
+                .get())), em);
+    }
+
+    @Test
+    void entityLoadingSupportsOntoDriverLangStringAttribute() throws Exception {
+        this.em = getEntityManager("entityLoadingSupportsOntoDriverLangStringAttribute", true);
+        final String langStringValue = "test value";
+        final String language = "en";
+        persistTestData(Arrays.asList(
+                new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_langString), langStringValue, language)
+        ), em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(new LangString(langStringValue, language), result.getLangString());
     }
 }
