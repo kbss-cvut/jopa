@@ -21,7 +21,7 @@ import java.util.Optional;
 /**
  * Represents a string value with a (optional) language tag.
  */
-public class LangString implements Serializable {
+public final class LangString implements Serializable {
 
     private final String value;
 

@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.18.2 - February 14, 2022
+- Prevent attempts at using `rdf:type` as property mapping (`@Types` should be used instead).
+- Allow using `LangString` as entity attribute type.
+
 ## 0.18.1 - January 16, 2022
 - Support date/time value conversions in SPARQL result mapping.
 

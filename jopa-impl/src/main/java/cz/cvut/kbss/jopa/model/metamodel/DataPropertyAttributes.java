@@ -39,6 +39,6 @@ class DataPropertyAttributes extends PropertyAttributes {
         this.simpleLiteral = odp.simpleLiteral();
         this.datatype = typeBuilderContext.resolveNamespace(odp.datatype());
         this.language = resolveLanguage(fieldValueCls);
-        validator.validateDataPropertyField(field, odp);
+        validator.validateLiteralFieldMapping(field, this);
     }
 }

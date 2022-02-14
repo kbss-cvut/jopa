@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
@@ -23,6 +24,7 @@ import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +32,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -286,5 +287,20 @@ class MetamodelBuilderTest {
 
         assertThat(builder.getTypeReferenceMap().getReferringTypes(OWLClassA.class), hasItem(OWLClassC.class));
         assertTrue(builder.getTypeReferenceMap().getReferringTypes(OWLClassD.class).isEmpty());
+    }
+
+    @Test
+    void buildMetamodelThrowsInvalidFieldMappingExceptionWhenFieldIsMappedToRDFType() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(WithInvalidTypeField.class));
+        assertThrows(InvalidFieldMappingException.class, () -> builder.buildMetamodel(finderMock));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInvalidTypeField")
+    private static class WithInvalidTypeField {
+        @Id
+        private URI uri;
+
+        @OWLDataProperty(iri = RDF.TYPE)
+        private URI type;
     }
 }

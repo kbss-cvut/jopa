@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,10 +17,12 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -112,54 +114,59 @@ class FieldMappingValidatorTest {
 
     @Test
     void lexicalFormAnnotationIsValidOnStringField() throws Exception {
-        validator.validateDataPropertyField(OWLClassM.getLexicalFormField(),
-                OWLClassM.getLexicalFormField().getAnnotation(OWLDataProperty.class));
+        final PropertyAttributes pa = new DataPropertyAttributes(validator);
+        pa.iri = IRI.create(Vocabulary.p_m_lexicalForm);
+        pa.lexicalForm = true;
+        validator.validateLiteralFieldMapping(OWLClassM.getLexicalFormField(), pa);
     }
 
     @Test
-    void validateDataPropertyFieldInvokesLexicalFormValidation() {
+    void validateLiteralFieldMappingThrowsInvalidFieldMappingExceptionWhenFieldIsLexicalFormAndNotString() {
+        final PropertyAttributes pa = new DataPropertyAttributes(validator);
+        pa.iri = IRI.create(Vocabulary.p_m_lexicalForm);
+        pa.lexicalForm = true;
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateDataPropertyField(getField("invalidLexicalForm"),
-                        getField("invalidLexicalForm").getAnnotation(OWLDataProperty.class)));
-    }
-
-    @Test
-    void validateAnnotationPropertyFieldInvokesLexicalFormValidation() {
-        assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateAnnotationPropertyField(getField("invalidLexicalFormAnnotation"),
-                        getField("invalidLexicalFormAnnotation").getAnnotation(OWLAnnotationProperty.class)));
+                () -> validator.validateLiteralFieldMapping(getField("invalidLexicalForm"), pa));
     }
 
     @Test
     void simpleLiteralAnnotationIsValidOnStringField() throws Exception {
-        validator.validateDataPropertyField(OWLClassM.getSimpleLiteralField(),
-                OWLClassM.getSimpleLiteralField().getAnnotation(OWLDataProperty.class));
+        final PropertyAttributes pa = new DataPropertyAttributes(validator);
+        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
+        pa.simpleLiteral = true;
+        validator.validateLiteralFieldMapping(OWLClassM.getSimpleLiteralField(), pa);
     }
 
     @Test
-    void simpleLiteralAnnotationThrowsInvalidFieldMappingExceptionOnNonStringField() {
+    void validateLiteralFieldMappingThrowsInvalidFieldMappingExceptionWhenFieldIsSimpleLiteralAndNotString() {
+        final PropertyAttributes pa = new DataPropertyAttributes(validator);
+        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
+        pa.simpleLiteral = true;
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateDataPropertyField(getField("invalidSimpleLiteral"),
-                        getField("invalidSimpleLiteral").getAnnotation(OWLDataProperty.class)));
-    }
-
-    @Test
-    void simpleLiteralAnnotationThrowsInvalidFieldMappingExceptionOnNonStringAnnotationPropertyField() {
-        assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateAnnotationPropertyField(getField("invalidSimpleLiteralAnnotation"),
-                        getField("invalidSimpleLiteralAnnotation").getAnnotation(OWLAnnotationProperty.class)));
+                () -> validator.validateLiteralFieldMapping(getField("invalidSimpleLiteral"), pa));
     }
 
     @Test
     void simpleLiteralAnnotationIsValidOnSetStringField() throws Exception {
-        validator.validateAnnotationPropertyField(getField("validSimpleLiteralSet"),
-                getField("validSimpleLiteralSet").getAnnotation(OWLAnnotationProperty.class));
+        final PropertyAttributes pa = new AnnotationPropertyAttributes(validator);
+        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
+        pa.simpleLiteral = true;
+        validator.validateLiteralFieldMapping(getField("validSimpleLiteralSet"), pa);
     }
 
     @Test
     void lexicalFormDataPropertyIsValidOnListStringFields() throws Exception {
-        validator.validateDataPropertyField(getField("validLexicalFormList"),
-                getField("validLexicalFormList").getAnnotation(OWLDataProperty.class));
+        final PropertyAttributes pa = new DataPropertyAttributes(validator);
+        pa.iri = IRI.create(Vocabulary.p_m_lexicalForm);
+        pa.lexicalForm = true;
+        validator.validateLiteralFieldMapping(getField("validLexicalFormList"), pa);
+    }
+
+    @Test
+    void validateAttributeMappingThrowsInvalidFieldMappingExceptionWhenFieldMapsRDFType() {
+        final PropertyAttributes pa = new DataPropertyAttributes(validator);
+        pa.iri = IRI.create(RDF.TYPE);
+        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(getField("type"), pa));
     }
 
     @SuppressWarnings("unused")
@@ -207,19 +214,16 @@ class FieldMappingValidatorTest {
         @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
         private Integer invalidLexicalForm;
 
-        @OWLAnnotationProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
-        private Integer invalidLexicalFormAnnotation;
-
         @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
         private Integer invalidSimpleLiteral;
-
-        @OWLAnnotationProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
-        private Integer invalidSimpleLiteralAnnotation;
 
         @OWLAnnotationProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
         private Set<String> validSimpleLiteralSet;
 
         @OWLDataProperty(iri = Vocabulary.p_m_lexicalForm, lexicalForm = true)
         private List<String> validLexicalFormList;
+
+        @OWLDataProperty(iri = RDF.TYPE)
+        private String type;
     }
 }

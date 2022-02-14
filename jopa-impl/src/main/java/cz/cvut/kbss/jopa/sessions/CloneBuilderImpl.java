@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -294,6 +295,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         ret.add(Instant.class);
         ret.add(Duration.class);
         ret.add(Period.class);
+        ret.add(LangString.class);
         return ret;
     }
 
