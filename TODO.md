@@ -6,8 +6,6 @@
     - [x] Mapped superclass
     - [x] Single inheritance
     - [ ] Multiple inheritance
-- [ ] Add a `@Context` annotation, which would specify that a field/entity should always be loaded from the specified context.
-    - This could be overwritten with a descriptor passed to EM
 - [ ] Add support for `orphanRemoval` attribute in object properties
 - [ ] Allow static (annotation, attribute of `@OWLDataProperty`) specification of language of String attributes. 
         This can be overridden on EM operation level (in descriptor).
