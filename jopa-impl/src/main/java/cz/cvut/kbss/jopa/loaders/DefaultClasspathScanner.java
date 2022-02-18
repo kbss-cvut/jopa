@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -38,6 +38,9 @@ public class DefaultClasspathScanner implements ClasspathScanner {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultClasspathScanner.class);
 
+    protected static final char JAVA_CLASSPATH_SEPARATOR = '/';
+    protected static final char WINDOWS_FILE_SEPARATOR = '\\';
+    protected static final char JAVA_PACKAGE_SEPARATOR = '.';
     protected static final String JAR_FILE_SUFFIX = ".jar";
     protected static final String CLASS_FILE_SUFFIX = ".class";
 
@@ -58,7 +61,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
      */
     @Override
     public void processClasses(String scanPackage) {
-        this.pathPattern = scanPackage.replace('.', '/');
+        this.pathPattern = scanPackage.replace(JAVA_PACKAGE_SEPARATOR, JAVA_CLASSPATH_SEPARATOR);
         this.visited = new HashSet<>();
         try {
             Enumeration<URL> urls = classLoader.getResources(pathPattern);
@@ -132,7 +135,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
                 final String entryName = entry.getName();
                 if (entryName.endsWith(CLASS_FILE_SUFFIX) && entryName.contains(pathPattern)) {
                     String className = entryName.substring(entryName.indexOf(pathPattern));
-                    className = className.replace('/', '.').replace('\\', '.');
+                    className = className.replace(JAVA_CLASSPATH_SEPARATOR, JAVA_PACKAGE_SEPARATOR).replace(WINDOWS_FILE_SEPARATOR, JAVA_PACKAGE_SEPARATOR);
                     className = className.substring(0, className.length() - CLASS_FILE_SUFFIX.length());
                     processClass(className);
                 }
@@ -163,7 +166,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
      * @param packageName Package name
      */
     protected void processDirectory(File dir, String packageName) throws IOException {
-        if (!dir.getPath().contains(pathPattern)) {
+        if (!dir.getPath().replace(WINDOWS_FILE_SEPARATOR, JAVA_CLASSPATH_SEPARATOR).contains(pathPattern)) {
             return;
         }
         LOG.trace("Scanning directory {} for entity classes.", dir);
@@ -184,7 +187,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
             }
             final File subDir = new File(dir, fileName);
             if (subDir.isDirectory()) {
-                processDirectory(subDir, packageName + (!packageName.isEmpty() ? '.' : "") + fileName);
+                processDirectory(subDir, packageName + (!packageName.isEmpty() ? JAVA_PACKAGE_SEPARATOR : "") + fileName);
             } else if (isJar(subDir.getAbsolutePath())) {
                 processJarFile(createJarFile(subDir.toURI().toURL()));
             }
