@@ -6,3 +6,4 @@ http://krizik.felk.cvut.cz/ontologies/import-with-same-property.owl > ./import-w
 http://krizik.felk.cvut.cz/ontologies/onto-with-same-property-in-import.owl  > ./onto-with-same-property-in-import.owl
 http://krizik.felk.cvut.cz/ontologies/model > modelOne.owl
 http://onto.fel.cvut.cz/ontologies/model > modelTwo.owl
+http://onto.fel.cvut.cz/ontologies/owl2java/slovník > slovník.owl

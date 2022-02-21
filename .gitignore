@@ -1,6 +1,7 @@
 **/target
 **/*.iml
 **/.idea
+.vscode
 .gradle
 **/results
 **/testResults
