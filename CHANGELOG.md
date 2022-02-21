@@ -1,135 +1,140 @@
 # JOPA - Release Notes
 
-## 0.18.2 - February 14, 2022
+## 0.18.3 - 2022-02-21
+- Add a no-arg constructor to `LangString` so that it can be serialized/deserialized by JSON mapping libraries like Jackson.
+- Fix a classpath scanning issue on Windows.
+- Explicitly use UTF-8 encoding when reading mapping file.
+
+## 0.18.2 - 2022-02-14
 - Prevent attempts at using `rdf:type` as property mapping (`@Types` should be used instead).
 - Allow using `LangString` as entity attribute type.
 
-## 0.18.1 - January 16, 2022
+## 0.18.1 - 2022-01-16
 - Support date/time value conversions in SPARQL result mapping.
 
-## 0.18.0 - January 13, 2022
+## 0.18.0 - 2022-01-13
 - Implemented full support for Java 8 date/time API. It is now the preferred way of representing temporal data (#95).
 - Do not validate participation constraints on inferred attributes on persist (#98).
 - Support mapping lexical form of literals with explicit datatype (#96).
 - Allow retrieving entity classes mapping the specified class IRI from `Metamodel` (#99).
 - Dependency updates - RDF4J 3.7.4, test dependencies, plugins.
 
-## 0.17.2 - September 27, 2021
+## 0.17.2 - 2021-09-27
 - Reload SPARQL-based attribute values when object is retrieved from cache to ensure up-to-date results (#93).
 - Support referencing other entity attributes in SPARQL-based attribute queries (#94).
 - Dependency updates - RDF4J 3.7.3, SLF4J 1.7.32, Logback 1.2.6 and others.
 
-## 0.17.1 - September 13, 2021
+## 0.17.1 - 2021-09-13
 - Switch back to the resurrected official [aspectj-maven-plugin](https://github.com/mojohaus/aspectj-maven-plugin) which allows running on JDK up to 16.
 - Dependency updates: RDF4J 3.7.2, OWL API 5.1.19.
 
-## 0.17.0 - June 29, 2021
+## 0.17.0 - 2021-06-29
 - Add support for SPARQL-based entity attributes (Feature #65).
 - Add support for Criteria API (Feature #20).
 - Fix handling of ASK queries with prefixes in the Sesame Driver (Bug #89).
 - Dependency updates: AspectJ 1.9.7, RDF4J 3.7.1.
 
-## 0.16.5 - April 28, 2021
+## 0.16.5 - 2021-04-28
 - Dependency updates: RDF4J 3.6.3.
 
-## 0.16.4 - March 3, 2021
+## 0.16.4 - 2021-03-03
 - [JOPA] Support for initialization of static metamodel (has to be created manually for now) (Feature #83).
 - Fix issues with building and using the project on Windows (path-related).
 - Dependency updates: RDF4J 3.6.0, switched to a different fork of the maven-aspectj-plugin allowing to build the project under JDK 11.
 
-## 0.16.3 - February 4, 2021
+## 0.16.3 - 2021-02-04
 - [JOPA] Fix issues with cached references becoming stale after merge (Bug #81).
 - [JOPA] Fix missing support for Windows-like newline characters (CRLF) in queries (Bug #82).
 - Fix project build issues on Windows.
 - Simplify `PersistenceProvider` implementation discovery (based on JPA spec implementation now).
 - Dependency updates: RDF4J 3.5.1, Jena 3.17.0.
 
-## 0.16.2 - November 19, 2020
+## 0.16.2 - 2020-11-19
 - [JOPA] Prioritize transient configuration over property mapping in setter/getter aspects (Bug #80).
 
-## 0.16.1 - November 13, 2020
+## 0.16.1 - 2020-11-13
 - [Jena OntoDriver] Support connecting to Jena Fuseki server (Feature #76).
 - Dependency updates: RDF4J 3.4.4, OWL API 5.1.17.
 
-## 0.16.0 - October 12, 2020
+## 0.16.0 - 2020-10-12
 - Support using multiple contexts for entity/attribute (Enhancement #73).
 - Dependency updates: RDF4J 3.4.3.
 
-## 0.15.2 - September 23, 2020
+## 0.15.2 - 2020-09-23
 - [JOPA] Fix handling of multilingual strings in annotation properties when target type is `Object`.
 - Allow configuring whether `MultilingualString` should be preferred over `String` in situations like above (`cz.cvut.jopa.preferMultilingualString`).
 - Minor code quality improvements.
 
-## 0.15.1 - September 21, 2020
+## 0.15.1 - 2020-09-21
 - [JOPA] Add support for using collections as query parameters (Enhancement #74).
 - [Sesame OntoDriver] Retry connection to remote repository when configured to (Feature #72).
 - Minor fixes in multilingual string handling.
 - Dependency updates: RDF4J 3.4.1.
 
-## 0.15.0 - September 6, 2020
+## 0.15.0 - 2020-09-06
 - [JOPA] Add support for multilingual String attributes (Feature #59).
 - Dependency updates: RDF4J 3.4.0, AspectJ 1.9.6.
 
-## 0.14.7 - August 4, 2020
+## 0.14.7 - 2020-08-04
 - Dependency updates: Jena 3.16.0, OWL API 5.1.16, RDF4J 3.3.0.
 - Project configuration simplification.
 - Minor fix of formatting `java.util.Date` query parameter values.
 
-## 0.14.6 - June 26, 2020
+## 0.14.6 - 2020-06-26
 - Add missing support for mapping `float` attributes.
 
-## 0.14.5 - June 18, 2020
+## 0.14.5 - 2020-06-18
 - [JOPA] Extend XSD constants.
 - Dependency update - RDF4J 3.2.2.
 
-## 0.14.4 - May 27, 2020
+## 0.14.4 - 2020-05-27
 - [JOPA] Fix handling of objects with overridden `equals`/`hashCode` in `PendingReferenceRegistry`.
 
-## 0.14.3 - May 20, 2020
+## 0.14.3 - 2020-05-20
 - [OWLAPI OntoDriver, OWLAPI Utils] - Refactor common code in OWL API OntoDriver and OWL API Utils module. [Task #68]
 - [OWL2Java] Support mapping **to** remote URLs in the IRI mapping file.
 - [JOPA] Support `CollectionAttribute`s. [Task #56]
 - [OWL2Java] Sort imported ontology IRIs to ensure stable ordering of generated vocabulary constants.
 - Dependency updates - RDF4J 3.2.1, Jena 3.15.0, SLF4J 1.7.30.
 
-## 0.14.2 - April 28, 2020
+## 0.14.2 - 2020-04-28
 - [OWL2Java] Do not generate id, label, comment, types and properties fields in entities which already inherit them from parent. (Bug #66, thanks to @cristianolongo for reporting and providing a PR with fix)
 - [OWL2Java] Ensure ontology IRI is output into generated vocabularies only once even in case of multiple imports.
 - [JOPA] Add constants for all DC Terms properties and classes.
 - Dependency updates - RDF4J 3.1.4, OWLAPI 5.1.14.
 
-## 0.14.1 - March 22, 2020
+## 0.14.1 - 2020-03-22
 - [JOPA] Support using Java 8 Date/Time API as query parameters.
 - [OWL2Java] Log reasons why an ontology could not be imported for transformation.
 - Dependency updates - RDF4J 3.1.2.
 
-## 0.14.0 - March 2, 2020
+## 0.14.0 - 2020-03-02
 - [JOPA] Implement basic support for the Semantic Object Query Language (SOQL), an object model-based query language. (Feature #19)
 - [JOPA] Support annotation properties of type `Object`, which allow to accommodate both literals and URIs.
 - Dependency updates - RDF4J 3.1.1.
 
-## 0.13.5 - February 19, 2020
+## 0.13.5 - 2020-02-19
 - [JOPA] Fix an issue with loading entity classes in Spring Boot projects, where classes are in a non-standard location in the JAR (Bug #62).
 
-## 0.13.4 - February 12, 2020
+## 0.13.4 - 2020-02-12
 - [JOPA] Support using entities as query parameters (Feature #61).
 - [JOPA] Run IC validation on lazy loaded fetched attributes also in case no value is loaded.
 - [OWLAPI OntoDriver] Search also in imported ontologies when loading data.
 - Dependency updates - RDF4J 3.1.0, OWLAPI 5.1.13, Jena 3.14.0, AspectJ 1.9.5. 
 
-## 0.13.3 - November 8, 2019
+## 0.13.3 - 2019-11-08
 - Upgraded to RDF4J 3.0.2 and OWLAPI 5.1.12.
 - Fixed the issue with incorrect treatment of default context specification for attribute of an entity in a different context (Bug #58).
 
-## 0.13.2 - October 21, 2019
+## 0.13.2 - 2019-10-21
 - Upgraded to RDF4J 3.0.1.
 - Fixed missing support for lexical form and simple literal plural attributes.
 - Automatically generate `toString` method in OWL2Java model transformation.
 
-## 0.13.1 - August 8, 2019
+## 0.13.1 - 2019-08-08
 - Fixed incorrect context handling in `ObjectPropertyCollectionDescriptor`.
 
-## 0.13.0 - July 15, 2019
+## 0.13.0 - 2019-07-15
 - Added support for read-only literal lexical form access. This allows to load the lexical form of literals regardless of their type (Task #50).
 - Added support for RDF *simple literals*, i.e. literals of type `xsd:string`. Simple literals allow to use strings without language tags (Task #53).
 - Fixed handling of named graphs. Store property assertions in the subject's graph by default (Task #54).
@@ -138,24 +143,24 @@
 - Updated drivers to always use language specified by assertions and removed global language setting from the drivers.
 - Upgraded to OWLAPI 5.1.11, Jena 3.12.0 and RDF4J 2.5.3.
 
-## 0.12.2 - May 28, 2019
+## 0.12.2 - 2019-05-28
 - Do not generate error message when directory structure for OWL2Java already exists.
 - Fixed issue with parent entity listeners/lifecycle callbacks not being called (Bug #49).
 - Fixed problems with using Spring Boot Devtools with JOPA (classloader issues, Task #26).
 - Added [SKOS](http://www.w3.org/TR/skos-reference) vocabulary constants.
 - Upgraded to AspectJ 1.9.4, Jena 3.11.0 and RDF4J 2.5.2.
 
-## 0.12.1 - March 26, 2019
+## 0.12.1 - 2019-03-26
 - Generate ASCII-only identifier names (OWL2Java).
 - Fixed issues with caching instances referencing partially loaded getReference results.
 - Upgraded to Jena 3.10.0, OWLAPI 5.1.10 and RDF4J 2.5.0.
 
-## 0.12.0 - February 27, 2019
+## 0.12.0 - 2019-02-27
 - Implemented support for `EntityManager.getReference` (Feature #46).
 - Prevent adding `null` into plural attribute collection when value cannot be loaded (Fix).
 - Upgraded to RDF4J 2.4.5.
 
-## 0.11.0 - January 15, 2019
+## 0.11.0 - 2019-01-15
 - Added support for specifying repository config when creating embedded in-memory and native RDF4J repositories (Feature #41).
 - Added supports for Java 8 Streams in the Query API (Feature #45).
 - Fixed issues where aspects were not invoked for fields inherited from mapped superclasses.
@@ -163,46 +168,46 @@
 - Upgraded to RDF4J 2.4.2.
 - Removed several deprecated parts of the API.
 
-## 0.10.8 - December 12, 2018
+## 0.10.8 - 2018-12-12
 - Support for plural annotation properties (Feature #38).
 - Fixed incorrect rdf:Property constant.
 - Added definitions of a subset of the Dublin Core vocabulary.
 - Fixed issues with support of polymorphism in entity attributes.
 
-## 0.10.7 - November 1, 2018
+## 0.10.7 - 2018-11-01
 - Added support for Java 8 Date/Time API (Feature #36).
 - Fixed issue with caching instances of classes overriding `equals`/`hashCode`.
 - Upgraded to AspectJ 1.9.2, Jena 3.9.0, OWL API 5.1.7 and RDF4J 2.4.1.
 
-## 0.10.6 - September 25, 2018
+## 0.10.6 - 2018-09-25
 - Support unbound variables in `VariableResult` in `SparqlResultMapping`.
 - Fixed incorrect handling of language on attribute loading.
 - More consistent handling of open/close persistence context.
 
-## 0.10.5 - August 13, 2018
+## 0.10.5 - 2018-08-13
 - Removed several unused files, libraries.
 - Improved collection cloning.
 - Fixed incorrect field cardinality specification in OWL2Java.
 - Upgraded to OWLAPI 5.1.6.
 - Added `aop.xml` so that [load time weaving](https://github.com/kbss-cvut/jopa/wiki/Maven-setup#load-time-weaving) can be used with JOPA.
 
-## 0.10.4 - July 20, 2018
+## 0.10.4 - 2018-07-20
 - Fixed a critical NPX issue caused by inherited indirect collections not being removed when an entity was detached from 
 the persistence context.
 
-## 0.10.3 - July 19, 2018
+## 0.10.3 - 2018-07-19
 - Reduced memory footprint.
 - Configurable generation of Javadoc from rdfs:comment annotations in OWL2Java (Enhancement #35).
 - Entity classes generated by OWL2Java implement `Serializable`.
 - Introduced dedicated classes with constants from RDF, RDFS and OWL namespaces into the API.
 - Deprecated `CommonVocabulary`, use `RDF`, `RDFS`, `OWL` and `XSD` classes instead.
 
-## 0.10.2 - June 18, 2018
+## 0.10.2 - 2018-06-18
 - Fixed bug SPARQL query parser which prevent the use of property paths together with variables.
 - Added support for setting the in-memory storage in Jena and RDF4J driver (Enhancement #32).
 - Working on Github Wiki.
 
-## 0.10.1 - May 20, 2018
+## 0.10.1 - 2018-05-20
 - Fixed bug where old object property assertion was not removed on merge (Bug #33).
 - Allow to reload file-based storage in OntoDriver (Enhancement #33).
     - Use the `ReloadableDataSource`, which can be unwrapped from an `EntityManagerFactory`.
@@ -212,48 +217,48 @@ the persistence context.
 - Library updates (AspectJ 1.9.1, RDF4J 2.3.1).
 - Support for anonymous ontologies in OWLAPI driver.
 
-## 0.10.0 - April 11, 2018
+## 0.10.0 - 2018-04-11
 - Jena OntoDriver implementation (Enhancement #18).
     - In-memory, File and TDB storage are supported.
 
-## 0.9.16 - March 29, 2018
+## 0.9.16 - 2018-03-29
 - Fixed bug in cloning instances with circular dependencies (using collections).
 - Updated the compiler and AspectJ plugins.
 
-## 0.9.15 - February 21, 2018
+## 0.9.15 - 2018-02-21
 - Fixed dependency conflict in JOPA Maven plugin (Bug #29).
 
-## 0.9.14 - February 20, 2018
+## 0.9.14 - 2018-02-20
 - Fixed incorrect implementation of `contains` in Sesame driver.
 - Minor memory consumption optimizations.
 - Fixed volatile order of generated vocabulary elements (Issue #28).
 
-## 0.9.13 - January 14, 2018
+## 0.9.13 - 2018-01-14
 - Fixed issue with OWL2Java silently ignoring missing imports (Bug #22).
 - Upgraded to OWLAPI 5.1.3. Upgraded to OWL2Query 0.5.0.
 - Unified OWLAPI version in all project submodules.
 - Switched to Openllet in tests (it supports OWLAPI 5).
 
-## 0.9.12 - December 4, 2017
+## 0.9.12 - 2017-12-04
 - Rewrote em.refresh to correspond to JPA behavior (Issue #17).
 - Upgraded to the latest RDF4J (2.2.4).
 - Generate class names compliant with Java naming conventions (OWL2Java).
 - Added support for untyped query parameters to Query API (necessary for `LIMIT` and `OFFSET` support).
 - Also added support for `Query.setFirstResult`.
 
-## 0.9.11 - November 14, 2017
+## 0.9.11 - 2017-11-14
 - Finished implementation of support for result set mapping - EntityResult (Feature #7).
 - Fixed issue with PostLoad lifecycle callbacks and listeners not being called for referenced entities (Bug #10).
 - Improved performance of the getter/setter Aspect. This also caused smaller memory requirements for tracking persistence context of entities.
 - Rewrote persistence provider discovery to work the same as in JPA.
 - Better support of the `isLoaded` methods.
 
-## 0.9.10 - October 16, 2017
+## 0.9.10 - 2017-10-16
 - Partial support for SPARQL result set mapping - VariableResult and ConstructorResult (Feature #7).
 - Fixed issue with class discovery in JDK 9 (Bug #8, thanks to Yan Doroshenko).
 - Log executed query to provide more auditing info.
 
-## 0.9.9 - September 2, 2017
+## 0.9.9 - 2017-09-02
 - Support for credentials specification for accessing remote RDF4J repositories.
 - Reworked instance persist to prevent saving pending references before the target instances are saved.
 This also fixes the problem of prematurely generated IDs.
@@ -261,10 +266,10 @@ This also fixes the problem of prematurely generated IDs.
 - Allow descriptor specification for TypedQuery results. This allows context to be specified for these results.
 It also replaces the original possibility of setting context for query, which did not work anyway.
 
-## 0.9.8 - June 26, 2017
+## 0.9.8 - 2017-06-26
 - Added support for language tag specification of String attributes.
 
-## 0.9.7 - May 27, 2017
+## 0.9.7 - 2017-05-27
 - Fixed issue with handling cascading cycles (Bug #4).
 - Fixed issue with parsing queries without spaces after variables (Bug #6).
 - Fixed issue with loading unmapped properties in Sesame driver.
@@ -272,96 +277,96 @@ It also replaces the original possibility of setting context for query, which di
 - Added support for generating subclasses in OWL2Java.
 - Improved handling of query result sets.
 
-## 0.9.6 - April 27, 2017
+## 0.9.6 - 2017-04-27
 - Fixed issue with loading classes containing 'class' in name (Bug #5).
 - Implemented support for `EntityListener`s.
 - Escape string parameters in SPARQL native queries.
 
-## 0.9.5 - March 22, 2017
+## 0.9.5 - 2017-03-22
 - Fixed issue with mapped superclass referencing its descendants (Bug #3).
 - Fixed issue with cloning content of singleton collections elements.
 - Upgraded Sesame driver from Sesame API 2.8.9 to RDF4J 2.2.
 - Mark transaction for rollback when exception is thrown in persistence context-related operations.
 
-## 0.9.4 - March 10, 2017
+## 0.9.4 - 2017-03-10
 - Fixed issue with merge overwriting values of references in managed objects (Bug #2).
 - Aligned merge implementation with the JPA specification semantics.
 
-## 0.9.3 - February 28,2017
+## 0.9.3 - 2017-02-28
 - Fixed issue in which second level cache was being bypassed by instances loaded from repository.
 - Create default collection instance (currently `ArrayList`, `HashSet`) when unable to clone the specified instance.
 - Minor performance improvements.
 
-## 0.9.2 - February 18, 2017
+## 0.9.2 - 2017-02-18
 - Internal entity lifecycle callbacks support (Lifecycle callback methods declared directly in entity classes).
 
-## 0.9.1 - January 3, 2017
+## 0.9.1 - 2017-01-03
 - Fixed major memory leak in persistence context management.
 
-## 0.9.0 - December 13, 2016
+## 0.9.0 - 2016-12-13
 - Support for single inheritance.
 
-## 0.8.8 - December 9, 2016
+## 0.8.8 - 2016-12-09
 - Added support for datatype property collections in entities.
 
-## 0.8.7 - November 3, 2016
+## 0.8.7 - 2016-11-03
 - Added support for `Query.executeUpdate`, which executes SPARQL Update statements on the repository. (_This feature is not supported by OWL2Query, so it only applies to Sesame-backed applications._)
 
-## 0.8.6 - September 30, 2016
+## 0.8.6 - 2016-09-30
 - Fixed issue with merging changes into collections which do not support the  `clear` operation (e.g. singleton collections).
 
-## 0.8.5 - September 26, 2016
+## 0.8.5 - 2016-09-26
 - Upgraded to OWL API 4.2.4 - it fixes issues with missing import statements after ontology copy,
 - Changed the way transactional snapshot are created in the OWL API driver.
 - Refactored metamodel as a preparation for inheritance implementation. Use AspectJ 1.8.9.
 
-## 0.8.4 - July 13, 2016
+## 0.8.4 - 2016-07-13
 - Added support for named native queries. Declaration is similar to JPA, just use `@NamedNativeQuery` or `@NamedNativeQueries`
 on an entity or its mapped superclass and the query will be available in the persistence unit.
 
-## 0.8.3 - July 12, 2016
+## 0.8.3 - 2016-07-12
 - Consistent handling of instances with the same identifier (i.e. the same individual). Only single instance with a given
 identifier is allowed in one persistence context. But, persisting the same individual as instance of different classes in
 different persistence contexts is possible.
 
-## 0.8.2 - July 4, 2016
+## 0.8.2 - 2016-07-04
 - Major improvement of instance loading in the Sesame driver
 - Fixed bug in `CollectionChangeDetector`, which caused identical collection to behave as different (issue with element ordering)
 
-## 0.8.1 - June 29, 2016
+## 0.8.1 - 2016-06-29
 - More efficient handling of repository connections in the Sesame driver
 
-## 0.8.0 - June 17, 2016
+## 0.8.0 - 2016-06-17
 - Added support for Mapped superclass (`@MappedSuperclass` annotation)
 - Do not allow non-entities in `EntityManager` operations (e.g. `persist`, `find`) - conforms to JPA
 
-## 0.7.12 - June 8, 2016
+## 0.7.12 - 2016-06-08
 - Fixed issue with updating value in context,
 - Verify integrity constraints on merge
 
-## 0.7.11 - June 6, 2016
+## 0.7.11 - 2016-06-06
 - Generation of Vocabularies improvements - individuals, whole file processing.
 
-## 0.7.10 - June 1, 2016
+## 0.7.10 - 2016-06-01
 - Added support for URI-based types, i.e. now it is possible to use `@Types Set<URI> types` in entities
 
-## 0.7.9 - May 22, 2016
+## 0.7.9 - 2016-05-22
 - Fixed issue with running multiple persistence units in the same VM.
 
-## 0.7.8 - May 16, 2016
+## 0.7.8 - 2016-05-16
 - Implemented support for `EntityManager.unwrap`. Using unwrap, it is possible to get a hold of for example the Sesame 
     in-memory repository used by the Sesame driver (which is otherwise, due to the Sesame API architecture, inaccessible 
     through the `RepositoryProvider`.
 
-## 0.7.7 - May 11, 2016
+## 0.7.7 - 2016-05-11
 - Added the possibility to generate only vocabulary using OWL2Java, without the Java object model itself.
 
-## 0.7.6 - April 15, 2016
+## 0.7.6 - 2016-04-15
 - Added support for plain identifiers as values of Annotation and Object properties
     - E.g. when an entity has an object property pointing to another individual, but that individual is not mapped by any class in the object model, its URI can now be used as the property value
 
-## 0.7.5 - March 31, 2016
+## 0.7.5 - 2016-03-31
 - Use xsd:int for mapping Java Integer/int values to RDF. Most Java implementations (including JAXB) do it this way.
 
-## 0.7.4 - March 21, 2016
+## 0.7.4 - 2016-03-21
 - Implemented support for typed @Properties fields (i.e. @Properties field can now be a `Map<URI, Set<Object>>`, where values have corresponding types instead of plain strings)

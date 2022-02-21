@@ -14,19 +14,21 @@
  */
 package cz.cvut.kbss.jopa.util;
 
-import cz.cvut.kbss.jopa.owlapi.exception.MappingFileParserException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.cvut.kbss.jopa.owlapi.exception.MappingFileParserException;
 
 public final class MappingFileParser {
 
@@ -67,22 +69,22 @@ public final class MappingFileParser {
         Objects.requireNonNull(mappingFile);
         Objects.requireNonNull(delimiter);
         final Map<URI, URI> map = new HashMap<>();
-        String line;
         final File defaultDir = mappingFile.getParentFile();
-        try (final BufferedReader r = new BufferedReader(new FileReader(mappingFile))) {
-            while ((line = r.readLine()) != null) {
-                final StringTokenizer t = new StringTokenizer(line, delimiter);
-                if (t.countTokens() != 2) {
-                    LOG.warn("Ignoring line '" + line + "' - invalid number of tokens = " + t.countTokens());
-                    continue;
-                }
-                final String uriName = t.nextToken().trim();
-                final String fileName = t.nextToken().trim();
-                final URI fileUri = resolveLocation(defaultDir, fileName);
-
-                LOG.debug("Mapping ontology {} to location {}.", uriName, fileUri);
-                map.put(URI.create(uriName), fileUri);
+        try {
+            final List<String> lines = Files.readAllLines(mappingFile.toPath(), StandardCharsets.UTF_8);
+            lines.forEach(line -> {
+            final StringTokenizer t = new StringTokenizer(line, delimiter);
+            if (t.countTokens() != 2) {
+                LOG.warn("Ignoring line '" + line + "' - invalid number of tokens = " + t.countTokens());
+                return;
             }
+            final String uriName = t.nextToken().trim();
+            final String fileName = t.nextToken().trim();
+            final URI fileUri = resolveLocation(defaultDir, fileName);
+
+            LOG.debug("Mapping ontology {} to location {}.", uriName, fileUri);
+            map.put(URI.create(uriName), fileUri);
+        });
         } catch (IOException e) {
             LOG.error("Unable to parse mapping file." + e);
             throw new MappingFileParserException(e);

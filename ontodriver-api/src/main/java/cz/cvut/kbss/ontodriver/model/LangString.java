@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,6 +26,14 @@ public final class LangString implements Serializable {
     private final String value;
 
     private final String language;
+
+    /**
+     * Explicit no-arg constructor allowing deserialization from JSON.
+     */
+    private LangString() {
+        this.value = null;
+        this.language = null;
+    }
 
     public LangString(String value) {
         this.value = Objects.requireNonNull(value);
@@ -64,7 +72,7 @@ public final class LangString implements Serializable {
             return false;
         }
         LangString that = (LangString) o;
-        return value.equals(that.value) && Objects.equals(language, that.language);
+        return Objects.equals(value, that.value) && Objects.equals(language, that.language);
     }
 
     @Override
