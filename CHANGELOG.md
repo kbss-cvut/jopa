@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.18.3 - 2022-02-21
+- Add a no-arg constructor to `LangString` so that it can be serialized/deserialized by JSON mapping libraries like Jackson.
+- Fix a classpath scanning issue on Windows.
+- Explicitly use UTF-8 encoding when reading mapping file.
+
 ## 0.18.2 - 2022-02-14
 - Prevent attempts at using `rdf:type` as property mapping (`@Types` should be used instead).
 - Allow using `LangString` as entity attribute type.
