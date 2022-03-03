@@ -52,4 +52,10 @@ class NamespaceResolverTest {
         final String invalidIri = "prefixWithoutLocalName";
         assertEquals(invalidIri, sut.resolveFullIri(invalidIri));
     }
+
+    @Test
+    void resolveReturnsOriginalValueWhenItIsURN() {
+        final String urn = "urn:jopa:model:test-class";
+        assertEquals(urn, sut.resolveFullIri(urn));
+    }
 }

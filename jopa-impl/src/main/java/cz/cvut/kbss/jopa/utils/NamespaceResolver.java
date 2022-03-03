@@ -33,6 +33,8 @@ public class NamespaceResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(NamespaceResolver.class);
 
+    public static final String URN_PREFIX = "urn";
+
     private final Map<String, String> namespaces = new HashMap<>();
 
     public NamespaceResolver() {
@@ -75,6 +77,9 @@ public class NamespaceResolver {
             return iri;
         }
         final String prefix = iri.substring(0, colonIndex);
+        if (URN_PREFIX.equalsIgnoreCase(prefix)) {
+            return iri;
+        }
         if (!namespaces.containsKey(prefix)) {
             LOG.warn("Namespace for prefix '{}' not registered. Prefixed IRI '{}' will not be resolved.", prefix, iri);
             return iri;
