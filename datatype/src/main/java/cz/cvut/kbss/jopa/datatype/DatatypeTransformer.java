@@ -49,7 +49,7 @@ public class DatatypeTransformer {
         map.put(new Pair(Short.class, Double.class), value -> ((Short) value).doubleValue());
         map.put(new Pair(Integer.class, Short.class), value -> ((Integer) value).shortValue());
         map.put(new Pair(Integer.class, Long.class), value -> ((Integer) value).longValue());
-        map.put(new Pair(Integer.class, Float.class), value -> ((Integer) value).doubleValue());
+        map.put(new Pair(Integer.class, Float.class), value -> ((Integer) value).floatValue());
         map.put(new Pair(Integer.class, Double.class), value -> ((Integer) value).doubleValue());
         map.put(new Pair(Long.class, Integer.class), value -> ((Long) value).intValue());
         map.put(new Pair(Long.class, Short.class), value -> ((Long) value).shortValue());
