@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.datatype;
 
 import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
+import cz.cvut.kbss.jopa.datatype.util.Pair;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.lang.reflect.Constructor;
@@ -123,31 +124,4 @@ public class DatatypeTransformer {
         }
     }
 
-    private static final class Pair {
-
-        private final Class<?> sourceType;
-        private final Class<?> targetType;
-
-        private Pair(Class<?> sourceType, Class<?> targetType) {
-            this.sourceType = sourceType;
-            this.targetType = targetType;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Pair pair = (Pair) o;
-            return sourceType.equals(pair.sourceType) && targetType.equals(pair.targetType);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(sourceType, targetType);
-        }
-    }
 }
