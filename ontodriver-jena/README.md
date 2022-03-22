@@ -1,12 +1,13 @@
 # Jena OntoDriver
 
-Allows to connect to Jena-based storage.
+Allows connecting to Jena-based storage.
 
 Currently supported storage types:
 
 * In-memory (`in-memory`)
 * File (`file`)
 * TDB (`tdb`)
+* Fuseki (`fuseki`)
 
 The storage type is configured using the `cz.cvut.kbss.ontodriver.jena.storage` property.
 

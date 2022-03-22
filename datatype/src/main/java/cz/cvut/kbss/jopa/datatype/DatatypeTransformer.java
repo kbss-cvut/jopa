@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.datatype;
 
 import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
+import cz.cvut.kbss.jopa.datatype.util.Pair;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.lang.reflect.Constructor;
@@ -49,7 +50,7 @@ public class DatatypeTransformer {
         map.put(new Pair(Short.class, Double.class), value -> ((Short) value).doubleValue());
         map.put(new Pair(Integer.class, Short.class), value -> ((Integer) value).shortValue());
         map.put(new Pair(Integer.class, Long.class), value -> ((Integer) value).longValue());
-        map.put(new Pair(Integer.class, Float.class), value -> ((Integer) value).doubleValue());
+        map.put(new Pair(Integer.class, Float.class), value -> ((Integer) value).floatValue());
         map.put(new Pair(Integer.class, Double.class), value -> ((Integer) value).doubleValue());
         map.put(new Pair(Long.class, Integer.class), value -> ((Long) value).intValue());
         map.put(new Pair(Long.class, Short.class), value -> ((Long) value).shortValue());
@@ -123,31 +124,4 @@ public class DatatypeTransformer {
         }
     }
 
-    private static final class Pair {
-
-        private final Class<?> sourceType;
-        private final Class<?> targetType;
-
-        private Pair(Class<?> sourceType, Class<?> targetType) {
-            this.sourceType = sourceType;
-            this.targetType = targetType;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Pair pair = (Pair) o;
-            return sourceType.equals(pair.sourceType) && targetType.equals(pair.targetType);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(sourceType, targetType);
-        }
-    }
 }

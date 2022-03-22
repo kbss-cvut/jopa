@@ -25,7 +25,11 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -37,6 +41,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class DuplicateIdentifiersTest extends IntegrationTestBase {
 
     private OWLClassA entityA;
@@ -96,9 +102,9 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         em.getTransaction().begin();
         em.persist(entityA);
         em.getTransaction().commit();
-        when(connectionMock.contains(
+        doReturn(true).when(connectionMock).contains(
                 new AxiomImpl<>(NamedResource.create(entityA.getUri()), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(OWLClassA.getClassIri()))), null)).thenReturn(true);
+                        new Value<>(NamedResource.create(OWLClassA.getClassIri()))), Collections.emptySet());
 
         em.getTransaction().begin();
         em.persist(entityB);
@@ -196,8 +202,8 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         desc.addAssertion(Assertion.createClassAssertion(false));
         desc.addAssertion(stringAss);
         desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
-        when(connectionMock.find(desc)).thenReturn(axioms);
-        when(connectionMock.contains(classAssertion, Collections.emptySet())).thenReturn(true);
+        doReturn(axioms).when(connectionMock).find(desc);
+        doReturn(true).when(connectionMock).contains(classAssertion, Collections.emptySet());
     }
 
     @Test
@@ -305,7 +311,6 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         final OWLClassB entityB = new OWLClassB();
         entityB.setUri(entityA.getUri());
         entityB.setStringAttribute("bStringAttribute");
-        initAxiomsForOWLClassB(entityB, subject, stringAssB);
 
         final OWLClassA aOne = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(aOne);

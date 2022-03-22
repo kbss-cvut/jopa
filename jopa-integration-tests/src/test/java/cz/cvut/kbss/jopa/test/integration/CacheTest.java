@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.integration;
 
@@ -30,8 +28,9 @@ import cz.cvut.kbss.ontodriver.iteration.ResultSetIterator;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class CacheTest extends IntegrationTestBase {
 
     @Mock
@@ -56,15 +56,14 @@ class CacheTest extends IntegrationTestBase {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         super.setUp();
-        when(connectionMock.createStatement()).thenReturn(statementMock);
-        when(resultSetMock.iterator()).thenReturn(resultSetIteratorMock);
-        when(resultSetIteratorMock.next()).thenReturn(resultRowMock);
     }
 
     @Test
     void queryResultIsLoadedFromCacheWhenItIsAlreadyCached() throws Exception {
+        when(connectionMock.createStatement()).thenReturn(statementMock);
+        when(resultSetMock.iterator()).thenReturn(resultSetIteratorMock);
+        when(resultSetIteratorMock.next()).thenReturn(resultRowMock);
         final URI instanceUri = Generators.generateUri();
         final String query = "SELECT ?x WHERE { ?x a <" + Vocabulary.C_OWL_CLASS_A + "> . }";
         when(statementMock.executeQuery(query)).thenReturn(resultSetMock);
@@ -85,17 +84,13 @@ class CacheTest extends IntegrationTestBase {
     }
 
     private Collection<Axiom<?>> axiomsForA(URI identifier) {
-        return axiomsForA(identifier, "stringAttribute");
-    }
-
-    private Collection<Axiom<?>> axiomsForA(URI identifier, String stringAttribute) {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         final NamedResource nr = NamedResource.create(identifier);
         axioms.add(new AxiomImpl<>(nr, Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_A))));
+                                   new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_A))));
         axioms.add(new AxiomImpl<>(nr,
-                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false),
-                new Value<>(stringAttribute)));
+                                   Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                                                                         false), new Value<>("stringAttribute")));
         return axioms;
     }
 
@@ -104,7 +99,7 @@ class CacheTest extends IntegrationTestBase {
         final URI id = Generators.generateUri();
         final Collection<Axiom<?>> axioms = axiomsForA(id);
         axioms.add(new AxiomImpl<>(NamedResource.create(id), Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_Q))));
+                                   new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_Q))));
         when(connectionMock.find(any())).thenReturn(axioms);
         final OWLClassA a = em.find(OWLClassA.class, id);
         assertNotNull(a);
@@ -120,7 +115,7 @@ class CacheTest extends IntegrationTestBase {
         final URI uri = Generators.generateUri();
         final Collection<Axiom<?>> axioms = Collections.singleton(
                 new AxiomImpl<>(NamedResource.create(uri), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_F))));
+                                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_F))));
         when(connectionMock.find(any())).thenReturn(axioms);
         final EntityDescriptor descriptor = new EntityDescriptor();
         em.getTransaction().begin();

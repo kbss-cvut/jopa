@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -486,5 +487,30 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         for (OWLClassA classA : res.getPluralQueryAttribute()) {
             assertTrue(em.contains(classA));
         }
+    }
+
+    @Test
+    void testSupportForUrnIrisInClassAndProperty() {
+        this.em = getEntityManager("testSupportForUrnIrisInClassAndProperty", false);
+        final OWLClassWithUrn instance = new OWLClassWithUrn();
+        instance.setUri(Generators.generateUri());
+        instance.setLabel("Test instance with URN");
+        instance.setCreated(LocalDate.now());
+        persist(instance);
+
+        final OWLClassWithUrn result = findRequired(OWLClassWithUrn.class, instance.getUri());
+        assertEquals(instance.getLabel(), result.getLabel());
+        assertEquals(instance.getCreated(), result.getCreated());
+    }
+
+    @Test
+    void testSupportForUrnIdentifier() {
+        this.em = getEntityManager("testSupportForUrnIdentifier", false);
+        final URI id = URI.create("urn:jopa:instance:test-instance");
+        final OWLClassWithUrn instance = new OWLClassWithUrn();
+        instance.setUri(id);
+        persist(instance);
+
+        findRequired(OWLClassWithUrn.class, id);
     }
 }

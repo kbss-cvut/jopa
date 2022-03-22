@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,9 +17,13 @@ package cz.cvut.kbss.jopa.datatype;
 import cz.cvut.kbss.jopa.datatype.exception.UnsupportedTypeTransformationException;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,6 +40,22 @@ class DatatypeTransformerTest {
         final Double result = DatatypeTransformer.transform(value, Double.class);
         assertNotNull(result);
         assertEquals(value.doubleValue(), result, 0.01);
+    }
+
+    @ParameterizedTest
+    @MethodSource("wideningConversionTestValues")
+    <T> void transformSupportsWideningConversion(Class<T> targetType, T expected, Object value) {
+        assertEquals(expected, DatatypeTransformer.transform(value, targetType));
+    }
+
+    private static Stream<Arguments> wideningConversionTestValues() {
+        return Stream.of(
+                Arguments.arguments(Long.class, 117L, 117),
+                Arguments.arguments(Float.class, 117.0f, 117),
+                Arguments.arguments(Double.class, 117.0, 117),
+                Arguments.arguments(Float.class, 117.0f, 117L),
+                Arguments.arguments(Double.class, 117.0, 117L)
+        );
     }
 
     @Test
@@ -63,7 +83,7 @@ class DatatypeTransformerTest {
 
     @Test
     void transformSupportsConversionUsingConstructorWithParameterMatchingTransformedValueType() {
-        final String value = "http://onto.fel.cvut.cz";
+        final String value = "https://onto.fel.cvut.cz";
         final URL result = DatatypeTransformer.transform(value, URL.class);
         assertNotNull(result);
         assertEquals(value, result.toString());
