@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.18.4 - 2022-03-22
+- Make `LangString` extensible (need by JB4JSON-LD).
+- Fix incorrect implementation of transformation to float in `DatatypeTransformer`.
+- Dependency updates: RDF4J 3.7.5, OWL API 5.1.20.
+
 ## 0.18.3 - 2022-02-21
 - Add a no-arg constructor to `LangString` so that it can be serialized/deserialized by JSON mapping libraries like Jackson.
 - Fix a classpath scanning issue on Windows.
