@@ -83,7 +83,7 @@ class DatatypeTransformerTest {
 
     @Test
     void transformSupportsConversionUsingConstructorWithParameterMatchingTransformedValueType() {
-        final String value = "http://onto.fel.cvut.cz";
+        final String value = "https://onto.fel.cvut.cz";
         final URL result = DatatypeTransformer.transform(value, URL.class);
         assertNotNull(result);
         assertEquals(value, result.toString());

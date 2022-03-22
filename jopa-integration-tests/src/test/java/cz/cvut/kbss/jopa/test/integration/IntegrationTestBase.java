@@ -27,13 +27,12 @@ import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 
 public class IntegrationTestBase {
 
@@ -45,7 +44,6 @@ public class IntegrationTestBase {
 
     @BeforeEach
     protected void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.emf = PersistenceFactory.initPersistence(Collections.emptyMap());
         this.em = emf.createEntityManager();
 
@@ -73,7 +71,7 @@ public class IntegrationTestBase {
         final AxiomDescriptor desc = new AxiomDescriptor(subject);
         desc.addAssertion(Assertion.createClassAssertion(false));
         desc.addAssertion(stringAss);
-        when(connectionMock.find(desc)).thenReturn(axioms);
-        when(connectionMock.contains(classAssertion, Collections.emptySet())).thenReturn(true);
+        doReturn(axioms).when(connectionMock).find(desc);
+        doReturn(true).when(connectionMock).contains(classAssertion, Collections.emptySet());
     }
 }

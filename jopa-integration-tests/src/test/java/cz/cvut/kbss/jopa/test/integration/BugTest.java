@@ -22,6 +22,8 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.*;
@@ -30,11 +32,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
  * Test for discovered bugs and their fixes.
  */
+@ExtendWith(MockitoExtension.class)
 class BugTest extends IntegrationTestBase {
 
     /* Bug: using an attribute in hashCode/equals caused an infinite loop, because the BeanListenerAspect tried
@@ -74,10 +78,7 @@ class BugTest extends IntegrationTestBase {
         em.persist(a);
         em.getTransaction().commit();
         em.clear();
-        initAxiomsForOwlClassD(NamedResource.create(d.getUri()), NamedResource.create(a.getUri()));
-        initAxiomsForOWLClassA(NamedResource.create(a.getUri()),
-                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false),
-                a.getStringAttribute());
+        initAxiomsForOwlClassD(NamedResource.create(d.getUri()));
 
         a.setStringAttribute(null);
         em.getTransaction().begin();
@@ -89,19 +90,10 @@ class BugTest extends IntegrationTestBase {
         assertEquals(str, result.getStringAttribute());
     }
 
-    private void initAxiomsForOwlClassD(NamedResource subject, NamedResource owlClassA) throws OntoDriverException {
-        final List<Axiom<?>> axioms = new ArrayList<>();
+    private void initAxiomsForOwlClassD(NamedResource subject) throws OntoDriverException {
         final Axiom<?> classAssertion = new AxiomImpl<>(subject, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_D)));
-        axioms.add(classAssertion);
-        final Assertion opAssertion = Assertion
-                .createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false);
-        axioms.add(new AxiomImpl<>(subject, opAssertion, new Value<>(owlClassA)));
-        final AxiomDescriptor desc = new AxiomDescriptor(subject);
-        desc.addAssertion(Assertion.createClassAssertion(false));
-        desc.addAssertion(opAssertion);
-        when(connectionMock.find(desc)).thenReturn(axioms);
-        when(connectionMock.contains(classAssertion, null)).thenReturn(true);
+        doReturn(true).when(connectionMock).contains(classAssertion, Collections.emptySet());
     }
 
     /**

@@ -40,6 +40,7 @@ import static org.mockito.Mockito.*;
 /**
  * Initializes the specified mock objects to return reasonable values.
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class MetamodelFactory {
 
     private MetamodelFactory() {
