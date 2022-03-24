@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.datatype.xsd;
 
@@ -29,10 +27,15 @@ import java.util.Optional;
  * Maps XML Schema types to Java.
  * <p>
  * The mapping logic is based on the known <a href="https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html">JAXB</a>/
- * <a href="https://xmlbeans.apache.org/docs/2.0.0/guide/conXMLBeansSupportBuiltInSchemaTypes.html">Apache XML Beans</a>
+ * <a href="https://xmlbeans.apache.org/docs/2.0.0/guide/conXMLBeansSupportBuiltInSchemaTypes.html">Apache XML
+ * Beans</a>
  * mapping with utilization of the Java 8 Date/Time API.
  */
 public class XsdDatatypeMapper implements DatatypeMapper {
+
+    public static final String NEGATIVE_INFINITY = "-INF";
+
+    public static final String POSITIVE_INFINITY = "INF";
 
     private static final XsdDatatypeMapper INSTANCE = new XsdDatatypeMapper();
 
@@ -67,9 +70,9 @@ public class XsdDatatypeMapper implements DatatypeMapper {
                 case XSD.UNSIGNED_INT:
                     return Optional.of(Long.parseLong(value));
                 case XSD.FLOAT:
-                    return Optional.of(Float.parseFloat(value));
+                    return Optional.of(toFloat(value));
                 case XSD.DOUBLE:
-                    return Optional.of(Double.parseDouble(value));
+                    return Optional.of(toDouble(value));
                 case XSD.STRING:
                 case XSD.NORMALIZED_STRING:
                     return Optional.of(value);
@@ -98,5 +101,23 @@ public class XsdDatatypeMapper implements DatatypeMapper {
         } catch (IllegalArgumentException e) {
             throw new DatatypeMappingException("Unable to map literal " + literal, e);
         }
+    }
+
+    private Float toFloat(String lexicalForm) {
+        if (NEGATIVE_INFINITY.equals(lexicalForm)) {
+            return Float.NEGATIVE_INFINITY;
+        } else if (POSITIVE_INFINITY.equals(lexicalForm)) {
+            return Float.POSITIVE_INFINITY;
+        }
+        return Float.parseFloat(lexicalForm);
+    }
+
+    private Double toDouble(String lexicalForm) {
+        if (NEGATIVE_INFINITY.equals(lexicalForm)) {
+            return Double.NEGATIVE_INFINITY;
+        } else if (POSITIVE_INFINITY.equals(lexicalForm)) {
+            return Double.POSITIVE_INFINITY;
+        }
+        return Double.parseDouble(lexicalForm);
     }
 }
