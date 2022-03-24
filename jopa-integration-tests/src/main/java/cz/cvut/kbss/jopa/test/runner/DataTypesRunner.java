@@ -34,11 +34,11 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public abstract class ExplicitDatatypesRunner extends BaseRunner {
+public abstract class DataTypesRunner extends BaseRunner {
 
     private static final String VALUE = "P1Y";
 
-    public ExplicitDatatypesRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+    public DataTypesRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
     }
 
@@ -98,5 +98,17 @@ public abstract class ExplicitDatatypesRunner extends BaseRunner {
 
         final OWLClassX result = findRequired(OWLClassX.class, entity.getUri());
         assertEquals(values, result.getExplicitDatatypes());
+    }
+
+    @Test
+    public void floatingPointAttributesSupportInfinityMapping() {
+        this.em = getEntityManager("floatingPointAttributesSupportInfinity", false);
+        entityM.setFloatAttribute(Float.NEGATIVE_INFINITY);
+        entityM.setDoubleAttribute(Double.POSITIVE_INFINITY);
+        persist(entityM);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(Float.NEGATIVE_INFINITY, result.getFloatAttribute());
+        assertEquals(Double.POSITIVE_INFINITY, result.getDoubleAttribute());
     }
 }
