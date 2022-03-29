@@ -12,19 +12,19 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.test.integration.sesame;
+package cz.cvut.kbss.jopa.test.integration.jena;
 
-import cz.cvut.kbss.jopa.test.environment.SesameDataAccessor;
-import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
-import cz.cvut.kbss.jopa.test.runner.ExplicitDatatypesRunner;
+import cz.cvut.kbss.jopa.test.environment.JenaDataAccessor;
+import cz.cvut.kbss.jopa.test.environment.JenaPersistenceFactory;
+import cz.cvut.kbss.jopa.test.runner.DataTypesRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ExplicitDatatypesTest extends ExplicitDatatypesRunner {
+public class DataTypesTest extends DataTypesRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExplicitDatatypesTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataTypesTest.class);
 
-    public ExplicitDatatypesTest() {
-        super(LOG, new SesamePersistenceFactory(), new SesameDataAccessor());
+    public DataTypesTest() {
+        super(LOG, new JenaPersistenceFactory(), new JenaDataAccessor());
     }
 }

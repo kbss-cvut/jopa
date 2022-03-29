@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.18.5 - 2022-03-29
+- Add support for special floating point numeric values NaN, -INF, INF (Bug #108).
+- Dependency updates: RDF4J 3.7.6, SLF4J 1.7.36, Logback 1.2.11.
+
 ## 0.18.4 - 2022-03-22
 - Make `LangString` extensible (need by JB4JSON-LD).
 - Fix incorrect implementation of transformation to float in `DatatypeTransformer`.

@@ -18,12 +18,16 @@ import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigInteger;
 import java.net.URI;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -114,7 +118,8 @@ class XsdDatatypeMapperTest {
     @Test
     void mapReturnsOffsetDateTimeForXsdDateTime() {
         final OffsetDateTime dateTime = OffsetDateTime.of(2021, 11, 17, 12, 23, 10, 0, ZoneOffset.UTC);
-        assertEquals(dateTime, map(Literal.from(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), XSD.DATETIME)));
+        assertEquals(dateTime,
+                     map(Literal.from(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), XSD.DATETIME)));
     }
 
     @Test
@@ -127,5 +132,25 @@ class XsdDatatypeMapperTest {
     void mapReturnsUriForXsdAnyUri() {
         final String uri = "https://www.w3.org/TR/xmlschema-2/#anyURI";
         assertEquals(URI.create(uri), map(Literal.from(uri, XSD.ANY_URI)));
+    }
+
+    /**
+     * Bug #108
+     */
+    @ParameterizedTest
+    @MethodSource("floatingPointSpecialValuesGenerator")
+    void mapSupportsSpecialFloatingPointValuesMapping(Literal literal, Number expected) {
+        assertEquals(expected, map(literal));
+    }
+
+    private static Stream<Arguments> floatingPointSpecialValuesGenerator() {
+        return Stream.of(
+                Arguments.of(Literal.from("NaN", XSD.FLOAT), Float.NaN),
+                Arguments.of(Literal.from("-INF", XSD.FLOAT), Float.NEGATIVE_INFINITY),
+                Arguments.of(Literal.from("INF", XSD.FLOAT), Float.POSITIVE_INFINITY),
+                Arguments.of(Literal.from("NaN", XSD.DOUBLE), Double.NaN),
+                Arguments.of(Literal.from("-INF", XSD.DOUBLE), Double.NEGATIVE_INFINITY),
+                Arguments.of(Literal.from("INF", XSD.DOUBLE), Double.POSITIVE_INFINITY)
+        );
     }
 }

@@ -16,18 +16,18 @@ package cz.cvut.kbss.jopa.test.integration.owlapi;
 
 import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
-import cz.cvut.kbss.jopa.test.runner.ExplicitDatatypesRunner;
+import cz.cvut.kbss.jopa.test.runner.DataTypesRunner;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
-public class ExplicitDatatypesTest extends ExplicitDatatypesRunner {
+public class DataTypesTest extends DataTypesRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExplicitDatatypesTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DataTypesTest.class);
 
-    public ExplicitDatatypesTest() {
+    public DataTypesTest() {
         super(LOG, new OwlapiPersistenceFactory(), new OwlapiDataAccessor());
     }
 
