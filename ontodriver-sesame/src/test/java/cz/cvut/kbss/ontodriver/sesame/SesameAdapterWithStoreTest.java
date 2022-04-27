@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -20,9 +18,11 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
+import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactoryImpl;
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -57,12 +57,12 @@ public class SesameAdapterWithStoreTest {
     @BeforeEach
     public void setUp() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
-                                                                      .physicalUri("memory-store").build();
+                .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         configuration.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.toString(true));
-        this.factory = ConnectorFactory.getInstance();
-        this.connector = factory.createStorageConnector(configuration);
-        this.adapter = new SesameAdapter(connector, configuration);
+        this.factory = new ConnectorFactoryImpl(configuration);
+        this.connector = factory.createStorageConnector();
+        this.adapter = new SesameAdapter(connector, new RuntimeConfiguration(configuration));
         this.repo = adapter.unwrap(Repository.class);
         this.vf = repo.getValueFactory();
     }

@@ -71,7 +71,7 @@ class SesameAdapterTest {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(SesameDataSource.class.getName())
                 .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
-        this.adapter = new SesameAdapter(connectorMock, configuration);
+        this.adapter = new SesameAdapter(connectorMock, new RuntimeConfiguration(configuration));
 
     }
 
@@ -81,7 +81,7 @@ class SesameAdapterTest {
                 .physicalUri("memory-store").build();
         final DriverConfiguration dc = new DriverConfiguration(sp);
         dc.setProperty(SesameConfigParam.LOAD_ALL_THRESHOLD, "1");
-        this.adapter = new SesameAdapter(connectorMock, dc);
+        this.adapter = new SesameAdapter(connectorMock, new RuntimeConfiguration(dc));
         final Field configField = SesameAdapter.class.getDeclaredField("config");
         configField.setAccessible(true);
         final RuntimeConfiguration config = (RuntimeConfiguration) configField.get(adapter);

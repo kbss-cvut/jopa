@@ -23,15 +23,12 @@ import cz.cvut.kbss.ontodriver.sesame.loader.StatementLoader;
 import cz.cvut.kbss.ontodriver.sesame.util.AxiomBuilder;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.*;
 
 class AxiomLoader {
 
     private final Connector connector;
-    private final ValueFactory valueFactory;
 
     private final Map<IRI, Assertion> propertyToAssertion;
     private Map<IRI, Assertion> explicitAssertions;
@@ -39,9 +36,8 @@ class AxiomLoader {
 
     private final RuntimeConfiguration config;
 
-    AxiomLoader(Connector connector, ValueFactory valueFactory, RuntimeConfiguration config) {
+    AxiomLoader(Connector connector, RuntimeConfiguration config) {
         this.connector = connector;
-        this.valueFactory = valueFactory;
         this.propertyToAssertion = new HashMap<>();
         this.config = config;
     }
@@ -52,10 +48,9 @@ class AxiomLoader {
 
     private Collection<Axiom<?>> findStatements(AxiomDescriptor descriptor) throws SesameDriverException {
         final Collection<Axiom<?>> result = new HashSet<>();
-        final Resource subject = SesameUtils.toSesameIri(descriptor.getSubject().getIdentifier(), valueFactory);
         final Assertion unspecified = processAssertions(descriptor);
         final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified);
-        final StatementLoader statementLoader = new StatementLoader(connector, subject, axiomBuilder);
+        final StatementLoader statementLoader = createLoader(descriptor.getSubject(), axiomBuilder);
         statementLoader.setLoadAllThreshold(config.getLoadAllThreshold());
         if (unspecified == null || !unspecified.isInferred()) {
             statementLoader.setIncludeInferred(false);
@@ -64,6 +59,11 @@ class AxiomLoader {
         statementLoader.setIncludeInferred(true);
         result.addAll(statementLoader.loadAxioms(descriptor, inferredAssertions));
         return result;
+    }
+
+    private StatementLoader createLoader(NamedResource individual, AxiomBuilder axiomBuilder) {
+        final IRI subject = SesameUtils.toSesameIri(individual.getIdentifier(), connector.getValueFactory());
+        return config.getStatementLoaderFactory().create(connector, subject, axiomBuilder);
     }
 
     /**
@@ -80,7 +80,7 @@ class AxiomLoader {
         this.inferredAssertions = new HashMap<>(assertions.size());
         Assertion unspecified = null;
         for (Assertion a : assertions) {
-            final IRI property = SesameUtils.toSesameIri(a.getIdentifier(), valueFactory);
+            final IRI property = SesameUtils.toSesameIri(a.getIdentifier(), connector.getValueFactory());
             propertyToAssertion.put(property, a);
             if (a.equals(Assertion.createUnspecifiedPropertyAssertion(a.isInferred()))) {
                 unspecified = a;
@@ -98,7 +98,7 @@ class AxiomLoader {
             throws SesameDriverException {
         final AxiomBuilder axiomBuilder = new AxiomBuilder(individual, Collections.emptyMap(),
                 Assertion.createUnspecifiedPropertyAssertion(includeInferred));
-        final StatementLoader loader = new StatementLoader(connector, SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory), axiomBuilder);
+        final StatementLoader loader = createLoader(individual, axiomBuilder);
         return loader.loadAxioms(context != null ? Collections.singleton(context) : Collections.emptySet());
     }
 }

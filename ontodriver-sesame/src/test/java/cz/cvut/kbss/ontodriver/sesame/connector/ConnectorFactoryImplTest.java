@@ -1,22 +1,19 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
-import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.environment.TestUtils;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -38,43 +35,25 @@ public class ConnectorFactoryImplTest {
     }
 
     @Test
-    public void setRepositoryConnectsUninitializedFactory() throws Exception {
-        this.factory = new ConnectorFactoryImpl();
-        final DriverConfiguration config = TestUtils.createDriverConfig("urn:test");
-        config.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        final Repository repo = new SailRepository(new MemoryStore());
-        Generator.initTestData(repo);
-        try {
-            factory.setRepository(repo, config);
-            final Connector connector = factory.createStorageConnector(config);
-            connector.begin();
-            assertFalse(connector.findStatements(null, null, null, false).isEmpty());
-            connector.close();
-        } finally {
-            repo.shutDown();
-        }
-    }
-
-    @Test
     public void setRepositoryThrowsIllegalStateWhenCalledOnClosedFactory() throws Exception {
-        this.factory = new ConnectorFactoryImpl();
         final DriverConfiguration config = TestUtils.createDriverConfig("urn:test");
         config.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+        this.factory = new ConnectorFactoryImpl(config);
         factory.close();
         final Repository repo = new SailRepository(new MemoryStore());
         try {
-            assertThrows(IllegalStateException.class, () -> factory.setRepository(repo, config));
+            assertThrows(IllegalStateException.class, () -> factory.setRepository(repo));
         } finally {
             repo.shutDown();
         }
     }
 
     @Test
-    public void createConnectorInitializesRepository() throws Exception {
-        this.factory = new ConnectorFactoryImpl();
+    public void constructorInitializesRepositoryConnection() throws Exception {
         final DriverConfiguration config = TestUtils.createDriverConfig("urn:test");
         config.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        final Connector connector = factory.createStorageConnector(config);
+        this.factory = new ConnectorFactoryImpl(config);
+        final Connector connector = factory.createStorageConnector();
         assertNotNull(connector);
         assertTrue(connector.unwrap(Repository.class).isInitialized());
     }
