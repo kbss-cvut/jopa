@@ -33,12 +33,6 @@ public class Constants {
      */
     public static final InheritanceType DEFAULT_INHERITANCE_TYPE = InheritanceType.TWO_STEP;
 
-    /**
-     * Supported identifier Java types.
-     */
-    public static final Set<Class<?>> SUPPORTED_IDENTIFIER_TYPES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(URI.class, URL.class, String.class)));
-
     private Constants() {
         throw new AssertionError();
     }
