@@ -15,6 +15,8 @@
 package cz.cvut.kbss.ontodriver.sesame.config;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
+import cz.cvut.kbss.ontodriver.sesame.loader.DefaultStatementLoaderFactory;
+import cz.cvut.kbss.ontodriver.sesame.loader.StatementLoaderFactory;
 
 /**
  * Represents configuration which influences the driver during its active usage, not its initialization.
@@ -22,6 +24,8 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 public class RuntimeConfiguration {
 
     private final int loadAllThreshold;
+
+    private StatementLoaderFactory statementLoaderFactory = new DefaultStatementLoaderFactory();
 
     public RuntimeConfiguration(DriverConfiguration config) {
         if (config.isSet(SesameConfigParam.LOAD_ALL_THRESHOLD)) {
@@ -39,5 +43,14 @@ public class RuntimeConfiguration {
 
     public int getLoadAllThreshold() {
         return loadAllThreshold;
+    }
+
+    public StatementLoaderFactory getStatementLoaderFactory() {
+        return statementLoaderFactory;
+    }
+
+    public void setStatementLoaderFactory(StatementLoaderFactory statementLoaderFactory) {
+        assert statementLoaderFactory != null;
+        this.statementLoaderFactory = statementLoaderFactory;
     }
 }

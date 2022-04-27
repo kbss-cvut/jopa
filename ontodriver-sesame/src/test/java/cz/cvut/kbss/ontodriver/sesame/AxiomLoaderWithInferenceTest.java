@@ -37,7 +37,8 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.Collection;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AxiomLoaderWithInferenceTest {
 
@@ -54,7 +55,7 @@ class AxiomLoaderWithInferenceTest {
         this.connector = repositoryProvider.createConnector(true);
         final DriverConfiguration driverConfig = new DriverConfiguration(TestRepositoryProvider.storageProperties());
 
-        this.sut = new AxiomLoader(connector, vf, new RuntimeConfiguration(driverConfig));
+        this.sut = new AxiomLoader(connector, new RuntimeConfiguration(driverConfig));
     }
 
     @AfterEach
