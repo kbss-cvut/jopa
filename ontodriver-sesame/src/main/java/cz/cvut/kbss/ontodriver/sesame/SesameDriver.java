@@ -21,16 +21,18 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactoryImpl;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.loader.DefaultStatementLoaderFactory;
+import cz.cvut.kbss.ontodriver.sesame.loader.GraphDBStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.sesame.loader.StatementLoaderFactory;
 import org.eclipse.rdf4j.repository.Repository;
 
 import java.util.*;
 
-class SesameDriver implements Closeable, ConnectionListener {
+class SesameDriver implements Closeable, ConnectionListener<SesameConnection> {
 
     private static final List<ConfigurationParameter> CONFIGS = Arrays
             .asList(DriverConfigParam.AUTO_COMMIT, SesameConfigParam.USE_INFERENCE,
@@ -40,7 +42,7 @@ class SesameDriver implements Closeable, ConnectionListener {
     private final DriverConfiguration configuration;
     private boolean open;
     private final ConnectorFactory connectorFactory;
-    private StatementLoaderFactory statementLoaderFactory = new DefaultStatementLoaderFactory();
+    private final StatementLoaderFactory statementLoaderFactory;
 
     private final Set<SesameConnection> openedConnections;
 
@@ -52,8 +54,22 @@ class SesameDriver implements Closeable, ConnectionListener {
         this.configuration = new DriverConfiguration(storageProperties);
         configuration.addConfiguration(properties, CONFIGS);
         this.openedConnections = new HashSet<>();
-        this.connectorFactory = new ConnectorFactoryImpl(configuration);
+        this.connectorFactory = initConnectorFactory(configuration);
+        this.statementLoaderFactory = initStatementLoaderFactory(connectorFactory);
         this.open = true;
+    }
+
+    private ConnectorFactory initConnectorFactory(DriverConfiguration configuration) throws SesameDriverException {
+        return new ConnectorFactoryImpl(configuration);
+    }
+
+    private StatementLoaderFactory initStatementLoaderFactory(
+            ConnectorFactory connectorFactory) throws SesameDriverException {
+        final Connector connector = connectorFactory.createStorageConnector();
+        if (GraphDBStatementLoaderFactory.isRepositoryGraphDB(connector)) {
+            return new GraphDBStatementLoaderFactory();
+        }
+        return new DefaultStatementLoaderFactory();
     }
 
     @Override
@@ -96,7 +112,7 @@ class SesameDriver implements Closeable, ConnectionListener {
     }
 
     @Override
-    public void connectionClosed(Connection connection) {
+    public void connectionClosed(SesameConnection connection) {
         if (connection == null) {
             return;
         }
