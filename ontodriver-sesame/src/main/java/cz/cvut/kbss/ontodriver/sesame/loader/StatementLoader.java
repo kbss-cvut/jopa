@@ -41,7 +41,7 @@ public class StatementLoader {
 
     private int loadAllThreshold = Constants.DEFAULT_LOAD_ALL_THRESHOLD;
     private boolean loadAll;
-    private boolean includeInferred;
+    boolean includeInferred;
 
     public StatementLoader(Connector connector, Resource subject, AxiomBuilder axiomBuilder) {
         this.connector = connector;
@@ -72,9 +72,10 @@ public class StatementLoader {
                                               Map<IRI, Assertion> assertions) throws SesameDriverException {
         final Collection<Axiom<?>> result = new HashSet<>();
         for (Map.Entry<IRI, Assertion> e : assertions.entrySet()) {
-            final Set<IRI> contexts = descriptor.getAssertionContexts(e.getValue()).stream()
-                    .map(uri -> SesameUtils.toSesameIri(uri, vf))
-                    .collect(Collectors.toSet());
+            final Set<IRI> contexts = resolveContexts(descriptor, e.getValue()).stream()
+                                                                               .map(uri -> SesameUtils.toSesameIri(uri,
+                                                                                                                   vf))
+                                                                               .collect(Collectors.toSet());
 
             final Collection<Statement> statements;
             statements = connector.findStatements(subject, e.getKey(), null, includeInferred, contexts);
@@ -88,6 +89,10 @@ public class StatementLoader {
         return result;
     }
 
+    protected Set<URI> resolveContexts(AxiomDescriptor descriptor, Assertion a) {
+        return descriptor.getAssertionContexts(a);
+    }
+
     private Collection<Axiom<?>> loadAll(AxiomDescriptor descriptor,
                                          Map<IRI, Assertion> properties) throws SesameDriverException {
         final Collection<Statement> statements = connector.findStatements(subject, null, null, includeInferred);
@@ -98,7 +103,8 @@ public class StatementLoader {
                 continue;
             }
             final Assertion a = getAssertion(properties, s);
-            if (!contextMatches(descriptor.getAssertionContexts(a), s) && !(loadAll && contextMatches(descriptor.getAssertionContexts(unspecified), s))) {
+            if (!contextMatches(resolveContexts(descriptor, a), s) &&
+                    !(loadAll && contextMatches(resolveContexts(descriptor, unspecified), s))) {
                 continue;
             }
             final Axiom<?> axiom = axiomBuilder.statementToAxiom(s);
@@ -117,18 +123,21 @@ public class StatementLoader {
     }
 
     private boolean contextMatches(Set<URI> assertionCtx, Statement s) {
-        final Resource statementContext = s.getContext();
         if (assertionCtx.isEmpty()) {
             // If the assertion should be in default, we don't care about the context of the statement, because
             // the default is a union of all the contexts
             return true;
         }
+        final Resource statementContext = s.getContext();
         return statementContext != null && assertionCtx.contains(URI.create(statementContext.stringValue()));
     }
 
     public Collection<Axiom<?>> loadAxioms(Set<URI> contexts) throws SesameDriverException {
-        final Collection<Statement> statements = connector.findStatements(subject, null, null, includeInferred, contexts.stream()
-                .map(uri -> SesameUtils.toSesameIri(uri, vf)).collect(Collectors.toSet()));
+        final Collection<Statement> statements =
+                connector.findStatements(subject, null, null, includeInferred, contexts.stream()
+                                                                                       .map(uri -> SesameUtils.toSesameIri(
+                                                                                               uri, vf))
+                                                                                       .collect(Collectors.toSet()));
         return statements.stream().map(axiomBuilder::statementToAxiom).collect(Collectors.toSet());
     }
 }
