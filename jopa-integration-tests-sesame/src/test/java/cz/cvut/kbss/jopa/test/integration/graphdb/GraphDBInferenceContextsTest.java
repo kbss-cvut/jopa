@@ -9,6 +9,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,17 +27,18 @@ public class GraphDBInferenceContextsTest {
 
     private static final String VOCABULARY = "http://onto.fel.cvut.cz/ontologies/slovnik/ml-test";
 
+    private Map<String, String> properties;
+
     private EntityManagerFactory emf;
 
     @BeforeEach
     void setUp() {
-        final Map<String, String> properties = new HashMap<>();
+        this.properties = new HashMap<>();
         properties.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         properties.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test.integration.graphdb");
         properties.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, SesameDataSource.class.getName());
         properties.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, System.getProperty("jopa.graphdb.url"));
         properties.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, JOPAPersistenceProvider.class.getName());
-        this.emf = Persistence.createEntityManagerFactory("graphdbTestPU", properties);
     }
 
     @AfterEach
@@ -49,7 +51,26 @@ public class GraphDBInferenceContextsTest {
      */
     @Test
     @EnabledIfSystemProperty(named = "jopa.graphdb.url", matches = "http(s)?://")
-    void inferredStatementsAreLoadedEvenWhenDescriptorWithContextIsSpecified() {
+    void inferredStatementsAreLoadedOneByOneEvenWhenDescriptorWithContextIsSpecified() {
+        this.emf = Persistence.createEntityManagerFactory("graphdbTestPU", properties);
+        final EntityManager em = emf.createEntityManager();
+        final URI vocabularyUri = URI.create(VOCABULARY);
+        final Descriptor descriptor = new EntityDescriptor(vocabularyUri);
+        final List<Term> result = em.createQuery("SELECT t FROM " + Term.class.getSimpleName() + " t WHERE t.vocabulary = :vocabulary", Term.class)
+                .setParameter("vocabulary", vocabularyUri)
+                .setDescriptor(descriptor).getResultList();
+        assertFalse(result.isEmpty());
+        result.forEach(t -> assertEquals(vocabularyUri, t.getVocabulary()));
+    }
+
+    /**
+     * Enhancement #106
+     */
+    @Test
+    @EnabledIfSystemProperty(named = "jopa.graphdb.url", matches = "http(s)?://")
+    void inferredStatementsAreLoadedAllEvenWhenDescriptorWithContextIsSpecified() {
+        properties.put(SesameOntoDriverProperties.SESAME_LOAD_ALL_THRESHOLD, "1");
+        this.emf = Persistence.createEntityManagerFactory("graphdbTestPU", properties);
         final EntityManager em = emf.createEntityManager();
         final URI vocabularyUri = URI.create(VOCABULARY);
         final Descriptor descriptor = new EntityDescriptor(vocabularyUri);

@@ -6,6 +6,7 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.AxiomBuilder;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
@@ -40,7 +41,11 @@ public class GraphDBStatementLoaderFactory implements StatementLoaderFactory {
             final Repository repository = connector.unwrap(Repository.class);
             try (final RepositoryConnection connection = repository.getConnection()) {
                 final ValueFactory vf = connection.getValueFactory();
-                return connection.hasStatement(null, vf.createIRI(GRAPHDB_INTERNAL_ID_PROPERTY), null, false);
+                // Have to use a SPARQL query, because RDF4J API hasStatement call ended with an error
+                // See https://graphdb.ontotext.com/documentation/standard/query-behaviour.html#how-to-access-internal-identifiers-for-entities
+                final BooleanQuery query = connection.prepareBooleanQuery("ASK { ?x ?internalId ?y }");
+                query.setBinding("internalId", vf.createIRI(GRAPHDB_INTERNAL_ID_PROPERTY));
+                return query.evaluate();
             }
         } catch (OntoDriverException e) {
             throw (SesameDriverException) e;

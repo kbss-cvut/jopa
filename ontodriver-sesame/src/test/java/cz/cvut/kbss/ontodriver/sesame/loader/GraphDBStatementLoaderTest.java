@@ -26,6 +26,8 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,7 +57,7 @@ class GraphDBStatementLoaderTest {
     }
 
     @Test
-    void loadAxiomsAddsGraphDBImplicitContextToLoadingStatementsByAssertionWhenIncludeInferredIsTrue() throws Exception {
+    void loadAxiomsAddsGraphDBImplicitAndExplicitContextToLoadingStatementsByAssertionWhenIncludeInferredIsTrue() throws Exception {
         final URI context = Generator.generateUri();
         final Assertion a = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(SUBJECT));
@@ -66,33 +68,12 @@ class GraphDBStatementLoaderTest {
         sut.setIncludeInferred(true);
         sut.loadAxioms(descriptor, map);
         verify(connector).findStatements(eq(VF.createIRI(SUBJECT)), eq(map.keySet().iterator().next()), isNull(),
-                                         eq(true), captor.capture());
+                eq(true), captor.capture());
         assertThat(captor.getValue(), hasItem(VF.createIRI(context.toString())));
         assertThat(captor.getValue(),
-                   hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString())));
-    }
-
-    @Test
-    void loadAxiomsAddsGraphDBImplicitContextToContextsUsedForMatchingLoadedStatementsWhenLoadingAllStatementsAtOnceAndIncludeInferredIsTrue() throws Exception {
-        final URI context = Generator.generateUri();
-        final Assertion a = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
-        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(SUBJECT));
-        descriptor.addAssertion(a);
-        descriptor.addAssertionContext(a, context);
-        final IRI subjectIri = VF.createIRI(SUBJECT);
-        final Map<IRI, Assertion> map = Collections.singletonMap(VF.createIRI(a.getIdentifier().toString()), a);
-        final Statement rdfStatement =
-                VF.createStatement(subjectIri, VF.createIRI(a.getIdentifier().toString()),
-                                   VF.createLiteral(Generator.randomInt()),
-                                   VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString()));
-        when(connector.findStatements(eq(subjectIri), isNull(), isNull(), eq(true))).thenReturn(
-                Collections.singleton(rdfStatement));
-
-        sut.setIncludeInferred(true);
-        sut.setLoadAllThreshold(0);
-        sut.loadAxioms(descriptor, map);
-        verify(axiomBuilder).statementToAxiom(rdfStatement);
-        verify(connector).findStatements(eq(subjectIri), isNull(), isNull(), eq(true));
+                hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString())));
+        assertThat(captor.getValue(),
+                hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_EXPLICIT_CONTEXT.toString())));
     }
 
     @Test
@@ -107,21 +88,20 @@ class GraphDBStatementLoaderTest {
         sut.setIncludeInferred(false);
         sut.loadAxioms(descriptor, map);
         verify(connector).findStatements(eq(VF.createIRI(SUBJECT)), eq(map.keySet().iterator().next()), isNull(),
-                                         eq(false), captor.capture());
+                eq(false), captor.capture());
         assertThat(captor.getValue(), hasItem(VF.createIRI(context.toString())));
         assertThat(captor.getValue(),
-                   not(hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString()))));
+                not(hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString()))));
     }
 
     @Test
-    void loadAxiomsByContextsAddsGraphDBImplicitContextToStatementLoadingWhenIncludeInferredIsTrue() throws Exception {
+    void loadAxiomsByContextsAddsGraphDBImplicitAndExplicitContextToStatementLoadingWhenIncludeInferredIsTrue() throws Exception {
         final URI context = Generator.generateUri();
         final Assertion a = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
         final IRI subjectIri = VF.createIRI(SUBJECT);
         final Statement rdfStatement =
                 VF.createStatement(subjectIri, VF.createIRI(a.getIdentifier().toString()),
-                                   VF.createLiteral(Generator.randomInt()),
-                                   VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString()));
+                        VF.createLiteral(Generator.randomInt()), null);
         when(connector.findStatements(eq(subjectIri), isNull(), isNull(), eq(true), anyCollection())).thenReturn(
                 Collections.singleton(rdfStatement));
 
@@ -130,18 +110,19 @@ class GraphDBStatementLoaderTest {
         verify(connector).findStatements(eq(VF.createIRI(SUBJECT)), isNull(), isNull(), eq(true), captor.capture());
         assertThat(captor.getValue(), hasItem(VF.createIRI(context.toString())));
         assertThat(captor.getValue(),
-                   hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString())));
+                hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString())));
+        assertThat(captor.getValue(),
+                hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_EXPLICIT_CONTEXT.toString())));
     }
 
     @Test
-    void loadAxiomsByContextsDoesNotAddGraphDBImplicitContextToStatementLoadingWhenIncludeInferredIsFalse() throws Exception {
+    void loadAxiomsByContextsDoesNotAddGraphDBPseudoContextsToStatementLoadingWhenIncludeInferredIsFalse() throws Exception {
         final URI context = Generator.generateUri();
         final Assertion a = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
         final IRI subjectIri = VF.createIRI(SUBJECT);
         final Statement rdfStatement =
                 VF.createStatement(subjectIri, VF.createIRI(a.getIdentifier().toString()),
-                                   VF.createLiteral(Generator.randomInt()),
-                                   VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString()));
+                        VF.createLiteral(Generator.randomInt()), null);
         when(connector.findStatements(eq(subjectIri), isNull(), isNull(), eq(false), anyCollection())).thenReturn(
                 Collections.singleton(rdfStatement));
 
@@ -150,6 +131,30 @@ class GraphDBStatementLoaderTest {
         verify(connector).findStatements(eq(VF.createIRI(SUBJECT)), isNull(), isNull(), eq(false), captor.capture());
         assertThat(captor.getValue(), hasItem(VF.createIRI(context.toString())));
         assertThat(captor.getValue(),
-                   not(hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString()))));
+                not(hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_IMPLICIT_CONTEXT.toString()))));
+        assertThat(captor.getValue(),
+                not(hasItem(VF.createIRI(GraphDBStatementLoader.GRAPHDB_EXPLICIT_CONTEXT.toString()))));
+    }
+
+    @Test
+    void contextMatchesReturnsTrueForInferredAssertionAndStatementInDefaultContext() {
+        final IRI subjectIri = VF.createIRI(SUBJECT);
+        final Assertion a = Assertion.createObjectPropertyAssertion(Generator.generateUri(), true);
+        final Statement rdfStatement =
+                VF.createStatement(subjectIri, VF.createIRI(a.getIdentifier().toString()),
+                        VF.createLiteral(Generator.randomInt()), null);
+        sut.setIncludeInferred(true);
+        assertTrue(sut.contextMatches(Collections.singleton(Generator.generateUri()), rdfStatement, a));
+    }
+
+    @Test
+    void contextMatchesReturnsFalseForNonInferredAssertionAndStatementInDefault() {
+        final IRI subjectIri = VF.createIRI(SUBJECT);
+        final Assertion a = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
+        final Statement rdfStatement =
+                VF.createStatement(subjectIri, VF.createIRI(a.getIdentifier().toString()),
+                        VF.createLiteral(Generator.randomInt()), null);
+        sut.setIncludeInferred(false);
+        assertFalse(sut.contextMatches(Collections.singleton(Generator.generateUri()), rdfStatement, a));
     }
 }

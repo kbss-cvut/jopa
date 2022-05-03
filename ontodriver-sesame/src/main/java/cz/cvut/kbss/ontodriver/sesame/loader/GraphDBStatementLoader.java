@@ -7,6 +7,7 @@ import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.AxiomBuilder;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 
 import java.net.URI;
 import java.util.Collection;
@@ -27,6 +28,11 @@ public class GraphDBStatementLoader extends StatementLoader {
      */
     static final URI GRAPHDB_IMPLICIT_CONTEXT = URI.create("http://www.ontotext.com/implicit");
 
+    /**
+     * Repository pseudo-context used by GraphDB to store explicit statements in the default context.
+     */
+    static final URI GRAPHDB_EXPLICIT_CONTEXT = URI.create("http://www.ontotext.com/explicit");
+
     public GraphDBStatementLoader(Connector connector, Resource subject, AxiomBuilder axiomBuilder) {
         super(connector, subject, axiomBuilder);
     }
@@ -36,8 +42,20 @@ public class GraphDBStatementLoader extends StatementLoader {
         final Set<URI> contexts = new HashSet<>(super.resolveContexts(descriptor, a));
         if (includeInferred) {
             contexts.add(GRAPHDB_IMPLICIT_CONTEXT);
+            // Add explicit context for the cases when an explicit statement in default hides the inferred one.
+            // This is just to make the behavior consistent with contextMatches
+            contexts.add(GRAPHDB_EXPLICIT_CONTEXT);
         }
         return contexts;
+    }
+
+    @Override
+    protected boolean contextMatches(Set<URI> assertionCtx, Statement s, Assertion a) {
+        if (includeInferred && a.isInferred() && s.getContext() == null) {
+            // If the statement is inferred, its context is null in GraphDB (although when querying, one can ask the implicit context)
+            return true;
+        }
+        return super.contextMatches(assertionCtx, s, a);
     }
 
     @Override
@@ -45,6 +63,7 @@ public class GraphDBStatementLoader extends StatementLoader {
         if (includeInferred) {
             final Set<URI> contextsToUse = new HashSet<>(contexts);
             contextsToUse.add(GRAPHDB_IMPLICIT_CONTEXT);
+            contextsToUse.add(GRAPHDB_EXPLICIT_CONTEXT);
             return super.loadAxioms(contextsToUse);
         }
         return super.loadAxioms(contexts);

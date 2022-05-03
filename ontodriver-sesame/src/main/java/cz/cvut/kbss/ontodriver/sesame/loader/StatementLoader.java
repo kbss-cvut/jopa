@@ -103,8 +103,8 @@ public class StatementLoader {
                 continue;
             }
             final Assertion a = getAssertion(properties, s);
-            if (!contextMatches(resolveContexts(descriptor, a), s) &&
-                    !(loadAll && contextMatches(resolveContexts(descriptor, unspecified), s))) {
+            if (!contextMatches(descriptor.getAssertionContexts(a), s, a) &&
+                    !(loadAll && contextMatches(descriptor.getAssertionContexts(unspecified), s, a))) {
                 continue;
             }
             final Axiom<?> axiom = axiomBuilder.statementToAxiom(s);
@@ -122,7 +122,7 @@ public class StatementLoader {
         return Assertion.createUnspecifiedPropertyAssertion(includeInferred);
     }
 
-    private boolean contextMatches(Set<URI> assertionCtx, Statement s) {
+    protected boolean contextMatches(Set<URI> assertionCtx, Statement s, Assertion a) {
         if (assertionCtx.isEmpty()) {
             // If the assertion should be in default, we don't care about the context of the statement, because
             // the default is a union of all the contexts
