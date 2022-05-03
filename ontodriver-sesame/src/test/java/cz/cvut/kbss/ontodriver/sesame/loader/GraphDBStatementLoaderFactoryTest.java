@@ -1,9 +1,9 @@
 package cz.cvut.kbss.ontodriver.sesame.loader;
 
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.jupiter.api.Test;
@@ -12,9 +12,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GraphDBStatementLoaderFactoryTest {
@@ -34,9 +34,11 @@ class GraphDBStatementLoaderFactoryTest {
         final ValueFactory vf = SimpleValueFactory.getInstance();
         when(connection.getValueFactory()).thenReturn(vf);
         when(connector.unwrap(Repository.class)).thenReturn(repository);
-        when(connection.hasStatement(any(), any(IRI.class), any(), anyBoolean())).thenReturn(true);
+        final BooleanQuery query = mock(BooleanQuery.class);
+        when(connection.prepareBooleanQuery(anyString())).thenReturn(query);
+        when(query.evaluate()).thenReturn(true);
 
         assertTrue(GraphDBStatementLoaderFactory.isRepositoryGraphDB(connector));
-        verify(connection).hasStatement(isNull(), eq(vf.createIRI(GraphDBStatementLoaderFactory.GRAPHDB_INTERNAL_ID_PROPERTY)), isNull(), eq(false));
+        verify(query).setBinding(anyString(), eq(vf.createIRI(GraphDBStatementLoaderFactory.GRAPHDB_INTERNAL_ID_PROPERTY)));
     }
 }
