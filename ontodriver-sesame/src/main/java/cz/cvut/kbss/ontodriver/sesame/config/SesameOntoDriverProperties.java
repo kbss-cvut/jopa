@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.config;
 
@@ -19,10 +17,9 @@ public abstract class SesameOntoDriverProperties {
     /**
      * Specifies whether a in-memory storage should be used for local Sesame repositories.
      * <p>
-     * When set to true, any local Sesame repositories that are created by the
-     * driver are created as only MemoryStores without any persistent backend.
-     * Repositories accessed over the Internet or already existing locally are
-     * not affected by this setting.
+     * When set to true, any local Sesame repositories that are created by the driver are created as only MemoryStores
+     * without any persistent backend. Repositories accessed over the Internet or already existing locally are not
+     * affected by this setting.
      * <p>
      * {@code Boolean} value expected, default is false.
      */
@@ -53,36 +50,54 @@ public abstract class SesameOntoDriverProperties {
     /**
      * Path to repository configuration file.
      * <p>
-     * The configuration file is a Turtle file corresponding to the repository config file schema defined by RDF4J.
-     * See for example <a href="http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced">
+     * The configuration file is a Turtle file corresponding to the repository config file schema defined by RDF4J. See
+     * for example <a href="http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced">
      * http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced</a>
      * <p>
      * Sample configuration files are available in the RDF4J GitHub repo:
      * <a href="https://github.com/eclipse/rdf4j/tree/master/repository/api/src/main/resources/org/eclipse/rdf4j/repository/config">
      * https://github.com/eclipse/rdf4j/tree/master/repository/api/src/main/resources/org/eclipse/rdf4j/repository/config</a>
      * <p>
-     * The config file can be present on the classpath (if the value starts with the {@code classpath:} prefix) or can be loaded
-     * using the value as file path.
-     * The loaded configuration supersedes relevant properties passed to the driver, e.g., {@link #SESAME_USE_VOLATILE_STORAGE} or {@link #SESAME_USE_INFERENCE}.
+     * The config file can be present on the classpath (if the value starts with the {@code classpath:} prefix) or can
+     * be loaded using the value as file path. The loaded configuration supersedes relevant properties passed to the
+     * driver, e.g., {@link #SESAME_USE_VOLATILE_STORAGE} or {@link #SESAME_USE_INFERENCE}.
      * <p>
-     * Note that the config applies only to embedded repositories created by the driver, repositories on a Sesame/RDF4J server
-     * to which the driver just connects must preexist and the configuration does not apply to them. The physical URI specified
-     * in configuration must correspond to the URI of the repository in the config file, i.e., for memory store, the repository ID must
-     * be the same. For a native store, the physical URI must be in the form {@code /local-path/repositories/repository-id}, where {@code local-path} will
-     * be used for initialization of a local {@link org.eclipse.rdf4j.repository.manager.RepositoryManager} and {@code repository-id} must again
-     * correspond to the repository ID in the configuration file.
+     * Note that the config applies only to embedded repositories created by the driver, repositories on a Sesame/RDF4J
+     * server to which the driver just connects must preexist and the configuration does not apply to them. The physical
+     * URI specified in configuration must correspond to the URI of the repository in the config file, i.e., for memory
+     * store, the repository ID must be the same. For a native store, the physical URI must be in the form {@code
+     * /local-path/repositories/repository-id}, where {@code local-path} will be used for initialization of a local
+     * {@link org.eclipse.rdf4j.repository.manager.RepositoryManager} and {@code repository-id} must again correspond to
+     * the repository ID in the configuration file.
      */
     public static final String SESAME_REPOSITORY_CONFIG = "cz.cvut.kbss.ontodriver.sesame.repository-config";
 
     /**
      * Number of attempts to reconnect to the repository in case of connection issues.
-     *
+     * <p>
      * This setting applies only when using a remote rdf4j-server repository (including GraphDB). Applies also when
      * initial connection on startup is attempted.
-     *
+     * <p>
      * Note that once connection is successful, the counter of failed attempts is reset.
      */
     public static final String SESAME_RECONNECT_ATTEMPTS = "cz.cvut.kbss.ontodriver.sesame.reconnect-attempts";
+
+    /**
+     * Whether inferred assertion values are expected to exist in the default repository context.
+     * <p>
+     * Normally, RDF4J stores inferred statements in the context of the statement from which they were inferred.
+     * However, if one uses SPIN rules or custom inference rules
+     * <a href="https://rdf4j.org/documentation/programming/repository/#custom-inferencing">https://rdf4j.org/documentation/programming/repository/#custom-inferencing</a>,
+     * their results will be stored in the default context. Setting this parameter to {@code true} will cause the
+     * statement loading to use the default context for loading inferred assertions.
+     * <p>
+     * Note that GraphDB inference is handled automatically and does not need this parameter. However, setting it will
+     * override the default automatic inference context resolution for GraphDB.
+     * <p>
+     * Defaults to {@code false}, i.e., inferred statements are expected in the same context as their causes.
+     */
+    public static final String SESAME_INFERENCE_IN_DEFAULT_CONTEXT =
+            "cz.cvut.kbss.ontodriver.sesame.inference-in-default-context";
 
     private SesameOntoDriverProperties() {
         throw new AssertionError();

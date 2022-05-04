@@ -25,6 +25,7 @@ import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactoryImpl;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.sesame.loader.DefaultContextInferenceStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.sesame.loader.DefaultStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.sesame.loader.GraphDBStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.sesame.loader.StatementLoaderFactory;
@@ -37,7 +38,8 @@ class SesameDriver implements Closeable, ConnectionListener<SesameConnection> {
     private static final List<ConfigurationParameter> CONFIGS = Arrays
             .asList(DriverConfigParam.AUTO_COMMIT, SesameConfigParam.USE_INFERENCE,
                     SesameConfigParam.USE_VOLATILE_STORAGE, SesameConfigParam.LOAD_ALL_THRESHOLD,
-                    SesameConfigParam.RECONNECT_ATTEMPTS, SesameConfigParam.REPOSITORY_CONFIG);
+                    SesameConfigParam.RECONNECT_ATTEMPTS, SesameConfigParam.REPOSITORY_CONFIG,
+                    SesameConfigParam.INFERENCE_IN_DEFAULT_CONTEXT);
 
     private final DriverConfiguration configuration;
     private boolean open;
@@ -65,6 +67,9 @@ class SesameDriver implements Closeable, ConnectionListener<SesameConnection> {
 
     private StatementLoaderFactory initStatementLoaderFactory(
             ConnectorFactory connectorFactory) throws SesameDriverException {
+        if (configuration.is(SesameConfigParam.INFERENCE_IN_DEFAULT_CONTEXT)) {
+            return new DefaultContextInferenceStatementLoaderFactory();
+        }
         final Connector connector = connectorFactory.createStorageConnector();
         if (GraphDBStatementLoaderFactory.isRepositoryGraphDB(connector)) {
             return new GraphDBStatementLoaderFactory();
