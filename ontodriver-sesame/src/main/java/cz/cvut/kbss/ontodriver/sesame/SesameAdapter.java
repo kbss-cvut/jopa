@@ -1,22 +1,19 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -50,16 +47,16 @@ class SesameAdapter implements Closeable, Wrapper {
     private final Connector connector;
     private final ValueFactory valueFactory;
     private final RuntimeConfiguration config;
-    private boolean open;
     private final Transaction transaction;
 
-    public SesameAdapter(Connector connector, DriverConfiguration configuration) {
+    private boolean open = true;
+
+    public SesameAdapter(Connector connector, RuntimeConfiguration config) {
         assert connector != null;
 
         this.connector = connector;
         this.valueFactory = connector.getValueFactory();
-        this.config = new RuntimeConfiguration(configuration);
-        this.open = true;
+        this.config = config;
         this.transaction = new Transaction();
     }
 
@@ -176,18 +173,18 @@ class SesameAdapter implements Closeable, Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        return new AxiomLoader(connector, valueFactory, config).loadAxioms(axiomDescriptor);
+        return new AxiomLoader(connector, config).loadAxioms(axiomDescriptor);
     }
 
     void persist(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        new AxiomSaver(connector, valueFactory).persistAxioms(axiomDescriptor);
+        new AxiomSaver(connector).persistAxioms(axiomDescriptor);
     }
 
     void update(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
         new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
-        new AxiomSaver(connector, valueFactory).persistAxioms(axiomDescriptor);
+        new AxiomSaver(connector).persistAxioms(axiomDescriptor);
     }
 
     void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {

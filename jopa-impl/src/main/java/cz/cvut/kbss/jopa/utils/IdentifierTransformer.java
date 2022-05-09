@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static cz.cvut.kbss.jopa.utils.Constants.SUPPORTED_IDENTIFIER_TYPES;
+import static cz.cvut.kbss.jopa.model.PersistenceProperties.IDENTIFIER_TYPES;
 
 public class IdentifierTransformer {
 
@@ -33,7 +33,7 @@ public class IdentifierTransformer {
     }
 
     private static Map<Class<?>, Function<Object, ?>> initTransformers() {
-        final Map<Class<?>, Function<Object, ?>> m = new HashMap<>(SUPPORTED_IDENTIFIER_TYPES.size());
+        final Map<Class<?>, Function<Object, ?>> m = new HashMap<>(IDENTIFIER_TYPES.size());
         m.put(URI.class, val -> {
             Objects.requireNonNull(val);
             if (val instanceof URI) {
@@ -87,6 +87,6 @@ public class IdentifierTransformer {
      * @return {@code true} if type is supported identifier type, {@code false} otherwise
      */
     public static boolean isValidIdentifierType(Class<?> type) {
-        return type != null && SUPPORTED_IDENTIFIER_TYPES.contains(type);
+        return type != null && IDENTIFIER_TYPES.contains(type);
     }
 }

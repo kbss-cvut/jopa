@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-import static cz.cvut.kbss.jopa.utils.Constants.SUPPORTED_IDENTIFIER_TYPES;
+import static cz.cvut.kbss.jopa.model.PersistenceProperties.IDENTIFIER_TYPES;
 
 /**
  * Verifies that a field's mapping metadata and declaration are valid.
@@ -47,7 +47,7 @@ class FieldMappingValidator {
         if (!isValidIdentifierType(parametersResolver.getKeyType())) {
             throw new InvalidFieldMappingException(
                     "@Properties key type is not a valid identifier type. Expected one of " +
-                            SUPPORTED_IDENTIFIER_TYPES);
+                            IDENTIFIER_TYPES);
         }
         validatePropertiesValueType(parametersResolver.getValueType());
     }
@@ -77,7 +77,7 @@ class FieldMappingValidator {
         final ParameterizedType typeSpec = (ParameterizedType) field.getGenericType();
         if (!isValidIdentifierType(typeSpec.getActualTypeArguments()[0])) {
             throw new InvalidFieldMappingException(
-                    "@Types field value is not a valid identifier type. Expected one of " + SUPPORTED_IDENTIFIER_TYPES);
+                    "@Types field value is not a valid identifier type. Expected one of " + IDENTIFIER_TYPES);
         }
     }
 

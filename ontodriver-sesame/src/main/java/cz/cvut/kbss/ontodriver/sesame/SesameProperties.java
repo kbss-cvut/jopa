@@ -23,7 +23,6 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.sesame.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.net.URI;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import java.util.Set;
 class SesameProperties implements Properties {
 
     private final Connector connector;
-    private final ValueFactory valueFactory;
     private final RuntimeConfiguration config;
 
     private final Procedure beforeCallback;
@@ -41,7 +39,6 @@ class SesameProperties implements Properties {
 
     public SesameProperties(SesameAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
         this.connector = adapter.getConnector();
-        this.valueFactory = adapter.getValueFactory();
         this.config = adapter.getConfig();
         this.beforeCallback = beforeCallback;
         this.afterChangeCallback = afterChangeCallback;
@@ -51,21 +48,21 @@ class SesameProperties implements Properties {
     public Collection<Axiom<?>> getProperties(NamedResource individual, URI context, boolean includeInferred)
             throws SesameDriverException {
         beforeCallback.execute();
-        return new AxiomLoader(connector, valueFactory, config).loadAxioms(individual, includeInferred, context);
+        return new AxiomLoader(connector, config).loadAxioms(individual, includeInferred, context);
     }
 
     @Override
     public void addProperties(NamedResource individual, URI context, Map<Assertion, Set<Value<?>>> properties)
             throws OntoDriverException {
         beforeCallback.execute();
-        new AxiomSaver(connector, valueFactory).persistAxioms(individual, properties, context);
+        new AxiomSaver(connector).persistAxioms(individual, properties, context);
         afterChangeCallback.execute();
     }
 
     @Override
     public void removeProperties(NamedResource individual, URI context, Map<Assertion, Set<Value<?>>> properties)
             throws OntoDriverException {
-        new EpistemicAxiomRemover(connector, valueFactory).remove(individual, properties, context);
+        new EpistemicAxiomRemover(connector, connector.getValueFactory()).remove(individual, properties, context);
         afterChangeCallback.execute();
     }
 }
