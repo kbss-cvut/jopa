@@ -19,18 +19,21 @@ import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.integration.sesame.model.Concept;
 import cz.cvut.kbss.jopa.test.runner.RetrieveWithInferenceRunner;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
-import org.junit.jupiter.api.Disabled;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
 
@@ -49,8 +52,6 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         super.retrievedEntityWithInferredTypesContainsInferredData();
     }
 
-    // TODO
-    @Disabled
     @Test
     void retrieveSupportsLoadingInferredStatementsFromDefaultContext() {
         final Map<String, String> inferenceProps = new HashMap<>();
@@ -59,6 +60,7 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         inferenceProps.put(SesameOntoDriverProperties.SESAME_INFERENCE_IN_DEFAULT_CONTEXT, Boolean.TRUE.toString());
         this.em =
                 getEntityManager("RetrieveSupportsLoadingInferredStatementsFromDefaultContext", false, inferenceProps);
+        loadSpinRules();
         final URI context = Generators.generateUri();
         final EntityDescriptor descriptor = new EntityDescriptor(context);
 
@@ -74,5 +76,17 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         assertNotNull(resultParent);
         assertNotNull(resultParent.getNarrower());
         assertTrue(resultParent.getNarrower().stream().anyMatch(c -> c.getUri().equals(child.getUri())));
+    }
+
+    private void loadSpinRules() {
+        transactional(() -> {
+            final Repository repo = em.unwrap(Repository.class);
+            try (final RepositoryConnection conn = repo.getConnection()) {
+                final InputStream rulesIn = this.getClass().getClassLoader().getResourceAsStream("test-spin-rules.ttl");
+                conn.add(rulesIn, RDFFormat.TURTLE);
+            } catch (IOException e) {
+                fail(e);
+            }
+        });
     }
 }
