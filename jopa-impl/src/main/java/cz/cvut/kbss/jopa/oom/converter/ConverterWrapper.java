@@ -14,9 +14,6 @@ package cz.cvut.kbss.jopa.oom.converter;
 
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
 /**
  * Internal wrapper of a {@link AttributeConverter} providing addition methods.
  *

@@ -68,7 +68,7 @@ public class AxiomBuilder {
         return assertion;
     }
 
-    private Optional<Value<?>> createValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
+    private static Optional<Value<?>> createValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
         final Assertion.AssertionType assertionType = assertion.getType();
         switch (assertionType) {
             case DATA_PROPERTY:
