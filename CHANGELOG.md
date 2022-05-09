@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.18.6 - 2022-05-09
+- Automatically resolve inferred statements contexts for GraphDB (Enhancement #106).
+- Allow configuring Sesame driver to load inferred statements from the default context (See wiki for details).
+- Move supported identifier types constants from jopa-impl to jopa-api module.
+
 ## 0.18.5 - 2022-03-29
 - Add support for special floating point numeric values NaN, -INF, INF (Bug #108).
 - Dependency updates: RDF4J 3.7.6, SLF4J 1.7.36, Logback 1.2.11.
