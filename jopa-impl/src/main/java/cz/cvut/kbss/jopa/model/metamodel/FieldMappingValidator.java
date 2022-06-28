@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -97,7 +95,8 @@ class FieldMappingValidator {
 
     private static void validateFieldDoesNotMapRdfType(Field field, PropertyAttributes pa) {
         if (RDF.TYPE.equals(pa.getIri().toString())) {
-            throw new InvalidFieldMappingException(field + " - cannot use rdf:type for property mapping. Use a Set field annotated with " + Types.class.getSimpleName());
+            throw new InvalidFieldMappingException(
+                    field + " - cannot use rdf:type for property mapping. Use a Set field annotated with " + Types.class.getSimpleName());
         }
     }
 
@@ -111,13 +110,17 @@ class FieldMappingValidator {
 
     private static void validateLexicalFormField(Field field, PropertyAttributes pa) {
         if (pa.isLexicalForm() && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
-            throw new InvalidFieldMappingException(field + " - lexicalForm mapping can be used only on fields of type String.");
+            throw new InvalidFieldMappingException(
+                    field + " - lexicalForm mapping can be used only on fields of type String.");
         }
     }
 
     private static void validateSimpleLiteralField(Field field, PropertyAttributes pa) {
-        if (pa.isSimpleLiteral() && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
-            throw new InvalidFieldMappingException(field + " - simpleLiteral mapping can be used only on fields of type String.");
+        final Class<?> fieldType = getLiteralFieldType(field);
+        if (pa.isSimpleLiteral() && (!String.class.isAssignableFrom(fieldType) && !Enum.class.isAssignableFrom(
+                fieldType))) {
+            throw new InvalidFieldMappingException(
+                    field + " - simpleLiteral mapping can only be used on fields of type String or Enum.");
         }
     }
 
