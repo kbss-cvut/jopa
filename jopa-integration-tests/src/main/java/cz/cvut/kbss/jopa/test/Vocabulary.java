@@ -54,6 +54,7 @@ public class Vocabulary {
     public static final String p_m_floatAttribute = ATTRIBUTE_IRI_BASE + "m-floatAttribute";
     public static final String p_m_dateAttribute = ATTRIBUTE_IRI_BASE + "m-dateAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_IRI_BASE + "m-enumAttribute";
+    public static final String p_m_enumSimpleLiteralAttribute = ATTRIBUTE_IRI_BASE + "m-enumSimpleLiteralAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_IRI_BASE + "m-pluralIntAttribute";
     public static final String p_m_lexicalForm = ATTRIBUTE_IRI_BASE + "m-lexicalForm";
     public static final String p_m_simpleLiteral = ATTRIBUTE_IRI_BASE + "m-simpleLiteral";

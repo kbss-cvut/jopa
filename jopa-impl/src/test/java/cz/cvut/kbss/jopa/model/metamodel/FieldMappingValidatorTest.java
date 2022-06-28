@@ -44,7 +44,7 @@ class FieldMappingValidatorTest {
     }
 
     private static Field getField(String name) throws Exception {
-        return InvalidClass.class.getDeclaredField(name);
+        return TestClass.class.getDeclaredField(name);
     }
 
     @Test
@@ -155,6 +155,14 @@ class FieldMappingValidatorTest {
     }
 
     @Test
+    void simpleLiteralMappingIsValidOnEnum() throws Exception {
+        final PropertyAttributes pa = new DataPropertyAttributes(validator);
+        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
+        pa.simpleLiteral = true;
+        validator.validateLiteralFieldMapping(getField("validEnumSimpleLiteral"), pa);
+    }
+
+    @Test
     void lexicalFormDataPropertyIsValidOnListStringFields() throws Exception {
         final PropertyAttributes pa = new DataPropertyAttributes(validator);
         pa.iri = IRI.create(Vocabulary.p_m_lexicalForm);
@@ -170,7 +178,7 @@ class FieldMappingValidatorTest {
     }
 
     @SuppressWarnings("unused")
-    private static final class InvalidClass {
+    private static final class TestClass {
 
         // Properties tests
 
@@ -225,5 +233,8 @@ class FieldMappingValidatorTest {
 
         @OWLDataProperty(iri = RDF.TYPE)
         private String type;
+
+        @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
+        private OWLClassM.Severity validEnumSimpleLiteral;
     }
 }

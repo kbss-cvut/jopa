@@ -238,7 +238,7 @@ public abstract class BaseRunner {
     /**
      * Persists the specified instance of {@link OWLClassC} together will all items in the lists (if specified).
      *
-     * @param instance Instace to persist
+     * @param instance Instance to persist
      */
     void persistCWithLists(OWLClassC instance) {
         transactional(() -> {
