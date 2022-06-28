@@ -526,7 +526,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persistTestData(Arrays.asList(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
-                         entityM.getEnumSimpleLiteral(), (String) null)
+                         entityM.getEnumSimpleLiteral().name(), (String) null)
         ), em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
