@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -20,8 +18,8 @@ import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
-import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -36,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class DataTypesRunner extends BaseRunner {
 
-    private static final String VALUE = "P1Y";
+    private static final String VALUE = "https://example.com/query{?firstName,lastName}";
 
     public DataTypesRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
@@ -48,7 +46,8 @@ public abstract class DataTypesRunner extends BaseRunner {
         entityM.setExplicitDatatype(VALUE);
         transactional(() -> em.persist(entityM));
 
-        verifyValueDatatype(URI.create(entityM.getKey()), Vocabulary.p_m_explicitDatatype, XSD.DURATION);
+        verifyValueDatatype(URI.create(entityM.getKey()), Vocabulary.p_m_explicitDatatype,
+                            TestEnvironment.EXPLICIT_DATATYPE);
     }
 
     @Test
@@ -57,7 +56,7 @@ public abstract class DataTypesRunner extends BaseRunner {
         persistTestData(Arrays.asList(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_explicitDatatype),
-                        new Literal(VALUE, XSD.DURATION))
+                         new Literal(VALUE, TestEnvironment.EXPLICIT_DATATYPE))
         ), em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
@@ -70,7 +69,7 @@ public abstract class DataTypesRunner extends BaseRunner {
         entityM.setExplicitDatatype(VALUE);
         persist(entityM);
 
-        final String newValue = "PT55S";
+        final String newValue = "https://example.com/query{?givenName,familyName}";
         transactional(() -> {
             final OWLClassM toUpdate = findRequired(OWLClassM.class, entityM.getKey());
             toUpdate.setExplicitDatatype(newValue);

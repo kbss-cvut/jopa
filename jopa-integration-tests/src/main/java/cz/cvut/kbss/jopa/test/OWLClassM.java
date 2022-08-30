@@ -16,7 +16,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.vocabulary.XSD;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.util.*;
@@ -66,7 +66,7 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_StringCollection)
     private Collection<String> stringCollection;
 
-    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.DURATION)
+    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = TestEnvironment.EXPLICIT_DATATYPE)
     private String explicitDatatype;
 
     @OWLDataProperty(iri = Vocabulary.p_m_langString)

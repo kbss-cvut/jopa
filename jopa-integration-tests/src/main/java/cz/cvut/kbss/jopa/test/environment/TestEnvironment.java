@@ -29,6 +29,8 @@ public class TestEnvironment {
     public static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
     public static final String IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/";
 
+    public static final String EXPLICIT_DATATYPE = "http://www.w3.org/ns/csvw#uriTemplate";
+
     /**
      * True if the ontology file should be deleted before access to it is initialized. This effectively means that the
      * test will create the ontology from scratch. Default value is true.
@@ -39,50 +41,10 @@ public class TestEnvironment {
         throw new AssertionError();
     }
 
-    /**
-     * Creates persistence connector, with enabled second level cache, for OWLAPI accessed ontology stored in a file.
-     *
-     * @param name Base name used for ontology URI and physical storage path/URI
-     * @return Persistence context
-     */
-    public static EntityManager getPersistenceConnector(String name) {
-        return getOwlapiPersistenceConnector(name, true);
-    }
-
-    /**
-     * Creates persistence connector for OWLAPI accessed ontology stored in a file.
-     *
-     * @param name  Base name used for ontology URI and physical storage path/URI
-     * @param cache Whether second level cache should be enabled
-     * @return Persistence context
-     */
-    public static EntityManager getPersistenceConnector(String name, boolean cache) {
-        return getOwlapiPersistenceConnector(name, cache);
-    }
-
-    private static EntityManager getOwlapiPersistenceConnector(String name, boolean cache) {
-        return getPersistenceConnector(name,
-                Collections.singletonList(new OwlapiStorageConfig()), cache).get(0);
-    }
-
     public static EntityManager getPersistenceConnector(String name, StorageConfig storage,
                                                         boolean cache, Map<String, String> properties) {
         return getPersistenceConnector(name, Collections.singletonList(storage), cache, properties)
                 .get(0);
-    }
-
-    /**
-     * Creates persistence connector for the specified list of storages.
-     *
-     * @param baseName Base name used for ontology URI and physical storage path/URI
-     * @param storages List of storage configurations
-     * @param cache    Whether second level cache should be enabled
-     * @return Persistence context
-     */
-    public static List<EntityManager> getPersistenceConnector(String baseName,
-                                                              List<StorageConfig> storages, boolean cache) {
-        return getPersistenceConnector(baseName, storages, cache,
-                Collections.emptyMap());
     }
 
     /**

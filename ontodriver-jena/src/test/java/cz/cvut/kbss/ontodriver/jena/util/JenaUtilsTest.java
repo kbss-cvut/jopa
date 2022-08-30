@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.jena.util;
 
@@ -69,7 +67,7 @@ public class JenaUtilsTest {
     @Test
     void valueToRdfNodeCreatesRdfLiteralFromOntoDriverLiteralWithLexicalFormAndDatatype() {
         final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = new cz.cvut.kbss.ontodriver.model.Literal("P1Y",
-                XSD.duration.getURI());
+                                                                                                            XSD.duration.getURI());
         final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(ontoLiteral));
         assertTrue(result.isLiteral());
         assertEquals(ontoLiteral.getLexicalForm(), result.asLiteral().getLexicalForm());
@@ -93,7 +91,8 @@ public class JenaUtilsTest {
     @Test
     void literalToValueTransformsCustomDatatypeLiteralToOntoDriverLiteral() {
         final Literal literal = ResourceFactory.createTypedLiteral("P1Y",
-                TypeMapper.getInstance().getTypeByName(XSD.gMonth.getURI()));
+                                                                   TypeMapper.getInstance()
+                                                                             .getTypeByName(XSD.gMonth.getURI()));
         final Object result = JenaUtils.literalToValue(literal);
         assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
         final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
@@ -108,7 +107,7 @@ public class JenaUtilsTest {
         final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(date));
         assertTrue(result.isLiteral());
         assertEquals(instant.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                result.asLiteral().getLexicalForm());
+                     result.asLiteral().getLexicalForm());
         assertEquals(XSD.dateTime.getURI(), result.asLiteral().getDatatypeURI());
     }
 
@@ -118,7 +117,7 @@ public class JenaUtilsTest {
         final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(value));
         assertTrue(result.isLiteral());
         assertEquals(value.atOffset(SYSTEM_OFFSET).format(DateTimeFormatter.ISO_OFFSET_TIME),
-                result.asLiteral().getLexicalForm());
+                     result.asLiteral().getLexicalForm());
         assertEquals(XSD.time.getURI(), result.asLiteral().getDatatypeURI());
     }
 
@@ -156,5 +155,19 @@ public class JenaUtilsTest {
         assertTrue(result.isLiteral());
         assertEquals(value.toString(), result.asLiteral().getLexicalForm());
         assertEquals(XSD.decimal.getURI(), result.asLiteral().getDatatypeURI());
+    }
+
+    /**
+     * Bug #113
+     */
+    @Test
+    void valueToRdfNodeSupportsLiteralsWithCustomExplicitDatatype() {
+        // Ensures that non-built-in datatypes are supported as well
+        final cz.cvut.kbss.ontodriver.model.Literal jopaLiteral =
+                cz.cvut.kbss.ontodriver.model.Literal.from("test", "http://www.w3.org/ns/csvw#uriTemplate");
+        final RDFNode result = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(jopaLiteral));
+        assertTrue(result.isLiteral());
+        assertEquals(jopaLiteral.getLexicalForm(), result.asLiteral().getLexicalForm());
+        assertEquals(jopaLiteral.getDatatype(), result.asLiteral().getDatatypeURI());
     }
 }
