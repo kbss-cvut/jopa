@@ -110,7 +110,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                      cloneObject(cloneOwner, field, e.getKey(), configuration);
         Object value = CloneBuilderImpl.isImmutable(e.getValue()) ? e.getValue() :
                        cloneObject(cloneOwner, field, e.getValue(), configuration);
-        if (value instanceof Collection || value instanceof Map) {
+        if ((value instanceof Collection || value instanceof Map) && !(value instanceof IndirectCollection)) {
             value = uow.createIndirectCollection(value, cloneOwner, field);
         }
         return Collections.singletonMap(key, value);
