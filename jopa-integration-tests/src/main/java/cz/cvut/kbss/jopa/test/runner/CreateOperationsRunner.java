@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -254,7 +252,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyTwo", Collections
                 .singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeEntity"));
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyThree",
-                Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+                  Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
         final Map<String, Set<String>> expected = new HashMap<>(4);
         expected.putAll(props);
         entityB.setProperties(props);
@@ -496,13 +494,13 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class)
-                .getDeclaredAttribute("stringAttribute"), "cs");
+                                          .getDeclaredAttribute("stringAttribute"), "cs");
         em.persist(entityA, descriptor);
         em.getTransaction().commit();
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
-                        "cs")), em);
+                         "cs")), em);
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 
@@ -515,7 +513,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
-                        "en")), em);
+                         "en")), em);
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 
@@ -525,13 +523,13 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().begin();
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassA.class)
-                .getDeclaredAttribute("stringAttribute"), null);
+                                          .getDeclaredAttribute("stringAttribute"), null);
         em.persist(entityA, descriptor);
         em.getTransaction().commit();
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
-                        (String) null)), em);
+                         (String) null)), em);
         final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri());
         // The string attribute should be loaded even though PU language is set to en, because the persisted value has no lang tag
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
@@ -545,7 +543,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage("de");
         descriptor.setAttributeLanguage(em.getMetamodel().entity(OWLClassN.class)
-                .getDeclaredAttribute("stringAttribute"), "cs");
+                                          .getDeclaredAttribute("stringAttribute"), "cs");
 
         em.getTransaction().begin();
         em.persist(entityN, descriptor);
@@ -553,9 +551,9 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         final Set<Quad> statements = new HashSet<>(4);
         statements.add(new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
-                entityN.getAnnotationProperty(), "de"));
+                                entityN.getAnnotationProperty(), "de"));
         statements.add(new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE),
-                entityN.getStringAttribute(), "cs"));
+                                entityN.getStringAttribute(), "cs"));
         verifyStatementsPresent(statements, em);
 
         final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
@@ -621,7 +619,9 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         persist(entityM);
 
         verifyStatementsPresent(entityM.getStringCollection().stream().map(s -> new Quad(URI.create(entityM.getKey()),
-                URI.create(Vocabulary.p_m_StringCollection), s, "en")).collect(
+                                                                                         URI.create(
+                                                                                                 Vocabulary.p_m_StringCollection),
+                                                                                         s, "en")).collect(
                 Collectors.toSet()), em);
     }
 
@@ -635,7 +635,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassWithQueryAttr resultEntity = findRequired(OWLClassWithQueryAttr.class, entityWithQueryAttr.getUri());
+        final OWLClassWithQueryAttr resultEntity =
+                findRequired(OWLClassWithQueryAttr.class, entityWithQueryAttr.getUri());
         assertEquals(entityWithQueryAttr.getUri(), resultEntity.getUri());
         assertEquals(entityWithQueryAttr.getStringAttribute(), resultEntity.getStringAttribute());
         assertEquals(entityWithQueryAttr.getStringAttribute(), resultEntity.getStringQueryAttribute());
@@ -653,7 +654,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertTrue(em.contains(entityWithQueryAttr2));
         em.getTransaction().commit();
 
-        final OWLClassWithQueryAttr2 resultEntity = findRequired(OWLClassWithQueryAttr2.class, entityWithQueryAttr2.getUri());
+        final OWLClassWithQueryAttr2 resultEntity =
+                findRequired(OWLClassWithQueryAttr2.class, entityWithQueryAttr2.getUri());
         assertEquals(entityWithQueryAttr2.getUri(), resultEntity.getUri());
         assertNotNull(resultEntity.getEntityAttribute());
         assertNotNull(resultEntity.getEntityQueryAttribute());
@@ -678,7 +680,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassWithQueryAttr3 resultEntity = findRequired(OWLClassWithQueryAttr3.class, entityWithQueryAttr3.getUri());
+        final OWLClassWithQueryAttr3 resultEntity =
+                findRequired(OWLClassWithQueryAttr3.class, entityWithQueryAttr3.getUri());
         assertEquals(entityWithQueryAttr3.getUri(), resultEntity.getUri());
         assertEquals(entityWithQueryAttr3.getPluralAttribute(), resultEntity.getPluralAttribute());
         assertEquals(entityWithQueryAttr3.getPluralAttribute(), resultEntity.getPluralQueryAttribute());
@@ -697,7 +700,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassWithQueryAttr5 resultEntity = findRequired(OWLClassWithQueryAttr5.class, entityWithQueryAttr5.getUri());
+        final OWLClassWithQueryAttr5 resultEntity =
+                findRequired(OWLClassWithQueryAttr5.class, entityWithQueryAttr5.getUri());
         assertEquals(entityWithQueryAttr5.getUri(), resultEntity.getUri());
         assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralAttribute());
         assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralQueryAttribute());
@@ -719,7 +723,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassWithQueryAttr5 resultEntity = findRequired(OWLClassWithQueryAttr5.class, entityWithQueryAttr5.getUri());
+        final OWLClassWithQueryAttr5 resultEntity =
+                findRequired(OWLClassWithQueryAttr5.class, entityWithQueryAttr5.getUri());
         assertEquals(entityWithQueryAttr5.getUri(), resultEntity.getUri());
         assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralAttribute());
         assertEquals(entityWithQueryAttr5.getPluralAttribute(), resultEntity.getPluralQueryAttribute());
@@ -735,9 +740,21 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassWithQueryAttr4 resultEntity = findRequired(OWLClassWithQueryAttr4.class, entityWithQueryAttr4.getUri());
+        final OWLClassWithQueryAttr4 resultEntity =
+                findRequired(OWLClassWithQueryAttr4.class, entityWithQueryAttr4.getUri());
         assertEquals(entityWithQueryAttr4.getUri(), resultEntity.getUri());
         assertEquals(entityWithQueryAttr4.getStringAttribute(), resultEntity.getStringAttribute());
         assertEquals(true, resultEntity.getAskQueryAttribute());
+    }
+
+    @Test
+    void persistSupportsMappingEnumsToSimpleLiterals() throws Exception {
+        this.em = getEntityManager("persistSupportsMappingEnumsToSimpleLiterals", false);
+
+        persist(entityM);
+
+        verifyStatementsPresent(Collections.singleton(
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
+                         entityM.getEnumSimpleLiteral().name(), (String) null)), em);
     }
 }

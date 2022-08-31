@@ -205,7 +205,7 @@ public abstract class BaseRunner {
      * @param identifier Individual identifier
      */
     protected void verifyIndividualWasRemoved(URI identifier) {
-        // TODO There is a bug in OWL2Query - the query returns true, because it finds the top object and data property assertion for an individual
+        // There is a bug in OWL2Query - the query returns true, because it finds the top object and data property assertion for an individual
         // which doesn't exist anymore (but is a part of the query)
         final boolean remains = em.createNativeQuery("ASK WHERE { ?instance ?y ?z . }", Boolean.class)
                                   .setParameter("instance", identifier).getSingleResult();
@@ -238,7 +238,7 @@ public abstract class BaseRunner {
     /**
      * Persists the specified instance of {@link OWLClassC} together will all items in the lists (if specified).
      *
-     * @param instance Instace to persist
+     * @param instance Instance to persist
      */
     void persistCWithLists(OWLClassC instance) {
         transactional(() -> {

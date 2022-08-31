@@ -17,9 +17,11 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
@@ -39,8 +42,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CacheTest extends IntegrationTestBase {
@@ -126,5 +128,22 @@ class CacheTest extends IntegrationTestBase {
         em.persist(newA);
         em.getTransaction().commit();
         assertFalse(emf.getCache().contains(OWLClassF.class, entityF.getUri(), descriptor));
+    }
+
+    @Test
+    void mergeIntoCacheResetsIndirectCollectionsToWrappedInstances() throws Exception {
+        final Properties properties = mock(Properties.class);
+        when(connectionMock.properties()).thenReturn(properties);
+        final OWLClassB b = new OWLClassB();
+        b.setUri(Generators.generateUri());
+        b.setProperties(Collections.singletonMap(Vocabulary.P_Q_STRING_ATTRIBUTE, Collections.singleton("Test")));
+        em.getTransaction().begin();
+        em.persist(b);
+        em.getTransaction().commit();
+        Mockito.reset(connectionMock);
+
+        final OWLClassB result = em.find(OWLClassB.class, b.getUri());
+        assertEquals(b.getProperties(), result.getProperties());
+        verify(connectionMock, never()).update(any());
     }
 }

@@ -495,7 +495,7 @@ public class JavaTransformer {
     /**
      * Add common properties such as id and type
      */
-    private void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls,
+    private static void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls,
                                       final PropertiesType propertiesType) {
         // @Id(generated = true) protected String id;
         final JClass ftId = cm.ref(String.class);
@@ -520,7 +520,7 @@ public class JavaTransformer {
         fvTypes.annotate(Types.class);
 
         // @Properties public final Map<String,Set<String>> properties;
-        final Class propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
+        final Class<?> propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
         final JClass ftProperties = cm.ref(Map.class)
                 .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
         final JFieldVar fvProperties = addField("properties", cls, ftProperties);

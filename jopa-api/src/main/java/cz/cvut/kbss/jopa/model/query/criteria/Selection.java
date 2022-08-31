@@ -31,5 +31,5 @@ public interface Selection<X> {
      * @return list of selection items
      * @throws IllegalStateException if selection is not a compound selection
      */
-    List<Selection<?>> getCompoundedSelectionItems() throws IllegalStateException;
+    List<Selection<?>> getCompoundedSelectionItems();
 }

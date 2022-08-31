@@ -16,7 +16,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.vocabulary.XSD;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.util.*;
@@ -66,11 +66,14 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_StringCollection)
     private Collection<String> stringCollection;
 
-    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.DURATION)
+    @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = TestEnvironment.EXPLICIT_DATATYPE)
     private String explicitDatatype;
 
     @OWLDataProperty(iri = Vocabulary.p_m_langString)
     private LangString langString;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_enumSimpleLiteralAttribute, simpleLiteral = true)
+    private Severity enumSimpleLiteral;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -188,6 +191,14 @@ public class OWLClassM {
         this.langString = langString;
     }
 
+    public Severity getEnumSimpleLiteral() {
+        return enumSimpleLiteral;
+    }
+
+    public void setEnumSimpleLiteral(Severity enumSimpleLiteral) {
+        this.enumSimpleLiteral = enumSimpleLiteral;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -204,6 +215,7 @@ public class OWLClassM {
                 ", stringCollection=" + stringCollection +
                 ", explicitDatatype=" + explicitDatatype +
                 ", langString=" + langString +
+                ", enumSimpleLiteral=" + enumSimpleLiteral +
                 '}';
     }
 
@@ -220,5 +232,6 @@ public class OWLClassM {
         this.enumAttribute = Severity.MEDIUM;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
         this.stringCollection = new HashSet<>(Arrays.asList("test-one", "test-two", "test-three"));
+        this.enumSimpleLiteral = Severity.HIGH;
     }
 }

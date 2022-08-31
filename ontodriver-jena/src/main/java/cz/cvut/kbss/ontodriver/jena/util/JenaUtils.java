@@ -20,6 +20,8 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
+import org.apache.jena.datatypes.BaseDatatype;
+import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.rdf.model.Literal;
@@ -56,7 +58,8 @@ public class JenaUtils {
                              .orElseGet(() -> ResourceFactory.createTypedLiteral(langString.getValue()));
         } else if (val instanceof String) {
             return assertion.hasLanguage() ? ResourceFactory.createLangLiteral((String) val,
-                    assertion.getLanguage()) : ResourceFactory.createTypedLiteral(val);
+                                                                               assertion.getLanguage()) :
+                   ResourceFactory.createTypedLiteral(val);
         } else if (val instanceof cz.cvut.kbss.ontodriver.model.Literal) {
             final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = (cz.cvut.kbss.ontodriver.model.Literal) val;
             return createLiteral(ontoLiteral);
@@ -75,12 +78,18 @@ public class JenaUtils {
     }
 
     private static Literal createLiteral(cz.cvut.kbss.ontodriver.model.Literal ontoLiteral) {
-        return ResourceFactory.createTypedLiteral(ontoLiteral.getLexicalForm(),
-                TypeMapper.getInstance().getTypeByName(ontoLiteral.getDatatype()));
+        final TypeMapper typeMapper = TypeMapper.getInstance();
+        RDFDatatype datatype = typeMapper.getTypeByName(ontoLiteral.getDatatype());
+        if (datatype == null) {
+            // If the datatype does not exist, register it as a base datatype without any special behavior
+            datatype = new BaseDatatype(ontoLiteral.getDatatype());
+            typeMapper.registerDatatype(datatype);
+        }
+        return ResourceFactory.createTypedLiteral(ontoLiteral.getLexicalForm(), datatype);
     }
 
     public static Object literalToValue(Literal literal) {
-        if (literal.getDatatype().equals(RDFLangString.rdfLangString)) {
+        if (RDFLangString.rdfLangString.equals(literal.getDatatype())) {
             return new LangString(literal.getString(), literal.getLanguage());
         }
         final cz.cvut.kbss.ontodriver.model.Literal lit = cz.cvut.kbss.ontodriver.model.Literal.from(

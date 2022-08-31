@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -119,12 +117,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return cloneBuilder;
     }
 
-    /**
-     * This method returns null, since we don't support nested Units of Work yet.
-     */
     @Override
     public UnitOfWork acquireUnitOfWork() {
-        return null;
+        throw new UnsupportedOperationException("Nested UoWs are not supported.");
     }
 
     @Override
@@ -657,7 +652,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Aspects.aspectOf(BeanListenerAspect.class).register(entity, this);
     }
 
-    private void deregisterEntityFromPersistenceContext(Object entity) {
+    private static void deregisterEntityFromPersistenceContext(Object entity) {
         Aspects.aspectOf(BeanListenerAspect.class).deregister(entity);
     }
 

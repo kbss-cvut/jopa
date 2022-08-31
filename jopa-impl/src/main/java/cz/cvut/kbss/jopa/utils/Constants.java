@@ -16,13 +16,6 @@ package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 
-import java.net.URI;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Declares some constants and default values used in JOPA.
  */

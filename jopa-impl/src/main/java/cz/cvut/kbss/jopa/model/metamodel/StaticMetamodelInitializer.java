@@ -148,11 +148,11 @@ public class StaticMetamodelInitializer {
                Optional.of((Identifier<T, ?>) mt.getIdentifier()) : Optional.empty();
     }
 
-    private boolean isDeclaredInClass(FieldSpecification<?, ?> fs, Class<?> cls) {
+    private static boolean isDeclaredInClass(FieldSpecification<?, ?> fs, Class<?> cls) {
         return fs.getJavaField().getDeclaringClass().equals(cls);
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredAttribute(Field field, ManagedType<T> type) {
+    private static <T> Optional<FieldSpecification<T, ?>> getDeclaredAttribute(Field field, ManagedType<T> type) {
         try {
             return Optional.of(type.getDeclaredAttribute(field.getName()));
         } catch (IllegalArgumentException e) {

@@ -51,7 +51,7 @@ public class DateConverter implements ConverterWrapper<Date, Object> {
         }
     }
 
-    private Date offsetDateTimeToDate(OffsetDateTime value) {
+    private static Date offsetDateTimeToDate(OffsetDateTime value) {
         return Date.from(value.toInstant());
     }
 

@@ -49,7 +49,7 @@ public class InstantConverter implements ConverterWrapper<Instant, Object> {
         }
     }
 
-    private Instant offsetDateTimeToInstant(OffsetDateTime value) {
+    private static Instant offsetDateTimeToInstant(OffsetDateTime value) {
         return value.toInstant();
     }
 

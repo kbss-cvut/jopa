@@ -84,11 +84,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     @Override
-    public UnitOfWork acquireUnitOfWork() {
-        return new UnitOfWorkImpl(this);
-    }
-
-    @Override
     public CacheManager getLiveObjectCache() {
         return liveObjectCache;
     }
