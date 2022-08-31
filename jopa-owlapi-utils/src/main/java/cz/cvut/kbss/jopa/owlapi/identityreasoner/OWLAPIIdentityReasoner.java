@@ -345,8 +345,7 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
 
 
     @Nonnull
-    public NodeSet<OWLClass> getSuperClasses(@Nonnull OWLClassExpression ce,
-                                             boolean direct) throws ClassExpressionNotInProfileException {
+    public NodeSet<OWLClass> getSuperClasses(@Nonnull OWLClassExpression ce, boolean direct) {
         final OWLClassNodeSet pn = new OWLClassNodeSet();
 
         for (final OWLSubClassOfAxiom a : o.getAxioms(AxiomType.SUBCLASS_OF)) {

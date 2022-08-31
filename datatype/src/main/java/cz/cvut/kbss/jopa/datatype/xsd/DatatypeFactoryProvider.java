@@ -26,6 +26,10 @@ class DatatypeFactoryProvider {
 
     private static final DatatypeFactory FACTORY = initFactory();
 
+    private DatatypeFactoryProvider() {
+        throw new AssertionError();
+    }
+
     private static DatatypeFactory initFactory() {
         try {
             return DatatypeFactory.newInstance();
@@ -36,9 +40,5 @@ class DatatypeFactoryProvider {
 
     static DatatypeFactory getFactory() {
         return FACTORY;
-    }
-
-    private DatatypeFactoryProvider() {
-        throw new AssertionError();
     }
 }

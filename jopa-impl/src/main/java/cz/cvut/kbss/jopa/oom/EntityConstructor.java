@@ -208,7 +208,7 @@ class EntityConstructor {
         qfs.buildInstanceFieldValue(instance);
     }
 
-    private <T> void setAttributeQueryParameters(T instance, QueryAttribute<? super T, ?> queryAtt,
+    private static <T> void setAttributeQueryParameters(T instance, QueryAttribute<? super T, ?> queryAtt,
                                                  TypedQueryImpl<?> query, EntityType<?> et) {
         try {
             if (query.hasParameter(THIS_PARAMETER)) {
@@ -229,7 +229,7 @@ class EntityConstructor {
         }
     }
 
-    private <T> QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> getQueryFieldLoader(
+    private static <T> QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> getQueryFieldLoader(
             EntityType<T> et, QueryAttribute<? super T, ?> queryAttribute) {
         if (queryAttribute == null) {
             return null;

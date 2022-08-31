@@ -63,7 +63,7 @@ public class PersistenceUnitClassFinder {
         this.scanned = true;
     }
 
-    private ClasspathScanner resolveClasspathScanner(Configuration config) {
+    private static ClasspathScanner resolveClasspathScanner(Configuration config) {
         try {
             final String scannerType = config.get(JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS, DefaultClasspathScanner.class.getName());
             final Class<?> scannerCls = Class.forName(scannerType);

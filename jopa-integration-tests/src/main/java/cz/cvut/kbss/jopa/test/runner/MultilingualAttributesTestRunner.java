@@ -20,7 +20,6 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
-import cz.cvut.kbss.jopa.utils.Constants;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
@@ -228,7 +227,7 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
         }
     }
 
-    private void verifyPluralContainsValue(OWLClassY instance, String lang, String value) {
+    private static void verifyPluralContainsValue(OWLClassY instance, String lang, String value) {
         assertTrue(instance.getPluralString().stream()
                 .anyMatch(ms -> ms.contains(lang) && ms.get(lang).equals(value)));
     }

@@ -103,7 +103,7 @@ public class XsdDatatypeMapper implements DatatypeMapper {
         }
     }
 
-    private Float toFloat(String lexicalForm) {
+    private static Float toFloat(String lexicalForm) {
         if (NEGATIVE_INFINITY.equals(lexicalForm)) {
             return Float.NEGATIVE_INFINITY;
         } else if (POSITIVE_INFINITY.equals(lexicalForm)) {
@@ -112,7 +112,7 @@ public class XsdDatatypeMapper implements DatatypeMapper {
         return Float.parseFloat(lexicalForm);
     }
 
-    private Double toDouble(String lexicalForm) {
+    private static Double toDouble(String lexicalForm) {
         if (NEGATIVE_INFINITY.equals(lexicalForm)) {
             return Double.NEGATIVE_INFINITY;
         } else if (POSITIVE_INFINITY.equals(lexicalForm)) {
