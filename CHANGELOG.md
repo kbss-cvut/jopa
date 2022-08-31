@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.18.7 - 2022-08-31
+- Fix support for custom datatypes in Jena driver (Bug #113).
+- Fix mapping enums to simple literals (Bug #111).
+- Fix an issue with double-wrapped indirect collections when cloning singleton Maps (Bug #114).
+- Dependency updates: RDF4J 3.7.7
+
 ## 0.18.6 - 2022-05-09
 - Automatically resolve inferred statements contexts for GraphDB (Enhancement #106).
 - Allow configuring Sesame driver to load inferred statements from the default context (See wiki for details).
