@@ -20,9 +20,10 @@
         <module>jopa-owl2java</module>
         <module>jopa-maven-plugin</module>
         <module>datatype</module>
-        <module>ontodriver-sesame</module>
-        <module>ontodriver-owlapi</module>
         <module>ontodriver-jena</module>
+        <module>ontodriver-owlapi</module>
+        <module>ontodriver-rdf4j</module>
+        <module>ontodriver-sesame</module>
         <module>jopa-impl</module>
         <module>jopa-integration-tests</module>
         <module>jopa-integration-tests-sesame</module>
