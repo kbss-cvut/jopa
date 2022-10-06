@@ -23,7 +23,6 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.*;
 
-import java.net.URI;
 import java.util.*;
 
 /**
@@ -177,7 +176,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
      * Creates handler for simple lists.
      *
      * @param connector Storage connector
-     * @param vf        Sesame value factory
+     * @param vf        RDF4J value factory
      * @return List handler
      */
     static ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> createForSimpleList(
@@ -192,7 +191,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
      * Creates handler for referenced lists.
      *
      * @param connector Storage connector
-     * @param vf        Sesame value factory
+     * @param vf        RDF4J value factory
      * @return List handler
      */
     static ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> createForReferencedList(

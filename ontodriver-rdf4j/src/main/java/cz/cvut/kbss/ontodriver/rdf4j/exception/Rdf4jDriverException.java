@@ -17,13 +17,11 @@ package cz.cvut.kbss.ontodriver.rdf4j.exception;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 /**
- * This is a generic checked exception thrown by the Sesame driver.
+ * This is a generic, checked exception thrown by the RDF4J driver.
  * <p>
  * It extends the {@link OntoDriverException}, so we can throw it instead of that one.
  */
 public class Rdf4jDriverException extends OntoDriverException {
-
-    private static final long serialVersionUID = 4771575441559318165L;
 
     public Rdf4jDriverException() {
     }

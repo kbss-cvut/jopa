@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.rdf4j.util;
 
@@ -94,8 +92,8 @@ public final class Rdf4jUtils {
      *
      * @param value    The value to transform
      * @param language Language to add to string literals, optional
-     * @param vf       Sesame value factory
-     * @return Sesame Literal
+     * @param vf       RDF4J value factory
+     * @return RFD4J Literal
      * @throws IllegalArgumentException If the type of the value is not supported
      */
     public static Literal createLiteral(Object value, String language, ValueFactory vf) {
@@ -108,7 +106,7 @@ public final class Rdf4jUtils {
         } else if (value instanceof LangString) {
             final LangString ls = (LangString) value;
             return ls.getLanguage().isPresent() ? vf.createLiteral(ls.getValue(), ls.getLanguage().get()) :
-                    vf.createLiteral(ls.getValue());
+                   vf.createLiteral(ls.getValue());
         } else if (value instanceof Byte) {
             return vf.createLiteral((Byte) value);
         } else if (value instanceof Short) {

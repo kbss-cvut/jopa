@@ -65,18 +65,18 @@ class EpistemicAxiomRemover {
 
     void remove(NamedResource individual, Map<Assertion, Set<Value<?>>> values, java.net.URI context)
             throws Rdf4jDriverException {
-        final IRI sesameContext = toRdf4jIri(context, valueFactory);
+        final IRI repoContext = toRdf4jIri(context, valueFactory);
         final Resource subject = toRdf4jIri(individual.getIdentifier(), valueFactory);
         final Collection<Statement> toRemove = new ArrayList<>();
         final ValueConverter valueConverter = new ValueConverter(valueFactory);
         for (Map.Entry<Assertion, Set<Value<?>>> entry : values.entrySet()) {
             final IRI property = toRdf4jIri(entry.getKey().getIdentifier(), valueFactory);
             for (Value<?> val : entry.getValue()) {
-                final org.eclipse.rdf4j.model.Value sesameValue = valueConverter.toRdf4jValue(entry.getKey(), val);
-                if (sesameContext != null) {
-                    toRemove.add(valueFactory.createStatement(subject, property, sesameValue, sesameContext));
+                final org.eclipse.rdf4j.model.Value rdf4jValue = valueConverter.toRdf4jValue(entry.getKey(), val);
+                if (repoContext != null) {
+                    toRemove.add(valueFactory.createStatement(subject, property, rdf4jValue, repoContext));
                 } else {
-                    toRemove.add(valueFactory.createStatement(subject, property, sesameValue));
+                    toRemove.add(valueFactory.createStatement(subject, property, rdf4jValue));
                 }
             }
         }

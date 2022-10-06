@@ -23,7 +23,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import java.util.List;
 
 /**
- * This class wraps the Sesame TupleQueryResult returned by QueryExecutor to be
+ * This class wraps the RDF4J {@link TupleQueryResult} returned by QueryExecutor to be
  * able to close the repository connection once the result is closed.
  *
  */
