@@ -64,10 +64,6 @@ class Rdf4jAdapter implements Closeable, Wrapper {
         return connector;
     }
 
-    ValueFactory getValueFactory() {
-        return valueFactory;
-    }
-
     RuntimeConfiguration getConfig() {
         return config;
     }
@@ -106,8 +102,7 @@ class Rdf4jAdapter implements Closeable, Wrapper {
     }
 
     boolean isConsistent(URI context) {
-        // Sesame currently doesn't support any consistency checking
-        // functionality
+        // RDF4J currently doesn't support any consistency checking functionality
         return true;
     }
 

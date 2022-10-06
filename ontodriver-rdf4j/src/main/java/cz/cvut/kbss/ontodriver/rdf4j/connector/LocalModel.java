@@ -20,7 +20,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import java.util.Collection;
 
 /**
- * Caches local transactional changes to the Sesame repository model.
+ * Caches local transactional changes to the RDF4J repository model.
  */
 class LocalModel {
 

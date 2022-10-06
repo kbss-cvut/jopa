@@ -71,11 +71,11 @@ class TypesHandler {
     }
 
     void addTypes(NamedResource individual, URI context, Set<URI> types) throws Rdf4jDriverException {
-        final Collection<Statement> statements = prepareSesameStatements(individual, context, types);
+        final Collection<Statement> statements = prepareStatements(individual, context, types);
         connector.addStatements(statements);
     }
 
-    private Collection<Statement> prepareSesameStatements(NamedResource individual, URI context, Set<URI> types) {
+    private Collection<Statement> prepareStatements(NamedResource individual, URI context, Set<URI> types) {
         final org.eclipse.rdf4j.model.IRI subject = Rdf4jUtils.toRdf4jIri(individual.getIdentifier(), valueFactory);
         final org.eclipse.rdf4j.model.IRI contextUri = Rdf4jUtils.toRdf4jIri(context, valueFactory);
         final Collection<Statement> statements = new ArrayList<>(types.size());
@@ -87,7 +87,7 @@ class TypesHandler {
     }
 
     void removeTypes(NamedResource individual, URI context, Set<URI> types) throws Rdf4jDriverException {
-        final Collection<Statement> statements = prepareSesameStatements(individual, context, types);
+        final Collection<Statement> statements = prepareStatements(individual, context, types);
         connector.removeStatements(statements);
     }
 }

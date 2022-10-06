@@ -15,9 +15,9 @@ package cz.cvut.kbss.ontodriver.rdf4j.config;
 public abstract class Rdf4jOntoDriverProperties {
 
     /**
-     * Specifies whether a in-memory storage should be used for local Sesame repositories.
+     * Specifies whether a in-memory storage should be used for local RDF4J repositories.
      * <p>
-     * When set to true, any local Sesame repositories that are created by the driver are created as only MemoryStores
+     * When set to true, any local RDF4J repositories that are created by the driver are created as only MemoryStores
      * without any persistent backend. Repositories accessed over the Internet or already existing locally are not
      * affected by this setting.
      * <p>
@@ -26,7 +26,7 @@ public abstract class Rdf4jOntoDriverProperties {
     public static final String USE_VOLATILE_STORAGE = "cz.cvut.kbss.ontodriver.rdf4j.use-volatile-storage";
 
     /**
-     * Specifies whether Sesame inference (RDFS, forward chaining) should be used.
+     * Specifies whether RDF4J inference (RDFS, forward chaining) should be used.
      * <p>
      * Note that this setting applies only to local storages (in memory or native), remote storages use their own
      * inference settings.
@@ -39,7 +39,7 @@ public abstract class Rdf4jOntoDriverProperties {
      * Specifies how many requested assertions suffice to perform load all.
      * <p>
      * More specifically, if the number of assertions requested by an {@link cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor}
-     * is low enough, the statements for them will be loaded by asking Sesame for statements with subject and property
+     * is low enough, the statements for them will be loaded by asking RDF4J for statements with subject and property
      * bound.
      * <p>
      * Otherwise, statements will be loaded using only subject bound and will be filtered according to the assertions.
@@ -62,7 +62,7 @@ public abstract class Rdf4jOntoDriverProperties {
      * be loaded using the value as file path. The loaded configuration supersedes relevant properties passed to the
      * driver, e.g., {@link #USE_VOLATILE_STORAGE} or {@link #USE_INFERENCE}.
      * <p>
-     * Note that the config applies only to embedded repositories created by the driver, repositories on a Sesame/RDF4J
+     * Note that the config applies only to embedded repositories created by the driver, repositories on a RDF4J
      * server to which the driver just connects must preexist and the configuration does not apply to them. The physical
      * URI specified in configuration must correspond to the URI of the repository in the config file, i.e., for memory
      * store, the repository ID must be the same. For a native store, the physical URI must be in the form {@code

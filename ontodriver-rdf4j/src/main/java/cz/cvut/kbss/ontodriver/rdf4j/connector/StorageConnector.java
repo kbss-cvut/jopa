@@ -101,7 +101,7 @@ class StorageConnector extends AbstractConnector {
                 manager.shutDown();
             }
         } catch (RepositoryException e) {
-            throw new Rdf4jDriverException("Exception caught when closing Sesame repository connection.", e);
+            throw new Rdf4jDriverException("Exception caught when closing RDF4J repository connection.", e);
         } finally {
             this.open = false;
         }

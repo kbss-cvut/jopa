@@ -96,12 +96,12 @@ class SimpleListIterator extends AbstractListIterator {
     @Override
     public void replaceCurrentWith(NamedResource newNode) throws Rdf4jDriverException {
         assert current.getObject() instanceof Resource;
-        final Resource newNodeSesame = vf.createIRI(newNode.getIdentifier().toString());
+        final Resource newNodeRdf4j = vf.createIRI(newNode.getIdentifier().toString());
         final List<Statement> toAdd = new ArrayList<>(2);
         final List<Statement> toRemove = new ArrayList<>(2);
         toRemove.add(current);
         final Statement newCurrent = vf.createStatement(current.getSubject(), currentProperty,
-                newNodeSesame, context);
+                newNodeRdf4j, context);
         // From the current subject to the new node
         toAdd.add(newCurrent);
         if (hasNext()) {
@@ -109,14 +109,14 @@ class SimpleListIterator extends AbstractListIterator {
             final Statement stmt = next.iterator().next();
             checkNodeIsResource(stmt);
             final Resource nextNode = (Resource) stmt.getObject();
-            if (!newNodeSesame.equals(nextNode)) {
+            if (!newNodeRdf4j.equals(nextNode)) {
                 // From the new node to the next node
-                final Statement newNext = vf.createStatement(newNodeSesame, hasNextProperty,
+                final Statement newNext = vf.createStatement(newNodeRdf4j, hasNextProperty,
                         nextNode, context);
                 toAdd.add(newNext);
                 this.next = Collections.singletonList(newNext);
             } else {
-                this.next = connector.findStatements(newNodeSesame, hasNextProperty, null,
+                this.next = connector.findStatements(newNodeRdf4j, hasNextProperty, null,
                         includeInferred, contexts());
             }
         } else {

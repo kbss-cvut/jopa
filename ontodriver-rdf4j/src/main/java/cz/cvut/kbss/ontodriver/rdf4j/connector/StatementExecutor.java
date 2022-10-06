@@ -20,7 +20,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 public interface StatementExecutor {
 
     /**
-     * Executes the specified query and returns result in form of a Sesame query
+     * Executes the specified query and returns result in form of a RDF4J query
      * result.
      *
      * @param query The query to execute

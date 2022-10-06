@@ -18,7 +18,7 @@ import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 
 /**
- * Sesame driver configuration parameters.
+ * RDF4J driver configuration parameters.
  *
  * @see OntoDriverProperties
  * @see Rdf4jOntoDriverProperties

@@ -33,7 +33,7 @@ import java.io.Reader;
 import java.net.URL;
 
 /**
- * Wraps a standard Sesame {@link RepositoryConnection} and prevents its closing.
+ * Wraps a standard RFD4J {@link RepositoryConnection} and prevents its closing.
  * <p>
  * This is because the connector will handle closing when a transaction finishes or the connector is closed.
  *

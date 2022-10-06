@@ -81,7 +81,7 @@ class RepositoryConnectorInitializer {
             verifyRepositoryCreated(serverUri, isRemote);
             repository.init();
         } catch (RepositoryException | RepositoryConfigException e) {
-            throw new Rdf4jDriverException("Failed to acquire sesame repository connection.", e);
+            throw new Rdf4jDriverException("Failed to acquire RDF4J repository connection.", e);
         }
     }
 
@@ -194,7 +194,7 @@ class RepositoryConnectorInitializer {
     }
 
     /**
-     * Creates a local in-memory Sesame repository which is disposed when the VM shuts down.
+     * Creates a local in-memory RDF4J repository which is disposed of when the VM shuts down.
      */
     private Repository createInMemoryRepository() {
         LOG.trace("Creating local in-memory repository.");
@@ -228,7 +228,7 @@ class RepositoryConnectorInitializer {
     private static void validateNativeStorePath(String path) {
         if (path.split(LOCAL_NATIVE_REPO).length != 2) {
             throw new RepositoryCreationException(
-                    "Unsupported local RDF4J/Sesame repository path. Expected file://path/repositories/id but got " +
+                    "Unsupported local RDF4J repository path. Expected file://path/repositories/id but got " +
                             path);
         }
     }
