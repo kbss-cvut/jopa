@@ -30,7 +30,10 @@ import java.util.*;
 
 import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
-
+/**
+ * @deprecated Switch to {@code Rdf4jConnection} from the new ontodriver-rdf4j module.
+ */
+@Deprecated
 class SesameConnection implements Connection {
 
     private final SesameAdapter adapter;

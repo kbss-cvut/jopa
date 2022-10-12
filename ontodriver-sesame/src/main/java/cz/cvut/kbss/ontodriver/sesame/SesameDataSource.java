@@ -23,6 +23,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @deprecated Switch to {@code Rdf4jDataSource} from the new ontodriver-rdf4j module.
+ */
+@Deprecated
 public class SesameDataSource implements DataSource {
 
     private SesameDriver driver;
