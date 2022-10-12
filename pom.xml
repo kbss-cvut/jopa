@@ -26,9 +26,9 @@
         <module>ontodriver-sesame</module>
         <module>jopa-impl</module>
         <module>jopa-integration-tests</module>
-        <module>jopa-integration-tests-sesame</module>
-        <module>jopa-integration-tests-owlapi</module>
         <module>jopa-integration-tests-jena</module>
+        <module>jopa-integration-tests-owlapi</module>
+        <module>jopa-integration-tests-rdf4j</module>
         <module>jopa-distribution</module>
     </modules>
 
