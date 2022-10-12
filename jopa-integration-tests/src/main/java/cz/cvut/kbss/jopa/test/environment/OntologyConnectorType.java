@@ -24,9 +24,9 @@ public enum OntologyConnectorType {
      */
     JENA("jena", "cz.cvut.kbss.ontodriver.jena.JenaDataSource"),
     /**
-     * Sesame ontology connector. Name: sesame
+     * RDF4J ontology connector. Name: rdf4j
      */
-    SESAME("sesame", "cz.cvut.kbss.ontodriver.sesame.SesameDataSource");
+    RDF4J("rdf4j", "cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource");
 
     private final String name;
 
