@@ -84,7 +84,7 @@ Supported storages:
 
 * Jena (since **0.10.0**)
 * OWLAPI
-* Sesame/RDF4J
+* RDF4J
 
 ### Not Supported, yet
 
@@ -102,13 +102,14 @@ Other missing/planned stuff can be found in [TODO.md](TODO.md) and in the GitHub
 
 The whole framework consists of several modules:
 
-* _JOPA API_ - definition of the JOPA API, similar to JPA,
-* _OntoDriver API_ - API of the storage access layer,
-* _JOPA Implementation_ - persistence provider implementation,
-* _OntoDriver Sesame_ - OntoDriver implementation for RDF4J (Sesame)-accessed storages,
-* _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files,
-* _Ontodriver Jena_ - OntoDriver implementation for Jena-based storages,
-* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-sesame-owl2java)),
+* _JOPA API_ - definition of the JOPA API, similar to JPA.
+* _OntoDriver API_ - API of the storage access layer.
+* _JOPA Implementation_ - persistence provider implementation.
+* _OntoDriver Sesame_ - OntoDriver implementation for RDF4J (Sesame)-accessed storages. **Deprecated** - use the new _OntoDriver RDF4J_,
+* _OntoDriver RDF4J_ - OntoDriver implementation for RDF4J-accessed storages.
+* _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files.
+* _Ontodriver Jena_ - OntoDriver implementation for Jena-based storages.
+* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-sesame-owl2java)).
 * _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
 
 Other modules represent integration tests and various utilities.
@@ -155,7 +156,7 @@ Basically, the _jopa-impl_ module and one of the OntoDriver implementations is a
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>ontodriver-jena</artifactId>
         <!-- OR <artifactId>ontodriver-owlapi</artifactId> -->
-        <!-- OR <artifactId>ontodriver-sesame</artifactId> -->
+        <!-- OR <artifactId>ontodriver-rdf4j</artifactId> -->
     </dependency>
 </dependencies>
 ```
