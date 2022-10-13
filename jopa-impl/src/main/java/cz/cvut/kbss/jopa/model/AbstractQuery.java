@@ -31,6 +31,7 @@ import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -354,5 +355,17 @@ abstract class AbstractQuery implements Query {
             throw e;
         }
         return this;
+    }
+
+    @Override
+    public Query setHint(String hintName, Object value) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> getHints() {
+        // TODO
+        return null;
     }
 }
