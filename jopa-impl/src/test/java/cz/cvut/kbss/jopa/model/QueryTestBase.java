@@ -35,6 +35,7 @@ import org.mockito.Mock;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -286,5 +287,51 @@ abstract class QueryTestBase {
         q.setParameter("a", a);
         q.getResultList();
         verify(statementMock).executeQuery("SELECT ?x WHERE { ?x ?hasA <" + a.getUri() + "> . }");
+    }
+
+    @Test
+    void executeQueryAppliesQueryHints() throws Exception {
+        final AbstractQuery q = createQuery(SELECT_QUERY, OWLClassA.class);
+        final String hintName = "jopa.query.testHint";
+        final QueryHintsHandler.Hint hint = spy(new TestHint(hintName));
+        QueryHintsHandler.Hint.registerHint(hint);
+        q.setHint(hintName, true);
+        q.executeQuery((r) -> {});
+        verify(hint).apply(true, q, statementMock);
+    }
+
+    private static class TestHint extends QueryHintsHandler.Hint {
+
+        TestHint(String name) {
+            super(name, null);
+        }
+
+        @Override
+        void applyToQuery(Object hintValue, AbstractQuery query, Statement statement) {
+            // Do nothing
+        }
+    }
+
+    @Test
+    void executeQueryForStreamAppliesQueryHints() throws Exception {
+        when(resultSetMock.isOpen()).thenReturn(true);
+        final AbstractQuery q = createQuery(SELECT_QUERY, OWLClassA.class);
+        final String hintName = "jopa.query.testHint";
+        final QueryHintsHandler.Hint hint = spy(new TestHint(hintName));
+        QueryHintsHandler.Hint.registerHint(hint);
+        q.setHint(hintName, false);
+        q.executeQueryForStream((r) -> Optional.empty());
+        verify(hint).apply(false, q, statementMock);
+    }
+
+    @Test
+    void executeUpdateAppliesQueryHints() {
+        final AbstractQuery q = createQuery(UPDATE_QUERY);
+        final String hintName = "jopa.query.testHint";
+        final QueryHintsHandler.Hint hint = spy(new TestHint(hintName));
+        QueryHintsHandler.Hint.registerHint(hint);
+        q.setHint(hintName, true);
+        q.executeUpdate();
+        verify(hint).apply(true, q, statementMock);
     }
 }
