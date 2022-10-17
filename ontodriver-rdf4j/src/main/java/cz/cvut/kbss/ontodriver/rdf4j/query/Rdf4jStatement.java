@@ -30,6 +30,7 @@ import java.util.Objects;
 public class Rdf4jStatement implements Statement {
 
     private StatementOntology targetOntology = StatementOntology.TRANSACTIONAL;
+    private boolean inferenceDisabled = false;
     private final StatementExecutor queryExecutor;
     private ResultSet resultSet;
 
@@ -51,15 +52,19 @@ public class Rdf4jStatement implements Statement {
 
     private ResultSet determineResult(String sparql) throws Rdf4jDriverException {
         if (isAskQuery(sparql)) {
-            return new AskResultSet(queryExecutor.executeBooleanQuery(sparql), this);
+            return new AskResultSet(queryExecutor.executeBooleanQuery(querySpec(sparql)), this);
         } else {
-            final TupleQueryResult tqr = queryExecutor.executeSelectQuery(sparql);
+            final TupleQueryResult tqr = queryExecutor.executeSelectQuery(querySpec(sparql));
             try {
                 return new SelectResultSet(tqr, this);
             } catch (QueryEvaluationException e) {
                 throw new Rdf4jDriverException(e);
             }
         }
+    }
+
+    QuerySpecification querySpec(String sparql) {
+        return QuerySpecification.query(sparql).includeInference(!inferenceDisabled);
     }
 
     private static boolean isAskQuery(String query) {
@@ -71,7 +76,7 @@ public class Rdf4jStatement implements Statement {
         ensureOpen();
         validateQueryParams(sparql);
         closeCurrentResultSet();
-        queryExecutor.executeUpdate(sparql);
+        queryExecutor.executeUpdate(querySpec(sparql));
     }
 
     @Override
@@ -130,6 +135,16 @@ public class Rdf4jStatement implements Statement {
     public boolean useBackupOntology() {
         ensureOpen();
         return targetOntology == StatementOntology.CENTRAL;
+    }
+
+    @Override
+    public void disableInference() {
+        this.inferenceDisabled = true;
+    }
+
+    @Override
+    public boolean isInferenceDisabled() {
+        return inferenceDisabled;
     }
 
     void ensureOpen() {

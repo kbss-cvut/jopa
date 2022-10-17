@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 import cz.cvut.kbss.ontodriver.util.TransactionState;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
@@ -85,11 +86,11 @@ public class PoolingStorageConnectorTest {
     @Test
     public void executeSelectOutsideTransactionRunsOnCentralConnector() throws Exception {
         final String query = "Some query";
-        connector.executeSelectQuery(query);
+        connector.executeSelectQuery(QuerySpecification.query(query));
 
         InOrder inOrder = inOrder(readLock, centralMock);
         inOrder.verify(readLock).lock();
-        inOrder.verify(centralMock).executeSelectQuery(query);
+        inOrder.verify(centralMock).executeSelectQuery(QuerySpecification.query(query));
         inOrder.verify(readLock).unlock();
     }
 
@@ -101,7 +102,7 @@ public class PoolingStorageConnectorTest {
         when(conn.prepareTupleQuery(QueryLanguage.SPARQL, query)).thenReturn(tq);
         when(centralMock.acquireConnection()).thenReturn(conn);
         connector.begin();
-        connector.executeSelectQuery(query);
+        connector.executeSelectQuery(QuerySpecification.query(query));
 
         verify(conn).prepareTupleQuery(QueryLanguage.SPARQL, query);
         verify(tq).evaluate();
@@ -110,9 +111,9 @@ public class PoolingStorageConnectorTest {
     @Test
     public void testUnlockWhenExecuteQueryThrowsException() throws Exception {
         final String query = "Some query";
-        when(centralMock.executeSelectQuery(query)).thenThrow(new Rdf4jDriverException());
+        when(centralMock.executeSelectQuery(any())).thenThrow(new Rdf4jDriverException());
         try {
-            assertThrows(Rdf4jDriverException.class, () -> connector.executeSelectQuery(query));
+            assertThrows(Rdf4jDriverException.class, () -> connector.executeSelectQuery(QuerySpecification.query(query)));
         } finally {
             verify(readLock).lock();
             verify(readLock).unlock();
@@ -122,11 +123,11 @@ public class PoolingStorageConnectorTest {
     @Test
     public void executeBooleanQueryRunsOnCentralConnectionWhenNoTransactionIsActive() throws Exception {
         final String query = "ASK some query";
-        connector.executeBooleanQuery(query);
+        connector.executeBooleanQuery(QuerySpecification.query(query));
 
         InOrder inOrder = inOrder(readLock, centralMock);
         inOrder.verify(readLock).lock();
-        inOrder.verify(centralMock).executeBooleanQuery(query);
+        inOrder.verify(centralMock).executeBooleanQuery(QuerySpecification.query(query));
         inOrder.verify(readLock).unlock();
     }
 
@@ -138,7 +139,7 @@ public class PoolingStorageConnectorTest {
         when(conn.prepareBooleanQuery(QueryLanguage.SPARQL, query)).thenReturn(bq);
         when(centralMock.acquireConnection()).thenReturn(conn);
         connector.begin();
-        connector.executeBooleanQuery(query);
+        connector.executeBooleanQuery(QuerySpecification.query(query));
 
         verify(conn).prepareBooleanQuery(QueryLanguage.SPARQL, query);
         verify(bq).evaluate();
@@ -147,10 +148,10 @@ public class PoolingStorageConnectorTest {
     @Test
     public void unlocksReadLockWhenExecuteBooleanQueryThrowsException() throws Exception {
         final String query = "ASK some query";
-        when(centralMock.executeBooleanQuery(query)).thenThrow(new Rdf4jDriverException());
+        when(centralMock.executeBooleanQuery(any())).thenThrow(new Rdf4jDriverException());
 
         try {
-            assertThrows(Rdf4jDriverException.class, () -> connector.executeBooleanQuery(query));
+            assertThrows(Rdf4jDriverException.class, () -> connector.executeBooleanQuery(QuerySpecification.query(query)));
         } finally {
             verify(readLock).unlock();
         }
@@ -160,11 +161,11 @@ public class PoolingStorageConnectorTest {
     public void testExecuteUpdate() throws Exception {
         connector.begin();
         final String query = "Some query";
-        connector.executeUpdate(query);
+        connector.executeUpdate(QuerySpecification.query(query));
 
         InOrder inOrder = inOrder(writeLock, centralMock);
         inOrder.verify(writeLock).lock();
-        inOrder.verify(centralMock).executeUpdate(query);
+        inOrder.verify(centralMock).executeUpdate(QuerySpecification.query(query));
         inOrder.verify(writeLock).unlock();
     }
 
@@ -172,9 +173,9 @@ public class PoolingStorageConnectorTest {
     public void testUnlockWhenExecuteUpdateThrowsException() throws Exception {
         connector.begin();
         final String query = "Some query";
-        doThrow(new Rdf4jDriverException()).when(centralMock).executeUpdate(query);
+        doThrow(new Rdf4jDriverException()).when(centralMock).executeUpdate(any());
         try {
-            assertThrows(Rdf4jDriverException.class, () -> connector.executeUpdate(query));
+            assertThrows(Rdf4jDriverException.class, () -> connector.executeUpdate(QuerySpecification.query(query)));
         } finally {
             verify(writeLock).unlock();
         }

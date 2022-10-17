@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 public interface StatementExecutor {
@@ -27,7 +28,7 @@ public interface StatementExecutor {
      * @return Tuple query result
      * @throws Rdf4jDriverException When things go wrong with query execution
      */
-    TupleQueryResult executeSelectQuery(String query) throws Rdf4jDriverException;
+    TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException;
 
     /**
      * Executes the specified boolean query.
@@ -38,7 +39,7 @@ public interface StatementExecutor {
      * @return Boolean result of the query
      * @throws Rdf4jDriverException When things go wrong with query execution
      */
-    boolean executeBooleanQuery(String query) throws Rdf4jDriverException;
+    boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException;
 
     /**
      * Executes the specified update query.
@@ -46,5 +47,5 @@ public interface StatementExecutor {
      * @param query The query to execute
      * @throws Rdf4jDriverException When things go wrong with query execution
      */
-    void executeUpdate(String query) throws Rdf4jDriverException;
+    void executeUpdate(QuerySpecification query) throws Rdf4jDriverException;
 }

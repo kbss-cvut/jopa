@@ -14,6 +14,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -43,7 +44,7 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public TupleQueryResult executeSelectQuery(String query) throws Rdf4jDriverException {
+    public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
         if (transaction.isActive()) {
             return new ConnectionStatementExecutor(wrapConnection()).executeSelectQuery(query);
         }
@@ -60,7 +61,7 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public boolean executeBooleanQuery(String query) throws Rdf4jDriverException {
+    public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
         if (transaction.isActive()) {
             return new ConnectionStatementExecutor(wrapConnection()).executeBooleanQuery(query);
         }
@@ -73,7 +74,7 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public void executeUpdate(String query) throws Rdf4jDriverException {
+    public void executeUpdate(QuerySpecification query) throws Rdf4jDriverException {
         WRITE.lock();
         try {
             centralConnector.executeUpdate(query);

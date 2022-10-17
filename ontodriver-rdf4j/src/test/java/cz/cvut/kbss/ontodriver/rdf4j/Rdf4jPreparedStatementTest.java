@@ -17,6 +17,7 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
+import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.rdf4j.query.Rdf4jPreparedStatement;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.jupiter.api.Test;
@@ -50,13 +51,13 @@ public class Rdf4jPreparedStatementTest {
 
     @Test
     public void testExecuteQuery() throws Exception {
-        when(executorMock.executeSelectQuery(any(String.class))).thenReturn(resultMock);
+        when(executorMock.executeSelectQuery(any(QuerySpecification.class))).thenReturn(resultMock);
         final String query = "SELECT ?y WHERE { ?x <http://property> ?y . }";
         final String expected = "SELECT ?y WHERE { <http://subject> <http://property> ?y . }";
         initStatement(query);
         statement.setObject("x", "<http://subject>");
         statement.executeQuery();
-        verify(executorMock).executeSelectQuery(expected);
+        verify(executorMock).executeSelectQuery(QuerySpecification.query(expected));
     }
 
     @Test
@@ -72,12 +73,12 @@ public class Rdf4jPreparedStatementTest {
         initStatement(query);
         statement.setObject("name", "'Bill'");
         statement.executeUpdate();
-        verify(executorMock).executeUpdate(expected);
+        verify(executorMock).executeUpdate(QuerySpecification.query(expected));
     }
 
     @Test
     public void executeQueryClosesCurrentResultSet() throws Exception {
-        when(executorMock.executeSelectQuery(any(String.class))).thenReturn(resultMock);
+        when(executorMock.executeSelectQuery(any(QuerySpecification.class))).thenReturn(resultMock);
         final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }";
         initStatement(query);
         final ResultSet rsOne = statement.executeQuery();

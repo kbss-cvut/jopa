@@ -41,7 +41,7 @@ class Rdf4jConnection implements Connection {
     private Types types;
     private Properties properties;
 
-    private ConnectionListener listener;
+    private ConnectionListener<Rdf4jConnection> listener;
 
     Rdf4jConnection(Rdf4jAdapter adapter) {
         assert adapter != null;
@@ -61,7 +61,7 @@ class Rdf4jConnection implements Connection {
         this.properties = properties;
     }
 
-    void setListener(ConnectionListener listener) {
+    void setListener(ConnectionListener<Rdf4jConnection> listener) {
         ensureOpen();
         assert listener != null;
         this.listener = listener;
