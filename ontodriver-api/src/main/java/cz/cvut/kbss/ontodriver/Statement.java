@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver;
 
@@ -55,8 +53,8 @@ public interface Statement extends AutoCloseable {
     /**
      * Sets which ontology is used to evaluate this statement.
      * <p>
-     * {@link Statement.StatementOntology#TRANSACTIONAL} ontology is the transactional
-     * snapshot. It may contain uncommitted changes and thus the query results may differ from evaluation against {@link
+     * {@link Statement.StatementOntology#TRANSACTIONAL} ontology is the transactional snapshot. It may contain
+     * uncommitted changes and thus the query results may differ from evaluation against {@link
      * Statement.StatementOntology#CENTRAL}.
      *
      * @param ontology Which ontology to use
@@ -85,10 +83,28 @@ public interface Statement extends AutoCloseable {
      * <p>
      * Calling the method close on a Statement object that is already closed has no effect.
      * <p>
-     * Note: When a {@code Statement} object is closed, its current {@code ResultSet} object, if one exists, is also closed.
+     * Note: When a {@code Statement} object is closed, its current {@code ResultSet} object, if one exists, is also
+     * closed.
      *
      * @throws OntoDriverException If closing the statement fails
      */
     @Override
     void close() throws OntoDriverException;
+
+    /**
+     * Disables inference for execution of this statement.
+     * <p>
+     * Note that by default, inference is enabled for execution of all statements (depending on whether the underlying
+     * storage supports inference at all). Also note that in case the underlying repository does not support disabling
+     * inference, this configuration may be silently ignored.
+     */
+    void disableInference();
+
+    /**
+     * Checks whether inference is disabled for execution of this statement.
+     *
+     * @return Inference disabled status
+     * @see #disableInference()
+     */
+    boolean isInferenceDisabled();
 }

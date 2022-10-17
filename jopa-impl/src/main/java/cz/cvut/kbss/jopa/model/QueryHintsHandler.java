@@ -16,7 +16,8 @@ import java.util.Set;
  * To add a new hint (inspired by Eclipselink):
  * <ul>
  *     <li>Define a hint in {@link QueryHints}</li>
- *     <li>Ad an inner class extending {@link Hint} corresponding to the new hint</li>
+ *     <li>Ad an inner class extending {@link Hint} corresponding to the new hint. The class should implement the
+ *     {@link Hint#applyToQuery(Object, AbstractQuery, Statement)} method and provide an array of values for transformation.</li>
  *     <li>Register the new hint class by calling {@link Hint#registerHint(Hint)} with an instance of the hint</li>
  * </ul>
  */
@@ -35,7 +36,7 @@ public class QueryHintsHandler {
 
     /**
      * Applies the specified hint value to the specified query.
-     *
+     * <p>
      * Note that if the hint is unknown, it is ignored.
      *
      * @param hintName  Query hint name
@@ -148,15 +149,16 @@ public class QueryHintsHandler {
 
         DisableInferenceHint() {
             super(QueryHints.DISABLE_INFERENCE, Boolean.FALSE);
-            this.valueArray = new Object[][]{
-                    {Boolean.TRUE.toString(), Boolean.TRUE},
-                    {Boolean.FALSE.toString(), Boolean.FALSE},
-                    };
+            this.valueArray =
+                    new Object[][]{{Boolean.TRUE.toString(), Boolean.TRUE}, {Boolean.FALSE.toString(), Boolean.FALSE},};
         }
 
         @Override
         void applyToQuery(Object hintValue, AbstractQuery query, Statement statement) {
-            // TODO
+            assert statement != null;
+            if (Boolean.TRUE == hintValue) {
+                statement.disableInference();
+            }
         }
     }
 }
