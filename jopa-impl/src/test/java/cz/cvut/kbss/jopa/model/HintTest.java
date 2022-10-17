@@ -115,4 +115,11 @@ public class HintTest {
         QueryHintsHandler.Hint.apply("unknownHintName", "true", query, statement);
         verify(sut, never()).apply(any(), any(), any());
     }
+
+    @Test
+    void disableInferenceHintDisablesInferenceOnStatement() {
+        final QueryHintsHandler.Hint sut = new QueryHintsHandler.DisableInferenceHint();
+        sut.apply(true, query, statement);
+        verify(statement).disableInference();
+    }
 }
