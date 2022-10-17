@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -31,9 +32,10 @@ class ConnectionStatementExecutor implements StatementExecutor {
     }
 
     @Override
-    public TupleQueryResult executeSelectQuery(String query) throws Rdf4jDriverException {
+    public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
         try {
-            final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query);
+            final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query.getQuery());
+            tq.setIncludeInferred(query.isIncludeInference());
             return new QueryResult(tq.evaluate(), connection);
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             throw new Rdf4jDriverException(e);
@@ -41,18 +43,21 @@ class ConnectionStatementExecutor implements StatementExecutor {
     }
 
     @Override
-    public boolean executeBooleanQuery(String query) throws Rdf4jDriverException {
+    public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
         try {
-            return connection.prepareBooleanQuery(QueryLanguage.SPARQL, query).evaluate();
+            final BooleanQuery bq = connection.prepareBooleanQuery(QueryLanguage.SPARQL, query.getQuery());
+            bq.setIncludeInferred(query.isIncludeInference());
+            return bq.evaluate();
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             throw new Rdf4jDriverException(e);
         }
     }
 
     @Override
-    public void executeUpdate(String query) throws Rdf4jDriverException {
+    public void executeUpdate(QuerySpecification query) throws Rdf4jDriverException {
         try {
-            final Update u = connection.prepareUpdate(QueryLanguage.SPARQL, query);
+            final Update u = connection.prepareUpdate(QueryLanguage.SPARQL, query.getQuery());
+            u.setIncludeInferred(query.isIncludeInference());
             u.execute();
         } catch (MalformedQueryException | UpdateExecutionException | RepositoryException e) {
             throw new Rdf4jDriverException(e);

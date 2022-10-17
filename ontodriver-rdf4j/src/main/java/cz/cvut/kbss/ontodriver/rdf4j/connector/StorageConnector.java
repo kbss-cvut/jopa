@@ -20,6 +20,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -108,7 +109,7 @@ class StorageConnector extends AbstractConnector {
     }
 
     @Override
-    public TupleQueryResult executeSelectQuery(String query) throws Rdf4jDriverException {
+    public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
         final RepositoryConnection conn = acquireConnection();
         return new ConnectionStatementExecutor(conn).executeSelectQuery(query);
         // The connection is released by the result set once it is closed
@@ -148,14 +149,14 @@ class StorageConnector extends AbstractConnector {
     }
 
     @Override
-    public boolean executeBooleanQuery(String query) throws Rdf4jDriverException {
+    public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
             return new ConnectionStatementExecutor(conn).executeBooleanQuery(query);
         }
     }
 
     @Override
-    public void executeUpdate(String query) throws Rdf4jDriverException {
+    public void executeUpdate(QuerySpecification query) throws Rdf4jDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
             new ConnectionStatementExecutor(conn).executeUpdate(query);
         }
