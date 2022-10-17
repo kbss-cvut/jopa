@@ -105,6 +105,16 @@ public class SesameStatement implements Statement {
         closeCurrentResultSet();
     }
 
+    @Override
+    public void disableInference() {
+        // Do nothing, not supported
+    }
+
+    @Override
+    public boolean isInferenceDisabled() {
+        return false;
+    }
+
     private void closeCurrentResultSet() throws OntoDriverException {
         if (resultSet != null) {
             resultSet.close();
