@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.test.query.rdf4j;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.environment.Rdf4jDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
@@ -33,7 +34,7 @@ public class QueryTest extends QueryRunner {
     private static EntityManager em;
 
     QueryTest() {
-        super(LOG);
+        super(LOG, new Rdf4jDataAccessor());
     }
 
     @BeforeEach

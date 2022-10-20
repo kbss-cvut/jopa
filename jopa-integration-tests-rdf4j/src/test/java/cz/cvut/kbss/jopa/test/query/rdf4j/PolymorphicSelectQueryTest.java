@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.test.query.rdf4j;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.environment.Rdf4jDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.PolymorphicSelectQueryRunner;
@@ -33,7 +34,7 @@ public class PolymorphicSelectQueryTest extends PolymorphicSelectQueryRunner {
     private static EntityManager em;
 
     PolymorphicSelectQueryTest() {
-        super(LOG);
+        super(LOG, new Rdf4jDataAccessor());
     }
 
     @BeforeEach
