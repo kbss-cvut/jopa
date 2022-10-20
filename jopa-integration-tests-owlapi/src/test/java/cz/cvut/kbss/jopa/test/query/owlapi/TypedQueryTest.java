@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.test.query.owlapi;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
@@ -35,7 +36,7 @@ public class TypedQueryTest extends TypedQueryRunner {
     private static EntityManager em;
 
     TypedQueryTest() {
-        super(LOG);
+        super(LOG, new OwlapiDataAccessor());
     }
 
     @Override

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
@@ -21,7 +19,9 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.model.LangString;
@@ -41,8 +41,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     private static final String SELECT_E_BY_TYPE =
             "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
 
-    protected QueryRunner(Logger logger) {
-        super(logger);
+    protected QueryRunner(Logger logger, DataAccessor dataAccessor) {
+        super(logger, dataAccessor);
     }
 
     @Test
@@ -228,12 +228,13 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithMappingReturnsResultWithVariablesMappedAccordingly() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
-                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
-                "}", OWLClassA.VARIABLE_MAPPING).getResultList();
+                                                                      "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                                                                      "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
+                                                                      "}", OWLClassA.VARIABLE_MAPPING).getResultList();
         final Map<String, Object> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class)
-                            .forEach(a -> expected.put(a.getUri().toString(), new LangString(a.getStringAttribute(), "en")));
+                            .forEach(a -> expected.put(a.getUri().toString(),
+                                                       new LangString(a.getStringAttribute(), "en")));
         assertEquals(expected.size(), res.size());
         for (Object row : res) {
             assertTrue(row instanceof Object[]);
@@ -247,9 +248,10 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithConstructorMappingReturnsCorrectInstances() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
-                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
-                "}", OWLClassA.CONSTRUCTOR_MAPPING).getResultList();
+                                                                      "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                                                                      "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
+                                                                      "}", OWLClassA.CONSTRUCTOR_MAPPING)
+                                           .getResultList();
         final Map<URI, OWLClassA> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
 
@@ -268,9 +270,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithEntityMappingReturnsCorrectManagedInstances() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
-                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?stringAttribute ." +
-                "}", OWLClassA.ENTITY_MAPPING).getResultList();
+                                                                      "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                                                                      "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?stringAttribute ." +
+                                                                      "}", OWLClassA.ENTITY_MAPPING).getResultList();
         final Map<URI, OWLClassA> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
 
@@ -283,8 +285,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithEntityMappingLoadsReferencedEntitiesAsWell() {
         final List res = getEntityManager().createNativeQuery("SELECT ?x ?y WHERE {" +
-                "?x a ?dType ;" +
-                "?hasA ?y . }", OWLClassD.MAPPING_NAME)
+                                                                      "?x a ?dType ;" +
+                                                                      "?hasA ?y . }", OWLClassD.MAPPING_NAME)
                                            .setParameter("dType", URI.create(Vocabulary.C_OWL_CLASS_D))
                                            .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
                                            .getResultList();
@@ -318,12 +320,12 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void queryWithEntityMappingLoadsReferencedEntityAndInheritedAttributes() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                "?x a ?type ;" +
-                "?hasA ?y ;" +
-                "?rdfsLabel ?label ;" +
-                "?hasDescription ?description ;" +
-                "?hasInt ?intAttribute ." +
-                "}", OWLClassT.MAPPING_NAME)
+                                                                      "?x a ?type ;" +
+                                                                      "?hasA ?y ;" +
+                                                                      "?rdfsLabel ?label ;" +
+                                                                      "?hasDescription ?description ;" +
+                                                                      "?hasInt ?intAttribute ." +
+                                                                      "}", OWLClassT.MAPPING_NAME)
                                            .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_T))
                                            .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
                                            .setParameter("rdfsLabel", URI.create(RDFS.LABEL))
@@ -430,14 +432,18 @@ public abstract class QueryRunner extends BaseQueryRunner {
      * Enhancement #101
      */
     @Test
-    void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() {
+    void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() throws Exception {
+        final String superType = Vocabulary.CLASS_IRI_BASE + "A-superclass";
+        persistTestData(Collections.singleton(
+                                new Quad(URI.create(Vocabulary.C_OWL_CLASS_A), URI.create(RDFS.SUB_CLASS_OF), URI.create(superType))),
+                        getEntityManager());
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final Set<String> types = new HashSet<>(a.getTypes());
         types.add(a.getClass().getAnnotation(OWLClass.class).iri());
-        final String query = "SELECT ?type WHERE { ?instance a ?type . }";
+        final String query = "SELECT DISTINCT ?type WHERE { ?instance a ?type . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setParameter("instance", a.getUri())
-                .setHint(QueryHints.DISABLE_INFERENCE, true);
+         .setHint(QueryHints.DISABLE_INFERENCE, true);
 
         final List res = q.getResultList();
         // The result can contain more types (inference)

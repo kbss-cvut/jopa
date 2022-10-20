@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.test.query.jena;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.environment.JenaDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.JenaPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.SoqlRunner;
@@ -34,7 +35,7 @@ public class SoqlTest extends SoqlRunner {
     private static EntityManager em;
 
     public SoqlTest() {
-        super(LOG);
+        super(LOG, new JenaDataAccessor());
     }
 
     @BeforeEach

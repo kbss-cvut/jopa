@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.jupiter.api.Test;
@@ -33,8 +34,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class CriteriaRunner extends BaseQueryRunner {
 
-    protected CriteriaRunner(Logger logger) {
-        super(logger);
+    protected CriteriaRunner(Logger logger, DataAccessor dataAccessor) {
+        super(logger, dataAccessor);
     }
 
     @Test
