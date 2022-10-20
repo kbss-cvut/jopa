@@ -52,7 +52,7 @@ public class LiveOntologyStatementExecutorTest {
     public void executeQueryPassesFunctionToConnectorForExecutionInReadOnly() throws Exception {
         final SelectResultSet resultSet = mock(SelectResultSet.class);
         when(connectorMock.executeRead(any(Function.class))).thenReturn(resultSet);
-        final ResultSet res = executor.executeQuery(QUERY, statementMock);
+        final ResultSet res = executor.executeQuery(QuerySpecification.query(QUERY).statement(statementMock));
         assertNotNull(res);
         assertEquals(resultSet, res);
         verify(connectorMock).executeRead(any(Function.class));
@@ -60,12 +60,12 @@ public class LiveOntologyStatementExecutorTest {
 
     @Test
     public void executeQueryReturningNullThrowsDriverException() {
-        assertThrows(OntoDriverException.class, () -> executor.executeQuery(QUERY, statementMock));
+        assertThrows(OntoDriverException.class, () -> executor.executeQuery(QuerySpecification.query(QUERY).statement(statementMock)));
     }
 
     @Test
     public void executeUpdatePassesConsumerFunctionToConnectorForExecutionInWriteMode() {
-        executor.executeUpdate(UPDATE);
+        executor.executeUpdate(QuerySpecification.query(UPDATE).statement(statementMock));
         verify(connectorMock).executeWrite(any(Consumer.class));
     }
 }

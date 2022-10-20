@@ -22,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,7 +42,7 @@ public class OwlapiPreparedStatementTest {
     @Test
     public void executeQueryClosesCurrentResultSet() throws Exception {
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
-        when(executorMock.executeQuery(anyString(), any())).thenReturn(resultSetMock);
+        when(executorMock.executeQuery(any(QuerySpecification.class))).thenReturn(resultSetMock);
         final OwlapiPreparedStatement statement = new OwlapiPreparedStatement(executorFactoryMock, connectionMock,
                 QUERY);
         statement.executeQuery();

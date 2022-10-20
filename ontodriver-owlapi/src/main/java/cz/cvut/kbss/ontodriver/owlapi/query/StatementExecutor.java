@@ -24,19 +24,18 @@ public interface StatementExecutor {
      * Executes the specified read-only query.
      *
      * @param query     The query to execute
-     * @param statement Statement instance representing the query
      * @return Query result
      * @throws OwlapiDriverException When storage access error occurs.
      */
-    ResultSet executeQuery(String query, Statement statement) throws OwlapiDriverException;
+    ResultSet executeQuery(QuerySpecification query) throws OwlapiDriverException;
 
     /**
      * Executes the specified update query.
      * <p>
      * This query may modify the state of the ontology.
      *
-     * @param update The update query to execute
+     * @param query Specification of the update query to execute
      * @throws OwlapiDriverException When storage access error occurs
      */
-    void executeUpdate(String update) throws OwlapiDriverException;
+    void executeUpdate(QuerySpecification query) throws OwlapiDriverException;
 }

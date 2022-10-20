@@ -100,6 +100,17 @@ public class JenaStatement implements Statement {
     }
 
     @Override
+    public void disableInference() {
+        // TODO
+    }
+
+    @Override
+    public boolean isInferenceDisabled() {
+        // TODO
+        return false;
+    }
+
+    @Override
     public boolean isOpen() {
         return open;
     }
