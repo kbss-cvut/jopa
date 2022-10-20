@@ -71,6 +71,10 @@ public class QueryHintsHandler {
         Object defaultValue;
         String name;
 
+        static {
+            registerHint(new DisableInferenceHint());
+        }
+
         Hint(String name, Object defaultValue) {
             this.name = name;
             this.defaultValue = defaultValue;
@@ -142,11 +146,6 @@ public class QueryHintsHandler {
      * @see QueryHints#DISABLE_INFERENCE
      */
     protected static class DisableInferenceHint extends Hint {
-
-        static {
-            registerHint(new DisableInferenceHint());
-        }
-
         DisableInferenceHint() {
             super(QueryHints.DISABLE_INFERENCE, Boolean.FALSE);
             this.valueArray =
