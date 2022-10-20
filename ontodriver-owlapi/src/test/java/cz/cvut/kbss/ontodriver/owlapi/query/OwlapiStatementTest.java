@@ -20,11 +20,11 @@ import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,11 +54,14 @@ public class OwlapiStatementTest {
     @Test
     public void executeStatementOnTransactionalUsesTransactionalSnapshot() throws Exception {
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
-        when(executorMock.executeQuery(anyString(), eq(statement))).thenReturn(resultSetMock);
+        when(executorMock.executeQuery(any(QuerySpecification.class))).thenReturn(resultSetMock);
         statement.useOntology(Statement.StatementOntology.TRANSACTIONAL);
         statement.executeQuery(QUERY);
         verify(executorFactoryMock).getStatementExecutor(Statement.StatementOntology.TRANSACTIONAL);
-        verify(executorMock).executeQuery(QUERY, statement);
+        final ArgumentCaptor<QuerySpecification> queryCaptor = ArgumentCaptor.forClass(QuerySpecification.class);
+        verify(executorMock).executeQuery(queryCaptor.capture());
+        assertEquals(QUERY, queryCaptor.getValue().getQuery());
+        assertEquals(statement, queryCaptor.getValue().getStatement());
     }
 
     @Test
@@ -67,7 +70,7 @@ public class OwlapiStatementTest {
         statement.useOntology(Statement.StatementOntology.CENTRAL);
         statement.executeUpdate(UPDATE);
         verify(executorFactoryMock).getStatementExecutor(Statement.StatementOntology.CENTRAL);
-        verify(executorMock).executeUpdate(UPDATE);
+        verify(executorMock).executeUpdate(QuerySpecification.query(UPDATE));
     }
 
     @Test
@@ -92,7 +95,7 @@ public class OwlapiStatementTest {
     @Test
     public void closeClosesExistingResultSet() throws Exception {
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
-        when(executorMock.executeQuery(anyString(), eq(statement))).thenReturn(resultSetMock);
+        when(executorMock.executeQuery(any(QuerySpecification.class))).thenReturn(resultSetMock);
         statement.executeQuery(QUERY);
         statement.close();
         verify(resultSetMock).close();
@@ -102,7 +105,7 @@ public class OwlapiStatementTest {
     @Test
     public void executeQueryClosesCurrentResultSet() throws Exception {
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
-        when(executorMock.executeQuery(anyString(), eq(statement))).thenReturn(resultSetMock);
+        when(executorMock.executeQuery(any(QuerySpecification.class))).thenReturn(resultSetMock);
         statement.executeQuery(QUERY);
         statement.executeQuery(QUERY);
         verify(resultSetMock).close();
@@ -111,7 +114,7 @@ public class OwlapiStatementTest {
     @Test
     public void executeUpdateClosesCurrentResultSet() throws Exception {
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
-        when(executorMock.executeQuery(anyString(), eq(statement))).thenReturn(resultSetMock);
+        when(executorMock.executeQuery(any(QuerySpecification.class))).thenReturn(resultSetMock);
         statement.executeQuery(QUERY);
         statement.executeUpdate(UPDATE);
         verify(resultSetMock).close();
