@@ -21,12 +21,11 @@ import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
-import org.apache.jena.reasoner.rulesys.RDFSRuleReasoner;
 import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
-import org.apache.jena.reasoner.transitiveReasoner.TransitiveReasonerFactory;
 import org.apache.jena.vocabulary.ReasonerVocabulary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,5 +65,11 @@ public class QueryTest extends QueryRunner {
     @Override
     protected EntityManager getEntityManager() {
         return em;
+    }
+
+    // Cannot disable inference in Jena queries
+    @Disabled
+    @Override
+    public void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() {
     }
 }

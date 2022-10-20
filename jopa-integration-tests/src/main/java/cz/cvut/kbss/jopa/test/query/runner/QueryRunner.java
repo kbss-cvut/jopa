@@ -432,7 +432,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
      * Enhancement #101
      */
     @Test
-    void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() throws Exception {
+    public void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() throws Exception {
         final String superType = Vocabulary.CLASS_IRI_BASE + "A-superclass";
         persistTestData(Collections.singleton(
                                 new Quad(URI.create(Vocabulary.C_OWL_CLASS_A), URI.create(RDFS.SUB_CLASS_OF), URI.create(superType))),
