@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
@@ -28,10 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -119,7 +117,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
         final List res = q.getResultList();
         // The result can contain more types (inference)
-        assertTrue(res.size() >= types.size());
+        assertThat(res.size(), greaterThanOrEqualTo(types.size()));
         for (String type : types) {
             assertTrue(res.contains(URI.create(type)));
         }
@@ -426,5 +424,23 @@ public abstract class QueryRunner extends BaseQueryRunner {
         assertEquals(1, res.size());
         final Object subRes = res.get(0);
         assertEquals(d.getUri(), subRes);
+    }
+
+    /**
+     * Enhancement #101
+     */
+    @Test
+    void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() {
+        final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
+        final Set<String> types = new HashSet<>(a.getTypes());
+        types.add(a.getClass().getAnnotation(OWLClass.class).iri());
+        final String query = "SELECT ?type WHERE { ?instance a ?type . }";
+        final Query q = getEntityManager().createNativeQuery(query);
+        q.setParameter("instance", a.getUri())
+                .setHint(QueryHints.DISABLE_INFERENCE, true);
+
+        final List res = q.getResultList();
+        // The result can contain more types (inference)
+        assertEquals(types, res.stream().map(Object::toString).collect(Collectors.toSet()));
     }
 }
