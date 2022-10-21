@@ -23,22 +23,26 @@ import java.util.Objects;
  */
 public class CustomConverterWrapper<X, Y> implements ConverterWrapper<X, Y> {
 
-    private final AttributeConverter<X, Y> wrapped;
+    private final AttributeConverter<X, Y> wrappedConverter;
     private final Class<Y> axiomValueType;
 
-    public CustomConverterWrapper(AttributeConverter<X, Y> wrapped, Class<Y> axiomValueType) {
-        this.wrapped = Objects.requireNonNull(wrapped);
+    public CustomConverterWrapper(AttributeConverter<X, Y> wrappedConverter, Class<Y> axiomValueType) {
+        this.wrappedConverter = Objects.requireNonNull(wrappedConverter);
         this.axiomValueType = axiomValueType;
+    }
+
+    public AttributeConverter<X, Y> getWrappedConverter() {
+        return wrappedConverter;
     }
 
     @Override
     public Y convertToAxiomValue(X value) {
-        return wrapped.convertToAxiomValue(value);
+        return wrappedConverter.convertToAxiomValue(value);
     }
 
     @Override
     public X convertToAttribute(Y value) {
-        return wrapped.convertToAttribute(value);
+        return wrappedConverter.convertToAttribute(value);
     }
 
     @Override

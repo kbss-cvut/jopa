@@ -39,6 +39,5 @@ class AnnotationPropertyAttributes extends PropertyAttributes {
         this.simpleLiteral = oap.simpleLiteral();
         this.datatype = typeBuilderContext.resolveNamespace(oap.datatype());
         this.language = resolveLanguage(fieldValueCls);
-        validator.validateLiteralFieldMapping(field, this);
     }
 }

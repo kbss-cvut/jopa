@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.test;
 
+import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -19,6 +20,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -74,6 +76,10 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_enumSimpleLiteralAttribute, simpleLiteral = true)
     private Severity enumSimpleLiteral;
+
+    @Convert(converter = ZoneOffsetConverter.class)
+    @OWLDataProperty(iri = Vocabulary.p_m_withConverter, simpleLiteral = true)
+    private ZoneOffset withConverter;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -199,6 +205,14 @@ public class OWLClassM {
         this.enumSimpleLiteral = enumSimpleLiteral;
     }
 
+    public ZoneOffset getWithConverter() {
+        return withConverter;
+    }
+
+    public void setWithConverter(ZoneOffset withConverter) {
+        this.withConverter = withConverter;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -216,6 +230,7 @@ public class OWLClassM {
                 ", explicitDatatype=" + explicitDatatype +
                 ", langString=" + langString +
                 ", enumSimpleLiteral=" + enumSimpleLiteral +
+                ", withConverter=" + withConverter +
                 '}';
     }
 
@@ -233,5 +248,6 @@ public class OWLClassM {
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
         this.stringCollection = new HashSet<>(Arrays.asList("test-one", "test-two", "test-three"));
         this.enumSimpleLiteral = Severity.HIGH;
+        this.withConverter = ZoneOffset.UTC;
     }
 }

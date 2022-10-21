@@ -120,6 +120,7 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
             return this;
         }
 
-        public abstract PluralAttribute<X, C, E> build();
+        @Override
+        public abstract AbstractPluralAttribute<X, C, E> build();
     }
 }

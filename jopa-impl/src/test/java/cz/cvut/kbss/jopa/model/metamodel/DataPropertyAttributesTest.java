@@ -44,13 +44,6 @@ class DataPropertyAttributesTest {
         doAnswer(invocation -> invocation.getArguments()[0]).when(typeBuilderContext).resolveNamespace(anyString());
     }
 
-    @Test
-    void resolveInvokesDataPropertyFieldValidation() throws Exception {
-        final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
-        verify(validator).validateLiteralFieldMapping(OWLClassA.getStrAttField(), sut);
-    }
-
     private DataPropertyAttributes initSystemUnderTest() {
         final DataPropertyAttributes sut = new DataPropertyAttributes(validator);
         sut.typeBuilderContext = typeBuilderContext;

@@ -20,10 +20,8 @@ import cz.cvut.kbss.jopa.vocabulary.RDF;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 import static cz.cvut.kbss.jopa.model.PersistenceProperties.IDENTIFIER_TYPES;
 
@@ -44,8 +42,7 @@ class FieldMappingValidator {
         final PropertiesParametersResolver parametersResolver = new PropertiesParametersResolver(field);
         if (!isValidIdentifierType(parametersResolver.getKeyType())) {
             throw new InvalidFieldMappingException(
-                    "@Properties key type is not a valid identifier type. Expected one of " +
-                            IDENTIFIER_TYPES);
+                    "@Properties key type is not a valid identifier type. Expected one of " + IDENTIFIER_TYPES);
         }
         validatePropertiesValueType(parametersResolver.getValueType());
     }
@@ -89,49 +86,39 @@ class FieldMappingValidator {
         return type instanceof Class && IdentifierTransformer.isValidIdentifierType((Class<?>) type);
     }
 
-    void validateAttributeMapping(Field field, PropertyAttributes pa) {
-        validateFieldDoesNotMapRdfType(field, pa);
+    void validateAttributeMapping(AbstractAttribute<?, ?> attribute) {
+        validateAttributeDoesNotMapRdfType(attribute);
+        if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.DATA
+                || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ANNOTATION) {
+            validateLexicalFormAttribute(attribute);
+            validateSimpleLiteralField(attribute);
+        }
     }
 
-    private static void validateFieldDoesNotMapRdfType(Field field, PropertyAttributes pa) {
-        if (RDF.TYPE.equals(pa.getIri().toString())) {
+    private static void validateAttributeDoesNotMapRdfType(AbstractAttribute<?, ?> att) {
+        if (RDF.TYPE.equals(att.getIRI().toString())) {
             throw new InvalidFieldMappingException(
-                    field + " - cannot use rdf:type for property mapping. Use a Set field annotated with " + Types.class.getSimpleName());
+                    att + " - cannot use rdf:type for property mapping. Use a Set field annotated with " + Types.class.getSimpleName());
         }
     }
 
-    void validateLiteralFieldMapping(Field field, PropertyAttributes pa) {
-        assert field != null;
-        assert pa != null;
-        validateAttributeMapping(field, pa);
-        validateLexicalFormField(field, pa);
-        validateSimpleLiteralField(field, pa);
-    }
-
-    private static void validateLexicalFormField(Field field, PropertyAttributes pa) {
-        if (pa.isLexicalForm() && !String.class.isAssignableFrom(getLiteralFieldType(field))) {
+    private static void validateLexicalFormAttribute(AbstractAttribute<?, ?> attribute) {
+        if (attribute.isLexicalForm() && !String.class.isAssignableFrom(getLiteralFieldType(attribute))) {
             throw new InvalidFieldMappingException(
-                    field + " - lexicalForm mapping can be used only on fields of type String.");
+                    attribute + " - lexicalForm mapping can be used only on fields of type String.");
         }
     }
 
-    private static void validateSimpleLiteralField(Field field, PropertyAttributes pa) {
-        final Class<?> fieldType = getLiteralFieldType(field);
-        if (pa.isSimpleLiteral() && (!String.class.isAssignableFrom(fieldType) && !Enum.class.isAssignableFrom(
-                fieldType))) {
+    private static void validateSimpleLiteralField(AbstractAttribute<?, ?> attribute) {
+        final Class<?> fieldType = getLiteralFieldType(attribute);
+        if (attribute.isSimpleLiteral() && (!String.class.isAssignableFrom(fieldType) && !Enum.class.isAssignableFrom(
+                fieldType) && !attribute.getConverter().supportsAxiomValueType(String.class))) {
             throw new InvalidFieldMappingException(
-                    field + " - simpleLiteral mapping can only be used on fields of type String or Enum.");
+                    attribute + " - simpleLiteral mapping can only be used on fields of type String or Enum or using a suitable converter.");
         }
     }
 
-    private static Class<?> getLiteralFieldType(Field field) {
-        final Class<?> fieldType = field.getType();
-        if (List.class.isAssignableFrom(fieldType) || Set.class.isAssignableFrom(fieldType) ||
-                SortedSet.class.isAssignableFrom(fieldType)) {
-            final ParameterizedType typeSpec = (ParameterizedType) field.getGenericType();
-            assert typeSpec.getActualTypeArguments().length == 1;
-            return (Class<?>) typeSpec.getActualTypeArguments()[0];
-        }
-        return fieldType;
+    private static Class<?> getLiteralFieldType(AbstractAttribute<?, ?> attribute) {
+        return attribute.isCollection() ? ((AbstractPluralAttribute) attribute).getBindableJavaType() : attribute.getJavaType();
     }
 }

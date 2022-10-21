@@ -41,7 +41,9 @@ public class SetAttributeImpl<X, V> extends AbstractPluralAttribute<X, Set<V>, V
 
         @Override
         public SetAttributeImpl<X, V> build() {
-            return new SetAttributeImpl<>(this);
+            final SetAttributeImpl<X, V> result = new SetAttributeImpl<>(this);
+            mappingValidator.validateAttributeMapping(result);
+            return result;
         }
     }
 }
