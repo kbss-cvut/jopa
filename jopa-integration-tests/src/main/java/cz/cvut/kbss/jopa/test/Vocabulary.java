@@ -61,6 +61,7 @@ public class Vocabulary {
     public static final String p_m_StringCollection = ATTRIBUTE_IRI_BASE + "m-collectionStringAttribute";
     public static final String p_m_explicitDatatype = ATTRIBUTE_IRI_BASE + "m-explicitDatatype";
     public static final String p_m_langString = ATTRIBUTE_IRI_BASE + "m-langString";
+    public static final String p_m_withConverter = ATTRIBUTE_IRI_BASE + "m-withConverter";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
     public static final String P_N_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "N-stringAttribute";

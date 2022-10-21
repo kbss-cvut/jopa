@@ -15,12 +15,14 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.lang.reflect.Field;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,6 +67,10 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.DURATION)
     private String explicitDatatype;
+
+    @Convert(converter = ZoneOffsetConverter.class)
+    @OWLDataProperty(iri = Vocabulary.p_m_withConverter, simpleLiteral = true)
+    private ZoneOffset withConverter;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -158,6 +164,14 @@ public class OWLClassM {
         this.explicitDatatype = explicitDatatype;
     }
 
+    public ZoneOffset getWithConverter() {
+        return withConverter;
+    }
+
+    public void setWithConverter(ZoneOffset withConverter) {
+        this.withConverter = withConverter;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -171,6 +185,7 @@ public class OWLClassM {
                 ", lexicalForm=" + lexicalForm +
                 ", simpleLiteral=" + simpleLiteral +
                 ", explicitDatatype=" + explicitDatatype +
+                ", withConverter=" + withConverter +
                 '}';
     }
 
@@ -188,6 +203,7 @@ public class OWLClassM {
         this.lexicalForm = "test";
         this.simpleLiteral = "test";
         this.explicitDatatype = "P1Y";
+        this.withConverter = ZoneOffset.UTC;
     }
 
     public static String getClassIri() {
@@ -236,5 +252,9 @@ public class OWLClassM {
 
     public static Field getExplicitDatatypeField() throws Exception {
         return OWLClassM.class.getDeclaredField("explicitDatatype");
+    }
+
+    public static Field getWithConverterField() throws Exception {
+        return OWLClassM.class.getDeclaredField("withConverter");
     }
 }

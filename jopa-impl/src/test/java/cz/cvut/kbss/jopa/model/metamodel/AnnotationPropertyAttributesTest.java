@@ -45,14 +45,6 @@ class AnnotationPropertyAttributesTest {
         doAnswer(invocation -> invocation.getArguments()[0]).when(typeBuilderContext).resolveNamespace(anyString());
     }
 
-    @Test
-    void resolveInvokesAnnotationPropertyFieldValidation() throws Exception {
-        final AnnotationPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder,
-                OWLClassN.getAnnotationPropertyField().getType());
-        verify(validator).validateLiteralFieldMapping(OWLClassN.getAnnotationPropertyField(), sut);
-    }
-
     private AnnotationPropertyAttributes initSystemUnderTest() {
         final AnnotationPropertyAttributes sut = new AnnotationPropertyAttributes(validator);
         sut.typeBuilderContext = typeBuilderContext;

@@ -22,6 +22,8 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +35,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FieldMappingValidatorTest {
 
@@ -50,19 +54,19 @@ class FieldMappingValidatorTest {
     @Test
     void rawPropertiesMapThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validatePropertiesField(getField("rawProperties")));
+                     () -> validator.validatePropertiesField(getField("rawProperties")));
     }
 
     @Test
     void propertiesFieldRequiresValueTypeToBeSet() {
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validatePropertiesField(getField("propertiesWithIntegerValue")));
+                     () -> validator.validatePropertiesField(getField("propertiesWithIntegerValue")));
     }
 
     @Test
     void propertiesFieldWithInvalidKeyTypeThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validatePropertiesField(getField("propertiesWithInvalidKey")));
+                     () -> validator.validatePropertiesField(getField("propertiesWithInvalidKey")));
     }
 
     @Test
@@ -83,7 +87,7 @@ class FieldMappingValidatorTest {
     @Test
     void invalidTypesValueTypeThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateTypesField(getField("invalidValueTypes")));
+                     () -> validator.validateTypesField(getField("invalidValueTypes")));
     }
 
     @Test
@@ -109,72 +113,109 @@ class FieldMappingValidatorTest {
     @Test
     void invalidIdentifierTypeThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateIdentifierType(getField("invalidIdentifier").getType()));
+                     () -> validator.validateIdentifierType(getField("invalidIdentifier").getType()));
     }
 
     @Test
     void lexicalFormAnnotationIsValidOnStringField() throws Exception {
-        final PropertyAttributes pa = new DataPropertyAttributes(validator);
-        pa.iri = IRI.create(Vocabulary.p_m_lexicalForm);
-        pa.lexicalForm = true;
-        validator.validateLiteralFieldMapping(OWLClassM.getLexicalFormField(), pa);
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(attribute.isLexicalForm()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
+        when(attribute.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
+        when(attribute.getJavaType()).thenReturn(OWLClassM.getLexicalFormField().getType());
+        validator.validateAttributeMapping(attribute);
     }
 
     @Test
-    void validateLiteralFieldMappingThrowsInvalidFieldMappingExceptionWhenFieldIsLexicalFormAndNotString() {
-        final PropertyAttributes pa = new DataPropertyAttributes(validator);
-        pa.iri = IRI.create(Vocabulary.p_m_lexicalForm);
-        pa.lexicalForm = true;
-        assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateLiteralFieldMapping(getField("invalidLexicalForm"), pa));
+    void validateLiteralFieldMappingThrowsInvalidFieldMappingExceptionWhenFieldIsLexicalFormAndNotString() throws Exception {
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(attribute.isLexicalForm()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
+        when(attribute.getJavaField()).thenReturn(getField("invalidLexicalForm"));
+        when(attribute.getJavaType()).thenReturn(getField("invalidLexicalForm").getType());
+        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(attribute));
     }
 
     @Test
     void simpleLiteralAnnotationIsValidOnStringField() throws Exception {
-        final PropertyAttributes pa = new DataPropertyAttributes(validator);
-        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
-        pa.simpleLiteral = true;
-        validator.validateLiteralFieldMapping(OWLClassM.getSimpleLiteralField(), pa);
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(attribute.isSimpleLiteral()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
+        when(attribute.getJavaType()).thenReturn(OWLClassM.getSimpleLiteralField().getType());
+        validator.validateAttributeMapping(attribute);
     }
 
     @Test
-    void validateLiteralFieldMappingThrowsInvalidFieldMappingExceptionWhenFieldIsSimpleLiteralAndNotString() {
-        final PropertyAttributes pa = new DataPropertyAttributes(validator);
-        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
-        pa.simpleLiteral = true;
-        assertThrows(InvalidFieldMappingException.class,
-                () -> validator.validateLiteralFieldMapping(getField("invalidSimpleLiteral"), pa));
+    void validateLiteralFieldMappingThrowsInvalidFieldMappingExceptionWhenFieldIsSimpleLiteralAndNotString() throws Exception {
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(attribute.isSimpleLiteral()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
+        when(attribute.getJavaField()).thenReturn(getField("invalidSimpleLiteral"));
+        when(attribute.getJavaType()).thenReturn(getField("invalidSimpleLiteral").getType());
+        when(attribute.getConverter()).thenReturn(DefaultConverterWrapper.INSTANCE);
+        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(attribute));
+    }
+
+    @Test
+    void validateLiteralFieldMappingAllowsSimpleLiteralMappingViaConverterSupportingStringAxiomValue() throws Exception {
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(attribute.isSimpleLiteral()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
+        when(attribute.getJavaField()).thenReturn(getField("invalidSimpleLiteral"));
+        when(attribute.getJavaType()).thenReturn(getField("invalidSimpleLiteral").getType());
+        final ConverterWrapper<Integer, String> wrapper = mock(ConverterWrapper.class);
+        when(wrapper.supportsAxiomValueType(String.class)).thenReturn(true);
+        when(attribute.getConverter()).thenReturn(wrapper);
+        validator.validateAttributeMapping(attribute);
     }
 
     @Test
     void simpleLiteralAnnotationIsValidOnSetStringField() throws Exception {
-        final PropertyAttributes pa = new AnnotationPropertyAttributes(validator);
-        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
-        pa.simpleLiteral = true;
-        validator.validateLiteralFieldMapping(getField("validSimpleLiteralSet"), pa);
+        final AbstractPluralAttribute attribute = mock(AbstractPluralAttribute.class);
+        when(attribute.isCollection()).thenReturn(true);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
+        when(attribute.isSimpleLiteral()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
+        when(attribute.getJavaField()).thenReturn(getField("validSimpleLiteralSet"));
+        when(attribute.getBindableJavaType()).thenReturn(String.class);
+        validator.validateAttributeMapping(attribute);
     }
 
     @Test
     void simpleLiteralMappingIsValidOnEnum() throws Exception {
-        final PropertyAttributes pa = new DataPropertyAttributes(validator);
-        pa.iri = IRI.create(Vocabulary.p_m_simpleLiteral);
-        pa.simpleLiteral = true;
-        validator.validateLiteralFieldMapping(getField("validEnumSimpleLiteral"), pa);
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
+        when(attribute.isSimpleLiteral()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
+        when(attribute.getJavaField()).thenReturn(getField("validEnumSimpleLiteral"));
+        when(attribute.getJavaType()).thenReturn(getField("validEnumSimpleLiteral").getType());
+        validator.validateAttributeMapping(attribute);
     }
 
     @Test
     void lexicalFormDataPropertyIsValidOnListStringFields() throws Exception {
-        final PropertyAttributes pa = new DataPropertyAttributes(validator);
-        pa.iri = IRI.create(Vocabulary.p_m_lexicalForm);
-        pa.lexicalForm = true;
-        validator.validateLiteralFieldMapping(getField("validLexicalFormList"), pa);
+        final AbstractPluralAttribute attribute = mock(AbstractPluralAttribute.class);
+        when(attribute.isCollection()).thenReturn(true);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(attribute.isLexicalForm()).thenReturn(true);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
+        when(attribute.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
+        when(attribute.getBindableJavaType()).thenReturn(String.class);
+        validator.validateAttributeMapping(attribute);
     }
 
     @Test
-    void validateAttributeMappingThrowsInvalidFieldMappingExceptionWhenFieldMapsRDFType() {
-        final PropertyAttributes pa = new DataPropertyAttributes(validator);
-        pa.iri = IRI.create(RDF.TYPE);
-        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(getField("type"), pa));
+    void validateAttributeMappingThrowsInvalidFieldMappingExceptionWhenFieldMapsRDFType() throws Exception {
+        final AbstractAttribute<?, ?> attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(attribute.getIRI()).thenReturn(IRI.create(RDF.TYPE));
+        when(attribute.getJavaField()).thenReturn(getField("type"));
+        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(attribute));
     }
 
     @SuppressWarnings("unused")

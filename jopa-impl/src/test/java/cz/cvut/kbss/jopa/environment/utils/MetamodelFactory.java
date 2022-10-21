@@ -32,6 +32,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.*;
@@ -552,6 +553,7 @@ public class MetamodelFactory {
                                          AbstractAttribute enumAtt, AbstractPluralAttribute intSetAtt,
                                          SingularAttributeImpl lexicalFormAtt, SingularAttributeImpl simpleLiteralAtt,
                                          SingularAttributeImpl explicitDatatypeAtt,
+                                         SingularAttributeImpl mWithConverterAtt,
                                          Identifier idMock)
             throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassM.class);
@@ -707,8 +709,21 @@ public class MetamodelFactory {
         when(explicitDatatypeAtt.isSimpleLiteral()).thenReturn(false);
         when(explicitDatatypeAtt.getDatatype()).thenReturn(OWLClassM.getExplicitDatatypeField()
                 .getAnnotation(OWLDataProperty.class).datatype());
-        when(etMock.getFieldSpecification(OWLClassM.getSimpleLiteralField().getName())).thenReturn(simpleLiteralAtt);
-        when(etMock.getAttribute(OWLClassM.getSimpleLiteralField().getName())).thenReturn(simpleLiteralAtt);
+        when(etMock.getFieldSpecification(OWLClassM.getExplicitDatatypeField().getName())).thenReturn(explicitDatatypeAtt);
+        when(etMock.getAttribute(OWLClassM.getExplicitDatatypeField().getName())).thenReturn(explicitDatatypeAtt);
+
+        when(mWithConverterAtt.getJavaField()).thenReturn(OWLClassM.getWithConverterField());
+        when(mWithConverterAtt.getName()).thenReturn(OWLClassM.getWithConverterField().getName());
+        when(mWithConverterAtt.getJavaType()).thenReturn(OWLClassM.getWithConverterField().getType());
+        when(mWithConverterAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_withConverter));
+        when(mWithConverterAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(mWithConverterAtt.isCollection()).thenReturn(false);
+        when(mWithConverterAtt.getDeclaringType()).thenReturn(etMock);
+        when(mWithConverterAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(mWithConverterAtt.getConverter()).thenReturn(new CustomConverterWrapper(new ZoneOffsetConverter(), String.class));
+        when(mWithConverterAtt.isSimpleLiteral()).thenReturn(false);
+        when(etMock.getFieldSpecification(OWLClassM.getWithConverterField().getName())).thenReturn(mWithConverterAtt);
+        when(etMock.getAttribute(OWLClassM.getWithConverterField().getName())).thenReturn(mWithConverterAtt);
 
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }

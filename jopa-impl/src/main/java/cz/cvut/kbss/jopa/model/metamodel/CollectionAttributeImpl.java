@@ -42,7 +42,9 @@ public class CollectionAttributeImpl<X, V> extends AbstractPluralAttribute<X, Co
 
         @Override
         public CollectionAttributeImpl<X, V> build() {
-            return new CollectionAttributeImpl<>(this);
+            final CollectionAttributeImpl<X, V> result = new CollectionAttributeImpl<>(this);
+            mappingValidator.validateAttributeMapping(result);
+            return result;
         }
     }
 }

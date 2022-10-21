@@ -292,6 +292,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         ret.add(ZonedDateTime.class);
         ret.add(OffsetDateTime.class);
         ret.add(OffsetTime.class);
+        ret.add(ZoneOffset.class);
         ret.add(Instant.class);
         ret.add(Duration.class);
         ret.add(Period.class);

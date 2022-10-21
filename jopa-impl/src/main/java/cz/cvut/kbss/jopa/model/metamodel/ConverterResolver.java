@@ -1,26 +1,26 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
-import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
-import cz.cvut.kbss.jopa.oom.converter.EnumConverter;
-import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
-import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
+import cz.cvut.kbss.jopa.model.AttributeConverter;
+import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.oom.converter.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -56,6 +56,10 @@ class ConverterResolver {
         if (attValueType.isEnum()) {
             return Optional.of(new EnumConverter(attValueType));
         }
+        final Optional<ConverterWrapper<?, ?>> customConverter = resolveCustomConverter(field);
+        if (customConverter.isPresent()) {
+            return customConverter;
+        }
         if (config.hasDatatype()) {
             verifyTypeIsString(field, attValueType);
             return Optional.of(new ToRdfLiteralConverter(config.getDatatype()));
@@ -68,23 +72,51 @@ class ConverterResolver {
 
     private static void verifyTypeIsString(Field field, Class<?> attValueType) {
         if (!attValueType.equals(String.class)) {
-            throw new InvalidFieldMappingException("Attributes with explicit datatype identifier must have values of type String. " +
-                    "The provided attribute " + field + " has type " + attValueType);
+            throw new InvalidFieldMappingException(
+                    "Attributes with explicit datatype identifier must have values of type String. " +
+                            "The provided attribute " + field + " has type " + attValueType);
         }
     }
 
+    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(Field field) {
+        final Convert convertAnn = field.getAnnotation(Convert.class);
+        if (convertAnn == null || convertAnn.disableConversion()) {
+            return Optional.empty();
+        }
+        final Class converterType = convertAnn.converter();
+        try {
+            return Optional.of(new CustomConverterWrapper((AttributeConverter<?, ?>) converterType.newInstance(),
+                                                          resolveConverterAxiomType(
+                                                                  (Class<? extends AttributeConverter<?, ?>>) converterType)));
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new InvalidConverterException(
+                    "Converter type " + converterType + " must have a public no-arg constructor to be used.", e);
+        }
+    }
+
+    private static Class<?> resolveConverterAxiomType(Class<?> converterType) {
+        final ParameterizedType typeSpec = (ParameterizedType) Arrays.stream(converterType.getGenericInterfaces())
+                                                                     .filter(t -> t instanceof ParameterizedType && ((ParameterizedType) t).getRawType()
+                                                                                                                                           .equals(AttributeConverter.class))
+                                                                     .findAny().orElseThrow(
+                        () -> new InvalidConverterException(
+                                "Type specified in @Convert annotation does not implement " + AttributeConverter.class.getSimpleName()));
+        return (Class<?>) typeSpec.getActualTypeArguments()[1];
+
+    }
+
     /**
-     * Alternative method for resolving converter. Can be used when the persistent attribute type is not relevant
-     * and/or the class {@link PropertyAttributes} is not used for attribute configuration,
-     * e.g. for attributes defined by a query.
+     * Alternative method for resolving converter. Can be used when the persistent attribute type is not relevant and/or
+     * the class {@link PropertyAttributes} is not used for attribute configuration, e.g. for attributes defined by a
+     * query.
      * <p>
-     * Determines converter which should be used for transformation of values to and from the specified type of a field.
+     * Determines converter which should be used for transformation of values to and from the specified type of field.
      * <p>
-     * Besides custom converters, the system supports a number of built-in converters, which ensure that e.g. widening
+     * Beside custom converters, the system supports a number of built-in converters, which ensure that e.g. widening
      * conversion or mapping to Java 8 Date/Time API is supported.
      *
-     * @param type attribute type as defined in {@link cz.cvut.kbss.jopa.model.metamodel.Type}
-     *             (not to be confused with {@link java.lang.reflect.Type})
+     * @param type attribute type as defined in {@link cz.cvut.kbss.jopa.model.metamodel.Type} (not to be confused with
+     *             {@link java.lang.reflect.Type})
      * @return Possible converter instance to be used for transformation of values of the specified field. Returns empty
      * {@code Optional} if no suitable converter is found (or needed)
      * @see cz.cvut.kbss.jopa.model.metamodel.QueryAttribute

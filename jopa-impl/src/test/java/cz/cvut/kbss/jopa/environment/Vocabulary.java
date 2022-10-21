@@ -42,6 +42,7 @@ public class Vocabulary {
     public static final String p_m_lexicalForm = ATTRIBUTE_BASE + "m-lexicalForm";
     public static final String p_m_simpleLiteral = ATTRIBUTE_BASE + "m-simpleLiteral";
     public static final String p_m_explicitDatatype = ATTRIBUTE_BASE + "m-explicitDatatype";
+    public static final String p_m_withConverter = ATTRIBUTE_BASE + "m-withConverter";
 
     public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
     public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";

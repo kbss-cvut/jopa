@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -756,5 +757,18 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         verifyStatementsPresent(Collections.singleton(
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
                          entityM.getEnumSimpleLiteral().name(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsUsingExplicitCustomConverter() throws Exception {
+        this.em = getEntityManager("persistSupportsUsingExplicitCustomConverter", false);
+        final ZoneOffset value = ZoneOffset.ofHours(2);
+        entityM.setWithConverter(value);
+
+        persist(entityM);
+
+        verifyStatementsPresent(Collections.singleton(
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_withConverter),
+                         entityM.getWithConverter().getId(), (String) null)), em);
     }
 }
