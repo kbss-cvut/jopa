@@ -84,11 +84,9 @@ class FieldResultMapper {
             return queryValue;
         }
         try {
-            if (Converters.getDefaultConverters().containsKey(fieldSpec.getJavaType())) {
-                return ((ConverterWrapper) Converters.getDefaultConverters()
-                        .get(fieldSpec.getJavaType())).convertToAttribute(queryValue);
-            }
-            return DatatypeTransformer.transform(queryValue, fieldSpec.getJavaType());
+            return Converters.getDefaultConverter(fieldSpec.getJavaType())
+                             .map(converter -> ((ConverterWrapper) converter).convertToAttribute(queryValue))
+                             .orElseGet(() -> DatatypeTransformer.transform(queryValue, fieldSpec.getJavaType()));
         } catch (UnsupportedTypeTransformationException e) {
             throw new SparqlResultMappingException(e);
         }

@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.environment.ZoneOffsetConverter;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InstantiationException;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
@@ -39,6 +40,7 @@ class ConverterLoaderTest {
                    instanceOf(AutoAppliedConverter.class));
     }
 
+    @TestLocal
     @Converter(autoApply = true)
     public static class AutoAppliedConverter implements AttributeConverter<ZoneOffset, String> {
 
@@ -67,8 +69,9 @@ class ConverterLoaderTest {
         assertThat(e.getMessage(), containsString(AttributeConverter.class.getSimpleName()));
     }
 
+    @TestLocal
     @Converter(autoApply = true)
-    public static class InvalidTypeConverter {
+    static class InvalidTypeConverter {
     }
 
     @Test
@@ -78,8 +81,9 @@ class ConverterLoaderTest {
         assertThat(e.getCause(), instanceOf(InstantiationException.class));
     }
 
+    @TestLocal
     @Converter(autoApply = true)
-    public static class MissingNoArgConstructorConverter implements AttributeConverter<Period, String> {
+    static class MissingNoArgConstructorConverter implements AttributeConverter<Period, String> {
 
         public MissingNoArgConstructorConverter(String argument) {
             // Do nothing
