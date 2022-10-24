@@ -12,11 +12,13 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.exception.InstantiationException;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -29,7 +31,7 @@ import java.util.Optional;
  * Currently, only built-in converters for data and annotation property attributes are supported, but in the future,
  * custom converters should be also supported.
  */
-class ConverterResolver {
+public class ConverterResolver {
 
     private final Converters converters;
 
@@ -40,7 +42,7 @@ class ConverterResolver {
     /**
      * Determines converter which should be used for transformation of values to and from the specified field.
      * <p>
-     * Besides custom converters, the system supports a number of built-in converters, which ensure that e.g. widening
+     * Beside custom converters, the system supports a number of built-in converters, which ensure that e.g. widening
      * conversion or mapping to Java 8 Date/Time API is supported.
      *
      * @param field  The field for which converter should be determined
@@ -83,24 +85,41 @@ class ConverterResolver {
         if (convertAnn == null || convertAnn.disableConversion()) {
             return Optional.empty();
         }
-        final Class converterType = convertAnn.converter();
-        try {
-            return Optional.of(new CustomConverterWrapper((AttributeConverter<?, ?>) converterType.newInstance(),
-                                                          resolveConverterAxiomType(
-                                                                  (Class<? extends AttributeConverter<?, ?>>) converterType)));
-        } catch (InstantiationException | IllegalAccessException e) {
+        return Optional.of(createCustomConverter(convertAnn.converter()));
+    }
+
+    public static ConverterWrapper<?, ?> createCustomConverter(Class<?> converterType) {
+        if (!AttributeConverter.class.isAssignableFrom(converterType)) {
             throw new InvalidConverterException(
-                    "Converter type " + converterType + " must have a public no-arg constructor to be used.", e);
+                    "Specified converter type " + converterType + " does not implement " + AttributeConverter.class);
+        }
+        try {
+            final AttributeConverter<?, ?> converter =
+                    (AttributeConverter<?, ?>) ReflectionUtils.instantiateUsingDefaultConstructor(converterType);
+            return new CustomConverterWrapper(converter, resolveConverterAxiomType(converterType));
+        } catch (InstantiationException e) {
+            throw new InvalidConverterException("Unable to instantiate attribute converter.", e);
         }
     }
 
-    private static Class<?> resolveConverterAxiomType(Class<?> converterType) {
-        final ParameterizedType typeSpec = (ParameterizedType) Arrays.stream(converterType.getGenericInterfaces())
-                                                                     .filter(t -> t instanceof ParameterizedType && ((ParameterizedType) t).getRawType()
-                                                                                                                                           .equals(AttributeConverter.class))
-                                                                     .findAny().orElseThrow(
+    public static Class<?> resolveConverterAttributeType(Class<?> converterType) {
+        final ParameterizedType typeSpec = getConverterGenerics(converterType);
+        assert typeSpec.getActualTypeArguments().length == 2;
+        return (Class<?>) typeSpec.getActualTypeArguments()[0];
+    }
+
+    private static ParameterizedType getConverterGenerics(Class<?> converterType) {
+        return (ParameterizedType) Arrays.stream(converterType.getGenericInterfaces())
+                                         .filter(t -> t instanceof ParameterizedType && ((ParameterizedType) t).getRawType()
+                                                                                                               .equals(AttributeConverter.class))
+                                         .findAny().orElseThrow(
                         () -> new InvalidConverterException(
-                                "Type specified in @Convert annotation does not implement " + AttributeConverter.class.getSimpleName()));
+                                "Specified converter type " + converterType + " does not implement " + AttributeConverter.class.getSimpleName()));
+    }
+
+    private static Class<?> resolveConverterAxiomType(Class<?> converterType) {
+        final ParameterizedType typeSpec = getConverterGenerics(converterType);
+        assert typeSpec.getActualTypeArguments().length == 2;
         return (Class<?>) typeSpec.getActualTypeArguments()[1];
 
     }
@@ -128,5 +147,15 @@ class ConverterResolver {
         }
 
         return converters.getConverter(attValueType);
+    }
+
+    /**
+     * Registers the specified converter for automatically converting values to the specified attribute type.
+     *
+     * @param attributeType Entity attribute type to convert to/from
+     * @param converter     Converter instance
+     */
+    public void registerConverter(Class<?> attributeType, ConverterWrapper<?, ?> converter) {
+        converters.registerConverter(attributeType, converter);
     }
 }

@@ -1,24 +1,25 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ public class PersistenceUnitClassFinder {
 
     private final EntityLoader entityLoader = new EntityLoader();
     private final ResultSetMappingLoader resultSetMappingLoader = new ResultSetMappingLoader();
+    private final ConverterLoader converterLoader = new ConverterLoader();
 
     private boolean scanned = false;
 
@@ -59,16 +61,18 @@ public class PersistenceUnitClassFinder {
         final ClasspathScanner classpathScanner = resolveClasspathScanner(configuration);
         classpathScanner.addListener(entityLoader);
         classpathScanner.addListener(resultSetMappingLoader);
+        classpathScanner.addListener(converterLoader);
         classpathScanner.processClasses(toScan);
         this.scanned = true;
     }
 
     private static ClasspathScanner resolveClasspathScanner(Configuration config) {
         try {
-            final String scannerType = config.get(JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS, DefaultClasspathScanner.class.getName());
+            final String scannerType = config.get(JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS,
+                                                  DefaultClasspathScanner.class.getName());
             final Class<?> scannerCls = Class.forName(scannerType);
-            return (ClasspathScanner) scannerCls.newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            return (ClasspathScanner) ReflectionUtils.instantiateUsingDefaultConstructor(scannerCls);
+        } catch (ClassNotFoundException | cz.cvut.kbss.jopa.exception.InstantiationException e) {
             throw new MetamodelInitializationException("Unable to instantiate configured ClasspathScanner.", e);
         }
     }
@@ -91,5 +95,16 @@ public class PersistenceUnitClassFinder {
     public Set<SparqlResultSetMapping> getResultSetMappings() {
         assert scanned;
         return resultSetMappingLoader.getMappings();
+    }
+
+    /**
+     * Gets {@link cz.cvut.kbss.jopa.model.AttributeConverter} implementations found during classpath scanning.
+     *
+     * The converters are wrapped in an internal helper class {@link ConverterWrapper}.
+     * @return Set of custom converters
+     */
+    public Map<Class<?>, ConverterWrapper<?, ?>> getAttributeConverters() {
+        assert scanned;
+        return converterLoader.getConverters();
     }
 }
