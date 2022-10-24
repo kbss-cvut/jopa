@@ -45,6 +45,10 @@ public class Converters {
         return Optional.ofNullable(converters.get(type));
     }
 
+    void registerConverter(Class<?> attributeType, ConverterWrapper<?, ?> converter) {
+        converters.put(attributeType, converter);
+    }
+
     private static Map<Class<?>, ConverterWrapper<?, ?>> initDefaultConverters() {
         final Map<Class<?>, ConverterWrapper<?, ?>> converters = new HashMap<>();
         converters.put(LocalDateTime.class, new LocalDateTimeConverter());
