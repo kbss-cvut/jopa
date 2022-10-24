@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.loaders;
 
@@ -94,8 +92,10 @@ public class PersistenceUnitClassFinderTest {
 
     @Test
     public void loadsEntityClassesWhenAncestorPackageIsSet() {
-        final Map<String, String> properties = Collections.singletonMap(
-                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss");
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
+        properties.put(JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS,
+                       cz.cvut.kbss.jopa.environment.utils.TestClasspathScanner.class.getCanonicalName());
         sut.scanClasspath(new Configuration(properties));
         assertTrue(sut.getEntities().containsAll(ENTITY_CLASSES));
     }
@@ -110,7 +110,7 @@ public class PersistenceUnitClassFinderTest {
         sut.scanClasspath(new Configuration(properties));
         final Set<Class<?>> result = sut.getEntities();
         final Optional<Class<?>> cls = result.stream().filter(c -> c.getName().contains("classInName"))
-                .findAny();
+                                             .findAny();
         assertTrue(cls.isPresent());
     }
 
@@ -121,7 +121,7 @@ public class PersistenceUnitClassFinderTest {
         sut.scanClasspath(new Configuration(properties));
         assertFalse(sut.getResultSetMappings().isEmpty());
         assertTrue(sut.getResultSetMappings()
-                .contains(OWLClassA.class.getDeclaredAnnotation(SparqlResultSetMapping.class)));
+                      .contains(OWLClassA.class.getDeclaredAnnotation(SparqlResultSetMapping.class)));
     }
 
     @Test

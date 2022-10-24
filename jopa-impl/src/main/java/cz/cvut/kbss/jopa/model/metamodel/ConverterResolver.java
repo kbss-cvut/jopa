@@ -44,6 +44,13 @@ public class ConverterResolver {
      * <p>
      * Beside custom converters, the system supports a number of built-in converters, which ensure that e.g. widening
      * conversion or mapping to Java 8 Date/Time API is supported.
+     * <p>
+     * The order of priorities of converter resolution is:
+     * <ol>
+     *     <li>Custom converter declared on attribute with {@link Convert}</li>
+     *     <li>Custom automatically applied converter declared with {@link cz.cvut.kbss.jopa.model.annotations.Converter}</li>
+     *     <li>Built-in converter</li>
+     * </ol>
      *
      * @param field  The field for which converter should be determined
      * @param config Mapping configuration extracted during metamodel building
@@ -55,12 +62,16 @@ public class ConverterResolver {
             return Optional.empty();
         }
         final Class<?> attValueType = config.getType().getJavaType();
+        final Optional<ConverterWrapper<?, ?>> localCustomConverter = resolveCustomConverter(field);
+        if (localCustomConverter.isPresent()) {
+            return localCustomConverter;
+        }
+        final Optional<ConverterWrapper<?, ?>> globalCustomConverter = converters.getCustomConverter(attValueType);
+        if (globalCustomConverter.isPresent()) {
+            return globalCustomConverter;
+        }
         if (attValueType.isEnum()) {
             return Optional.of(new EnumConverter(attValueType));
-        }
-        final Optional<ConverterWrapper<?, ?>> customConverter = resolveCustomConverter(field);
-        if (customConverter.isPresent()) {
-            return customConverter;
         }
         if (config.hasDatatype()) {
             verifyTypeIsString(field, attValueType);
@@ -69,7 +80,7 @@ public class ConverterResolver {
         if (config.isLexicalForm()) {
             return Optional.of(new ToLexicalFormConverter());
         }
-        return converters.getConverter(attValueType);
+        return Converters.getDefaultConverter(attValueType);
     }
 
     private static void verifyTypeIsString(Field field, Class<?> attValueType) {
@@ -146,7 +157,7 @@ public class ConverterResolver {
             return Optional.of(new EnumConverter(attValueType));
         }
 
-        return converters.getConverter(attValueType);
+        return converters.getCustomConverter(attValueType);
     }
 
     /**

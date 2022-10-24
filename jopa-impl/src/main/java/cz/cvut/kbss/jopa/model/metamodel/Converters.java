@@ -30,7 +30,7 @@ public class Converters {
 
     private static final Map<Class<?>, ConverterWrapper<?, ?>> DEFAULT_CONVERTERS = initDefaultConverters();
 
-    private final Map<Class<?>, ConverterWrapper<?, ?>> converters = new HashMap<>(DEFAULT_CONVERTERS);
+    private final Map<Class<?>, ConverterWrapper<?, ?>> converters = new HashMap<>();
 
     Converters(Configuration configuration) {
         initConverters(configuration);
@@ -41,12 +41,16 @@ public class Converters {
                 new ObjectConverter(configuration.is(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING)));
     }
 
-    Optional<ConverterWrapper<?, ?>> getConverter(Class<?> type) {
-        return Optional.ofNullable(converters.get(type));
+    Optional<ConverterWrapper<?, ?>> getCustomConverter(Class<?> attributeType) {
+        return Optional.ofNullable(converters.get(attributeType));
     }
 
     void registerConverter(Class<?> attributeType, ConverterWrapper<?, ?> converter) {
         converters.put(attributeType, converter);
+    }
+
+    public static Optional<ConverterWrapper<?, ?>> getDefaultConverter(Class<?> attributeType) {
+        return Optional.ofNullable(DEFAULT_CONVERTERS.get(attributeType));
     }
 
     private static Map<Class<?>, ConverterWrapper<?, ?>> initDefaultConverters() {
