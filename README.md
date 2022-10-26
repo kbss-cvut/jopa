@@ -8,6 +8,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 Notable changes:
 
+* **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future)
 * **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
 * **0.15.0** - Support for multilingual String attributes. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Multilingual-String-Attributes) for more info
 * **0.14.0** - Support for the Semantic Object Query Language (SOQL). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Semantic-Object-Query-Language) for more info
@@ -24,7 +25,7 @@ Notable changes:
 * Explicit access to inferred knowledge,
 * Access to unmapped properties and individual's types,
 * Transactions,
-* Separate storage access layer - Jena, OWLAPI, RDF4J (Sesame) drivers are available.
+* Separate storage access layer - Jena, OWLAPI, RDF4J drivers are available.
 
 #### Object-ontological mapping based on integrity constraints
 
