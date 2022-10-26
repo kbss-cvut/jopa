@@ -168,7 +168,7 @@ public class JavaTransformer {
             final JCodeModel cm = new JCodeModel();
             voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
-            _generateModel(ontology, cm, context, modelPackageName());
+            generateModelImpl(ontology, cm, context, modelPackageName());
             return new ObjectModel(cm);
         } catch (JClassAlreadyExistsException e) {
             throw new OWL2JavaException("Transformation FAILED.", e);
@@ -338,8 +338,8 @@ public class JavaTransformer {
         return cls;
     }
 
-    private void _generateModel(final OWLOntology ontology, final JCodeModel cm,
-                                final ContextDefinition context, final String pkg) {
+    private void generateModelImpl(final OWLOntology ontology, final JCodeModel cm,
+                                   final ContextDefinition context, final String pkg) {
         LOG.info("Generating model ...");
         final PropertiesType propertiesType = configuration.getPropertiesType();
 

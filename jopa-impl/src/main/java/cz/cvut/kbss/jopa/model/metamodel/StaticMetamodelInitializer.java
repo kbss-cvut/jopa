@@ -138,7 +138,7 @@ public class StaticMetamodelInitializer {
                                                         field)))));
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredIdentifier(Field field, ManagedType<T> type) {
+    private static <T> Optional<FieldSpecification<T, ?>> getDeclaredIdentifier(Field field, ManagedType<T> type) {
         if (!(type instanceof IdentifiableType)) {
             return Optional.empty();
         }
@@ -160,14 +160,14 @@ public class StaticMetamodelInitializer {
         }
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredTypes(Field field, ManagedType<T> type) {
+    private static <T> Optional<FieldSpecification<T, ?>> getDeclaredTypes(Field field, ManagedType<T> type) {
         return type.getTypes() != null &&
                        Objects.equals(field.getName(), type.getTypes().getJavaField().getName()) &&
                        isDeclaredInClass(type.getTypes(), type.getJavaType()) ?
                Optional.of((TypesSpecification<T, ?>) type.getTypes()) : Optional.empty();
     }
 
-    private <T> Optional<FieldSpecification<T, ?>> getDeclaredProperties(Field field, ManagedType<T> type) {
+    private static <T> Optional<FieldSpecification<T, ?>> getDeclaredProperties(Field field, ManagedType<T> type) {
         return type.getProperties() != null &&
                        Objects.equals(field.getName(), type.getProperties().getJavaField().getName()) &&
                        isDeclaredInClass(type.getProperties(), type.getJavaType()) ?

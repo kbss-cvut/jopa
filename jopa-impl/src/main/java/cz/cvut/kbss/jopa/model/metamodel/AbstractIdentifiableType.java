@@ -151,7 +151,11 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (supertype != null) {
             return supertype.getAttribute(name);
         }
-        throw new IllegalArgumentException("Attribute " + name + " is not present in type " + this);
+        throw attributeMissing(name, false);
+    }
+
+    protected IllegalArgumentException attributeMissing(String name, boolean declared) {
+        return new IllegalArgumentException("Attribute " + name + " is not "+ (declared ? "declared" : "present") +" in type " + this);
     }
 
     @Override
@@ -175,7 +179,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (supertype != null) {
             return supertype.getQueryAttribute(name);
         }
-        throw new IllegalArgumentException("Query attribute " + name + " is not present in type " + this);
+        throw attributeMissing(name, false);
     }
 
     @Override
@@ -314,7 +318,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (declaredAttributes.containsKey(name)) {
             return declaredAttributes.get(name);
         }
-        throw new IllegalArgumentException("Attribute " + name + " is not declared in type " + name);
+        throw attributeMissing(name, true);
     }
 
     @Override
