@@ -144,7 +144,9 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
 
         @Override
         public ListAttributeImpl<X, V> build() {
-            return new ListAttributeImpl<>(this);
+            final ListAttributeImpl<X, V> result = new ListAttributeImpl<>(this);
+            mappingValidator.validateAttributeMapping(result);
+            return result;
         }
     }
 }

@@ -15,12 +15,17 @@
 package cz.cvut.kbss.jopa.test.query.jena;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.environment.JenaDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.JenaPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
+import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
+import org.apache.jena.vocabulary.ReasonerVocabulary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +39,7 @@ public class QueryTest extends QueryRunner {
     private static EntityManager em;
 
     QueryTest() {
-        super(LOG);
+        super(LOG, new JenaDataAccessor());
     }
 
     @BeforeEach
@@ -43,6 +48,8 @@ public class QueryTest extends QueryRunner {
         final Map<String, String> properties = new HashMap<>();
         properties.put(JenaOntoDriverProperties.JENA_STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
         properties.put(JenaOntoDriverProperties.JENA_TREAT_DEFAULT_GRAPH_AS_UNION, Boolean.toString(true));
+        properties.put(OntoDriverProperties.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getCanonicalName());
+        properties.put(ReasonerVocabulary.PROPsetRDFSLevel.getURI(), ReasonerVocabulary.RDFS_SIMPLE);
         em = persistenceFactory.getEntityManager("SPARQLQueryTests", false, properties);
         QueryTestEnvironment.generateTestData(em);
         em.clear();
@@ -58,5 +65,11 @@ public class QueryTest extends QueryRunner {
     @Override
     protected EntityManager getEntityManager() {
         return em;
+    }
+
+    // Cannot disable inference in Jena queries
+    @Disabled
+    @Override
+    public void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() {
     }
 }

@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.test.query.runner;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.jupiter.api.Test;
@@ -31,8 +32,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class SoqlRunner extends BaseQueryRunner {
 
-    protected SoqlRunner(Logger logger) {
-        super(logger);
+    protected SoqlRunner(Logger logger, DataAccessor dataAccessor) {
+        super(logger, dataAccessor);
     }
 
     @Test

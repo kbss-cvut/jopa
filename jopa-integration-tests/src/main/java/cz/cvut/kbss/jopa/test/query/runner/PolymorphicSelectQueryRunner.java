@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.test.OWLClassS;
 import cz.cvut.kbss.jopa.test.OWLClassSParent;
 import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.Vocabulary;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
@@ -37,8 +38,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
 
-    protected PolymorphicSelectQueryRunner(Logger logger) {
-        super(logger);
+    protected PolymorphicSelectQueryRunner(Logger logger, DataAccessor dataAccessor) {
+        super(logger, dataAccessor);
     }
 
     @AfterEach

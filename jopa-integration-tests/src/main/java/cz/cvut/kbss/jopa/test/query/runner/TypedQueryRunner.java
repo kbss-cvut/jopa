@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.jupiter.api.Disabled;
@@ -41,8 +42,8 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     private static final String SELECT_BY_TYPE = "SELECT ?x WHERE { ?x a ?type .}";
 
-    protected TypedQueryRunner(Logger logger) {
-        super(logger);
+    protected TypedQueryRunner(Logger logger, DataAccessor dataAccessor) {
+        super(logger, dataAccessor);
     }
 
     @Test

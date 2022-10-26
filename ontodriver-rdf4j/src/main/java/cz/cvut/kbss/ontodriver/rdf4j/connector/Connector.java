@@ -1,0 +1,140 @@
+/**
+ * Copyright (C) 2022 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+package cz.cvut.kbss.ontodriver.rdf4j.connector;
+
+import cz.cvut.kbss.ontodriver.Closeable;
+import cz.cvut.kbss.ontodriver.Wrapper;
+import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import org.eclipse.rdf4j.model.*;
+
+import java.util.Collection;
+import java.util.List;
+
+public interface Connector extends Closeable, StatementExecutor, Wrapper {
+
+    /**
+     * Explicitly starts a transaction.
+     *
+     * @throws Rdf4jDriverException If unable to start transaction
+     */
+    void begin() throws Rdf4jDriverException;
+
+    /**
+     * Commits the changes made since transaction beginning.
+     *
+     * @throws Rdf4jDriverException If an error occurs during commit
+     * @see #begin()
+     */
+    void commit() throws Rdf4jDriverException;
+
+    /**
+     * Rolls back changes made since transaction beginning.
+     *
+     * @throws Rdf4jDriverException If an error occurs when rolling back
+     * @see #begin()
+     */
+    void rollback() throws Rdf4jDriverException;
+
+    /**
+     * Gets resources representing currently existing contexts in the repository.
+     *
+     * @return List of resources
+     * @throws Rdf4jDriverException If repository access error occurs
+     */
+    List<Resource> getContexts() throws Rdf4jDriverException;
+
+    /**
+     * Gets Rdf4j value factory.
+     *
+     * @return {@link ValueFactory}
+     */
+    ValueFactory getValueFactory();
+
+    /**
+     * Finds statements corresponding to the specified criteria.
+     * <p>
+     * Note that some of the parameters are optional.
+     * <p>
+     * This version searches the default context.
+     *
+     * @param subject         Statement subject, optional
+     * @param property        Statement property, optional
+     * @param value           Statement value, optional
+     * @param includeInferred Whether to include inferred statements as well
+     * @return Collection of matching statements
+     * @throws Rdf4jDriverException If a repository access error occurs
+     * @see #findStatements(Resource, IRI, Value, boolean, Collection)
+     */
+    Collection<Statement> findStatements(Resource subject, IRI property, Value value, boolean includeInferred)
+            throws Rdf4jDriverException;
+
+    /**
+     * Finds statements corresponding to the specified criteria.
+     * <p>
+     * Note that some parameters are optional
+     *
+     * @param subject         Statement subject, optional
+     * @param property        Statement property, optional
+     * @param value           Statement value, optional
+     * @param includeInferred Whether to include inferred statements as well
+     * @param contexts        Contexts in which the search should be performed. Empty collection indicates the default
+     *                        context will be searched
+     * @return Collection of matching statements
+     * @throws Rdf4jDriverException If a repository access error occurs
+     */
+    Collection<Statement> findStatements(Resource subject, IRI property, Value value,
+                                         boolean includeInferred, Collection<IRI> contexts)
+            throws Rdf4jDriverException;
+
+    /**
+     * Checks whether the repository contains any statements matching the specified criteria.
+     *
+     * @param subject         Statement subject, optional
+     * @param property        Statement property, optional
+     * @param value           Statement value, optional
+     * @param includeInferred Whether to include inferred statements as well
+     * @param contexts        Optionally specify contexts in which the search should be performed. If empty, the default
+     *                        one is used
+     * @return Boolean indicating whether the statement exists
+     * @throws Rdf4jDriverException If a repository access error occurs
+     */
+    boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
+                              Collection<IRI> contexts)
+            throws Rdf4jDriverException;
+
+    /**
+     * Adds the specified statements to the underlying repository.
+     * <p>
+     * Note that this operation is transactional and the changes are required to be persistent only after successful
+     * {@link #commit()}.
+     *
+     * @param statements The statements to add
+     * @throws IllegalStateException If transaction is not active
+     * @throws Rdf4jDriverException If a repository access error occurs
+     */
+    void addStatements(Collection<Statement> statements) throws Rdf4jDriverException;
+
+    /**
+     * Removes the specified statements from the underlying repository.
+     * <p>
+     * Note that this operation is transactional and the changes are required to be persistent only after successful
+     * {@link #commit()}.
+     *
+     * @param statements The statements to remove
+     * @throws IllegalStateException If transaction is not active
+     * @throws Rdf4jDriverException If a repository access error occurs
+     */
+    void removeStatements(Collection<Statement> statements) throws Rdf4jDriverException;
+}

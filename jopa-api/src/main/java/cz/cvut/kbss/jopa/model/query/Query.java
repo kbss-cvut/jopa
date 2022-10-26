@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.query;
 
@@ -20,6 +18,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -294,4 +293,24 @@ public interface Query {
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
     <T> Query setUntypedParameter(Parameter<T> parameter, T value);
+
+    /**
+     * Sets a query hint.
+     * <p>
+     * The hints elements may be used to specify query properties and hints. Vendor-specific hints that are not
+     * recognized by a provider are silently ignored.
+     *
+     * @param hintName Name of the query hint
+     * @param value    Value of the query hint
+     * @return this query instance
+     * @throws IllegalArgumentException If the value is not valid for the hint implementation
+     */
+    Query setHint(String hintName, Object value);
+
+    /**
+     * Gets the hints and associated values that are in effect for this query instance.
+     *
+     * @return Map of query hints with values
+     */
+    Map<String, Object> getHints();
 }

@@ -34,6 +34,7 @@ import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -147,5 +148,21 @@ class SingularDataPropertyStrategyTest {
         final Assertion a = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_enumAttribute), Generators.LANG, false);
         assertThat(valueDescriptor.getAssertions(), hasItem(a));
         assertEquals(Collections.singletonList(Value.nullValue()), valueDescriptor.getAssertionValues(a));
+    }
+
+    @Test
+    void buildInstanceFieldTransformsUsingCustomConverter() {
+        final SingularDataPropertyStrategy<OWLClassM> sut = new SingularDataPropertyStrategy<>(
+                mocks.forOwlClassM().entityType(),
+                mocks.forOwlClassM().withConverterAttribute(), descriptor, mapperMock);
+        final OWLClassM m = new OWLClassM();
+        m.setKey(PK.toString());
+
+        final String value = "-01:00";
+        final Axiom<String> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
+                                                     new Value<>(value));
+        sut.addValueFromAxiom(axiom);
+        sut.buildInstanceFieldValue(m);
+        assertEquals(ZoneOffset.of(value), m.getWithConverter());
     }
 }

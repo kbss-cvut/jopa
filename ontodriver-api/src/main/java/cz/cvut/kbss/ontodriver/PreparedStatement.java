@@ -19,10 +19,8 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 /**
  * This interface extends the {@code Statement} and adds the possibility to parametrize queries
  * <p>
- * Implementations are also expected to support at least a basic level of character escaping (e. g. quotes) and other
+ * Implementations are also expected to support at least a basic level of character escaping (e.g. quotes) and other
  * injection-protection methods.
- *
- * @author kidney
  */
 public interface PreparedStatement extends Statement {
 

@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.annotations.EntityListeners;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -98,10 +99,10 @@ class EntityLifecycleCallbackResolver {
         }
         for (Class<?> listenerType : listenersAnn.value()) {
             try {
-                final Object listener = listenerType.newInstance();
+                final Object listener = ReflectionUtils.instantiateUsingDefaultConstructor(listenerType);
                 manager.addEntityListener(listener);
                 resolveEntityListenerCallbacks(listener, listenerType);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
                 throw new MetamodelInitializationException("Unable to instantiate entity listener of type "
                         + listenerType + ". The listener has to have a public no-arg constructor.");
             }

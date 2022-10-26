@@ -124,12 +124,17 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AxiomDescriptor)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AxiomDescriptor)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         AxiomDescriptor that = (AxiomDescriptor) o;
-        return subjectContexts.equals(that.subjectContexts) &&
-                assertionContexts.equals(that.assertionContexts);
+        return subjectContexts.equals(that.subjectContexts) && assertionContexts.equals(that.assertionContexts);
     }
 
     @Override

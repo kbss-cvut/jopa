@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -44,16 +42,13 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
     private static final Class<?> arrayAsListClass = Arrays.asList(null, null).getClass();
 
-    private static final Class<? extends List> DEFAULT_LIST_CLASS = ArrayList.class;
-    private static final Class<? extends Set> DEFAULT_SET_CLASS = HashSet.class;
-
     CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 
     /**
      * This method is the entry point for cloning the Java collections. It clones standard collections as well as
-     * immutable collections and singleton collections. </p>
+     * immutable collections and singleton collections.
      * <p>
      * Currently supported are List and Set.
      *
@@ -188,19 +183,15 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                                                          CloneConfiguration configuration) {
         LOG.trace("Unable to find matching collection constructor. Creating default collection.");
         final Collection<?> clone;
-        try {
-            if (container instanceof List) {
-                clone = DEFAULT_LIST_CLASS.newInstance();
-            } else if (container instanceof Set) {
-                clone = DEFAULT_SET_CLASS.newInstance();
-            } else {
-                throw new OWLPersistenceException(
-                        "Cannot clone unsupported collection instance of type " + container.getClass() + ".");
-            }
-            cloneCollectionContent(cloneOwner, field, container, clone, configuration);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new OWLPersistenceException(e);
+        if (container instanceof List) {
+            clone = CollectionFactory.createDefaultCollection(CollectionType.LIST);
+        } else if (container instanceof Set) {
+            clone = CollectionFactory.createDefaultCollection(CollectionType.SET);
+        } else {
+            throw new OWLPersistenceException(
+                    "Cannot clone unsupported collection instance of type " + container.getClass() + ".");
         }
+        cloneCollectionContent(cloneOwner, field, container, clone, configuration);
         return clone;
     }
 

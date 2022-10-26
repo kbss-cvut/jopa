@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -22,6 +20,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +30,8 @@ import java.net.URI;
 import java.net.URL;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
@@ -129,7 +130,8 @@ public class CloneBuilderImpl implements CloneBuilder {
                 final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                 // Collection or Map
                 clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
-                        new CloneConfiguration(fieldDescriptor, configuration.getPostRegister()));
+                                                                     new CloneConfiguration(fieldDescriptor,
+                                                                                            configuration.getPostRegister()));
             } else {
                 // Otherwise we have a relationship and we need to clone its target as well
                 if (isOriginalInUoW(origVal)) {
@@ -142,7 +144,7 @@ public class CloneBuilderImpl implements CloneBuilder {
                         clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
                         if (clonedValue == null) {
                             clonedValue = uow.registerExistingObject(origVal, fieldDescriptor,
-                                    configuration.getPostRegister());
+                                                                     configuration.getPostRegister());
                         }
                     } else {
                         clonedValue = buildClone(origVal, configuration);
@@ -268,35 +270,34 @@ public class CloneBuilderImpl implements CloneBuilder {
     private String stringify(Object object) {
         assert object != null;
         return isTypeManaged(object.getClass()) ?
-                object.getClass().getSimpleName() + "<" + EntityPropertiesUtils.getIdentifier(object, getMetamodel()) +
-                        ">" : object.toString();
+               (object.getClass().getSimpleName() + IdentifierTransformer.stringify(
+                       EntityPropertiesUtils.getIdentifier(object, getMetamodel()))) :
+               object.toString();
     }
 
     private static Set<Class<?>> getImmutableTypes() {
-        HashSet<Class<?>> ret = new HashSet<>();
-        ret.add(Boolean.class);
-        ret.add(Character.class);
-        ret.add(Byte.class);
-        ret.add(Short.class);
-        ret.add(Integer.class);
-        ret.add(Long.class);
-        ret.add(Float.class);
-        ret.add(Double.class);
-        ret.add(Void.class);
-        ret.add(String.class);
-        ret.add(URI.class);
-        ret.add(URL.class);
-        ret.add(LocalDate.class);
-        ret.add(LocalDateTime.class);
-        ret.add(LocalTime.class);
-        ret.add(ZonedDateTime.class);
-        ret.add(OffsetDateTime.class);
-        ret.add(OffsetTime.class);
-        ret.add(Instant.class);
-        ret.add(Duration.class);
-        ret.add(Period.class);
-        ret.add(LangString.class);
-        return ret;
+        return Stream.of(Boolean.class,
+                         Character.class,
+                         Byte.class,
+                         Short.class,
+                         Integer.class,
+                         Long.class,
+                         Float.class,
+                         Double.class,
+                         Void.class,
+                         String.class,
+                         URI.class,
+                         URL.class,
+                         LocalDate.class,
+                         LocalDateTime.class,
+                         ZonedDateTime.class,
+                         OffsetDateTime.class,
+                         OffsetTime.class,
+                         ZoneOffset.class,
+                         Instant.class,
+                         Duration.class,
+                         Period.class,
+                         LangString.class).collect(Collectors.toSet());
     }
 
     private final class Builders {

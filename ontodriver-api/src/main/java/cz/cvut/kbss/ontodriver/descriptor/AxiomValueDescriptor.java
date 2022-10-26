@@ -162,9 +162,15 @@ public class AxiomValueDescriptor extends AbstractAxiomDescriptor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AxiomValueDescriptor)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AxiomValueDescriptor)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         AxiomValueDescriptor that = (AxiomValueDescriptor) o;
         return Objects.equals(subjectContext, that.subjectContext) &&
                 assertionData.equals(that.assertionData);

@@ -85,6 +85,7 @@ public class JenaOntoDriverProperties {
      *
      * @see #JENA_STORAGE_TYPE
      */
+    @Deprecated
     public static final String SDB = "sdb";
 
     /**

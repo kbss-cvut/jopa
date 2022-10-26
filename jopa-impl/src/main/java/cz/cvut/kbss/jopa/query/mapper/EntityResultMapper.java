@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
@@ -53,11 +54,11 @@ class EntityResultMapper<T> implements SparqlResultMapper {
     @Override
     public T map(ResultRow resultRow, UnitOfWorkImpl uow) {
         try {
-            final T instance = et.getJavaType().newInstance();
+            final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
             fieldMappers.forEach(m -> m.map(resultRow, instance, uow));
             return (T) uow.registerExistingObject(instance, new EntityDescriptor(),
                     Collections.singletonList(new PostLoadInvoker(uow.getMetamodel())));
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
             // This is not expected, since an entity class must have a public no-arg constructor
             throw new SparqlResultMappingException(e);
         }

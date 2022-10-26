@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import org.slf4j.Logger;
@@ -60,11 +61,8 @@ class EntityConstructor {
      * @param axioms     Axioms from which the instance attribute values should be reconstructed
      * @param <T>        Entity type
      * @return New instance with populated attributes
-     * @throws InstantiationException If instance cannot be created
-     * @throws IllegalAccessException If the default constructor is not public
      */
-    <T> T reconstructEntity(URI identifier, EntityType<T> et, Descriptor descriptor,
-                            Collection<Axiom<?>> axioms) throws InstantiationException, IllegalAccessException {
+    <T> T reconstructEntity(URI identifier, EntityType<T> et, Descriptor descriptor, Collection<Axiom<?>> axioms) {
         assert !axioms.isEmpty();
 
         if (!axiomsContainEntityClassAssertion(axioms, et)) {
@@ -80,12 +78,7 @@ class EntityConstructor {
     }
 
     private static boolean axiomsContainEntityClassAssertion(Collection<Axiom<?>> axioms, EntityType<?> et) {
-        for (Axiom<?> ax : axioms) {
-            if (MappingUtils.isEntityClassAssertion(ax, et)) {
-                return true;
-            }
-        }
-        return false;
+        return axioms.stream().anyMatch(ax -> MappingUtils.isEntityClassAssertion(ax, et));
     }
 
     /**
@@ -95,12 +88,9 @@ class EntityConstructor {
      * @param et         Entity type
      * @param <T>        Entity type
      * @return Newly created instance with identifier set
-     * @throws InstantiationException If instance cannot be created
-     * @throws IllegalAccessException If the default constructor is not public
      */
-    <T> T createEntityInstance(URI identifier, EntityType<T> et)
-            throws InstantiationException, IllegalAccessException {
-        final T instance = et.getJavaType().newInstance();
+    <T> T createEntityInstance(URI identifier, EntityType<T> et) {
+        final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
         EntityPropertiesUtils.setIdentifier(identifier, instance, et);
         return instance;
     }
@@ -109,8 +99,7 @@ class EntityConstructor {
                                         Collection<Axiom<?>> axioms) {
         final Map<URI, FieldSpecification<? super T, ?>> attributes = indexEntityAttributes(et);
         final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>>
-                fieldLoaders = new HashMap<>(
-                et.getAttributes().size());
+                fieldLoaders = new HashMap<>(et.getAttributes().size());
         for (Axiom<?> ax : axioms) {
             if (MappingUtils.isEntityClassAssertion(ax, et)) {
                 continue;

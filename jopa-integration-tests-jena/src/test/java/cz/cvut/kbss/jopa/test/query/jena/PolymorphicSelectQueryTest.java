@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.test.query.jena;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.environment.JenaDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.JenaPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.PolymorphicSelectQueryRunner;
@@ -34,7 +35,7 @@ public class PolymorphicSelectQueryTest extends PolymorphicSelectQueryRunner {
     private static EntityManager em;
 
     PolymorphicSelectQueryTest() {
-        super(LOG);
+        super(LOG, new JenaDataAccessor());
     }
 
     @BeforeEach

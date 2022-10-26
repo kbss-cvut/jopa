@@ -73,8 +73,12 @@ public abstract class AbstractAxiomDescriptor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AbstractAxiomDescriptor)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AbstractAxiomDescriptor)) {
+            return false;
+        }
         AbstractAxiomDescriptor that = (AbstractAxiomDescriptor) o;
         return subject.equals(that.subject);
     }

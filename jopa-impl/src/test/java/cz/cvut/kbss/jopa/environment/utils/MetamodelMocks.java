@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -156,6 +157,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassM, String> mSimpleLiteralAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, String> mExplicitDatatypeAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassM, ZoneOffset> mWithConverterAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassN> etN;
@@ -284,7 +287,8 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
-                mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt, mExplicitDatatypeAtt, idM);
+                                           mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt, mExplicitDatatypeAtt,
+                                           mWithConverterAtt, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
                 nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
@@ -651,6 +655,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassM, String> explicitDatatypeAttribute() {
             return MetamodelMocks.this.mExplicitDatatypeAtt;
+        }
+
+        public AbstractAttribute<OWLClassM, ZoneOffset> withConverterAttribute() {
+            return MetamodelMocks.this.mWithConverterAtt;
         }
     }
 

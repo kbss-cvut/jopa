@@ -95,7 +95,7 @@ abstract class EntityInstanceLoader {
             return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(identifier, et, descriptor, axioms);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
             throw new EntityReconstructionException(e);
         }
     }
@@ -151,7 +151,7 @@ abstract class EntityInstanceLoader {
             return contains ? entityBuilder.createEntityInstance(identifier, et) : null;
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
             throw new EntityReconstructionException(e);
         }
     }

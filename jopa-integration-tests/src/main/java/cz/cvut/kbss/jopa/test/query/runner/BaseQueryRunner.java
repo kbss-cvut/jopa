@@ -15,15 +15,24 @@
 package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import org.slf4j.Logger;
+
+import java.util.Collection;
 
 public abstract class BaseQueryRunner {
 
     protected final Logger logger;
+    protected final DataAccessor dataAccessor;
 
-    protected BaseQueryRunner(Logger logger) {
-        assert logger != null;
+    protected BaseQueryRunner(Logger logger, DataAccessor dataAccessor) {
         this.logger = logger;
+        this.dataAccessor = dataAccessor;
+    }
+
+    protected void persistTestData(Collection<Quad> data, EntityManager em) throws Exception {
+        dataAccessor.persistTestData(data, em);
     }
 
     protected abstract EntityManager getEntityManager();

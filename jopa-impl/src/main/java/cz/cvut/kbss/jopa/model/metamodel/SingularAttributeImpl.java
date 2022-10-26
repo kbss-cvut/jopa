@@ -111,8 +111,11 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
             return this;
         }
 
-        public SingularAttribute<X, Y> build() {
-            return new SingularAttributeImpl<>(this);
+        @Override
+        public SingularAttributeImpl<X, Y> build() {
+            final SingularAttributeImpl<X, Y> result = new SingularAttributeImpl<>(this);
+            mappingValidator.validateAttributeMapping(result);
+            return result;
         }
     }
 }

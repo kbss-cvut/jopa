@@ -25,8 +25,9 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unused")
+@ExtendWith(MockitoExtension.class)
 public class CollectionInstanceBuilderTest {
 
     @Mock
@@ -51,9 +53,12 @@ public class CollectionInstanceBuilderTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         CloneBuilderImpl cloneBuilder = new CloneBuilderImpl(uowMock);
         this.builder = new CollectionInstanceBuilder(cloneBuilder, uowMock);
+        this.descriptor = new EntityDescriptor();
+    }
+
+    private void mockIndirectCollectionBuilder() {
         when(uowMock.createIndirectCollection(any(), any(), any(Field.class))).thenAnswer(invocation -> {
             final Collection<?> col = (Collection<?>) invocation.getArguments()[0];
             final Object owner = invocation.getArguments()[1];
@@ -64,11 +69,11 @@ public class CollectionInstanceBuilderTest {
                 return new IndirectSet<>(owner, field, uowMock, (Set<?>) col);
             }
         });
-        this.descriptor = new EntityDescriptor();
     }
 
     @Test
     public void buildCloneCreatesDefaultListWhenUnknownListImplementationIsPassedAsArgument() throws Exception {
+        mockIndirectCollectionBuilder();
         final CollectionOwner owner = new CollectionOwner();
         owner.list = new TestList<>(owner);
         IntStream.range(0, 10).forEach(i -> owner.list.add("String" + i));
@@ -82,6 +87,7 @@ public class CollectionInstanceBuilderTest {
 
     @Test
     public void buildCloneCreatesDefaultSetWhenUnknownSetImplementationIsPassedAsArgument() throws Exception {
+        mockIndirectCollectionBuilder();
         final CollectionOwner owner = new CollectionOwner();
         owner.set = new TestSet<>(owner);
         IntStream.range(0, 10).forEach(i -> owner.set.add("String" + i));
@@ -156,6 +162,7 @@ public class CollectionInstanceBuilderTest {
 
     @Test
     public void buildingSingletonSetCloneRegistersElementCloneInUoW() throws Exception {
+        mockIndirectCollectionBuilder();
         final OWLClassJ owner = new OWLClassJ(Generators.createIndividualIdentifier());
         final OWLClassA aOrig = Generators.generateOwlClassAInstance();
         final OWLClassA aClone = new OWLClassA(aOrig);
@@ -171,6 +178,7 @@ public class CollectionInstanceBuilderTest {
 
     @Test
     public void buildCloneClonesSingletonListWithContent() throws Exception {
+        mockIndirectCollectionBuilder();
         final OWLClassC owner = new OWLClassC(Generators.createIndividualIdentifier());
         final OWLClassA aOrig = Generators.generateOwlClassAInstance();
         final OWLClassA aClone = new OWLClassA(aOrig);
@@ -187,6 +195,7 @@ public class CollectionInstanceBuilderTest {
 
     @Test
     public void buildCloneClonesArrayAsListWithContent() throws Exception {
+        mockIndirectCollectionBuilder();
         final OWLClassC owner = new OWLClassC(Generators.createIndividualIdentifier());
         final OWLClassA aOneOrig = Generators.generateOwlClassAInstance();
         final OWLClassA aOneClone = new OWLClassA(aOneOrig);

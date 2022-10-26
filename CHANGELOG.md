@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.19.0 - 2022-10-26
+- Add support for disabling inference via query hints (Enhancement #101).
+- Allow registering custom attribute converters (Enhancement #118).
+- Add RDF4J driver, deprecate Sesame driver (Task #75).
+- Dependency updates: SLF4J 2.0.3, Logback 1.3.4.
+
 ## 0.18.7 - 2022-08-31
 - Fix support for custom datatypes in Jena driver (Bug #113).
 - Fix mapping enums to simple literals (Bug #111).

@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.accessors;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -37,7 +38,7 @@ public class DefaultStorageAccessor implements StorageAccessor {
         final Class<?> dataSourceCls;
         try {
             dataSourceCls = Class.forName(storageProperties.getDriver());
-            DataSource ds = (DataSource) dataSourceCls.newInstance();
+            DataSource ds = (DataSource) ReflectionUtils.instantiateUsingDefaultConstructor(dataSourceCls);
             ds.setStorageProperties(storageProperties);
             if (properties != null) {
                 ds.setProperties(properties);
@@ -46,7 +47,7 @@ public class DefaultStorageAccessor implements StorageAccessor {
         } catch (ClassNotFoundException e) {
             throw new DataSourceCreationException(
                     "Unable to find OntoDriver data source class " + storageProperties.getDriver(), e);
-        } catch (InstantiationException | IllegalAccessException | OntoDriverException e) {
+        } catch (cz.cvut.kbss.jopa.exception.InstantiationException | OntoDriverException e) {
             throw new DataSourceCreationException(
                     "Unable to create instance of OntoDriver data source " + storageProperties.getDriver(), e);
         }

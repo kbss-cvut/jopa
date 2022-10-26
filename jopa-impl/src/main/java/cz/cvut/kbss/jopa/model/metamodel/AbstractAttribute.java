@@ -184,6 +184,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private ParticipationConstraint[] constraints;
         private ConverterWrapper converter;
 
+        FieldMappingValidator mappingValidator;
+
         public AbstractAttributeBuilder<X, Y> config(PropertyAttributes config) {
             this.iri = config.getIri();
             this.attributeType = config.getPersistentAttributeType();
@@ -195,6 +197,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             this.simpleLiteral = config.isSimpleLiteral();
             this.datatype = config.hasDatatype() ? config.getDatatype() : null;
             this.language = config.getLanguage();
+            this.mappingValidator = config.validator;
             return this;
         }
 
@@ -222,5 +225,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             this.converter = converter;
             return this;
         }
+
+        public abstract AbstractAttribute<X, Y> build();
     }
 }

@@ -44,9 +44,9 @@ public class DefaultClasspathScanner implements ClasspathScanner {
     protected static final String JAR_FILE_SUFFIX = ".jar";
     protected static final String CLASS_FILE_SUFFIX = ".class";
 
-    private final List<Consumer<Class<?>>> listeners = new ArrayList<>();
+    protected final List<Consumer<Class<?>>> listeners = new ArrayList<>();
 
-    private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    protected final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     protected String pathPattern;
     protected Set<URL> visited;
