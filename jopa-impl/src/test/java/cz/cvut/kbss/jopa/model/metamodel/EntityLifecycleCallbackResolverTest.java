@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.listener.ParentListener;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.IRI;
@@ -63,8 +64,9 @@ public class EntityLifecycleCallbackResolverTest {
                 "].", ex.getMessage());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithMultipleListeners")
-    private static class ClassWithMultipleListeners {
+    public static class ClassWithMultipleListeners {
         @PostLoad
         private void one() {
         }
@@ -83,8 +85,9 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. It should not have any arguments.", ex.getMessage());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithLifecycleListenerTakingArguments")
-    private static class ClassWithLifecycleListenerTakingArguments {
+    public static class ClassWithLifecycleListenerTakingArguments {
 
         @PrePersist
         private void takesArguments(EntityManager em) {
@@ -100,8 +103,9 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. Its return type should be void.", ex.getMessage());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithNonVoidLifecycleListener")
-    private static class ClassWithNonVoidLifecycleListener {
+    public static class ClassWithNonVoidLifecycleListener {
 
         @PostPersist
         private String returnsData() {
@@ -118,8 +122,9 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. It should not be static or final.", ex.getMessage());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithFinalLifecycleListener")
-    private static class ClassWithFinalLifecycleListener {
+    public static class ClassWithFinalLifecycleListener {
 
         @PostPersist
         public final void finalListener() {
@@ -135,8 +140,9 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. It should not be static or final.", ex.getMessage());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithStaticLifecycleListener")
-    private static class ClassWithStaticLifecycleListener {
+    public static class ClassWithStaticLifecycleListener {
 
         @PostPersist
         public static void staticListener() {
@@ -172,14 +178,15 @@ public class EntityLifecycleCallbackResolverTest {
                 + ". The listener has to have a public no-arg constructor.", ex.getMessage());
     }
 
-    private static class InvalidListener {
+    public static class InvalidListener {
         private InvalidListener() {
         }
     }
 
+    @TestLocal
     @EntityListeners(InvalidListener.class)
     @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithInvalidListener")
-    private static class EntityWithInvalidListener {
+    public static class EntityWithInvalidListener {
     }
 
     @Test
@@ -205,7 +212,7 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. It should take exactly one argument.", ex.getMessage());
     }
 
-    private static class ListenerWithInvalidArgumentCount {
+    public static class ListenerWithInvalidArgumentCount {
         public ListenerWithInvalidArgumentCount() {
         }
 
@@ -214,9 +221,10 @@ public class EntityLifecycleCallbackResolverTest {
         }
     }
 
+    @TestLocal
     @EntityListeners(ListenerWithInvalidArgumentCount.class)
     @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithInvalidArgumentCount")
-    private static class EntityWithListenerWithInvalidArgumentCount {
+    public static class EntityWithListenerWithInvalidArgumentCount {
     }
 
     @Test
@@ -230,7 +238,7 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. Its return type should be void.", ex.getMessage());
     }
 
-    private static class ListenerWithNonVoidCallback {
+    public static class ListenerWithNonVoidCallback {
         public ListenerWithNonVoidCallback() {
         }
 
@@ -240,6 +248,7 @@ public class EntityLifecycleCallbackResolverTest {
         }
     }
 
+    @TestLocal
     @EntityListeners(ListenerWithNonVoidCallback.class)
     @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithNonVoidCallback")
     private static class EntityWithListenerWithNonVoidCallback {
@@ -256,7 +265,7 @@ public class EntityLifecycleCallbackResolverTest {
                 "] has incorrect signature. It should not be static or final.", ex.getMessage());
     }
 
-    private static class ListenerWithStaticCallback {
+    public static class ListenerWithStaticCallback {
         public ListenerWithStaticCallback() {
         }
 
@@ -265,9 +274,10 @@ public class EntityLifecycleCallbackResolverTest {
         }
     }
 
+    @TestLocal
     @EntityListeners(ListenerWithStaticCallback.class)
     @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithStaticCallback")
-    private static class EntityWithListenerWithStaticCallback {
+    public static class EntityWithListenerWithStaticCallback {
     }
 
     @Test
@@ -281,7 +291,7 @@ public class EntityLifecycleCallbackResolverTest {
                 ex.getMessage());
     }
 
-    private static class ListenerWithMultipleCallbacksForSameEvent {
+    public static class ListenerWithMultipleCallbacksForSameEvent {
         public ListenerWithMultipleCallbacksForSameEvent() {
         }
 
@@ -294,9 +304,10 @@ public class EntityLifecycleCallbackResolverTest {
         }
     }
 
+    @TestLocal
     @EntityListeners(ListenerWithMultipleCallbacksForSameEvent.class)
     @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithMultipleConflictingCallbacks")
-    private static class EntityWithListenerWithMultipleConflictingCallbacks {
+    public static class EntityWithListenerWithMultipleConflictingCallbacks {
     }
 
     @Test
@@ -311,7 +322,7 @@ public class EntityLifecycleCallbackResolverTest {
                 EntityWithListenerWithInvalidParameterTypeCallback.class.getName() + "].", ex.getMessage());
     }
 
-    private static class ListenerWithInvalidParameterTypeCallback {
+    public static class ListenerWithInvalidParameterTypeCallback {
         public ListenerWithInvalidParameterTypeCallback() {
         }
 
@@ -320,8 +331,9 @@ public class EntityLifecycleCallbackResolverTest {
         }
     }
 
+    @TestLocal
     @EntityListeners(ListenerWithInvalidParameterTypeCallback.class)
     @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithInvalidParameterTypeCallback")
-    private static class EntityWithListenerWithInvalidParameterTypeCallback {
+    public static class EntityWithListenerWithInvalidParameterTypeCallback {
     }
 }

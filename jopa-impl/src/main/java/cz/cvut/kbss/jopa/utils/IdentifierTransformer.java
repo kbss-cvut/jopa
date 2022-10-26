@@ -89,4 +89,13 @@ public class IdentifierTransformer {
     public static boolean isValidIdentifierType(Class<?> type) {
         return type != null && IDENTIFIER_TYPES.contains(type);
     }
+
+    /**
+     * Stringifies the specified identifier by enclosing it in &lt; and &gt;.
+     * @param identifier Identifier to stringify
+     * @return String URI
+     */
+    public static String stringify(Object identifier) {
+        return "<" + identifier + ">";
+    }
 }

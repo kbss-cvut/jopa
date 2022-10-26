@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+
 import java.net.URI;
 import java.util.Objects;
 
@@ -35,7 +37,7 @@ class UriParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
-        return "<" + uri + ">";
+        return IdentifierTransformer.stringify(uri);
     }
 
     @Override

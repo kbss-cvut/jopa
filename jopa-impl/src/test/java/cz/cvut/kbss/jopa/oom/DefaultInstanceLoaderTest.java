@@ -178,7 +178,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
     }
 
     @Test
-    void loadEntityReloadsQueryAttributesWhenInstanceIsRetrievedFromCache() throws Exception {
+    void loadEntityReloadsQueryAttributesWhenInstanceIsRetrievedFromCache() {
         when(cacheMock.contains(OWLClassA.class, loadingParameters.getIdentifier(), descriptor)).thenReturn(true);
         when(cacheMock.get(OWLClassA.class, loadingParameters.getIdentifier(), descriptor)).thenReturn(entityA);
 
