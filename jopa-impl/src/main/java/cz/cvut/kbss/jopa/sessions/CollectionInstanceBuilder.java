@@ -204,8 +204,13 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         if (clone instanceof IndirectCollection) {
             clone = ((IndirectCollection<Collection<Object>>) clone).unwrap();
         }
-        final Optional<Collection<?>> origOpt = createNewInstance(clone.getClass(), clone.size());
-        Collection<Object> orig = (Collection<Object>) origOpt.orElse(createDefaultCollection(clone.getClass()));
+        Collection<Object> orig;
+        if (clone == Collections.emptyList() || clone == Collections.emptySet()) {
+            orig = createDefaultCollection(clone.getClass());
+        } else {
+            final Optional<Collection<?>> origOpt = createNewInstance(clone.getClass(), clone.size());
+            orig = (Collection<Object>) origOpt.orElse(createDefaultCollection(clone.getClass()));
+        }
         EntityPropertiesUtils.setFieldValue(field, target, orig);
 
         if (clone.isEmpty()) {
