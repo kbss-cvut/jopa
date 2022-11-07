@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.test.OWLClassA;
 
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -130,7 +131,7 @@ public abstract class Generators {
     }
 
     private static Object generateRandomPropertyValue(int valueIndex, int propertyIndex) {
-        final int random = randomInt(6);
+        final int random = randomInt(7);
         switch (random) {
             case 0: // boolean
                 return valueIndex % 2 == 0;
@@ -145,6 +146,8 @@ public abstract class Generators {
                 return OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
             case 5: // String
                 return "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
+            case 6:
+                return BigInteger.valueOf(valueIndex);
             default:
                 throw new IllegalArgumentException();
         }
