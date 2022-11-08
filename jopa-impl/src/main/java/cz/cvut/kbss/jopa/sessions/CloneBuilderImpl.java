@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
@@ -286,6 +287,7 @@ public class CloneBuilderImpl implements CloneBuilder {
                          Float.class,
                          Double.class,
                          BigInteger.class,
+                         BigDecimal.class,
                          Void.class,
                          String.class,
                          URI.class,
