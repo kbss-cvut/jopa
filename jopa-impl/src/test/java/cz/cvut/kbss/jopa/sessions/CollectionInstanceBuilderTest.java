@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -19,10 +17,13 @@ import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -106,7 +107,7 @@ public class CollectionInstanceBuilderTest {
         final OWLPersistenceException ex = assertThrows(OWLPersistenceException.class, () -> builder
                 .buildClone(owner, CollectionOwner.queueField(), owner.queue, new CloneConfiguration(descriptor)));
         assertThat(ex.getMessage(),
-                containsString("Cannot clone unsupported collection instance of type " + owner.queue.getClass()));
+                   containsString("Cannot clone unsupported collection instance of type " + owner.queue.getClass()));
     }
 
     private static class CollectionOwner {
@@ -170,7 +171,7 @@ public class CollectionInstanceBuilderTest {
         when(uowMock.registerExistingObject(aOrig, descriptor, Collections.emptyList())).thenReturn(aClone);
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
         final Set<?> clone = (Set<?>) builder.buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(),
-                new CloneConfiguration(descriptor));
+                                                         new CloneConfiguration(descriptor));
         assertEquals(owner.getOwlClassA().size(), clone.size());
         assertSame(aClone, clone.iterator().next());
         verify(uowMock).registerExistingObject(aOrig, descriptor, Collections.emptyList());
@@ -187,7 +188,7 @@ public class CollectionInstanceBuilderTest {
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final List<?> clone = (List<?>) builder.buildClone(owner, OWLClassC.getSimpleListField(), owner.getSimpleList(),
-                new CloneConfiguration(descriptor));
+                                                           new CloneConfiguration(descriptor));
         assertEquals(1, clone.size());
         assertSame(aClone, clone.get(0));
         verify(uowMock).registerExistingObject(aOrig, descriptor, Collections.emptyList());
@@ -207,11 +208,20 @@ public class CollectionInstanceBuilderTest {
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final List<?> clone = (List<?>) builder.buildClone(owner, OWLClassC.getSimpleListField(), owner.getSimpleList(),
-                new CloneConfiguration(descriptor));
+                                                           new CloneConfiguration(descriptor));
         assertEquals(2, clone.size());
         assertSame(aOneClone, clone.get(0));
         assertSame(aTwoClone, clone.get(1));
         verify(uowMock).registerExistingObject(aOneOrig, descriptor, Collections.emptyList());
         verify(uowMock).registerExistingObject(aTwoOrig, descriptor, Collections.emptyList());
+    }
+
+    @Test
+    void mergeChangesReplacesEmptySetWithDefaultSet() throws Exception {
+        final OWLClassM target = new OWLClassM();
+        target.initializeTestValues(true);
+        builder.mergeChanges(OWLClassM.getIntegerSetField(), target, new HashSet<>(), Collections.emptySet());
+        assertThat(target.getIntegerSet(),
+                   instanceOf(CollectionFactory.createDefaultCollection(CollectionType.SET).getClass()));
     }
 }

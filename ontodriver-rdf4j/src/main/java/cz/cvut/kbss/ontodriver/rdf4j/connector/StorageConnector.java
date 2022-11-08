@@ -41,7 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-class StorageConnector extends AbstractConnector {
+public class StorageConnector extends AbstractConnector {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
@@ -310,8 +310,10 @@ class StorageConnector extends AbstractConnector {
         if (!(repo instanceof SailRepository)) {
             return false;
         }
-        final Sail sail = ((SailRepository) repo).getSail();
-        return sail instanceof SailWrapper ? ((SailWrapper) sail).getBaseSail() instanceof MemoryStore :
-               sail instanceof MemoryStore;
+        Sail sail = ((SailRepository) repo).getSail();
+        while (sail instanceof SailWrapper) {
+            sail = ((SailWrapper) sail).getBaseSail();
+        }
+        return sail instanceof MemoryStore;
     }
 }
