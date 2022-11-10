@@ -21,7 +21,9 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -132,7 +134,7 @@ public abstract class Generators {
     }
 
     private static Object generateRandomPropertyValue(int valueIndex, int propertyIndex) {
-        final int random = randomInt(8);
+        final int random = randomInt(10);
         switch (random) {
             case 0: // boolean
                 return valueIndex % 2 == 0;
@@ -142,14 +144,18 @@ public abstract class Generators {
                 return System.currentTimeMillis();
             case 3: //double
                 return ((double) propertyIndex + 1) / (valueIndex + 1);
-            case 4: // date
-                // Generate date rounded to seconds to prevent issues with time rounding
+            case 4: // datetime
+                // Generate date rounded to milliseconds to prevent issues with time rounding
                 return OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-            case 5: // String
-                return "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
+            case 5:
+                return OffsetTime.now().truncatedTo(ChronoUnit.MILLIS);
             case 6:
+                return LocalDate.now();
+            case 7: // String
+                return "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
+            case 8:
                 return BigInteger.valueOf(valueIndex);
-            case 7:
+            case 9:
                 return BigDecimal.valueOf(Math.PI);
             default:
                 throw new IllegalArgumentException();
