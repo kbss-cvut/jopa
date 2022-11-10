@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.19.2 - 2022-11-10
+- Fix issues in working with `LocalTime` values.
+
 ## 0.19.1 - 2022-11-08
 - Fix issues in working with `BigInteger` and `BigDecimal` values.
 - Fix a warning about illegal reflective operations on newer JDKs.
