@@ -293,6 +293,7 @@ public class CloneBuilderImpl implements CloneBuilder {
                          URI.class,
                          URL.class,
                          LocalDate.class,
+                         LocalTime.class,
                          LocalDateTime.class,
                          ZonedDateTime.class,
                          OffsetDateTime.class,

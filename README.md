@@ -72,7 +72,7 @@ This means that when you add an instance of some class during a transaction and 
 transaction), you'll see the newly added instance as well. This is a feature not usually seen even in large triple stores.
 
 There are some limitations to this approach. Currently, pending changes are not taken into account when doing inference.
-Also, the current version of Sesame OntoDriver is not able to include pending changes into results of SPARQL queries.
+Also, the current version of RDF4J OntoDriver is not able to include pending changes into results of SPARQL queries.
 
 #### Separate storage access layer
 
@@ -110,7 +110,7 @@ The whole framework consists of several modules:
 * _OntoDriver RDF4J_ - OntoDriver implementation for RDF4J-accessed storages.
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files.
 * _Ontodriver Jena_ - OntoDriver implementation for Jena-based storages.
-* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-sesame-owl2java)).
+* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-rdf4j-owl2java)).
 * _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
 
 Other modules represent integration tests and various utilities.
