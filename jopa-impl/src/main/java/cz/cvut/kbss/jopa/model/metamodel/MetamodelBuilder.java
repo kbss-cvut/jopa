@@ -84,6 +84,9 @@ public class MetamodelBuilder {
         if (supertype != null) {
             type.setSupertype(supertype);
         }
+        final Set<AbstractIdentifiableType<? super X>> superInterfaces =processSuperInterfaces(cls);
+        superInterfaces.forEach(type::addSuperInterface);
+
         type.setLifecycleListenerManager(new EntityLifecycleCallbackResolver(type).resolve());
 
         final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(context, this);
@@ -92,7 +95,7 @@ public class MetamodelBuilder {
             fieldProcessor.processField(f);
         }
 
-        if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
+        if (!type.isAbstract()) {
             try {
                 type.getIdentifier();
             } catch (IllegalArgumentException e) {
@@ -118,7 +121,23 @@ public class MetamodelBuilder {
         }
         return null;
     }
+    private <X> Set<AbstractIdentifiableType<? super X>> processSuperInterfaces(Class<X> cls) {
+        Set<AbstractIdentifiableType<? super X>> superTypes = new HashSet<>();
 
+        final Set<Class<? super X>> managedSupertypes = ManagedClassProcessor.getManagedSuperInterfaces(cls);
+        for (Class<? super X> managedSupertype : managedSupertypes) {
+            if (typeMap.containsKey(managedSupertype)) {
+                superTypes.add((AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype));
+            } else {
+                final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
+                context.setConverterResolver(converterResolver);
+                context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
+                processManagedType(context);
+                superTypes.add(context.getType());
+            }
+        }
+        return superTypes;
+    }
     private static <X> void resolveInheritanceType(EntityTypeImpl<X> et) {
         final Class<X> cls = et.getJavaType();
         final Inheritance inheritance = cls.getDeclaredAnnotation(Inheritance.class);

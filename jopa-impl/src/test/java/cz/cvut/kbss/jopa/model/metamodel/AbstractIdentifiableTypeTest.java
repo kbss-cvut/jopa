@@ -48,7 +48,7 @@ class AbstractIdentifiableTypeTest {
 
     @BeforeEach
     void setUp() {
-        this.et = new EntityTypeImpl<>(className, cls, classIri);
+        this.et = new ConcreteEntityType<>(className, cls, classIri);
         final Identifier<OWLClassA, URI> id = mock(Identifier.class);
         when(id.getName()).thenReturn(ID_NAME);
         et.setIdentifier(id);

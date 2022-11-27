@@ -81,7 +81,7 @@ public class PolymorphicEntityTypeResolver<T> {
                                         Set<EntityType<? extends T>> ancestors) {
         for (AbstractIdentifiableType<? extends T> subtype : parent.getSubtypes()) {
             final Set<EntityType<? extends T>> updatedAncestors = new HashSet<>(ancestors);
-            if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY && !subtype.isAbstract()) {
+            if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY && !subtype.isAbstract()) { /// here
                 final EntityTypeImpl<? extends T> et = (EntityTypeImpl<? extends T>) subtype;
                 final URI etUri = et.getIRI().toURI();
                 if (types.contains(etUri)) {

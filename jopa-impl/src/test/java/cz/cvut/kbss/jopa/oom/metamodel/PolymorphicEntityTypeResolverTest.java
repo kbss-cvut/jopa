@@ -183,8 +183,8 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeReturnsNullWhenMostSpecificTypeIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
         final EntityTypeImpl<AbstractSubtype> etAbstract = spy(
-                new EntityTypeImpl<>(AbstractSubtype.class.getSimpleName(),
-                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+                new ConcreteEntityType<>(AbstractSubtype.class.getSimpleName(),
+                                         AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(etR).when(etAbstract).getSupertype();
         doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
 
@@ -199,8 +199,8 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeIsNotAmbiguousWhenOneOfTheTypesIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
         final EntityTypeImpl<AbstractSubtype> etAbstract = spy(
-                new EntityTypeImpl<>(AbstractSubtype.class.getSimpleName(),
-                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+                new ConcreteEntityType<>(AbstractSubtype.class.getSimpleName(),
+                                         AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(etR).when(etAbstract).getSupertype();
         doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
         final EntityTypeImpl mostSpecificEtOne = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
@@ -213,8 +213,8 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeSearchesForMoreSpecificTypeWhenRootTypeIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
         final EntityTypeImpl<AbstractSubtype> etAbstract = spy(
-                new EntityTypeImpl<>(AbstractSubtype.class.getSimpleName(),
-                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+                new ConcreteEntityType<>(AbstractSubtype.class.getSimpleName(),
+                                         AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(Collections.singleton(etS)).when(etAbstract).getSubtypes();
         // We are abusing the type erasure here a little
         when(etS.getSupertype()).thenReturn((AbstractIdentifiableType) etAbstract);

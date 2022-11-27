@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,6 +23,9 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 
 import java.lang.reflect.AnnotatedElement;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Utility methods for processing managed types for metamodel construction.
@@ -72,9 +75,12 @@ class ManagedClassProcessor {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
         assert c != null;
 
-        checkForNoArgConstructor(cls);
-
-        return new EntityTypeImpl<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        if (cls.isInterface()) {
+            return new AbstractEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        } else {
+            checkForNoArgConstructor(cls);
+            return new ConcreteEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        }
     }
 
     private static <T> void checkForNoArgConstructor(Class<T> cls) {
@@ -97,7 +103,14 @@ class ManagedClassProcessor {
         }
         return null;
     }
+    static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
+       return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
+                                          .map(clazz -> (Class<? super T>) clazz)
+                                          .collect(Collectors.toSet());
 
+
+
+    }
     static boolean isManagedType(Class<?> cls) {
         return isEntityType(cls) || isMappedSuperclassType(cls);
     }

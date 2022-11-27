@@ -23,6 +23,9 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";
     public static final String C_OWL_CLASS_D = CLASS_IRI_BASE + "OWLClassD";
     public static final String C_OWL_CLASS_E = CLASS_IRI_BASE + "OWLClassE";
+    public static final String NOTEBOOK = CLASS_IRI_BASE + "NOTEBOOK";
+    public static final String TABLET = CLASS_IRI_BASE + "TABLET";
+    public static final String SURFACE = CLASS_IRI_BASE + "SURFACE";
     public static final String C_OWL_CLASS_F = CLASS_IRI_BASE + "OWLClassF";
     public static final String C_OWL_CLASS_G = CLASS_IRI_BASE + "OWLClassG";
     public static final String C_OWL_CLASS_H = CLASS_IRI_BASE + "OWLClassH";

@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +24,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     private Identifier<X, ?> identifier;
 
     private AbstractIdentifiableType<? super X> supertype;
+
+    private Set<AbstractIdentifiableType<? super X>> superInterfaces = new HashSet<>();
 
     private Set<AbstractIdentifiableType<? extends X>> subtypes;
 
@@ -55,7 +56,12 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.supertype = supertype;
         supertype.addSubtype(this);
     }
+    void addSuperInterface(AbstractIdentifiableType<? super X> supertype) {
+        assert supertype != null;
+        this.superInterfaces.add(supertype);
 
+        supertype.addSubtype(this);
+    }
     private void addSubtype(AbstractIdentifiableType<? extends X> subtype) {
         if (subtypes == null) {
             this.subtypes = new HashSet<>(2);
@@ -105,9 +111,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
      *
      * @return {@code true} if the represented Java type is abstract, {@code false} otherwise
      */
-    public boolean isAbstract() {
-        return Modifier.isAbstract(javaType.getModifiers());
-    }
+    public abstract boolean isAbstract();
 
     public Set<AbstractIdentifiableType<? extends X>> getSubtypes() {
         return subtypes != null ? Collections.unmodifiableSet(subtypes) : Collections.emptySet();
