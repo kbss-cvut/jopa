@@ -636,8 +636,8 @@ public class CloneBuilderTest {
     private void initMetamodelForAB() throws Exception {
         when(uow.isEntityType(A.class)).thenReturn(true);
         when(uow.isEntityType(B.class)).thenReturn(true);
-        final EntityTypeImpl<A> etA = mock(EntityTypeImpl.class);
-        final EntityTypeImpl<B> etB = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<A> etA = mock(IdentifiableEntityType.class);
+        final IdentifiableEntityType<B> etB = mock(IdentifiableEntityType.class);
         final Identifier idA = new IRIIdentifierImpl<>(etA, A.class.getDeclaredField("uri"), true);
         final Identifier idB = new IRIIdentifierImpl<>(etB, B.class.getDeclaredField("uri"), true);
         when(etA.getIdentifier()).thenReturn(idA);

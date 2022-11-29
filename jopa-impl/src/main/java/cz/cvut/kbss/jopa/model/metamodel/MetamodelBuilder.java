@@ -101,7 +101,7 @@ public class MetamodelBuilder {
             } catch (IllegalArgumentException e) {
                 throw new MetamodelInitializationException("Missing identifier field in entity " + cls);
             }
-            resolveInheritanceType((EntityTypeImpl<X>) type);
+            resolveInheritanceType((IdentifiableEntityType<X>) type);
         }
 
         queryProcessor.processClass(cls);
@@ -138,7 +138,7 @@ public class MetamodelBuilder {
         }
         return superTypes;
     }
-    private static <X> void resolveInheritanceType(EntityTypeImpl<X> et) {
+    private static <X> void resolveInheritanceType(IdentifiableEntityType<X> et) {
         final Class<X> cls = et.getJavaType();
         final Inheritance inheritance = cls.getDeclaredAnnotation(Inheritance.class);
         if (inheritance != null) {

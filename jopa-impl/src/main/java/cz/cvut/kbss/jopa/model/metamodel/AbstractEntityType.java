@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
 
-public class AbstractEntityType<X> extends EntityTypeImpl<X> {
+public class AbstractEntityType<X> extends IdentifiableEntityType<X>  {
     public AbstractEntityType(String name, Class<X> javaType, IRI iri) {
         super(name, javaType, iri);
     }

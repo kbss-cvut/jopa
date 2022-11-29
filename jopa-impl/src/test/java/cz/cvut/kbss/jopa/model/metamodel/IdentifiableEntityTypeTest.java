@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class EntityTypeImplTest {
+class IdentifiableEntityTypeTest {
 
     private static Class<OWLClassA> cls;
     private static IRI classIri;
@@ -56,7 +56,7 @@ class EntityTypeImplTest {
 
     @Test
     void getFieldSpecificationReturnsTypesIfNameMatches() throws Exception {
-        final EntityTypeImpl<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
+        final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
         final TypesSpecification typesSpec = mock(TypesSpecification.class);
         when(typesSpec.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesSpec.getJavaField()).thenReturn(OWLClassA.getTypesField());
@@ -67,10 +67,10 @@ class EntityTypeImplTest {
 
     @Test
     void setSupertypeSetsInheritanceStrategyFromTheSupertypeWhenItIsEntity() {
-        final EntityTypeImpl<OWLClassR> rEntityType = new ConcreteEntityType<>(OWLClassR.class.getName(),
-                                                                               OWLClassR.class, IRI.create(OWLClassR.getClassIri()));
-        final EntityTypeImpl<OWLClassS> sEntityType = spy(new ConcreteEntityType<>(OWLClassS.class.getName(),
-                                                                                   OWLClassS.class, IRI.create(OWLClassS.getClassIri())));
+        final IdentifiableEntityType<OWLClassR> rEntityType = new ConcreteEntityType<>(OWLClassR.class.getName(),
+                                                                                       OWLClassR.class, IRI.create(OWLClassR.getClassIri()));
+        final IdentifiableEntityType<OWLClassS> sEntityType = spy(new ConcreteEntityType<>(OWLClassS.class.getName(),
+                                                                                           OWLClassS.class, IRI.create(OWLClassS.getClassIri())));
         sEntityType.setInheritanceType(InheritanceType.TRY_FIRST);
         rEntityType.setSupertype(sEntityType);
 
@@ -79,8 +79,8 @@ class EntityTypeImplTest {
 
     @Test
     void setSupertypeSkipsInheritanceStrategyWhenSupertypeIsNotEntity() {
-        final EntityTypeImpl<OWLClassQ> qEntityType = new ConcreteEntityType<>(OWLClassQ.class.getName(), OWLClassQ.class,
-                                                                               IRI.create(OWLClassQ.getClassIri()));
+        final IdentifiableEntityType<OWLClassQ> qEntityType = new ConcreteEntityType<>(OWLClassQ.class.getName(), OWLClassQ.class,
+                                                                                       IRI.create(OWLClassQ.getClassIri()));
         final MappedSuperclassTypeImpl<QMappedSuperclass> superclassType = new MappedSuperclassTypeImpl<>(
                 QMappedSuperclass.class);
         qEntityType.setSupertype(superclassType);

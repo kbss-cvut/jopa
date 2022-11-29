@@ -32,7 +32,6 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.*;
@@ -50,7 +49,7 @@ public class MetamodelFactory {
     /**
      * Initializes the specified mock objects to return reasonable values.
      */
-    public static void initOWLClassAMocks(EntityTypeImpl<OWLClassA> etMock, AbstractAttribute strAttMock,
+    public static void initOWLClassAMocks(IdentifiableEntityType<OWLClassA> etMock, AbstractAttribute strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
@@ -113,7 +112,7 @@ public class MetamodelFactory {
     /**
      * Initializes the specified mock objects to return reasonable values.
      */
-    public static void initOWLClassBMocks(EntityTypeImpl<OWLClassB> etMock, AbstractAttribute strAttMock,
+    public static void initOWLClassBMocks(IdentifiableEntityType<OWLClassB> etMock, AbstractAttribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
             NoSuchFieldException,
             SecurityException {
@@ -158,7 +157,7 @@ public class MetamodelFactory {
         });
     }
 
-    public static void initOWLClassCMocks(EntityTypeImpl<OWLClassC> etMock,
+    public static void initOWLClassCMocks(IdentifiableEntityType<OWLClassC> etMock,
                                           ListAttributeImpl simpleListMock, ListAttributeImpl refListMock,
                                           Identifier idMock)
             throws NoSuchFieldException, SecurityException {
@@ -238,7 +237,7 @@ public class MetamodelFactory {
         });
     }
 
-    public static void initOWLClassEMocks(EntityTypeImpl<OWLClassE> etMock, AbstractAttribute strAttMock,
+    public static void initOWLClassEMocks(IdentifiableEntityType<OWLClassE> etMock, AbstractAttribute strAttMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassE.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassE.getClassIri()));
@@ -263,7 +262,7 @@ public class MetamodelFactory {
     /**
      * Initializes the specified mock objects to return reasonable values.
      */
-    public static void initOWLClassDMocks(EntityTypeImpl<OWLClassD> etMock, AbstractAttribute clsAMock,
+    public static void initOWLClassDMocks(IdentifiableEntityType<OWLClassD> etMock, AbstractAttribute clsAMock,
                                           Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassD.class);
@@ -294,7 +293,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassFMocks(EntityTypeImpl<OWLClassF> etMock, AbstractPluralAttribute setAMock,
+    public static void initOWLClassFMocks(IdentifiableEntityType<OWLClassF> etMock, AbstractPluralAttribute setAMock,
                                           AbstractAttribute strAttMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassF.class);
@@ -342,7 +341,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void iniOWLClassGMocks(EntityTypeImpl<OWLClassG> etMock, AbstractAttribute clsHMock,
+    public static void iniOWLClassGMocks(IdentifiableEntityType<OWLClassG> etMock, AbstractAttribute clsHMock,
                                          Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassG.class);
@@ -369,7 +368,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassHMocks(EntityTypeImpl<OWLClassH> etMock, AbstractAttribute clsAMock,
+    public static void initOWLClassHMocks(IdentifiableEntityType<OWLClassH> etMock, AbstractAttribute clsAMock,
                                           Attribute clsGMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassH.class);
@@ -410,7 +409,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassJMocks(EntityTypeImpl<OWLClassJ> etMock, AbstractPluralAttribute setAMock,
+    public static void initOWLClassJMocks(IdentifiableEntityType<OWLClassJ> etMock, AbstractPluralAttribute setAMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassJ.getClassIri()));
@@ -438,7 +437,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassKMocks(EntityTypeImpl<OWLClassK> etMock, AbstractAttribute clsEMock,
+    public static void initOWLClassKMocks(IdentifiableEntityType<OWLClassK> etMock, AbstractAttribute clsEMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassK.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassK.getClassIri()));
@@ -462,7 +461,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassLMocks(EntityTypeImpl<OWLClassL> etMock, ListAttributeImpl refListMock,
+    public static void initOWLClassLMocks(IdentifiableEntityType<OWLClassL> etMock, ListAttributeImpl refListMock,
                                           ListAttributeImpl simpleListMock, AbstractPluralAttribute setMock,
                                           AbstractAttribute singleAMock,
                                           Identifier idMock)
@@ -547,7 +546,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassMMock(EntityTypeImpl<OWLClassM> etMock, AbstractAttribute booleanAtt,
+    public static void initOWLClassMMock(IdentifiableEntityType<OWLClassM> etMock, AbstractAttribute booleanAtt,
                                          AbstractAttribute intAtt, SingularAttributeImpl longAtt,
                                          AbstractAttribute doubleAtt, AbstractAttribute dateAtt,
                                          AbstractAttribute enumAtt, AbstractPluralAttribute intSetAtt,
@@ -728,7 +727,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassNMock(EntityTypeImpl<OWLClassN> et, SingularAttributeImpl annotationAtt,
+    public static void initOWLClassNMock(IdentifiableEntityType<OWLClassN> et, SingularAttributeImpl annotationAtt,
                                          SingularAttributeImpl annotationUriAtt, SingularAttributeImpl stringAtt,
                                          AbstractPluralAttribute pluralAnnotationAtt,
                                          PropertiesSpecification props, Identifier idN)
@@ -809,7 +808,7 @@ public class MetamodelFactory {
         when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassOMock(EntityTypeImpl<OWLClassO> et, SingularAttributeImpl stringAtt, Identifier idO)
+    public static void initOWLClassOMock(IdentifiableEntityType<OWLClassO> et, SingularAttributeImpl stringAtt, Identifier idO)
             throws Exception {
         when(et.getIdentifier()).thenReturn(idO);
         when(et.getName()).thenReturn(OWLClassO.class.getSimpleName());
@@ -831,7 +830,7 @@ public class MetamodelFactory {
         when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassPMock(EntityTypeImpl<OWLClassP> et, TypesSpecification types,
+    public static void initOWLClassPMock(IdentifiableEntityType<OWLClassP> et, TypesSpecification types,
                                          PropertiesSpecification props,
                                          SingularAttribute uriAtt, PluralAttribute urlsAtt,
                                          ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
@@ -919,7 +918,7 @@ public class MetamodelFactory {
         when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOwlClassQMock(EntityTypeImpl<OWLClassQ> et,
+    public static void initOwlClassQMock(IdentifiableEntityType<OWLClassQ> et,
                                          MappedSuperclassTypeImpl<QMappedSuperclass> superclassType,
                                          SingularAttributeImpl qStringAtt, SingularAttributeImpl qParentStringAtt,
                                          SingularAttributeImpl qLabelAtt, SingularAttributeImpl qOwlClassAAtt,
@@ -1024,7 +1023,7 @@ public class MetamodelFactory {
                 .getDeclaredAttributes();
     }
 
-    public static void initOwlClassSMock(EntityTypeImpl<OWLClassS> et, SingularAttributeImpl sNameAtt,
+    public static void initOwlClassSMock(IdentifiableEntityType<OWLClassS> et, SingularAttributeImpl sNameAtt,
                                          TypesSpecification sTypes, Identifier idS) throws Exception {
         when(et.getName()).thenReturn(OWLClassS.class.getSimpleName());
         when(et.getIdentifier()).thenReturn(idS);
@@ -1064,8 +1063,8 @@ public class MetamodelFactory {
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
     }
 
-    static void initOwlClassRMock(EntityTypeImpl<OWLClassR> et, SingularAttributeImpl rStringAtt,
-                                  SingularAttributeImpl owlClassAAtt, EntityTypeImpl<OWLClassS> parentEt)
+    static void initOwlClassRMock(IdentifiableEntityType<OWLClassR> et, SingularAttributeImpl rStringAtt,
+                                  SingularAttributeImpl owlClassAAtt, IdentifiableEntityType<OWLClassS> parentEt)
             throws Exception {
         final Identifier id = parentEt.getIdentifier();
         when(et.getIdentifier()).thenReturn(id);
@@ -1133,7 +1132,7 @@ public class MetamodelFactory {
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
     }
 
-    static void initOwlClassSListeners(EntityTypeImpl<OWLClassS> etS, ParentListener listener) throws Exception {
+    static void initOwlClassSListeners(IdentifiableEntityType<OWLClassS> etS, ParentListener listener) throws Exception {
         final EntityLifecycleListenerManager manager = etS.getLifecycleListenerManager();
         final Method addListener = EntityLifecycleListenerManager.class
                 .getDeclaredMethod("addEntityListener", Object.class);
@@ -1154,7 +1153,7 @@ public class MetamodelFactory {
         addListenerCallback.invoke(manager, listener, evt, callback);
     }
 
-    static void initOwlClassRListeners(EntityTypeImpl<OWLClassR> etR, EntityTypeImpl<OWLClassS> etS,
+    static void initOwlClassRListeners(IdentifiableEntityType<OWLClassR> etR, IdentifiableEntityType<OWLClassS> etS,
                                        ConcreteListener concreteListener, AnotherListener anotherListener)
             throws Exception {
         final EntityLifecycleListenerManager manager = etR.getLifecycleListenerManager();
@@ -1177,7 +1176,7 @@ public class MetamodelFactory {
         addEntityListenerCallback(manager, concreteListener, POST_REMOVE, ConcreteListener.getPostRemove());
     }
 
-    static void initOwlClassTMock(EntityTypeImpl<OWLClassT> et, SingularAttributeImpl localDateAtt,
+    static void initOwlClassTMock(IdentifiableEntityType<OWLClassT> et, SingularAttributeImpl localDateAtt,
                                   SingularAttributeImpl localDateTimeAtt, SingularAttributeImpl owlClassSAtt,
                                   Identifier id) throws Exception {
         when(et.getIdentifier()).thenReturn(id);
@@ -1233,7 +1232,7 @@ public class MetamodelFactory {
         when(owlClassSAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
     }
 
-    static void initOwlClassUMocks(EntityTypeImpl<OWLClassU> et, SingularAttributeImpl singularStringAtt,
+    static void initOwlClassUMocks(IdentifiableEntityType<OWLClassU> et, SingularAttributeImpl singularStringAtt,
                                    AbstractPluralAttribute pluralStringAtt,
                                    Identifier id) throws Exception {
         when(et.getIdentifier()).thenReturn(id);
@@ -1280,7 +1279,7 @@ public class MetamodelFactory {
         when(pluralStringAtt.getLanguage()).thenReturn(null);
     }
 
-    static void initOWLClassWithQueryAttrMocks(EntityTypeImpl<OWLClassWithQueryAttr> etMock,
+    static void initOWLClassWithQueryAttrMocks(IdentifiableEntityType<OWLClassWithQueryAttr> etMock,
                                                AbstractQueryAttribute strQueryAttMock, AbstractAttribute strAttMock,
                                                AbstractQueryAttribute entityQueryAttMock,
                                                AbstractAttribute entityAttMock,

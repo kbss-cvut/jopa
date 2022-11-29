@@ -101,7 +101,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
-        final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
         final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntity(loadingParameters);
@@ -118,7 +118,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> T loadReference(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
-        final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
         if (et.hasSubtypes()) {
             return twoStepInstanceLoader.loadReference(loadingParameters);
         } else {
@@ -127,7 +127,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> EntityTypeImpl<T> getEntityType(Class<T> cls) {
+    public <T> IdentifiableEntityType<T> getEntityType(Class<T> cls) {
         return uow.getMetamodel().entity(cls);
     }
 

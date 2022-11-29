@@ -34,7 +34,7 @@ class ClassFieldMetamodelProcessorTest {
 
     @Test
     void processingNonTransientFieldWithoutPropertyInfoThrowsException() throws Exception {
-        final EntityTypeImpl<InvalidClass> etMock = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<InvalidClass> etMock = mock(IdentifiableEntityType.class);
         when(etMock.getJavaType()).thenReturn(InvalidClass.class);
         when(metamodelBuilder.hasManagedType(InvalidClass.class)).thenReturn(true);
         final ClassFieldMetamodelProcessor<InvalidClass> processor =
@@ -60,7 +60,7 @@ class ClassFieldMetamodelProcessorTest {
     @Test
     void processPluralFieldWithNonEmptyCardinalityConstraintAddsTheConstraintToAttributeSpecification()
             throws Exception {
-        final EntityTypeImpl<OWLClassJ> etMock = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<OWLClassJ> etMock = mock(IdentifiableEntityType.class);
         when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
         final TypeBuilderContext<OWLClassJ> context = new TypeBuilderContext<>(etMock, new NamespaceResolver());
         context.setConverterResolver(new ConverterResolver(new Converters(new Configuration())));

@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.model.lifecycle;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 
 import java.util.function.Consumer;
 
@@ -32,7 +32,7 @@ public class PostLoadInvoker implements Consumer<Object> {
 
     @Override
     public void accept(Object o) {
-        final EntityTypeImpl<?> et = metamodel.entity(o.getClass());
+        final IdentifiableEntityType<?> et = metamodel.entity(o.getClass());
         et.getLifecycleListenerManager().invokePostLoadCallbacks(o);
     }
 }

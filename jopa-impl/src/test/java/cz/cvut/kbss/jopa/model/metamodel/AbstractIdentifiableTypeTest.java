@@ -37,7 +37,7 @@ class AbstractIdentifiableTypeTest {
     private static IRI classIri;
     private static String className;
 
-    private EntityTypeImpl<OWLClassA> et;
+    private IdentifiableEntityType<OWLClassA> et;
 
     @BeforeAll
     static void setUpBeforeClass() {

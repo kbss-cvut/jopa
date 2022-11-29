@@ -71,7 +71,7 @@ class ManagedClassProcessor {
         }
     }
 
-    private static <T> EntityTypeImpl<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver) {
+    private static <T> IdentifiableEntityType<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver) {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
         assert c != null;
 
