@@ -33,8 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,11 +51,11 @@ public class MainAxiomLoaderTest {
     @Mock
     private InferredStorageConnector inferredConnectorMock;
 
-    private MainAxiomLoader axiomLoader;
+    private MainAxiomLoader sut;
 
     @BeforeEach
     public void setUp() {
-        this.axiomLoader = new MainAxiomLoader(connectorMock, inferredConnectorMock);
+        this.sut = new MainAxiomLoader(connectorMock, inferredConnectorMock);
     }
 
     @Test
@@ -65,7 +64,7 @@ public class MainAxiomLoaderTest {
         when(connectorMock.contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet())).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(cls.getURI())));
-        assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
+        assertTrue(sut.contains(axiom, Collections.emptySet()));
         verify(connectorMock).contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
         verify(inferredConnectorMock, never()).containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
     }
@@ -76,7 +75,7 @@ public class MainAxiomLoaderTest {
         when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet())).thenReturn(true);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true),
                 new Value<>(NamedResource.create(cls.getURI())));
-        assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
+        assertTrue(sut.contains(axiom, Collections.emptySet()));
         verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
         verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
     }
@@ -100,9 +99,34 @@ public class MainAxiomLoaderTest {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         descriptor.addAssertion(inferred.getAssertion());
         descriptor.addAssertion(asserted.getAssertion());
-        final Collection<Axiom<?>> result = axiomLoader.find(descriptor);
+        final Collection<Axiom<?>> result = sut.find(descriptor);
         assertEquals(2, result.size());
         assertTrue(result.contains(asserted));
         assertTrue(result.contains(inferred));
+    }
+
+    @Test
+    void isInferredChecksWhetherInferredLoaderContainsAndAssertedDoesNotContainSpecifiedAxiom() {
+        final URI ctx = Generator.generateUri();
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true), new Value<>(NamedResource.create(Generator.generateUri())));
+        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, createResource(axiom.getValue()
+                .stringValue()), Collections.singleton(ctx.toString()))).thenReturn(true);
+        when(connectorMock.contains(SUBJECT_RES, RDF.type, createResource(axiom.getValue()
+                .stringValue()), Collections.singleton(ctx.toString()))).thenReturn(false);
+        assertTrue(sut.isInferred(axiom, Collections.singleton(ctx)));
+        verify(connectorMock).contains(SUBJECT_RES, RDF.type, createResource(axiom.getValue().stringValue()), Collections.singleton(ctx.toString()));
+        verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, createResource(axiom.getValue().stringValue()), Collections.singleton(ctx.toString()));
+    }
+
+    @Test
+    void isInferredReturnsFalseWhenBothExplicitAndInferredLoadersContainSpecifiedAxiom() {
+        final URI ctx = Generator.generateUri();
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true), new Value<>(NamedResource.create(Generator.generateUri())));
+        when(inferredConnectorMock.containsWithInference(SUBJECT_RES, RDF.type, createResource(axiom.getValue()
+                .stringValue()), Collections.singleton(ctx.toString()))).thenReturn(true);
+        when(connectorMock.contains(SUBJECT_RES, RDF.type, createResource(axiom.getValue()
+                .stringValue()), Collections.singleton(ctx.toString()))).thenReturn(true);
+
+        assertFalse(sut.isInferred(axiom, Collections.singleton(ctx)));
     }
 }

@@ -126,7 +126,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @param statement Statement whose inference to check
      * @param contexts  Optionally specify contexts in which the search should be performed. If empty, the default one
      *                  is used
-     * @return {@code true} iff the specified statement is inferred in the specified context
+     * @return {@code true} iff the specified statement is inferred in any of the specified contexts
      * @throws Rdf4jDriverException If a repository access error occurs
      */
     boolean isInferred(Statement statement, Collection<IRI> contexts) throws Rdf4jDriverException;
