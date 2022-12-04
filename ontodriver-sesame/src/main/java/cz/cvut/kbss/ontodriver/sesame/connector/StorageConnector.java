@@ -267,7 +267,7 @@ class StorageConnector extends AbstractConnector {
                                      Collection<IRI> contexts)
             throws SesameDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
-            return conn.hasStatement(subject, property, null, includeInferred, contexts.toArray(new IRI[0]));
+            return conn.hasStatement(subject, property, value, includeInferred, contexts.toArray(new IRI[0]));
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);
         }
