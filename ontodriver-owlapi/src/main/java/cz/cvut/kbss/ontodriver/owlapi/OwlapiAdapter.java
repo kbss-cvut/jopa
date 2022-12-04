@@ -129,6 +129,12 @@ public class OwlapiAdapter {
         return false;
     }
 
+    boolean isInferred(Axiom<?> axiom, Set<URI> contexts) {
+        startTransactionIfNotActive();
+        final Collection<OWLAxiom> owlAxiom = asOwlAxioms(axiom);
+        return owlAxiom.stream().anyMatch(a -> reasoner().isEntailed(a) && !ontology().containsAxiom(a));
+    }
+
     private Collection<OWLAxiom> asOwlAxioms(Axiom<?> axiom) {
         final Collection<OWLAxiom> owlAxioms = new ArrayList<>(3);
         final AxiomAdapter axiomAdapter = new AxiomAdapter(dataFactory());

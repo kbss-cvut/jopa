@@ -125,6 +125,11 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
+        public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException {
+            return true;
+        }
+
+        @Override
         public Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
             return null;
         }
