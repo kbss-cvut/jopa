@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
@@ -80,33 +79,6 @@ public class MainAxiomLoaderTest {
         assertTrue(axiomLoader.contains(axiom, Collections.emptySet()));
         verify(connectorMock, never()).contains(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
         verify(inferredConnectorMock).containsWithInference(SUBJECT_RES, RDF.type, cls, Collections.emptySet());
-    }
-
-    @Test
-    public void findBySubjectUsesNonInferredConnector() {
-        final Axiom<NamedResource> axiom =
-                new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), false),
-                        new Value<>(OBJECT));
-        when(connectorMock.find(SUBJECT_RES, null, null, Collections.emptySet())).thenReturn(Collections.singletonList(
-                createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
-        ));
-        final Collection<Axiom<?>> result = axiomLoader.find(SUBJECT, null);
-        assertEquals(1, result.size());
-        assertTrue(result.contains(axiom));
-    }
-
-    @Test
-    public void findWithInferenceUsesInferredConnector() {
-        final Axiom<NamedResource> axiom =
-                new AxiomImpl<>(SUBJECT, Assertion.createObjectPropertyAssertion(URI.create(PROPERTY.getURI()), true),
-                        new Value<>(OBJECT));
-        when(inferredConnectorMock.findWithInference(SUBJECT_RES, null, null, Collections.emptySet()))
-                .thenReturn(Collections.singletonList(
-                        createStatement(SUBJECT_RES, PROPERTY, OBJECT_RES)
-                ));
-        final Collection<Axiom<?>> result = axiomLoader.findWithInference(SUBJECT, null);
-        assertEquals(1, result.size());
-        assertTrue(result.contains(axiom));
     }
 
     @Test

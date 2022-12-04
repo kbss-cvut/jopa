@@ -19,7 +19,6 @@ import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.util.Collection;
@@ -75,31 +74,5 @@ class MainAxiomLoader {
                 asserted.put(a.getIdentifier().toString(), a);
             }
         }
-    }
-
-    /**
-     * Loads all asserted property statements with the specified subject.
-     * <p>
-     * Note that type assertion statements (those with property {@code rdf:type}) are skipped.
-     *
-     * @param subject Statement subject
-     * @param context Context identifier, optional
-     * @return Matching statements
-     */
-    Collection<Axiom<?>> find(NamedResource subject, URI context) {
-        return explicitLoader.find(subject, context);
-    }
-
-    /**
-     * Loads all property statements with the specified subject, including inferred ones.
-     * <p>
-     * Note that type assertion statements (those with property {@code rdf:type}) are skipped.
-     *
-     * @param subject Statement subject
-     * @param context Context identifier, optional
-     * @return Matching statements
-     */
-    Collection<Axiom<?>> findWithInference(NamedResource subject, URI context) {
-        return inferredLoader.find(subject, context);
     }
 }
