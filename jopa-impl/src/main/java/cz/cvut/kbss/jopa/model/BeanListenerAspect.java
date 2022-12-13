@@ -54,7 +54,7 @@ public class BeanListenerAspect {
         }
     }
 
-    @DeclareMixin(value = "!is(InterfaceType) && (@cz.cvut.kbss.jopa.model.annotations.OWLClass *)")
+    @DeclareMixin(value = "!is(InterfaceType) && (@cz.cvut.kbss.jopa.model.annotations.OWLClass *) && (!@cz.cvut.kbss.jopa.model.annotations.util.NonEntity *)")
     public static Manageable createImpl() {
         return new ManageableImpl();
     }
@@ -65,7 +65,8 @@ public class BeanListenerAspect {
             "|| cz.cvut.kbss.jopa.model.annotations.Types " +
             "|| cz.cvut.kbss.jopa.model.annotations.Properties " +
             "|| cz.cvut.kbss.jopa.model.annotations.Sparql) * * ) " +
-            "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
+            "&& ((within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) && !within(@cz.cvut.kbss.jopa.model.annotations.util.NonEntity *)) " +
+            "|| within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
     void getter() {
     }
 
@@ -73,7 +74,8 @@ public class BeanListenerAspect {
             "|| cz.cvut.kbss.jopa.model.annotations.OWLDataProperty " +
             "|| cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty " +
             "|| cz.cvut.kbss.jopa.model.annotations.Types || cz.cvut.kbss.jopa.model.annotations.Properties ) * * ) " +
-            "&& (within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) || within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
+            "&& ((within(@cz.cvut.kbss.jopa.model.annotations.OWLClass *) && !within(@cz.cvut.kbss.jopa.model.annotations.util.NonEntity *)) " +
+            "|| within(@cz.cvut.kbss.jopa.model.annotations.MappedSuperclass *))")
     void setter() {
     }
 
@@ -115,7 +117,8 @@ public class BeanListenerAspect {
                 return;
             }
             final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(entity,
-                    thisJoinPoint.getSignature().getName(), persistenceContext);
+                                                                             thisJoinPoint.getSignature().getName(),
+                                                                             persistenceContext);
             AttributeModificationValidator.verifyCanModify(fieldSpec);
             persistenceContext.attributeChanged(entity, field);
         } catch (SecurityException e) {
