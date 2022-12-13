@@ -15,5 +15,5 @@ import java.lang.annotation.Target;
 @NonJPA
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface NotEntity {
+public @interface NonEntity {
 }
