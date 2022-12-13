@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.19.3 - 2022-12-13
+- Allow excluding `@OWLClass` annotated classes from persistence by using `NonEntity` (Enhancement #124).
+- Update dependencies: SF4J 2.0.6, Logback 1.3.5, Mockito 4.9.0.
+
 ## 0.19.2 - 2022-11-10
 - Fix issues in working with `LocalTime` values.
 
