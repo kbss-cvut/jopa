@@ -30,6 +30,7 @@
         <module>jopa-integration-tests-owlapi</module>
         <module>jopa-integration-tests-rdf4j</module>
         <module>jopa-distribution</module>
+        <module>model-gen</module>
     </modules>
 
     <properties>
