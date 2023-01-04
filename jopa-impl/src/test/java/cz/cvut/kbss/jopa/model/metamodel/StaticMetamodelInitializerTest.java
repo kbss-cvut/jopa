@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -217,7 +216,7 @@ class StaticMetamodelInitializerTest {
     void initializeStaticMetamodelInitializesMetamodelForMappedSuperclasses() {
         when(metamodel.getEntities()).thenReturn(Collections.singleton(metamodelMocks.forOwlClassQ().entityType()));
         doReturn(new HashSet<>(Arrays.asList(metamodelMocks.forOwlClassQ().entityType(),
-                metamodelMocks.forOwlClassQ().entityType().getSupertype()))).when(metamodel).getManagedTypes();
+                metamodelMocks.forOwlClassQ().entityType().getSupertypes().iterator().next()))).when(metamodel).getManagedTypes();
         sut.initializeStaticMetamodel();
         assertEquals(metamodelMocks.forOwlClassQ().identifier(), QMappedSuperclass_.uri);
         assertEquals(metamodelMocks.forOwlClassQ().qLabelAtt(), QMappedSuperclass_.label);
@@ -241,7 +240,7 @@ class StaticMetamodelInitializerTest {
         final MappedSuperclassType<SuperClass> superType = mock(MappedSuperclassType.class);
         when(superType.getIdentifier()).thenReturn(id);
         when(superType.getJavaType()).thenReturn(SuperClass.class);
-        when(et.getSupertype()).thenReturn((IdentifiableType) superType);
+        when(et.getSupertypes()).thenReturn(Collections.singleton(superType));
         when(metamodel.getEntities()).thenReturn(Collections.singleton(et));
         doReturn(new HashSet<>(Arrays.asList(et, superType))).when(metamodel).getManagedTypes();
 

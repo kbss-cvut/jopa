@@ -39,9 +39,9 @@ public class EntityLoaderTest {
     }
 
     @Test
-    public void entityLoaderIgnoresInterfaceWithOwlClassAnnotation() {
+    public void entityLoaderAcceptsInterfaceWithOwlClassAnnotation() {
         sut.accept(AnnotatedInterface.class);
-        assertFalse(sut.getEntities().contains(AnnotatedInterface.class));
+        assertTrue(sut.getEntities().contains(AnnotatedInterface.class));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "interface")

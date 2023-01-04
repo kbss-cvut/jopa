@@ -80,12 +80,9 @@ public class MetamodelBuilder {
         final Class<X> cls = type.getJavaType();
         typeMap.put(cls, type);
 
-        final AbstractIdentifiableType<? super X> supertype = processSupertypes(cls);
-        if (supertype != null) {
-            type.setSupertype(supertype);
-        }
-        final Set<AbstractIdentifiableType<? super X>> superInterfaces =processSuperInterfaces(cls);
-        superInterfaces.forEach(type::addSuperInterface);
+        final Set<AbstractIdentifiableType<? super X>> supertypes = processSupertypes(cls);
+
+        type.setSupertypes(supertypes);
 
         type.setLifecycleListenerManager(new EntityLifecycleCallbackResolver(type).resolve());
 
@@ -107,25 +104,18 @@ public class MetamodelBuilder {
         queryProcessor.processClass(cls);
     }
 
-    private <X> AbstractIdentifiableType<? super X> processSupertypes(Class<X> cls) {
-        final Class<? super X> managedSupertype = ManagedClassProcessor.getManagedSupertype(cls);
-        if (managedSupertype != null) {
-            if (typeMap.containsKey(managedSupertype)) {
-                return (AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype);
-            }
-            final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
-            context.setConverterResolver(converterResolver);
-            context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
-            processManagedType(context);
-            return context.getType();
-        }
-        return null;
-    }
-    private <X> Set<AbstractIdentifiableType<? super X>> processSuperInterfaces(Class<X> cls) {
+    private <X> Set<AbstractIdentifiableType<? super X>> processSupertypes(Class<X> cls) {
         Set<AbstractIdentifiableType<? super X>> superTypes = new HashSet<>();
 
-        final Set<Class<? super X>> managedSupertypes = ManagedClassProcessor.getManagedSuperInterfaces(cls);
-        for (Class<? super X> managedSupertype : managedSupertypes) {
+        final Set<Class<? super X>> managedSuperTypes = ManagedClassProcessor.getManagedSuperInterfaces(cls);
+
+        final Class<? super X> managedSuperClass = ManagedClassProcessor.getManagedSuperClass(cls);
+
+        if (managedSuperClass != null) {
+            managedSuperTypes.add(managedSuperClass);
+        }
+
+        for (Class<? super X> managedSupertype : managedSuperTypes) {
             if (typeMap.containsKey(managedSupertype)) {
                 superTypes.add((AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype));
             } else {
@@ -138,12 +128,18 @@ public class MetamodelBuilder {
         }
         return superTypes;
     }
+
+    private static <X> boolean inheritsInheritanceStrategy(IdentifiableType<X> et) {
+        return et.getSupertypes()
+                 .stream()
+                 .anyMatch(supertype -> supertype.getPersistenceType() != Type.PersistenceType.MAPPED_SUPERCLASS);
+    }
+
     private static <X> void resolveInheritanceType(IdentifiableEntityType<X> et) {
         final Class<X> cls = et.getJavaType();
         final Inheritance inheritance = cls.getDeclaredAnnotation(Inheritance.class);
         if (inheritance != null) {
-            if (et.getSupertype() != null &&
-                    et.getSupertype().getPersistenceType() != Type.PersistenceType.MAPPED_SUPERCLASS) {
+            if (et.getSupertypes() != null && inheritsInheritanceStrategy(et)) {
                 throw new MetamodelInitializationException("Class " + cls +
                                                                    " cannot declare inheritance strategy, because it already inherits it from its supertype.");
             }

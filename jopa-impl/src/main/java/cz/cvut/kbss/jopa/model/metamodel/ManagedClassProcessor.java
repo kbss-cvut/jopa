@@ -97,7 +97,7 @@ class ManagedClassProcessor {
         return new MappedSuperclassTypeImpl<>(cls);
     }
 
-    static <T> Class<? super T> getManagedSupertype(Class<T> cls) {
+    static <T> Class<? super T> getManagedSuperClass(Class<T> cls) {
         if (cls.getSuperclass() != null && isManagedType(cls.getSuperclass())) {
             return cls.getSuperclass();
         }
@@ -107,9 +107,6 @@ class ManagedClassProcessor {
        return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
                                           .map(clazz -> (Class<? super T>) clazz)
                                           .collect(Collectors.toSet());
-
-
-
     }
     static boolean isManagedType(Class<?> cls) {
         return isEntityType(cls) || isMappedSuperclassType(cls);

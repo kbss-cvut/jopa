@@ -931,7 +931,7 @@ public class MetamodelFactory {
         when(idQ.isGenerated()).thenReturn(true);
         when(idQ.getDeclaringType()).thenReturn(superclassType);
         when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
-        when(et.getSupertype()).thenReturn((AbstractIdentifiableType) superclassType);
+        when(et.getSupertypes()).thenReturn(Collections.singleton(superclassType));
         when(superclassType.getSubtypes()).thenReturn(Collections.singleton(et));
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         when(et.getFieldSpecifications())
@@ -1080,7 +1080,7 @@ public class MetamodelFactory {
         fieldSpecs.add(owlClassAAtt);
         when(et.getFieldSpecifications()).thenReturn(fieldSpecs);
         when(et.getAttributes()).thenReturn(attributes);
-        when(et.getSupertype()).thenReturn((AbstractIdentifiableType) parentEt);
+        when(et.getSupertypes()).thenReturn(Collections.singleton(parentEt));
         when(parentEt.getSubtypes()).thenReturn(Collections.singleton(et));
         when(parentEt.hasSubtypes()).thenReturn(true);
 
@@ -1118,10 +1118,10 @@ public class MetamodelFactory {
             when(et.getFieldSpecification(fs.getName())).thenReturn(fs);
         }
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
-        final Method setParent = EntityLifecycleListenerManager.class
-                .getDeclaredMethod("setParent", EntityLifecycleListenerManager.class);
-        setParent.setAccessible(true);
-        setParent.invoke(listenerManager, parentEt.getLifecycleListenerManager());
+        final Method addParent = EntityLifecycleListenerManager.class
+                .getDeclaredMethod("addParent", EntityLifecycleListenerManager.class);
+        addParent.setAccessible(true);
+        addParent.invoke(listenerManager, parentEt.getLifecycleListenerManager());
         addLifecycleCallback(listenerManager, PRE_PERSIST, OWLClassR.getPrePersistHook());
         addLifecycleCallback(listenerManager, POST_PERSIST, OWLClassR.getPostPersistHook());
         addLifecycleCallback(listenerManager, PRE_UPDATE, OWLClassR.getPreUpdateHook());
@@ -1157,10 +1157,10 @@ public class MetamodelFactory {
                                        ConcreteListener concreteListener, AnotherListener anotherListener)
             throws Exception {
         final EntityLifecycleListenerManager manager = etR.getLifecycleListenerManager();
-        final Method setParent = EntityLifecycleListenerManager.class
-                .getDeclaredMethod("setParent", EntityLifecycleListenerManager.class);
-        setParent.setAccessible(true);
-        setParent.invoke(manager, etS.getLifecycleListenerManager());
+        final Method addParent = EntityLifecycleListenerManager.class
+                .getDeclaredMethod("addParent", EntityLifecycleListenerManager.class);
+        addParent.setAccessible(true);
+        addParent.invoke(manager, etS.getLifecycleListenerManager());
         final Method addListener = EntityLifecycleListenerManager.class
                 .getDeclaredMethod("addEntityListener", Object.class);
         addListener.setAccessible(true);

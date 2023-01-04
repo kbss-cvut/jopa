@@ -166,8 +166,10 @@ class MetamodelBuilderTest {
         final EntityLifecycleListenerManager childLifecycleManager = result.getLifecycleListenerManager();
         assertFalse(childLifecycleManager.getLifecycleCallbacks().isEmpty());
         assertTrue(childLifecycleManager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
-        assertNotNull(childLifecycleManager.getParent());
-        assertTrue(childLifecycleManager.getParent().hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
+        assertNotNull(childLifecycleManager.getParents());
+        assertTrue(childLifecycleManager.getParents()
+                                        .stream()
+                                        .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
     }
 
     @MappedSuperclass

@@ -17,6 +17,10 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType<X> implements EntityType<X> {
 
     private final String name;
@@ -57,10 +61,16 @@ public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType
     }
 
     @Override
-    void setSupertype(AbstractIdentifiableType<? super X> supertype) {
-        super.setSupertype(supertype);
-        if (supertype.getPersistenceType() == PersistenceType.ENTITY) {
-            this.inheritanceType = ((IdentifiableEntityType) supertype).inheritanceType;
+    void setSupertypes(Set<AbstractIdentifiableType<? super X>> supertypes) {
+        super.setSupertypes(supertypes);
+        /// find unique inheritance types of parents
+        List<InheritanceType> superTypesInheritanceTypes = supertypes.stream()
+                                                           .filter(superType -> superType.getPersistenceType() == PersistenceType.ENTITY)
+                                                           .map(abstractIdentifiableType -> ((IdentifiableEntityType<?>) abstractIdentifiableType).inheritanceType)
+                                                           .distinct()
+                                                           .collect(Collectors.toList());
+        if (superTypesInheritanceTypes.size() == 1) { /// there is an agreement from all parents on inheritance type
+            this.inheritanceType = superTypesInheritanceTypes.get(0);
         }
     }
 

@@ -19,7 +19,7 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
+import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -72,7 +72,7 @@ class IdentifiableEntityTypeTest {
         final IdentifiableEntityType<OWLClassS> sEntityType = spy(new ConcreteEntityType<>(OWLClassS.class.getName(),
                                                                                            OWLClassS.class, IRI.create(OWLClassS.getClassIri())));
         sEntityType.setInheritanceType(InheritanceType.TRY_FIRST);
-        rEntityType.setSupertype(sEntityType);
+        rEntityType.setSupertypes(Collections.singleton(sEntityType));
 
         assertEquals(InheritanceType.TRY_FIRST, rEntityType.getInheritanceType());
     }
@@ -83,7 +83,7 @@ class IdentifiableEntityTypeTest {
                                                                                        IRI.create(OWLClassQ.getClassIri()));
         final MappedSuperclassTypeImpl<QMappedSuperclass> superclassType = new MappedSuperclassTypeImpl<>(
                 QMappedSuperclass.class);
-        qEntityType.setSupertype(superclassType);
+        qEntityType.setSupertypes(Collections.singleton(superclassType));
         assertNull(qEntityType.getInheritanceType());
     }
 }
