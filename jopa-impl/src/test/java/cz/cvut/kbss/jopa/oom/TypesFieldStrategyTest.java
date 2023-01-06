@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -30,6 +28,8 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -62,7 +62,7 @@ public class TypesFieldStrategyTest {
     private <T> TypesFieldStrategy<T> strategy(EntityType<T> et, TypesSpecification<T, ?> typesSpec) {
         EntityDescriptor descriptor = new EntityDescriptor();
         return new TypesFieldStrategy<>(et, typesSpec,
-                descriptor.getAttributeDescriptor(typesSpec), mapperMock);
+                                        descriptor.getAttributeDescriptor(typesSpec), mapperMock);
     }
 
     @Test
@@ -89,9 +89,8 @@ public class TypesFieldStrategyTest {
         entityA.setTypes(Generators.generateTypes(count));
         final OWLClassA original = createOriginal();
         when(mapperMock.getOriginalInstance(entityA)).thenReturn(original);
-        final Set<String> addedTypes = new HashSet<>();
-        addedTypes.add("http://krizik.felk.cvut.cz/ontologies/jopa#addedOne");
-        addedTypes.add("http://krizik.felk.cvut.cz/ontologies/jopa#addedTwo");
+        final Set<String> addedTypes = new HashSet<>(Arrays.asList(Generators.createIndividualIdentifier().toString(),
+                                                                   Generators.createIndividualIdentifier().toString()));
         entityA.getTypes().addAll(addedTypes);
 
         strategy.buildAxiomValuesFromInstance(entityA, gatherer);
@@ -181,9 +180,8 @@ public class TypesFieldStrategyTest {
         final OWLClassA original = createOriginal();
         when(mapperMock.getOriginalInstance(entityA)).thenReturn(original);
         final Set<String> removedTypes = removeRandomTypes();
-        final Set<String> addedTypes = new HashSet<>();
-        addedTypes.add("http://krizik.felk.cvut.cz/ontologies/jopa#addedOne");
-        addedTypes.add("http://krizik.felk.cvut.cz/ontologies/jopa#addedTwo");
+        final Set<String> addedTypes = new HashSet<>(Arrays.asList(Generators.createIndividualIdentifier().toString(),
+                                                                   Generators.createIndividualIdentifier().toString()));
         entityA.getTypes().addAll(addedTypes);
 
         strategy.buildAxiomValuesFromInstance(entityA, gatherer);
@@ -293,12 +291,37 @@ public class TypesFieldStrategyTest {
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().types());
         final List<Axiom<URI>> axioms = Collections.singletonList(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(URI.create(OWLClassP.getClassIri()))));
+                                new Value<>(URI.create(OWLClassP.getClassIri()))));
         axioms.forEach(strategy::addValueFromAxiom);
 
         final OWLClassP p = new OWLClassP();
         assertNull(p.getTypes());
         strategy.buildInstanceFieldValue(p);
         assertNull(p.getTypes());
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        final TypesFieldStrategy<OWLClassA> sut =
+                strategy(mocks.forOwlClassA().entityType(), mocks.forOwlClassA().typesSpec());
+        final int count = 5;
+        entityA.setTypes(Generators.generateTypes(count));
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(entityA);
+        assertEquals(entityA.getTypes().size(), result.size());
+        final Assertion assertion = Assertion.createClassAssertion(false);
+        entityA.getTypes().forEach(t -> assertThat(result, hasItem(new AxiomImpl<>(NamedResource.create(IDENTIFIER),
+                                                                                   assertion,
+                                                                                   new Value<>(URI.create(t))))));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsEmptySetForEmptyTypes() {
+        entityA.setTypes(Collections.emptySet());
+        final TypesFieldStrategy<OWLClassA> sut =
+                strategy(mocks.forOwlClassA().entityType(), mocks.forOwlClassA().typesSpec());
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(entityA);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }

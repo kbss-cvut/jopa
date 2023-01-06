@@ -176,6 +176,12 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
     }
 
     @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        // TODO
+        return null;
+    }
+
+    @Override
     Assertion createAssertion() {
         return Assertion.createUnspecifiedPropertyAssertion(attribute.isInferred());
     }

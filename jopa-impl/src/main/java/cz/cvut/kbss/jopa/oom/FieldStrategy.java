@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
+import java.util.Set;
 
 /**
  * @param <T> The attribute specification type, e.g. {@link SingularAttribute}, {@link ListAttribute}
@@ -42,9 +43,10 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         this.mapper = mapper;
     }
 
-    static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
-            EntityType<X> et, FieldSpecification<? super X, ?> att,
-            Descriptor entityDescriptor, EntityMappingHelper mapper) {
+    static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(EntityType<X> et,
+                                                                                                FieldSpecification<? super X, ?> att,
+                                                                                                Descriptor entityDescriptor,
+                                                                                                EntityMappingHelper mapper) {
         if (att.equals(et.getIdentifier())) {
             return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, entityDescriptor, mapper);
         }
@@ -52,21 +54,21 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, entityDescriptor, mapper);
         } else if (att instanceof PropertiesSpecification) {
             return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att,
-                    entityDescriptor,
-                    mapper);
+                                                 entityDescriptor, mapper);
         }
         final AbstractAttribute<? super X, ?> attribute = (AbstractAttribute<? super X, ?>) att;
         if (attribute.isCollection()) {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
                     return createPluralAnnotationPropertyStrategy(et,
-                            (AbstractPluralAttribute<? super X, ?, ?>) attribute, entityDescriptor, mapper);
+                                                                  (AbstractPluralAttribute<? super X, ?, ?>) attribute,
+                                                                  entityDescriptor, mapper);
                 case DATA:
                     return createPluralDataPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            entityDescriptor, mapper);
+                                                            entityDescriptor, mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            entityDescriptor, mapper);
+                                                              entityDescriptor, mapper);
                 default:
                     break;
             }
@@ -87,34 +89,36 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralAnnotationPropertyStrategy(
-            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
-            Descriptor descriptor, EntityMappingHelper mapper) {
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
             return new PluralMultilingualStringFieldStrategy<>(et,
-                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute, descriptor, mapper);
+                                                               (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
+                                                               descriptor, mapper);
         } else {
             return new PluralAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralDataPropertyStrategy(
-            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
-            Descriptor descriptor, EntityMappingHelper mapper) {
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
             return new PluralMultilingualStringFieldStrategy<>(et,
-                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute, descriptor, mapper);
+                                                               (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
+                                                               descriptor, mapper);
         } else {
             return new PluralDataPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(
-            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute,
-            Descriptor descriptor, EntityMappingHelper mapper) {
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
         switch (attribute.getCollectionType()) {
             case LIST:
                 return createOwlListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
-                        mapper);
+                                                     mapper);
             case COLLECTION:
             case SET:
                 return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
@@ -143,7 +147,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getJavaType())) {
             return new SingularMultilingualStringFieldStrategy<>(et,
-                    (AbstractAttribute<? super X, MultilingualString>) attribute, descriptor, mapper);
+                                                                 (AbstractAttribute<? super X, MultilingualString>) attribute,
+                                                                 descriptor, mapper);
         } else {
             return new SingularDataPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
@@ -154,7 +159,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getJavaType())) {
             return new SingularMultilingualStringFieldStrategy<>(et,
-                    (AbstractAttribute<? super X, MultilingualString>) attribute, descriptor, mapper);
+                                                                 (AbstractAttribute<? super X, MultilingualString>) attribute,
+                                                                 descriptor, mapper);
         } else {
             return new SingularAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
@@ -224,13 +230,24 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     abstract void buildInstanceFieldValue(Object instance);
 
     /**
-     * Extracts values of field represented by this strategy from the specified instance.
+     * Extracts values of field represented by this strategy from the specified instance and adds them to the specified
+     * value gatherer.
      *
      * @param instance     The instance to extract values from
      * @param valueBuilder Builder into which the attribute value(s) are extracted
      * @throws IllegalArgumentException Access error
      */
     abstract void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder);
+
+    /**
+     * Extracts values of field represented by this strategy from the specified instance and returns axioms representing
+     * them.
+     *
+     * @param instance The instance to extract values from
+     * @return Set of axioms
+     * @throws IllegalArgumentException Access error
+     */
+    abstract Set<Axiom<?>> buildAxiomsFromInstance(X instance);
 
     /**
      * Creates property assertion appropriate for the attribute represented by this strategy.

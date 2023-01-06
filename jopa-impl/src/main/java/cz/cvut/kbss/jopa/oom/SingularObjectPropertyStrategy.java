@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -20,14 +18,12 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Set;
 
 class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
@@ -51,7 +47,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
                     .transformToIdentifier(valueIdentifier.getIdentifier(), attribute.getJavaType());
         } else {
             newValue = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
-                    entityDescriptor.getAttributeDescriptor(attribute));
+                                                           entityDescriptor.getAttributeDescriptor(attribute));
             if (newValue == null) {
                 LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
                 return;
@@ -83,7 +79,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
         } else {
             referenceSavingResolver
                     .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), extractedValue,
-                            getAttributeWriteContext());
+                                              getAttributeWriteContext());
             // This will cause the existing property assertion to be removed
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         }
@@ -105,6 +101,15 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 
         final URI id = EntityPropertiesUtils.getIdentifier(value, valEt);
         return id != null ? new Value<>(NamedResource.create(id)) : Value.nullValue();
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final Object extractedValue = extractFieldValueFromInstance(instance);
+        final Value<NamedResource> val = extractReferenceIdentifier(extractedValue);
+        return Collections.singleton(
+                new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
+                                createAssertion(), val));
     }
 
     @Override

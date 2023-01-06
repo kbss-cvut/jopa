@@ -36,6 +36,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -164,5 +165,19 @@ class SingularDataPropertyStrategyTest {
         sut.addValueFromAxiom(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(ZoneOffset.of(value), m.getWithConverter());
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        final SingularDataPropertyStrategy<OWLClassA> strategy = new SingularDataPropertyStrategy<>(
+                mocks.forOwlClassA().entityType(), mocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+
+        final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(a);
+        assertEquals(1, result.size());
+        final Axiom<?> ax = result.iterator().next();
+        assertEquals(NamedResource.create(a.getUri()), ax.getSubject());
+        assertEquals(mocks.forOwlClassA().stringAttribute().getIRI().toURI(), ax.getAssertion().getIdentifier());
+        assertEquals(a.getStringAttribute(), ax.getValue().getValue());
     }
 }

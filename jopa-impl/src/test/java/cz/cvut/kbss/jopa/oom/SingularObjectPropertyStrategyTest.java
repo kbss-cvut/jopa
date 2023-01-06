@@ -37,6 +37,7 @@ import org.mockito.quality.Strictness;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -254,5 +255,24 @@ class SingularObjectPropertyStrategyTest {
         instance.setOwlClassA(Generators.generateOwlClassAInstance());
         sut.buildAxiomValuesFromInstance(instance, gatherer);
         verify(referenceResolverMock).shouldSaveReference(instance.getOwlClassA(), aDescriptor.getContexts());
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        final OWLClassD d = new OWLClassD();
+        d.setUri(IDENTIFIER);
+        d.setOwlClassA(Generators.generateOwlClassAInstance());
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
+        strategy.setReferenceSavingResolver(referenceResolverMock);
+        strategy.buildAxiomValuesFromInstance(d, gatherer);
+
+        final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(d);
+        assertEquals(1, result.size());
+        final Axiom<?> ax = result.iterator().next();
+        assertEquals(NamedResource.create(IDENTIFIER), ax.getSubject());
+        assertEquals(metamodelMocks.forOwlClassD().owlClassAAtt().getIRI().toURI(), ax.getAssertion().getIdentifier());
+        assertEquals(NamedResource.create(d.getOwlClassA().getUri()), ax.getValue().getValue());
     }
 }

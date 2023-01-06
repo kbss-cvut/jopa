@@ -18,10 +18,11 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,6 +73,21 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
                                                                  .map(v -> new Value<>(toAxiomValue(v)))
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(), assertionValues, getAttributeWriteContext());
+        }
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final Object value = extractFieldValueFromInstance(instance);
+        assert value instanceof Collection || value == null;
+        final Collection<?> valueCollection = (Collection<?>) value;
+        if (valueCollection == null || valueCollection.isEmpty()) {
+            return Collections.emptySet();
+        } else {
+            final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
+            final Assertion assertion = createAssertion();
+            return valueCollection.stream().map(v -> new AxiomImpl<>(subject, assertion, new Value<>(toAxiomValue(v))))
+                                  .collect(Collectors.toSet());
         }
     }
 }
