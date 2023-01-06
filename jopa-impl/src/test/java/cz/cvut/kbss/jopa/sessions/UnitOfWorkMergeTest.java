@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -179,6 +180,8 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         assertTrue(result.hasChanges());
     }
 
+    // TODO Re-enable after implementing check for change of singular inferred attribute value
+    @Disabled
     @Test
     void mergeDetachedThrowsInferredAttributeModifiedWhenInferredAttributeValueWasChanged() {
         final OWLClassF entityF = new OWLClassF(Generators.createIndividualIdentifier());

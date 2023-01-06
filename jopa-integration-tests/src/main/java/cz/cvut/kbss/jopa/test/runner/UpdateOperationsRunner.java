@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.*;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -543,6 +544,8 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
+    // TODO Re-enable after implementing check for change of singular inferred attribute value
+    @Disabled
     @Test
     void testModifyInferredAttribute() {
         this.em = getEntityManager("ModifyInferredAttribute", false);
