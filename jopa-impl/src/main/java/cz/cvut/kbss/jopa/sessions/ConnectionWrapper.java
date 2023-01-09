@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -76,6 +77,11 @@ public class ConnectionWrapper implements Wrapper {
 
     public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
         mapper.loadFieldValue(entity, field, descriptor);
+    }
+
+    public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,
+                                         Descriptor entityDescriptor) {
+        return mapper.getAttributeAxioms(entity, fieldSpec, entityDescriptor);
     }
 
     public void commit() {
