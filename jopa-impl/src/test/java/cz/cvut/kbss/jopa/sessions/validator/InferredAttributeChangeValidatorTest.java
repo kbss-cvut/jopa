@@ -105,9 +105,10 @@ class InferredAttributeChangeValidatorTest {
         doAnswer(inv -> {
             final OWLClassF instance = inv.getArgument(0, OWLClassF.class);
             return Collections.singleton(new AxiomImpl<>(SUBJECT,
-                                   Assertion.createDataPropertyAssertion(URI.create("http://F-secondStringAttribute"),
-                                                                         true),
-                                   new Value<>(instance.getSecondStringAttribute())));
+                                                         Assertion.createDataPropertyAssertion(
+                                                                 URI.create("http://F-secondStringAttribute"),
+                                                                 true),
+                                                         new Value<>(instance.getSecondStringAttribute())));
         }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
         when(connectionWrapper.isInferred(any(Axiom.class), eq(Collections.emptySet()))).thenReturn(true);
 
@@ -129,8 +130,8 @@ class InferredAttributeChangeValidatorTest {
                 return Collections.emptySet();
             }
             return Collections.singleton(new AxiomImpl<>(SUBJECT,
-                                                         Assertion.createDataPropertyAssertion(URI.create("http://F-secondStringAttribute"),
-                                                                                               true),
+                                                         Assertion.createDataPropertyAssertion(
+                                                                 URI.create(Vocabulary.p_f_stringAttribute), true),
                                                          new Value<>(instance.getSecondStringAttribute())));
         }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
 

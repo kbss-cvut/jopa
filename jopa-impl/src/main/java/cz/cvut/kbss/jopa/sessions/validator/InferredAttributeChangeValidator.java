@@ -8,6 +8,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,8 +41,8 @@ public class InferredAttributeChangeValidator {
      */
     public <T> void validateChange(T instance, T original, FieldSpecification<? super T, ?> fieldSpec,
                                    Descriptor instanceDescriptor) {
-        final Set<Axiom<?>> originalValues =
-                connectionWrapper.getAttributeAxioms(original, fieldSpec, instanceDescriptor);
+        final Set<Axiom<?>> originalValues = new HashSet<>(
+                connectionWrapper.getAttributeAxioms(original, fieldSpec, instanceDescriptor));
         final Set<Axiom<?>> newValues = connectionWrapper.getAttributeAxioms(instance, fieldSpec, instanceDescriptor);
         originalValues.removeAll(newValues);
         if (originalValues.isEmpty()) {
