@@ -24,8 +24,11 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.*;
@@ -34,6 +37,8 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class StringPropertiesFieldStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
@@ -48,7 +53,6 @@ public class StringPropertiesFieldStrategyTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         MetamodelMocks mocks = new MetamodelMocks();
 
         this.entity = new OWLClassB();
@@ -349,5 +353,20 @@ public class StringPropertiesFieldStrategyTest {
                     .collect(Collectors.toList()));
         }
         return axioms;
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        entity.setProperties(Generators.generateStringProperties());
+        final Set<Axiom<?>> expected = new HashSet<>(createAxiomsForProperties(entity.getProperties()));
+        assertEquals(expected, strategy.buildAxiomsFromInstance(entity));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsEmptySetWhenAttributeValueIsNull() {
+        entity.setProperties(null);
+        final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(entity);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }
