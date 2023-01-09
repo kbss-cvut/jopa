@@ -71,8 +71,12 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     @Override
     Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final Value<?> val = extractValue(instance);
+        if (Value.nullValue().equals(val)) {
+            return Collections.emptySet();
+        }
         return Collections.singleton(
                 new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
-                                createAssertion(), extractValue(instance)));
+                                createAssertion(), val));
     }
 }

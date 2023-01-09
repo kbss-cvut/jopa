@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -23,7 +22,6 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.*;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -544,16 +542,19 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    // TODO Re-enable after implementing check for change of singular inferred attribute value
-    @Disabled
     @Test
-    void testModifyInferredAttribute() {
+    void modificationOfInferredAttributeWithNonInferredValueWorks() {
         this.em = getEntityManager("ModifyInferredAttribute", false);
         persist(entityF);
 
+        final String updateValue = "updated value";
         em.getTransaction().begin();
         final OWLClassF f = findRequired(OWLClassF.class, entityF.getUri());
-        assertThrows(InferredAttributeModifiedException.class, () -> f.setSecondStringAttribute("otherValue"));
+        assertDoesNotThrow(() -> f.setSecondStringAttribute(updateValue));
+        em.getTransaction().commit();
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri());
+        assertEquals(updateValue, result.getSecondStringAttribute());
     }
 
     @Test

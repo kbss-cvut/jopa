@@ -275,4 +275,18 @@ class SingularObjectPropertyStrategyTest {
         assertEquals(metamodelMocks.forOwlClassD().owlClassAAtt().getIRI().toURI(), ax.getAssertion().getIdentifier());
         assertEquals(NamedResource.create(d.getOwlClassA().getUri()), ax.getValue().getValue());
     }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsEmptyCollectionWhenAttributeValueIsNull() {
+        final OWLClassD d = new OWLClassD();
+        d.setUri(IDENTIFIER);
+        d.setOwlClassA(null);
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
+
+        final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(d);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
 }

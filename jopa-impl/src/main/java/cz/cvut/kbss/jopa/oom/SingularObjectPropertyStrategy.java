@@ -107,6 +107,9 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
         final Object extractedValue = extractFieldValueFromInstance(instance);
         final Value<NamedResource> val = extractReferenceIdentifier(extractedValue);
+        if (Value.nullValue().equals(val)) {
+            return Collections.emptySet();
+        }
         return Collections.singleton(
                 new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
                                 createAssertion(), val));

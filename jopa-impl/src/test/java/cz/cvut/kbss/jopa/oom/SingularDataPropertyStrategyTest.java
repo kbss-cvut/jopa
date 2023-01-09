@@ -180,4 +180,16 @@ class SingularDataPropertyStrategyTest {
         assertEquals(mocks.forOwlClassA().stringAttribute().getIRI().toURI(), ax.getAssertion().getIdentifier());
         assertEquals(a.getStringAttribute(), ax.getValue().getValue());
     }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsEmptyCollectionWhenAttributeValueIsNull() {
+        final SingularDataPropertyStrategy<OWLClassA> strategy = new SingularDataPropertyStrategy<>(
+                mocks.forOwlClassA().entityType(), mocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        a.setStringAttribute(null);
+
+        final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(a);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
 }
