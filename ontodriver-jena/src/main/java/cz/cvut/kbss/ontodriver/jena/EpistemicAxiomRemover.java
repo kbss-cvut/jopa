@@ -51,7 +51,7 @@ class EpistemicAxiomRemover {
      */
     void remove(AbstractAxiomDescriptor descriptor) {
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
-        descriptor.getAssertions().stream().filter(a -> !a.isInferred()).forEach(assertion -> {
+        descriptor.getAssertions().forEach(assertion -> {
             final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
             if (descriptor.getAssertionContexts(assertion).isEmpty()) {
                 connector.remove(subject, property, null, null);

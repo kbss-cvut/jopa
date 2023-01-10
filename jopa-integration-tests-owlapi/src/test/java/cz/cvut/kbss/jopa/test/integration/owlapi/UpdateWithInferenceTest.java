@@ -24,6 +24,13 @@ public class UpdateWithInferenceTest extends UpdateWithInferenceRunner {
 
     @Test
     @Override
+    public void settingSingularInferredAttributeFromOneAssertedValueToAnotherWorks() {
+        this.em = getEntityManager("settingSingularInferredAttributeFromOneAssertedValueToAnotherWorks", false);
+        super.settingSingularInferredAttributeFromOneAssertedValueToAnotherWorks();
+    }
+
+    @Test
+    @Override
     public void additiveChangeToAttributeWithInferredValuesWorks() throws Exception {
         this.em = getEntityManager("additiveChangeToAttributeWithInferredValuesWorks", false);
         super.additiveChangeToAttributeWithInferredValuesWorks();

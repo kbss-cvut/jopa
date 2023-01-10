@@ -50,9 +50,6 @@ class EpistemicAxiomRemover {
         final Resource individual = toRdf4jIri(axiomDescriptor.getSubject(), valueFactory);
         final Collection<Statement> toRemove = new HashSet<>();
         for (Assertion a : axiomDescriptor.getAssertions()) {
-            if (a.isInferred()) {
-                continue;
-            }
             final Set<IRI> contexts = axiomDescriptor.getAssertionContexts(a).stream()
                                                      .map(uri -> toRdf4jIri(uri, valueFactory))
                                                      .collect(Collectors.toSet());

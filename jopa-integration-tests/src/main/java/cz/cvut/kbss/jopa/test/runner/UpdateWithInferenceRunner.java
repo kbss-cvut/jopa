@@ -31,15 +31,32 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
 
     @Test
     public void settingInferredAttributeFromNullToNewValueWorks() {
+        assertNotNull(em);
         final OWLClassF entityF = new OWLClassF(Generators.generateUri());
-        this.em = getEntityManager("settingInferredAttributeFromNullToNewValueWorks", false);
         persist(entityF);
 
         final String updateValue = "updated value";
-        em.getTransaction().begin();
-        final OWLClassF f = findRequired(OWLClassF.class, entityF.getUri());
-        assertDoesNotThrow(() -> f.setSecondStringAttribute(updateValue));
-        em.getTransaction().commit();
+        transactional(() -> {
+            final OWLClassF f = findRequired(OWLClassF.class, entityF.getUri());
+            assertDoesNotThrow(() -> f.setSecondStringAttribute(updateValue));
+        });
+
+        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri());
+        assertEquals(updateValue, result.getSecondStringAttribute());
+    }
+
+    @Test
+    public void settingSingularInferredAttributeFromOneAssertedValueToAnotherWorks() {
+        assertNotNull(em);
+        final OWLClassF entityF = new OWLClassF(Generators.generateUri());
+        entityF.setSecondStringAttribute("Original value");
+        persist(entityF);
+
+        final String updateValue = "updated value";
+        transactional(() -> {
+            final OWLClassF f = findRequired(OWLClassF.class, entityF.getUri());
+            assertDoesNotThrow(() -> f.setSecondStringAttribute(updateValue));
+        });
 
         final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri());
         assertEquals(updateValue, result.getSecondStringAttribute());
@@ -47,6 +64,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
 
     @Test
     public void additiveChangeToAttributeWithInferredValuesWorks() throws Exception {
+        assertNotNull(em);
         final OWLClassW entityW = new OWLClassW();
         persistTestData(Collections.singleton(
                 new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
@@ -66,6 +84,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
 
     @Test
     public void removalOfAssertedValueOfInferredAttributeWorks() throws Exception {
+        assertNotNull(em);
         final URI typeToRemove = Generators.generateUri();
         final OWLClassW entityW = new OWLClassW();
         entityW.setTypes(Collections.singleton(typeToRemove));
@@ -89,6 +108,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
 
     @Test
     public void removalOfInferredValueOfInferredAttributeThrowsInferredAttributeModifiedException() throws Exception {
+        assertNotNull(em);
         final URI typeToRemove = URI.create(Vocabulary.C_OWL_CLASS_A);
         final OWLClassW entityW = new OWLClassW();
         persistTestData(Collections.singleton(
