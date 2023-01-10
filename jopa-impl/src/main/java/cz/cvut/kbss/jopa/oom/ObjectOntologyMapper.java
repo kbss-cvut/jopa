@@ -94,10 +94,10 @@ public interface ObjectOntologyMapper {
      * Sets value of property represented by the specified field to the field's value.
      *
      * @param entity     Entity containing the field
-     * @param field      The field to update
+     * @param fieldSpec      The field to update
      * @param descriptor Optionally specifies context
      */
-    <T> void updateFieldValue(T entity, Field field, Descriptor descriptor);
+    <T> void updateFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
 
     /**
      * Extracts the value of the specified field from the specified entity and transforms it to axioms.

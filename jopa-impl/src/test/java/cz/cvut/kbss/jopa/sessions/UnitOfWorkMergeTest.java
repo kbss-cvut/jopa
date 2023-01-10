@@ -15,6 +15,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -23,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
@@ -38,11 +38,11 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testMergeDetachedExisting() throws Exception {
+    void testMergeDetachedExisting() {
         mergeDetachedTest();
     }
 
-    private void mergeDetachedTest() throws Exception {
+    private void mergeDetachedTest() {
         when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor)).thenReturn(Boolean.TRUE);
         final OWLClassA orig = new OWLClassA();
         orig.setUri(entityA.getUri());
@@ -56,11 +56,11 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         final OWLClassA res = uow.mergeDetached(entityA, descriptor);
         assertNotNull(res);
         assertEquals(entityA.getUri(), res.getUri());
-        final ArgumentCaptor<Field> ac = ArgumentCaptor.forClass(Field.class);
+        final ArgumentCaptor<FieldSpecification> ac = ArgumentCaptor.forClass(FieldSpecification.class);
         verify(storageMock, atLeastOnce()).merge(any(Object.class), ac.capture(), eq(descriptor));
-        final List<Field> mergedFields = ac.getAllValues();
-        assertTrue(mergedFields.contains(OWLClassA.getStrAttField()));
-        assertTrue(mergedFields.contains(OWLClassA.getTypesField()));
+        final List<FieldSpecification> mergedFields = ac.getAllValues();
+        assertTrue(mergedFields.contains(metamodelMocks.forOwlClassA().stringAttribute()));
+        assertTrue(mergedFields.contains(metamodelMocks.forOwlClassA().typesSpec()));
     }
 
     @Test
@@ -201,7 +201,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void mergeDetachedThrowsInferredAttributeModifiedExceptionOnChangeToInferredAttributeValue() throws Exception {
+    void mergeDetachedThrowsInferredAttributeModifiedExceptionOnChangeToInferredAttributeValue() {
         final OWLClassF original = new OWLClassF(Generators.createIndividualIdentifier());
         original.setSecondStringAttribute("Original value");
         final OWLClassF detached = new OWLClassF(original.getUri());
@@ -222,6 +222,6 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         verify(storageMock).isInferred(new AxiomImpl<>(NamedResource.create(original.getUri()), assertion,
                                                        new Value<>(original.getSecondStringAttribute())),
                                        Collections.singleton(CONTEXT_URI));
-        verify(storageMock, never()).merge(any(), eq(OWLClassF.getStrAttField()), any());
+        verify(storageMock, never()).merge(any(), eq(metamodelMocks.forOwlClassF().stringAttribute()), any());
     }
 }

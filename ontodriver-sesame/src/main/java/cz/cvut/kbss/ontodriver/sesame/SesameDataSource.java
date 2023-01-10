@@ -18,6 +18,8 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.repository.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
@@ -28,6 +30,8 @@ import java.util.Objects;
  */
 @Deprecated
 public class SesameDataSource implements DataSource {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SesameDataSource.class);
 
     private SesameDriver driver;
     private volatile boolean open = true;
@@ -78,6 +82,7 @@ public class SesameDataSource implements DataSource {
         if (properties == null) {
             this.properties = Collections.emptyMap();
         }
+        LOG.warn("Sesame driver is deprecated. Please, switch to the RDF4J driver and use the Rdf4jDataSource class.");
         this.driver = new SesameDriver(storageProperties, properties);
         this.connected = true;
     }

@@ -369,6 +369,14 @@ public class MetamodelMocks {
         return new OWLClassEMetamodel();
     }
 
+    public OWLClassFMetamodel forOwlClassF() {
+        return new OWLClassFMetamodel();
+    }
+
+    public OWLClassGMetamodel forOwlClassG() {
+        return new OWLClassGMetamodel();
+    }
+
     public OWLClassJMetamodel forOwlClassJ() {
         return new OWLClassJMetamodel();
     }

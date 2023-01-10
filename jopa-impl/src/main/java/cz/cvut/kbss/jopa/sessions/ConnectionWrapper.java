@@ -61,8 +61,8 @@ public class ConnectionWrapper implements Wrapper {
         return mapper.loadReference(loadingParameters);
     }
 
-    public <T> void merge(T entity, Field field, Descriptor descriptor) {
-        mapper.updateFieldValue(entity, field, descriptor);
+    public <T> void merge(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
+        mapper.updateFieldValue(entity, fieldSpec, descriptor);
     }
 
     public <T> void persist(Object identifier, T entity, Descriptor descriptor) {

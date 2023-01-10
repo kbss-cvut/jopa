@@ -282,20 +282,19 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void updateFieldValue(T entity, Field field, Descriptor entityDescriptor) {
+    public <T> void updateFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor) {
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         // It is OK to do it like this, because if necessary, the mapping will re-register a pending assertion
-        removePendingAssertions(et, field, pkUri);
+        removePendingAssertions(et, fieldSpec, pkUri);
         final AxiomValueGatherer axiomBuilder = entityBreaker
-                .mapFieldToAxioms(pkUri, entity, field, et, entityDescriptor);
+                .mapFieldToAxioms(pkUri, entity, fieldSpec, et, entityDescriptor);
         axiomBuilder.update(storageConnection);
     }
 
-    private <T> void removePendingAssertions(EntityType<T> et, Field field, URI identifier) {
-        final FieldSpecification<? super T, ?> fs = et.getFieldSpecification(field.getName());
+    private <T> void removePendingAssertions(EntityType<T> et, FieldSpecification<? super T, ?> fs, URI identifier) {
         if (fs instanceof Attribute) {
             final Attribute<?, ?> att = (Attribute<?, ?>) fs;
             // We care only about object property assertions, others are never pending

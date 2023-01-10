@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.EntityManagerImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.*;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +39,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -68,6 +68,8 @@ public class EntityLifecycleListenersTest {
     @Mock
     private EntityManagerImpl emMock;
 
+    private MetamodelMocks mocks;
+
     private UnitOfWorkImpl uow;
 
     private ParentListener parentListenerMock;
@@ -82,7 +84,7 @@ public class EntityLifecycleListenersTest {
         when(serverSessionStub.getLiveObjectCache()).thenReturn(mock(CacheManager.class));
         when(emMock.getTransaction()).thenReturn(transactionMock);
         when(transactionMock.isActive()).thenReturn(true);
-        final MetamodelMocks mocks = new MetamodelMocks();
+        this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.parentListenerMock = mocks.forOwlClassS().parentListener();
         this.concreteListenerMock = mocks.forOwlClassR().concreteListener();
@@ -191,7 +193,7 @@ public class EntityLifecycleListenersTest {
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
         inOrder.verify(concreteListenerMock).preUpdate(rInstance);
         inOrder.verify(rInstance).preUpdate();
-        inOrder.verify(storageMock).merge(rInstance, OWLClassR.getStringAttField(), descriptor);
+        inOrder.verify(storageMock).merge(rInstance, mocks.forOwlClassR().rStringAtt(), descriptor);
     }
 
     @Test
@@ -206,7 +208,7 @@ public class EntityLifecycleListenersTest {
         final InOrder inOrder = inOrder(merged, concreteListenerMock, storageMock);
         inOrder.verify(concreteListenerMock).preUpdate(merged);
         inOrder.verify(merged).preUpdate();
-        inOrder.verify(storageMock, atLeastOnce()).merge(eq(merged), any(Field.class), eq(descriptor));
+        inOrder.verify(storageMock, atLeastOnce()).merge(eq(merged), any(FieldSpecification.class), eq(descriptor));
     }
 
     @Test
@@ -219,7 +221,7 @@ public class EntityLifecycleListenersTest {
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         verify(concreteListenerMock, never()).preUpdate(any());
         verify(merged, never()).preUpdate();
-        verify(storageMock, never()).merge(eq(merged), any(Field.class), eq(descriptor));
+        verify(storageMock, never()).merge(eq(merged), any(FieldSpecification.class), eq(descriptor));
     }
 
     @Test
@@ -233,7 +235,7 @@ public class EntityLifecycleListenersTest {
         // Have to call it manually, aspects do not work here
         uow.attributeChanged(rInstance, OWLClassR.getStringAttField());
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
-        inOrder.verify(storageMock).merge(rInstance, OWLClassR.getStringAttField(), descriptor);
+        inOrder.verify(storageMock).merge(rInstance, mocks.forOwlClassR().rStringAtt(), descriptor);
         inOrder.verify(concreteListenerMock).postUpdate(rInstance);
         inOrder.verify(rInstance).postUpdate();
     }
@@ -248,7 +250,7 @@ public class EntityLifecycleListenersTest {
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rOriginal);
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         final InOrder inOrder = inOrder(merged, concreteListenerMock, storageMock);
-        inOrder.verify(storageMock, atLeastOnce()).merge(eq(merged), any(Field.class), eq(descriptor));
+        inOrder.verify(storageMock, atLeastOnce()).merge(eq(merged), any(FieldSpecification.class), eq(descriptor));
         inOrder.verify(concreteListenerMock).postUpdate(merged);
         inOrder.verify(merged).postUpdate();
     }
@@ -263,7 +265,7 @@ public class EntityLifecycleListenersTest {
         final OWLClassR merged = uow.mergeDetached(rInstance, descriptor);
         verify(concreteListenerMock, never()).postUpdate(any());
         verify(merged, never()).postUpdate();
-        verify(storageMock, never()).merge(eq(merged), any(Field.class), eq(descriptor));
+        verify(storageMock, never()).merge(eq(merged), any(FieldSpecification.class), eq(descriptor));
     }
 
     @Test

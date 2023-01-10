@@ -134,7 +134,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
         uow.attributeChanged(result, OWLClassA.getStrAttField());
-        verify(storageMock).merge(result, OWLClassA.getStrAttField(), descriptor);
+        verify(storageMock).merge(result, metamodelMocks.forOwlClassA().stringAttribute(), descriptor);
     }
 
     @Test

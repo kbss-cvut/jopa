@@ -513,7 +513,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final Field strField = OWLClassA.getStrAttField();
 
         uow.attributeChanged(clone, strField);
-        verify(storageMock).merge(clone, strField, descriptor);
+        verify(storageMock).merge(clone, metamodelMocks.forOwlClassA().stringAttribute(), descriptor);
     }
 
     @Test
@@ -521,14 +521,14 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(OWLPersistenceException.class, () -> uow.attributeChanged(entityA, strField));
-        verify(storageMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
+        verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()), eq(descriptor));
     }
 
     @Test
     void testAttributeChangedOutsideTransaction() throws Exception {
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(IllegalStateException.class, () -> uow.attributeChanged(entityA, strField));
-        verify(storageMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
+        verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()), eq(descriptor));
     }
 
     @Test
@@ -846,7 +846,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         Mockito.reset(storageMock);
         when(storageMock.find(any())).thenReturn(original);
         uow.refreshObject(a);
-        verify(storageMock).merge(eq(a), eq(OWLClassA.getStrAttField()), any(Descriptor.class));
+        verify(storageMock).merge(eq(a), eq(metamodelMocks.forOwlClassA().stringAttribute()), any(Descriptor.class));
     }
 
     @Test
@@ -1090,6 +1090,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         verify(storageMock).isInferred(new AxiomImpl<>(NamedResource.create(original.getUri()), assertion,
                                                        new Value<>(original.getSecondStringAttribute())),
                                        Collections.singleton(CONTEXT_URI));
-        verify(storageMock, never()).merge(any(), eq(OWLClassF.getStrAttField()), any());
+        verify(storageMock, never()).merge(any(), eq(metamodelMocks.forOwlClassF().stringAttribute()), any());
     }
 }

@@ -522,7 +522,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             inferredAttributeChangeValidator.validateChange(entity, getOriginal(entity), fieldSpec, descriptor);
         }
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
-        storage.merge(entity, f, descriptor);
+        storage.merge(entity, fieldSpec, descriptor);
         createAndRegisterChangeRecord(entity, fieldSpec, descriptor);
         setHasChanges();
         setIndirectObjectIfPresent(entity, f);
@@ -622,8 +622,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                 for (ChangeRecord record : chSet.getChanges()) {
                     AttributeModificationValidator.verifyCanModify(record.getAttribute());
                     preventCachingIfReferenceIsNotLoaded(record);
-                    final Field field = record.getAttribute().getJavaField();
-                    storage.merge(clone, field, descriptor);
+                    storage.merge(clone, (FieldSpecification<? super T, ?>) record.getAttribute(), descriptor);
                 }
                 et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
                 uowChangeSet.addObjectChangeSet(copyChangeSet(chSet, getOriginal(clone), clone, descriptor));
@@ -759,7 +758,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
         for (ChangeRecord change : chSet.getChanges()) {
-            storage.merge(object, change.getAttribute().getJavaField(),
+            storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(),
                           descriptor.getAttributeDescriptor(change.getAttribute()));
         }
     }
