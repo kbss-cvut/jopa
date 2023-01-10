@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.semanticweb.owlapi.model.*;
@@ -385,5 +386,16 @@ class OwlapiAdapterTest {
                 .stringValue()), factory.getOWLNamedIndividual(axiom.getSubject().getIdentifier().toString()));
         verify(reasonerMock).isEntailed(owlAxiom);
         verify(ontology).containsAxiom(owlAxiom);
+    }
+
+    @Test
+    void isInferredFlushesBufferedChangesOnReasonerBeforeCheckingAxiomEntailment() {
+        final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, true);
+        when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(true);
+
+        assertTrue(sut.isInferred(axiom, Collections.emptySet()));
+        final InOrder inOrder = inOrder(reasonerMock);
+        inOrder.verify(reasonerMock).flush();
+        inOrder.verify(reasonerMock).isEntailed(any(OWLAxiom.class));
     }
 }

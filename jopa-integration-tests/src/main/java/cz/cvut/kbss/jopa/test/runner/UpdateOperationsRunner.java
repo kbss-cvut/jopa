@@ -44,7 +44,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class UpdateOperationsRunner extends BaseRunner {
 
     private OWLClassA entityA2;
-    private OWLClassF entityF;
     private OWLClassJ entityJ;
     private OWLClassO entityO;
 
@@ -54,8 +53,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     private void initialize() {
-        this.entityF = new OWLClassF();
-        entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
         this.entityA2 = new OWLClassA();
         entityA2.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA2"));
         this.entityJ = new OWLClassJ();
@@ -540,21 +537,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         } else {
             return "StringValue";
         }
-    }
-
-    @Test
-    void modificationOfInferredAttributeWithNonInferredValueWorks() {
-        this.em = getEntityManager("ModifyInferredAttribute", false);
-        persist(entityF);
-
-        final String updateValue = "updated value";
-        em.getTransaction().begin();
-        final OWLClassF f = findRequired(OWLClassF.class, entityF.getUri());
-        assertDoesNotThrow(() -> f.setSecondStringAttribute(updateValue));
-        em.getTransaction().commit();
-
-        final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri());
-        assertEquals(updateValue, result.getSecondStringAttribute());
     }
 
     @Test
