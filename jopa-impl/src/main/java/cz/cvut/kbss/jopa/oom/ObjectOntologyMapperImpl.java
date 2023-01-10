@@ -32,7 +32,6 @@ import cz.cvut.kbss.ontodriver.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
@@ -132,27 +131,26 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
+    public <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
         assert entity != null;
-        assert field != null;
+        assert fieldSpec != null;
         assert descriptor != null;
 
-        LOG.trace("Lazily loading value of field {} of entity {}.", field, entity);
+        LOG.trace("Lazily loading value of field {} of entity {}.", fieldSpec, entity);
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI primaryKey = EntityPropertiesUtils.getIdentifier(entity, et);
 
-        if (et.hasQueryAttribute(field.getName())) {
-            QueryAttribute<? super T, ?> queryAttribute = et.getQueryAttribute(field.getName());
+        if (et.hasQueryAttribute(fieldSpec.getName())) {
+            QueryAttribute<? super T, ?> queryAttribute = (QueryAttribute<? super T, ?>) fieldSpec;
             entityBuilder.setQueryAttributeFieldValue(entity, queryAttribute, et);
             return;
         }
 
-        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
-                field, descriptor, et);
+        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,fieldSpec, descriptor, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            entityBuilder.setFieldValue(entity, field, axioms, et, descriptor);
+            entityBuilder.setFieldValue(entity, fieldSpec, axioms, et, descriptor);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (IllegalArgumentException e) {

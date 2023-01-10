@@ -26,7 +26,6 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -75,8 +74,8 @@ public class ConnectionWrapper implements Wrapper {
         mapper.removeEntity(idUri, cls, descriptor);
     }
 
-    public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
-        mapper.loadFieldValue(entity, field, descriptor);
+    public <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
+        mapper.loadFieldValue(entity, fieldSpec, descriptor);
     }
 
     public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,

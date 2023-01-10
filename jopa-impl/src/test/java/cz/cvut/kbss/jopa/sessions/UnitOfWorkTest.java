@@ -24,6 +24,8 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -449,15 +451,14 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassB clone = (OWLClassB) uow.registerExistingObject(b, descriptor);
         final Field propsField = OWLClassB.getPropertiesField();
         doAnswer(invocation -> {
-            final Field f = (Field) invocation.getArguments()[1];
-            f.setAccessible(true);
-            f.set(invocation.getArguments()[0], props);
+            final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
+            EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], props);
             return null;
-        }).when(storageMock).loadFieldValue(clone, propsField, descriptor);
+        }).when(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassB().propertiesSpec(), descriptor);
 
         uow.loadEntityField(clone, propsField);
         assertNotNull(clone.getProperties());
-        verify(storageMock).loadFieldValue(clone, propsField, descriptor);
+        verify(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassB().propertiesSpec(), descriptor);
     }
 
     @Test
@@ -466,14 +467,14 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
         final Field toLoad = OWLClassL.getSetField();
         doAnswer(invocation -> {
-            final Field f = (Field) invocation.getArguments()[1];
-            f.setAccessible(true);
-            f.set(invocation.getArguments()[0], Collections.singleton(entityA));
+            final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
+            EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], Collections.singleton(entityA));
             return null;
-        }).when(storageMock).loadFieldValue(eq(clone), eq(toLoad), eq(descriptor));
+        }).when(storageMock)
+          .loadFieldValue(eq(clone), eq(metamodelMocks.forOwlClassL().setAttribute()), eq(descriptor));
 
         uow.loadEntityField(clone, toLoad);
-        verify(storageMock).loadFieldValue(clone, toLoad, descriptor);
+        verify(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
         assertNotNull(clone.getSet());
         assertEquals(1, clone.getSet().size());
         // Verify that the loaded value was cloned
@@ -487,11 +488,10 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
         final Field toLoad = OWLClassL.getSetField();
         doAnswer(invocation -> {
-            final Field f = (Field) invocation.getArguments()[1];
-            f.setAccessible(true);
-            f.set(invocation.getArguments()[0], Collections.singleton(entityA));
+            final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
+            EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], Collections.singleton(entityA));
             return null;
-        }).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
+        }).when(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
         uow.loadEntityField(clone, toLoad);
         assertNotNull(clone.getSet());
 
@@ -501,9 +501,11 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testLoadFieldValueNotRegistered() throws Exception {
+    void testLoadFieldValueNotRegistered() {
         assertThrows(OWLPersistenceException.class, () -> uow.loadEntityField(entityB, OWLClassB.getStrAttField()));
-        verify(storageMock, never()).loadFieldValue(any(Object.class), eq(OWLClassB.getStrAttField()), eq(descriptor));
+        verify(storageMock, never()).loadFieldValue(any(OWLClassB.class),
+                                                    eq(metamodelMocks.forOwlClassB().stringAttribute()),
+                                                    eq(descriptor));
     }
 
     @Test
@@ -521,14 +523,16 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(OWLPersistenceException.class, () -> uow.attributeChanged(entityA, strField));
-        verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()), eq(descriptor));
+        verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()),
+                                           eq(descriptor));
     }
 
     @Test
     void testAttributeChangedOutsideTransaction() throws Exception {
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(IllegalStateException.class, () -> uow.attributeChanged(entityA, strField));
-        verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()), eq(descriptor));
+        verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()),
+                                           eq(descriptor));
     }
 
     @Test
@@ -836,7 +840,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void refreshOverwritesChangesSentToRepository() throws Exception {
+    void refreshOverwritesChangesSentToRepository() {
         when(transactionMock.isActive()).thenReturn(true);
         final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         a.setStringAttribute("updatedString");
@@ -963,7 +967,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
             final OWLClassL inst = inv.getArgument(0);
             inst.setSet(Collections.singleton(entityA));
             return null;
-        }).when(storageMock).loadFieldValue(eq(instance), eq(OWLClassL.getSetField()), any());
+        }).when(storageMock).loadFieldValue(eq(instance), eq(metamodelMocks.forOwlClassL().setAttribute()), any());
         uow.loadEntityField(instance, OWLClassL.getSetField());
 
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
@@ -998,7 +1002,8 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.attributeChanged(instance, OWLClassL.getSetField());
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         uow.loadEntityField(instance, OWLClassL.getSetField());
-        verify(storageMock, never()).loadFieldValue(eq(instance), eq(OWLClassL.getSetField()), any(Descriptor.class));
+        verify(storageMock, never()).loadFieldValue(eq(instance), eq(metamodelMocks.forOwlClassL().setAttribute()),
+                                                    any(Descriptor.class));
     }
 
     @Test
@@ -1068,7 +1073,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void attributeChangedThrowsInferredAttributeModifiedExceptionOnChangeToInferredAttributeValue() throws Exception {
+    void attributeChangedThrowsInferredAttributeModifiedExceptionOnChangeToInferredAttributeValue() {
         final OWLClassF original = new OWLClassF(Generators.createIndividualIdentifier());
         original.setSecondStringAttribute("Changed value");
         when(transactionMock.isActive()).thenReturn(true);

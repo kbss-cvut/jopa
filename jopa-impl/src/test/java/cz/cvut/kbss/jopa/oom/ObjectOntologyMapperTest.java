@@ -25,11 +25,13 @@ import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.Types;
@@ -109,7 +111,7 @@ class ObjectOntologyMapperTest {
         mocks.setMocks(metamodelMock);
         this.etAMock = mocks.forOwlClassA().entityType();
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, etAMock)).thenReturn(axiomDescriptor);
-        when(descriptorFactoryMock.createForFieldLoading(IDENTIFIER, OWLClassA.getTypesField(),
+        when(descriptorFactoryMock.createForFieldLoading(IDENTIFIER, mocks.forOwlClassA().typesSpec(),
                                                          aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(
                 axiomDescriptor);
         entityA.setTypes(null);
@@ -146,16 +148,15 @@ class ObjectOntologyMapperTest {
         when(connectionMock.find(axiomDescriptor)).thenReturn(axiomsForA);
         doAnswer(invocation -> {
             final OWLClassA a = (OWLClassA) invocation.getArguments()[0];
-            final Field types = (Field) invocation.getArguments()[1];
-            types.setAccessible(true);
-            types.set(a, aTypes);
+            final FieldSpecification<?, ?> types = (FieldSpecification<?, ?>) invocation.getArguments()[1];
+            EntityPropertiesUtils.setFieldValue(types.getJavaField(), a, aTypes);
             return null;
-        }).when(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock, aDescriptor);
-        mapper.loadFieldValue(entityA, typesField, aDescriptor);
+        }).when(entityConstructorMock).setFieldValue(entityA, mocks.forOwlClassA().typesSpec(), axiomsForA, etAMock, aDescriptor);
+        mapper.loadFieldValue(entityA, mocks.forOwlClassA().typesSpec(), aDescriptor);
         assertNotNull(typesField.get(entityA));
         assertEquals(aTypes, entityA.getTypes());
         verify(connectionMock).find(axiomDescriptor);
-        verify(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock, aDescriptor);
+        verify(entityConstructorMock).setFieldValue(entityA, mocks.forOwlClassA().typesSpec(), axiomsForA, etAMock, aDescriptor);
     }
 
     @Test
@@ -164,9 +165,9 @@ class ObjectOntologyMapperTest {
         final Field typesField = OWLClassA.getTypesField();
         typesField.setAccessible(true);
         assertNull(typesField.get(entityA));
-        assertThrows(StorageAccessException.class, () -> mapper.loadFieldValue(entityA, typesField, aDescriptor));
+        assertThrows(StorageAccessException.class, () -> mapper.loadFieldValue(entityA, mocks.forOwlClassA().typesSpec(), aDescriptor));
         verify(entityConstructorMock, never()).setFieldValue(any(),
-                                                             eq(typesField), any(), any(),
+                                                             eq(mocks.forOwlClassA().typesSpec()), any(), any(),
                                                              any());
     }
 

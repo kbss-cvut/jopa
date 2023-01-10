@@ -933,13 +933,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                     "Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
         final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
-        final FieldSpecification<?, ?> fieldSpec = entityType((Class<Object>) entity.getClass())
+        final FieldSpecification<? super T, ?> fieldSpec = entityType((Class<Object>) entity.getClass())
                 .getFieldSpecification(field.getName());
         if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
             return;
         }
 
-        storage.loadFieldValue(entity, field, entityDescriptor);
+        storage.loadFieldValue(entity, fieldSpec, entityDescriptor);
         final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
         final Object entityOriginal = getOriginal(entity);
         if (entityOriginal != null) {

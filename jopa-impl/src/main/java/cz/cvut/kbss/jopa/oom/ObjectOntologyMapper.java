@@ -20,7 +20,6 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Set;
 
@@ -60,10 +59,10 @@ public interface ObjectOntologyMapper {
      * Loads entity field value and sets it on the specified entity.
      *
      * @param entity     The entity on which the field value will be set
-     * @param field      The field to load
+     * @param fieldSpec      The field to load
      * @param descriptor Descriptor possibly specifying the field context
      */
-    <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
+    <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
 
     /**
      * Persists the specified entity into the underlying ontology.
