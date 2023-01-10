@@ -19,11 +19,11 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -82,14 +82,30 @@ public class PluralMultilingualStringFieldStrategy<X>
         if (valueCollection == null || valueCollection.isEmpty()) {
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         } else {
-            final Set<Value<?>> assertionValues = valueCollection.stream()
-                                                                 .filter(Objects::nonNull)
-                                                                 .flatMap(v -> v.getValue().entrySet().stream()
-                                                                                .map(e -> new Value<>(
-                                                                                        new LangString(e.getValue(),
-                                                                                                e.getKey()))))
-                                                                 .collect(Collectors.toSet());
+            final Set<Value<?>> assertionValues = translationsToValues(valueCollection);
             valueBuilder.addValues(createAssertion(), assertionValues, getAttributeWriteContext());
         }
+    }
+
+    private static Set<Value<?>> translationsToValues(Collection<MultilingualString> valueCollection) {
+        return valueCollection.stream()
+                              .filter(Objects::nonNull)
+                              .flatMap(v -> v.getValue().entrySet().stream()
+                                             .map(e -> new Value<>(new LangString(e.getValue(), e.getKey()))))
+                              .collect(Collectors.toSet());
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final Object value = extractFieldValueFromInstance(instance);
+        assert value instanceof Collection || value == null;
+        final Collection<MultilingualString> valueCollection = (Collection<MultilingualString>) value;
+        if (valueCollection == null || valueCollection.isEmpty()) {
+            return Collections.emptySet();
+        }
+        final Set<Value<?>> assertionValues = translationsToValues(valueCollection);
+        final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
+        final Assertion assertion = createAssertion();
+        return assertionValues.stream().map(v -> new AxiomImpl<>(subject, assertion, v)).collect(Collectors.toSet());
     }
 }

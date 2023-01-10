@@ -17,9 +17,9 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.*;
 
 import java.net.URI;
 import java.util.Collections;
@@ -106,6 +106,21 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
         final Set<URI> toAdd = new HashSet<>(types.size());
         toAdd.addAll(types.stream().map(t -> URI.create(t.toString())).collect(Collectors.toList()));
         return toAdd;
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final Object val = extractFieldValueFromInstance(instance);
+        assert val == null || val instanceof Set;
+        final Set<?> types = (Set<?>) val;
+        if (val == null || ((Set<?>) val).isEmpty()) {
+            return Collections.emptySet();
+        } else {
+            final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
+            final Assertion assertion = createAssertion();
+            return types.stream().map(t -> new AxiomImpl<>(subject, assertion, new Value<>(URI.create(t.toString()))))
+                        .collect(Collectors.toSet());
+        }
     }
 
     @Override

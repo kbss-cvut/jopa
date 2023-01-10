@@ -15,7 +15,6 @@
 package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.*;
-import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
@@ -26,7 +25,10 @@ import cz.cvut.kbss.ontodriver.rdf4j.query.Rdf4jPreparedStatement;
 import cz.cvut.kbss.ontodriver.rdf4j.query.Rdf4jStatement;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
@@ -166,6 +168,14 @@ class Rdf4jConnection implements Connection {
         Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
         Objects.requireNonNull(contexts);
         return adapter.contains(axiom, contexts);
+    }
+
+    @Override
+    public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
+        Objects.requireNonNull(contexts);
+        return adapter.isInferred(axiom, contexts);
     }
 
     @Override

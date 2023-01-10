@@ -327,6 +327,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         return uow.getConfiguration();
     }
 
+    @Override
+    public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor) {
+        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        return FieldStrategy.createFieldStrategy(et, fieldSpec, entityDescriptor, this).buildAxiomsFromInstance(entity);
+    }
+
     public UnitOfWorkImpl getUow() {
         return uow;
     }

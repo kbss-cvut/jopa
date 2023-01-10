@@ -71,8 +71,7 @@ class EntityDeconstructor {
 
     <T> AxiomValueGatherer mapFieldToAxioms(URI primaryKey, T entity, Field field, EntityType<T> et,
                                             Descriptor descriptor) {
-        final FieldSpecification<? super T, ?> fieldSpec = et
-                .getFieldSpecification(field.getName());
+        final FieldSpecification<? super T, ?> fieldSpec = et.getFieldSpecification(field.getName());
         final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(primaryKey, descriptor);
         addAssertions(entity, et, fieldSpec, descriptor, valueBuilder);
         return valueBuilder;

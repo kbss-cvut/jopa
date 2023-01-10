@@ -118,15 +118,35 @@ public interface Connection extends AutoCloseable, Wrapper {
     /**
      * Checks whether the storage contains the specified axiom.
      * <p>
-     * The context optionally specifies context in which to look for the axiom.
+     * The contexts optionally specify repository contexts in which to look for the axiom.
      *
-     * @param axiom   The axiom to look for
+     * @param axiom    The axiom to look for
      * @param contexts Optional search contexts, an empty set means to look in the default storage context
      * @return {@code true} if the storage contains matching axiom, {@code false} otherwise
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
     boolean contains(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException;
+
+    /**
+     * Checks whether the specified axiom is inferred in the underlying repository.
+     * <p>
+     * The contexts optionally specify repository contexts in which to look for the axiom. However, note that different
+     * triple stores treat inference differently and inferred statements may be stored in a special context. In this
+     * case, the implementation may choose to ignore the provided set of contexts.
+     * <p>
+     * Also note that since most underlying repository access implementations do not allow retrieving inferred
+     * statements only and instead provide either only asserted or asserted + inferred statements, this method may
+     * return {@code false} in case the repository contains the axiom both inferred and asserted.
+     *
+     * @param axiom    Axiom whose inference to check
+     * @param contexts Optional search contexts, an empty set means to look in the default storage context
+     * @return {@code true} if the repository inferred the specified axiom, {@code false} if the axiom is asserted or
+     * not present at all
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    boolean isInferred(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException;
 
     /**
      * Finds axioms with the corresponding subject and properties.

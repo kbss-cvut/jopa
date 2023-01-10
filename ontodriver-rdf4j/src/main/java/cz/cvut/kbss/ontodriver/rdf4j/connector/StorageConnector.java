@@ -265,10 +265,21 @@ public class StorageConnector extends AbstractConnector {
 
     @Override
     public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
-                                     Collection<IRI> contexts)
-            throws Rdf4jDriverException {
+                                     Collection<IRI> contexts) throws Rdf4jDriverException {
+        assert contexts != null;
         try (final RepositoryConnection conn = acquireConnection()) {
             return conn.hasStatement(subject, property, value, includeInferred, contexts.toArray(new IRI[0]));
+        } catch (RepositoryException e) {
+            throw new Rdf4jDriverException(e);
+        }
+    }
+
+    @Override
+    public boolean isInferred(Statement statement, Collection<IRI> contexts) throws Rdf4jDriverException {
+        assert contexts != null;
+        try (final RepositoryConnection conn = acquireConnection()) {
+            final IRI[] ctxArr = contexts.toArray(new IRI[0]);
+            return conn.hasStatement(statement, true, ctxArr) && !conn.hasStatement(statement, false, ctxArr);
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
         }

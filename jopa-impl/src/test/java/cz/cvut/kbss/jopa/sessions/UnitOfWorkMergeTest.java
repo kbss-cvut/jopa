@@ -1,27 +1,30 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,14 +98,14 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         assertEquals(2, objectChanges.getChanges().size());
         final String strAttName = OWLClassA.getStrAttField().getName();
         final Optional<ChangeRecord> rOne = objectChanges.getChanges().stream()
-                .filter(ch -> ch.getAttribute().getName().equals(strAttName))
-                .findAny();
+                                                         .filter(ch -> ch.getAttribute().getName().equals(strAttName))
+                                                         .findAny();
         assertTrue(rOne.isPresent());
         assertEquals(clone.getStringAttribute(), rOne.get().getNewValue());
         final String typesAttName = OWLClassA.getTypesField().getName();
         final Optional<ChangeRecord> rTwo = objectChanges.getChanges().stream()
-                .filter(ch -> ch.getAttribute().getName().equals(typesAttName))
-                .findAny();
+                                                         .filter(ch -> ch.getAttribute().getName().equals(typesAttName))
+                                                         .findAny();
         assertTrue(rTwo.isPresent());
         assertEquals(clone.getTypes(), rTwo.get().getNewValue());
     }
@@ -118,7 +121,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         entityA.getTypes().add(Vocabulary.CLASS_BASE + "addedType");
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
         final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
-                descriptor, true);
+                                                                             descriptor, true);
         when(storageMock.find(dParams)).thenReturn(dOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);
@@ -133,7 +136,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         dOriginal.setOwlClassA(aOriginal);
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
         final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
-                descriptor, true);
+                                                                             descriptor, true);
         when(storageMock.find(dParams)).thenReturn(dOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);
@@ -180,20 +183,9 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void mergeDetachedThrowsInferredAttributeModifiedWhenInferredAttributeValueWasChanged() {
-        final OWLClassF entityF = new OWLClassF(Generators.createIndividualIdentifier());
-        entityF.setSecondStringAttribute("value");
-        when(storageMock.contains(entityF.getUri(), OWLClassF.class, descriptor)).thenReturn(true);
-        when(storageMock.find(any(LoadingParameters.class))).thenReturn(entityF);
-        final OWLClassF toMerge = new OWLClassF(entityF.getUri());
-        toMerge.setSecondStringAttribute("different-value");
-        when(transactionMock.isActive()).thenReturn(true);
-        assertThrows(InferredAttributeModifiedException.class, () -> uow.mergeDetached(toMerge, descriptor));
-    }
-
-    @Test
     void mergeDetachedEvictsClassesPossiblyReferencingMergedTypeFromCache() {
-        when(metamodelMock.getReferringTypes(OWLClassA.class)).thenReturn(new HashSet<>(Arrays.asList(OWLClassD.class, OWLClassC.class)));
+        when(metamodelMock.getReferringTypes(OWLClassA.class)).thenReturn(
+                new HashSet<>(Arrays.asList(OWLClassD.class, OWLClassC.class)));
         final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         final OWLClassA detached = new OWLClassA(managed.getUri());
         detached.setTypes(new HashSet<>(managed.getTypes()));
@@ -206,5 +198,30 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
         verify(cacheManagerMock).evict(OWLClassD.class);
         verify(cacheManagerMock).evict(OWLClassC.class);
+    }
+
+    @Test
+    void mergeDetachedThrowsInferredAttributeModifiedExceptionOnChangeToInferredAttributeValue() throws Exception {
+        final OWLClassF original = new OWLClassF(Generators.createIndividualIdentifier());
+        original.setSecondStringAttribute("Original value");
+        final OWLClassF detached = new OWLClassF(original.getUri());
+        detached.setSecondStringAttribute("Changed value");
+        when(transactionMock.isActive()).thenReturn(true);
+        when(storageMock.contains(detached.getUri(), OWLClassF.class, descriptor)).thenReturn(true);
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        final Assertion assertion =
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_f_stringAttribute), true);
+        doAnswer(inv -> {
+            final OWLClassF inst = inv.getArgument(0, OWLClassF.class);
+            return Collections.singleton(new AxiomImpl<>(NamedResource.create(inst.getUri()), assertion,
+                                                         new Value<>(inst.getSecondStringAttribute())));
+        }).when(storageMock).getAttributeAxioms(any(), any(), any());
+        when(storageMock.isInferred(any(), any())).thenReturn(true);
+
+        assertThrows(InferredAttributeModifiedException.class, () -> uow.mergeDetached(detached, descriptor));
+        verify(storageMock).isInferred(new AxiomImpl<>(NamedResource.create(original.getUri()), assertion,
+                                                       new Value<>(original.getSecondStringAttribute())),
+                                       Collections.singleton(CONTEXT_URI));
+        verify(storageMock, never()).merge(any(), eq(OWLClassF.getStrAttField()), any());
     }
 }

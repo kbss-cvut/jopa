@@ -21,7 +21,12 @@ import cz.cvut.kbss.ontodriver.rdf4j.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryCreationException;
 import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -47,6 +52,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -85,7 +91,7 @@ class StorageConnectorTest {
     void nonExistingParentFoldersAreCreatedWhenStorageIsInitialized() throws Exception {
         final String projectRootPath = getProjectRootPath();
         final URI fileUri = Paths.get(projectRootPath + File.separator + "internal" + File.separator + "folder" +
-                        File.separator + "repositories" + File.separator + "repositoryTest").toUri();
+                File.separator + "repositories" + File.separator + "repositoryTest").toUri();
         final File parentDir = new File(projectRootPath + File.separator + "internal");
         assertFalse(parentDir.exists());
         this.repositoryFolder = parentDir;
@@ -103,18 +109,20 @@ class StorageConnectorTest {
 
     @Test
     void invalidLocalRepositoryPathThrowsRepositoryCreationException() {
-        final URI invalidUri = Paths.get(getProjectRootPath() + File.separator + "reps" + File.separator + "repositoryTest").toUri();
+        final URI invalidUri = Paths.get(getProjectRootPath() + File.separator + "reps" + File.separator + "repositoryTest")
+                .toUri();
         final File parentDir = new File(getProjectRootPath() + File.separator + "reps");
         assertFalse(parentDir.exists());
         this.repositoryFolder = parentDir;
         assertThrows(RepositoryCreationException.class,
-                     () -> new StorageConnector(TestUtils.createDriverConfig(invalidUri.toString())));
+                () -> new StorageConnector(TestUtils.createDriverConfig(invalidUri.toString())));
     }
 
     @Test
     void connectorIsAbleToConnectToAlreadyInitializedLocalNativeStorage() throws Exception {
         final String repoId = "repositoryTest";
-        final URI repoUri = Paths.get(getProjectRootPath() + File.separator + "repositories" + File.separator + repoId).toUri();
+        final URI repoUri = Paths.get(getProjectRootPath() + File.separator + "repositories" + File.separator + repoId)
+                .toUri();
         this.repositoryFolder = new File(getProjectRootPath() + File.separator + "repositories");
         SailImplConfig backend = new NativeStoreConfig();
         final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
@@ -248,7 +256,8 @@ class StorageConnectorTest {
     void initializationLoadsRepositoryConfigurationFromFileAndCreatesNativeRepo() throws Exception {
         final Path serverDir = Files.createTempDirectory("rdf4j-config-test");
         this.repositoryFolder = serverDir.toFile();
-        final String physicalUri = Paths.get(serverDir.toAbsolutePath().toString(), File.separator + "repositories" + File.separator + "native-lucene").toUri().toString();
+        final String physicalUri = Paths.get(serverDir.toAbsolutePath()
+                .toString(), File.separator + "repositories" + File.separator + "native-lucene").toUri().toString();
         final DriverConfiguration conf = TestUtils.createDriverConfig(physicalUri);
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/native-lucene.ttl");
         this.connector = new StorageConnector(conf);
@@ -292,5 +301,33 @@ class StorageConnectorTest {
 
         assertThrows(Rdf4jDriverException.class, () -> connector.acquireConnection());
         verify(repoMock, times(attempts)).getConnection();
+    }
+
+    @Test
+    void isInferredReturnsTrueWhenStatementIsInferredInSpecifiedContext() throws Exception {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("test");
+        conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+        conf.setProperty(Rdf4jConfigParam.USE_INFERENCE, Boolean.TRUE.toString());
+        this.connector = new StorageConnector(conf);
+        final ValueFactory vf = SimpleValueFactory.getInstance();
+        final IRI childType = vf.createIRI(Generator.generateUri().toString());
+        final IRI parentType = vf.createIRI(Generator.generateUri().toString());
+        final IRI instance = vf.createIRI(Generator.generateUri().toString());
+        final URI context = Generator.generateUri();
+        try (final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection()) {
+            conn.begin();
+            conn.add(childType, RDFS.SUBCLASSOF, parentType, vf.createIRI(context.toString()));
+            conn.add(instance, RDF.TYPE, childType, vf.createIRI(context.toString()));
+            conn.commit();
+        }
+
+        connector.begin();
+        try {
+            assertFalse(connector.isInferred(vf.createStatement(instance, RDF.TYPE, parentType), Collections.singleton(vf.createIRI(Generator.generateUri().toString()))));
+            assertTrue(connector.isInferred(vf.createStatement(instance, RDF.TYPE, parentType), Collections.singleton(vf.createIRI(context.toString()))));
+            assertTrue(connector.isInferred(vf.createStatement(instance, RDF.TYPE, parentType), Collections.emptySet()));
+        } finally {
+            connector.rollback();
+        }
     }
 }
