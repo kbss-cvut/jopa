@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.cache;
 
@@ -28,6 +26,8 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManager> {
@@ -200,5 +200,32 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
             }
         }
         return map;
+    }
+
+    @Test
+    void evictByClassRemovesClassMapWhenEvictedWasLastItem() throws Exception {
+        Class<?> evicted = evictByClass();
+        final Field entityCacheField = LruCacheManager.class.getDeclaredField("entityCache");
+        entityCacheField.setAccessible(true);
+        final EntityCache entityCache = (EntityCache) entityCacheField.get(manager);
+        for (Map<Object, Map<Class<?>, Object>> repoEntry : entityCache.repoCache.values()) {
+            assertThat(repoEntry.size(), greaterThan(0));
+            for (Map<Class<?>, Object> typeMap : repoEntry.values()) {
+                if (typeMap.containsKey(evicted)) {
+                    assertNull(typeMap.get(evicted));
+                } else {
+                    assertThat(typeMap.size(), greaterThan(0));
+                }
+            }
+        }
+    }
+
+    @Test
+    void evictByContextRemovesContextMap() throws Exception {
+        final URI ctx = evictByContext();
+        final Field entityCacheField = LruCacheManager.class.getDeclaredField("entityCache");
+        entityCacheField.setAccessible(true);
+        final EntityCache entityCache = (EntityCache) entityCacheField.get(manager);
+        assertFalse(entityCache.repoCache.containsKey(ctx));
     }
 }
