@@ -39,13 +39,6 @@ public class MultipleInheritanceTestRunner extends BaseRunner {
         System.out.println(tabletFound.getPluralAnnotationProperty().size());
         System.out.println(notebookFound.getStringAttribute());
         assertEquals(s.getId(), found.getId());
-//        assertEquals(s.getStringAttribute(), found.getStringAttribute());
-//        assertEquals(s.getPluralAnnotationProperty(), found.getPluralAnnotationProperty());
-//this.em.createNativeQuery("ASK WHERE {local rdf:type http://krizik.felk.cvut.cz/ontologies/jopa/entities#TABLET . }",Boolean.class).getSingleResult()
-//        verifyValueDatatype(s.getId(), "rdf:type", Vocabulary.TABLET  );
-
-
-//        verifyValueDatatype(id,"http://www.w3.org/1999/02/22-rdf-syntax-ns#type",Vocabulary.TABLET);
     }
 
 
