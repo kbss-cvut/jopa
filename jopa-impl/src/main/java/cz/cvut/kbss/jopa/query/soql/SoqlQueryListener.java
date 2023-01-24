@@ -35,7 +35,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     private String typeDef = "SELECT";
 
-    // keeps pointer at created object of SoqlAttribute while processing other neccessary rules
+    // keeps pointer at created object of SoqlAttribute while processing other necessary rules
     private SoqlAttribute attrPointer;
 
     private final ArrayList<SoqlAttribute> attributes;
@@ -100,7 +100,7 @@ public class SoqlQueryListener implements SoqlListener {
     @Override
     public void enterJoinedParams(SoqlParser.JoinedParamsContext ctx) {
         SoqlAttribute myAttr = new SoqlAttribute();
-        SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
+        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
         SoqlNode actualNode = firstNode;
         for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = actualNode;
@@ -160,8 +160,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterObjWithAttr(SoqlParser.ObjWithAttrContext ctx) {
-        String owner = getOwnerfromParam(ctx);
-        String attribute = getAttributefromParam(ctx);
+        String owner = getOwnerFromParam(ctx);
+        String attribute = getAttributeFromParam(ctx);
         SoqlNode firstNode = new SoqlNode(owner);
         SoqlNode lastNode = new SoqlNode(firstNode, attribute);
         SoqlAttribute myAttr = new SoqlAttribute();
@@ -213,19 +213,100 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterLogOp(SoqlParser.LogOpContext ctx) {
-    }
-
-    @Override
-    public void exitLogOp(SoqlParser.LogOpContext ctx) {
-    }
-
-    @Override
     public void enterWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
     }
 
     @Override
     public void exitWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
+    }
+
+    @Override
+    public void enterConditionalExpression(SoqlParser.ConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitConditionalExpression(SoqlParser.ConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void enterConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
+    }
+
+    @Override
+    public void exitConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
+        final ParserRuleContext parentCtx = ctx.getParent();
+        if (parentCtx.getChildCount() > 1 && !parentCtx.getChild(0).equals(ctx)) {
+            objectOfNextOr.add(attrPointer);
+        }
+    }
+
+    @Override
+    public void enterConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
+    }
+
+    @Override
+    public void exitConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
+        if (ctx.getChildCount() > 1) {
+            attrPointer.setNot(true);
+        }
+    }
+
+    @Override
+    public void enterSimpleConditionalExpression(SoqlParser.SimpleConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitSimpleConditionalExpression(SoqlParser.SimpleConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void enterInExpression(SoqlParser.InExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitInExpression(SoqlParser.InExpressionContext ctx) {
+    }
+
+    @Override
+    public void enterInItem(SoqlParser.InItemContext ctx) {
+    }
+
+    @Override
+    public void exitInItem(SoqlParser.InItemContext ctx) {
+    }
+
+    @Override
+    public void enterLiteral(SoqlParser.LiteralContext ctx) {
+    }
+
+    @Override
+    public void exitLiteral(SoqlParser.LiteralContext ctx) {
+    }
+
+    @Override
+    public void enterLikeExpression(SoqlParser.LikeExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitLikeExpression(SoqlParser.LikeExpressionContext ctx) {
+        attrPointer.setOperator(SoqlConstants.LIKE);
+
+        ParseTree whereClauseValue = ctx.getChild(2);
+        attrPointer.setValue(whereClauseValue.getText());
+    }
+
+    @Override
+    public void enterComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
+        String operator = ctx.getChild(1).getText();
+
+        ParseTree whereClauseValue = ctx.getChild(2);
+
+        attrPointer.setOperator(operator);
+        attrPointer.setValue(whereClauseValue.getText());
     }
 
     @Override
@@ -272,41 +353,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterWhereClauses(SoqlParser.WhereClausesContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClauses(SoqlParser.WhereClausesContext ctx) {
-    }
-
-    @Override
-    public void enterWhereClauseOps(SoqlParser.WhereClauseOpsContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClauseOps(SoqlParser.WhereClauseOpsContext ctx) {
-    }
-
-    @Override
-    public void enterWhereClause(SoqlParser.WhereClauseContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClause(SoqlParser.WhereClauseContext ctx) {
-        String logicalOperator = getOperators(ctx.getParent());
-        String operator = ctx.getChild(1).getText();
-
-        ParseTree whereClauseValue = ctx.getChild(2);
-
-        attrPointer.setOperator(operator);
-        attrPointer.setValue(whereClauseValue.getText());
-
-        if ("OR".equals(logicalOperator)) {
-            objectOfNextOr.add(attrPointer);
-        }
-    }
-
-    @Override
     public void enterWhereClauseValue(SoqlParser.WhereClauseValueContext ctx) {
     }
 
@@ -348,7 +394,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterOrderByParam(SoqlParser.OrderByParamContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
+        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
         SoqlNode actualNode = firstNode;
         for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = actualNode;
@@ -399,7 +445,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterGroupByParam(SoqlParser.GroupByParamContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
+        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
         SoqlNode actualNode = firstNode;
         for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = actualNode;
@@ -448,11 +494,11 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     //Methods to help parse tree
-    private String getOwnerfromParam(ParserRuleContext ctx) {
+    private String getOwnerFromParam(ParserRuleContext ctx) {
         return ctx.getChild(0).getChild(0).getText();
     }
 
-    private String getAttributefromParam(ParserRuleContext ctx) {
+    private String getAttributeFromParam(ParserRuleContext ctx) {
         return ctx.getChild(2).getChild(0).getText();
     }
 

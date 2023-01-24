@@ -104,7 +104,7 @@ public class SoqlAttribute extends SoqlParameter {
 
     public String getFilter() {
         StringBuilder buildFilter = new StringBuilder();
-        if ("LIKE".equals(operator)) {
+        if (SoqlConstants.LIKE.equals(operator)) {
             buildFilter.append("regex(").append(getAsParam()).append(", ?").append(value.substring(1))
                        .append(") ");
         } else {
