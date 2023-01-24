@@ -269,6 +269,26 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassWithQueryAttr, OWLClassA> qaEntityAtt;
 
+    @Mock
+    private EntityTypeImpl<Person> etPerson;
+    @Mock
+    private Identifier<Person, URI> idPerson;
+    @Mock
+    private SingularAttributeImpl<Person, String> personUsernameAtt;
+    @Mock
+    private SingularAttributeImpl<Person, String> personGenderAtt;
+    @Mock
+    private SingularAttributeImpl<Person, Integer> personAgeAtt;
+    @Mock
+    private SingularAttributeImpl<Person, Phone> personPhoneAtt;
+
+    @Mock
+    private EntityTypeImpl<Phone> etPhone;
+    @Mock
+    private Identifier<Phone, URI> idPhone;
+    @Mock
+    private SingularAttributeImpl<Phone, String> phoneNumberAtt;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.openMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
@@ -281,8 +301,8 @@ public class MetamodelMocks {
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
         MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
-        MetamodelFactory.iniOWLClassGMocks(etG, gOwlClassHAtt, idG);
-        MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, idH);
+        MetamodelFactory.initOWLClassGMocks(etG, gOwlClassHAtt, etH, idG);
+        MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, etA, etG, idH);
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
@@ -304,6 +324,8 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, idU);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt, qaEntityAtt, idQA);
+        MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
+        MetamodelFactory.initPersonMocks(etPerson, personUsernameAtt, personGenderAtt, personAgeAtt, personPhoneAtt, etPhone, idPerson);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -330,6 +352,8 @@ public class MetamodelMocks {
         etMap.put(OWLClassT.class, etT);
         etMap.put(OWLClassU.class, etU);
         etMap.put(OWLClassWithQueryAttr.class, etQA);
+        etMap.put(Person.class, etPerson);
+        etMap.put(Phone.class, etPhone);
         when(metamodel.entity(any())).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
@@ -882,6 +906,46 @@ public class MetamodelMocks {
 
         public AbstractQueryAttribute<OWLClassWithQueryAttr, OWLClassA> entityQueryAttribute() {
             return MetamodelMocks.this.qaEntityQueryAtt;
+        }
+    }
+
+    public class PhoneMetamodel {
+        public EntityTypeImpl<Phone> entityType() {
+            return MetamodelMocks.this.etPhone;
+        }
+
+        public Identifier<Phone, URI> identifier() {
+            return MetamodelMocks.this.idPhone;
+        }
+
+        public SingularAttributeImpl<Phone, String> numberAttribute() {
+            return MetamodelMocks.this.phoneNumberAtt;
+        }
+    }
+
+    public class PersonMetamodel {
+        public EntityTypeImpl<Person> entityType() {
+            return MetamodelMocks.this.etPerson;
+        }
+
+        public Identifier<Person, URI> identifier() {
+            return MetamodelMocks.this.idPerson;
+        }
+
+        public SingularAttributeImpl<Person, String> usernameAttribute() {
+            return MetamodelMocks.this.personUsernameAtt;
+        }
+
+        public SingularAttributeImpl<Person, String> genderAttribute() {
+            return MetamodelMocks.this.personGenderAtt;
+        }
+
+        public SingularAttributeImpl<Person, Integer> ageAttribute() {
+            return MetamodelMocks.this.personAgeAtt;
+        }
+
+        public SingularAttributeImpl<Person, Phone> phoneAttribute() {
+            return MetamodelMocks.this.personPhoneAtt;
         }
     }
 }

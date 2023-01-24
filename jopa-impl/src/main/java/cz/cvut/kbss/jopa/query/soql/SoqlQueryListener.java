@@ -15,10 +15,7 @@
 package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -26,6 +23,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class SoqlQueryListener implements SoqlListener {
 
@@ -55,8 +53,7 @@ public class SoqlQueryListener implements SoqlListener {
 
 
     public SoqlQueryListener(MetamodelImpl metamodel) {
-        super();
-        this.metamodel = metamodel;
+        this.metamodel = Objects.requireNonNull(metamodel);
         this.attributes = new ArrayList<>();
         this.objectOfNextOr = new ArrayList<>();
         this.orderAttributes = new ArrayList<>();
@@ -100,14 +97,7 @@ public class SoqlQueryListener implements SoqlListener {
     @Override
     public void enterJoinedParams(SoqlParser.JoinedParamsContext ctx) {
         SoqlAttribute myAttr = new SoqlAttribute();
-        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
-        SoqlNode actualNode = firstNode;
-        for (int i = 2; i < ctx.getChildCount(); i += 2) {
-            SoqlNode prevNode = actualNode;
-            actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
-            prevNode.setChild(actualNode);
-        }
-        setIris(firstNode);
+        SoqlNode firstNode = linkContextNodes(ctx);
         myAttr.setFirstNode(firstNode);
         attributes.add(myAttr);
         attrPointer = myAttr;
@@ -394,14 +384,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterOrderByParam(SoqlParser.OrderByParamContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
-        SoqlNode actualNode = firstNode;
-        for (int i = 2; i < ctx.getChildCount(); i += 2) {
-            SoqlNode prevNode = actualNode;
-            actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
-            prevNode.setChild(actualNode);
-        }
-        setIris(firstNode);
+        SoqlNode firstNode = linkContextNodes(ctx);
         String orderingBy = getOrderingBy(ctx.getParent());
         SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
         boolean attrSet = false;
@@ -445,14 +428,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterGroupByParam(SoqlParser.GroupByParamContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
-        SoqlNode actualNode = firstNode;
-        for (int i = 2; i < ctx.getChildCount(); i += 2) {
-            SoqlNode prevNode = actualNode;
-            actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
-            prevNode.setChild(actualNode);
-        }
-        setIris(firstNode);
+        SoqlNode firstNode = linkContextNodes(ctx);
         SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
         boolean attrSet = false;
         for (SoqlAttribute attr : attributes) {
@@ -471,6 +447,18 @@ public class SoqlQueryListener implements SoqlListener {
             groupParam.setAttribute(myAttr);
         }
         groupAttributes.add(groupParam);
+    }
+
+    private SoqlNode linkContextNodes(ParserRuleContext ctx) {
+        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
+        SoqlNode currentNode = firstNode;
+        for (int i = 2; i < ctx.getChildCount(); i += 2) {
+            SoqlNode prevNode = currentNode;
+            currentNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
+            prevNode.setChild(currentNode);
+        }
+        setIris(firstNode);
+        return firstNode;
     }
 
     @Override
@@ -502,34 +490,11 @@ public class SoqlQueryListener implements SoqlListener {
         return ctx.getChild(2).getChild(0).getText();
     }
 
-    private String getOperators(ParserRuleContext ctx) {
-        String operator = "";
-        switch (ctx.getChildCount()) {
-            case 2:
-                if (ctx.getChild(0).getChildCount() > 0) {
-                    operator = ctx.getChild(0).getChild(0).getText();
-                } else {
-                    attrPointer.setNot(true);
-                }
-                break;
-            case 3:
-                attrPointer.setNot(true);
-                operator = ctx.getChild(0).getChild(0).getText();
-                break;
-            default:
-                attrPointer.setNot(false);
-        }
-        return operator;
-    }
-
     private String getOrderingBy(ParserRuleContext ctx) {
         return ctx.getChildCount() > 1 ? ctx.getChild(1).getText() : "";
     }
 
     private void setObjectIri(SoqlNode node) {
-        if (metamodel == null) {
-            return;
-        }
         EntityTypeImpl<?> entityType = getEntityType(node.getValue());
         if (entityType == null) {
             return;
@@ -541,9 +506,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private EntityTypeImpl<?> getEntityType(String name) {
-        if (metamodel == null) {
-            return null;
-        }
         for (EntityType<?> type : metamodel.getEntities()) {
             EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) type;
             if (entityType.getName().equals(name)) {
@@ -553,38 +515,22 @@ public class SoqlQueryListener implements SoqlListener {
         return null;
     }
 
-    private EntityTypeImpl<?> getEntityType(Type<?> type) {
-        if (metamodel == null) {
-            return null;
-        }
-        for (EntityType<?> value : metamodel.getEntities()) {
-            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) value;
-            if (entityType.equals(type)) {
-                return entityType;
-            }
-        }
-        return null;
-    }
-
-    private void setAllNodesIris(EntityTypeImpl<?> entityType, SoqlNode node) {
-        SingularAttributeImpl<?, ?> abstractAttribute = (SingularAttributeImpl<?, ?>) entityType.getAttribute(node.getValue());
+    private void setAllNodesIris(ManagedType<?> entityType, SoqlNode node) {
+        final Attribute<?, ?> abstractAttribute = entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
         if (node.hasNextChild()) {
-            Type<?> type = abstractAttribute.getType();
-            EntityTypeImpl<?> attrEntityType = getEntityType(type);
-            if (attrEntityType == null) {
+            assert abstractAttribute instanceof SingularAttribute;
+            final Type<?> type = ((SingularAttribute<?, ?>) abstractAttribute).getType();
+            if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
             }
-            setAllNodesIris(attrEntityType, node.getChild());
+            setAllNodesIris((ManagedType<?>) type, node.getChild());
         }
     }
 
     private void setIris(SoqlNode firstNode) {
         if (!objectTypes.containsKey(firstNode.getValue())) {
-            return;
-        }
-        if (metamodel == null) {
             return;
         }
         String objectName = objectTypes.get(firstNode.getValue());
