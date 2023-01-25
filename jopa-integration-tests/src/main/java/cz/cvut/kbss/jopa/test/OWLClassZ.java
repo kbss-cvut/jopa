@@ -19,7 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import java.net.URI;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_Z)
-public class OWLClassZ {
+public class OWLClassZ implements HasUri {
 
     @Id
     private URI uri;
@@ -27,6 +27,7 @@ public class OWLClassZ {
     @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_IRI_BASE + "hasRoot", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private OWLClassZChild root;
 
+    @Override
     public URI getUri() {
         return uri;
     }

@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
@@ -36,12 +35,12 @@ import java.util.Set;
         })
 })})
 @NamedNativeQueries({@NamedNativeQuery(name = "OWLClassA.findAll",
-        query = "SELECT ?x WHERE {?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . } ORDER BY ?x"),
+        query = "SELECT ?x WHERE {?x a <" + Vocabulary.C_OWL_CLASS_A + "> . } ORDER BY ?x"),
         @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
                 Vocabulary.P_A_STRING_ATTRIBUTE + "> ?str . }")
 })
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_A)
-public class OWLClassA {
+public class OWLClassA implements HasUri {
 
     public static final String VARIABLE_MAPPING = "OWLClassA.testMapping";
     public static final String CONSTRUCTOR_MAPPING = "OWLClassA.constructorMapping";
@@ -68,16 +67,11 @@ public class OWLClassA {
         this.stringAttribute = stringAttribute;
     }
 
-    /**
-     * @param uri the uri to set
-     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -123,13 +117,5 @@ public class OWLClassA {
 
     public static String getClassIri() {
         return OWLClassA.class.getDeclaredAnnotation(OWLClass.class).iri();
-    }
-
-    public static Field getStringField() {
-        try {
-            return OWLClassA.class.getDeclaredField("stringAttribute");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

@@ -24,7 +24,7 @@ import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_Y)
-public class OWLClassY implements Serializable {
+public class OWLClassY implements HasUri, Serializable {
 
     @Id(generated = true)
     private URI uri;
@@ -35,6 +35,7 @@ public class OWLClassY implements Serializable {
     @OWLDataProperty(iri = Vocabulary.P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE)
     private Set<MultilingualString> pluralString;
 
+    @Override
     public URI getUri() {
         return uri;
     }

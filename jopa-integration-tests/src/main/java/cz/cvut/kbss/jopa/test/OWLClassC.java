@@ -16,12 +16,11 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")
-public class OWLClassC {
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_C)
+public class OWLClassC implements HasUri {
 
     @Id
     private URI uri;
@@ -45,6 +44,7 @@ public class OWLClassC {
         this.uri = uri;
     }
 
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -75,13 +75,5 @@ public class OWLClassC {
             out += ", simpleList = {" + simpleList + "}";
         }
         return out;
-    }
-
-    public static Field getReferencedListField() throws NoSuchFieldException {
-        return OWLClassC.class.getDeclaredField("referencedList");
-    }
-
-    public static Field getSimpleListField() throws NoSuchFieldException {
-        return OWLClassC.class.getDeclaredField("simpleList");
     }
 }

@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassN")
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_N)
 public class OWLClassN {
 
     @Id(generated = true)

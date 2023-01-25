@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassP")
-public class OWLClassP {
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_P)
+public class OWLClassP implements HasUri {
 
     @Id(generated = true)
     private URI uri;
@@ -48,6 +48,7 @@ public class OWLClassP {
     @Properties(fetchType = FetchType.EAGER)
     private Map<URI, Set<Object>> properties;
 
+    @Override
     public URI getUri() {
         return uri;
     }
