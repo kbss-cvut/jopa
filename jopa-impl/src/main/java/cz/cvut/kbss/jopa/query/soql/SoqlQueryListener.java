@@ -255,11 +255,11 @@ public class SoqlQueryListener implements SoqlListener {
     @Override
     public void exitInExpression(SoqlParser.InExpressionContext ctx) {
         if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
-            attrPointer.setOperator(new NotInOperator());
+            attrPointer.setOperator(InOperator.notIn());
             ParseTree whereClauseValue = ctx.getChild(3);
             attrPointer.setValue(whereClauseValue.getText());
         } else {
-            attrPointer.setOperator(new InOperator());
+            attrPointer.setOperator(InOperator.in());
             ParseTree whereClauseValue = ctx.getChild(2);
             attrPointer.setValue(whereClauseValue.getText());
         }
@@ -287,10 +287,15 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitLikeExpression(SoqlParser.LikeExpressionContext ctx) {
-        attrPointer.setOperator(new LikeOperator());
-
-        ParseTree whereClauseValue = ctx.getChild(2);
-        attrPointer.setValue(whereClauseValue.getText());
+        if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
+            attrPointer.setOperator(LikeOperator.notLike());
+            ParseTree whereClauseValue = ctx.getChild(3);
+            attrPointer.setValue(whereClauseValue.getText());
+        } else {
+            attrPointer.setOperator(LikeOperator.like());
+            ParseTree whereClauseValue = ctx.getChild(2);
+            attrPointer.setValue(whereClauseValue.getText());
+        }
     }
 
     @Override
