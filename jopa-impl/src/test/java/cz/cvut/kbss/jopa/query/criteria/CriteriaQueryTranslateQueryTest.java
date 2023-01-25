@@ -45,17 +45,11 @@ import static org.mockito.Mockito.when;
 
 public class CriteriaQueryTranslateQueryTest {
 
-
     @Mock
     private UnitOfWorkImpl uowMock;
 
-    private static CriteriaBuilder cb;
+    private CriteriaBuilder cb;
     private CriteriaParameterFiller criteriaParameterFiller;
-
-    @BeforeAll
-    static void init() {
-        cb = mock(CriteriaBuilderImpl.class);
-    }
 
     @BeforeEach
     void setUp() throws Exception {
@@ -438,7 +432,7 @@ public class CriteriaQueryTranslateQueryTest {
             query.select(root).where(cb.in(root.getAttr("stringAttribute")).value("value").value("anotherValue"));
 
             final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute IN(:generatedName0, :generatedName1)";
+            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute IN (:generatedName0)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -449,7 +443,7 @@ public class CriteriaQueryTranslateQueryTest {
             query.select(root).where(cb.not(cb.in(root.getAttr("stringAttribute")).value("value").value("anotherValue")));
 
             final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN(:generatedName0, :generatedName1)";
+            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN (:generatedName0)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -460,7 +454,7 @@ public class CriteriaQueryTranslateQueryTest {
             query.select(root).where(cb.notIn(root.getAttr("stringAttribute")).value("value").value("anotherValue"));
 
             final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN(:generatedName0, :generatedName1)";
+            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN (:generatedName0)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 

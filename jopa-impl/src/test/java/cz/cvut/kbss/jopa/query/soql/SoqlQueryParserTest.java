@@ -507,6 +507,15 @@ public class SoqlQueryParserTest {
     }
 
     @Test
+    void testParseFindByAttributeValueInVariableWrappedInParentheses() {
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username IN (:authorizedUsers";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername IN (?authorizedUsers)) }";
+        final QueryHolder holder = sut.parseQuery(soqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertNotNull(holder.getParameter("authorizedUsers"));
+    }
+
+    @Test
     public void testParseFindOneNotLikeQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username NOT LIKE :username";
         final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (!regex(?pUsername, ?username) ) }";

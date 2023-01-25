@@ -254,15 +254,22 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitInExpression(SoqlParser.InExpressionContext ctx) {
-        if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
+        assert ctx.getChildCount() > 2;
+        final ParseTree value = resolveInExpressionValue(ctx);
+        if (ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
             attrPointer.setOperator(InOperator.notIn());
-            ParseTree whereClauseValue = ctx.getChild(3);
-            attrPointer.setValue(whereClauseValue.getText());
         } else {
             attrPointer.setOperator(InOperator.in());
-            ParseTree whereClauseValue = ctx.getChild(2);
-            attrPointer.setValue(whereClauseValue.getText());
         }
+        attrPointer.setValue(value.getText());
+    }
+
+    private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
+        final ParseTree lastToken = ctx.getChild(ctx.getChildCount() - 1);
+        if (")".equals(lastToken.getText())) {
+            return ctx.getChild(ctx.getChildCount() - 2);
+        }
+        return lastToken;
     }
 
     @Override
