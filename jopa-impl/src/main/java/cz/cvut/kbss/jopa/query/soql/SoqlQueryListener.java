@@ -67,7 +67,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitQuerySentence(SoqlParser.QuerySentenceContext ctx) {
-        buildString();
+        buildQueryString();
     }
 
     @Override
@@ -255,6 +255,15 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitInExpression(SoqlParser.InExpressionContext ctx) {
+        if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
+            attrPointer.setOperator(SoqlConstants.NOT_IN);
+            ParseTree whereClauseValue = ctx.getChild(3);
+            attrPointer.setValue(whereClauseValue.getText());
+        } else {
+            attrPointer.setOperator(SoqlConstants.IN);
+            ParseTree whereClauseValue = ctx.getChild(2);
+            attrPointer.setValue(whereClauseValue.getText());
+        }
     }
 
     @Override
@@ -549,7 +558,7 @@ public class SoqlQueryListener implements SoqlListener {
 
 
     //Methods to build new Query
-    private void buildString() {
+    private void buildQueryString() {
         if (attributes.isEmpty()) {
             return;
         }
@@ -558,7 +567,7 @@ public class SoqlQueryListener implements SoqlListener {
             newQueryBuilder.append(getCountPart());
         } else {
             if (isSelectedParamDistinct) {
-                newQueryBuilder.append(" ").append("DISTINCT");
+                newQueryBuilder.append(" ").append(SoqlConstants.DISTINCT);
             }
             newQueryBuilder.append(" ?x ");
         }
@@ -584,7 +593,7 @@ public class SoqlQueryListener implements SoqlListener {
     private StringBuilder getCountPart() {
         StringBuilder countPart = new StringBuilder(" (COUNT(");
         if (isSelectedParamDistinct) {
-            countPart.append("distinct ");
+            countPart.append(SoqlConstants.DISTINCT).append(" ");
         }
         countPart.append("?x) AS ?count) ");
         return countPart;

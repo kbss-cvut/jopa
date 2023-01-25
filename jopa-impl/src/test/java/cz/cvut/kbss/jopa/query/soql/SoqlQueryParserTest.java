@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -87,7 +86,7 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseDistinctCountQuery() {
         final String soqlQuery = "SELECT DISTINCT COUNT(p) FROM Person p";
-        final String expectedSparqlQuery = "SELECT (COUNT(distinct ?x) AS ?count) WHERE { ?x a <" + Vocabulary.c_Person + "> . }";
+        final String expectedSparqlQuery = "SELECT (COUNT(DISTINCT ?x) AS ?count) WHERE { ?x a <" + Vocabulary.c_Person + "> . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());
@@ -489,11 +488,19 @@ public class SoqlQueryParserTest {
         assertEquals(5, holder.getParameters().size());
     }
 
-    @Disabled
     @Test
     void testParseFindByAttributeValueInVariable() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username IN :authorizedUsers";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . FILTER (?username IN (?authorizedUsers)) }";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername IN (?authorizedUsers)) }";
+        final QueryHolder holder = sut.parseQuery(soqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertNotNull(holder.getParameter("authorizedUsers"));
+    }
+
+    @Test
+    void testParseFindByAttributeValueNotInVariable() {
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username NOT IN :authorizedUsers";
+        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername NOT IN (?authorizedUsers)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertNotNull(holder.getParameter("authorizedUsers"));

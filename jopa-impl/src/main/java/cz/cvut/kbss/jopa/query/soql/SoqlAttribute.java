@@ -75,10 +75,13 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     public String getFilter() {
+        // TODO Refactor into class hierarchy to prevent this if-else tree
         StringBuilder buildFilter = new StringBuilder();
         if (SoqlConstants.LIKE.equals(operator)) {
             buildFilter.append("regex(").append(getAsParam()).append(", ").append(toVariable(value))
                        .append(") ");
+        } else if (SoqlConstants.IN.equals(operator) || SoqlConstants.NOT_IN.equals(operator)) {
+            buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" (").append(toVariable(value)).append(')');
         } else {
             buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" ").append(toVariable(value));
         }

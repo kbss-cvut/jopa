@@ -65,7 +65,7 @@ simpleConditionalExpression
    ;
 
 inExpression
-   : whereClauseParam (NOT)? IN '(' (inItem (',' inItem)*) ')'
+   : whereClauseParam (NOT)? IN '('? (inItem (',' inItem)*) ')'?
    ;
 
 inItem
