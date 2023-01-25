@@ -14,17 +14,25 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+
 public class SoqlAttribute extends SoqlParameter {
+
+    private static final String TRIPLE_END = " . ";
 
     private String value;
 
     private boolean isNot = false;
 
-    private String operator;
+    private FilterOperator operator;
 
     private boolean isOrderBy = false;
 
     private boolean isGroupBy = false;
+
+    public SoqlAttribute(SoqlNode firstNode) {
+        super(firstNode);
+    }
 
     public String getValue() {
         return value;
@@ -42,11 +50,11 @@ public class SoqlAttribute extends SoqlParameter {
         isNot = not;
     }
 
-    public void setOperator(String operator) {
+    public void setOperator(FilterOperator operator) {
         this.operator = operator;
     }
 
-    public String getOperator() {
+    public FilterOperator getOperator() {
         return operator;
     }
 
@@ -67,7 +75,7 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     public boolean isFilter() {
-        return !operator.isEmpty() && !"=".equals(operator);
+        return operator != null && operator.requiresFilterExpression();
     }
 
     public boolean isObject() {
@@ -75,24 +83,14 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     public String getFilter() {
-        // TODO Refactor into class hierarchy to prevent this if-else tree
-        StringBuilder buildFilter = new StringBuilder();
-        if (SoqlConstants.LIKE.equals(operator)) {
-            buildFilter.append("regex(").append(getAsParam()).append(", ").append(toVariable(value))
-                       .append(") ");
-        } else if (SoqlConstants.IN.equals(operator) || SoqlConstants.NOT_IN.equals(operator)) {
-            buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" (").append(toVariable(value)).append(')');
-        } else {
-            buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" ").append(toVariable(value));
-        }
-        return buildFilter.toString();
+        return operator.toFilterExpression(getAsParam(), toVariable(value));
     }
 
     public String getTriplePattern() {
         StringBuilder buildTP = new StringBuilder("?x ");
         if (isObject()) {
             buildTP.append(SoqlConstants.RDF_TYPE).append(" ")
-                   .append(toIri(getFirstNode())).append(" . ");
+                   .append(toIri(getFirstNode())).append(TRIPLE_END);
         } else {
             SoqlNode pointer = getFirstNode().getChild();
             StringBuilder buildParam = new StringBuilder("?");
@@ -108,7 +106,7 @@ public class SoqlAttribute extends SoqlParameter {
                     param = toVariable(value);
                 }
             }
-            buildTP.append(toIri(pointer)).append(" ").append(param).append(" . ");
+            buildTP.append(toIri(pointer)).append(" ").append(param).append(TRIPLE_END);
             while (pointer.hasNextChild()) {
                 SoqlNode newPointer = pointer.getChild();
                 buildTP.append("?").append(pointer.getValue())
@@ -123,18 +121,15 @@ public class SoqlAttribute extends SoqlParameter {
                         buildTP.append(toVariable(value));
                     }
                 }
-                buildTP.append(" . ");
+                buildTP.append(TRIPLE_END);
                 pointer = newPointer;
             }
         }
         return buildTP.toString();
     }
 
-    private StringBuilder toIri(SoqlNode node) {
-        StringBuilder sb = new StringBuilder("<");
-        String prefix = node.getIri().isEmpty() ? node.getValue() : node.getIri();
-        sb.append(prefix).append(">");
-        return sb;
+    private static String toIri(SoqlNode node) {
+        return IdentifierTransformer.stringifyIri(node.getIri());
     }
 
     private static String toVariable(String name) {

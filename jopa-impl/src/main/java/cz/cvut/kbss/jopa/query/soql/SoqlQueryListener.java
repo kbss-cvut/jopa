@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Objects;
 
 public class SoqlQueryListener implements SoqlListener {
@@ -96,9 +97,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterJoinedParams(SoqlParser.JoinedParamsContext ctx) {
-        SoqlAttribute myAttr = new SoqlAttribute();
         SoqlNode firstNode = linkContextNodes(ctx);
-        myAttr.setFirstNode(firstNode);
+        SoqlAttribute myAttr = new SoqlAttribute(firstNode);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
@@ -154,10 +154,9 @@ public class SoqlQueryListener implements SoqlListener {
         String attribute = getAttributeFromParam(ctx);
         SoqlNode firstNode = new SoqlNode(owner);
         SoqlNode lastNode = new SoqlNode(firstNode, attribute);
-        SoqlAttribute myAttr = new SoqlAttribute();
         firstNode.setChild(lastNode);
         setIris(firstNode);
-        myAttr.setFirstNode(firstNode);
+        SoqlAttribute myAttr = new SoqlAttribute(firstNode);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
@@ -193,7 +192,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterDistinct(SoqlParser.DistinctContext ctx) {
-        if ("DISTINCT".equals(ctx.getChild(0).getText())) {
+        if (SoqlConstants.DISTINCT.equals(ctx.getChild(0).getText())) {
             isSelectedParamDistinct = true;
         }
     }
@@ -256,11 +255,11 @@ public class SoqlQueryListener implements SoqlListener {
     @Override
     public void exitInExpression(SoqlParser.InExpressionContext ctx) {
         if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
-            attrPointer.setOperator(SoqlConstants.NOT_IN);
+            attrPointer.setOperator(new NotInOperator());
             ParseTree whereClauseValue = ctx.getChild(3);
             attrPointer.setValue(whereClauseValue.getText());
         } else {
-            attrPointer.setOperator(SoqlConstants.IN);
+            attrPointer.setOperator(new InOperator());
             ParseTree whereClauseValue = ctx.getChild(2);
             attrPointer.setValue(whereClauseValue.getText());
         }
@@ -288,7 +287,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitLikeExpression(SoqlParser.LikeExpressionContext ctx) {
-        attrPointer.setOperator(SoqlConstants.LIKE);
+        attrPointer.setOperator(new LikeOperator());
 
         ParseTree whereClauseValue = ctx.getChild(2);
         attrPointer.setValue(whereClauseValue.getText());
@@ -304,7 +303,7 @@ public class SoqlQueryListener implements SoqlListener {
 
         ParseTree whereClauseValue = ctx.getChild(2);
 
-        attrPointer.setOperator(operator);
+        attrPointer.setOperator(new ComparisonOperator(operator));
         attrPointer.setValue(whereClauseValue.getText());
     }
 
@@ -337,12 +336,9 @@ public class SoqlQueryListener implements SoqlListener {
         String table = ctx.getChild(0).getChild(0).getText();
         String objectName = ctx.getChild(1).getChild(0).getText();
         objectTypes.put(objectName, table);
-        SoqlAttribute myAttr = new SoqlAttribute();
         SoqlNode node = new SoqlNode(table);
         setObjectIri(node);
-        myAttr.setFirstNode(node);
-        myAttr.setOperator("");
-        myAttr.setValue("");
+        SoqlAttribute myAttr = new SoqlAttribute(node);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
@@ -404,9 +400,7 @@ public class SoqlQueryListener implements SoqlListener {
             }
         }
         if (!attrSet) {
-            SoqlAttribute myAttr = new SoqlAttribute();
-            myAttr.setFirstNode(firstNode);
-            myAttr.setOperator("");
+            SoqlAttribute myAttr = new SoqlAttribute(firstNode);
             myAttr.setValue(orderParam.getAsValue());
             myAttr.setOrderBy(true);
             attributes.add(1, myAttr);
@@ -447,9 +441,7 @@ public class SoqlQueryListener implements SoqlListener {
             }
         }
         if (!attrSet) {
-            SoqlAttribute myAttr = new SoqlAttribute();
-            myAttr.setFirstNode(firstNode);
-            myAttr.setOperator("");
+            SoqlAttribute myAttr = new SoqlAttribute(firstNode);
             myAttr.setValue(groupParam.getAsValue());
             myAttr.setGroupBy(true);
             attributes.add(1, myAttr);
@@ -601,14 +593,12 @@ public class SoqlQueryListener implements SoqlListener {
 
     private StringBuilder processSupremeAttributes() {
         StringBuilder attributesPart = new StringBuilder();
-        SoqlAttribute pointer = attributes.get(0);
-        while (pointer.isObject() || pointer.isOrderBy() || pointer.isGroupBy()) {
-            attributesPart.append(processAttribute(pointer));
-            attributes.remove(pointer);
-            if (attributes.isEmpty()) {
-                break;
-            } else {
-                pointer = attributes.get(0);
+        final Iterator<SoqlAttribute> it = attributes.iterator();
+        while (it.hasNext()) {
+            final SoqlAttribute current = it.next();
+            if (current.isObject() || current.isOrderBy() || current.isGroupBy()) {
+                attributesPart.append(processAttribute(current));
+                it.remove();
             }
         }
         return attributesPart;

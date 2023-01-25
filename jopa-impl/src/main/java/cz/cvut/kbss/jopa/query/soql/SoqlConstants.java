@@ -6,11 +6,6 @@ package cz.cvut.kbss.jopa.query.soql;
 class SoqlConstants {
 
     /**
-     * {@code LIKE} operator.
-     */
-    static final String LIKE = "LIKE";
-
-    /**
      * {@code DISTINCT} operator.
      */
     static final String DISTINCT = "DISTINCT";
