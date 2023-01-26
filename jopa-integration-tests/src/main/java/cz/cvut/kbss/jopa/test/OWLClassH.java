@@ -19,7 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import java.net.URI;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_H)
-public class OWLClassH {
+public class OWLClassH implements HasUri {
 
     @Id
     private URI uri;
@@ -38,17 +38,11 @@ public class OWLClassH {
         this.uri = uri;
     }
 
-    /**
-     * @param uri
-     *            the uri to set
-     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }

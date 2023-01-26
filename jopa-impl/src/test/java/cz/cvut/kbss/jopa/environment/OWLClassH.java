@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassH")
+@OWLClass(iri = Vocabulary.c_OwlClassH)
 public class OWLClassH {
 
     private static final String CLS_A_FIELD = "owlClassA";
@@ -32,11 +32,11 @@ public class OWLClassH {
     @Id
     private URI uri;
 
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OWLObjectProperty(iri = Vocabulary.p_h_hasA, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private OWLClassA owlClassA;
 
     // Inverse property to hasH
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasG", fetch = FetchType.EAGER)
+    @OWLObjectProperty(iri = Vocabulary.p_h_hasG, fetch = FetchType.EAGER)
     private OWLClassG owlClassG;
 
     public OWLClassH() {

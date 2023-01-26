@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_X)
-public class OWLClassX {
+public class OWLClassX implements HasUri {
 
     @Id(generated = true)
     private URI uri;

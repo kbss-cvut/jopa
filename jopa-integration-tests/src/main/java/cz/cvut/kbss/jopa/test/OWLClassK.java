@@ -19,8 +19,8 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import java.net.URI;
 import java.util.List;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassK")
-public class OWLClassK {
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_K)
+public class OWLClassK implements HasUri {
 
     @Id(generated = true)
     private URI uri;
@@ -36,6 +36,7 @@ public class OWLClassK {
     @OWLObjectProperty(iri = Vocabulary.P_HAS_REFERENCED_LIST)
     private List<OWLClassE> referencedList;
 
+    @Override
     public URI getUri() {
         return uri;
     }

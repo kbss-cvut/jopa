@@ -20,7 +20,7 @@ import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import java.net.URI;
 
 @MappedSuperclass
-class QMappedSuperclass {
+class QMappedSuperclass implements HasUri {
 
     @Id(generated = true)
     private URI uri;
@@ -35,6 +35,7 @@ class QMappedSuperclass {
     @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, fetch = FetchType.EAGER)
     private OWLClassA owlClassA;
 
+    @Override
     public URI getUri() {
         return uri;
     }

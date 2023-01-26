@@ -16,9 +16,10 @@ package cz.cvut.kbss.jopa.query.soql;
 
 public class SoqlParameter {
 
-    private SoqlNode firstNode;
+    private final SoqlNode firstNode;
 
-    public SoqlParameter() {
+    public SoqlParameter(SoqlNode firstNode) {
+        this.firstNode = firstNode;
     }
 
     public String getAsParam() {
@@ -34,10 +35,6 @@ public class SoqlParameter {
 
     public SoqlNode getFirstNode() {
         return firstNode;
-    }
-
-    public void setFirstNode(SoqlNode firstNode) {
-        this.firstNode = firstNode;
     }
 
     public String getAsValue() {

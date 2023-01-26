@@ -91,11 +91,12 @@ public class IdentifierTransformer {
     }
 
     /**
-     * Stringifies the specified identifier by enclosing it in &lt; and &gt;.
+     * Stringifies the specified IRI identifier by enclosing it in &lt; and &gt;.
+     *
      * @param identifier Identifier to stringify
      * @return String URI
      */
-    public static String stringify(Object identifier) {
+    public static String stringifyIri(Object identifier) {
         return "<" + identifier + ">";
     }
 }

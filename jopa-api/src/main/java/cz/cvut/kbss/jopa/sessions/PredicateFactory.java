@@ -225,12 +225,5 @@ public interface PredicateFactory {
          * @return in predicate
          */
         PredicateFactory.In<T> value(T value);
-
-        /**
-         * Add to list of values to be tested against.
-         * @param value - value
-         * @return in predicate
-         */
-        PredicateFactory.In<T> value(Expression<? extends T> value);
     }
 }
