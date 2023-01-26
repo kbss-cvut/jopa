@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.soql;
 
@@ -77,7 +75,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseCountQuery() {
         final String soqlQuery = "SELECT COUNT(p) FROM Person p";
-        final String expectedSparqlQuery = "SELECT (COUNT(?x) AS ?count) WHERE { ?x a <" + Vocabulary.c_Person + "> . }";
+        final String expectedSparqlQuery =
+                "SELECT (COUNT(?x) AS ?count) WHERE { ?x a <" + Vocabulary.c_Person + "> . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());
@@ -86,7 +85,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseDistinctCountQuery() {
         final String soqlQuery = "SELECT DISTINCT COUNT(p) FROM Person p";
-        final String expectedSparqlQuery = "SELECT (COUNT(DISTINCT ?x) AS ?count) WHERE { ?x a <" + Vocabulary.c_Person + "> . }";
+        final String expectedSparqlQuery =
+                "SELECT (COUNT(DISTINCT ?x) AS ?count) WHERE { ?x a <" + Vocabulary.c_Person + "> . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());
@@ -104,7 +104,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());
@@ -113,7 +114,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneLikeQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username LIKE :username";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (regex(?pUsername, ?username) ) }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (regex(?pUsername, ?username)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(3, holder.getParameters().size());
@@ -122,7 +124,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneJoinedQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(3, holder.getParameters().size());
@@ -131,7 +134,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindMultipleJoinedQuery() {
         final String soqlQuery = "SELECT g FROM OWLClassG g WHERE g.owlClassH.owlClassA.stringAttribute = :d";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_OwlClassG + "> . ?x <" + Vocabulary.p_g_hasH + "> ?owlClassH . ?owlClassH <" + Vocabulary.p_h_hasA + "> ?owlClassA . ?owlClassA <" + Vocabulary.p_a_stringAttribute + "> ?d . }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_OwlClassG + "> . ?x <" + Vocabulary.p_g_hasH + "> ?owlClassH . ?owlClassH <" + Vocabulary.p_h_hasA + "> ?owlClassA . ?owlClassA <" + Vocabulary.p_a_stringAttribute + "> ?d . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -140,7 +144,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindMultipleJoinedQueryFilter() {
         final String soqlQuery = "SELECT g FROM OWLClassG g WHERE g.owlClassH.owlClassA.stringAttribute > :str";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_OwlClassG + "> . ?x <" + Vocabulary.p_g_hasH + "> ?owlClassH . ?owlClassH <" + Vocabulary.p_h_hasA + "> ?owlClassA . ?owlClassA <" + Vocabulary.p_a_stringAttribute + "> ?gOwlClassHOwlClassAStringAttribute . FILTER (?gOwlClassHOwlClassAStringAttribute > ?str) }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_OwlClassG + "> . ?x <" + Vocabulary.p_g_hasH + "> ?owlClassH . ?owlClassH <" + Vocabulary.p_h_hasA + "> ?owlClassA . ?owlClassA <" + Vocabulary.p_a_stringAttribute + "> ?gOwlClassHOwlClassAStringAttribute . FILTER (?gOwlClassHOwlClassAStringAttribute > ?str) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -149,7 +154,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneOrderByQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.age > :age ORDER BY p.age DESC";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } ORDER BY DESC(?pAge) ";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } ORDER BY DESC(?pAge) ";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(3, holder.getParameters().size());
@@ -158,7 +164,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneOrderByNotInWhereQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.age > :age ORDER BY p.username DESC";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } ORDER BY DESC(?username) ";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } ORDER BY DESC(?username) ";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -167,7 +174,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneGroupByQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.age > :age GROUP BY p.age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } GROUP BY ?pAge ";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } GROUP BY ?pAge ";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(3, holder.getParameters().size());
@@ -176,7 +184,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneGroupByNotInWhereQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.age > :age GROUP BY p.gender";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } GROUP BY ?gender ";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } GROUP BY ?gender ";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -185,7 +194,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByOneNotQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());
@@ -194,7 +204,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleAndQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -203,7 +214,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleNotAndQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -212,7 +224,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleAndNotQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -221,7 +234,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleNotAndNotQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -230,7 +244,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleOrQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -239,7 +254,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleNotOrQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -248,7 +264,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleOrNotQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -257,7 +274,8 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindByMultipleNotOrNotQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(4, holder.getParameters().size());
@@ -265,8 +283,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleOrOrderByNotInWhereQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.age > :age OR p.gender = :gender ORDER BY p.username DESC";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } ORDER BY DESC(?username) ";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.age > :age OR p.gender = :gender ORDER BY p.username DESC";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } ORDER BY DESC(?username) ";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -274,8 +294,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleOrGroupByNotInWhereQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.age > :age OR p.gender = :gender GROUP BY p.username DESC";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } GROUP BY ?username ";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.age > :age OR p.gender = :gender GROUP BY p.username DESC";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } GROUP BY ?username ";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -283,8 +305,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(6, holder.getParameters().size());
@@ -292,8 +316,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotAndOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.phone.number = :phoneNumber AND p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.phone.number = :phoneNumber AND p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(6, holder.getParameters().size());
@@ -301,8 +327,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndNotOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND NOT p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(6, holder.getParameters().size());
@@ -310,8 +338,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndOrNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_hasPhone + "> ?phone . ?phone <" + Vocabulary.p_p_phoneNumber + "> ?phoneNumber . ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(6, holder.getParameters().size());
@@ -319,8 +349,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotAndNotOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -328,8 +360,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndNotOrNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -337,8 +371,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotAndOrNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -346,8 +382,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndAndQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND p.gender = :gender AND p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username AND p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -355,8 +393,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotAndAndQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender AND p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -364,8 +404,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndNotAndQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender AND p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -373,8 +415,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndAndNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND p.gender = :gender AND NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username AND p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -382,8 +426,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotAndNotAndQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender AND p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender AND p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -391,8 +437,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleAndNotAndNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender AND NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username AND NOT p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -400,8 +448,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotAndAndNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender AND NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username AND p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_gender + "> ?gender . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -409,8 +459,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotAndNotAndNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender AND NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username AND NOT p.gender = :gender AND NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . ?x <" + Vocabulary.p_p_gender + "> ?gender . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -418,8 +470,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleOrOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username OR p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -427,8 +481,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotOrOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username OR p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -436,8 +492,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleOrNotOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR NOT p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username OR NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -445,8 +503,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleOrOrNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username OR p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -454,8 +514,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotOrNotOrQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.gender = :gender OR p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.gender = :gender OR p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -463,8 +525,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleOrNotOrNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username OR NOT p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE p.username = :username OR NOT p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { ?x <" + Vocabulary.p_p_username + "> ?username . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -472,8 +536,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotOrOrNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username OR p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { ?x <" + Vocabulary.p_p_gender + "> ?gender . } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -481,8 +547,10 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindByMultipleNotOrNotOrNotQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.gender = :gender OR NOT p.age > :age";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
+        final String soqlQuery =
+                "SELECT p FROM Person p WHERE NOT p.username = :username OR NOT p.gender = :gender OR NOT p.age > :age";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_username + "> ?username . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_gender + "> ?gender . } } UNION { FILTER NOT EXISTS { ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } } }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(5, holder.getParameters().size());
@@ -491,7 +559,8 @@ public class SoqlQueryParserTest {
     @Test
     void testParseFindByAttributeValueInVariable() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username IN :authorizedUsers";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername IN (?authorizedUsers)) }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername IN (?authorizedUsers)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertNotNull(holder.getParameter("authorizedUsers"));
@@ -500,7 +569,8 @@ public class SoqlQueryParserTest {
     @Test
     void testParseFindByAttributeValueNotInVariable() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username NOT IN :authorizedUsers";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername NOT IN (?authorizedUsers)) }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername NOT IN (?authorizedUsers)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertNotNull(holder.getParameter("authorizedUsers"));
@@ -509,7 +579,8 @@ public class SoqlQueryParserTest {
     @Test
     void testParseFindByAttributeValueInVariableWrappedInParentheses() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username IN (:authorizedUsers";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername IN (?authorizedUsers)) }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername IN (?authorizedUsers)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertNotNull(holder.getParameter("authorizedUsers"));
@@ -518,10 +589,23 @@ public class SoqlQueryParserTest {
     @Test
     public void testParseFindOneNotLikeQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username NOT LIKE :username";
-        final String expectedSparqlQuery = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (!regex(?pUsername, ?username) ) }";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (!regex(?pUsername, ?username)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(3, holder.getParameters().size());
         assertNotNull(holder.getParameter("username"));
+    }
+
+    @Test
+    public void testParseInequalityOperatorQuery() {
+        final String standardSoql = "SELECT p FROM Person p WHERE p.username <> :username";
+        final String javaLikeSoql = "SELECT p FROM Person p WHERE p.username != :username";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername != ?username) }";
+        QueryHolder holder = sut.parseQuery(standardSoql);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        holder = sut.parseQuery(javaLikeSoql);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
     }
 }
