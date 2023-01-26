@@ -8,6 +8,7 @@ an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 Notable changes:
 
+* **0.20.0** - Allow editing inferred attributes (See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details). Support `IN`, `NOT LIKE`, `<>` operators in SOQL.
 * **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future)
 * **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
 * **0.15.0** - Support for multilingual String attributes. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Multilingual-String-Attributes) for more info
