@@ -14,7 +14,11 @@ class ComparisonOperator implements FilterOperator {
 
     @Override
     public String toFilterExpression(String parameter, String value) {
-        return parameter + " " + this.operator + " " + value;
+        return parameter + " " + translateOperator() + " " + value;
+    }
+
+    private String translateOperator() {
+        return "<>".equals(operator) ? "!=" : operator;
     }
 
     @Override

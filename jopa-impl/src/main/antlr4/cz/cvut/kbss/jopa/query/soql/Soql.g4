@@ -135,7 +135,7 @@ LIKE: 'LIKE' ;
 
 IN: 'IN' ;
 
-COMPARISON_OPERATOR: '>' | '<' | '>=' | '<=' | '=';
+COMPARISON_OPERATOR: '>' | '<' | '>=' | '<=' | '=' | '<>' | '!=' ;
 
 DOT: '.' ;
 

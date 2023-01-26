@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.criteria;
 
@@ -72,7 +70,8 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(root);
 
-        final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+        final String generatedSoqlQuery =
+                ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
         final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa";
         assertEquals(expectedSoqlQuery, generatedSoqlQuery);
     }
@@ -83,7 +82,8 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(root).distinct(true);
 
-        final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+        final String generatedSoqlQuery =
+                ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
         final String expectedSoqlQuery = "SELECT DISTINCT owlclassa FROM OWLClassA owlclassa";
         assertEquals(expectedSoqlQuery, generatedSoqlQuery);
     }
@@ -116,7 +116,8 @@ public class CriteriaQueryTranslateQueryTest {
         Root<OWLClassA> root = query.from(OWLClassA.class);
         query.select(root).orderBy(cb.desc(root));
 
-        final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+        final String generatedSoqlQuery =
+                ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
         final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa ORDER BY owlclassa DESC";
         assertEquals(expectedSoqlQuery, generatedSoqlQuery);
     }
@@ -130,7 +131,8 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root.getAttr("stringAttribute"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery = "SELECT owlclassa.stringAttribute FROM OWLClassA owlclassa";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
@@ -141,7 +143,8 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassD> root = query.from(OWLClassD.class);
             query.select(root.getAttr("owlClassA").getAttr("stringAttribute"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery = "SELECT owlclassd.owlClassA.stringAttribute FROM OWLClassD owlclassd";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
@@ -152,8 +155,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).where(cb.equal(root.getAttr("stringAttribute"), "value"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -163,10 +168,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).where(cb.notEqual(root.getAttr("stringAttribute"), "value"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0";
-            //TODO - replace expetedSoqlQuery when SOQL supports equal negation as != or <>
-            //final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -176,8 +181,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.greaterThan(root.getAttr("intAttribute"), 1));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute > :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute > :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -187,8 +194,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.greaterThan(root.getAttr("intAttribute"), 1).not());
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute <= :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute <= :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -198,8 +207,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.greaterThanOrEqual(root.getAttr("intAttribute"), 1));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute >= :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute >= :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -209,8 +220,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.greaterThanOrEqual(root.getAttr("intAttribute"), 1).not());
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -220,8 +233,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.lessThan(root.getAttr("intAttribute"), 1));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -231,8 +246,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.lessThan(root.getAttr("intAttribute"), 1).not());
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute >= :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute >= :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -242,8 +259,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.lessThanOrEqual(root.getAttr("intAttribute"), 1));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute <= :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute <= :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -253,8 +272,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassM> root = query.from(OWLClassM.class);
             query.select(root).where(cb.lessThanOrEqual(root.getAttr("intAttribute"), 1).not());
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute > :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute > :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -266,9 +287,8 @@ public class CriteriaQueryTranslateQueryTest {
 
             final CriteriaQueryImpl<OWLClassA> criteriaQuery = (CriteriaQueryImpl<OWLClassA>) query;
             final String generatedSoqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0";
-            //TODO - replace expetedSoqlQuery when SOQL supports equal negation as != or <>
-            //final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0";
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -283,8 +303,10 @@ public class CriteriaQueryTranslateQueryTest {
             );
             query.select(root).where(restrictions);
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0 OR owlclassa.stringAttribute = :generatedName1 OR owlclassa.stringAttribute = :generatedName2";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0 OR owlclassa.stringAttribute = :generatedName1 OR owlclassa.stringAttribute = :generatedName2";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -299,8 +321,10 @@ public class CriteriaQueryTranslateQueryTest {
             );
             query.select(root).where(restrictions);
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute = :generatedName0 AND owlclassm.doubleAttribute = :generatedName1 AND owlclassm.booleanAttribute = :generatedName2";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute = :generatedName0 AND owlclassm.doubleAttribute = :generatedName1 AND owlclassm.booleanAttribute = :generatedName2";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -314,8 +338,10 @@ public class CriteriaQueryTranslateQueryTest {
             restrictions.add(cb.equal(root.getAttr("booleanAttribute"), true));
             query.select(root).where(restrictions);
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute = :generatedName0 AND owlclassm.doubleAttribute = :generatedName1 AND owlclassm.booleanAttribute = :generatedName2";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.intAttribute = :generatedName0 AND owlclassm.doubleAttribute = :generatedName1 AND owlclassm.booleanAttribute = :generatedName2";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -337,7 +363,8 @@ public class CriteriaQueryTranslateQueryTest {
 
             final CriteriaQueryImpl<OWLClassM> criteriaQuery = (CriteriaQueryImpl<OWLClassM>) query;
             final String generatedSoqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute = :generatedName0 AND owlclassm.intAttribute = :generatedName1) OR (owlclassm.doubleAttribute = :generatedName2 AND owlclassm.intAttribute = :generatedName3)";
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute = :generatedName0 AND owlclassm.intAttribute = :generatedName1) OR (owlclassm.doubleAttribute = :generatedName2 AND owlclassm.intAttribute = :generatedName3)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -352,10 +379,10 @@ public class CriteriaQueryTranslateQueryTest {
             );
             query.select(root).where(restrictions.not());
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0 AND NOT owlclassa.stringAttribute = :generatedName1 AND NOT owlclassa.stringAttribute = :generatedName2";
-            //TODO - replace expetedSoqlQuery when SOQL supports equal negation as != or <>
-            //final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0 AND owlclassa.stringAttribute != :generatedName1 AND owlclassa.stringAttribute != :generatedName2";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0 AND owlclassa.stringAttribute <> :generatedName1 AND owlclassa.stringAttribute <> :generatedName2";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -370,10 +397,10 @@ public class CriteriaQueryTranslateQueryTest {
             );
             query.select(root).where(cb.not(restrictions));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE NOT owlclassa.stringAttribute = :generatedName0 AND NOT owlclassa.stringAttribute = :generatedName1 AND NOT owlclassa.stringAttribute = :generatedName2";
-            //TODO - replace expetedSoqlQuery when SOQL supports equal negation as != or <>
-            //final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute != :generatedName0 AND owlclassa.stringAttribute != :generatedName1 AND owlclassa.stringAttribute != :generatedName2";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute <> :generatedName0 AND owlclassa.stringAttribute <> :generatedName1 AND owlclassa.stringAttribute <> :generatedName2";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -394,12 +421,10 @@ public class CriteriaQueryTranslateQueryTest {
 
             final CriteriaQueryImpl<OWLClassM> criteriaQuery = (CriteriaQueryImpl<OWLClassM>) query;
             final String generatedSoqlQuery = criteriaQuery.translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute < :generatedName0 AND owlclassm.intAttribute >= :generatedName1) OR (owlclassm.doubleAttribute <= :generatedName2 OR NOT owlclassm.intAttribute = :generatedName3)";
-            //TODO - replace expetedSoqlQuery when SOQL supports equal negation as != or <>
-            //final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute < :generatedName0 AND owlclassm.intAttribute >= :generatedName1) OR (owlclassm.doubleAttribute <= :generatedName2 OR owlclassm.intAttribute != :generatedName3)";
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm WHERE (owlclassm.doubleAttribute < :generatedName0 AND owlclassm.intAttribute >= :generatedName1) OR (owlclassm.doubleAttribute <= :generatedName2 OR owlclassm.intAttribute <> :generatedName3)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
-
 
         @Test
         public void testTranslateQueryLikeRestriction() {
@@ -407,8 +432,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).where(cb.like(root.getAttr("stringAttribute"), "pattern"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute LIKE :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute LIKE :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -418,8 +445,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).where(cb.notLike(root.getAttr("stringAttribute"), "pattern"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT LIKE :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT LIKE :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -429,8 +458,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).where(cb.in(root.getAttr("stringAttribute")).value("value").value("anotherValue"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute IN (:generatedName0)";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute IN (:generatedName0)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -438,10 +469,13 @@ public class CriteriaQueryTranslateQueryTest {
         public void testTranslateQueryInNegatedRestriction() {
             CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(cb.not(cb.in(root.getAttr("stringAttribute")).value("value").value("anotherValue")));
+            query.select(root)
+                 .where(cb.not(cb.in(root.getAttr("stringAttribute")).value("value").value("anotherValue")));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN (:generatedName0)";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN (:generatedName0)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -451,8 +485,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).where(cb.notIn(root.getAttr("stringAttribute")).value("value").value("anotherValue"));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN (:generatedName0)";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute NOT IN (:generatedName0)";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -462,8 +498,10 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root).orderBy(cb.desc(root.getAttr("stringAttribute")));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa ORDER BY owlclassa.stringAttribute DESC";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa ORDER BY owlclassa.stringAttribute DESC";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -476,8 +514,10 @@ public class CriteriaQueryTranslateQueryTest {
                     cb.desc(root.getAttr("doubleAttribute"))
             );
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm ORDER BY owlclassm.intAttribute ASC, owlclassm.doubleAttribute DESC";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassM>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassm FROM OWLClassM owlclassm ORDER BY owlclassm.intAttribute ASC, owlclassm.doubleAttribute DESC";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
     }
@@ -490,30 +530,34 @@ public class CriteriaQueryTranslateQueryTest {
             Root<OWLClassA> root = query.from(OWLClassA.class);
             query.select(root.getAttr(OWLClassA_.stringAttribute));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery = "SELECT owlclassa.stringAttribute FROM OWLClassA owlclassa";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
         @Test
         public void testTranslateQuerySelectPropertyPath() {
-        CriteriaQuery<String> query = cb.createQuery(String.class);
-        Root<OWLClassD> root = query.from(OWLClassD.class);
-        query.select(root.getAttr(OWLClassD_.owlClassA).getAttr(OWLClassA_.stringAttribute));
+            CriteriaQuery<String> query = cb.createQuery(String.class);
+            Root<OWLClassD> root = query.from(OWLClassD.class);
+            query.select(root.getAttr(OWLClassD_.owlClassA).getAttr(OWLClassA_.stringAttribute));
 
-        final String generatedSoqlQuery = ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
-        final String expectedSoqlQuery = "SELECT owlclassd.owlClassA.stringAttribute FROM OWLClassD owlclassd";
-        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<String>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassd.owlClassA.stringAttribute FROM OWLClassD owlclassd";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
         @Test
         public void testTranslateQueryRestrictionWithLiteral() {
             CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(cb.equal(root.getAttr(OWLClassA_.stringAttribute),cb.literal("value")));
+            query.select(root).where(cb.equal(root.getAttr(OWLClassA_.stringAttribute), cb.literal("value")));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
@@ -522,10 +566,12 @@ public class CriteriaQueryTranslateQueryTest {
             CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
             ParameterExpression<String> parameter = cb.parameter(String.class);
-            query.select(root).where(cb.equal(root.getAttr(OWLClassA_.stringAttribute),parameter));
+            query.select(root).where(cb.equal(root.getAttr(OWLClassA_.stringAttribute), parameter));
 
-            final String generatedSoqlQuery = ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
-            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            final String generatedSoqlQuery =
+                    ((CriteriaQueryImpl<OWLClassA>) query).translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 

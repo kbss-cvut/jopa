@@ -13,7 +13,7 @@ class LikeOperator implements FilterOperator {
 
     @Override
     public String toFilterExpression(String parameter, String value) {
-        return (isNot ? "!" : "") + "regex(" + parameter + ", " + value + ") ";
+        return (isNot ? "!" : "") + "regex(" + parameter + ", " + value + ")";
     }
 
     static LikeOperator like() {

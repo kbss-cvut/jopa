@@ -23,11 +23,6 @@
             <name>KBSS Maven 2 Repository</name>
             <url>https://kbss.felk.cvut.cz/m2repo</url>
         </repository>
-        <repository>
-            <id>repository.jboss.org-public</id>
-            <name>JBoss.org Maven repository</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -79,7 +74,6 @@
             <version>1.6</version>
             <type>jar</type>
             <scope>test</scope>
-            <optional>false</optional>
         </dependency>
     </dependencies>
 
@@ -108,5 +102,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
