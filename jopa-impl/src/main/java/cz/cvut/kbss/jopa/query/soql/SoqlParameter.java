@@ -39,13 +39,10 @@ public class SoqlParameter {
 
     public String getAsValue() {
         StringBuilder buildParam = new StringBuilder("?");
-        SoqlNode firstNode = getFirstNode();
-        SoqlNode pointer;
-        if (firstNode.hasNextChild()) {
-            pointer = getFirstNode().getChild();
-        } else {
+        if (!firstNode.hasNextChild()) {
             return "?x";
         }
+        SoqlNode pointer = firstNode.getChild();
         buildParam.append(pointer.getValue());
         while (pointer.hasNextChild()) {
             pointer = pointer.getChild();
