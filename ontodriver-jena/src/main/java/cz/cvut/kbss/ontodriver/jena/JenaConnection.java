@@ -126,6 +126,18 @@ public class JenaConnection implements Connection {
     }
 
     @Override
+    public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) throws JenaDriverException {
+        ensureOpen();
+        Objects.requireNonNull(axiom);
+        Objects.requireNonNull(contexts);
+        try {
+            return adapter.isInferred(axiom, contexts);
+        } catch (RuntimeException e) {
+            throw new JenaDriverException(e);
+        }
+    }
+
+    @Override
     public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws JenaDriverException {
         ensureOpen();
         Objects.requireNonNull(descriptor);

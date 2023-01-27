@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_B)
-public class OWLClassB {
+public class OWLClassB implements HasUri {
 
     @Id
     private URI uri;
@@ -32,16 +32,11 @@ public class OWLClassB {
     @Properties(fetchType = FetchType.LAZY)
     private Map<String, Set<String>> properties;
 
-    /**
-     * @param uri the uri to set
-     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }

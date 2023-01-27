@@ -167,14 +167,16 @@ public class MultilingualString implements Serializable {
     }
 
     /**
-     * Gets the translations contained in this instance as an unmodifiable map backed by this instance.
+     * Gets the translations contained in this instance as a map of language-value pairs.
      * <p>
-     * Convenience method for accessing all values at once.
+     * Convenience method for accessing all values at once. Note that this method returns the actual value used
+     * by this instance, so any changes to it will be reflected in the instance's behavior. It is not a general purpose
+     * method, rather a way to access and manipulate the underlying data structure more efficiently when necessary.
      *
      * @return Map of language to translation values
      */
     public Map<String, String> getValue() {
-        return Collections.unmodifiableMap(value);
+        return value;
     }
 
     @Override

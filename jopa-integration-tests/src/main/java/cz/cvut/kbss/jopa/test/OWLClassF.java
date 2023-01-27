@@ -16,13 +16,12 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_F)
-public class OWLClassF {
+public class OWLClassF implements HasUri {
 
     @Id
     private URI uri;
@@ -41,6 +40,7 @@ public class OWLClassF {
         this.uri = uri;
     }
 
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -73,9 +73,5 @@ public class OWLClassF {
         String out = "OWLClassF: uri = " + uri;
         out += ", secondStringAttribute = " + secondStringAttribute;
         return out;
-    }
-
-    public static Field getSimpleSetField() throws NoSuchFieldException {
-        return OWLClassF.class.getDeclaredField("simpleSet");
     }
 }

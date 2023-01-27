@@ -22,10 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -250,19 +247,33 @@ public class LruCacheManager implements CacheManager {
                 });
             }
             ctxContent.clear();
+            // Remove the whole context map
+            repoCache.remove(ctx);
         }
 
         @Override
         void evict(Class<?> cls) {
-            for (Map.Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
+            final Iterator<Map.Entry<URI, Map<Object, Map<Class<?>, Object>>>> repoIt = repoCache.entrySet().iterator();
+            while (repoIt.hasNext()) {
+                final Map.Entry<URI, Map<Object, Map<Class<?>, Object>>> e = repoIt.next();
                 final URI ctx = e.getKey();
-                e.getValue().forEach((id, indNode) -> {
-                    final Object instance = indNode.remove(cls);
+                final Iterator<Map.Entry<Object, Map<Class<?>, Object>>> it = e.getValue().entrySet().iterator();
+                while (it.hasNext()) {
+                    final Map.Entry<Object, Map<Class<?>, Object>> idEntry = it.next();
+                    final Object instance = idEntry.getValue().remove(cls);
                     if (instance != null) {
                         descriptors.remove(instance);
                     }
-                    cache.remove(new LruCache.CacheNode(ctx, cls, id));
-                });
+                    cache.remove(new LruCache.CacheNode(ctx, cls, idEntry.getKey()));
+                    // Remove the whole identifier-based map if the removed node was the last one
+                    if (idEntry.getValue().isEmpty()) {
+                        it.remove();
+                    }
+                }
+                // Remove the whole context map if the removed node was the last one
+                if (e.getValue().isEmpty()) {
+                    repoIt.remove();
+                }
             }
         }
     }

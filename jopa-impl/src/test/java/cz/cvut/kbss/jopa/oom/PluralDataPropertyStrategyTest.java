@@ -32,6 +32,8 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -206,5 +208,29 @@ class PluralDataPropertyStrategyTest {
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);
         assertEquals(Collections.singleton(117), m.getIntegerSet());
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        final PluralDataPropertyStrategy<OWLClassM> sut = createStrategyForM();
+        final OWLClassM m = new OWLClassM();
+        m.initializeTestValues(true);
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(m);
+        assertEquals(m.getIntegerSet().size(), result.size());
+        final Assertion assertion = assertionForMIntegerSet();
+        m.getIntegerSet().forEach(i -> assertThat(result, hasItem(
+                new AxiomImpl<>(NamedResource.create(m.getKey()), assertion, new Value<>(i))
+        )));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomEmptySetWhenCollectionIsEmpty() {
+        final PluralDataPropertyStrategy<OWLClassM> sut = createStrategyForM();
+        final OWLClassM m = new OWLClassM();
+        m.initializeTestValues(true);
+        m.setIntegerSet(Collections.emptySet());
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(m);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }

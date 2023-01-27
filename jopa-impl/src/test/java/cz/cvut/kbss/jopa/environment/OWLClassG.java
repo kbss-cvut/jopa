@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassG")
+@OWLClass(iri = Vocabulary.c_OwlClassG)
 public class OWLClassG {
 
 	private static final String CLS_H_FIELD = "owlClassH";
@@ -31,7 +31,7 @@ public class OWLClassG {
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasH", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OWLObjectProperty(iri = Vocabulary.p_g_hasH, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	// @ParticipationConstraints({
 	// @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
 	// max=1)

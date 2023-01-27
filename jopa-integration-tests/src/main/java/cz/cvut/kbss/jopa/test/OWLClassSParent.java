@@ -20,11 +20,12 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import java.net.URI;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_S_PARENT)
-public abstract class OWLClassSParent {
+public abstract class OWLClassSParent implements HasUri {
 
     @Id(generated = true)
     private URI uri;
 
+    @Override
     public URI getUri() {
         return uri;
     }

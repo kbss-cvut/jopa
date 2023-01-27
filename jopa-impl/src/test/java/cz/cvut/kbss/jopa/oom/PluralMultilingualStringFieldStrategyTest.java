@@ -34,6 +34,8 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -62,7 +64,8 @@ class PluralMultilingualStringFieldStrategyTest {
 
     private PluralMultilingualStringFieldStrategy<OWLClassU> createStrategy() {
         return new PluralMultilingualStringFieldStrategy<>(mocks.forOwlClassU().entityType(),
-                mocks.forOwlClassU().uPluralStringAtt(), descriptor, mapperMock);
+                                                           mocks.forOwlClassU().uPluralStringAtt(), descriptor,
+                                                           mapperMock);
     }
 
     @Test
@@ -135,9 +138,9 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         final Axiom<LangString> axOne = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString("construction", "en")));
+                                                        new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString("stavba", "cs")));
+                                                        new Value<>(new LangString("stavba", "cs")));
         sut.addValueFromAxiom(axOne);
         sut.addValueFromAxiom(axTwo);
         sut.buildInstanceFieldValue(u);
@@ -154,9 +157,9 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         final Axiom<LangString> axOne = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString("construction", "en")));
+                                                        new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString("building", "en")));
+                                                        new Value<>(new LangString("building", "en")));
         sut.addValueFromAxiom(axOne);
         sut.addValueFromAxiom(axTwo);
         sut.buildInstanceFieldValue(u);
@@ -174,11 +177,11 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         final Axiom<LangString> axOne = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString("construction", "en")));
+                                                        new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString("building", "en")));
+                                                        new Value<>(new LangString("building", "en")));
         final Axiom<LangString> axThree = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString("stavba", "cs")));
+                                                          new Value<>(new LangString("stavba", "cs")));
         sut.addValueFromAxiom(axOne);
         sut.addValueFromAxiom(axTwo);
         sut.addValueFromAxiom(axThree);
@@ -197,5 +200,43 @@ class PluralMultilingualStringFieldStrategyTest {
         final OWLClassU u = new OWLClassU(ID);
         sut.buildInstanceFieldValue(u);
         assertNull(u.getPluralStringAtt());
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        final PluralMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU u = new OWLClassU(ID);
+        final MultilingualString msOne = new MultilingualString();
+        msOne.set("en", "building");
+        msOne.set("cs", "budova");
+        final MultilingualString msTwo = new MultilingualString();
+        msTwo.set("en", "construction");
+        msTwo.set("cs", "stavba");
+        msTwo.set("construction");
+        u.setPluralStringAtt(new HashSet<>(Arrays.asList(msOne, msTwo)));
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(u);
+        final Assertion assertion = Assertion
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
+        u.getPluralStringAtt().forEach(ms ->
+                                               ms.getValue().forEach((lang, val) -> assertThat(result,
+                                                                                               hasItem(new AxiomImpl<>(
+                                                                                                       INDIVIDUAL,
+                                                                                                       assertion,
+                                                                                                       new Value<>(
+                                                                                                               new LangString(
+                                                                                                                       val,
+                                                                                                                       lang)))))));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsEmptySetWhenAttributeValueIsEmpty() {
+        final PluralMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU u = new OWLClassU(ID);
+        u.setPluralStringAtt(null);
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(u);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }

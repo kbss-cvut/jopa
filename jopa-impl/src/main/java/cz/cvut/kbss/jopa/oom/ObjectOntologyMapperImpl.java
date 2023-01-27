@@ -32,7 +32,6 @@ import cz.cvut.kbss.ontodriver.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
@@ -132,27 +131,26 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
+    public <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
         assert entity != null;
-        assert field != null;
+        assert fieldSpec != null;
         assert descriptor != null;
 
-        LOG.trace("Lazily loading value of field {} of entity {}.", field, entity);
+        LOG.trace("Lazily loading value of field {} of entity {}.", fieldSpec, entity);
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI primaryKey = EntityPropertiesUtils.getIdentifier(entity, et);
 
-        if (et.hasQueryAttribute(field.getName())) {
-            QueryAttribute<? super T, ?> queryAttribute = et.getQueryAttribute(field.getName());
+        if (et.hasQueryAttribute(fieldSpec.getName())) {
+            QueryAttribute<? super T, ?> queryAttribute = (QueryAttribute<? super T, ?>) fieldSpec;
             entityBuilder.setQueryAttributeFieldValue(entity, queryAttribute, et);
             return;
         }
 
-        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
-                field, descriptor, et);
+        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,fieldSpec, descriptor, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            entityBuilder.setFieldValue(entity, field, axioms, et, descriptor);
+            entityBuilder.setFieldValue(entity, fieldSpec, axioms, et, descriptor);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (IllegalArgumentException e) {
@@ -282,20 +280,19 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void updateFieldValue(T entity, Field field, Descriptor entityDescriptor) {
+    public <T> void updateFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor) {
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         // It is OK to do it like this, because if necessary, the mapping will re-register a pending assertion
-        removePendingAssertions(et, field, pkUri);
+        removePendingAssertions(et, fieldSpec, pkUri);
         final AxiomValueGatherer axiomBuilder = entityBreaker
-                .mapFieldToAxioms(pkUri, entity, field, et, entityDescriptor);
+                .mapFieldToAxioms(pkUri, entity, fieldSpec, et, entityDescriptor);
         axiomBuilder.update(storageConnection);
     }
 
-    private <T> void removePendingAssertions(EntityType<T> et, Field field, URI identifier) {
-        final FieldSpecification<? super T, ?> fs = et.getFieldSpecification(field.getName());
+    private <T> void removePendingAssertions(EntityType<T> et, FieldSpecification<? super T, ?> fs, URI identifier) {
         if (fs instanceof Attribute) {
             final Attribute<?, ?> att = (Attribute<?, ?>) fs;
             // We care only about object property assertions, others are never pending
@@ -325,6 +322,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     @Override
     public Configuration getConfiguration() {
         return uow.getConfiguration();
+    }
+
+    @Override
+    public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor) {
+        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        return FieldStrategy.createFieldStrategy(et, fieldSpec, entityDescriptor, this).buildAxiomsFromInstance(entity);
     }
 
     public UnitOfWorkImpl getUow() {

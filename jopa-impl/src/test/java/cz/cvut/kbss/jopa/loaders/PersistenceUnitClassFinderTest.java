@@ -52,6 +52,8 @@ public class PersistenceUnitClassFinderTest {
         set.add(OWLClassT.class);
         set.add(OWLClassU.class);
         set.add(OWLClassWithQueryAttr.class);
+        set.add(Person.class);
+        set.add(Phone.class);
         return set;
     }
 

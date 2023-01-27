@@ -17,9 +17,7 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-import java.lang.reflect.Field;
-
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassQ")
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_Q)
 public class OWLClassQ extends QMappedSuperclass {
 
     @OWLDataProperty(iri = Vocabulary.P_Q_STRING_ATTRIBUTE)
@@ -38,9 +36,5 @@ public class OWLClassQ extends QMappedSuperclass {
         return "OWLClassQ{" +
                 "stringAttribute='" + stringAttribute + '\'' +
                 "} " + super.toString();
-    }
-
-    public static Field getOWlClassAField() throws NoSuchFieldException {
-        return QMappedSuperclass.class.getDeclaredField("owlClassA");
     }
 }

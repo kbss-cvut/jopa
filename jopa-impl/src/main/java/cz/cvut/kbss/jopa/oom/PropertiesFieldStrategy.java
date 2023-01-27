@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -23,10 +21,7 @@ import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.model.*;
 
 import java.net.URI;
 import java.util.*;
@@ -173,6 +168,24 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
 
     private Map<Assertion, Set<Value<?>>> resolvePropertiesToAdd(Map<?, Set<?>> current, Map<?, Set<?>> original) {
         return propertyDiff(current, original);
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final Object val = extractFieldValueFromInstance(instance);
+        assert val instanceof Map || val == null;
+        final Map<?, Set<?>> values = (Map<?, Set<?>>) val;
+        if (values == null || values.isEmpty()) {
+            return Collections.emptySet();
+        }
+        final Set<Axiom<?>> result = new HashSet<>();
+        final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
+        for (Entry<?, Set<?>> e : values.entrySet()) {
+            final Assertion assertion = propertyToAssertion(e.getKey());
+            e.getValue().stream().filter(Objects::nonNull).map(Value::new)
+             .forEach(v -> result.add(new AxiomImpl<>(subject, assertion, v)));
+        }
+        return result;
     }
 
     @Override

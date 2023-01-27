@@ -207,6 +207,12 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
+    public boolean isInferred(Statement statement, Collection<IRI> contexts) throws Rdf4jDriverException {
+        verifyTransactionActive();
+        return centralConnector.isInferred(statement, contexts);
+    }
+
+    @Override
     public <T> T unwrap(Class<T> cls) throws OntoDriverException {
         if (cls.isAssignableFrom(this.getClass())) {
             return cls.cast(this);

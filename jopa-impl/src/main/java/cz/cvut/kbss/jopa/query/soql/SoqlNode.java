@@ -21,12 +21,6 @@ public class SoqlNode {
     private String value;
     private String iri = "";
 
-    public SoqlNode(SoqlNode parent, SoqlNode child, String value) {
-        this.parent = parent;
-        this.child = child;
-        this.value = value;
-    }
-
     public SoqlNode(String value) {
         this.value = value;
     }
@@ -35,7 +29,6 @@ public class SoqlNode {
         this.parent = parent;
         this.value = value;
     }
-
 
     public boolean hasNextChild() {
         return this.child != null;

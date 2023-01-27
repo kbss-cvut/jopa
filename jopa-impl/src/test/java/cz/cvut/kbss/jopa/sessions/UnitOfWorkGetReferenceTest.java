@@ -110,7 +110,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassL result = uow.getReference(OWLClassL.class, entityL.getUri(), descriptor);
         uow.loadEntityField(result, OWLClassL.getSetField());
-        verify(storageMock).loadFieldValue(result, OWLClassL.getSetField(), descriptor);
+        verify(storageMock).loadFieldValue(result, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(result, OWLClassL.getSetField().getName()));
     }
 
@@ -123,7 +123,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         uow.loadEntityField(result, OWLClassL.getSetField());
         // Call it twice. Storage should be called only once
         uow.loadEntityField(result, OWLClassL.getSetField());
-        verify(storageMock).loadFieldValue(result, OWLClassL.getSetField(), descriptor);
+        verify(storageMock).loadFieldValue(result, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(result, OWLClassL.getSetField().getName()));
     }
 
@@ -134,7 +134,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
         uow.attributeChanged(result, OWLClassA.getStrAttField());
-        verify(storageMock).merge(result, OWLClassA.getStrAttField(), descriptor);
+        verify(storageMock).merge(result, metamodelMocks.forOwlClassA().stringAttribute(), descriptor);
     }
 
     @Test

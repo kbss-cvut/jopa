@@ -37,6 +37,7 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
+import cz.cvut.kbss.jopa.sessions.validator.InferredAttributeChangeValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
@@ -87,6 +88,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final SparqlQueryFactory queryFactory;
     private final CriteriaBuilder criteriaFactory;
     private final IndirectWrapperHelper indirectWrapperHelper;
+    private final InferredAttributeChangeValidator inferredAttributeChangeValidator;
     /**
      * This is a shortcut for the second level cache.
      */
@@ -109,6 +111,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.criteriaFactory = new CriteriaBuilderImpl(this);
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
+        this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
         this.useTransactionalOntology = true;
         this.isActive = true;
     }
@@ -152,7 +155,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return null;
         }
         final Object clone = registerExistingObject(result, descriptor,
-                Collections.singletonList(new PostLoadInvoker(getMetamodel())));
+                                                    Collections.singletonList(new PostLoadInvoker(getMetamodel())));
         checkForIndirectObjects(clone);
         return cls.cast(clone);
     }
@@ -234,7 +237,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             }
             newObjectsCloneToOriginal.put(clone, original);
             changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone,
-                    c));
+                                                                                   c));
         }
     }
 
@@ -343,7 +346,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private void validateIntegrityConstraints() {
         final IntegrityConstraintsValidator validator = getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
-            validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()), isNotInferred());
+            validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()),
+                               isNotInferred());
         }
         uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }
@@ -512,13 +516,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         }
         final Descriptor descriptor = getDescriptor(entity);
         final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
+        final FieldSpecification<Object, ?> fieldSpec = et.getFieldSpecification(f.getName());
+        final Object original = getOriginal(entity);
+        if (fieldSpec.isInferred() && original != null) {
+            inferredAttributeChangeValidator.validateChange(entity, getOriginal(entity), fieldSpec, descriptor);
+        }
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
-        storage.merge(entity, f, descriptor);
-        createAndRegisterChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
+        storage.merge(entity, fieldSpec, descriptor);
+        createAndRegisterChangeRecord(entity, fieldSpec, descriptor);
         setHasChanges();
         setIndirectObjectIfPresent(entity, f);
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
-        instanceDescriptors.get(entity).setLoaded(et.getFieldSpecification(f.getName()), LoadState.LOADED);
+        instanceDescriptors.get(entity).setLoaded(fieldSpec, LoadState.LOADED);
     }
 
     private void createAndRegisterChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec,
@@ -528,7 +537,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return;
         }
         final ChangeRecord record = new ChangeRecordImpl(fieldSpec,
-                EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), clone));
+                                                         EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(),
+                                                                                             clone));
         preventCachingIfReferenceIsNotLoaded(record);
         registerChangeRecord(clone, orig, descriptor, record);
     }
@@ -595,20 +605,24 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
-        final Object clone = getInstanceForMerge(idUri, et, descriptor);
+        final T clone = getInstanceForMerge(idUri, et, descriptor);
         try {
             // Merge only the changed attributes
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
+                // Have to check for inferred attribute changes before the actual merge
+                chSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
+                        chr -> inferredAttributeChangeValidator.validateChange(entity, clone,
+                                                                               (FieldSpecification<? super T, ?>) chr.getAttribute(),
+                                                                               descriptor));
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
                 final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
                 merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
                 for (ChangeRecord record : chSet.getChanges()) {
                     AttributeModificationValidator.verifyCanModify(record.getAttribute());
                     preventCachingIfReferenceIsNotLoaded(record);
-                    final Field field = record.getAttribute().getJavaField();
-                    storage.merge(clone, field, descriptor);
+                    storage.merge(clone, (FieldSpecification<? super T, ?>) record.getAttribute(), descriptor);
                 }
                 et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
                 uowChangeSet.addObjectChangeSet(copyChangeSet(chSet, getOriginal(clone), clone, descriptor));
@@ -623,15 +637,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return et.getJavaType().cast(clone);
     }
 
-    private <T> Object getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
+    private <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
         if (keysToClones.containsKey(identifier)) {
-            return keysToClones.get(identifier);
+            return (T) keysToClones.get(identifier);
         }
         final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
         T original = storage.find(params);
         assert original != null;
 
-        return registerExistingObject(original, descriptor);
+        return (T) registerExistingObject(original, descriptor);
     }
 
     private static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
@@ -744,8 +758,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
         for (ChangeRecord change : chSet.getChanges()) {
-            storage.merge(object, change.getAttribute().getJavaField(),
-                    descriptor.getAttributeDescriptor(change.getAttribute()));
+            storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(),
+                          descriptor.getAttributeDescriptor(change.getAttribute()));
         }
     }
 
@@ -919,13 +933,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                     "Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
         final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
-        final FieldSpecification<?, ?> fieldSpec = entityType((Class<Object>) entity.getClass())
+        final FieldSpecification<? super T, ?> fieldSpec = entityType((Class<Object>) entity.getClass())
                 .getFieldSpecification(field.getName());
         if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
             return;
         }
 
-        storage.loadFieldValue(entity, field, entityDescriptor);
+        storage.loadFieldValue(entity, fieldSpec, entityDescriptor);
         final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
         final Object entityOriginal = getOriginal(entity);
         if (entityOriginal != null) {
@@ -981,7 +995,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-                LoadState.UNKNOWN;
+               LoadState.UNKNOWN;
     }
 
     @Override

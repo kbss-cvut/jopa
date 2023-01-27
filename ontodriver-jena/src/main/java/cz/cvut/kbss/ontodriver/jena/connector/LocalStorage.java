@@ -44,14 +44,17 @@ abstract class LocalStorage implements Storage {
         this.defaultAsUnion = configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION);
     }
 
+    @Override
     public void writeChanges() throws JenaDriverException {
         // Do nothing by default
     }
 
+    @Override
     public Dataset getDataset() {
         return dataset;
     }
 
+    @Override
     public Model getDefaultGraph() {
         return defaultAsUnion ? ModelFactory.createUnion(dataset.getUnionModel(), dataset.getDefaultModel()) :
                dataset.getDefaultModel();
@@ -66,22 +69,27 @@ abstract class LocalStorage implements Storage {
         return dataset;
     }
 
+    @Override
     public void begin(ReadWrite readWrite) {
         dataset.begin(readWrite);
     }
 
+    @Override
     public void commit() {
         dataset.commit();
     }
 
+    @Override
     public void rollback() {
         dataset.abort();
     }
 
+    @Override
     public void close() {
         dataset.close();
     }
 
+    @Override
     public void add(List<Statement> statements, String context) {
         if (context != null) {
             dataset.getNamedModel(context).add(statements);
@@ -90,6 +98,7 @@ abstract class LocalStorage implements Storage {
         }
     }
 
+    @Override
     public void remove(List<Statement> statements, String context) {
         if (context != null) {
             dataset.getNamedModel(context).remove(statements);
@@ -101,6 +110,7 @@ abstract class LocalStorage implements Storage {
         }
     }
 
+    @Override
     public void remove(StmtIterator iterator, String context) {
         if (context != null) {
             dataset.getNamedModel(context).remove(iterator);

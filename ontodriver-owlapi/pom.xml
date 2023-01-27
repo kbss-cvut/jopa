@@ -11,12 +11,12 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.19.3</version>
+        <version>0.20.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
-        <cz.cvut.kbss.owl2query.version>0.6.0</cz.cvut.kbss.owl2query.version>
+        <cz.cvut.kbss.owl2query.version>0.6.1</cz.cvut.kbss.owl2query.version>
     </properties>
 
     <repositories>
@@ -69,13 +69,14 @@
         <!-- OWL2Query -->
         <dependency>
             <groupId>cz.cvut.kbss</groupId>
-            <artifactId>owl2query-engine</artifactId>
-            <version>${cz.cvut.kbss.owl2query.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>cz.cvut.kbss</groupId>
             <artifactId>owl2query-owlapi</artifactId>
             <version>${cz.cvut.kbss.owl2query.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sourceforge.owlapi</groupId>
+                    <artifactId>owlapi-distribution</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>xml-apis</groupId>

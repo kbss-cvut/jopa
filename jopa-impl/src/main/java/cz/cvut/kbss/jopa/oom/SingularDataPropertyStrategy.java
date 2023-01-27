@@ -18,9 +18,14 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+
+import java.util.Collections;
+import java.util.Set;
 
 class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractAttribute<? super X, ?>, X> {
 
@@ -56,9 +61,22 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        final Object extractedValue = toAxiomValue(extractFieldValueFromInstance(instance));
+        valueBuilder.addValue(createAssertion(), extractValue(instance), getAttributeWriteContext());
+    }
 
-        final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
-        valueBuilder.addValue(createAssertion(), val, getAttributeWriteContext());
+    private Value<?> extractValue(X instance) {
+        final Object extractedValue = toAxiomValue(extractFieldValueFromInstance(instance));
+        return extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final Value<?> val = extractValue(instance);
+        if (Value.nullValue().equals(val)) {
+            return Collections.emptySet();
+        }
+        return Collections.singleton(
+                new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
+                                createAssertion(), val));
     }
 }

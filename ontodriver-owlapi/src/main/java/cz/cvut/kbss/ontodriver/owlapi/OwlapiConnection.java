@@ -139,6 +139,13 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
+    public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) {
+        ensureOpen();
+        Objects.requireNonNull(axiom);
+        return adapter.isInferred(axiom, contexts);
+    }
+
+    @Override
     public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(descriptor);

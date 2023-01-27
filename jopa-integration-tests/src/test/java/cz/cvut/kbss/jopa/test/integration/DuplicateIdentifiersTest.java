@@ -305,8 +305,6 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
-        final Assertion stringAssB = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.P_B_STRING_ATTRIBUTE), false);
         initAxiomsForOWLClassA(subject, stringAssA, entityA.getStringAttribute());
         final OWLClassB entityB = new OWLClassB();
         entityB.setUri(entityA.getUri());

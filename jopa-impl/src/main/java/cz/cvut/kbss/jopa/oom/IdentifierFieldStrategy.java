@@ -17,9 +17,11 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.*;
+
+import java.util.Collections;
+import java.util.Set;
 
 class IdentifierFieldStrategy<X> extends FieldStrategy<Identifier<? super X, ?>, X> {
 
@@ -41,6 +43,14 @@ class IdentifierFieldStrategy<X> extends FieldStrategy<Identifier<? super X, ?>,
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
         valueBuilder.addValue(createAssertion(), new Value<>(et.getIRI().toURI()), getAttributeWriteContext());
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        return Collections.singleton(
+                new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
+                                createAssertion(),
+                                new Value<>(et.getIRI().toURI())));
     }
 
     @Override

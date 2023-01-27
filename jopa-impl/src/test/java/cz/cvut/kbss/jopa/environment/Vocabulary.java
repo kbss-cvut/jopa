@@ -23,6 +23,9 @@ public class Vocabulary {
     public static final String c_OwlClassB = CLASS_BASE + "OWLClassB";
     public static final String c_OwlClassC = CLASS_BASE + "OWLClassC";
     public static final String c_OwlClassD = CLASS_BASE + "OWLClassD";
+    public static final String c_OwlClassF = CLASS_BASE + "OWLClassF";
+    public static final String c_OwlClassG = CLASS_BASE + "OWLClassG";
+    public static final String c_OwlClassH = CLASS_BASE + "OWLClassH";
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
     public static final String c_OwlClassN = CLASS_BASE + "OWLClassN";
     public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";
@@ -30,6 +33,14 @@ public class Vocabulary {
     public static final String c_OwlClassT = CLASS_BASE + "OWLClassT";
     public static final String c_OwlClassU = CLASS_BASE + "OWLClassU";
     public static final String c_OwlClassWithQueryAttr = CLASS_BASE + "OWLClassWithQueryAttr";
+    public static final String c_Person = CLASS_BASE + "Person";
+    public static final String c_Phone = CLASS_BASE + "Phone";
+
+    public static final String p_f_stringAttribute = ATTRIBUTE_BASE + "f-stringAttribute";
+
+    public static final String p_g_hasH = ATTRIBUTE_BASE + "hasH";
+    public static final String p_h_hasA = ATTRIBUTE_BASE + "hasA";
+    public static final String p_h_hasG = ATTRIBUTE_BASE + "hasG";
 
     public static final String p_a_stringAttribute = ATTRIBUTE_BASE + "A-stringAttribute";
     public static final String p_m_booleanAttribute = ATTRIBUTE_BASE + "m-booleanAttribute";
@@ -56,6 +67,12 @@ public class Vocabulary {
 
     public static final String P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "singularMultilingualAttribute";
     public static final String P_U_PLURAL_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "pluralMultilingualAttribute";
+
+    public static final String p_p_username = ATTRIBUTE_BASE + "username";
+    public static final String p_p_age = ATTRIBUTE_BASE + "age";
+    public static final String p_p_hasPhone = ATTRIBUTE_BASE + "hasPhone";
+    public static final String p_p_gender = ATTRIBUTE_BASE + "gender";
+    public static final String p_p_phoneNumber = ATTRIBUTE_BASE + "phoneNumber";
 
     public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
 

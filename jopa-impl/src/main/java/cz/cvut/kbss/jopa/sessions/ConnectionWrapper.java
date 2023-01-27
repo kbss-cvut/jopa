@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -23,10 +24,11 @@ import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 public class ConnectionWrapper implements Wrapper {
 
@@ -58,8 +60,8 @@ public class ConnectionWrapper implements Wrapper {
         return mapper.loadReference(loadingParameters);
     }
 
-    public <T> void merge(T entity, Field field, Descriptor descriptor) {
-        mapper.updateFieldValue(entity, field, descriptor);
+    public <T> void merge(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
+        mapper.updateFieldValue(entity, fieldSpec, descriptor);
     }
 
     public <T> void persist(Object identifier, T entity, Descriptor descriptor) {
@@ -72,8 +74,13 @@ public class ConnectionWrapper implements Wrapper {
         mapper.removeEntity(idUri, cls, descriptor);
     }
 
-    public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
-        mapper.loadFieldValue(entity, field, descriptor);
+    public <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
+        mapper.loadFieldValue(entity, fieldSpec, descriptor);
+    }
+
+    public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,
+                                         Descriptor entityDescriptor) {
+        return mapper.getAttributeAxioms(entity, fieldSpec, entityDescriptor);
     }
 
     public void commit() {
@@ -104,6 +111,14 @@ public class ConnectionWrapper implements Wrapper {
     public boolean isConsistent(URI context) {
         try {
             return connection.isConsistent(context);
+        } catch (OntoDriverException e) {
+            throw new OWLPersistenceException(e);
+        }
+    }
+
+    public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) {
+        try {
+            return connection.isInferred(axiom, contexts);
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException(e);
         }

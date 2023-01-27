@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.19.3</version>
+    <version>0.20.0</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -315,10 +315,10 @@
         <developer>
             <name>Petr Křemen</name>
             <email>petr.kremen@fel.cvut.cz</email>
-            <url>http://cs.fel.cvut.cz/en/people/kremep1</url>
+            <url>https://cs.fel.cvut.cz/en/people/kremep1</url>
             <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
             </organization>
-            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <organizationUrl>https://kbss.felk.cvut.cz</organizationUrl>
             <roles>
             </roles>
         </developer>
@@ -327,7 +327,7 @@
             <email>martin.ledvinka@fel.cvut.cz</email>
             <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
             </organization>
-            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <organizationUrl>https://kbss.felk.cvut.cz</organizationUrl>
             <roles>
             </roles>
         </developer>
@@ -335,7 +335,7 @@
 
     <organization>
         <name>Czech Technical University in Prague, Knowledge Based and Software Systems Group</name>
-        <url>http://kbss.felk.cvut.cz</url>
+        <url>https://kbss.felk.cvut.cz</url>
     </organization>
 
     <scm>

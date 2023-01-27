@@ -47,17 +47,14 @@ class EpistemicAxiomRemover {
     }
 
     void remove(AbstractAxiomDescriptor axiomDescriptor) throws Rdf4jDriverException {
-        final Resource individual = toRdf4jIri(axiomDescriptor.getSubject().getIdentifier(), valueFactory);
+        final Resource individual = toRdf4jIri(axiomDescriptor.getSubject(), valueFactory);
         final Collection<Statement> toRemove = new HashSet<>();
         for (Assertion a : axiomDescriptor.getAssertions()) {
-            if (a.isInferred()) {
-                continue;
-            }
             final Set<IRI> contexts = axiomDescriptor.getAssertionContexts(a).stream()
                                                      .map(uri -> toRdf4jIri(uri, valueFactory))
                                                      .collect(Collectors.toSet());
             toRemove.addAll(connector.findStatements(individual,
-                                                     toRdf4jIri(a.getIdentifier(), valueFactory), null, a.isInferred(),
+                                                     toRdf4jIri(a, valueFactory), null, a.isInferred(),
                                                      contexts));
         }
         connector.removeStatements(toRemove);
@@ -70,7 +67,7 @@ class EpistemicAxiomRemover {
         final Collection<Statement> toRemove = new ArrayList<>();
         final ValueConverter valueConverter = new ValueConverter(valueFactory);
         for (Map.Entry<Assertion, Set<Value<?>>> entry : values.entrySet()) {
-            final IRI property = toRdf4jIri(entry.getKey().getIdentifier(), valueFactory);
+            final IRI property = toRdf4jIri(entry.getKey(), valueFactory);
             for (Value<?> val : entry.getValue()) {
                 final org.eclipse.rdf4j.model.Value rdf4jValue = valueConverter.toRdf4jValue(entry.getKey(), val);
                 if (repoContext != null) {

@@ -62,7 +62,7 @@ public class QueryHintsHandler {
      * two-element array where the first element is a string representation of the value and the second one is the value
      * itself.
      */
-    static abstract class Hint {
+    abstract static class Hint {
 
         private static final Map<String, Hint> HINTS = new HashMap<>();
 

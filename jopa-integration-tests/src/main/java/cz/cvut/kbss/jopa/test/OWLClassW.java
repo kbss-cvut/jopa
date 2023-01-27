@@ -23,7 +23,7 @@ import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_W)
-public class OWLClassW {
+public class OWLClassW implements HasUri {
 
     @Id(generated = true)
     private URI uri;
@@ -32,6 +32,7 @@ public class OWLClassW {
     @Types
     private Set<URI> types;
 
+    @Override
     public URI getUri() {
         return uri;
     }
