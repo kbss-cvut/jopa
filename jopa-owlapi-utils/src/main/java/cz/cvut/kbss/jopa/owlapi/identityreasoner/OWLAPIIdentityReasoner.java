@@ -177,8 +177,7 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
         final OWLNamedIndividualNodeSet s = new OWLNamedIndividualNodeSet();
 
         for (final OWLClassAssertionAxiom a : o.getAxioms(AxiomType.CLASS_ASSERTION)) {
-            if (a.getClassExpression().equals(ce)
-                    && a.getIndividual().isNamed()) {
+            if (a.getClassExpression().equals(ce) && a.getIndividual().isNamed()) {
                 s.addEntity(a.getIndividual().asOWLNamedIndividual());
             }
         }
@@ -289,7 +288,6 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
                 }
             }
         }
-
         return pn;
     }
 
@@ -299,30 +297,23 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
         final OWLClassNodeSet pn = new OWLClassNodeSet();
 
         for (final OWLSubClassOfAxiom a : o.getAxioms(AxiomType.SUBCLASS_OF)) {
-            if (a.getSuperClass().equals(ce)) {
-                if (!a.getSubClass().isAnonymous()) {
-                    pn.addEntity(a.getSubClass().asOWLClass());
-                }
+            if (a.getSuperClass().equals(ce) && !a.getSubClass().isAnonymous()) {
+                pn.addEntity(a.getSubClass().asOWLClass());
             }
         }
-
         return pn;
     }
 
 
     @Nonnull
-    public NodeSet<OWLDataProperty> getSubDataProperties(@Nonnull OWLDataProperty pe,
-                                                         boolean direct) {
+    public NodeSet<OWLDataProperty> getSubDataProperties(@Nonnull OWLDataProperty pe, boolean direct) {
         final OWLDataPropertyNodeSet pn = new OWLDataPropertyNodeSet();
 
         for (final OWLSubDataPropertyOfAxiom a : o.getAxioms(AxiomType.SUB_DATA_PROPERTY)) {
-            if (a.getSuperProperty().equals(pe)) {
-                if (!a.getSubProperty().isAnonymous()) {
-                    pn.addEntity(a.getSubProperty().asOWLDataProperty());
-                }
+            if (a.getSuperProperty().equals(pe) && !a.getSubProperty().isAnonymous()) {
+                pn.addEntity(a.getSubProperty().asOWLDataProperty());
             }
         }
-
         return pn;
     }
 
@@ -333,13 +324,10 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
         final OWLObjectPropertyNodeSet pn = new OWLObjectPropertyNodeSet();
 
         for (final OWLSubObjectPropertyOfAxiom a : o.getAxioms(AxiomType.SUB_OBJECT_PROPERTY)) {
-            if (a.getSuperProperty().equals(pe)) {
-                if (!a.getSubProperty().isAnonymous()) {
-                    pn.addEntity(a.getSubProperty().asOWLObjectProperty());
-                }
+            if (a.getSuperProperty().equals(pe) && !a.getSubProperty().isAnonymous()) {
+                pn.addEntity(a.getSubProperty().asOWLObjectProperty());
             }
         }
-
         return pn;
     }
 
@@ -349,30 +337,23 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
         final OWLClassNodeSet pn = new OWLClassNodeSet();
 
         for (final OWLSubClassOfAxiom a : o.getAxioms(AxiomType.SUBCLASS_OF)) {
-            if (a.getSubClass().equals(ce)) {
-                if (!a.getSuperClass().isAnonymous()) {
-                    pn.addEntity(a.getSuperClass().asOWLClass());
-                }
+            if (a.getSubClass().equals(ce) && !a.getSuperClass().isAnonymous()) {
+                pn.addEntity(a.getSuperClass().asOWLClass());
             }
         }
-
         return pn;
     }
 
 
     @Nonnull
-    public NodeSet<OWLDataProperty> getSuperDataProperties(@Nonnull OWLDataProperty pe,
-                                                           boolean direct) {
+    public NodeSet<OWLDataProperty> getSuperDataProperties(@Nonnull OWLDataProperty pe, boolean direct) {
         final OWLDataPropertyNodeSet pn = new OWLDataPropertyNodeSet();
 
         for (final OWLSubDataPropertyOfAxiom a : o.getAxioms(AxiomType.SUB_DATA_PROPERTY)) {
-            if (a.getSubProperty().equals(pe)) {
-                if (!a.getSuperProperty().isAnonymous()) {
-                    pn.addEntity(a.getSuperProperty().asOWLDataProperty());
-                }
+            if (a.getSubProperty().equals(pe) && !a.getSuperProperty().isAnonymous()) {
+                pn.addEntity(a.getSuperProperty().asOWLDataProperty());
             }
         }
-
         return pn;
     }
 
@@ -383,13 +364,10 @@ class OWLAPIIdentityReasoner implements OWLReasoner {
         final OWLObjectPropertyNodeSet pn = new OWLObjectPropertyNodeSet();
 
         for (final OWLSubObjectPropertyOfAxiom a : o.getAxioms(AxiomType.SUB_OBJECT_PROPERTY)) {
-            if (a.getSubProperty().equals(pe)) {
-                if (!a.getSuperProperty().isAnonymous()) {
-                    pn.addEntity(a.getSuperProperty().asOWLObjectProperty());
-                }
+            if (a.getSubProperty().equals(pe) && !a.getSuperProperty().isAnonymous()) {
+                pn.addEntity(a.getSuperProperty().asOWLObjectProperty());
             }
         }
-
         return pn;
     }
 
