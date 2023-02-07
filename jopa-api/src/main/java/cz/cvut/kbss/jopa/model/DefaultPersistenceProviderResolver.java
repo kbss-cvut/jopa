@@ -36,15 +36,14 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
     private static final Logger LOG = LoggerFactory.getLogger(DefaultPersistenceProviderResolver.class);
 
     /**
-     * Cached list of available providers cached by CacheKey to ensure
-     * there is not potential for provider visibility issues.
-     */
-    private final HashMap<CacheKey, PersistenceProviderReference> providers = new HashMap<>();
-
-    /**
      * Queue for reference objects referring to class loaders or persistence providers.
      */
     private static final ReferenceQueue<?> referenceQueue = new ReferenceQueue<>();
+
+    /**
+     * Available providers cached by CacheKey to ensure there is no potential for provider visibility issues.
+     */
+    private final HashMap<CacheKey, PersistenceProviderReference> providers = new HashMap<>();
 
     public List<PersistenceProvider> getPersistenceProviders() {
         // Before we do the real loading work, see whether we need to
@@ -69,11 +68,11 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
                     PersistenceProvider pp = ipp.next();
                     loadedProviders.add(pp);
                 } catch (ServiceConfigurationError sce) {
-                    LOG.trace("Unable to load PersistenceProvider implementation via service loader.", sce);
+                    LOG.warn("Unable to load PersistenceProvider implementation via service loader.", sce);
                 }
             }
         } catch (ServiceConfigurationError sce) {
-            LOG.trace("Unable to load PersistenceProvider implementation via service loader.", sce);
+            LOG.warn("Unable to load PersistenceProvider implementation via service loader.", sce);
         }
 
         if (loadedProviders.isEmpty()) {

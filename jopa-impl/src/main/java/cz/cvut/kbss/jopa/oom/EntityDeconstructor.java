@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 class EntityDeconstructor {

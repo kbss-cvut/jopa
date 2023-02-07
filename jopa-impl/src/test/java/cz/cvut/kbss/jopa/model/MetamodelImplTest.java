@@ -66,9 +66,9 @@ class MetamodelImplTest {
         assertNotNull(strAtt);
         final Field expectedField = OWLClassE.getStrAttField();
         checkSingularAttribute(strAtt, et, expectedField.getName(), Attribute.PersistentAttributeType.DATA,
-                expectedField,
-                FetchType.EAGER, false, expectedField.getAnnotation(OWLDataProperty.class).iri(),
-                expectedField.getType(), new CascadeType[]{});
+                               expectedField,
+                               FetchType.EAGER, false, expectedField.getAnnotation(OWLDataProperty.class).iri(),
+                               expectedField.getType(), new CascadeType[]{});
     }
 
     private MetamodelImpl getMetamodel() {
@@ -86,7 +86,7 @@ class MetamodelImplTest {
         assertFalse(singularAttribute.isId());  // it is not an id
         assertFalse(singularAttribute.isCollection());  // it is singular
         assertEquals(Bindable.BindableType.SINGULAR_ATTRIBUTE,
-                singularAttribute.getBindableType());    // correct bindable type
+                     singularAttribute.getBindableType());    // correct bindable type
         assertEquals(bindableJavaType, singularAttribute.getBindableJavaType());    // correct bindable java type
         checkCommonProperties(singularAttribute, declaringType, name, type, field, fetch, inferred, iri, cascadeTypes);
     }
@@ -122,8 +122,9 @@ class MetamodelImplTest {
         assertNotNull(att);
         final Field expectedField = OWLClassD.getOwlClassAField();
         checkSingularAttribute(att, et, expectedField.getName(), Attribute.PersistentAttributeType.OBJECT,
-                expectedField, FetchType.EAGER, false, expectedField.getAnnotation(OWLObjectProperty.class).iri(),
-                expectedField.getType(), new CascadeType[]{});
+                               expectedField, FetchType.EAGER, false,
+                               expectedField.getAnnotation(OWLObjectProperty.class).iri(),
+                               expectedField.getType(), new CascadeType[]{});
     }
 
     @Test
@@ -147,33 +148,38 @@ class MetamodelImplTest {
         final Field booleanField = OWLClassM.getBooleanAttributeField();
         final FieldSpecification<? super OWLClassM, ?> bAtt = et.getFieldSpecification(booleanField.getName());
         checkSingularAttribute(bAtt, et, booleanField.getName(), Attribute.PersistentAttributeType.DATA, booleanField,
-                FetchType.EAGER, false, booleanField.getAnnotation(OWLDataProperty.class).iri(),
-                booleanField.getType(), new CascadeType[]{});
+                               FetchType.EAGER, false, booleanField.getAnnotation(OWLDataProperty.class).iri(),
+                               booleanField.getType(), new CascadeType[]{});
         final Field intField = OWLClassM.getIntAttributeField();
         final FieldSpecification<? super OWLClassM, ?> iAtt = et.getFieldSpecification(intField.getName());
         checkSingularAttribute(iAtt, et, intField.getName(), Attribute.PersistentAttributeType.DATA, intField,
-                FetchType.EAGER, false, intField.getAnnotation(OWLDataProperty.class).iri(), intField.getType(),
-                new CascadeType[]{});
+                               FetchType.EAGER, false, intField.getAnnotation(OWLDataProperty.class).iri(),
+                               intField.getType(),
+                               new CascadeType[]{});
         final Field longField = OWLClassM.getLongAttributeField();
         final FieldSpecification<? super OWLClassM, ?> longAtt = et.getFieldSpecification(longField.getName());
         checkSingularAttribute(longAtt, et, longField.getName(), Attribute.PersistentAttributeType.DATA, longField,
-                FetchType.EAGER, false, longField.getAnnotation(OWLDataProperty.class).iri(), longField.getType(),
-                new CascadeType[]{});
+                               FetchType.EAGER, false, longField.getAnnotation(OWLDataProperty.class).iri(),
+                               longField.getType(),
+                               new CascadeType[]{});
         final Field doubleField = OWLClassM.getDoubleAttributeField();
         final FieldSpecification<? super OWLClassM, ?> dAtt = et.getFieldSpecification(doubleField.getName());
         checkSingularAttribute(dAtt, et, doubleField.getName(), Attribute.PersistentAttributeType.DATA, doubleField,
-                FetchType.EAGER, false, doubleField.getAnnotation(OWLDataProperty.class).iri(), doubleField.getType(),
-                new CascadeType[]{});
+                               FetchType.EAGER, false, doubleField.getAnnotation(OWLDataProperty.class).iri(),
+                               doubleField.getType(),
+                               new CascadeType[]{});
         final Field dateField = OWLClassM.getDateAttributeField();
         final FieldSpecification<? super OWLClassM, ?> dateAtt = et.getFieldSpecification(dateField.getName());
         checkSingularAttribute(dateAtt, et, dateField.getName(), Attribute.PersistentAttributeType.DATA, dateField,
-                FetchType.EAGER, false, dateField.getAnnotation(OWLDataProperty.class).iri(), dateField.getType(),
-                new CascadeType[]{});
+                               FetchType.EAGER, false, dateField.getAnnotation(OWLDataProperty.class).iri(),
+                               dateField.getType(),
+                               new CascadeType[]{});
         final Field enumField = OWLClassM.getEnumAttributeField();
         final FieldSpecification<? super OWLClassM, ?> enumAtt = et.getFieldSpecification(enumField.getName());
         checkSingularAttribute(enumAtt, et, enumField.getName(), Attribute.PersistentAttributeType.DATA, enumField,
-                FetchType.EAGER, false, enumField.getAnnotation(OWLDataProperty.class).iri(), enumField.getType(),
-                new CascadeType[]{});
+                               FetchType.EAGER, false, enumField.getAnnotation(OWLDataProperty.class).iri(),
+                               enumField.getType(),
+                               new CascadeType[]{});
     }
 
     @Test
@@ -187,8 +193,8 @@ class MetamodelImplTest {
         final FieldSpecification<? super OWLClassJ, ?> att = et.getFieldSpecification(setField.getName());
         assertNotNull(att);
         checkPluralAttribute(att, et, setField.getName(), Attribute.PersistentAttributeType.OBJECT, setField,
-                FetchType.LAZY, false, setField.getAnnotation(OWLObjectProperty.class).iri(),
-                OWLClassA.class, CollectionType.SET, new CascadeType[]{CascadeType.ALL});
+                             FetchType.LAZY, false, setField.getAnnotation(OWLObjectProperty.class).iri(),
+                             OWLClassA.class, CollectionType.SET, new CascadeType[]{CascadeType.ALL});
     }
 
     private void checkPluralAttribute(FieldSpecification<?, ?> attribute, EntityType<?> declaringType, String name,
@@ -200,7 +206,7 @@ class MetamodelImplTest {
         assertTrue(pluralAttribute.isCollection());  // it is plural
         assertEquals(collectionType, pluralAttribute.getCollectionType());  // correct collection type
         assertEquals(Bindable.BindableType.PLURAL_ATTRIBUTE,
-                pluralAttribute.getBindableType());    // correct bindable type
+                     pluralAttribute.getBindableType());    // correct bindable type
         assertEquals(bindableJavaType, pluralAttribute.getBindableJavaType());    // correct bindable java type
         checkCommonProperties(pluralAttribute, declaringType, name, type, field, fetch, inferred, iri, cascadeTypes);
     }
@@ -217,10 +223,12 @@ class MetamodelImplTest {
         final OWLObjectProperty simpleListProperty = simpleListField.getAnnotation(OWLObjectProperty.class);
         final Sequence simpleListSequence = simpleListField.getAnnotation(Sequence.class);
         checkPluralListAttribute(simpleListAtt, et, simpleListField.getName(), Attribute.PersistentAttributeType.OBJECT,
-                simpleListField, simpleListProperty.fetch(), false, simpleListProperty.iri(),
-                OWLClassA.class, CollectionType.LIST, simpleListProperty.cascade(), SequenceType.simple,
-                simpleListSequence.ClassOWLListIRI(), simpleListSequence.ObjectPropertyHasContentsIRI(),
-                simpleListSequence.ObjectPropertyHasNextIRI());
+                                 simpleListField, simpleListProperty.fetch(), false, simpleListProperty.iri(),
+                                 OWLClassA.class, CollectionType.LIST, simpleListProperty.cascade(),
+                                 SequenceType.simple,
+                                 simpleListSequence.ClassOWLListIRI(),
+                                 simpleListSequence.ObjectPropertyHasContentsIRI(),
+                                 simpleListSequence.ObjectPropertyHasNextIRI());
     }
 
     private void checkPluralListAttribute(FieldSpecification<?, ?> attribute, EntityType<?> declaringType, String name,
@@ -230,7 +238,7 @@ class MetamodelImplTest {
                                           SequenceType sequenceType, String owlListClass, String hasContents,
                                           String hasNext) {
         checkPluralAttribute(attribute, declaringType, name, type, field, fetch, inferred, iri, bindableJavaType,
-                collectionType, cascadeTypes);
+                             collectionType, cascadeTypes);
         assertThat(attribute, instanceOf(ListAttribute.class));
         final ListAttribute<?, ?> listAttribute = (ListAttribute<?, ?>) attribute;
         assertEquals(sequenceType, listAttribute.getSequenceType());
@@ -251,11 +259,13 @@ class MetamodelImplTest {
         final OWLObjectProperty referencedListProperty = referencedListField.getAnnotation(OWLObjectProperty.class);
         final Sequence referencedListSequence = referencedListField.getAnnotation(Sequence.class);
         checkPluralListAttribute(referencedListAtt, et, referencedListField.getName(),
-                Attribute.PersistentAttributeType.OBJECT, referencedListField, referencedListProperty.fetch(), false,
-                referencedListProperty.iri(), OWLClassA.class, CollectionType.LIST,
-                referencedListProperty.cascade(), SequenceType.referenced, referencedListSequence.ClassOWLListIRI(),
-                referencedListSequence.ObjectPropertyHasContentsIRI(),
-                referencedListSequence.ObjectPropertyHasNextIRI());
+                                 Attribute.PersistentAttributeType.OBJECT, referencedListField,
+                                 referencedListProperty.fetch(), false,
+                                 referencedListProperty.iri(), OWLClassA.class, CollectionType.LIST,
+                                 referencedListProperty.cascade(), SequenceType.referenced,
+                                 referencedListSequence.ClassOWLListIRI(),
+                                 referencedListSequence.ObjectPropertyHasContentsIRI(),
+                                 referencedListSequence.ObjectPropertyHasNextIRI());
     }
 
     @Test
@@ -318,8 +328,9 @@ class MetamodelImplTest {
                 .getFieldSpecification(annotationField.getName());
         assertNotNull(annotationProperty);
         checkSingularAttribute(annotationProperty, et, annotationField.getName(),
-                Attribute.PersistentAttributeType.ANNOTATION, annotationField, FetchType.EAGER, false,
-                annotationField.getAnnotation(OWLAnnotationProperty.class).iri(), String.class, new CascadeType[]{});
+                               Attribute.PersistentAttributeType.ANNOTATION, annotationField, FetchType.EAGER, false,
+                               annotationField.getAnnotation(OWLAnnotationProperty.class).iri(), String.class,
+                               new CascadeType[]{});
 
         final PropertiesSpecification<?, ?, ?, ?> propsSpec = et.getProperties();
         assertNotNull(propsSpec);
@@ -339,7 +350,7 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithInvalidTypes")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidTypes")
     private static class ClassWithInvalidTypes {
         @Id
         private String id;
@@ -353,7 +364,7 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithInvalidProperties")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidProperties")
     private static class ClassWithInvalidProperties {
         @Id
         private String id;
@@ -367,7 +378,7 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithInvalidIdentifier")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidIdentifier")
     private static class ClassWithInvalidIdentifier {
         @Id
         private Integer id;
@@ -379,7 +390,7 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithoutIdentifier")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithoutIdentifier")
     private static class ClassWithoutIdentifier {
         @Properties
         private Map<String, Set<String>> properties;
@@ -464,7 +475,7 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithoutNoArgConstructor")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithoutNoArgConstructor")
     private static class ClassWithoutNoArgConstructor {
 
         @Id
@@ -481,13 +492,13 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithArrayAttribute")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithArrayAttribute")
     private static class ClassWithArrayAttribute {
 
         @Id
         private URI id;
 
-        @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "objectProperty")
         private OWLClassA[] arr;
     }
 
@@ -505,13 +516,13 @@ class MetamodelImplTest {
         assertArrayEquals(new CascadeType[0], att.getCascadeTypes());
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithOPUri")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithOPUri")
     private static class ClassWithOPUri {
 
         @Id
         private URI id;
 
-        @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "objectProperty")
         private URI op;
     }
 
@@ -532,13 +543,13 @@ class MetamodelImplTest {
         assertEquals(CollectionType.SET, ((PluralAttribute<?, ?, ?>) att).getCollectionType());
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithOPUri")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithOPUri")
     private static class ClassWithPluralOPUrls {
 
         @Id
         private URI id;
 
-        @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "objectProperty")
         private Set<URL> op;
     }
 
@@ -552,7 +563,7 @@ class MetamodelImplTest {
         assertEquals(URI.class, et.getTypes().getElementType());
     }
 
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithUriTypes")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithUriTypes")
     private static class ClassWithUriTypes {
         @Id
         private URI id;
@@ -565,9 +576,9 @@ class MetamodelImplTest {
     void entityThrowsIllegalArgumentForNonEntityClass() {
         final Metamodel m = getMetamodel();
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> m.entity(ClassWithUriTypes.class));
+                                                         () -> m.entity(ClassWithUriTypes.class));
         assertThat(ex.getMessage(), containsString(
-                "Class " + ClassWithUriTypes.class.getName() + " is not a known entity in this persistence unit."));
+                ClassWithUriTypes.class.getName() + " is not a known entity in this persistence unit."));
     }
 
     @Test
@@ -583,7 +594,7 @@ class MetamodelImplTest {
             @NamedNativeQuery(name = "selectAll", query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }"),
             @NamedNativeQuery(name = "askQuery", query = "ASK WHERE { ?x a ?type . }")
     })
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithNamedQueries")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithNamedQueries")
     private static class ClassWithNamedQueries {
         @Id
         private URI id;
@@ -667,5 +678,17 @@ class MetamodelImplTest {
         final MetamodelImpl metamodel = getMetamodel();
         final Set<EntityType<?>> result = metamodel.getMappedEntities(Vocabulary.c_OwlClassA);
         assertEquals(Collections.singleton(metamodel.entity(OWLClassA.class)), result);
+    }
+
+    @Test
+    void buildForSetOfClassesBuildsOnlyEntityClassesMetamodel() {
+        final Set<Class<?>> entityClasses = new HashSet<>(Arrays.asList(OWLClassA.class, OWLClassE.class));
+        final MetamodelImpl result = new MetamodelImpl(conf);
+        result.build(entityClasses);
+        entityClasses.forEach(cls -> {
+            final EntityType<?> et = result.entity(cls);
+            assertNotNull(et);
+            assertEquals(cls, et.getJavaType());
+        });
     }
 }

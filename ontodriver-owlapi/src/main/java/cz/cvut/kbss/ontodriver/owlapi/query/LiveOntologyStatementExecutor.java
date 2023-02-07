@@ -56,7 +56,7 @@ public class LiveOntologyStatementExecutor implements StatementExecutor {
         return OWL2QueryEngine.exec(query.getQuery(), ont);
     }
 
-    private OWLReasoner getNoInferenceReasoner(OntologySnapshot snapshot) {
+    private static OWLReasoner getNoInferenceReasoner(OntologySnapshot snapshot) {
         return new NoOpReasoner(snapshot.getOntology());
     }
 

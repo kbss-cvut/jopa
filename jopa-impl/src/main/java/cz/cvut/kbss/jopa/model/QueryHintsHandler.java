@@ -25,6 +25,10 @@ public class QueryHintsHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(QueryHintsHandler.class);
 
+    private QueryHintsHandler() {
+        throw new AssertionError();
+    }
+
     /**
      * Gets query hints supported by this implementation.
      *

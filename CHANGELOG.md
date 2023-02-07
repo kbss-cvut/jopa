@@ -1,7 +1,10 @@
 # JOPA - Release Notes
 
+## 0.20.1 - 2023-02-07
+- Allow building a restricted metamodel from a set of entity classes (will be used by static metamodel generator).
+
 ## 0.20.0 - 2023-01-26
-- Allow editing inferred attributes (see Wiki for details) (Feature #121),
+- Allow editing inferred attributes (see Wiki for details) (Feature #121).
 - Support for `IN`, `NOT LIKE`, `<>` (`!=`) operators in SOQL (and the corresponding operators in Criteria API). (Enhancement #123, #129).
 
 ## 0.19.3 - 2022-12-13

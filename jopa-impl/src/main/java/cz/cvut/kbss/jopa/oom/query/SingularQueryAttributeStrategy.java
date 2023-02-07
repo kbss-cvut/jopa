@@ -41,7 +41,7 @@ public class SingularQueryAttributeStrategy<X> extends QueryFieldStrategy<Abstra
             LOG.trace("Query \"{}\" for attribute {} did not return any result.", attribute.getQuery(), attribute);
             return;
         } catch (NoUniqueResultException e2) {
-            LOG.trace("Query \"{}\" for attribute {} does not have a unique result.", attribute.getQuery(), attribute);
+            LOG.warn("Query \"{}\" for attribute {} does not have a unique result.", attribute.getQuery(), attribute);
             return;
         }
 

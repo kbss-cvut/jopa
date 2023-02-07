@@ -65,13 +65,13 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.entityBreaker = new EntityDeconstructor(this);
 
         this.defaultInstanceLoader = DefaultInstanceLoader.builder().connection(storageConnection)
-                .metamodel(uow.getMetamodel())
-                .descriptorFactory(descriptorFactory)
-                .entityBuilder(entityBuilder).cache(cache).build();
+                                                          .metamodel(uow.getMetamodel())
+                                                          .descriptorFactory(descriptorFactory)
+                                                          .entityBuilder(entityBuilder).cache(cache).build();
         this.twoStepInstanceLoader = TwoStepInstanceLoader.builder().connection(storageConnection)
-                .metamodel(uow.getMetamodel())
-                .descriptorFactory(descriptorFactory)
-                .entityBuilder(entityBuilder).cache(cache).build();
+                                                          .metamodel(uow.getMetamodel())
+                                                          .descriptorFactory(descriptorFactory)
+                                                          .entityBuilder(entityBuilder).cache(cache).build();
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final EntityType<T> et = getEntityType(cls);
         final NamedResource classUri = NamedResource.create(et.getIRI().toURI());
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(identifier),
-                Assertion.createClassAssertion(false), new Value<>(classUri));
+                                                        Assertion.createClassAssertion(false), new Value<>(classUri));
         try {
             return storageConnection.contains(ax, descriptor.getContexts());
         } catch (OntoDriverException e) {
@@ -280,19 +280,20 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> void updateFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor) {
+    public <T> void updateFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec,
+                                     Descriptor entityDescriptor) {
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
         // It is OK to do it like this, because if necessary, the mapping will re-register a pending assertion
-        removePendingAssertions(et, fieldSpec, pkUri);
-        final AxiomValueGatherer axiomBuilder = entityBreaker
-                .mapFieldToAxioms(pkUri, entity, fieldSpec, et, entityDescriptor);
+        removePendingAssertions(fieldSpec, pkUri);
+        final AxiomValueGatherer axiomBuilder =
+                entityBreaker.mapFieldToAxioms(pkUri, entity, fieldSpec, et, entityDescriptor);
         axiomBuilder.update(storageConnection);
     }
 
-    private <T> void removePendingAssertions(EntityType<T> et, FieldSpecification<? super T, ?> fs, URI identifier) {
+    private <T> void removePendingAssertions(FieldSpecification<? super T, ?> fs, URI identifier) {
         if (fs instanceof Attribute) {
             final Attribute<?, ?> att = (Attribute<?, ?>) fs;
             // We care only about object property assertions, others are never pending
@@ -325,7 +326,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor) {
+    public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,
+                                                Descriptor entityDescriptor) {
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         return FieldStrategy.createFieldStrategy(et, fieldSpec, entityDescriptor, this).buildAxiomsFromInstance(entity);
     }
