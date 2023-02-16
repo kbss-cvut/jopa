@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.model.LangString;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class QueryRunner extends BaseQueryRunner {
@@ -448,5 +450,22 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final List res = q.getResultList();
         // The result can contain more types (inference)
         assertEquals(types, res.stream().map(Object::toString).collect(Collectors.toSet()));
+    }
+
+    @Test
+    void setParameterSupportsLangStringValue() {
+        final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
+        final List<OWLClassA> matching = aInstances.subList(0, Generators.randomPositiveInt(3, aInstances.size()));
+        final Set<LangString> params = matching.stream().map(a -> new LangString(a.getStringAttribute(),
+                                                                                 TestEnvironment.PERSISTENCE_LANGUAGE))
+                                               .collect(Collectors.toSet());
+        final EntityManager em = getEntityManager();
+        final String query = "SELECT ?x WHERE { ?x ?stringAtt ?value . FILTER (?value IN (?params)) }";
+        final List result =
+                em.createNativeQuery(query).setParameter("stringAtt", URI.create(Vocabulary.P_A_STRING_ATTRIBUTE))
+                  .setParameter("params", params)
+                  .getResultList();
+        assertEquals(matching.size(), result.size());
+        matching.forEach(a -> assertThat((List<URI>) result, hasItem(a.getUri())));
     }
 }

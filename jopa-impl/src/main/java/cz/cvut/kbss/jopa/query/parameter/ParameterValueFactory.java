@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -109,6 +110,8 @@ public class ParameterValueFactory {
             return new DurationParameterValue((TemporalAmount) value);
         } else if (metamodelProvider.isEntityType(value.getClass())) {
             return new EntityParameterValue(value, metamodelProvider);
+        } else if (value instanceof LangString) {
+            return new StringParameterValue((LangString) value);
         } else if (value instanceof Collection) {
             return new CollectionParameterValue(
                     ((Collection<?>) value).stream().map(this::create).collect(Collectors.toList()));

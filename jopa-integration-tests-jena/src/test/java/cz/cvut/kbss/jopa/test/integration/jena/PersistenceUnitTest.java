@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.JenaDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.JenaPersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.runner.PersistenceUnitTestRunner;
 import cz.cvut.kbss.ontodriver.jena.JenaDataSource;
 import org.apache.jena.query.Dataset;
@@ -53,7 +54,7 @@ class PersistenceUnitTest extends PersistenceUnitTestRunner {
                         createResource(Vocabulary.C_OWL_CLASS_A)),
                         createStatement(createResource(entityA.getUri().toString()),
                                 createProperty(Vocabulary.P_A_STRING_ATTRIBUTE),
-                                createLangLiteral(entityA.getStringAttribute(), "en"))
+                                createLangLiteral(entityA.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE))
                 ));
         ds.setDataset(newDataset);
         final EntityManager anotherEm = em.getEntityManagerFactory().createEntityManager();

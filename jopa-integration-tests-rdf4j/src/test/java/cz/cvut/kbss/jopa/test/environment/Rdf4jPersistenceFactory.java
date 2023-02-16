@@ -45,7 +45,7 @@ public class Rdf4jPersistenceFactory implements PersistenceFactory {
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         map.put(Rdf4jOntoDriverProperties.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         map.put(Rdf4jOntoDriverProperties.USE_INFERENCE, Boolean.FALSE.toString());
-        map.put(JOPAPersistenceProperties.LANG, "en");
+        map.put(JOPAPersistenceProperties.LANG, TestEnvironment.PERSISTENCE_LANGUAGE);
         return map;
     }
 }
