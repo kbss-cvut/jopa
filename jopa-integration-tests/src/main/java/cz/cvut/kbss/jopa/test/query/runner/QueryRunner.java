@@ -453,7 +453,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    void setParameterSupportsLangStringValue() {
+    public void setParameterSupportsLangStringValue() {
         final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
         final List<OWLClassA> matching = aInstances.subList(0, Generators.randomPositiveInt(3, aInstances.size()));
         final Set<LangString> params = matching.stream().map(a -> new LangString(a.getStringAttribute(),

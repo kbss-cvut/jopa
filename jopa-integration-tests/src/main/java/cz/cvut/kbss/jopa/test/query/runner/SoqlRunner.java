@@ -18,7 +18,9 @@ import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -189,8 +191,10 @@ public abstract class SoqlRunner extends BaseQueryRunner {
     public void testJoinOnPluralAttribute() {
         final List<OWLClassJ> jInstances = QueryTestEnvironment.getData(OWLClassJ.class);
         final OWLClassJ matching = Generators.getRandomItem(jInstances);
-        final Set<String> stringSet =
-                matching.getOwlClassA().stream().map(OWLClassA::getStringAttribute).collect(Collectors.toSet());
+        final Set<LangString> stringSet =
+                matching.getOwlClassA().stream()
+                        .map(a -> new LangString(a.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE))
+                        .collect(Collectors.toSet());
 
         final List<OWLClassJ> result = getEntityManager().createQuery(
                                                                  "SELECT j FROM OWLClassJ j WHERE j.owlClassA.stringAttribute IN :stringSet", OWLClassJ.class)

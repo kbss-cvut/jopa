@@ -533,12 +533,19 @@ public class SoqlQueryListener implements SoqlListener {
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
         if (node.hasNextChild()) {
-            assert abstractAttribute instanceof SingularAttribute;
-            final Type<?> type = ((SingularAttribute<?, ?>) abstractAttribute).getType();
+            final Type<?> type = resolveBindableType(abstractAttribute);
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
             }
             setAllNodesIris((ManagedType<?>) type, node.getChild());
+        }
+    }
+
+    private static Type<?> resolveBindableType(Attribute<?, ?> att) {
+        if (att instanceof SingularAttribute) {
+            return ((SingularAttribute<?, ?>) att).getType();
+        } else {
+            return ((PluralAttribute<?, ?, ?>) att).getElementType();
         }
     }
 
