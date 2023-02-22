@@ -6,11 +6,10 @@
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.rdf4j;
 
@@ -131,8 +130,7 @@ class Rdf4jAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         ad.addAssertionValue(Assertion.createDataPropertyAssertion(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"),
                 false), new Value<>("StringValue"));
@@ -178,22 +176,14 @@ class Rdf4jAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
-        ad.addAssertionValue(
-                Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")));
-        ad.addAssertionValue(
-                Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD")));
-        final Assertion dataAssertion = Assertion.createDataPropertyAssertion(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"),
-                false);
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+        ad.addAssertionValue(Assertion.createClassAssertion(false),
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")));
+        ad.addAssertionValue(Assertion.createClassAssertion(false),
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD")));
+        final Assertion dataAssertion = Assertion.createDataPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"), false);
         ad.addAssertionValue(dataAssertion, new Value<>("StringValue"));
-        ad.setAssertionContext(dataAssertion,
-                URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne"));
+        ad.setAssertionContext(dataAssertion, URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne"));
         adapter.persist(ad);
         final ArgumentCaptor<Collection<Statement>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
@@ -207,17 +197,12 @@ class Rdf4jAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Assertion objectAssertion = Assertion.createObjectPropertyAssertion(
-                URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-owlclassY"),
-                false);
-        ad.addAssertionValue(objectAssertion,
-                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityY")));
-        ad.addAssertionValue(objectAssertion,
-                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYY")));
-        ad.addAssertionValue(objectAssertion,
-                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYYY")));
+                URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-owlclassY"), false);
+        ad.addAssertionValue(objectAssertion, new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityY")));
+        ad.addAssertionValue(objectAssertion, new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYY")));
+        ad.addAssertionValue(objectAssertion, new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYYY")));
         ad.setSubjectContext(URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne"));
         adapter.persist(ad);
         final ArgumentCaptor<Collection<Statement>> captor = ArgumentCaptor.forClass(Collection.class);
@@ -232,8 +217,7 @@ class Rdf4jAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Assertion objectAssertion = Assertion.createPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-owlclassY"),
                 false);
@@ -252,16 +236,14 @@ class Rdf4jAdapterTest {
     }
 
     @Test
-    void testPersistEntityWithAnnotationPropertyAndDifferentSubjectAndPropertyContexts()
-            throws Exception {
+    void testPersistEntityWithAnnotationPropertyAndDifferentSubjectAndPropertyContexts() throws Exception {
         final URI subjectCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
         final URI propertyCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextTwo");
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.setSubjectContext(subjectCtx);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Assertion dataAssertion = Assertion.createAnnotationPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-annotation"),
                 false);
@@ -299,13 +281,13 @@ class Rdf4jAdapterTest {
         }
         final Collection<Axiom<?>> res = adapter.find(desc);
         verify(connectorMock, times(2)).findStatements(any(Resource.class),
-                                                       any(IRI.class), any(), anyBoolean(),
-                                                       eq(Collections.emptySet()));
+                any(IRI.class), any(), anyBoolean(),
+                eq(Collections.emptySet()));
         assertEquals(statements.size(), res.size());
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
-            assertEquals(statements.get(ax.getAssertion()).getObject().stringValue(), ax.getValue()
-                    .getValue().toString());
+            assertEquals(statements.get(ax.getAssertion()).getObject().stringValue(), ax.getValue().getValue()
+                    .toString());
         }
     }
 
@@ -354,15 +336,13 @@ class Rdf4jAdapterTest {
         final Map<Assertion, Statement> statements = initStatementsForDescriptor(desc);
         for (Assertion as : statements.keySet()) {
             final IRI predicate = VF.createIRI(as.getIdentifier().toString());
-            when(
-                    connectorMock.findStatements(subjectIri, predicate, null, as.isInferred(), Collections.emptySet()))
-                    .thenReturn(
-                            Collections.singletonList(statements.get(as)));
+            when(connectorMock.findStatements(subjectIri, predicate, null, as.isInferred(), Collections.emptySet()))
+                    .thenReturn(Collections.singletonList(statements.get(as)));
         }
         final Collection<Axiom<?>> res = adapter.find(desc);
         verify(connectorMock, times(3)).findStatements(any(Resource.class),
-                                                       any(IRI.class), any(), anyBoolean(),
-                                                       eq(Collections.emptySet()));
+                any(IRI.class), any(), anyBoolean(),
+                eq(Collections.emptySet()));
         verify(connectorMock, times(1)).findStatements(eq(subjectIri),
                 eq(VF.createIRI(anProperty)), eq(null), eq(true), eq(Collections.emptySet()));
         assertEquals(statements.size(), res.size());
@@ -390,9 +370,8 @@ class Rdf4jAdapterTest {
             statements.add(VF.createStatement(subjectIri, typeProperty, type));
             types.add(type.stringValue());
         }
-        when(
-                connectorMock.findStatements(subjectIri, typeProperty, null, false,
-                        Collections.singleton(VF.createIRI(subjectCtx.toString())))).thenReturn(statements);
+        when(connectorMock.findStatements(subjectIri, typeProperty, null, false,
+                Collections.singleton(VF.createIRI(subjectCtx.toString())))).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertEquals(statements.size(), res.size());
         for (Axiom<?> ax : res) {
@@ -416,8 +395,7 @@ class Rdf4jAdapterTest {
         for (Assertion a : statements.keySet()) {
             stmts.addAll(statements.get(a));
         }
-        when(
-                connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(stmts);
+        when(connectorMock.findStatements(subjectIri, null, null, false)).thenReturn(stmts);
 
         final Collection<Axiom<?>> res = adapter.find(desc);
         verify(connectorMock).findStatements(subjectIri, null, null, false);
@@ -496,19 +474,13 @@ class Rdf4jAdapterTest {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
         final List<Statement> statements = new ArrayList<>();
-        final Assertion asOne = Assertion.createObjectPropertyAssertion(URI.create(propertyOne),
-                false);
+        final Assertion asOne = Assertion.createObjectPropertyAssertion(URI.create(propertyOne), false);
         desc.addAssertion(asOne);
         final String expected = "http://krizik.felk.cvut.cz/ontologies/jopa#entityOne";
-        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
-                VF.createIRI(expected)));
+        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne), VF.createIRI(expected)));
         // This statement should be filtered out by the adapter
-        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
-                VF.createLiteral("someNonUriValue")));
-        when(
-                connectorMock
-                        .findStatements(subjectIri, VF.createIRI(propertyOne), null, false, Collections.emptySet()))
-                .thenReturn(statements);
+        statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne), VF.createLiteral("someNonUriValue")));
+        when(connectorMock.findStatements(subjectIri, VF.createIRI(propertyOne), null, false, Collections.emptySet())).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertEquals(1, res.size());
         assertEquals(expected, res.iterator().next().getValue().toString());
@@ -519,15 +491,12 @@ class Rdf4jAdapterTest {
         final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
         final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#dataProperty";
         final List<Statement> statements = new ArrayList<>();
-        final Assertion asOne = Assertion.createDataPropertyAssertion(URI.create(propertyOne),
-                false);
+        final Assertion asOne = Assertion.createDataPropertyAssertion(URI.create(propertyOne), false);
         desc.addAssertion(asOne);
         // This statement should be filtered out
         statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
                 VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
-        when(
-                connectorMock.findStatements(eq(subjectIri), eq(VF.createIRI(propertyOne)), any(), eq(false),
-                        anyCollection())).thenReturn(statements);
+        when(connectorMock.findStatements(eq(subjectIri), eq(VF.createIRI(propertyOne)), any(), eq(false), anyCollection())).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertTrue(res.isEmpty());
     }
@@ -539,8 +508,7 @@ class Rdf4jAdapterTest {
         final List<Statement> statements = new ArrayList<>();
         statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
                 VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
-        final Assertion asOne = Assertion.createObjectPropertyAssertion(URI.create(propertyOne),
-                false);
+        final Assertion asOne = Assertion.createObjectPropertyAssertion(URI.create(propertyOne), false);
         final Set<Assertion> assertions = new LinkedHashSet<>();
         assertions.add(Assertion.createUnspecifiedPropertyAssertion(false));
         assertions.add(asOne);
@@ -573,9 +541,8 @@ class Rdf4jAdapterTest {
     @Test
     void testGenerateIdentifier_ClassWithHash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz#class");
-        when(
-                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
+        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
@@ -586,9 +553,8 @@ class Rdf4jAdapterTest {
     @Test
     void testGenerateIdentifier_ClassWithoutHash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz/class");
-        when(
-                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
+        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
@@ -600,9 +566,8 @@ class Rdf4jAdapterTest {
     @Test
     void testGenerateIdentifier_ClassEndsWithSlash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz/class/");
-        when(
-                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
+        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
@@ -613,9 +578,8 @@ class Rdf4jAdapterTest {
     @Test
     void testGenerateIdentifierNeverUnique() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz#class");
-        when(
-                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                        eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(true);
+        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(true);
         assertThrows(IdentifierGenerationException.class, () -> adapter.generateIdentifier(clsUri));
     }
 
@@ -629,7 +593,7 @@ class Rdf4jAdapterTest {
                 .values());
         when(connectorMock
                 .findStatements(eq(subjectIri), any(IRI.class), any(), eq(false),
-                                eq(Collections.emptySet())))
+                        eq(Collections.emptySet())))
                 .thenReturn(statements);
 
         adapter.remove(desc);
@@ -644,9 +608,9 @@ class Rdf4jAdapterTest {
     void testContainsClassAssertion() throws Exception {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
-        when(connectorMock
-                .containsStatement(eq(subjectIri), eq(RDF.TYPE), eq(VF.createIRI(ax.getValue().stringValue())),
-                        anyBoolean(), anySet())).thenReturn(true);
+        when(connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE), eq(VF.createIRI(ax.getValue()
+                        .stringValue())),
+                anyBoolean(), anySet())).thenReturn(true);
 
         assertTrue(adapter.contains(ax, Collections.emptySet()));
         verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
@@ -659,10 +623,9 @@ class Rdf4jAdapterTest {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
-        when(
-                connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
-                        eq(VF.createIRI(ax.getValue().stringValue())), anyBoolean(),
-                        anyCollection())).thenReturn(true);
+        when(connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
+                eq(VF.createIRI(ax.getValue().stringValue())), anyBoolean(),
+                anyCollection())).thenReturn(true);
 
         assertTrue(adapter.contains(ax, Collections.singleton(context)));
         verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
@@ -676,9 +639,8 @@ class Rdf4jAdapterTest {
         final int val = 10;
         final Axiom<Integer> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(val));
-        when(
-                connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
-                        eq(VF.createLiteral(val)), anyBoolean(), anyCollection()))
+        when(connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
+                eq(VF.createLiteral(val)), anyBoolean(), anyCollection()))
                 .thenReturn(false);
 
         assertFalse(adapter.contains(ax, Collections.singleton(context)));
@@ -832,5 +794,14 @@ class Rdf4jAdapterTest {
     void getReferencedListHandlerStartsTransaction() throws Exception {
         adapter.getReferencedListHandler();
         verify(connectorMock).begin();
+    }
+
+    @Test
+    void isInferredTransformsAxiomToRdf4jStatementAndChecksForItsInference() throws Exception {
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(true), new Value<>(NamedResource.create(Generator.generateUri())));
+        adapter.isInferred(axiom, Collections.emptySet());
+        verify(connectorMock).begin();
+        final Statement s = VF.createStatement(subjectIri, RDF.TYPE, VF.createIRI(axiom.getValue().stringValue()));
+        verify(connectorMock).isInferred(s, Collections.emptySet());
     }
 }

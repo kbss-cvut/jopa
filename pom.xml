@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.19.2</version>
+    <version>0.20.1</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -38,11 +38,11 @@
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
 
-        <org.slf4j.version>2.0.3</org.slf4j.version>
+        <org.slf4j.version>2.0.6</org.slf4j.version>
         <org.junit.jupiter.version>5.9.1</org.junit.jupiter.version>
-        <org.mockito.version>4.2.0</org.mockito.version>
+        <org.mockito.version>4.9.0</org.mockito.version>
         <org.aspectj.version>1.9.7</org.aspectj.version>
-        <ch.qos.logback.version>1.3.4</ch.qos.logback.version>
+        <ch.qos.logback.version>1.3.5</ch.qos.logback.version>
 
         <!-- We use OWLAPI in multiple modules, so let's keep them in sync -->
         <net.sourceforge.owlapi.version>5.1.20</net.sourceforge.owlapi.version>
@@ -315,10 +315,10 @@
         <developer>
             <name>Petr Křemen</name>
             <email>petr.kremen@fel.cvut.cz</email>
-            <url>http://cs.fel.cvut.cz/en/people/kremep1</url>
+            <url>https://cs.fel.cvut.cz/en/people/kremep1</url>
             <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
             </organization>
-            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <organizationUrl>https://kbss.felk.cvut.cz</organizationUrl>
             <roles>
             </roles>
         </developer>
@@ -327,7 +327,7 @@
             <email>martin.ledvinka@fel.cvut.cz</email>
             <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
             </organization>
-            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <organizationUrl>https://kbss.felk.cvut.cz</organizationUrl>
             <roles>
             </roles>
         </developer>
@@ -335,7 +335,7 @@
 
     <organization>
         <name>Czech Technical University in Prague, Knowledge Based and Software Systems Group</name>
-        <url>http://kbss.felk.cvut.cz</url>
+        <url>https://kbss.felk.cvut.cz</url>
     </organization>
 
     <scm>

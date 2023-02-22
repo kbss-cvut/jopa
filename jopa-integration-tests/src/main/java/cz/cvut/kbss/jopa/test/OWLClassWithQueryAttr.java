@@ -19,14 +19,11 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sparql;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 @OWLClass(iri = Vocabulary.C_OwlClassWithQueryAttr)
-public class OWLClassWithQueryAttr {
+public class OWLClassWithQueryAttr implements HasUri {
 
-    private static final String STR_ATT_FIELD = "stringAttribute";
-    private static final String STR_QUERY_ATT_FIELD = "stringQueryAttribute";
     private static final String QUERY = "SELECT ?str\n" +
             "WHERE {?this <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?str . }";
 
@@ -47,16 +44,11 @@ public class OWLClassWithQueryAttr {
         this.uri = uri;
     }
 
-    /**
-     * @param uri the uri to set
-     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -75,18 +67,6 @@ public class OWLClassWithQueryAttr {
 
     public void setStringQueryAttribute(String stringQueryAttribute) {
         this.stringQueryAttribute = stringQueryAttribute;
-    }
-
-    public static String getClassIri() {
-        return OWLClassWithQueryAttr.class.getAnnotation(OWLClass.class).iri();
-    }
-
-    public static Field getStrAttField() throws NoSuchFieldException {
-        return OWLClassWithQueryAttr.class.getDeclaredField(STR_ATT_FIELD);
-    }
-
-    public static Field getStrQueryAttField() throws NoSuchFieldException {
-        return OWLClassWithQueryAttr.class.getDeclaredField(STR_QUERY_ATT_FIELD);
     }
 
     public static String getSparqlQuery() {

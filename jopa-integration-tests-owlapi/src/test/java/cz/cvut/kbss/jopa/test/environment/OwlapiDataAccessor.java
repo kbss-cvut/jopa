@@ -17,12 +17,15 @@ package cz.cvut.kbss.jopa.test.environment;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,30 +36,32 @@ public class OwlapiDataAccessor implements DataAccessor {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
         final OWLOntologyManager manager = ontology.getOWLOntologyManager();
         final OWLDataFactory df = manager.getOWLDataFactory();
+        final OwlapiAdapter owlapiAdapter = em.unwrap(OwlapiAdapter.class);
         for (Quad t : data) {
             final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
             final AddAxiom axiom;
             if (t.getProperty().toString().equals(RDF.TYPE)) {
                 final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
-                axiom = new AddAxiom(ontology, df.getOWLClassAssertionAxiom(cls, ind));
+                axiom = new MutableAddAxiom(ontology, df.getOWLClassAssertionAxiom(cls, ind));
             } else if (t.getProperty().toString().equals(RDFS.SUB_CLASS_OF)) {
                 final OWLClass subclass = df.getOWLClass(IRI.create(t.getSubject().toString()));
                 final OWLClass superclass = df.getOWLClass(IRI.create(t.getValue().toString()));
-                axiom = new AddAxiom(ontology, df.getOWLSubClassOfAxiom(subclass, superclass));
+                axiom = new MutableAddAxiom(ontology, df.getOWLSubClassOfAxiom(subclass, superclass));
             } else if (t.getValue() instanceof URI) {
                 final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(t.getProperty()));
                 final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) t.getValue()));
-                axiom = new AddAxiom(ontology, df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));
+                axiom = new MutableAddAxiom(ontology, df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));
             } else if (t.getProperty().toString().equals(RDFS.LABEL)) {
                 final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(t.getProperty()));
                 final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), t.getLanguage());
-                axiom = new AddAxiom(ontology, df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value));
+                axiom = new MutableAddAxiom(ontology, df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value));
             } else {
                 final OWLDataProperty dp = df.getOWLDataProperty(IRI.create(t.getProperty()));
                 final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), t.getLanguage());
-                axiom = new AddAxiom(ontology, df.getOWLDataPropertyAssertionAxiom(dp, ind, value));
+                axiom = new MutableAddAxiom(ontology, df.getOWLDataPropertyAssertionAxiom(dp, ind, value));
             }
             manager.applyChange(axiom);
+            owlapiAdapter.addTransactionalChanges(Collections.singleton(axiom));
         }
     }
 

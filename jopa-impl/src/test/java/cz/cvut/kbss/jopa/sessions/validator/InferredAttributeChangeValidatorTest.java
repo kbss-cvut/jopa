@@ -1,0 +1,161 @@
+package cz.cvut.kbss.jopa.sessions.validator;
+
+import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
+import cz.cvut.kbss.ontodriver.model.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@SuppressWarnings("unchecked")
+@ExtendWith(MockitoExtension.class)
+class InferredAttributeChangeValidatorTest {
+
+    private static final NamedResource SUBJECT = NamedResource.create(Generators.createIndividualIdentifier());
+
+    @Mock
+    private ConnectionWrapper connectionWrapper;
+
+    @InjectMocks
+    private InferredAttributeChangeValidator sut;
+
+    @Test
+    void validateChangeExtractsAxiomsForAttributeAndChecksWhetherRemovedOnesAreNotInferred() {
+        final OWLClassM original = new OWLClassM();
+        original.initializeTestValues(false);
+        original.setKey(SUBJECT.toString());
+        final OWLClassM clone = new OWLClassM();
+        clone.setKey(SUBJECT.toString());
+        clone.setIntegerSet(new HashSet<>(original.getIntegerSet()));
+        final Integer toRemove = original.getIntegerSet().iterator().next();
+        clone.getIntegerSet().remove(toRemove);
+        final FieldSpecification<? super OWLClassM, ?> fieldSpec = mock(FieldSpecification.class);
+        final Descriptor descriptor = new EntityDescriptor();
+        final Assertion a = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_IntegerSet), true);
+        doAnswer(inv -> {
+            final OWLClassM instance = inv.getArgument(0, OWLClassM.class);
+            return instance.getIntegerSet().stream().map(i -> new AxiomImpl<>(SUBJECT, a, new Value<>(i))).collect(
+                    Collectors.toSet());
+        }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
+
+        sut.validateChange(clone, original, fieldSpec, descriptor);
+        verify(connectionWrapper).getAttributeAxioms(clone, fieldSpec, descriptor);
+        verify(connectionWrapper).getAttributeAxioms(original, fieldSpec, descriptor);
+        verify(connectionWrapper).isInferred(new AxiomImpl<>(SUBJECT, a, new Value<>(toRemove)),
+                                             Collections.emptySet());
+    }
+
+    @Test
+    void validateChangeThrowsInferredAttributeModifiedExceptionWhenRemovedAxiomIsInferred() {
+        final OWLClassM original = new OWLClassM();
+        original.initializeTestValues(false);
+        original.setKey(SUBJECT.toString());
+        final OWLClassM clone = new OWLClassM();
+        clone.setKey(SUBJECT.toString());
+        clone.setIntegerSet(new HashSet<>(original.getIntegerSet()));
+        final Integer toRemove = original.getIntegerSet().iterator().next();
+        clone.getIntegerSet().remove(toRemove);
+        final FieldSpecification<? super OWLClassM, ?> fieldSpec = mock(FieldSpecification.class);
+        final Descriptor descriptor = new EntityDescriptor();
+        final Assertion a = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_IntegerSet), true);
+        doAnswer(inv -> {
+            final OWLClassM instance = inv.getArgument(0, OWLClassM.class);
+            return instance.getIntegerSet().stream().map(i -> new AxiomImpl<>(SUBJECT, a, new Value<>(i))).collect(
+                    Collectors.toSet());
+        }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
+        when(connectionWrapper.isInferred(new AxiomImpl<>(SUBJECT, a, new Value<>(toRemove)),
+                                          Collections.emptySet())).thenReturn(true);
+
+        final InferredAttributeModifiedException ex = assertThrows(InferredAttributeModifiedException.class,
+                                                                   () -> sut.validateChange(clone, original, fieldSpec,
+                                                                                            descriptor));
+        assertThat(ex.getMessage(), containsString(
+                "Value " + toRemove + " of attribute " + fieldSpec + " is inferred and cannot be removed"));
+    }
+
+    @Test
+    void validateChangeThrowsInferredAttributeModifiedExceptionWhenSingularAttributeIsModified() {
+        final OWLClassF original = new OWLClassF(SUBJECT.getIdentifier());
+        original.setSecondStringAttribute("Something original");
+        final OWLClassF clone = new OWLClassF(original.getUri());
+        clone.setSecondStringAttribute("Something different");
+        final FieldSpecification<? super OWLClassF, ?> fieldSpec = mock(FieldSpecification.class);
+        final Descriptor descriptor = new EntityDescriptor();
+        doAnswer(inv -> {
+            final OWLClassF instance = inv.getArgument(0, OWLClassF.class);
+            return Collections.singleton(new AxiomImpl<>(SUBJECT,
+                                                         Assertion.createDataPropertyAssertion(
+                                                                 URI.create("http://F-secondStringAttribute"),
+                                                                 true),
+                                                         new Value<>(instance.getSecondStringAttribute())));
+        }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
+        when(connectionWrapper.isInferred(any(Axiom.class), eq(Collections.emptySet()))).thenReturn(true);
+
+        assertThrows(InferredAttributeModifiedException.class,
+                     () -> sut.validateChange(clone, original, fieldSpec, descriptor));
+    }
+
+    @Test
+    void validateChangeAllowsAdditiveChangeOfSingularAttribute() {
+        final OWLClassF original = new OWLClassF(SUBJECT.getIdentifier());
+        original.setSecondStringAttribute(null);
+        final OWLClassF clone = new OWLClassF(original.getUri());
+        clone.setSecondStringAttribute("Something different");
+        final FieldSpecification<? super OWLClassF, ?> fieldSpec = mock(FieldSpecification.class);
+        final Descriptor descriptor = new EntityDescriptor();
+        doAnswer(inv -> {
+            final OWLClassF instance = inv.getArgument(0, OWLClassF.class);
+            if (instance.getSecondStringAttribute() == null) {
+                return Collections.emptySet();
+            }
+            return Collections.singleton(new AxiomImpl<>(SUBJECT,
+                                                         Assertion.createDataPropertyAssertion(
+                                                                 URI.create(Vocabulary.p_f_stringAttribute), true),
+                                                         new Value<>(instance.getSecondStringAttribute())));
+        }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
+
+        assertDoesNotThrow(() -> sut.validateChange(clone, original, fieldSpec, descriptor));
+    }
+
+    @Test
+    void validateChangeAllowsAdditiveChangeOfPluralAttribute() {
+        final OWLClassM original = new OWLClassM();
+        original.initializeTestValues(false);
+        original.setKey(SUBJECT.toString());
+        final OWLClassM clone = new OWLClassM();
+        clone.setKey(SUBJECT.toString());
+        clone.setIntegerSet(new HashSet<>(original.getIntegerSet()));
+        clone.getIntegerSet().add(Generators.randomInt());
+        final FieldSpecification<? super OWLClassM, ?> fieldSpec = mock(FieldSpecification.class);
+        final Descriptor descriptor = new EntityDescriptor();
+        final Assertion a = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_IntegerSet), true);
+        doAnswer(inv -> {
+            final OWLClassM instance = inv.getArgument(0, OWLClassM.class);
+            return instance.getIntegerSet().stream().map(i -> new AxiomImpl<>(SUBJECT, a, new Value<>(i))).collect(
+                    Collectors.toSet());
+        }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
+
+        assertDoesNotThrow(() -> sut.validateChange(clone, original, fieldSpec, descriptor));
+    }
+}

@@ -23,7 +23,7 @@ import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OwlClassWithQueryAttr3)
-public class OWLClassWithQueryAttr3 {
+public class OWLClassWithQueryAttr3 implements HasUri {
 
     private static final String QUERY = "SELECT ?pluralAttribute\n" +
             "WHERE {?this <" + Vocabulary.P_HAS_SIMPLE_LIST + "> ?pluralAttribute}";
@@ -44,16 +44,11 @@ public class OWLClassWithQueryAttr3 {
         this.uri = uri;
     }
 
-    /**
-     * @param uri the uri to set
-     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -72,10 +67,6 @@ public class OWLClassWithQueryAttr3 {
 
     public void setPluralQueryAttribute(Set<String> pluralQueryAttribute) {
         this.pluralQueryAttribute = pluralQueryAttribute;
-    }
-
-    public static String getClassIri() {
-        return OWLClassWithQueryAttr3.class.getAnnotation(OWLClass.class).iri();
     }
 
     public static String getSparqlQuery() {

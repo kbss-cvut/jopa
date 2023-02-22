@@ -22,8 +22,8 @@ import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import java.net.URI;
 import java.util.Objects;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassR")
-public class OWLClassR {
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_R)
+public class OWLClassR implements HasUri {
 
     @Id
     private URI uri;
@@ -31,6 +31,7 @@ public class OWLClassR {
     @OWLAnnotationProperty(iri = RDFS.LABEL)
     private String name;
 
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -55,11 +56,8 @@ public class OWLClassR {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         OWLClassR owlClassR = (OWLClassR) o;
-
         return Objects.equals(name, owlClassR.name);
-
     }
 
     @Override

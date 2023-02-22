@@ -104,7 +104,7 @@ class EntityLifecycleCallbackResolver {
                 resolveEntityListenerCallbacks(listener, listenerType);
             } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
                 throw new MetamodelInitializationException("Unable to instantiate entity listener of type "
-                        + listenerType + ". The listener has to have a public no-arg constructor.");
+                        + listenerType + ". The listener has to have a public no-arg constructor.", e);
             }
         }
     }

@@ -15,9 +15,9 @@
 package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -26,6 +26,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Objects;
 
 public class SoqlQueryListener implements SoqlListener {
 
@@ -35,7 +37,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     private String typeDef = "SELECT";
 
-    // keeps pointer at created object of SoqlAttribute while processing other neccessary rules
+    // keeps pointer at created object of SoqlAttribute while processing other necessary rules
     private SoqlAttribute attrPointer;
 
     private final ArrayList<SoqlAttribute> attributes;
@@ -55,8 +57,7 @@ public class SoqlQueryListener implements SoqlListener {
 
 
     public SoqlQueryListener(MetamodelImpl metamodel) {
-        super();
-        this.metamodel = metamodel;
+        this.metamodel = Objects.requireNonNull(metamodel);
         this.attributes = new ArrayList<>();
         this.objectOfNextOr = new ArrayList<>();
         this.orderAttributes = new ArrayList<>();
@@ -70,7 +71,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitQuerySentence(SoqlParser.QuerySentenceContext ctx) {
-        buildString();
+        buildQueryString();
     }
 
     @Override
@@ -99,16 +100,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterJoinedParams(SoqlParser.JoinedParamsContext ctx) {
-        SoqlAttribute myAttr = new SoqlAttribute();
-        SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
-        SoqlNode actualNode = firstNode;
-        for (int i = 2; i < ctx.getChildCount(); i += 2) {
-            SoqlNode prevNode = actualNode;
-            actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
-            prevNode.setChild(actualNode);
-        }
-        setIris(firstNode);
-        myAttr.setFirstNode(firstNode);
+        SoqlNode firstNode = linkContextNodes(ctx);
+        SoqlAttribute myAttr = new SoqlAttribute(firstNode);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
@@ -160,14 +153,13 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterObjWithAttr(SoqlParser.ObjWithAttrContext ctx) {
-        String owner = getOwnerfromParam(ctx);
-        String attribute = getAttributefromParam(ctx);
+        String owner = getOwnerFromParam(ctx);
+        String attribute = getAttributeFromParam(ctx);
         SoqlNode firstNode = new SoqlNode(owner);
         SoqlNode lastNode = new SoqlNode(firstNode, attribute);
-        SoqlAttribute myAttr = new SoqlAttribute();
         firstNode.setChild(lastNode);
         setIris(firstNode);
-        myAttr.setFirstNode(firstNode);
+        SoqlAttribute myAttr = new SoqlAttribute(firstNode);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
@@ -203,7 +195,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterDistinct(SoqlParser.DistinctContext ctx) {
-        if ("DISTINCT".equals(ctx.getChild(0).getText())) {
+        if (SoqlConstants.DISTINCT.equals(ctx.getChild(0).getText())) {
             isSelectedParamDistinct = true;
         }
     }
@@ -213,19 +205,121 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterLogOp(SoqlParser.LogOpContext ctx) {
-    }
-
-    @Override
-    public void exitLogOp(SoqlParser.LogOpContext ctx) {
-    }
-
-    @Override
     public void enterWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
     }
 
     @Override
     public void exitWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
+    }
+
+    @Override
+    public void enterConditionalExpression(SoqlParser.ConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitConditionalExpression(SoqlParser.ConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void enterConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
+    }
+
+    @Override
+    public void exitConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
+        final ParserRuleContext parentCtx = ctx.getParent();
+        if (parentCtx.getChildCount() > 1 && !parentCtx.getChild(0).equals(ctx)) {
+            objectOfNextOr.add(attrPointer);
+        }
+    }
+
+    @Override
+    public void enterConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
+    }
+
+    @Override
+    public void exitConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
+        if (ctx.getChildCount() > 1) {
+            attrPointer.setNot(true);
+        }
+    }
+
+    @Override
+    public void enterSimpleConditionalExpression(SoqlParser.SimpleConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitSimpleConditionalExpression(SoqlParser.SimpleConditionalExpressionContext ctx) {
+    }
+
+    @Override
+    public void enterInExpression(SoqlParser.InExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitInExpression(SoqlParser.InExpressionContext ctx) {
+        assert ctx.getChildCount() > 2;
+        final ParseTree value = resolveInExpressionValue(ctx);
+        if (ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
+            attrPointer.setOperator(InOperator.notIn());
+        } else {
+            attrPointer.setOperator(InOperator.in());
+        }
+        attrPointer.setValue(value.getText());
+    }
+
+    private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
+        final ParseTree lastToken = ctx.getChild(ctx.getChildCount() - 1);
+        if (")".equals(lastToken.getText())) {
+            return ctx.getChild(ctx.getChildCount() - 2);
+        }
+        return lastToken;
+    }
+
+    @Override
+    public void enterInItem(SoqlParser.InItemContext ctx) {
+    }
+
+    @Override
+    public void exitInItem(SoqlParser.InItemContext ctx) {
+    }
+
+    @Override
+    public void enterLiteral(SoqlParser.LiteralContext ctx) {
+    }
+
+    @Override
+    public void exitLiteral(SoqlParser.LiteralContext ctx) {
+    }
+
+    @Override
+    public void enterLikeExpression(SoqlParser.LikeExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitLikeExpression(SoqlParser.LikeExpressionContext ctx) {
+        if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
+            attrPointer.setOperator(LikeOperator.notLike());
+            ParseTree whereClauseValue = ctx.getChild(3);
+            attrPointer.setValue(whereClauseValue.getText());
+        } else {
+            attrPointer.setOperator(LikeOperator.like());
+            ParseTree whereClauseValue = ctx.getChild(2);
+            attrPointer.setValue(whereClauseValue.getText());
+        }
+    }
+
+    @Override
+    public void enterComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
+    }
+
+    @Override
+    public void exitComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
+        String operator = ctx.getChild(1).getText();
+
+        ParseTree whereClauseValue = ctx.getChild(2);
+
+        attrPointer.setOperator(new ComparisonOperator(operator));
+        attrPointer.setValue(whereClauseValue.getText());
     }
 
     @Override
@@ -257,53 +351,15 @@ public class SoqlQueryListener implements SoqlListener {
         String table = ctx.getChild(0).getChild(0).getText();
         String objectName = ctx.getChild(1).getChild(0).getText();
         objectTypes.put(objectName, table);
-        SoqlAttribute myAttr = new SoqlAttribute();
         SoqlNode node = new SoqlNode(table);
         setObjectIri(node);
-        myAttr.setFirstNode(node);
-        myAttr.setOperator("");
-        myAttr.setValue("");
+        SoqlAttribute myAttr = new SoqlAttribute(node);
         attributes.add(myAttr);
         attrPointer = myAttr;
     }
 
     @Override
     public void exitTableWithName(SoqlParser.TableWithNameContext ctx) {
-    }
-
-    @Override
-    public void enterWhereClauses(SoqlParser.WhereClausesContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClauses(SoqlParser.WhereClausesContext ctx) {
-    }
-
-    @Override
-    public void enterWhereClauseOps(SoqlParser.WhereClauseOpsContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClauseOps(SoqlParser.WhereClauseOpsContext ctx) {
-    }
-
-    @Override
-    public void enterWhereClause(SoqlParser.WhereClauseContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClause(SoqlParser.WhereClauseContext ctx) {
-        String logicalOperator = getOperators(ctx.getParent());
-        String operator = ctx.getChild(1).getText();
-
-        ParseTree whereClauseValue = ctx.getChild(2);
-
-        attrPointer.setOperator(operator);
-        attrPointer.setValue(whereClauseValue.getText());
-
-        if ("OR".equals(logicalOperator)) {
-            objectOfNextOr.add(attrPointer);
-        }
     }
 
     @Override
@@ -348,14 +404,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterOrderByParam(SoqlParser.OrderByParamContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
-        SoqlNode actualNode = firstNode;
-        for (int i = 2; i < ctx.getChildCount(); i += 2) {
-            SoqlNode prevNode = actualNode;
-            actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
-            prevNode.setChild(actualNode);
-        }
-        setIris(firstNode);
+        SoqlNode firstNode = linkContextNodes(ctx);
         String orderingBy = getOrderingBy(ctx.getParent());
         SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
         boolean attrSet = false;
@@ -366,9 +415,7 @@ public class SoqlQueryListener implements SoqlListener {
             }
         }
         if (!attrSet) {
-            SoqlAttribute myAttr = new SoqlAttribute();
-            myAttr.setFirstNode(firstNode);
-            myAttr.setOperator("");
+            SoqlAttribute myAttr = new SoqlAttribute(firstNode);
             myAttr.setValue(orderParam.getAsValue());
             myAttr.setOrderBy(true);
             attributes.add(1, myAttr);
@@ -399,14 +446,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterGroupByParam(SoqlParser.GroupByParamContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerfromParam(ctx));
-        SoqlNode actualNode = firstNode;
-        for (int i = 2; i < ctx.getChildCount(); i += 2) {
-            SoqlNode prevNode = actualNode;
-            actualNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
-            prevNode.setChild(actualNode);
-        }
-        setIris(firstNode);
+        SoqlNode firstNode = linkContextNodes(ctx);
         SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
         boolean attrSet = false;
         for (SoqlAttribute attr : attributes) {
@@ -416,15 +456,25 @@ public class SoqlQueryListener implements SoqlListener {
             }
         }
         if (!attrSet) {
-            SoqlAttribute myAttr = new SoqlAttribute();
-            myAttr.setFirstNode(firstNode);
-            myAttr.setOperator("");
+            SoqlAttribute myAttr = new SoqlAttribute(firstNode);
             myAttr.setValue(groupParam.getAsValue());
             myAttr.setGroupBy(true);
             attributes.add(1, myAttr);
             groupParam.setAttribute(myAttr);
         }
         groupAttributes.add(groupParam);
+    }
+
+    private SoqlNode linkContextNodes(ParserRuleContext ctx) {
+        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
+        SoqlNode currentNode = firstNode;
+        for (int i = 2; i < ctx.getChildCount(); i += 2) {
+            SoqlNode prevNode = currentNode;
+            currentNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
+            prevNode.setChild(currentNode);
+        }
+        setIris(firstNode);
+        return firstNode;
     }
 
     @Override
@@ -448,32 +498,12 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     //Methods to help parse tree
-    private String getOwnerfromParam(ParserRuleContext ctx) {
+    private String getOwnerFromParam(ParserRuleContext ctx) {
         return ctx.getChild(0).getChild(0).getText();
     }
 
-    private String getAttributefromParam(ParserRuleContext ctx) {
+    private String getAttributeFromParam(ParserRuleContext ctx) {
         return ctx.getChild(2).getChild(0).getText();
-    }
-
-    private String getOperators(ParserRuleContext ctx) {
-        String operator = "";
-        switch (ctx.getChildCount()) {
-            case 2:
-                if (ctx.getChild(0).getChildCount() > 0) {
-                    operator = ctx.getChild(0).getChild(0).getText();
-                } else {
-                    attrPointer.setNot(true);
-                }
-                break;
-            case 3:
-                attrPointer.setNot(true);
-                operator = ctx.getChild(0).getChild(0).getText();
-                break;
-            default:
-                attrPointer.setNot(false);
-        }
-        return operator;
     }
 
     private String getOrderingBy(ParserRuleContext ctx) {
@@ -481,9 +511,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private void setObjectIri(SoqlNode node) {
-        if (metamodel == null) {
-            return;
-        }
         IdentifiableEntityType<?> entityType = getEntityType(node.getValue());
         if (entityType == null) {
             return;
@@ -495,9 +522,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private IdentifiableEntityType<?> getEntityType(String name) {
-        if (metamodel == null) {
-            return null;
-        }
         for (EntityType<?> type : metamodel.getEntities()) {
             IdentifiableEntityType<?> entityType = (IdentifiableEntityType<?>) type;
             if (entityType.getName().equals(name)) {
@@ -507,38 +531,22 @@ public class SoqlQueryListener implements SoqlListener {
         return null;
     }
 
-    private IdentifiableEntityType<?> getEntityType(Type<?> type) {
-        if (metamodel == null) {
-            return null;
-        }
-        for (EntityType<?> value : metamodel.getEntities()) {
-            IdentifiableEntityType<?> entityType = (IdentifiableEntityType<?>) value;
-            if (entityType.equals(type)) {
-                return entityType;
-            }
-        }
-        return null;
-    }
-
-    private void setAllNodesIris(IdentifiableEntityType<?> entityType, SoqlNode node) {
-        SingularAttributeImpl<?, ?> abstractAttribute = (SingularAttributeImpl<?, ?>) entityType.getAttribute(node.getValue());
+    private void setAllNodesIris(ManagedType<?> entityType, SoqlNode node) {
+        final Attribute<?, ?> abstractAttribute = entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
         if (node.hasNextChild()) {
-            Type<?> type = abstractAttribute.getType();
-            IdentifiableEntityType<?> attrEntityType = getEntityType(type);
-            if (attrEntityType == null) {
+            assert abstractAttribute instanceof SingularAttribute;
+            final Type<?> type = ((SingularAttribute<?, ?>) abstractAttribute).getType();
+            if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
             }
-            setAllNodesIris(attrEntityType, node.getChild());
+            setAllNodesIris((ManagedType<?>) type, node.getChild());
         }
     }
 
     private void setIris(SoqlNode firstNode) {
         if (!objectTypes.containsKey(firstNode.getValue())) {
-            return;
-        }
-        if (metamodel == null) {
             return;
         }
         String objectName = objectTypes.get(firstNode.getValue());
@@ -557,7 +565,7 @@ public class SoqlQueryListener implements SoqlListener {
 
 
     //Methods to build new Query
-    private void buildString() {
+    private void buildQueryString() {
         if (attributes.isEmpty()) {
             return;
         }
@@ -566,7 +574,7 @@ public class SoqlQueryListener implements SoqlListener {
             newQueryBuilder.append(getCountPart());
         } else {
             if (isSelectedParamDistinct) {
-                newQueryBuilder.append(" ").append("DISTINCT");
+                newQueryBuilder.append(" ").append(SoqlConstants.DISTINCT);
             }
             newQueryBuilder.append(" ?x ");
         }
@@ -592,7 +600,7 @@ public class SoqlQueryListener implements SoqlListener {
     private StringBuilder getCountPart() {
         StringBuilder countPart = new StringBuilder(" (COUNT(");
         if (isSelectedParamDistinct) {
-            countPart.append("distinct ");
+            countPart.append(SoqlConstants.DISTINCT).append(" ");
         }
         countPart.append("?x) AS ?count) ");
         return countPart;
@@ -600,14 +608,12 @@ public class SoqlQueryListener implements SoqlListener {
 
     private StringBuilder processSupremeAttributes() {
         StringBuilder attributesPart = new StringBuilder();
-        SoqlAttribute pointer = attributes.get(0);
-        while (pointer.isObject() || pointer.isOrderBy() || pointer.isGroupBy()) {
-            attributesPart.append(processAttribute(pointer));
-            attributes.remove(pointer);
-            if (attributes.isEmpty()) {
-                break;
-            } else {
-                pointer = attributes.get(0);
+        final Iterator<SoqlAttribute> it = attributes.iterator();
+        while (it.hasNext()) {
+            final SoqlAttribute current = it.next();
+            if (current.isObject() || current.isOrderBy() || current.isGroupBy()) {
+                attributesPart.append(processAttribute(current));
+                it.remove();
             }
         }
         return attributesPart;

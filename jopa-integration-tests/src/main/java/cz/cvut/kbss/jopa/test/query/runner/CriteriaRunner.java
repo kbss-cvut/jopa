@@ -15,9 +15,15 @@
 package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.*;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
+import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.model.query.criteria.Root;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassA_;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
@@ -27,7 +33,9 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.*;
@@ -277,5 +285,27 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         assertEquals(expected.getUri(), result.getUri());
         assertEquals(expected.getStringAttribute(), result.getStringAttribute());
         assertEquals(expected.getTypes(), result.getTypes());
+    }
+
+    @Test
+    public void testFindByAttributeValueIn() {
+        final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
+        final List<OWLClassA> matching;
+        if (Generators.randomBoolean()) {
+            matching = aInstances.subList(0, aInstances.size() / 2);
+        } else {
+            matching = aInstances.subList(aInstances.size() / 2, aInstances.size());
+        }
+        final List<OWLClassD> expected = QueryTestEnvironment.getData(OWLClassD.class).stream()
+                                                             .filter(d -> matching.stream().anyMatch(
+                                                                     a -> d.getOwlClassA().getUri().equals(a.getUri())))
+                                                             .collect(Collectors.toList());
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<OWLClassD> query = cb.createQuery(OWLClassD.class);
+        Root<OWLClassD> root = query.from(OWLClassD.class);
+        query.select(root).where(root.getAttr("owlClassA").in(matching));
+
+        final List<OWLClassD> result = getEntityManager().createQuery(query).getResultList();
+        assertThat(result, containsSameEntities(expected));
     }
 }

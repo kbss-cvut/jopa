@@ -138,7 +138,8 @@ class MergeManagerTest {
         final OWLClassD clone = new OWLClassD(original.getUri());
         clone.setOwlClassA(new OWLClassA(Generators.createIndividualIdentifier()));
         final ObjectChangeSet changeSet = createChangeSet(original, clone);
-        final ChangeRecordImpl record = new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), clone.getOwlClassA());
+        final ChangeRecordImpl record =
+                new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), clone.getOwlClassA());
         record.preventCaching();
         changeSet.addChangeRecord(record);
         mm.mergeChangesOnObject(changeSet);

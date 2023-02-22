@@ -15,11 +15,13 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Set;
 
 public interface ObjectOntologyMapper {
 
@@ -44,7 +46,7 @@ public interface ObjectOntologyMapper {
     /**
      * Loads a reference to an entity corresponding to the specified parameters.
      * <p>
-     * The reference is usually an empty object will attributes being loaded lazily. However, it may be also be
+     * The reference is usually an empty object with attributes being loaded lazily. However, it may be also be
      * retrieved from the cache, in which case its attributes will be loaded.
      *
      * @param loadingParameters Reference loading parameters
@@ -57,10 +59,10 @@ public interface ObjectOntologyMapper {
      * Loads entity field value and sets it on the specified entity.
      *
      * @param entity     The entity on which the field value will be set
-     * @param field      The field to load
+     * @param fieldSpec      The field to load
      * @param descriptor Descriptor possibly specifying the field context
      */
-    <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
+    <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
 
     /**
      * Persists the specified entity into the underlying ontology.
@@ -81,7 +83,7 @@ public interface ObjectOntologyMapper {
     <T> void removeEntity(URI identifier, Class<T> cls, Descriptor descriptor);
 
     /**
-     * Checks that there are no pending changes in the mapper.
+     * Checks that there are not any pending changes in the mapper.
      *
      * @throws UnpersistedChangeException Thrown when there are unpersisted changes
      */
@@ -91,8 +93,20 @@ public interface ObjectOntologyMapper {
      * Sets value of property represented by the specified field to the field's value.
      *
      * @param entity     Entity containing the field
-     * @param field      The field to update
+     * @param fieldSpec      The field to update
      * @param descriptor Optionally specifies context
      */
-    <T> void updateFieldValue(T entity, Field field, Descriptor descriptor);
+    <T> void updateFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
+
+    /**
+     * Extracts the value of the specified field from the specified entity and transforms it to axioms.
+     *
+     * @param entity           Entity to extract attribute from
+     * @param fieldSpec        Field specification determining which values to extract
+     * @param entityDescriptor Entity descriptor
+     * @param <T>              Entity type
+     * @return Set of axioms representing the field value
+     */
+    <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,
+                                         Descriptor entityDescriptor);
 }

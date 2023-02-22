@@ -42,7 +42,7 @@ public class AxiomBuilder {
         return statementToAxiom(statement, assertion);
     }
 
-    private Optional<Value<?>> resolveValue(Statement stmt, Assertion assertion) {
+    private static Optional<Value<?>> resolveValue(Statement stmt, Assertion assertion) {
         if (assertion == null || Rdf4jUtils.isBlankNode(stmt.getObject())) {
             return Optional.empty();
         }

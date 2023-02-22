@@ -39,9 +39,8 @@ public interface SingularAttribute<X, T> extends Attribute<X, T>, Bindable<T> {
     /**
      * Is the attribute a version attribute.
      *
-     * @return boolean indicating whether the attribute is
-     *
-     *         a version attribute
+     * @return boolean indicating whether the attribute is a version attribute
+     * @deprecated Not supported in JOPA
      */
     @UnusedJPA
     @Deprecated

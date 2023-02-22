@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -31,7 +29,6 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
@@ -176,29 +173,31 @@ class EntityConstructor {
         TypedQueryImpl<?> typedQuery;
         try {
             if (queryAttribute.isCollection()) {
-                PluralQueryAttribute<? super T, ?, ?> pluralQueryAttribute = (PluralQueryAttribute<? super T, ?, ?>) queryAttribute;
+                PluralQueryAttribute<? super T, ?, ?> pluralQueryAttribute =
+                        (PluralQueryAttribute<? super T, ?, ?>) queryAttribute;
                 typedQuery = queryFactory.createNativeQuery(pluralQueryAttribute.getQuery(),
-                        pluralQueryAttribute.getElementType().getJavaType());
+                                                            pluralQueryAttribute.getElementType().getJavaType());
             } else {
                 typedQuery = queryFactory.createNativeQuery(queryAttribute.getQuery(), queryAttribute.getJavaType());
             }
         } catch (RuntimeException e) {
             LOG.error("Could not create native query from the parameter given in annotation @Sparql:\n{}" +
-                            "\nAttribute '{}' will be skipped.", queryAttribute.getQuery(),
-                    queryAttribute.getJavaMember().getName(), e);
+                              "\nAttribute '{}' will be skipped.", queryAttribute.getQuery(),
+                      queryAttribute.getJavaMember().getName(), e);
             return;
         }
 
         setAttributeQueryParameters(instance, queryAttribute, typedQuery, et);
 
-        QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs = getQueryFieldLoader(et, queryAttribute);
+        QueryFieldStrategy<? extends AbstractQueryAttribute<? super T, ?>, T> qfs =
+                getQueryFieldLoader(et, queryAttribute);
 
         qfs.addValueFromTypedQuery(typedQuery);
         qfs.buildInstanceFieldValue(instance);
     }
 
     private static <T> void setAttributeQueryParameters(T instance, QueryAttribute<? super T, ?> queryAtt,
-                                                 TypedQueryImpl<?> query, EntityType<?> et) {
+                                                        TypedQueryImpl<?> query, EntityType<?> et) {
         try {
             if (query.hasParameter(THIS_PARAMETER)) {
                 // set value of variable "this", if it is present in the query, with the entity instance
@@ -252,9 +251,8 @@ class EntityConstructor {
         IntegrityConstraintsValidator.getValidator().validate(id, fieldSpec, value);
     }
 
-    <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
-                           Descriptor entityDescriptor) {
-        final FieldSpecification<? super T, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
+    <T> void setFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Collection<Axiom<?>> axioms,
+                           EntityType<T> et, Descriptor entityDescriptor) {
         if (axioms.isEmpty()) {
             validateIntegrityConstraints(entity, fieldSpec, et);
             return;

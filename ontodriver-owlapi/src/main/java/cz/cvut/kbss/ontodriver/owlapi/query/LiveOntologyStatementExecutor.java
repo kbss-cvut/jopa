@@ -34,8 +34,7 @@ public class LiveOntologyStatementExecutor implements StatementExecutor {
     @Override
     public ResultSet executeQuery(QuerySpecification query) throws OwlapiDriverException {
         final ResultSet resultSet = connector.executeRead(snapshot -> {
-            final QueryResult<OWLObject> res =
-                    execute(query, snapshot);
+            final QueryResult<OWLObject> res = execute(query, snapshot);
 
             return res != null ? AbstractResultSet.createResultSet(res, query.getStatement(), query.getQuery()) : null;
         });
@@ -57,14 +56,12 @@ public class LiveOntologyStatementExecutor implements StatementExecutor {
         return OWL2QueryEngine.exec(query.getQuery(), ont);
     }
 
-    private OWLReasoner getNoInferenceReasoner(OntologySnapshot snapshot) {
+    private static OWLReasoner getNoInferenceReasoner(OntologySnapshot snapshot) {
         return new NoOpReasoner(snapshot.getOntology());
     }
 
     @Override
     public void executeUpdate(QuerySpecification query) {
-        connector.executeWrite(snapshot -> {
-            execute(query, snapshot);
-        });
+        connector.executeWrite(snapshot -> execute(query, snapshot));
     }
 }

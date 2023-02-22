@@ -3,21 +3,19 @@ grammar Soql;
 
 querySentence : selectStatement whereClauseWrapper? groupByClause? orderByClause? ;
 
-
-
 selectStatement: typeDef params FROM tables ;
 
 typeDef: SELECT ;
 
 params: paramComma* distinctParam ;
 
-paramComma: distinctParam COMMA ;
+paramComma: distinctParam ',' ;
 
 distinctParam: distinct? selectedParam ;
 
 selectedParam: param | count;
 
-count: COUNT LEFTPAREN param RIGHTPAREN ;
+count: COUNT '(' param ')' ;
 
 param: objWithAttr | objWithOutAttr ;
 
@@ -44,38 +42,62 @@ tableName: TEXT ;
 tableWithName: table tableName ;
 
 
+whereClauseWrapper
+    : WHERE conditionalExpression
+    ;
 
-logOp: AND | OR ;
+conditionalExpression
+    : (conditionalTerm) (OR conditionalTerm)*
+    ;
 
+conditionalTerm
+   : (conditionalFactor) (AND conditionalFactor)*
+   ;
 
+conditionalFactor
+   : (NOT)? simpleConditionalExpression
+   ;
 
-whereClauseWrapper: WHERE whereClauses ;
+simpleConditionalExpression
+   : comparisonExpression
+   | likeExpression
+   | inExpression
+   ;
 
-whereClauses: whereClauseOps whereClauseOps* ;
+inExpression
+   : whereClauseParam (NOT)? IN '('? (inItem (',' inItem)*) ')'?
+   ;
 
-whereClauseOps: logOp? NOT? whereClause ;
+inItem
+   : literal
+   | whereClauseValue
+   ;
 
-whereClause: whereClauseParam QUERYOPERATOR whereClauseValue;
+literal
+   :
+   ;
+
+likeExpression
+   : whereClauseParam ('NOT')? LIKE whereClauseValue
+   ;
+
+comparisonExpression: whereClauseParam COMPARISON_OPERATOR whereClauseValue;
 
 whereClauseValue: (QMARK TEXT QMARK) | COLONTEXT ;
 
 whereClauseParam: param | joinedParams ;
 
-
-
 orderByClause: ORDERBY orderByFullFormComma orderByFullFormComma* ;
 
-orderByFullFormComma: orderByFullForm COMMA? ;
+orderByFullFormComma: orderByFullForm ','? ;
 
 orderByFullForm: orderByParam ORDERING? ;
 
 orderByParam: object DOT attribute (DOT attribute)* ;
 
-
-
 groupByClause: GROUPBY groupByParamComma groupByParamComma* ;
 
-groupByParamComma: groupByParam COMMA? ;
+groupByParamComma: groupByParam ','? ;
 
 groupByParam: object DOT attribute (DOT attribute)* ;
 
@@ -109,19 +131,17 @@ DISTINCT: 'DISTINCT' ;
 
 COUNT: 'COUNT' ;
 
-QUERYOPERATOR: '>' | '<' | '>=' | '<=' | '=' | 'LIKE';
+LIKE: 'LIKE' ;
+
+IN: 'IN' ;
+
+COMPARISON_OPERATOR: '>' | '<' | '>=' | '<=' | '=' | '<>' | '!=' ;
 
 DOT: '.' ;
-
-COMMA: ',' ;
 
 QMARK: '"' ;
 
 COLON: ':' ;
-
-RIGHTPAREN: ')' ;
-
-LEFTPAREN: '(' ;
 
 TEXT: (LOWERCASE | UPPERCASE | DIGIT)+ ;
 

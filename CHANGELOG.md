@@ -1,5 +1,16 @@
 # JOPA - Release Notes
 
+## 0.20.1 - 2023-02-07
+- Allow building a restricted metamodel from a set of entity classes (will be used by static metamodel generator).
+
+## 0.20.0 - 2023-01-26
+- Allow editing inferred attributes (see Wiki for details) (Feature #121).
+- Support for `IN`, `NOT LIKE`, `<>` (`!=`) operators in SOQL (and the corresponding operators in Criteria API). (Enhancement #123, #129).
+
+## 0.19.3 - 2022-12-13
+- Allow excluding `@OWLClass` annotated classes from persistence by using `NonEntity` (Enhancement #124).
+- Update dependencies: SF4J 2.0.6, Logback 1.3.5, Mockito 4.9.0.
+
 ## 0.19.2 - 2022-11-10
 - Fix issues in working with `LocalTime` values.
 

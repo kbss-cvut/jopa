@@ -14,10 +14,12 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
-import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -106,14 +108,6 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
         public void setLabel(String label) {
             this.label = label;
         }
-    }
-
-    @Test
-    void setterAspectThrowsInferredAttributeModifiedExceptionWhenInferredAttributeIsModified() {
-        when(transactionMock.isActive()).thenReturn(true);
-        final OWLClassF entityF = new OWLClassF(Generators.createIndividualIdentifier());
-        final OWLClassF clone = (OWLClassF) sut.registerExistingObject(entityF, descriptor);
-        assertThrows(InferredAttributeModifiedException.class, () -> clone.setSecondStringAttribute("value"));
     }
 
     @Test

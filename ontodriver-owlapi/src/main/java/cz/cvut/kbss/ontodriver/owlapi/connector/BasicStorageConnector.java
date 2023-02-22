@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
@@ -74,7 +72,7 @@ public class BasicStorageConnector extends AbstractConnector {
         }
         final OntologyStorageProperties storageProperties = configuration.getStorageProperties();
         LOG.debug("Loading ontology {} from {}.", storageProperties.getOntologyURI(),
-                storageProperties.getPhysicalURI());
+                  storageProperties.getPhysicalURI());
         resolveIriMapper();
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         setIriMapper(ontologyManager);
@@ -160,7 +158,7 @@ public class BasicStorageConnector extends AbstractConnector {
             final OWLOntology snapshot = ontologyManager.createOntology();
             cloneOntologyContent(snapshot);
             return new OntologySnapshot(snapshot, ontologyManager, ontologyManager.getOWLDataFactory(),
-                    getReasoner(snapshot));
+                                        getReasoner(snapshot));
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
         } finally {
@@ -170,10 +168,8 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private void cloneOntologyContent(OWLOntology target) {
         ontologyManager.addAxioms(target, ontology.axioms());
-        ontologyManager
-                .applyChanges(
-                        ontology.importsDeclarations().map(i -> new AddImport(target, i)).collect(
-                                Collectors.toList()));
+        ontologyManager.applyChanges(
+                ontology.importsDeclarations().map(i -> new AddImport(target, i)).collect(Collectors.toList()));
     }
 
     private OntologySnapshot getLiveOntology() {
@@ -205,8 +201,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLReasoner getReasoner(OWLOntology ontology) {
         if (reasonerFactory == null) {
-            LOG.warn(
-                    "Creating ontology snapshot without reasoner, because reasoner factory class was not specified.");
+            LOG.warn("Creating ontology snapshot without reasoner, because reasoner factory class was not specified.");
             return null;
         }
         return reasonerFactory.createReasoner(ontology);

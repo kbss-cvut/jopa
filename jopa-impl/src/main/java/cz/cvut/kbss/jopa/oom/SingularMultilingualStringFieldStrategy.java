@@ -19,12 +19,12 @@ import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 class SingularMultilingualStringFieldStrategy<X>
@@ -82,5 +82,18 @@ class SingularMultilingualStringFieldStrategy<X>
     static List<Value<?>> translationsToLangStrings(MultilingualString str) {
         return str.getValue().entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())))
                   .collect(Collectors.toList());
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        final MultilingualString attValue = (MultilingualString) extractFieldValueFromInstance(instance);
+        if (attValue == null || attValue.isEmpty()) {
+            return Collections.emptySet();
+        } else {
+            final NamedResource id = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
+            final Assertion assertion = createAssertion();
+            return translationsToLangStrings(attValue).stream().map(v -> new AxiomImpl<>(id, assertion, v)).collect(
+                    Collectors.toSet());
+        }
     }
 }

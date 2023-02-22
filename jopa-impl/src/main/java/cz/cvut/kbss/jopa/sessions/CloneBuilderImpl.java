@@ -272,7 +272,7 @@ public class CloneBuilderImpl implements CloneBuilder {
     private String stringify(Object object) {
         assert object != null;
         return isTypeManaged(object.getClass()) ?
-               (object.getClass().getSimpleName() + IdentifierTransformer.stringify(
+               (object.getClass().getSimpleName() + IdentifierTransformer.stringifyIri(
                        EntityPropertiesUtils.getIdentifier(object, getMetamodel()))) :
                object.toString();
     }

@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -45,7 +44,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class UpdateOperationsRunner extends BaseRunner {
 
     private OWLClassA entityA2;
-    private OWLClassF entityF;
     private OWLClassJ entityJ;
     private OWLClassO entityO;
 
@@ -55,8 +53,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     private void initialize() {
-        this.entityF = new OWLClassF();
-        entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
         this.entityA2 = new OWLClassA();
         entityA2.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA2"));
         this.entityJ = new OWLClassJ();
@@ -541,16 +537,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         } else {
             return "StringValue";
         }
-    }
-
-    @Test
-    void testModifyInferredAttribute() {
-        this.em = getEntityManager("ModifyInferredAttribute", false);
-        persist(entityF);
-
-        em.getTransaction().begin();
-        final OWLClassF f = findRequired(OWLClassF.class, entityF.getUri());
-        assertThrows(InferredAttributeModifiedException.class, () -> f.setSecondStringAttribute("otherValue"));
     }
 
     @Test

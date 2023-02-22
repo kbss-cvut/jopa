@@ -520,7 +520,7 @@ class EntityManagerImplTest {
     }
 
     @Test
-    void mergeDifferentInstanceWithSameIdAsManagedInstanceMergesChanges() throws Exception {
+    void mergeDifferentInstanceWithSameIdAsManagedInstanceMergesChanges() {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         em.persist(a);
         when(connectorMock.contains(eq(a.getUri()), eq(OWLClassA.class), any())).thenReturn(true);
@@ -534,7 +534,7 @@ class EntityManagerImplTest {
         assertEquals(a.getTypes(), result.getTypes());
         assertTrue(em.contains(result));
         final ArgumentCaptor<OWLClassA> captor = ArgumentCaptor.forClass(OWLClassA.class);
-        verify(connectorMock).merge(captor.capture(), eq(OWLClassA.getStrAttField()), any());
+        verify(connectorMock).merge(captor.capture(), eq(mocks.forOwlClassA().stringAttribute()), any());
         assertEquals(a.getUri(), captor.getValue().getUri());
     }
 

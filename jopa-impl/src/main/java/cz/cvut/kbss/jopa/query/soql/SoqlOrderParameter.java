@@ -24,8 +24,7 @@ public class SoqlOrderParameter extends SoqlParameter {
     private SoqlAttribute attribute;
 
     public SoqlOrderParameter(SoqlNode firstNode, String orderingBy) {
-        super();
-        this.setFirstNode(firstNode);
+        super(firstNode);
         this.orderingBy = orderingBy.isEmpty() ? ASC_ORDER : orderingBy;
     }
 

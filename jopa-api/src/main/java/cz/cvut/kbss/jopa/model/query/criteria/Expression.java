@@ -27,13 +27,6 @@ public interface Expression<X> extends Selection<X>{
 
     /**
      * Create a predicate to test whether the expression is a member of the argument list.
-     * @param values expressions to be tested against
-     * @return predicate testing for membership
-     */
-    Predicate in(Expression<?>... values);
-
-    /**
-     * Create a predicate to test whether the expression is a member of the argument list.
      * @param values values to be tested against
      * @return predicate testing for membership
      */

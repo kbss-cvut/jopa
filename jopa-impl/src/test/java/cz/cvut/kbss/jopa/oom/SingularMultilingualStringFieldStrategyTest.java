@@ -32,8 +32,11 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static cz.cvut.kbss.jopa.environment.utils.Generators.LANG;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SingularMultilingualStringFieldStrategyTest {
@@ -60,7 +63,7 @@ class SingularMultilingualStringFieldStrategyTest {
         final String value = "test";
         final Axiom<LangString> axiom = new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
-                new Value<>(new LangString(value, LANG)));
+                                                        new Value<>(new LangString(value, LANG)));
 
         sut.addValueFromAxiom(axiom);
         final OWLClassU instance = new OWLClassU();
@@ -72,7 +75,8 @@ class SingularMultilingualStringFieldStrategyTest {
 
     private SingularMultilingualStringFieldStrategy<OWLClassU> createStrategy() {
         return new SingularMultilingualStringFieldStrategy<>(mocks.forOwlClassU().entityType(),
-                mocks.forOwlClassU().uSingularStringAtt(), descriptor, mapperMock);
+                                                             mocks.forOwlClassU().uSingularStringAtt(), descriptor,
+                                                             mapperMock);
     }
 
     @Test
@@ -82,10 +86,10 @@ class SingularMultilingualStringFieldStrategyTest {
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false);
         final String valueEn = "car";
         final Axiom<LangString> axiomEn = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString(valueEn, LANG)));
+                                                          new Value<>(new LangString(valueEn, LANG)));
         final String valueCs = "automobil";
         final Axiom<LangString> axiomCs = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString(valueCs, "cs")));
+                                                          new Value<>(new LangString(valueCs, "cs")));
 
         sut.addValueFromAxiom(axiomEn);
         sut.addValueFromAxiom(axiomCs);
@@ -104,7 +108,7 @@ class SingularMultilingualStringFieldStrategyTest {
         final String value = "test";
         final Axiom<String> axiom = new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
-                new Value<>(value));
+                                                    new Value<>(value));
 
         sut.addValueFromAxiom(axiom);
         final OWLClassU instance = new OWLClassU();
@@ -120,10 +124,10 @@ class SingularMultilingualStringFieldStrategyTest {
         final String value = "test";
         final Axiom<LangString> axiomOne = new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
-                new Value<>(new LangString(value, LANG)));
+                                                           new Value<>(new LangString(value, LANG)));
         final Axiom<LangString> axiomTwo = new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
-                new Value<>(new LangString("test two", LANG)));
+                                                           new Value<>(new LangString("test two", LANG)));
 
         sut.addValueFromAxiom(axiomOne);
         assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(axiomTwo));
@@ -136,10 +140,10 @@ class SingularMultilingualStringFieldStrategyTest {
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false);
         final String valueEn = "car";
         final Axiom<LangString> axiomEn = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString(valueEn, LANG)));
+                                                          new Value<>(new LangString(valueEn, LANG)));
         final String value = "auto";
         final Axiom<LangString> axiomCs = new AxiomImpl<>(INDIVIDUAL, assertion,
-                new Value<>(new LangString(value)));
+                                                          new Value<>(new LangString(value)));
 
         sut.addValueFromAxiom(axiomEn);
         sut.addValueFromAxiom(axiomCs);
@@ -157,10 +161,10 @@ class SingularMultilingualStringFieldStrategyTest {
         final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final Axiom<String> axiomOne = new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
-                new Value<>("test one"));
+                                                       new Value<>("test one"));
         final Axiom<LangString> axiomTwo = new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
-                new Value<>(new LangString("test two")));
+                                                           new Value<>(new LangString("test two")));
 
         sut.addValueFromAxiom(axiomOne);
         assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(axiomTwo));
@@ -178,7 +182,10 @@ class SingularMultilingualStringFieldStrategyTest {
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
         final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false));
+                                                                                 .createDataPropertyAssertion(
+                                                                                         URI.create(
+                                                                                                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE),
+                                                                                         false));
         assertEquals(instance.getSingularStringAtt().getLanguages().size(), values.size());
         for (Map.Entry<String, String> entry : instance.getSingularStringAtt().getValue().entrySet()) {
             assertTrue(values.contains(new Value<>(new LangString(entry.getValue(), entry.getKey()))));
@@ -195,13 +202,16 @@ class SingularMultilingualStringFieldStrategyTest {
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
         final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false));
+                                                                                 .createDataPropertyAssertion(
+                                                                                         URI.create(
+                                                                                                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE),
+                                                                                         false));
         assertEquals(1, values.size());
         assertEquals(Value.nullValue(), values.get(0));
     }
 
     @Test
-    void buildAxiomValuesFromInstanceAddsNulLValueWhenAttributeValueIsEmpty() throws Exception {
+    void buildAxiomValuesFromInstanceAddsNullValueWhenAttributeValueIsEmpty() throws Exception {
         final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final OWLClassU instance = new OWLClassU(ID);
         instance.setSingularStringAtt(new MultilingualString());
@@ -212,8 +222,41 @@ class SingularMultilingualStringFieldStrategyTest {
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
         final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false));
+                                                                                 .createDataPropertyAssertion(
+                                                                                         URI.create(
+                                                                                                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE),
+                                                                                         false));
         assertEquals(1, values.size());
         assertEquals(Value.nullValue(), values.get(0));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU instance = new OWLClassU(ID);
+        instance.setSingularStringAtt(MultilingualString.create("car", LANG));
+        instance.getSingularStringAtt().set("cs", "automobil");
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
+        assertEquals(instance.getSingularStringAtt().getValue().size(), result.size());
+        instance.getSingularStringAtt().getValue()
+                .forEach((k, v) -> assertThat(result, hasItem(new AxiomImpl<>(NamedResource.create(ID),
+                                                                              Assertion.createDataPropertyAssertion(
+                                                                                      mocks.forOwlClassU()
+                                                                                           .uSingularStringAtt()
+                                                                                           .getIRI()
+                                                                                           .toURI(), false),
+                                                                              new Value<>(new LangString(v, k))))));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsEmptySetWhenValueIsNull() {
+        final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU instance = new OWLClassU(ID);
+        instance.setSingularStringAtt(null);
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }

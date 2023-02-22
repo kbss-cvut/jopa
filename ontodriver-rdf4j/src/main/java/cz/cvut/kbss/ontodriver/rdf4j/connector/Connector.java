@@ -115,6 +115,23 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
             throws Rdf4jDriverException;
 
     /**
+     * Checks whether the specified statement is inferred by the repository.
+     * <p>
+     * Note that given the nature of the RDF4J API, this method will return {@code false} even if the statement is both
+     * asserted and inferred, as there is no way to easily ask only for inferred statements but both asserted and
+     * inferred statements are returned.
+     * <p>
+     * Also note that if the repository does not contain the statement at all, {@code false} is returned.
+     *
+     * @param statement Statement whose inference to check
+     * @param contexts  Optionally specify contexts in which the search should be performed. If empty, the default one
+     *                  is used
+     * @return {@code true} iff the specified statement is inferred in any of the specified contexts
+     * @throws Rdf4jDriverException If a repository access error occurs
+     */
+    boolean isInferred(Statement statement, Collection<IRI> contexts) throws Rdf4jDriverException;
+
+    /**
      * Adds the specified statements to the underlying repository.
      * <p>
      * Note that this operation is transactional and the changes are required to be persistent only after successful
@@ -122,7 +139,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      *
      * @param statements The statements to add
      * @throws IllegalStateException If transaction is not active
-     * @throws Rdf4jDriverException If a repository access error occurs
+     * @throws Rdf4jDriverException  If a repository access error occurs
      */
     void addStatements(Collection<Statement> statements) throws Rdf4jDriverException;
 
@@ -134,7 +151,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      *
      * @param statements The statements to remove
      * @throws IllegalStateException If transaction is not active
-     * @throws Rdf4jDriverException If a repository access error occurs
+     * @throws Rdf4jDriverException  If a repository access error occurs
      */
     void removeStatements(Collection<Statement> statements) throws Rdf4jDriverException;
 }

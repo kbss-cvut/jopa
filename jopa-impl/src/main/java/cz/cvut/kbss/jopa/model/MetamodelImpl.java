@@ -58,7 +58,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     }
 
     /**
-     * Builds the metamodel for entities discovered by the specified entity loader.
+     * Builds the metamodel for classes (entity classes, attribute converters etc.) discovered by the specified {@link
+     * PersistenceUnitClassFinder}.
      *
      * @param classFinder Finder of PU classes
      */
@@ -92,11 +93,33 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         }
     }
 
+    /**
+     * Builds a reduced metamodel for the specified set of entity classes.
+     * <p>
+     * The result of calling this method is not equivalent to {@link #build(PersistenceUnitClassFinder)} as it does not
+     * process result set mappings, attribute converters, named queries etc. It only builds metamodel for the specified
+     * entity classes.
+     * <p>
+     * Also, no additional processing (like initializing static metamodel) is done.
+     *
+     * @param entityClasses Entity classes to initialize the metamodel with
+     */
+    public void build(Set<Class<?>> entityClasses) {
+        Objects.requireNonNull(entityClasses);
+        LOG.debug("Building reduced metamodel from entity classes {}...", entityClasses);
+        final MetamodelBuilder metamodelBuilder = new MetamodelBuilder(configuration);
+        metamodelBuilder.buildMetamodel(entityClasses);
+
+        this.typeMap = metamodelBuilder.getTypeMap();
+        this.entities = metamodelBuilder.getEntities();
+        this.inferredClasses = metamodelBuilder.getInferredClasses();
+        this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
+    }
+
     @Override
     public <X> IdentifiableEntityType<X> entity(Class<X> cls) {
         if (!isEntityType(cls)) {
-            throw new IllegalArgumentException(
-                    "Class " + cls.getName() + " is not a known entity in this persistence unit.");
+            throw new IllegalArgumentException(cls.getName() + " is not a known entity in this persistence unit.");
         }
         return (IdentifiableEntityType<X>) entities.get(cls);
     }
@@ -104,8 +127,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     @Override
     public Set<EntityType<?>> getMappedEntities(String classIri) {
         Objects.requireNonNull(classIri);
-        return entities.values().stream()
-                       .filter(et -> Objects.equals(et.getIRI().toString(), classIri))
+        return entities.values().stream().filter(et -> Objects.equals(et.getIRI().toString(), classIri))
                        .collect(Collectors.toSet());
     }
 

@@ -14,24 +14,24 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+
 public class SoqlAttribute extends SoqlParameter {
+
+    private static final String TRIPLE_END = " . ";
 
     private String value;
 
     private boolean isNot = false;
 
-    private String operator;
-
-    private String prefix = "http://www.example.org/";
-
-    private String rdfType = "a";
+    private FilterOperator operator;
 
     private boolean isOrderBy = false;
 
     private boolean isGroupBy = false;
 
-    public SoqlAttribute() {
-        super();
+    public SoqlAttribute(SoqlNode firstNode) {
+        super(firstNode);
     }
 
     public String getValue() {
@@ -50,28 +50,12 @@ public class SoqlAttribute extends SoqlParameter {
         isNot = not;
     }
 
-    public void setOperator(String operator) {
+    public void setOperator(FilterOperator operator) {
         this.operator = operator;
     }
 
-    public String getOperator() {
+    public FilterOperator getOperator() {
         return operator;
-    }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
-    }
-
-    public String getPrefix() {
-        return this.prefix;
-    }
-
-    public void setRdfType(String rdfType) {
-        this.rdfType = rdfType;
-    }
-
-    public String getRdfType() {
-        return this.rdfType;
     }
 
     public boolean isOrderBy() {
@@ -91,34 +75,22 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     public boolean isFilter() {
-        return !operator.isEmpty() && !"=".equals(operator);
+        return operator != null && operator.requiresFilterExpression();
     }
 
     public boolean isObject() {
         return !getFirstNode().hasNextChild();
     }
 
-    private boolean isValueParam() {
-        return !operator.isEmpty() && value.charAt(0) == ':';
-    }
-
     public String getFilter() {
-        StringBuilder buildFilter = new StringBuilder();
-        if ("LIKE".equals(operator)) {
-            buildFilter.append("regex(").append(getAsParam()).append(", ?").append(value.substring(1))
-                       .append(") ");
-        } else {
-            buildFilter.append(getAsParam()).append(" ").append(this.operator).append(" ").append("?")
-                       .append(value.substring(1));
-        }
-        return buildFilter.toString();
+        return operator.toFilterExpression(getAsParam(), toVariable(value));
     }
 
     public String getTriplePattern() {
         StringBuilder buildTP = new StringBuilder("?x ");
         if (isObject()) {
-            buildTP.append(getRdfType()).append(" ")
-                   .append(toIri(getFirstNode())).append(" . ");
+            buildTP.append(SoqlConstants.RDF_TYPE).append(" ")
+                   .append(toIri(getFirstNode())).append(TRIPLE_END);
         } else {
             SoqlNode pointer = getFirstNode().getChild();
             StringBuilder buildParam = new StringBuilder("?");
@@ -131,10 +103,10 @@ public class SoqlAttribute extends SoqlParameter {
                 if (isFilter()) {
                     param = buildParam.toString();
                 } else {
-                    param = "?" + value.substring(1);
+                    param = toVariable(value);
                 }
             }
-            buildTP.append(toIri(pointer)).append(" ").append(param).append(" . ");
+            buildTP.append(toIri(pointer)).append(" ").append(param).append(TRIPLE_END);
             while (pointer.hasNextChild()) {
                 SoqlNode newPointer = pointer.getChild();
                 buildTP.append("?").append(pointer.getValue())
@@ -146,20 +118,21 @@ public class SoqlAttribute extends SoqlParameter {
                     if (isFilter()) {
                         buildTP.append(buildParam);
                     } else {
-                        buildTP.append("?").append(value.substring(1));
+                        buildTP.append(toVariable(value));
                     }
                 }
-                buildTP.append(" . ");
+                buildTP.append(TRIPLE_END);
                 pointer = newPointer;
             }
         }
         return buildTP.toString();
     }
 
-    private StringBuilder toIri(SoqlNode node) {
-        StringBuilder sb = new StringBuilder("<");
-        String prefix = node.getIri().isEmpty() ? getPrefix() + node.getValue() : node.getIri();
-        sb.append(prefix).append(">");
-        return sb;
+    private static String toIri(SoqlNode node) {
+        return IdentifierTransformer.stringifyIri(node.getIri());
+    }
+
+    private static String toVariable(String name) {
+        return "?" + name.substring(1);
     }
 }

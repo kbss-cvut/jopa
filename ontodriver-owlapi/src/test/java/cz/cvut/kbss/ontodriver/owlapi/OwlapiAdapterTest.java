@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.semanticweb.owlapi.model.*;
@@ -61,7 +62,7 @@ class OwlapiAdapterTest {
 
     private OWLDataFactory factory;
 
-    private OwlapiAdapter adapter;
+    private OwlapiAdapter sut;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -71,29 +72,29 @@ class OwlapiAdapterTest {
         this.ontologySnapshot = new OntologySnapshot(ontology, snapshot.getOntologyManager(), factory, reasonerMock);
         when(connectorMock.getOntologySnapshot()).thenReturn(ontologySnapshot);
 
-        this.adapter = spy(new OwlapiAdapter(connectorMock));
+        this.sut = spy(new OwlapiAdapter(connectorMock));
     }
 
     @Test
     void commitSendsChangesToConnector() throws Exception {
         startTransaction();
-        adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
-        adapter.commit();
+        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.commit();
         verify(connectorMock).applyChanges(any());
     }
 
     private void startTransaction() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         final Method startTransaction = OwlapiAdapter.class.getDeclaredMethod("startTransactionIfNotActive");
         startTransaction.setAccessible(true);
-        startTransaction.invoke(adapter);
+        startTransaction.invoke(sut);
     }
 
     @Test
     void rollbackCausesChangesToEmpty() throws Exception {
         startTransaction();
-        adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
-        adapter.rollback();
-        adapter.commit();
+        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.rollback();
+        sut.commit();
         verify(connectorMock, never()).applyChanges(any());
     }
 
@@ -102,7 +103,7 @@ class OwlapiAdapterTest {
         final URI uri = getOntologyUri();
         when(reasonerMock.isConsistent()).thenReturn(Boolean.TRUE);
 
-        assertTrue(adapter.isConsistent(uri));
+        assertTrue(sut.isConsistent(uri));
         verify(reasonerMock).isConsistent();
     }
 
@@ -115,7 +116,7 @@ class OwlapiAdapterTest {
     void isConsistentIgnoresContextInfo() {
         when(reasonerMock.isConsistent()).thenReturn(Boolean.TRUE);
         final URI ctx = URI.create("http://krizik.felk.cvut.cz/differentContext");
-        assertTrue(adapter.isConsistent(ctx));
+        assertTrue(sut.isConsistent(ctx));
         verify(reasonerMock).isConsistent();
     }
 
@@ -125,7 +126,7 @@ class OwlapiAdapterTest {
         when(connectorMock.getOntologyUri()).thenReturn(ontologyIri.toURI());
         final URI uri = getOntologyUri();
 
-        final List<URI> res = adapter.getContexts();
+        final List<URI> res = sut.getContexts();
         assertEquals(1, res.size());
         assertEquals(uri, res.get(0));
     }
@@ -134,7 +135,7 @@ class OwlapiAdapterTest {
     void testContainsUnknownContext() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, false);
         final URI context = URI.create("http://krizik.felk.cvut.cz/jopa/different");
-        boolean res = adapter.containsAxiom(axiom, Collections.singleton(context));
+        boolean res = sut.containsAxiom(axiom, Collections.singleton(context));
         assertFalse(res);
     }
 
@@ -208,7 +209,7 @@ class OwlapiAdapterTest {
     void testContainsClassAssertionAxiomNoContext() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, false);
         addAxiomToOntology(axiom);
-        boolean res = adapter.containsAxiom(axiom, null);
+        boolean res = sut.containsAxiom(axiom, null);
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);
@@ -226,7 +227,7 @@ class OwlapiAdapterTest {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.OBJECT_PROPERTY, true);
         final URI ctx = getOntologyUri();
         when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(Boolean.TRUE);
-        boolean res = adapter.containsAxiom(axiom, Collections.singleton(ctx));
+        boolean res = sut.containsAxiom(axiom, Collections.singleton(ctx));
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);
@@ -246,7 +247,7 @@ class OwlapiAdapterTest {
     void testContainsDataProperty() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.DATA_PROPERTY, false);
         addAxiomToOntology(axiom);
-        boolean res = adapter.containsAxiom(axiom, null);
+        boolean res = sut.containsAxiom(axiom, null);
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);
@@ -267,7 +268,7 @@ class OwlapiAdapterTest {
     void testContainsAnnotationPropertyInferred() {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.ANNOTATION_PROPERTY, true);
         when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(Boolean.TRUE);
-        boolean res = adapter.containsAxiom(axiom, null);
+        boolean res = sut.containsAxiom(axiom, null);
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);
@@ -292,8 +293,8 @@ class OwlapiAdapterTest {
         final String propA = "http://krizik.felk.cvut.cz/propertyA";
         descriptorOne
                 .addAssertionValue(Assertion.createDataPropertyAssertion(URI.create(propA), false), new Value<>(false));
-        adapter.persist(descriptorOne);
-        adapter.commit();
+        sut.persist(descriptorOne);
+        sut.commit();
         final AxiomValueDescriptor descriptorTwo = new AxiomValueDescriptor(INDIVIDUAL);
         final String typeB = "http://krizik.felk.cvut.cz/typeB";
         descriptorTwo.addAssertionValue(Assertion.createClassAssertion(false), new Value<>(URI.create(typeB)));
@@ -301,7 +302,7 @@ class OwlapiAdapterTest {
         final double bValue = 3.1419;
         descriptorTwo.addAssertionValue(Assertion.createDataPropertyAssertion(URI.create(propB), false),
                 new Value<>(bValue));
-        adapter.persist(descriptorTwo);
+        sut.persist(descriptorTwo);
 
         final OWLNamedIndividual individual = factory.getOWLNamedIndividual(IRI.create(INDIVIDUAL.getIdentifier()));
         final Collection<OWLClassExpression> classes =
@@ -320,45 +321,81 @@ class OwlapiAdapterTest {
     void startingTransactionInitializesOntologySnapshotAndExecutorFactory() throws Exception {
         final Field executorFactoryField = OwlapiAdapter.class.getDeclaredField("statementExecutorFactory");
         executorFactoryField.setAccessible(true);
-        assertNull(executorFactoryField.get(adapter));
+        assertNull(executorFactoryField.get(sut));
         startTransaction();
         verify(connectorMock).getOntologySnapshot();
-        assertNotNull(executorFactoryField.get(adapter));
+        assertNotNull(executorFactoryField.get(sut));
     }
 
     @Test
     void transactionCommitClosesTransactionalSnapshot() throws Exception {
         startTransaction();
-        adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
-        adapter.commit();
+        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.commit();
         verify(connectorMock).closeSnapshot(ontologySnapshot);
     }
 
     @Test
     void transactionRollbackClosesTransactionalSnapshot() throws Exception {
         startTransaction();
-        adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
-        adapter.rollback();
+        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.rollback();
         verify(connectorMock).closeSnapshot(ontologySnapshot);
     }
 
     @Test
     void unwrapReturnsTheAdapterWhenClassMatches() throws Exception {
-        assertSame(adapter, adapter.unwrap(OwlapiAdapter.class));
+        assertSame(sut, sut.unwrap(OwlapiAdapter.class));
     }
 
     @Test
     void unwrapReturnsOntologySnapshotWhenOwlOntologyClassIsPassedIn() throws Exception {
-        assertSame(ontology, adapter.unwrap(OWLOntology.class));
+        assertSame(ontology, sut.unwrap(OWLOntology.class));
     }
 
     @Test
     void throwsDriverExceptionWhenUnsupportedClassIsPassedToUnwrap() {
-        assertThrows(OwlapiDriverException.class, () -> adapter.unwrap(Connection.class));
+        assertThrows(OwlapiDriverException.class, () -> sut.unwrap(Connection.class));
     }
 
     @Test
     void unwrapReturnsOwlReasonerWhenClassMatches() throws Exception {
-        assertSame(reasonerMock, adapter.unwrap(OWLReasoner.class));
+        assertSame(reasonerMock, sut.unwrap(OWLReasoner.class));
+    }
+
+    @Test
+    void isInferredChecksWhetherAxiomIsEntailedByReasonerButNotContainedInOntology() {
+        final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, true);
+        when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(true);
+
+        assertTrue(sut.isInferred(axiom, Collections.emptySet()));
+        final OWLAxiom owlAxiom = factory.getOWLClassAssertionAxiom(factory.getOWLClass(axiom.getValue()
+                .stringValue()), factory.getOWLNamedIndividual(axiom.getSubject().getIdentifier().toString()));
+        verify(reasonerMock).isEntailed(owlAxiom);
+        verify(ontology).containsAxiom(owlAxiom);
+    }
+
+    @Test
+    void isInferredReturnsFalseWhenAxiomIsEntailedAndExistsInOntology() {
+        final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, true);
+        when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(true);
+        addAxiomToOntology(axiom);
+
+        assertFalse(sut.isInferred(axiom, Collections.emptySet()));
+        final OWLAxiom owlAxiom = factory.getOWLClassAssertionAxiom(factory.getOWLClass(axiom.getValue()
+                .stringValue()), factory.getOWLNamedIndividual(axiom.getSubject().getIdentifier().toString()));
+        verify(reasonerMock).isEntailed(owlAxiom);
+        verify(ontology).containsAxiom(owlAxiom);
+    }
+
+    @Test
+    void isInferredFlushesBufferedChangesOnReasonerBeforeCheckingAxiomEntailment() {
+        final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, true);
+        when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(true);
+
+        assertTrue(sut.isInferred(axiom, Collections.emptySet()));
+        final InOrder inOrder = inOrder(reasonerMock);
+        inOrder.verify(reasonerMock).flush();
+        inOrder.verify(reasonerMock).isEntailed(any(OWLAxiom.class));
     }
 }

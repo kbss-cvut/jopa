@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.loaders;
 
+import cz.cvut.kbss.jopa.environment.NonPersistentClass;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -46,5 +47,11 @@ public class EntityLoaderTest {
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "interface")
     interface AnnotatedInterface {
+    }
+
+    @Test
+    void entityLoaderIgnoresClassAnnotatedWithNonEntity() {
+        sut.accept(NonPersistentClass.class);
+        assertFalse(sut.getEntities().contains(NonPersistentClass.class));
     }
 }
