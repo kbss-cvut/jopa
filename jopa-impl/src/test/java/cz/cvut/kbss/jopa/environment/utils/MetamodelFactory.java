@@ -1358,7 +1358,7 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initPhoneMocks(EntityTypeImpl<Phone> etMock, AbstractAttribute phoneNumberAttMock,
+    public static void initPhoneMocks(IdentifiableEntityType<Phone> etMock, AbstractAttribute phoneNumberAttMock,
                                       Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(Phone.class);
         when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
@@ -1381,10 +1381,10 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initPersonMocks(EntityTypeImpl<Person> etMock, AbstractAttribute usernameAttMock,
+    public static void initPersonMocks(IdentifiableEntityType<Person> etMock, AbstractAttribute usernameAttMock,
                                        AbstractAttribute genderAttMock,
                                        AbstractAttribute ageAttMock, SingularAttributeImpl phoneAttMock,
-                                       EntityTypeImpl<Phone> etPhone,
+                                       AbstractIdentifiableType<Phone> etPhone,
                                        Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(Person.class);
         when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);

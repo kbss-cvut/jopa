@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -75,7 +76,7 @@ class ManagedClassProcessor {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
         assert c != null;
 
-        if (cls.isInterface()) {
+        if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers())) {
             return new AbstractEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
         } else {
             checkForNoArgConstructor(cls);

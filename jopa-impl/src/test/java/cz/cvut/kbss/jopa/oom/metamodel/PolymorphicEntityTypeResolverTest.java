@@ -171,7 +171,7 @@ public class PolymorphicEntityTypeResolverTest {
         final IdentifiableEntityType rootEt = generateEntityType(
                 IRI.create(Generators.createIndividualIdentifier().toString()));
         final IdentifiableEntityType<OWLClassQ> etQ = metamodelMock.entity(OWLClassQ.class);
-        final IdentifiableType mappedSuperclassType = etQ.getSupertypes().iterator().next();
+        final MappedSuperclassTypeImpl mappedSuperclassType = (MappedSuperclassTypeImpl) etQ.getSupertypes().iterator().next();
         when(mappedSuperclassType.getSupertypes()).thenReturn(Collections.singleton(rootEt));
         when(rootEt.getSubtypes()).thenReturn(Collections.singleton(mappedSuperclassType));
         final Collection<Axiom<URI>> types = getTypeAxioms(etQ.getIRI().toString());

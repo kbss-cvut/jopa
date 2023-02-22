@@ -270,7 +270,7 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassWithQueryAttr, OWLClassA> qaEntityAtt;
 
     @Mock
-    private EntityTypeImpl<Person> etPerson;
+    private IdentifiableEntityType<Person> etPerson;
     @Mock
     private Identifier<Person, URI> idPerson;
     @Mock
@@ -283,7 +283,7 @@ public class MetamodelMocks {
     private SingularAttributeImpl<Person, Phone> personPhoneAtt;
 
     @Mock
-    private EntityTypeImpl<Phone> etPhone;
+    private IdentifiableEntityType<Phone> etPhone;
     @Mock
     private Identifier<Phone, URI> idPhone;
     @Mock
@@ -910,7 +910,7 @@ public class MetamodelMocks {
     }
 
     public class PhoneMetamodel {
-        public EntityTypeImpl<Phone> entityType() {
+        public IdentifiableEntityType<Phone> entityType() {
             return MetamodelMocks.this.etPhone;
         }
 
@@ -924,7 +924,7 @@ public class MetamodelMocks {
     }
 
     public class PersonMetamodel {
-        public EntityTypeImpl<Person> entityType() {
+        public IdentifiableEntityType<Person> entityType() {
             return MetamodelMocks.this.etPerson;
         }
 

@@ -228,8 +228,8 @@ class StaticMetamodelInitializerTest {
     @Test
     void initializeStaticMetamodelChecksThatModelSubclassHasDeclaredSuperclassInStaticMetamodelAsWell()
             throws Exception {
-        final EntityType<SubClass> et = mock(EntityType.class);
-        final SingularAttribute labelAtt = mock(SingularAttribute.class);
+        final IdentifiableEntityType<SubClass> et = mock(IdentifiableEntityType.class);
+        final SingularAttributeImpl labelAtt = mock(SingularAttributeImpl.class);
         when(labelAtt.getJavaField()).thenReturn(SubClass.class.getDeclaredField("label"));
         when(labelAtt.getDeclaringType()).thenReturn(et);
         when(et.getDeclaredAttribute("label")).thenReturn(labelAtt);
