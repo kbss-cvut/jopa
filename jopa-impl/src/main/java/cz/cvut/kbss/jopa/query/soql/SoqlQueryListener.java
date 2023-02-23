@@ -542,10 +542,10 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private static Type<?> resolveBindableType(Attribute<?, ?> att) {
-        if (att instanceof SingularAttribute) {
-            return ((SingularAttribute<?, ?>) att).getType();
-        } else {
+        if (att.isCollection()) {
             return ((PluralAttribute<?, ?, ?>) att).getElementType();
+        } else {
+            return ((SingularAttribute<?, ?>) att).getType();
         }
     }
 
