@@ -149,6 +149,8 @@ public class ServerSession extends AbstractSession implements Wrapper {
         Objects.requireNonNull(cls);
         if (cls.isAssignableFrom(getClass())) {
             return cls.cast(this);
+        } else if (cls.isAssignableFrom(liveObjectCache.getClass())) {
+            return cls.cast(liveObjectCache);
         }
         return storageAccessor.unwrap(cls);
     }
