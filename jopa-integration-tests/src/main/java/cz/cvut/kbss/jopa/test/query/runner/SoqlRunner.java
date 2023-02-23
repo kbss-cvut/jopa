@@ -202,4 +202,18 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         assertFalse(result.isEmpty());
         assertTrue(result.stream().anyMatch(j -> j.getUri().equals(matching.getUri())));
     }
+
+    /**
+     * Enhancement #138
+     */
+    @Test
+    public void testSelectByIdentifier() {
+        final OWLClassA instance = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        final OWLClassA result =
+                getEntityManager().createQuery("SELECT a FROM OWLClassA a WHERE a.uri = :uri", OWLClassA.class)
+                                  .setParameter("uri", instance.getUri())
+                                  .getSingleResult();
+        assertNotNull(result);
+        assertEquals(instance.getUri(), result.getUri());
+    }
 }
