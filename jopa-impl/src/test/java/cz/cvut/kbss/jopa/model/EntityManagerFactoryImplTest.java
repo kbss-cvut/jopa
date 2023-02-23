@@ -27,10 +27,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EntityManagerFactoryImplTest {
@@ -40,6 +40,9 @@ class EntityManagerFactoryImplTest {
     @Mock
     private Connection connection;
 
+    @Mock
+    Consumer<EntityManagerFactoryImpl> closeListener;
+
     @BeforeEach
     void setUp() {
         final Map<String, String> props = new HashMap<>();
@@ -47,7 +50,7 @@ class EntityManagerFactoryImplTest {
         props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
                   Generators.createIndividualIdentifier().toString());
         props.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
-        this.emf = new EntityManagerFactoryImpl(props);
+        this.emf = new EntityManagerFactoryImpl(props, closeListener);
         emf.createEntityManager();
         emf.getServerSession().unwrap(DataSourceStub.class).setConnection(connection);
     }
@@ -147,5 +150,11 @@ class EntityManagerFactoryImplTest {
         assertTrue(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));
         emf.close();
         assertFalse(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));
+    }
+
+    @Test
+    void closeInvokesCloseListener() {
+        emf.close();
+        verify(closeListener).accept(emf);
     }
 }
