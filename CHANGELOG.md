@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.20.2 - 2023-02-23
+- Support automatic conversion of language-less strings to `LangString` attributes.
+- Support using `LangString` as query parameters.
+- Support joining over plural attributes in SOQL/Criteria API (Bug #135).
+- Implement stricter cleanup after EMF close (Enhancement #136).
+
 ## 0.20.1 - 2023-02-07
 - Allow building a restricted metamodel from a set of entity classes (will be used by static metamodel generator).
 
