@@ -16,6 +16,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.oom.converter.*;
 import cz.cvut.kbss.jopa.oom.converter.datetime.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -66,6 +67,7 @@ public class Converters {
         converters.put(Float.class, new ToFloatConverter());
         converters.put(Double.class, new ToDoubleConverter());
         converters.put(String.class, new ToStringConverter());
+        converters.put(LangString.class, new ToLangStringConverter());
         return Collections.unmodifiableMap(converters);
     }
 

@@ -29,6 +29,8 @@ public final class QueryTestEnvironment {
 
     private static final Logger LOG = LoggerFactory.getLogger(QueryTestEnvironment.class);
 
+    private static final int ITEM_COUNT = 10;
+
     private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
     private static final String TYPE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
     private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
@@ -134,22 +136,6 @@ public final class QueryTestEnvironment {
     }
 
     /**
-     * Gets all data from the specified context.
-     *
-     * @param context Context URI, null is permitted
-     * @return Map of all data or an empty map
-     */
-    public static Map<Class<?>, List<?>> getDataByContext(URI context) {
-        if (context == null) {
-            context = NULL_CONTEXT;
-        }
-        if (!dataByContext.containsKey(context)) {
-            return Collections.emptyMap();
-        }
-        return dataByContext.get(context);
-    }
-
-    /**
      * Gets data from the specified context and of the specified type
      *
      * @param context Context URI, null is permitted
@@ -175,20 +161,20 @@ public final class QueryTestEnvironment {
     private static Map<Class<?>, List<?>> generate() {
         LOG.debug("Generating test data...");
         final Map<Class<?>, List<?>> m = new HashMap<>();
-        final int count = 10;
-        final List<OWLClassA> aa = generateOwlClassAInstances(count);
+        final List<OWLClassA> aa = generateOwlClassAInstances();
         m.put(OWLClassA.class, aa);
-        m.put(OWLClassB.class, generateOwlClassBInstances(count));
-        m.put(OWLClassD.class, generateOwlClassDInstances(count, aa));
-        m.put(OWLClassE.class, generateOwlClassEInstances(count));
-        m.put(OWLClassT.class, generateOwlClassTInstances(count, aa));
+        m.put(OWLClassB.class, generateOwlClassBInstances());
+        m.put(OWLClassD.class, generateOwlClassDInstances(aa));
+        m.put(OWLClassE.class, generateOwlClassEInstances());
+        m.put(OWLClassJ.class, generateOwlClassJInstances(aa));
+        m.put(OWLClassT.class, generateOwlClassTInstances(aa));
         return m;
     }
 
-    private static List<OWLClassA> generateOwlClassAInstances(int count) {
-        final List<OWLClassA> lst = new ArrayList<>();
+    private static List<OWLClassA> generateOwlClassAInstances() {
+        final List<OWLClassA> lst = new ArrayList<>(ITEM_COUNT);
         int randomNum = Generators.randomInt(1000);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassA a = new OWLClassA();
             a.setUri(URI.create(BASE_A + randomNum));
             a.setStringAttribute("stringAttribute" + randomNum);
@@ -201,10 +187,10 @@ public final class QueryTestEnvironment {
         return lst;
     }
 
-    private static List<OWLClassB> generateOwlClassBInstances(int count) {
-        final List<OWLClassB> lst = new ArrayList<>();
+    private static List<OWLClassB> generateOwlClassBInstances() {
+        final List<OWLClassB> lst = new ArrayList<>(ITEM_COUNT);
         int randomNum = Generators.randomInt(1000);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassB b = new OWLClassB();
             b.setUri(URI.create(BASE_B + randomNum));
             b.setStringAttribute("strAtt" + randomNum);
@@ -214,10 +200,10 @@ public final class QueryTestEnvironment {
         return lst;
     }
 
-    private static List<OWLClassD> generateOwlClassDInstances(int count, List<OWLClassA> aList) {
-        final List<OWLClassD> lst = new ArrayList<>();
+    private static List<OWLClassD> generateOwlClassDInstances(List<OWLClassA> aList) {
+        final List<OWLClassD> lst = new ArrayList<>(ITEM_COUNT);
         int randomNum = Generators.randomInt(1000);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassD d = new OWLClassD();
             d.setUri(URI.create(BASE_D + randomNum));
             d.setOwlClassA(aList.get(i));
@@ -227,9 +213,9 @@ public final class QueryTestEnvironment {
         return lst;
     }
 
-    private static List<OWLClassE> generateOwlClassEInstances(int count) {
-        final List<OWLClassE> lst = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
+    private static List<OWLClassE> generateOwlClassEInstances() {
+        final List<OWLClassE> lst = new ArrayList<>(ITEM_COUNT);
+        for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassE e = new OWLClassE();
             // Auto-generated id
             e.setStringAttribute("eStr" + i);
@@ -238,15 +224,28 @@ public final class QueryTestEnvironment {
         return lst;
     }
 
-    private static List<OWLClassT> generateOwlClassTInstances(int count, List<OWLClassA> aList) {
-        final List<OWLClassT> lst = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
+    private static List<OWLClassT> generateOwlClassTInstances(List<OWLClassA> aList) {
+        final List<OWLClassT> lst = new ArrayList<>(ITEM_COUNT);
+        for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassT t = new OWLClassT();
             t.setIntAttribute(i);
             t.setName("tInstance " + i);
             t.setDescription("Description of tInstance" + i);
             t.setOwlClassA(aList.get(Generators.randomInt(aList.size())));
             lst.add(t);
+        }
+        return lst;
+    }
+
+    private static List<OWLClassJ> generateOwlClassJInstances(List<OWLClassA> aList) {
+        final List<OWLClassJ> lst = new ArrayList<>(ITEM_COUNT);
+        for (int i = 0; i < ITEM_COUNT; i++) {
+            final OWLClassJ inst = new OWLClassJ(Generators.generateUri());
+            inst.setOwlClassA(new HashSet<>());
+            for (int j = 0; j < 3; j++) {
+                inst.getOwlClassA().add(Generators.getRandomItem(aList));
+            }
+            lst.add(inst);
         }
         return lst;
     }

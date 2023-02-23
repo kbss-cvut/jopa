@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.runner.PersistenceUnitTestRunner;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource;
@@ -129,7 +130,8 @@ class PersistenceUnitTest extends PersistenceUnitTestRunner {
         conn.add(vf.createStatement(vf.createIRI(entityA.getUri().toString()), RDF.TYPE,
                 vf.createIRI(Vocabulary.C_OWL_CLASS_A)));
         conn.add(vf.createStatement(vf.createIRI(entityA.getUri().toString()),
-                vf.createIRI(Vocabulary.P_A_STRING_ATTRIBUTE), vf.createLiteral(entityA.getStringAttribute(), "en")));
+                vf.createIRI(Vocabulary.P_A_STRING_ATTRIBUTE), vf.createLiteral(entityA.getStringAttribute(),
+                                                                                TestEnvironment.PERSISTENCE_LANGUAGE)));
         conn.close();
         final EntityManager newEm = em.getEntityManagerFactory().createEntityManager();
         em.close();

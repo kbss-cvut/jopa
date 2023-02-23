@@ -24,6 +24,8 @@ import java.util.*;
 
 public class TestEnvironment {
 
+    public static final String PERSISTENCE_LANGUAGE = "en";
+
     public static final String TEST_RESULTS_DIR = "testResults";
 
     public static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
