@@ -21,7 +21,9 @@ import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -315,8 +317,10 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     public void testJoinOnPluralAttribute() {
         final List<OWLClassJ> jInstances = QueryTestEnvironment.getData(OWLClassJ.class);
         final OWLClassJ matching = Generators.getRandomItem(jInstances);
-        final Set<String> stringSet =
-                matching.getOwlClassA().stream().map(OWLClassA::getStringAttribute).collect(Collectors.toSet());
+        final Set<LangString> stringSet =
+                matching.getOwlClassA().stream()
+                        .map(a -> new LangString(a.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE))
+                        .collect(Collectors.toSet());
 
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassJ> query = cb.createQuery(OWLClassJ.class);
