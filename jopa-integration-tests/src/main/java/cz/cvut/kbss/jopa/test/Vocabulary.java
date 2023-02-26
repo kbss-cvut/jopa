@@ -56,6 +56,9 @@ public class Vocabulary {
     public static final String C_OwlClassWithQueryAttr4 = CLASS_IRI_BASE + "OWLClassWithQueryAttr4";
     public static final String C_OwlClassWithQueryAttr5 = CLASS_IRI_BASE + "OWLClassWithQueryAttr5";
     public static final String C_OwlClassWithQueryAttr6 = CLASS_IRI_BASE + "OWLClassWithQueryAttr6";
+    public static final String C_OwlInterfaceAnMethods = CLASS_IRI_BASE + "OWLInterfaceAnMethods";
+
+    public static final String C_OwlClassWithUnProperties = CLASS_IRI_BASE + "OWLClassWithUnProperties";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";

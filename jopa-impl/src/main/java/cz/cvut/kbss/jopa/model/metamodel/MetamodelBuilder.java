@@ -17,15 +17,19 @@ import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Constants;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class MetamodelBuilder {
@@ -38,6 +42,10 @@ public class MetamodelBuilder {
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
+    public final Set<Field> weirdFields = new HashSet<>();
+    private final Set<Method> toHydrate = new HashSet<>();
+
+    public final MultiValuedMap<IdentifiableType<?>, Method> inheritableProperties = new HashSetValuedHashMap<>();
     private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
 
     private final ConverterResolver converterResolver;
@@ -60,6 +68,29 @@ public class MetamodelBuilder {
         classFinder.getAttributeConverters().forEach(converterResolver::registerConverter);
         classFinder.getEntities().forEach(this::processOWLClass);
         classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
+
+//        hydrate();
+
+    }
+
+    private static String getPropertyNameFroMethod(String methodName) {
+        return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);/// make it lowercase
+    }
+
+    private void deeper(AbstractIdentifiableType<?> ait, String propertyName) {
+//ait.getAttributes()
+    }
+
+    private void hydrate() {
+        for (Method m : toHydrate) {
+            String propertyName = getPropertyNameFroMethod(m.getName());
+            LOG.error(" method name = {} property = {}", m.getName(), propertyName);
+            AbstractIdentifiableType<?> ait = typeMap.get(m.getDeclaringClass());
+
+            for (AbstractIdentifiableType<?> succ : ait.getSubtypes()) {
+                deeper(succ, propertyName);
+            }
+        }
     }
 
     /**
@@ -88,6 +119,18 @@ public class MetamodelBuilder {
         processManagedType(et);
     }
 
+    private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
+        for (Method m : cls.getDeclaredMethods()) {
+            OWLDataProperty property = m.getAnnotation(OWLDataProperty.class);
+            if (property != null) {
+                LOG.error("Found one {}", m);
+                inheritableProperties.put(type, m);
+//                toHydrate.add(m);
+
+            }
+        }
+    }
+
     private <X> void processManagedType(TypeBuilderContext<X> context) {
         final AbstractIdentifiableType<X> type = context.getType();
         final Class<X> cls = type.getJavaType();
@@ -104,6 +147,8 @@ public class MetamodelBuilder {
         for (Field f : cls.getDeclaredFields()) {
             fieldProcessor.processField(f);
         }
+
+        processMethods(cls, type);
 
         if (!type.isAbstract()) {
             try {

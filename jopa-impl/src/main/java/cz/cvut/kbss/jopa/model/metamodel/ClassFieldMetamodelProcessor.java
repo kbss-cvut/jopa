@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -80,19 +81,54 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator, context);
+        final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator, context); /// pridat v property attr property annotation a pracovat pak kompletne bez field
         propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
-
+        //// volam metodu ktera neni v potomkovi, tudiz se v potomkovi nevola resolve
         if (propertyAtt.isKnownOwlProperty()) {
-            final AbstractAttribute<X, ?> a = createAttribute(field, inference, propertyAtt);
+            final AbstractAttribute<X, ?> a = createAttribute(PropertyInfo.from(field), inference, propertyAtt);
             registerTypeReference(a);
         } else if (!isAspectIntegrationField(field)) {
             final boolean success = processIdentifierField(field);
-            if (!success) {
-                throw new MetamodelInitializationException(
-                        "Unable to process field " + field + ". It is not transient but has no mapping information.");
+            if (success) {
+                return;
             }
+            LOG.error("finding method to {} ", field);
+            run(field, inference);
         }
+    }
+
+    private void run(Field field, InferenceInfo inference) {
+
+        Set<IdentifiableType<?>> stack = new HashSet<>(et.getSupertypes());
+
+        while (!stack.isEmpty()) {
+            IdentifiableType<?> top = stack.iterator().next();
+            Collection<Method> methods = metamodelBuilder.inheritableProperties.get(top);
+
+            for (Method method : methods) {
+                if (propertyBelongsToMethod(field.getName(), method.getName())) {
+                    LOG.error("Found belonging");
+                    PropertyAttributes propertyAtt = new DataPropertyAttributes(mappingValidator, method.getAnnotation(OWLDataProperty.class));
+                    propertyAtt.typeBuilderContext = context;
+                    propertyAtt.resolve( method.getAnnotation(ParticipationConstraints.class), metamodelBuilder, field.getType());
+
+                    final PropertyInfo info = new PropertyInfo.MethodInfo(method,field);
+
+                    final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
+                    registerTypeReference(a);
+                    return;
+                }
+            }
+            stack.remove(top);
+
+        }
+
+        throw new MetamodelInitializationException(
+                "Unable to process field " + field + ". It is not transient but has no mapping information.");
+    }
+
+    private boolean propertyBelongsToMethod(String propertyName, String methodName) {
+        return methodName.toLowerCase().contains(propertyName.toLowerCase());
     }
 
     private static Class<?> getFieldValueType(Field field) {
@@ -148,9 +184,9 @@ class ClassFieldMetamodelProcessor<X> {
         final PropertiesParametersResolver paramsResolver = new PropertiesParametersResolver(field);
         et.addOtherProperties(
                 PropertiesSpecificationImpl.declaringType(et).fetchType(properties.fetchType()).javaField(field)
-                        .javaType(fieldValueCls).inferred(inference.inferred)
-                        .propertyIdType(paramsResolver.getPropertyIdentifierType())
-                        .propertyValueType(paramsResolver.getPropertyValueType()).build());
+                                           .javaType(fieldValueCls).inferred(inference.inferred)
+                                           .propertyIdType(paramsResolver.getPropertyIdentifierType())
+                                           .propertyValueType(paramsResolver.getPropertyValueType()).build());
     }
 
     private static boolean isQueryAttribute(Field field) {
@@ -175,7 +211,7 @@ class ClassFieldMetamodelProcessor<X> {
         }
 
         Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver()
-                .resolveConverter(type);
+                                                                           .resolveConverter(type);
         ConverterWrapper<?, ?> converterWrapper = null;
 
         if (optionalConverterWrapper.isPresent()) {
@@ -193,14 +229,14 @@ class ClassFieldMetamodelProcessor<X> {
         et.addDeclaredQueryAttribute(field.getName(), a);
     }
 
-    private AbstractAttribute<X, ?> createAttribute(Field field, InferenceInfo inference,
+    private AbstractAttribute<X, ?> createAttribute(PropertyInfo field, InferenceInfo inference,
                                                     PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
         if (field.getType().isAssignableFrom(Collection.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
                     CollectionAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .field(field)
-                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+                                           .propertyInfo(field)
+                                           .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         } else if (field.getType().isAssignableFrom(List.class)) {
@@ -208,8 +244,8 @@ class ClassFieldMetamodelProcessor<X> {
         } else if (field.getType().isAssignableFrom(Set.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
                     SetAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .field(field)
-                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+                                    .propertyInfo(field)
+                                    .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
@@ -217,8 +253,8 @@ class ClassFieldMetamodelProcessor<X> {
         } else {
             final SingularAttributeImpl.SingularAttributeBuilder builder =
                     SingularAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .field(field)
-                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+                                         .propertyInfo(field)
+                                         .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         }
@@ -226,22 +262,22 @@ class ClassFieldMetamodelProcessor<X> {
         return a;
     }
 
-    private AbstractAttribute<X, ?> createListAttribute(Field field,
+    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo propertyInfo,
                                                         InferenceInfo inference,
                                                         PropertyAttributes propertyAttributes) {
-        final Sequence os = field.getAnnotation(Sequence.class);
+        final Sequence os = propertyInfo.getAnnotation(Sequence.class);
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
         }
         final ListAttributeImpl.ListAttributeBuilder builder =
                 ListAttributeImpl.builder(propertyAttributes).declaringType(et)
-                        .field(field)
-                        .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
-                        .owlListClass(IRI.create(os.ClassOWLListIRI()))
-                        .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
-                        .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
-                        .sequenceType(os.type());
-        context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+                                 .propertyInfo(propertyInfo)
+                                 .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
+                                 .owlListClass(IRI.create(os.ClassOWLListIRI()))
+                                 .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
+                                 .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
+                                 .sequenceType(os.type());
+        context.getConverterResolver().resolveConverter(propertyInfo, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }
 

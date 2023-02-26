@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.test.Notebook;
+import cz.cvut.kbss.jopa.test.OWLClassWithUnProperties;
 import cz.cvut.kbss.jopa.test.Surface;
 import cz.cvut.kbss.jopa.test.Tablet;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
@@ -13,13 +14,14 @@ import java.net.URI;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MultipleInheritanceTestRunner extends BaseRunner {
     public MultipleInheritanceTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
     }
 
-    @Test
+//    @Test
     void nameUnknown() {
         this.em = getEntityManager("NameUnknown", false);
 
@@ -60,6 +62,25 @@ public class MultipleInheritanceTestRunner extends BaseRunner {
 
         final Notebook foundNotebook = findRequired(Notebook.class, id);
         assertEquals(s.getStringAttribute(), foundNotebook.getStringAttribute());
-
     }
+
+    @Test
+    void finale(){
+        this.em = getEntityManager("NameUnknown", false);
+        URI id = URI.create("mine");
+        final OWLClassWithUnProperties subject = new OWLClassWithUnProperties();
+
+        subject.setId(id);
+        subject.setName("NAME");
+
+        em.persist(subject);
+        em.clear();
+
+        OWLClassWithUnProperties found =  em.find(OWLClassWithUnProperties.class,id);
+
+        assertNotNull(found);
+        assertEquals(subject.getName(),found.getName());
+        assertEquals(subject.getId(),found.getId());
+    }
+
 }

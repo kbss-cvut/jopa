@@ -18,19 +18,22 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 
 import java.lang.reflect.Field;
 
 class ObjectPropertyAttributes extends PropertyAttributes {
-
-    ObjectPropertyAttributes(FieldMappingValidator validator) {
+    public OWLObjectProperty oop ;
+    ObjectPropertyAttributes(FieldMappingValidator validator,OWLObjectProperty owlPropertyAnnotation) {
         super(validator);
+        assert owlPropertyAnnotation!= null;
+        oop = owlPropertyAnnotation;
     }
 
     @Override
-    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        super.resolve(field, metamodelBuilder, fieldValueCls);
-        final OWLObjectProperty oop = field.getAnnotation(OWLObjectProperty.class);
+    void resolve( ParticipationConstraints cons, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        super.resolve(cons, metamodelBuilder, fieldValueCls);
+
         assert oop != null;
 
         this.persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;
