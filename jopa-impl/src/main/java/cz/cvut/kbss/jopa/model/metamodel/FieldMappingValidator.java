@@ -12,10 +12,9 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.exception.InvalidEnumMappingException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
-import cz.cvut.kbss.jopa.model.annotations.Individual;
-import cz.cvut.kbss.jopa.model.annotations.ObjectOneOf;
+import cz.cvut.kbss.jopa.model.annotations.EnumType;
+import cz.cvut.kbss.jopa.model.annotations.Enumerated;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -93,7 +92,7 @@ class FieldMappingValidator {
         validateAttributeDoesNotMapRdfType(attribute);
         switch (attribute.getPersistentAttributeType()) {
             case OBJECT:
-                validateObjectOneOfEnum(attribute);
+                validateObjectPropertyEnumMapping(attribute);
                 break;
             case DATA:  // Intentional fall-through
             case ANNOTATION:
@@ -131,20 +130,11 @@ class FieldMappingValidator {
                attribute.getJavaType();
     }
 
-    private static void validateObjectOneOfEnum(AbstractAttribute<?, ?> attribute) {
-        final Class<?> valueType = getBindableType(attribute);
-        if (valueType.isEnum()) {
-            if (valueType.getAnnotation(ObjectOneOf.class) == null) {
-                throw new InvalidEnumMappingException(
-                        "Enum " + valueType + " is used as object property value but is missing the " + ObjectOneOf.class + " annotation.");
-            }
-            assert valueType.getEnumConstants() != null;
-            for (Field f : valueType.getDeclaredFields()) {
-                if (f.isEnumConstant() && f.getAnnotation(Individual.class) == null) {
-                    throw new InvalidEnumMappingException(
-                            "Enum constant " + f + "must be mapped to an ontological individual via the " + Individual.class.getSimpleName() + " annotation.");
-                }
-            }
+    private static void validateObjectPropertyEnumMapping(Attribute<?, ?> attribute) {
+        final Enumerated enumeratedAnn = attribute.getJavaField().getAnnotation(Enumerated.class);
+        if (enumeratedAnn == null || enumeratedAnn.value() != EnumType.ONE_OF) {
+            throw new InvalidFieldMappingException(
+                    "Attribute " + attribute + " maps an enum but is not annotated with " + Enumerated.class + " with " + EnumType.ONE_OF + " value.");
         }
     }
 }
