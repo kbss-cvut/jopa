@@ -16,20 +16,19 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 
 class DataPropertyAttributes extends PropertyAttributes {
-    OWLDataProperty odp;
 
-    DataPropertyAttributes(FieldMappingValidator validator, OWLDataProperty owlPropertyAnnotation) {
+    DataPropertyAttributes(FieldMappingValidator validator) {
         super(validator);
-        assert owlPropertyAnnotation != null;
-        odp = owlPropertyAnnotation;
     }
 
     @Override
-    void resolve(ParticipationConstraints cons, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        super.resolve(cons, metamodelBuilder, fieldValueCls);
+    void resolve(PropertyInfo field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        super.resolve(field, metamodelBuilder, fieldValueCls);
+
+        final OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
+        assert odp != null;
 
         this.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
         this.iri = IRI.create(typeBuilderContext.resolveNamespace(odp.iri()));

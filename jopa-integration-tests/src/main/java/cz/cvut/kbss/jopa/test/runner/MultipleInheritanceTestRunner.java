@@ -67,11 +67,11 @@ public class MultipleInheritanceTestRunner extends BaseRunner {
     @Test
     void finale(){
         this.em = getEntityManager("NameUnknown", false);
-        URI id = URI.create("mine");
+        URI id = URI.create("id_value");
         final OWLClassWithUnProperties subject = new OWLClassWithUnProperties();
 
         subject.setId(id);
-        subject.setName("NAME");
+        subject.setName("NAME_VALUE");
 
         em.persist(subject);
         em.clear();

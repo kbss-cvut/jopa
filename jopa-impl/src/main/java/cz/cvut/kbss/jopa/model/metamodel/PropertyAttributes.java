@@ -94,21 +94,18 @@ abstract class PropertyAttributes {
         return participationConstraints;
     }
 
-    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        ParticipationConstraints cons = field.getAnnotation(ParticipationConstraints.class);
-        resolve(cons, metamodelBuilder, fieldValueCls);
-//        resolveParticipationConstraints(cons);
+    void resolve(PropertyInfo field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        resolveParticipationConstraints(field);
     }
 
-    void resolve(ParticipationConstraints cons, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        resolveParticipationConstraints(cons);
-    }
 
     String resolveLanguage(Class<?> fieldValueCls) {
         return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
     }
 
-    private void resolveParticipationConstraints(ParticipationConstraints cons) {
+    private void resolveParticipationConstraints(PropertyInfo propertyInfo) {
+        ParticipationConstraints cons = propertyInfo.getAnnotation(ParticipationConstraints.class);
+
         if (cons != null) {
             if (cons.value().length > 0) {
                 this.participationConstraints = cons.value();
@@ -118,14 +115,14 @@ abstract class PropertyAttributes {
         }
     }
 
-    static PropertyAttributes create(Field field, FieldMappingValidator validator, TypeBuilderContext<?> context) {
+    static PropertyAttributes create(PropertyInfo field, FieldMappingValidator validator, TypeBuilderContext<?> context) {
         final PropertyAttributes instance;
         if (field.getAnnotation(OWLObjectProperty.class) != null) {
-            instance = new ObjectPropertyAttributes(validator, field.getAnnotation(OWLObjectProperty.class));
+            instance = new ObjectPropertyAttributes(validator);
         } else if (field.getAnnotation(OWLDataProperty.class) != null) {
-            instance = new DataPropertyAttributes(validator, field.getAnnotation(OWLDataProperty.class));
+            instance = new DataPropertyAttributes(validator);
         } else if (field.getAnnotation(OWLAnnotationProperty.class) != null) {
-            instance = new AnnotationPropertyAttributes(validator, field.getAnnotation(OWLAnnotationProperty.class));
+            instance = new AnnotationPropertyAttributes(validator);
         } else {
             instance = new NonPropertyAttributes(validator);
         }
@@ -145,7 +142,7 @@ abstract class PropertyAttributes {
         }
 
         @Override
-        void resolve(ParticipationConstraints cons, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        void resolve(PropertyInfo info, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
             // do nothing
         }
     }

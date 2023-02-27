@@ -17,7 +17,9 @@ import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
@@ -119,18 +121,17 @@ public class MetamodelBuilder {
         processManagedType(et);
     }
 
-    private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
-        for (Method m : cls.getDeclaredMethods()) {
-            OWLDataProperty property = m.getAnnotation(OWLDataProperty.class);
-            if (property != null) {
-                LOG.error("Found one {}", m);
-                inheritableProperties.put(type, m);
-//                toHydrate.add(m);
 
-            }
-        }
+
+    private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
+        Arrays.stream(cls.getDeclaredMethods()).filter(MetamodelBuilder::isOWLPropertyMethod).forEach(m-> inheritableProperties.put(type,m));
     }
 
+    private static boolean isOWLPropertyMethod(Method m) {
+        return m.getAnnotation(OWLDataProperty.class) != null ||
+                m.getAnnotation(OWLAnnotationProperty.class) != null ||
+                m.getAnnotation(OWLObjectProperty.class) != null;
+    }
     private <X> void processManagedType(TypeBuilderContext<X> context) {
         final AbstractIdentifiableType<X> type = context.getType();
         final Class<X> cls = type.getJavaType();

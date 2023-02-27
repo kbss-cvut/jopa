@@ -65,7 +65,7 @@ class ClassFieldMetamodelProcessor<X> {
 
         final Class<?> fieldValueCls = getFieldValueType(field);
         field.setAccessible(true);
-        final InferenceInfo inference = processInferenceInfo(field);
+        final InferenceInfo inference = processInferenceInfo(field); // todo - is missing in property method
 
         if (isTypesField(field)) {
             processTypesField(field, fieldValueCls, inference);
@@ -81,11 +81,13 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator, context); /// pridat v property attr property annotation a pracovat pak kompletne bez field
-        propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
-        //// volam metodu ktera neni v potomkovi, tudiz se v potomkovi nevola resolve
+        PropertyInfo propertyInfo = PropertyInfo.from(field);
+
+        final PropertyAttributes propertyAtt = PropertyAttributes.create(propertyInfo, mappingValidator, context);
+        propertyAtt.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
+
         if (propertyAtt.isKnownOwlProperty()) {
-            final AbstractAttribute<X, ?> a = createAttribute(PropertyInfo.from(field), inference, propertyAtt);
+            final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
             registerTypeReference(a);
         } else if (!isAspectIntegrationField(field)) {
             final boolean success = processIdentifierField(field);
@@ -93,11 +95,11 @@ class ClassFieldMetamodelProcessor<X> {
                 return;
             }
             LOG.error("finding method to {} ", field);
-            run(field, inference);
+            findPropertyDefinitionInHierarchy(field, inference);
         }
     }
 
-    private void run(Field field, InferenceInfo inference) {
+    private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference) {
 
         Set<IdentifiableType<?>> stack = new HashSet<>(et.getSupertypes());
 
@@ -108,19 +110,19 @@ class ClassFieldMetamodelProcessor<X> {
             for (Method method : methods) {
                 if (propertyBelongsToMethod(field.getName(), method.getName())) {
                     LOG.error("Found belonging");
-                    PropertyAttributes propertyAtt = new DataPropertyAttributes(mappingValidator, method.getAnnotation(OWLDataProperty.class));
-                    propertyAtt.typeBuilderContext = context;
-                    propertyAtt.resolve( method.getAnnotation(ParticipationConstraints.class), metamodelBuilder, field.getType());
 
-                    final PropertyInfo info = new PropertyInfo.MethodInfo(method,field);
+                    final PropertyInfo info = new PropertyInfo.MethodInfo(method, field);
+
+                    final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context); /// pridat v property attr property annotation a pracovat pak kompletne bez field
+                    propertyAtt.resolve(info, metamodelBuilder, field.getType());
 
                     final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
                     registerTypeReference(a);
                     return;
                 }
             }
+            stack.addAll(top.getSupertypes());
             stack.remove(top);
-
         }
 
         throw new MetamodelInitializationException(
