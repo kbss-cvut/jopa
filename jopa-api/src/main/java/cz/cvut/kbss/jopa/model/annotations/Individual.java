@@ -4,8 +4,6 @@ import java.lang.annotation.*;
 
 /**
  * Represents an OWL individual (or an RDF resource) identified by the specified IRI.
- *
- * @see ObjectOneOf
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

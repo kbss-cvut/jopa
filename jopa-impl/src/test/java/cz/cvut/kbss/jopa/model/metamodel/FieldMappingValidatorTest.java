@@ -16,13 +16,11 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
-import cz.cvut.kbss.jopa.exception.InvalidEnumMappingException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
-import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 
@@ -276,30 +274,17 @@ class FieldMappingValidatorTest {
 
         @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
         private OWLClassM.Severity validEnumSimpleLiteral;
+
+        @OWLObjectProperty(iri = Vocabulary.p_m_enumAttribute)
+        private OWLClassM.Severity invalidEnumOneOf;
     }
 
     @Test
-    void validateAttributeMappingThrowsInvalidEnumMappingExceptionWhenObjectPropertyEnumHasNoObjectOneOfAnnotation() {
+    void validateAttributeMappingThrowsInvalidFieldMappingExceptionWhenObjectPropertyIsNotAnnotatedWithEnumeratedOneOf() throws Exception {
         final AbstractAttribute attribute = mock(AbstractAttribute.class);
         when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
-        when(attribute.getJavaType()).thenReturn(OWLClassM.Severity.class);
-        assertThrows(InvalidEnumMappingException.class, () -> sut.validateAttributeMapping(attribute));
-    }
-
-    @Test
-    void validateAttributeMappingThrowsInvalidEnumMappingExceptionWhenObjectPropertyEnumConstantsHasNoIndividualMapped() {
-        final AbstractAttribute attribute = mock(AbstractAttribute.class);
-        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
-        when(attribute.getJavaType()).thenReturn(ObjectOneOfTestEnum.class);
-        assertThrows(InvalidEnumMappingException.class, () -> sut.validateAttributeMapping(attribute));
-    }
-
-    @ObjectOneOf
-    enum ObjectOneOfTestEnum {
-        @Individual(iri = OWL.OBJECT_PROPERTY)
-        A,
-        B
+        when(attribute.getJavaField()).thenReturn(getField("invalidEnumOneOf"));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
     }
 }
