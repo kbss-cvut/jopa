@@ -16,14 +16,13 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.exception.InvalidEnumMappingException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
+import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 
@@ -40,11 +39,11 @@ import static org.mockito.Mockito.when;
 
 class FieldMappingValidatorTest {
 
-    private final FieldMappingValidator validator = new FieldMappingValidator();
+    private final FieldMappingValidator sut = new FieldMappingValidator();
 
     @Test
     void nonMapPropertiesFieldThrowsException() {
-        assertThrows(InvalidFieldMappingException.class, () -> validator.validatePropertiesField(getField("values")));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.validatePropertiesField(getField("values")));
     }
 
     private static Field getField(String name) throws Exception {
@@ -54,66 +53,66 @@ class FieldMappingValidatorTest {
     @Test
     void rawPropertiesMapThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                     () -> validator.validatePropertiesField(getField("rawProperties")));
+                     () -> sut.validatePropertiesField(getField("rawProperties")));
     }
 
     @Test
     void propertiesFieldRequiresValueTypeToBeSet() {
         assertThrows(InvalidFieldMappingException.class,
-                     () -> validator.validatePropertiesField(getField("propertiesWithIntegerValue")));
+                     () -> sut.validatePropertiesField(getField("propertiesWithIntegerValue")));
     }
 
     @Test
     void propertiesFieldWithInvalidKeyTypeThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                     () -> validator.validatePropertiesField(getField("propertiesWithInvalidKey")));
+                     () -> sut.validatePropertiesField(getField("propertiesWithInvalidKey")));
     }
 
     @Test
     void validPropertiesFieldPassesValidation() throws Exception {
-        validator.validatePropertiesField(getField("validProperties"));
+        sut.validatePropertiesField(getField("validProperties"));
     }
 
     @Test
     void nonSetTypesFieldThrowsException() {
-        assertThrows(InvalidFieldMappingException.class, () -> validator.validateTypesField(getField("typesList")));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.validateTypesField(getField("typesList")));
     }
 
     @Test
     void rawTypesSetThrowsException() {
-        assertThrows(InvalidFieldMappingException.class, () -> validator.validateTypesField(getField("rawTypes")));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.validateTypesField(getField("rawTypes")));
     }
 
     @Test
     void invalidTypesValueTypeThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                     () -> validator.validateTypesField(getField("invalidValueTypes")));
+                     () -> sut.validateTypesField(getField("invalidValueTypes")));
     }
 
     @Test
     void setOfUrisIsValidTypesField() throws Exception {
-        validator.validateTypesField(getField("validTypes"));
+        sut.validateTypesField(getField("validTypes"));
     }
 
     @Test
     void uriIsValidIdentifierField() throws Exception {
-        validator.validateIdentifierType(getField("validUriIdentifier").getType());
+        sut.validateIdentifierType(getField("validUriIdentifier").getType());
     }
 
     @Test
     void urlIsValidIdentifierField() throws Exception {
-        validator.validateIdentifierType(getField("validUrlIdentifier").getType());
+        sut.validateIdentifierType(getField("validUrlIdentifier").getType());
     }
 
     @Test
     void stringIsValidIdentifierField() throws Exception {
-        validator.validateIdentifierType(getField("validStringIdentifier").getType());
+        sut.validateIdentifierType(getField("validStringIdentifier").getType());
     }
 
     @Test
     void invalidIdentifierTypeThrowsException() {
         assertThrows(InvalidFieldMappingException.class,
-                     () -> validator.validateIdentifierType(getField("invalidIdentifier").getType()));
+                     () -> sut.validateIdentifierType(getField("invalidIdentifier").getType()));
     }
 
     @Test
@@ -124,7 +123,7 @@ class FieldMappingValidatorTest {
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
         when(attribute.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
         when(attribute.getJavaType()).thenReturn(OWLClassM.getLexicalFormField().getType());
-        validator.validateAttributeMapping(attribute);
+        sut.validateAttributeMapping(attribute);
     }
 
     @Test
@@ -135,7 +134,7 @@ class FieldMappingValidatorTest {
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
         when(attribute.getJavaField()).thenReturn(getField("invalidLexicalForm"));
         when(attribute.getJavaType()).thenReturn(getField("invalidLexicalForm").getType());
-        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(attribute));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
     }
 
     @Test
@@ -145,7 +144,7 @@ class FieldMappingValidatorTest {
         when(attribute.isSimpleLiteral()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
         when(attribute.getJavaType()).thenReturn(OWLClassM.getSimpleLiteralField().getType());
-        validator.validateAttributeMapping(attribute);
+        sut.validateAttributeMapping(attribute);
     }
 
     @Test
@@ -157,7 +156,7 @@ class FieldMappingValidatorTest {
         when(attribute.getJavaField()).thenReturn(getField("invalidSimpleLiteral"));
         when(attribute.getJavaType()).thenReturn(getField("invalidSimpleLiteral").getType());
         when(attribute.getConverter()).thenReturn(DefaultConverterWrapper.INSTANCE);
-        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(attribute));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
     }
 
     @Test
@@ -171,7 +170,7 @@ class FieldMappingValidatorTest {
         final ConverterWrapper<Integer, String> wrapper = mock(ConverterWrapper.class);
         when(wrapper.supportsAxiomValueType(String.class)).thenReturn(true);
         when(attribute.getConverter()).thenReturn(wrapper);
-        validator.validateAttributeMapping(attribute);
+        sut.validateAttributeMapping(attribute);
     }
 
     @Test
@@ -183,7 +182,7 @@ class FieldMappingValidatorTest {
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
         when(attribute.getJavaField()).thenReturn(getField("validSimpleLiteralSet"));
         when(attribute.getBindableJavaType()).thenReturn(String.class);
-        validator.validateAttributeMapping(attribute);
+        sut.validateAttributeMapping(attribute);
     }
 
     @Test
@@ -194,7 +193,7 @@ class FieldMappingValidatorTest {
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
         when(attribute.getJavaField()).thenReturn(getField("validEnumSimpleLiteral"));
         when(attribute.getJavaType()).thenReturn(getField("validEnumSimpleLiteral").getType());
-        validator.validateAttributeMapping(attribute);
+        sut.validateAttributeMapping(attribute);
     }
 
     @Test
@@ -206,7 +205,7 @@ class FieldMappingValidatorTest {
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
         when(attribute.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
         when(attribute.getBindableJavaType()).thenReturn(String.class);
-        validator.validateAttributeMapping(attribute);
+        sut.validateAttributeMapping(attribute);
     }
 
     @Test
@@ -215,7 +214,7 @@ class FieldMappingValidatorTest {
         when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(attribute.getIRI()).thenReturn(IRI.create(RDF.TYPE));
         when(attribute.getJavaField()).thenReturn(getField("type"));
-        assertThrows(InvalidFieldMappingException.class, () -> validator.validateAttributeMapping(attribute));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
     }
 
     @SuppressWarnings("unused")
@@ -277,5 +276,30 @@ class FieldMappingValidatorTest {
 
         @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
         private OWLClassM.Severity validEnumSimpleLiteral;
+    }
+
+    @Test
+    void validateAttributeMappingThrowsInvalidEnumMappingExceptionWhenObjectPropertyEnumHasNoObjectOneOfAnnotation() {
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
+        when(attribute.getJavaType()).thenReturn(OWLClassM.Severity.class);
+        assertThrows(InvalidEnumMappingException.class, () -> sut.validateAttributeMapping(attribute));
+    }
+
+    @Test
+    void validateAttributeMappingThrowsInvalidEnumMappingExceptionWhenObjectPropertyEnumConstantsHasNoIndividualMapped() {
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
+        when(attribute.getJavaType()).thenReturn(ObjectOneOfTestEnum.class);
+        assertThrows(InvalidEnumMappingException.class, () -> sut.validateAttributeMapping(attribute));
+    }
+
+    @ObjectOneOf
+    enum ObjectOneOfTestEnum {
+        @Individual(iri = OWL.OBJECT_PROPERTY)
+        A,
+        B
     }
 }
