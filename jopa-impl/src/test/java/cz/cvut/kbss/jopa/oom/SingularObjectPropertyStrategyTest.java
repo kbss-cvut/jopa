@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -21,9 +19,10 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +46,7 @@ import static org.mockito.Mockito.*;
 class SingularObjectPropertyStrategyTest {
 
     private static final URI IDENTIFIER = Generators.createIndividualIdentifier();
-    private static final URI VALUE = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individualAAA");
+    private static final URI VALUE = Generators.createIndividualIdentifier();
 
     @Mock
     private EntityMappingHelper mapperMock;
@@ -76,14 +75,14 @@ class SingularObjectPropertyStrategyTest {
         strategy.setReferenceSavingResolver(referenceResolverMock);
         strategy.addValueFromAxiom(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), propertyP(),
-                        new Value<>(NamedResource.create(VALUE))));
+                                new Value<>(NamedResource.create(VALUE))));
         final OWLClassP p = new OWLClassP();
         strategy.buildInstanceFieldValue(p);
         assertEquals(VALUE, p.getIndividualUri());
     }
 
     private <T> FieldStrategy<? extends FieldSpecification<? super T, ?>, T> strategy(EntityType<T> et,
-                                                                                      Attribute<? super T, ?> att) {
+                                                                                      AbstractAttribute<? super T, ?> att) {
         return new SingularObjectPropertyStrategy<>(et, att, descriptor, mapperMock);
     }
 
@@ -129,7 +128,7 @@ class SingularObjectPropertyStrategyTest {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
         d.setOwlClassA(Generators.generateOwlClassAInstance());
-        final Attribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
+        final AbstractAttribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
@@ -139,14 +138,14 @@ class SingularObjectPropertyStrategyTest {
 
         verify(referenceResolverMock)
                 .registerPendingReference(NamedResource.create(IDENTIFIER), strategy.createAssertion(),
-                        d.getOwlClassA(), null);
+                                          d.getOwlClassA(), null);
     }
 
     @Test
     void buildAxiomValuesAddsNullValueToAxiomBuilderForNullAttributeValue() {
         final OWLClassD d = new OWLClassD();
         d.setUri(IDENTIFIER);
-        final Attribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
+        final AbstractAttribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
@@ -164,7 +163,7 @@ class SingularObjectPropertyStrategyTest {
         final OWLClassA a = new OWLClassA();
         d.setOwlClassA(a);
         a.setUri(Generators.createIndividualIdentifier());
-        final Attribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
+        final AbstractAttribute<OWLClassD, OWLClassA> att = metamodelMocks.forOwlClassD().owlClassAAtt();
         final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> strategy =
                 strategy(metamodelMocks.forOwlClassD().entityType(), att);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(metamodelMocks.forOwlClassA().entityType());
@@ -207,7 +206,8 @@ class SingularObjectPropertyStrategyTest {
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another.getUri()), any()))
                 .thenReturn(another);
         final Axiom<NamedResource> violationAxiom = new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion,
-                new Value<>(NamedResource.create(another.getUri())));
+                                                                    new Value<>(
+                                                                            NamedResource.create(another.getUri())));
         assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(violationAxiom));
     }
 
@@ -223,7 +223,7 @@ class SingularObjectPropertyStrategyTest {
         final URI another = Generators.createIndividualIdentifier();
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another), any())).thenReturn(null);
         sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion,
-                new Value<>(NamedResource.create(another))));
+                                              new Value<>(NamedResource.create(another))));
         final OWLClassD instance = new OWLClassD();
         sut.buildInstanceFieldValue(instance);
         assertSame(existing, instance.getOwlClassA());
@@ -288,5 +288,35 @@ class SingularObjectPropertyStrategyTest {
         final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(d);
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void addValueFromAxiomConvertsNamedResourceToEnumConstantForEnumValuedObjectProperty() {
+        final OWLClassM m = new OWLClassM();
+        m.setKey(IDENTIFIER.toString());
+        final NamedResource value = NamedResource.create(OWL.ANNOTATION_PROPERTY);
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassM, ?>, OWLClassM> sut =
+                strategy(metamodelMocks.forOwlClassM().entityType(),
+                         metamodelMocks.forOwlClassM().objectOneOfEnumAttribute());
+        sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createObjectPropertyAssertion(
+                URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false), new Value<>(value)));
+        sut.buildInstanceFieldValue(m);
+        assertEquals(OneOfEnum.ANNOTATION_PROPERTY, m.getObjectOneOfEnumAttribute());
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceConvertsEnumValueToNamedResourceForEnumValuedObjectProperty() {
+        final OWLClassM m = new OWLClassM();
+        m.setKey(IDENTIFIER.toString());
+        m.setObjectOneOfEnumAttribute(OneOfEnum.DATATYPE_PROPERTY);
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassM, ?>, OWLClassM> sut =
+                strategy(metamodelMocks.forOwlClassM().entityType(),
+                         metamodelMocks.forOwlClassM().objectOneOfEnumAttribute());
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        when(referenceResolverMock.shouldSaveReference(m.getObjectOneOfEnumAttribute(), Collections.emptySet())).thenReturn(true);
+        sut.buildAxiomValuesFromInstance(m, gatherer);
+        verify(gatherer).addValue(Assertion.createObjectPropertyAssertion(
+                                          URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false),
+                                  new Value<>(NamedResource.create(OWL.DATATYPE_PROPERTY)), null);
     }
 }

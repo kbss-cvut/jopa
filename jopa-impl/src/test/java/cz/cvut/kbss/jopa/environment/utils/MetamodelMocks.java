@@ -753,7 +753,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idP;
         }
 
-        public SingularAttribute<OWLClassP, URI> pUriAttribute() {
+        public AbstractAttribute<OWLClassP, URI> pUriAttribute() {
             return MetamodelMocks.this.pUriAtt;
         }
 
