@@ -15,10 +15,7 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
-import cz.cvut.kbss.jopa.model.annotations.Convert;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.lang.reflect.Field;
@@ -71,6 +68,10 @@ public class OWLClassM {
     @Convert(converter = ZoneOffsetConverter.class)
     @OWLDataProperty(iri = Vocabulary.p_m_withConverter, simpleLiteral = true)
     private ZoneOffset withConverter;
+
+    @Enumerated(EnumType.ONE_OF)
+    @OWLObjectProperty(iri = Vocabulary.p_m_objectOneOfEnumAttribute)
+    private OneOfEnum objectOneOfEnumAttribute;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -172,6 +173,14 @@ public class OWLClassM {
         this.withConverter = withConverter;
     }
 
+    public OneOfEnum getObjectOneOfEnumAttribute() {
+        return objectOneOfEnumAttribute;
+    }
+
+    public void setObjectOneOfEnumAttribute(OneOfEnum objectOneOfEnumAttribute) {
+        this.objectOneOfEnumAttribute = objectOneOfEnumAttribute;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -186,6 +195,7 @@ public class OWLClassM {
                 ", simpleLiteral=" + simpleLiteral +
                 ", explicitDatatype=" + explicitDatatype +
                 ", withConverter=" + withConverter +
+                ", objectOneOfEnumAttribute=" + objectOneOfEnumAttribute +
                 '}';
     }
 
@@ -204,6 +214,7 @@ public class OWLClassM {
         this.simpleLiteral = "test";
         this.explicitDatatype = "P1Y";
         this.withConverter = ZoneOffset.UTC;
+        this.objectOneOfEnumAttribute = OneOfEnum.OBJECT_PROPERTY;
     }
 
     public static String getClassIri() {
@@ -256,5 +267,9 @@ public class OWLClassM {
 
     public static Field getWithConverterField() throws Exception {
         return OWLClassM.class.getDeclaredField("withConverter");
+    }
+
+    public static Field getObjectOneOfEnumAttributeField() throws Exception {
+        return OWLClassM.class.getDeclaredField("objectOneOfEnumAttribute");
     }
 }

@@ -58,9 +58,6 @@ public class ConverterResolver {
      * {@code Optional} if no suitable converter is found (or needed)
      */
     public Optional<ConverterWrapper<?, ?>> resolveConverter(Field field, PropertyAttributes config) {
-        if (config.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
-            return Optional.empty();
-        }
         final Class<?> attValueType = config.getType().getJavaType();
         final Optional<ConverterWrapper<?, ?>> localCustomConverter = resolveCustomConverter(field);
         if (localCustomConverter.isPresent()) {
@@ -71,7 +68,7 @@ public class ConverterResolver {
             return globalCustomConverter;
         }
         if (attValueType.isEnum()) {
-            return Optional.of(new EnumConverter(attValueType));
+            return Optional.of(createEnumConverter(attValueType, config));
         }
         if (config.hasDatatype()) {
             verifyTypeIsString(field, attValueType);
@@ -81,6 +78,11 @@ public class ConverterResolver {
             return Optional.of(new ToLexicalFormConverter());
         }
         return Converters.getDefaultConverter(attValueType);
+    }
+
+    private static ConverterWrapper<?, ?> createEnumConverter(Class<?> valueType, PropertyAttributes pa) {
+        return pa.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT ?
+               new ObjectOneOfEnumConverter(valueType) : new EnumConverter(valueType);
     }
 
     private static void verifyTypeIsString(Field field, Class<?> attValueType) {
