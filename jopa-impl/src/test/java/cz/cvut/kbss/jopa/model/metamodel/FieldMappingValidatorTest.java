@@ -14,7 +14,9 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.IRI;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -284,7 +287,17 @@ class FieldMappingValidatorTest {
         final AbstractAttribute attribute = mock(AbstractAttribute.class);
         when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
+        when(attribute.getJavaType()).thenReturn(OneOfEnum.class);
         when(attribute.getJavaField()).thenReturn(getField("invalidEnumOneOf"));
         assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
+    }
+
+    @Test
+    void validateAttributeMappingPassesForRegularObjectPropertyAttribute() {
+        final AbstractAttribute attribute = mock(AbstractAttribute.class);
+        when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_h_hasA));
+        when(attribute.getJavaType()).thenReturn(OWLClassA.class);
+        assertDoesNotThrow(() -> sut.validateAttributeMapping(attribute));
     }
 }

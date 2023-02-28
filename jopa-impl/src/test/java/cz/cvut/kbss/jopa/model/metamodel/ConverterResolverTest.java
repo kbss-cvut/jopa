@@ -12,10 +12,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassM;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
-import cz.cvut.kbss.jopa.environment.ZoneOffsetConverter;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
@@ -50,6 +47,9 @@ class ConverterResolverTest {
         final Field field = OWLClassD.getOwlClassAField();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final EntityType et = mock(EntityType.class);
+        when(et.getJavaType()).thenReturn(OWLClassA.class);
+        when(pa.getType()).thenReturn(et);
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertFalse(result.isPresent());
     }
@@ -225,5 +225,16 @@ class ConverterResolverTest {
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(ZoneOffset.class)).when(pa).getType();
         assertThrows(InvalidConverterException.class, () -> sut.resolveConverter(field, pa));
+    }
+
+    @Test
+    void resolveConverterReturnsObjectOneOfEnumConverterForEnumValuedObjectPropertyAttribute() throws Exception {
+        final Field field = OWLClassM.getObjectOneOfEnumAttributeField();
+        final ObjectPropertyAttributes pa = mock(ObjectPropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        doReturn(BasicTypeImpl.get(OneOfEnum.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertInstanceOf(ObjectOneOfEnumConverter.class, result.get());
     }
 }

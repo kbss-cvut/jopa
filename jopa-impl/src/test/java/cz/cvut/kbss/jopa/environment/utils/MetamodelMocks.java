@@ -159,6 +159,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassM, String> mExplicitDatatypeAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, ZoneOffset> mWithConverterAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassM, OneOfEnum> mObjectOneOfEnumAttribute;
 
     @Mock
     private EntityTypeImpl<OWLClassN> etN;
@@ -308,7 +310,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
                                            mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt, mExplicitDatatypeAtt,
-                                           mWithConverterAtt, idM);
+                                           mWithConverterAtt, mObjectOneOfEnumAttribute, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
                 nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
@@ -691,6 +693,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassM, ZoneOffset> withConverterAttribute() {
             return MetamodelMocks.this.mWithConverterAtt;
+        }
+
+        public AbstractAttribute<OWLClassM, OneOfEnum> objectOneOfEnumAttribute() {
+            return MetamodelMocks.this.mObjectOneOfEnumAttribute;
         }
     }
 

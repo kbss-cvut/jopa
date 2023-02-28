@@ -131,6 +131,9 @@ class FieldMappingValidator {
     }
 
     private static void validateObjectPropertyEnumMapping(Attribute<?, ?> attribute) {
+        if (!attribute.getJavaType().isEnum()) {
+            return;
+        }
         final Enumerated enumeratedAnn = attribute.getJavaField().getAnnotation(Enumerated.class);
         if (enumeratedAnn == null || enumeratedAnn.value() != EnumType.ONE_OF) {
             throw new InvalidFieldMappingException(

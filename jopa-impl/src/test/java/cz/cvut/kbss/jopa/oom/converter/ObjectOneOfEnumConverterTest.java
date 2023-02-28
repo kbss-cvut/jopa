@@ -13,8 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ObjectOneOfEnumConverterTest {
 
@@ -61,5 +60,12 @@ class ObjectOneOfEnumConverterTest {
     void convertToAttributeThrowsInvalidEnumMappingExceptionForUnknownNamedResource() {
         assertThrows(InvalidEnumMappingException.class,
                      () -> sut.convertToAttribute(NamedResource.create(Generators.createIndividualIdentifier())));
+    }
+
+    @Test
+    void supportsAxiomValueTypeReturnsTrueForNamedResource() {
+        assertTrue(sut.supportsAxiomValueType(NamedResource.class));
+        assertFalse(sut.supportsAxiomValueType(String.class));
+        assertFalse(sut.supportsAxiomValueType(Integer.class));
     }
 }
