@@ -109,7 +109,7 @@ class ConverterResolverTest {
         doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertThat(result.get(), instanceOf(EnumConverter.class));
+        assertThat(result.get(), instanceOf(StringEnumConverter.class));
         assertTrue(result.get().supportsAxiomValueType(String.class));
     }
 
