@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -48,12 +46,17 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
             return;
         }
+        final Class<?> elemType = attribute.getBindableJavaType();
         final Set<Value<?>> assertionValues = new HashSet<>(valueCollection.size());
-        if (IdentifierTransformer.isValidIdentifierType(attribute.getBindableJavaType())) {
+        if (IdentifierTransformer.isValidIdentifierType(elemType)) {
             valueCollection.stream().filter(Objects::nonNull).forEach(item -> assertionValues
                     .add(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(item)))));
+        } else if (elemType.isEnum()) {
+            assert attribute.getConverter() != null;
+            valueCollection.stream().filter(Objects::nonNull).forEach(
+                    item -> assertionValues.add(new Value<>(attribute.getConverter().convertToAxiomValue(item))));
         } else {
-            final EntityType<T> et = (EntityType<T>) mapper.getEntityType(attribute.getBindableJavaType());
+            final EntityType<T> et = (EntityType<T>) mapper.getEntityType(elemType);
             for (T val : valueCollection) {
                 if (val == null) {
                     continue;
@@ -65,7 +68,7 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
                 } else {
                     referenceSavingResolver
                             .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), val,
-                                    getAttributeWriteContext());
+                                                      getAttributeWriteContext());
                 }
             }
         }
