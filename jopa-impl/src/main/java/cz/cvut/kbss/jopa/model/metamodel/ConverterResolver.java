@@ -81,8 +81,14 @@ public class ConverterResolver {
     }
 
     private static ConverterWrapper<?, ?> createEnumConverter(Class<?> valueType, PropertyAttributes pa) {
-        return pa.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT ?
-               new ObjectOneOfEnumConverter(valueType) : new EnumConverter(valueType);
+        switch (pa.getEnumType()) {
+            case OBJECT_ONE_OF:
+                return new ObjectOneOfEnumConverter(valueType);
+            case ORDINAL:
+                return new OrdinalEnumConverter(valueType);
+            default:
+                return new StringEnumConverter(valueType);
+        }
     }
 
     private static void verifyTypeIsString(Field field, Class<?> attValueType) {
@@ -156,7 +162,7 @@ public class ConverterResolver {
     public Optional<ConverterWrapper<?, ?>> resolveConverter(Type<?> type) {
         final Class<?> attValueType = type.getJavaType();
         if (attValueType.isEnum()) {
-            return Optional.of(new EnumConverter(attValueType));
+            return Optional.of(new StringEnumConverter(attValueType));
         }
 
         return converters.getCustomConverter(attValueType);

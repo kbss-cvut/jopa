@@ -20,11 +20,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class EnumConverterTest {
+public class StringEnumConverterTest {
 
     @Test
     public void convertToAxiomValueTransformsEnumValueToString() {
-        final EnumConverter<OWLClassM.Severity> sut = new EnumConverter<>(OWLClassM.Severity.class);
+        final StringEnumConverter<OWLClassM.Severity> sut = new StringEnumConverter<>(OWLClassM.Severity.class);
         final Object result = sut.convertToAxiomValue(OWLClassM.Severity.HIGH);
         assertTrue(result instanceof String);
         assertEquals(OWLClassM.Severity.HIGH.toString(), result);
@@ -32,20 +32,20 @@ public class EnumConverterTest {
 
     @Test
     public void convertToAttributeValueUsesEnumValueOf() {
-        final EnumConverter<OWLClassM.Severity> sut = new EnumConverter<>(OWLClassM.Severity.class);
+        final StringEnumConverter<OWLClassM.Severity> sut = new StringEnumConverter<>(OWLClassM.Severity.class);
         final OWLClassM.Severity result = sut.convertToAttribute(OWLClassM.Severity.HIGH.toString());
         assertEquals(OWLClassM.Severity.HIGH, result);
     }
 
     @Test
     public void convertToAttributeValueThrowsUnsupportedTypeTransformationForUnknownEnumValue() {
-        final EnumConverter<OWLClassM.Severity> sut = new EnumConverter<>(OWLClassM.Severity.class);
+        final StringEnumConverter<OWLClassM.Severity> sut = new StringEnumConverter<>(OWLClassM.Severity.class);
         assertThrows(UnsupportedTypeTransformationException.class, () -> sut.convertToAttribute("test"));
     }
 
     @Test
     void convertToAxiomValueHandlesNullValue() {
-        final EnumConverter<OWLClassM.Severity> sut = new EnumConverter<>(OWLClassM.Severity.class);
+        final StringEnumConverter<OWLClassM.Severity> sut = new StringEnumConverter<>(OWLClassM.Severity.class);
         assertNull(sut.convertToAxiomValue(null));
     }
 }
