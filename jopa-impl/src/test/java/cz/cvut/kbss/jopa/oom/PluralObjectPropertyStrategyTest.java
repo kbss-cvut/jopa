@@ -1,25 +1,31 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,13 +37,16 @@ import org.mockito.quality.Strictness;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -207,5 +216,59 @@ class PluralObjectPropertyStrategyTest {
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void addValueFromAxiomConvertsNamedResourceToEnumConstantForEnumValuedObjectProperty() throws Exception {
+        final SimpleSetPropertyStrategy<EntityWithPluralObjectPropertyEnum> sut = initEnumAttributeStrategy();
+        final NamedResource value = NamedResource.create(OWL.ANNOTATION_PROPERTY);
+
+        sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(
+                URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false), new Value<>(value)));
+        final EntityWithPluralObjectPropertyEnum instance = new EntityWithPluralObjectPropertyEnum();
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(Collections.singleton(OneOfEnum.ANNOTATION_PROPERTY), instance.enumSet);
+    }
+
+    private SimpleSetPropertyStrategy<EntityWithPluralObjectPropertyEnum> initEnumAttributeStrategy() throws NoSuchFieldException {
+        final EntityType<EntityWithPluralObjectPropertyEnum> et = mock(EntityType.class);
+        final AbstractPluralAttribute<EntityWithPluralObjectPropertyEnum, Set<OneOfEnum>, OneOfEnum> att =
+                mock(AbstractPluralAttribute.class);
+        when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
+        when(att.getJavaField()).thenReturn(EntityWithPluralObjectPropertyEnum.class.getDeclaredField("enumSet"));
+        when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
+        when(att.getCollectionType()).thenReturn(CollectionType.SET);
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
+        final Identifier id = mock(Identifier.class);
+        when(id.getJavaField()).thenReturn(EntityWithPluralObjectPropertyEnum.class.getDeclaredField("uri"));
+        when(et.getIdentifier()).thenReturn(id);
+        return new SimpleSetPropertyStrategy<>(et, att, descriptor, mapperMock);
+    }
+
+    static class EntityWithPluralObjectPropertyEnum {
+
+        @Id
+        URI uri;
+
+        Set<OneOfEnum> enumSet;
+    }
+
+    @Test
+    void buildAxiomsFromInstanceConvertsEnumConstantsToNamedResourcesForEnumValuedObjectProperty() throws Exception {
+        final SimpleSetPropertyStrategy<EntityWithPluralObjectPropertyEnum> sut = initEnumAttributeStrategy();
+        final EntityWithPluralObjectPropertyEnum instance = new EntityWithPluralObjectPropertyEnum();
+        instance.uri = ID;
+        instance.enumSet = new HashSet<>(Arrays.asList(OneOfEnum.ANNOTATION_PROPERTY, OneOfEnum.OBJECT_PROPERTY));
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
+        assertEquals(instance.enumSet.size(), result.size());
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false);
+        assertThat(result, hasItems(
+                new AxiomImpl<>(NamedResource.create(ID), assertion,
+                                new Value<>(NamedResource.create(OWL.ANNOTATION_PROPERTY))),
+                new AxiomImpl<>(NamedResource.create(ID), assertion,
+                                new Value<>(NamedResource.create(OWL.OBJECT_PROPERTY)))
+        ));
     }
 }
