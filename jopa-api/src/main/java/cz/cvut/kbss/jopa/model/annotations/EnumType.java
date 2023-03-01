@@ -8,13 +8,13 @@ package cz.cvut.kbss.jopa.model.annotations;
  */
 public enum EnumType {
     /**
-     * Persist enumerated type property or field as an individual assumed to be an element of a {@literal owl:oneOf}
-     * enumeration.
+     * Persist enumerated type property or field as an individual assumed to be an element of a {@literal
+     * owl:ObjectOneOf} enumeration.
      * <p>
      * Note that in this case the enum constants must be annotated with {@link Individual} mapping them to ontological
      * individuals.
      */
-    ONE_OF,
+    OBJECT_ONE_OF,
 
     /**
      * Persist enumerated type property or field as an integer representing the ordinal number of the enumerated

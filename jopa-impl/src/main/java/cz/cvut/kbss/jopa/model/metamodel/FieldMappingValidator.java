@@ -135,9 +135,9 @@ class FieldMappingValidator {
             return;
         }
         final Enumerated enumeratedAnn = attribute.getJavaField().getAnnotation(Enumerated.class);
-        if (enumeratedAnn == null || enumeratedAnn.value() != EnumType.ONE_OF) {
+        if (enumeratedAnn == null || enumeratedAnn.value() != EnumType.OBJECT_ONE_OF) {
             throw new InvalidFieldMappingException(
-                    "Attribute " + attribute + " maps an enum but is not annotated with " + Enumerated.class + " with " + EnumType.ONE_OF + " value.");
+                    "Attribute " + attribute + " maps an enum but is not annotated with " + Enumerated.class + " with " + EnumType.OBJECT_ONE_OF + " value.");
         }
     }
 }
