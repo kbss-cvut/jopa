@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
@@ -302,5 +303,16 @@ class MetamodelBuilderTest {
 
         @OWLDataProperty(iri = RDF.TYPE)
         private URI type;
+    }
+
+    @Test
+    void buildMetamodelBuildsAttributeWithConverterForEnumValuedObjectProperty() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<OWLClassM> et = builder.entity(OWLClassM.class);
+        final AbstractAttribute<? super OWLClassM, ?> att = et.getAttribute(OWLClassM.getObjectOneOfEnumAttributeField().getName());
+        assertNotNull(att.getConverter());
+        assertInstanceOf(ObjectOneOfEnumConverter.class, att.getConverter());
+        assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
     }
 }

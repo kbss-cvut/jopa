@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? super X, ?, ?>, X>
@@ -44,13 +45,17 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
     @Override
     void addValueFromAxiom(Axiom<?> ax) {
         final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
-        if (IdentifierTransformer.isValidIdentifierType(attribute.getBindableJavaType())) {
-            values.add(IdentifierTransformer
-                               .transformToIdentifier(valueIdentifier.getIdentifier(),
-                                                      attribute.getBindableJavaType()));
+        final Class<?> elementType = attribute.getBindableJavaType();
+        if (IdentifierTransformer.isValidIdentifierType(elementType)) {
+            values.add(IdentifierTransformer.transformToIdentifier(valueIdentifier.getIdentifier(), elementType));
+        } else if (elementType.isEnum()) {
+            assert attribute.getConverter() != null;
+            assert attribute.getConverter().supportsAxiomValueType(NamedResource.class);
+            // Maybe we should catch the exception and just skip the value if it is not convertible to be consistent
+            // with the 'else' branch behavior?
+            values.add(attribute.getConverter().convertToAttribute(valueIdentifier));
         } else {
-            final Object value = mapper.getEntityFromCacheOrOntology(attribute.getBindableJavaType(),
-                                                                     valueIdentifier.getIdentifier(),
+            final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(),
                                                                      entityDescriptor.getAttributeDescriptor(
                                                                              attribute));
             if (value != null) {
@@ -78,18 +83,23 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
         }
         final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
         final Assertion assertion = createAssertion();
+        final Function<Object, Value<NamedResource>> valueMapper = resolveValueMapper();
         return valueCollection.stream().filter(Objects::nonNull)
-                              .map(v -> {
-                                  final Class<?> type = attribute.getBindableJavaType();
-                                  if (IdentifierTransformer.isValidIdentifierType(type)) {
-                                      return new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v)));
-                                  } else {
-                                      final EntityType<?> et = mapper.getEntityType(type);
-                                      return new Value<>(
-                                              NamedResource.create(EntityPropertiesUtils.getIdentifier(v, et)));
-                                  }
-                              })
+                              .map(valueMapper)
                               .map(v -> new AxiomImpl<>(subject, assertion, v)).collect(Collectors.toSet());
+    }
+
+    private Function<Object, Value<NamedResource>> resolveValueMapper() {
+        final Class<?> type = attribute.getBindableJavaType();
+        if (IdentifierTransformer.isValidIdentifierType(type)) {
+            return v -> new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v)));
+        } else if (type.isEnum()) {
+            assert attribute.getConverter() != null;
+            return v -> new Value<>((NamedResource) attribute.getConverter().convertToAxiomValue(v));
+        } else {
+            final EntityType<?> et = mapper.getEntityType(type);
+            return v -> new Value<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(v, et)));
+        }
     }
 
     /**

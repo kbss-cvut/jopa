@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -107,5 +108,15 @@ class ReferenceSavingResolverTest {
         final OWLClassA object = new OWLClassA();
         resolver.registerPendingReference(subject, assertion, object, null);
         verify(mapperMock).registerPendingAssertion(subject, assertion, object, null);
+    }
+
+    @Test
+    void shouldSaveReferenceReturnsTrueForEnumValue() {
+        assertTrue(resolver.shouldSaveReference(OneOfEnum.OBJECT_PROPERTY, Collections.emptySet()));
+    }
+
+    @Test
+    void shouldSaveReferenceToItemReturnsTrueForEnumValue() {
+        assertTrue(resolver.shouldSaveReferenceToItem(OneOfEnum.DATATYPE_PROPERTY, Collections.emptySet()));
     }
 }

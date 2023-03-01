@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -51,11 +49,15 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
         if (list == null) {
             return;
         }
-        if (IdentifierTransformer.isValidIdentifierType(attribute.getBindableJavaType())) {
+        final Class<?> elemType = attribute.getBindableJavaType();
+        if (IdentifierTransformer.isValidIdentifierType(elemType)) {
             list.stream().filter(Objects::nonNull)
                 .forEach(item -> listDescriptor.addValue(NamedResource.create(IdentifierTransformer.valueAsUri(item))));
+        } else if (elemType.isEnum()) {
+            assert attribute.getConverter() != null;
+            list.stream().filter(Objects::nonNull).forEach(item -> listDescriptor.addValue(
+                    (NamedResource) attribute.getConverter().convertToAxiomValue(item)));
         } else {
-            final Class<?> elemType = attribute.getBindableJavaType();
             final EntityType<?> valueType = mapper.getEntityType(elemType);
             addItemsToDescriptor(listDescriptor, list, valueType);
         }
@@ -67,10 +69,8 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
     }
 
     <K> List<K> resolveUnpersistedItems(List<K> list) {
-        if (list == null) {
-            return Collections.emptyList();
-        }
-        if (IdentifierTransformer.isValidIdentifierType(attribute.getBindableJavaType())) {
+        if (list == null || IdentifierTransformer.isValidIdentifierType(
+                attribute.getBindableJavaType()) || attribute.getBindableJavaType().isEnum()) {
             return Collections.emptyList();
         } else {
             return list.stream().filter(item -> item != null && !referenceSavingResolver
