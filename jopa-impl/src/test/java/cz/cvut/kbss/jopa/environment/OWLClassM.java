@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.lang.reflect.Field;
@@ -222,6 +223,10 @@ public class OWLClassM {
         return OWLClassM.class.getDeclaredField("intAttribute");
     }
 
+    public static PropertyInfo getIntAttributeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getIntAttributeField());
+    }
+
     public static Field getLongAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("longAttribute");
     }
@@ -234,27 +239,51 @@ public class OWLClassM {
         return OWLClassM.class.getDeclaredField("dateAttribute");
     }
 
+    public static PropertyInfo getDateAttributeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getDateAttributeField());
+    }
+
     public static Field getEnumAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("enumAttribute");
+    }
+    public static PropertyInfo getEnumAttributeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getEnumAttributeField());
     }
 
     public static Field getIntegerSetField() throws Exception {
         return OWLClassM.class.getDeclaredField("integerSet");
+    }
+    public static PropertyInfo getIntegerSetFieldPropertyInfo() throws Exception {
+        return  PropertyInfo.from(OWLClassM.getIntegerSetField());
     }
 
     public static Field getLexicalFormField() throws Exception {
         return OWLClassM.class.getDeclaredField("lexicalForm");
     }
 
+    public static PropertyInfo getLexicalFormFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getLexicalFormField());
+    }
+
     public static Field getSimpleLiteralField() throws Exception {
         return OWLClassM.class.getDeclaredField("simpleLiteral");
+    }
+
+    public static PropertyInfo getSimpleLiteralFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getSimpleLiteralField());
     }
 
     public static Field getExplicitDatatypeField() throws Exception {
         return OWLClassM.class.getDeclaredField("explicitDatatype");
     }
+    public static PropertyInfo getExplicitDatatypeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getExplicitDatatypeField());
+    }
 
     public static Field getWithConverterField() throws Exception {
         return OWLClassM.class.getDeclaredField("withConverter");
+    }
+    public static PropertyInfo getWithConverterFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getWithConverterField());
     }
 }

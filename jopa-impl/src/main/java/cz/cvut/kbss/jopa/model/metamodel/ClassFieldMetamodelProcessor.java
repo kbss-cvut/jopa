@@ -89,14 +89,18 @@ class ClassFieldMetamodelProcessor<X> {
         if (propertyAtt.isKnownOwlProperty()) {
             final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
             registerTypeReference(a);
-        } else if (!isAspectIntegrationField(field)) {
-            final boolean success = processIdentifierField(field);
-            if (success) {
-                return;
-            }
-            LOG.error("finding method to {} ", field);
-            findPropertyDefinitionInHierarchy(field, inference);
+            return;
         }
+
+        if (isAspectIntegrationField(field)) {
+            return;
+        }
+
+        if (tryProcessIdentifierField(field)) {
+            return;
+        }
+        LOG.error("finding method to {} ", field);
+        findPropertyDefinitionInHierarchy(field, inference);
     }
 
     private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference) {
@@ -109,16 +113,16 @@ class ClassFieldMetamodelProcessor<X> {
 
             for (Method method : methods) {
                 if (propertyBelongsToMethod(field.getName(), method.getName())) {
-                    LOG.error("Found belonging");
+                    LOG.error("Found belonging - {} - {}",field.getName(), method.getName());
 
                     final PropertyInfo info = new PropertyInfo.MethodInfo(method, field);
 
-                    final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context); /// pridat v property attr property annotation a pracovat pak kompletne bez field
+                    final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
                     propertyAtt.resolve(info, metamodelBuilder, field.getType());
 
                     final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
                     registerTypeReference(a);
-                    return;
+                    return;     /// konflikty pri stejnem jmenu ale dvou ruznych metodach jinem iri
                 }
             }
             stack.addAll(top.getSupertypes());
@@ -129,10 +133,10 @@ class ClassFieldMetamodelProcessor<X> {
                 "Unable to process field " + field + ". It is not transient but has no mapping information.");
     }
 
-    private boolean propertyBelongsToMethod(String propertyName, String methodName) {
+    private boolean propertyBelongsToMethod(String propertyName, String methodName) { // todo
         return methodName.toLowerCase().contains(propertyName.toLowerCase());
     }
-
+    /// todo do prace v budoucnu - rozhodovani mezi bottom up nebo up down pristup
     private static Class<?> getFieldValueType(Field field) {
         if (Collection.class.isAssignableFrom(field.getType())) {
             return getSetOrListErasureType((ParameterizedType) field.getGenericType());
@@ -291,7 +295,7 @@ class ClassFieldMetamodelProcessor<X> {
         }
     }
 
-    private boolean processIdentifierField(Field field) {
+    private boolean tryProcessIdentifierField(Field field) {
         final Id id = field.getAnnotation(Id.class);
         if (id == null) {
             return false;
@@ -307,13 +311,13 @@ class ClassFieldMetamodelProcessor<X> {
         return field.getType().equals(BeanListenerAspect.Manageable.class);
     }
 
-    private static class InferenceInfo {
-        private final boolean inferred;
-        private final boolean includeExplicit;
+private static class InferenceInfo {
+    private final boolean inferred;
+    private final boolean includeExplicit;
 
-        InferenceInfo(Inferred inferredAnnotation) {
-            this.inferred = inferredAnnotation != null;
-            this.includeExplicit = inferredAnnotation == null || inferredAnnotation.includeExplicit();
-        }
+    InferenceInfo(Inferred inferredAnnotation) {
+        this.inferred = inferredAnnotation != null;
+        this.includeExplicit = inferredAnnotation == null || inferredAnnotation.includeExplicit();
     }
+}
 }
