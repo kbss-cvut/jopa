@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.annotations.Individual;
+import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassR;
 import cz.cvut.kbss.jopa.test.ObjectOneOfEnum;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -30,7 +31,7 @@ public abstract class EnumMappingTestRunner extends BaseRunner {
         this.em = getEntityManager("persistSupportsMappingEnumValuesToObjectOneOfIndividuals", false);
         final OWLClassR instance = new OWLClassR(Generators.generateUri());
         instance.setObjectOneOf(Generators.getRandomItem(Arrays.asList(ObjectOneOfEnum.values())));
-        transactional(() -> em.persist(instance));
+        persist(instance);
         final String constantIri =
                 ObjectOneOfEnum.class.getDeclaredField(instance.getObjectOneOf().name()).getAnnotation(
                         Individual.class).iri();
@@ -43,7 +44,7 @@ public abstract class EnumMappingTestRunner extends BaseRunner {
         this.em = getEntityManager("entityLifecycleSupportsMappingEnumValuesToObjectOneOfIndividuals", true);
         final OWLClassR instance = new OWLClassR(Generators.generateUri());
         instance.setObjectOneOf(ObjectOneOfEnum.ANNOTATION_PROPERTY);
-        transactional(() -> em.persist(instance));
+        persist(instance);
 
         transactional(() -> {
             final OWLClassR toUpdate = findRequired(OWLClassR.class, instance.getUri());
@@ -53,5 +54,34 @@ public abstract class EnumMappingTestRunner extends BaseRunner {
 
         final OWLClassR result = findRequired(OWLClassR.class, instance.getUri());
         assertEquals(ObjectOneOfEnum.DATATYPE_PROPERTY, result.getObjectOneOf());
+    }
+
+    @Test
+    public void persistSupportsOrdinalEnumMapping() throws Exception {
+        this.em = getEntityManager("persistSupportsOrdinalEnumMapping", false);
+        final OWLClassM instance = new OWLClassM();
+        instance.initializeTestValues(true);
+        persist(instance);
+
+        verifyStatementsPresent(Collections.singletonList(
+                new Quad(URI.create(instance.getKey()), URI.create(Vocabulary.p_m_ordinalEnumAttribute),
+                         instance.getOrdinalEnumAttribute().ordinal())), em);
+    }
+
+    @Test
+    public void entityLifecycleSupportsOrdinalEnumMapping() {
+        this.em = getEntityManager("entityLifecycleSupportsOrdinalEnumMapping", true);
+        final OWLClassM instance = new OWLClassM();
+        instance.initializeTestValues(true);
+        persist(instance);
+
+        transactional(() -> {
+            final OWLClassM toUpdate = findRequired(OWLClassM.class, instance.getKey());
+            assertEquals(instance.getOrdinalEnumAttribute(), toUpdate.getOrdinalEnumAttribute());
+            toUpdate.setOrdinalEnumAttribute(OWLClassM.Severity.HIGH);
+        });
+
+        final OWLClassM result = findRequired(OWLClassM.class, instance.getKey());
+        assertEquals(OWLClassM.Severity.HIGH, result.getOrdinalEnumAttribute());
     }
 }
