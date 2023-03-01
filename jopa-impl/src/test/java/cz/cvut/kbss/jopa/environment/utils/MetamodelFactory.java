@@ -548,8 +548,9 @@ public class MetamodelFactory {
     public static void initOWLClassMMock(EntityTypeImpl<OWLClassM> etMock, AbstractAttribute booleanAtt,
                                          AbstractAttribute intAtt, SingularAttributeImpl longAtt,
                                          AbstractAttribute doubleAtt, AbstractAttribute dateAtt,
-                                         AbstractAttribute enumAtt, AbstractPluralAttribute intSetAtt,
-                                         SingularAttributeImpl lexicalFormAtt, SingularAttributeImpl simpleLiteralAtt,
+                                         AbstractAttribute enumAtt, AbstractAttribute ordinalEnumAtt,
+                                         AbstractPluralAttribute intSetAtt, SingularAttributeImpl lexicalFormAtt,
+                                         SingularAttributeImpl simpleLiteralAtt,
                                          SingularAttributeImpl explicitDatatypeAtt,
                                          SingularAttributeImpl mWithConverterAtt,
                                          SingularAttributeImpl mObjectOneOfEnumAttribute,
@@ -565,15 +566,15 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                                                                             dateAtt, enumAtt, intSetAtt,
-                                                                             lexicalFormAtt, simpleLiteralAtt,
-                                                                             explicitDatatypeAtt,
+                                                                             dateAtt, enumAtt, ordinalEnumAtt,
+                                                                             intSetAtt, lexicalFormAtt,
+                                                                             simpleLiteralAtt, explicitDatatypeAtt,
                                                                              mObjectOneOfEnumAttribute)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                                                                        enumAtt, intSetAtt, lexicalFormAtt,
-                                                                        simpleLiteralAtt, explicitDatatypeAtt,
-                                                                        mObjectOneOfEnumAttribute,
+                                                                        enumAtt, ordinalEnumAtt, intSetAtt,
+                                                                        lexicalFormAtt, simpleLiteralAtt,
+                                                                        explicitDatatypeAtt, mObjectOneOfEnumAttribute,
                                                                         idMock)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
@@ -659,6 +660,20 @@ public class MetamodelFactory {
         when(enumAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
         when(etMock.getAttribute(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
+
+        when(ordinalEnumAtt.getJavaField()).thenReturn(OWLClassM.getOrdinalEnumAttributeField());
+        when(ordinalEnumAtt.getName()).thenReturn(OWLClassM.getOrdinalEnumAttributeField().getName());
+        when(ordinalEnumAtt.getJavaType()).thenReturn(OWLClassM.getOrdinalEnumAttributeField().getType());
+        when(ordinalEnumAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_ordinalEnumAttribute));
+        when(ordinalEnumAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(ordinalEnumAtt.isCollection()).thenReturn(false);
+        when(ordinalEnumAtt.getDeclaringType()).thenReturn(etMock);
+        when(ordinalEnumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(ordinalEnumAtt.getConverter()).thenReturn(new OrdinalEnumConverter(OWLClassM.Severity.class));
+        when(ordinalEnumAtt.hasLanguage()).thenReturn(false);
+        when(etMock.getFieldSpecification(OWLClassM.getOrdinalEnumAttributeField().getName())).thenReturn(
+                ordinalEnumAtt);
+        when(etMock.getAttribute(OWLClassM.getOrdinalEnumAttributeField().getName())).thenReturn(ordinalEnumAtt);
 
         when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
         when(intSetAtt.getName()).thenReturn(OWLClassM.getIntegerSetField().getName());

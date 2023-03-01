@@ -53,6 +53,10 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_enumAttribute)
     private Severity enumAttribute;
 
+    @Enumerated(EnumType.ORDINAL)
+    @OWLDataProperty(iri = Vocabulary.p_m_ordinalEnumAttribute)
+    private Severity ordinalEnumAttribute;
+
     @OWLDataProperty(iri = Vocabulary.p_m_IntegerSet)
     private Set<Integer> integerSet;
 
@@ -190,6 +194,7 @@ public class OWLClassM {
                 ", longAttribute=" + longAttribute +
                 ", doubleAttribute=" + doubleAttribute +
                 ", enumAttribute=" + enumAttribute +
+                ", ordinalEnumAttribute=" + ordinalEnumAttribute +
                 ", integerSet=" + integerSet +
                 ", lexicalForm=" + lexicalForm +
                 ", simpleLiteral=" + simpleLiteral +
@@ -209,6 +214,7 @@ public class OWLClassM {
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
         this.enumAttribute = Severity.MEDIUM;
+        this.ordinalEnumAttribute = enumAttribute;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
         this.lexicalForm = "test";
         this.simpleLiteral = "test";
@@ -247,6 +253,10 @@ public class OWLClassM {
 
     public static Field getEnumAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("enumAttribute");
+    }
+
+    public static Field getOrdinalEnumAttributeField() throws Exception {
+        return OWLClassM.class.getDeclaredField("ordinalEnumAttribute");
     }
 
     public static Field getIntegerSetField() throws Exception {
