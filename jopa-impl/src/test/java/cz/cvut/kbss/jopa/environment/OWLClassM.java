@@ -69,7 +69,7 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_withConverter, simpleLiteral = true)
     private ZoneOffset withConverter;
 
-    @Enumerated(EnumType.ONE_OF)
+    @Enumerated(EnumType.OBJECT_ONE_OF)
     @OWLObjectProperty(iri = Vocabulary.p_m_objectOneOfEnumAttribute)
     private OneOfEnum objectOneOfEnumAttribute;
 

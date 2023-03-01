@@ -80,6 +80,7 @@ public class Vocabulary {
 
     public static final String P_T_INTEGER_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "T-integerAttribute";
     public static final String P_HAS_OWL_CLASS_A = ATTRIBUTE_IRI_BASE + "hasOwlClassA";
+    public static final String P_HAS_OBJECT_ONE_OF = ATTRIBUTE_IRI_BASE + "hasObjectOneOf";
 
     public static final String P_Q_PARENT_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "QParent-stringAttribute";
     public static final String P_Q_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "Q-stringAttribute";
