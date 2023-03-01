@@ -654,7 +654,7 @@ public class MetamodelFactory {
         when(enumAtt.isCollection()).thenReturn(false);
         when(enumAtt.getDeclaringType()).thenReturn(etMock);
         when(enumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(enumAtt.getConverter()).thenReturn(new EnumConverter<>(OWLClassM.Severity.class));
+        when(enumAtt.getConverter()).thenReturn(new StringEnumConverter<>(OWLClassM.Severity.class));
         when(enumAtt.hasLanguage()).thenReturn(true);
         when(enumAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
