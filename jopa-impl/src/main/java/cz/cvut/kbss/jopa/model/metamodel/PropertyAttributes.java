@@ -37,6 +37,7 @@ abstract class PropertyAttributes {
     String language;
     private boolean nonEmpty = false;
     private ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
+    private EnumType enumType = null;
 
     PropertyAttributes(FieldMappingValidator validator) {
         this.validator = validator;
@@ -94,12 +95,13 @@ abstract class PropertyAttributes {
         return participationConstraints;
     }
 
-    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        resolveParticipationConstraints(field);
+    public EnumType getEnumType() {
+        return enumType;
     }
 
-    String resolveLanguage(Class<?> fieldValueCls) {
-        return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
+    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        resolveParticipationConstraints(field);
+        resolveEnumType(field, fieldValueCls);
     }
 
     private void resolveParticipationConstraints(Field field) {
@@ -111,6 +113,20 @@ abstract class PropertyAttributes {
                 this.nonEmpty = cons.nonEmpty();
             }
         }
+    }
+
+    private void resolveEnumType(Field field, Class<?> fieldValueCls) {
+        final Enumerated enumAnn = field.getAnnotation(Enumerated.class);
+        if (enumAnn != null) {
+            this.enumType = enumAnn.value();
+        } else  if (fieldValueCls.isEnum()) {
+            // As per default of Enumerated.value()
+            this.enumType = EnumType.STRING;
+        }
+    }
+
+    String resolveLanguage(Class<?> fieldValueCls) {
+        return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
     }
 
     static PropertyAttributes create(Field field, FieldMappingValidator validator, TypeBuilderContext<?> context) {

@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.model.MultilingualString;
+import cz.cvut.kbss.jopa.model.annotations.EnumType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,5 +87,19 @@ class DataPropertyAttributesTest {
         assertNotNull(sut.getDatatype());
         assertEquals(OWLClassM.getExplicitDatatypeField().getAnnotation(OWLDataProperty.class)
                 .datatype(), sut.getDatatype());
+    }
+
+    @Test
+    void resolveSetsEnumTypeToValueSpecifiedInEnumeratedAnnotation() throws Exception {
+        final DataPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(OWLClassM.getOrdinalEnumAttributeField(), metamodelBuilder, OWLClassM.Severity.class);
+        assertEquals(EnumType.ORDINAL, sut.getEnumType());
+    }
+
+    @Test
+    void resolveSetsEnumTypeToStringWhenEnumeratedAnnotationIsNotSpecifiedOnEnumValuedField() throws Exception {
+        final DataPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(OWLClassM.getEnumAttributeField(), metamodelBuilder, OWLClassM.Severity.class);
+        assertEquals(EnumType.STRING, sut.getEnumType());
     }
 }
