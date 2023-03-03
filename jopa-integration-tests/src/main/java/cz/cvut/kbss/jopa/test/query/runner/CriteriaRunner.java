@@ -331,4 +331,16 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         assertFalse(result.isEmpty());
         assertTrue(result.stream().anyMatch(j -> j.getUri().equals(matching.getUri())));
     }
+
+    @Test
+    public void testQueryOnlyRootWithEmptyWhereClauseWorks() {
+        final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where();
+
+        final List<OWLClassA> result = getEntityManager().createQuery(query).getResultList();
+        assertThat(result, containsSameEntities(aInstances));
+    }
 }
