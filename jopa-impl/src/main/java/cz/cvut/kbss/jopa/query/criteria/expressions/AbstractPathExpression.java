@@ -34,7 +34,7 @@ public abstract class AbstractPathExpression<X> extends AbstractExpression<X> im
 
     public <Y> Path<Y> getAttr(String attributeName) {
         Attribute attribute = metamodel.entity(type).getAttribute(attributeName);
-        return new PathImpl<Y>(this.metamodel, this, attribute, this.cb);
+        return new PathImpl<>(this.metamodel, this, attribute, this.cb);
     }
 
     public <Y> Path<Y> getAttr(SingularAttribute<? super X, Y> attribute) {
