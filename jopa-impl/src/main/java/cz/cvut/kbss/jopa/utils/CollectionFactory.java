@@ -70,6 +70,13 @@ public final class CollectionFactory {
         return new HashMap<>();
     }
 
+    /**
+     * Resolves {@link CollectionType} from the specified Java class.
+     *
+     * @param javaType Java type whose collection type to resolve
+     * @return {@code CollectionType} value
+     * @throws IllegalArgumentException When unsupported java type is provided
+     */
     public static CollectionType resolveCollectionType(Class<?> javaType) {
         if (List.class.isAssignableFrom(javaType)) {
             return CollectionType.LIST;

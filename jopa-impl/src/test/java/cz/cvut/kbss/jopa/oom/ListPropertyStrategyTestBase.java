@@ -15,10 +15,18 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OneOfEnum;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.mockito.Mock;
@@ -27,11 +35,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ListPropertyStrategyTestBase {
 
@@ -57,15 +65,15 @@ class ListPropertyStrategyTestBase {
     static List<OWLClassA> generateList() {
         final List<OWLClassA> lst = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            final OWLClassA a = new OWLClassA();
-            a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
+            final OWLClassA a = new OWLClassA(Generators.createIndividualIdentifier());
             lst.add(a);
         }
         return lst;
     }
 
     static List<URI> generateListOfIdentifiers() {
-        return generateList().stream().map(OWLClassA::getUri).collect(Collectors.toList());
+        return IntStream.range(0, 10).mapToObj(i -> Generators.createIndividualIdentifier())
+                        .collect(Collectors.toList());
     }
 
     void setRandomListItemsToNull(List<?> lst) {
@@ -81,5 +89,25 @@ class ListPropertyStrategyTestBase {
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), actual.getValues().get(i).getIdentifier());
         }
+    }
+
+    static ListAttributeImpl<WithEnumList, OneOfEnum> initEnumListAttribute() throws Exception {
+        final ListAttributeImpl<WithEnumList, OneOfEnum> att = mock(ListAttributeImpl.class);
+        when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
+        when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
+        when(att.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(att.getJavaField()).thenReturn(WithEnumList.class.getDeclaredField("enumList"));
+        when(att.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasNext));
+        // For referenced list only
+        when(att.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));
+        return att;
+    }
+
+    static class WithEnumList {
+        @Id
+        URI uri;
+
+        List<OneOfEnum> enumList;
     }
 }

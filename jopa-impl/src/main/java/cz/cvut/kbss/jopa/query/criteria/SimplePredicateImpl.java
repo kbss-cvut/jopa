@@ -38,7 +38,7 @@ public class SimplePredicateImpl extends AbstractPredicate{
 
     @Override
     public List<Expression<Boolean>> getExpressions(){
-        return Collections.emptyList();
+        return Collections.singletonList(expression);
     }
 
     @Override

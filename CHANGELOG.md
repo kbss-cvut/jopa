@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.21.0 - 2023-03-06
+- Support for mapping Java enums to ontological individuals (`owl:ObjectOneOf`) (Feature #60).
+- Support for mapping Java enums via ordinals or strings (Enhancement #134).
+
 ## 0.20.2 - 2023-02-23
 - Support automatic conversion of language-less strings to `LangString` attributes.
 - Support using `LangString` as query parameters.

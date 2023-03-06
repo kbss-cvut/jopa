@@ -44,6 +44,8 @@ class AbstractAttributeTest {
         pa.simpleLiteral = true;
         pa.language = LANG;
         pa.iri = metamodelMocks.forOwlClassA().stringAttribute().getIRI();
+        pa.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
+        pa.type = BasicTypeImpl.get(String.class);
         final SingularAttribute<?, ?> sut = SingularAttributeImpl.builder(pa).build();
         assertFalse(sut.hasLanguage());
     }
@@ -55,6 +57,8 @@ class AbstractAttributeTest {
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassA().entityType(), new NamespaceResolver()));
         pa.language = LANG;
         pa.iri = metamodelMocks.forOwlClassA().stringAttribute().getIRI();
+        pa.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
+        pa.type = BasicTypeImpl.get(String.class);
         final SingularAttribute<?, ?> sut = SingularAttributeImpl.builder(pa).build();
         assertTrue(sut.hasLanguage());
         assertEquals(LANG, sut.getLanguage());
@@ -68,6 +72,8 @@ class AbstractAttributeTest {
         pa.lexicalForm = true;
         pa.language = LANG;
         pa.iri = metamodelMocks.forOwlClassA().stringAttribute().getIRI();
+        pa.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
+        pa.type = BasicTypeImpl.get(String.class);
         final SingularAttribute<?, ?> sut = SingularAttributeImpl.builder(pa).build();
         assertFalse(sut.hasLanguage());
     }
@@ -80,6 +86,8 @@ class AbstractAttributeTest {
         pa.persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;
         pa.language = LANG;
         pa.iri = metamodelMocks.forOwlClassA().stringAttribute().getIRI();
+        pa.persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;
+        pa.type = metamodelMocks.forOwlClassA().entityType();
         final SingularAttribute<?, ?> sut = SingularAttributeImpl.builder(pa).build();
         assertFalse(sut.hasLanguage());
     }
@@ -91,6 +99,8 @@ class AbstractAttributeTest {
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassM().entityType(), new NamespaceResolver()));
         pa.datatype = XSD.DURATION;
         pa.iri = metamodelMocks.forOwlClassM().explicitDatatypeAttribute().getIRI();
+        pa.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
+        pa.type = BasicTypeImpl.get(String.class);
         final SingularAttribute<?, ?> sut = SingularAttributeImpl.builder(pa).build();
         assertNotNull(sut.getDatatype());
         assertEquals(XSD.DURATION, sut.getDatatype());
@@ -103,6 +113,8 @@ class AbstractAttributeTest {
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassA().entityType(), new NamespaceResolver()));
         pa.datatype = "";
         pa.iri = metamodelMocks.forOwlClassA().stringAttribute().getIRI();
+        pa.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
+        pa.type = BasicTypeImpl.get(String.class);
         final SingularAttribute<?, ?> sut = SingularAttributeImpl.builder(pa).build();
         assertNull(sut.getDatatype());
     }
