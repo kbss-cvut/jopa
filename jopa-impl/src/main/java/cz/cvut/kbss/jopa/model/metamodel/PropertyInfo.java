@@ -19,9 +19,9 @@ public interface PropertyInfo {
         return new FieldInfo(field);
     }
 
-//    static PropertyInfo from(Method method) {
-//        return new MethodInfo(method);
-//    }
+    static PropertyInfo from(Method method,Field field) {
+        return new MethodInfo(method,field);
+    }
 
     class FieldInfo implements PropertyInfo {
         private final Field field;

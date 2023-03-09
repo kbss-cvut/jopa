@@ -5,8 +5,8 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import java.net.URI;
 import java.util.Set;
 
-@OWLClass(iri = Vocabulary.SURFACE)
-public class Surface  implements Tablet, Notebook {
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_MULTIPLE_PARENTS)
+public class OWLClassMultipleParents implements OWLParentA, OWLParentB {
     @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
     private Set<String> pluralAnnotationProperty;
     @OWLDataProperty(iri = Vocabulary.P_E_STRING_ATTRIBUTE)

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,16 +16,24 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ClassFieldMetamodelProcessorTest {
@@ -39,7 +47,7 @@ class ClassFieldMetamodelProcessorTest {
         when(metamodelBuilder.hasManagedType(InvalidClass.class)).thenReturn(true);
         final ClassFieldMetamodelProcessor<InvalidClass> processor =
                 new ClassFieldMetamodelProcessor<>(new TypeBuilderContext<>(etMock, new NamespaceResolver()),
-                        metamodelBuilder);
+                                                   metamodelBuilder);
         final Field field = InvalidClass.class.getDeclaredField("invalidAttribute");
         assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
     }
@@ -62,10 +70,7 @@ class ClassFieldMetamodelProcessorTest {
             throws Exception {
         final IdentifiableEntityType<OWLClassJ> etMock = mock(IdentifiableEntityType.class);
         when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
-        final TypeBuilderContext<OWLClassJ> context = new TypeBuilderContext<>(etMock, new NamespaceResolver());
-        context.setConverterResolver(new ConverterResolver(new Converters(new Configuration())));
-        final ClassFieldMetamodelProcessor<OWLClassJ> processor = new ClassFieldMetamodelProcessor<>(context,
-                metamodelBuilder);
+        final ClassFieldMetamodelProcessor<OWLClassJ> processor = prepareProcessorForClass(etMock);
         final Field field = OWLClassJ.getOwlClassAField();
         when(metamodelBuilder.hasManagedType(OWLClassJ.class)).thenReturn(true);
         when(metamodelBuilder.hasManagedType(OWLClassA.class)).thenReturn(true);
@@ -74,4 +79,132 @@ class ClassFieldMetamodelProcessorTest {
         verify(etMock).addDeclaredAttribute(eq(field.getName()), captor.capture());
         assertTrue(captor.getValue().isNonEmpty());
     }
+
+    @Test
+    void findPropertyDefinitionInHierarchyFindsAttributeDeeplyNested()
+            throws Exception {
+        final IdentifiableEntityType<OWLClassY> baseMock = mock(IdentifiableEntityType.class);
+
+        final IdentifiableType<OWLInterfaceD> dInterfaceMock = mock(IdentifiableType.class);
+        final IdentifiableType<OWLInterfaceE> eInterfaceMock = mock(IdentifiableType.class);
+        final IdentifiableType<OWLInterfaceC> cInterfaceMock = mock(IdentifiableType.class);
+        final Set<IdentifiableType<? super OWLClassY>> classSuperTypes = new HashSet<>();
+
+
+        classSuperTypes.add(cInterfaceMock);
+        classSuperTypes.add(eInterfaceMock);
+
+
+        when(baseMock.getJavaType()).thenReturn(OWLClassY.class);
+        when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
+        when(eInterfaceMock.getSupertypes()).thenReturn(Collections.singleton(dInterfaceMock));
+        final ClassFieldMetamodelProcessor<OWLClassY> processor = prepareProcessorForClass(baseMock);
+        final Field field = OWLClassY.getNameField();
+        when(metamodelBuilder.getTypesPropertyMethods(dInterfaceMock)).thenReturn(Collections.singleton(OWLInterfaceD.class.getMethod("setName", String.class)));
+
+        processor.processField(field);
+
+
+        final ArgumentCaptor<AbstractAttribute> captor = ArgumentCaptor.forClass(AbstractAttribute.class);
+        verify(baseMock).addDeclaredAttribute(eq(field.getName()), captor.capture());
+        assertEquals(captor.getValue().getIRI().toString(), Vocabulary.ATTRIBUTE_BASE + "name");
+    }
+
+
+    @Test
+    void findPropertyDefinitionInHierarchyThrowsExceptionIfAmbiguous()
+            throws Exception {
+        final IdentifiableEntityType<OWLClassX> baseMock = mock(IdentifiableEntityType.class);
+
+        final IdentifiableType<OWLInterfaceB> BInterfaceMock = mock(IdentifiableType.class);
+        final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
+
+        final Set<IdentifiableType<? super OWLClassX>> classSuperTypes = new HashSet<>();
+
+
+        classSuperTypes.add(BInterfaceMock);
+        classSuperTypes.add(AInterfaceMock);
+
+
+        when(baseMock.getJavaType()).thenReturn(OWLClassX.class);
+        when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
+
+        final ClassFieldMetamodelProcessor<OWLClassX> processor = prepareProcessorForClass(baseMock);
+        final Field field = OWLClassX.getPropertyField();
+        when(metamodelBuilder.getTypesPropertyMethods(BInterfaceMock)).thenReturn(Collections.singleton(OWLInterfaceB.class.getMethod("getProperty")));
+        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn(Collections.singleton(OWLInterfaceA.class.getMethod("getProperty")));
+
+        MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
+        assertTrue(ex.getMessage().contains("Ambiguous hierarchy"));
+
+    }
+
+    private <X> ClassFieldMetamodelProcessor<X> prepareProcessorForClass(IdentifiableEntityType<X> etMock) {
+        final TypeBuilderContext<X> context = new TypeBuilderContext<>(etMock, new NamespaceResolver());
+        context.setConverterResolver(new ConverterResolver(new Converters(new Configuration())));
+        return new ClassFieldMetamodelProcessor<>(context, metamodelBuilder);
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLClassX")
+    private static class OWLClassX implements OWLInterfaceA, OWLInterfaceB {
+        @Id
+        private URI uri;
+
+        private String property;
+
+        @Override
+        public String getProperty() {
+            return property;
+        }
+
+        public static Field getPropertyField() throws NoSuchFieldException {
+            return OWLClassX.class.getDeclaredField("property");
+        }
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceA")
+    public interface OWLInterfaceA {
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyA")
+        String getProperty();
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceB")
+    private interface OWLInterfaceB {
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyA")
+        String getProperty();
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildClassWithMultipleParents")
+    private static class OWLClassY implements OWLInterfaceE, OWLInterfaceC {
+        @Id
+        private URI uri;
+
+        private String name;
+
+        @Override
+        public void setName(String name) {
+        }
+
+        static Field getNameField() throws NoSuchFieldException {
+            return OWLClassY.class.getDeclaredField("name");
+        }
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceE")
+    private interface OWLInterfaceE extends OWLInterfaceD {
+
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceC")
+    private interface OWLInterfaceC {
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceD")
+    private interface OWLInterfaceD {
+
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "name")
+        void setName(String name);
+    }
 }
+
+

@@ -44,7 +44,7 @@ public class MetamodelBuilder {
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
-    public final MultiValuedMap<IdentifiableType<?>, Method> inheritableProperties = new HashSetValuedHashMap<>();
+    private final MultiValuedMap<IdentifiableType<?>, Method> inheritableProperties = new HashSetValuedHashMap<>();
     private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
 
     private final ConverterResolver converterResolver;
@@ -240,5 +240,8 @@ public class MetamodelBuilder {
 
     public TypeReferenceMap getTypeReferenceMap() {
         return typeReferenceMap;
+    }
+    public Collection<Method> getTypesPropertyMethods(IdentifiableType<?> k){
+       return inheritableProperties.get(k);
     }
 }

@@ -104,7 +104,7 @@ class ManagedClassProcessor {
         }
         return null;
     }
-    static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
+    public static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
        return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
                                           .map(clazz -> (Class<? super T>) clazz)
                                           .collect(Collectors.toSet());

@@ -5,6 +5,6 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
 @OWLClass(iri = Vocabulary.C_OwlInterfaceAnMethods)
 public interface OWLInterfaceAnMethods {
-    @OWLDataProperty(iri="best_iri_ever")
+    @OWLDataProperty(iri=Vocabulary.p_m_unannotated_name)
     void setName(String name);
 }

@@ -25,6 +25,9 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -106,15 +109,21 @@ class ClassFieldMetamodelProcessor<X> {
     private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference) {
 
         Set<IdentifiableType<?>> stack = new HashSet<>(et.getSupertypes());
-
+        boolean found = false;
+        Method foundMethod = null;
         while (!stack.isEmpty()) {
             IdentifiableType<?> top = stack.iterator().next();
-            Collection<Method> methods = metamodelBuilder.inheritableProperties.get(top);
+            Collection<Method> methods = metamodelBuilder.getTypesPropertyMethods(top);
 
             for (Method method : methods) {
-                if (propertyBelongsToMethod(field.getName(), method.getName())) {
-                    LOG.error("Found belonging - {} - {}",field.getName(), method.getName());
+                if (propertyBelongsToMethod(field.getName(), method.getName(), field.getDeclaringClass())) {
+                    LOG.error("Found belonging - {} - {}", field.getName(), method.getName());
 
+                    if (found) {
+                        throw new MetamodelInitializationException(
+                                "Ambiguous hierarchy - fields can inherit only from one method. However for field "
+                                        + field + " two suitable methods were found - " + foundMethod + " and " + method);
+                    }
                     final PropertyInfo info = new PropertyInfo.MethodInfo(method, field);
 
                     final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
@@ -122,21 +131,43 @@ class ClassFieldMetamodelProcessor<X> {
 
                     final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
                     registerTypeReference(a);
-                    return;     /// konflikty pri stejnem jmenu ale dvou ruznych metodach jinem iri
+
+                    found = true;
+                    foundMethod = method;
                 }
             }
             stack.addAll(top.getSupertypes());
             stack.remove(top);
         }
-
-        throw new MetamodelInitializationException(
-                "Unable to process field " + field + ". It is not transient but has no mapping information.");
+        if (!found) {
+            throw new MetamodelInitializationException(
+                    "Unable to process field " + field + ". It is not transient but has no mapping information.");
+        }
     }
+
+    private boolean propertyBelongsToMethod(String propertyName, String methodName, Class<?> cls) { // todo
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(cls);
+            PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
+            for (PropertyDescriptor pd : props) {
+
+                LOG.error("-----");
+                LOG.error(pd.getName());
+                if(pd.getReadMethod()!=null) {
+                    LOG.error(pd.getReadMethod().getName());
+                }
+                if(pd.getWriteMethod()!=null) {
+
+                    LOG.error(pd.getWriteMethod().getName());
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("exc");
 
     private boolean propertyBelongsToMethod(String propertyName, String methodName) { // todo
         return methodName.toLowerCase().contains(propertyName.toLowerCase());
     }
-    /// todo do prace v budoucnu - rozhodovani mezi bottom up nebo up down pristup
+
     private static Class<?> getFieldValueType(Field field) {
         if (Collection.class.isAssignableFrom(field.getType())) {
             return getSetOrListErasureType((ParameterizedType) field.getGenericType());
@@ -311,13 +342,13 @@ class ClassFieldMetamodelProcessor<X> {
         return field.getType().equals(BeanListenerAspect.Manageable.class);
     }
 
-private static class InferenceInfo {
-    private final boolean inferred;
-    private final boolean includeExplicit;
+    private static class InferenceInfo {
+        private final boolean inferred;
+        private final boolean includeExplicit;
 
-    InferenceInfo(Inferred inferredAnnotation) {
-        this.inferred = inferredAnnotation != null;
-        this.includeExplicit = inferredAnnotation == null || inferredAnnotation.includeExplicit();
+        InferenceInfo(Inferred inferredAnnotation) {
+            this.inferred = inferredAnnotation != null;
+            this.includeExplicit = inferredAnnotation == null || inferredAnnotation.includeExplicit();
+        }
     }
-}
 }

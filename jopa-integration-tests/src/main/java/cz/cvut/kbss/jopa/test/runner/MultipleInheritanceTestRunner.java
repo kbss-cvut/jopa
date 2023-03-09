@@ -1,14 +1,11 @@
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.test.Notebook;
-import cz.cvut.kbss.jopa.test.OWLClassWithUnProperties;
-import cz.cvut.kbss.jopa.test.Surface;
-import cz.cvut.kbss.jopa.test.Tablet;
+import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
-import sun.tools.jconsole.Tab;
 
 import java.net.URI;
 import java.util.Collections;
@@ -16,57 +13,37 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class MultipleInheritanceTestRunner extends BaseRunner {
+public abstract class MultipleInheritanceTestRunner extends BaseRunner {
     public MultipleInheritanceTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
     }
 
-//    @Test
-    void nameUnknown() {
-        this.em = getEntityManager("NameUnknown", false);
+    @Test
+    void entityCanBeFoundByBothParentTypes() {
+        this.em = getEntityManager("entityCanBeFoundByBothParentTypes", false);
 
         URI id = URI.create("local");
-        final Surface s = new Surface();
-        s.setId(id);
-        s.setStringAttribute("AttRVal");
-        s.setPluralAnnotationProperty(Collections.singleton("seeet"));
+        final OWLClassMultipleParents child = new OWLClassMultipleParents();
+        child.setId(id);
+        child.setStringAttribute("AttRVal");
+        child.setPluralAnnotationProperty(Collections.singleton("seeet"));
 
-        em.persist(s);
+        em.persist(child);
         em.clear();
-        final Surface found = findRequired(Surface.class, id);
+        final OWLClassMultipleParents found = findRequired(OWLClassMultipleParents.class, id);
         em.clear();
-        final Notebook notebookFound = findRequired(Notebook.class, id);
+        final OWLParentB parentBFound = findRequired(OWLParentB.class, id);
         em.clear();
-        final Tablet tabletFound = findRequired(Tablet.class, id);
-        System.out.println(tabletFound.getPluralAnnotationProperty().size());
-        System.out.println(notebookFound.getStringAttribute());
-        assertEquals(s.getId(), found.getId());
-    }
+        final OWLParentA parentAFound = findRequired(OWLParentA.class, id);
 
-
-    //    @Test
-    void nameKnown() {
-        this.em = getEntityManager("NameUnknown", false);
-        logger.info("Hello world");
-        URI id = URI.create("local");
-        final Surface s = new Surface();
-        s.setId(id);
-        s.setStringAttribute("AttRVal");
-        s.setPluralAnnotationProperty(Collections.singleton("seeet"));
-
-        em.persist(s);
-
-        final Tablet foundTablet = findRequired(Tablet.class, id);
-
-        assertEquals(s.getPluralAnnotationProperty(), foundTablet.getPluralAnnotationProperty());
-
-        final Notebook foundNotebook = findRequired(Notebook.class, id);
-        assertEquals(s.getStringAttribute(), foundNotebook.getStringAttribute());
+        assertEquals(child.getId(), found.getId());
+        assertEquals(child.getStringAttribute(),parentBFound.getStringAttribute());
+        assertEquals(child.getPluralAnnotationProperty(), parentAFound.getPluralAnnotationProperty());
     }
 
     @Test
-    void finale(){
-        this.em = getEntityManager("NameUnknown", false);
+    void annotatedMethodPassesDownAnnotationValues(){
+        this.em = getEntityManager("annotatedMethodPassesDownAnnotationValues", false);
         URI id = URI.create("ID_VALUE");
         final OWLClassWithUnProperties subject = new OWLClassWithUnProperties();
 
@@ -78,9 +55,16 @@ public class MultipleInheritanceTestRunner extends BaseRunner {
 
         OWLClassWithUnProperties found =  em.find(OWLClassWithUnProperties.class,id);
 
+
+
+        IRI namePropertyIRI=  em.getMetamodel().entity(OWLClassWithUnProperties.class).getDeclaredAttribute("name").getIRI();
+
         assertNotNull(found);
         assertEquals(subject.getName(),found.getName());
         assertEquals(subject.getId(),found.getId());
+        assertEquals(Vocabulary.p_m_unannotated_name,namePropertyIRI.toString());
+
+
     }
 
 }

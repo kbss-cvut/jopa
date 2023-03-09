@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -38,6 +38,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -305,4 +306,61 @@ class MetamodelBuilderTest {
         @OWLDataProperty(iri = RDF.TYPE)
         private URI type;
     }
+
+    @Test
+    void buildMetamodelSupportsMultipleInheritanceInterfaceOnly() {
+        when(finderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(AParentI.class, BParentI.class, InterfaceChild.class)));
+        builder.buildMetamodel(finderMock);
+
+        final EntityType<InterfaceChild> cClassEt = (EntityType<InterfaceChild>) builder.getEntityClass(InterfaceChild.class);
+        final EntityType<AParentI> AParentEt = (EntityType<AParentI>) builder.getEntityClass(AParentI.class);
+        final EntityType<BParentI> BParentEt = (EntityType<BParentI>) builder.getEntityClass(BParentI.class);
+
+        assertThat(builder.getEntities().entrySet(), hasSize(3));
+
+        assertNotNull(cClassEt);
+        assertThat(cClassEt.getSupertypes(), hasSize(2));
+        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt,BParentEt));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "AParentI")
+    private interface AParentI {
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "BParentI")
+    private interface BParentI {
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "InterfaceChild")
+    private static class InterfaceChild implements AParentI, BParentI {
+        @Id
+        private URI uri;
+    }
+    @Test
+    void buildMetamodelSupportsMultipleInheritanceInterfaceAndClass() {
+        when(finderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(AParentI.class, BParent.class, ClassChild.class)));
+        builder.buildMetamodel(finderMock);
+
+        final EntityType<ClassChild> cClassEt = (EntityType<ClassChild>) builder.getEntityClass(ClassChild.class);
+        final EntityType<AParentI> AParentEt = (EntityType<AParentI>) builder.getEntityClass(AParentI.class);
+        final EntityType<BParent> BParentEt = (EntityType<BParent>) builder.getEntityClass(BParent.class);
+
+        assertThat(builder.getEntities().entrySet(), hasSize(3));
+
+        assertNotNull(cClassEt);
+        assertThat(cClassEt.getSupertypes(), hasSize(2));
+        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt,BParentEt));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "BParent")
+    private static class BParent {
+        @Id
+        private URI uri;
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "Child")
+    private static class ClassChild extends BParent implements AParentI  {
+
+    }
 }
+

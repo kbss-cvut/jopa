@@ -48,6 +48,15 @@ public class EntityLoaderTest {
     @OWLClass(iri = Vocabulary.CLASS_BASE + "interface")
     interface AnnotatedInterface {
     }
+    interface UnAnnotatedInterface{
+
+    }
+
+    @Test
+    public void entityLoaderIgnoresInterfaceWithoutOwlClassAnnotation() {
+        sut.accept(UnAnnotatedInterface.class);
+        assertFalse(sut.getEntities().contains(UnAnnotatedInterface.class));
+    }
 
     @Test
     void entityLoaderIgnoresClassAnnotatedWithNonEntity() {
