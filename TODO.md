@@ -18,12 +18,7 @@
 - [ ] Add possibility to generate integrity constraints from the object model
 - [ ] When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
     - CodeModel API does not support any such feature, it always removes files and replaces them with new ones
-- [ ] Add support for Lobs and Blobs
 
 ## Research Topics
 
 - [ ] Data integrity violation checks. E.g. when an entity is removed, there should be a check whether it is referenced from another entity
-- [ ] Research whether we could replace aspectj with cglib-generated proxies
-
-### Currently in Progress
-- [ ] JOPA Specification doc, which would explain behaviour and principles. On Github Wiki.
