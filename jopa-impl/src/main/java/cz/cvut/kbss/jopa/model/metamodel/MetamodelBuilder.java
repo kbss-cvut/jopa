@@ -44,7 +44,7 @@ public class MetamodelBuilder {
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
-    private final MultiValuedMap<IdentifiableType<?>, Method> inheritableProperties = new HashSetValuedHashMap<>();
+    private final MultiValuedMap<IdentifiableType<?>, AnnotatedAccessor> inheritableProperties = new HashSetValuedHashMap<>();
     private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
 
     private final ConverterResolver converterResolver;
@@ -99,7 +99,7 @@ public class MetamodelBuilder {
 
 
     private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
-        Arrays.stream(cls.getDeclaredMethods()).filter(MetamodelBuilder::isOWLPropertyMethod).forEach(m-> inheritableProperties.put(type,m));
+        Arrays.stream(cls.getDeclaredMethods()).filter(MetamodelBuilder::isOWLPropertyMethod).forEach(m-> inheritableProperties.put(type,AnnotatedAccessor.from(m)));
     }
 
     private static boolean isOWLPropertyMethod(Method m) {
@@ -241,7 +241,7 @@ public class MetamodelBuilder {
     public TypeReferenceMap getTypeReferenceMap() {
         return typeReferenceMap;
     }
-    public Collection<Method> getTypesPropertyMethods(IdentifiableType<?> k){
+    public Collection<AnnotatedAccessor> getTypesPropertyMethods(IdentifiableType<?> k){
        return inheritableProperties.get(k);
     }
 }

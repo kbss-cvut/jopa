@@ -113,18 +113,18 @@ class ClassFieldMetamodelProcessor<X> {
         Method foundMethod = null;
         while (!stack.isEmpty()) {
             IdentifiableType<?> top = stack.iterator().next();
-            Collection<Method> methods = metamodelBuilder.getTypesPropertyMethods(top);
+            Collection<AnnotatedAccessor> annotatedAccessors = metamodelBuilder.getTypesPropertyMethods(top);
 
-            for (Method method : methods) {
-                if (propertyBelongsToMethod(field.getName(), method.getName(), field.getDeclaringClass())) {
-                    LOG.error("Found belonging - {} - {}", field.getName(), method.getName());
+            for (AnnotatedAccessor annotatedAccessor : annotatedAccessors) {
+                if (propertyBelongsToMethod(field, annotatedAccessor)) {
+                    LOG.error("Found belonging - {} - {}", field.getName(), annotatedAccessor.getMethod().getName());
 
                     if (found) {
                         throw new MetamodelInitializationException(
                                 "Ambiguous hierarchy - fields can inherit only from one method. However for field "
-                                        + field + " two suitable methods were found - " + foundMethod + " and " + method);
+                                        + field + " two suitable methods were found - " + foundMethod + " and " + annotatedAccessor);
                     }
-                    final PropertyInfo info = new PropertyInfo.MethodInfo(method, field);
+                    final PropertyInfo info = new PropertyInfo.MethodInfo(annotatedAccessor.getMethod(), field);
 
                     final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
                     propertyAtt.resolve(info, metamodelBuilder, field.getType());
@@ -133,7 +133,7 @@ class ClassFieldMetamodelProcessor<X> {
                     registerTypeReference(a);
 
                     found = true;
-                    foundMethod = method;
+                    foundMethod = annotatedAccessor.getMethod();
                 }
             }
             stack.addAll(top.getSupertypes());
@@ -145,7 +145,7 @@ class ClassFieldMetamodelProcessor<X> {
         }
     }
 
-    private boolean propertyBelongsToMethod(String propertyName, String methodName, Class<?> cls) { // todo
+    private boolean methodInfo(String propertyName, String methodName, Class<?> cls) { // todo
         try {
             BeanInfo beanInfo = Introspector.getBeanInfo(cls);
             PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
@@ -153,19 +153,24 @@ class ClassFieldMetamodelProcessor<X> {
 
                 LOG.error("-----");
                 LOG.error(pd.getName());
-                if(pd.getReadMethod()!=null) {
+                if (pd.getReadMethod() != null) {
                     LOG.error(pd.getReadMethod().getName());
                 }
-                if(pd.getWriteMethod()!=null) {
+                if (pd.getWriteMethod() != null) {
 
                     LOG.error(pd.getWriteMethod().getName());
                 }
             }
         } catch (Exception e) {
             LOG.error("exc");
+        }
+        return false;
+    }
 
-    private boolean propertyBelongsToMethod(String propertyName, String methodName) { // todo
-        return methodName.toLowerCase().contains(propertyName.toLowerCase());
+    private boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
+
+        return property.getName().equals(accessor.getPropertyName()) && property.getType()
+                                                                                .isAssignableFrom(accessor.getPropertyType());
     }
 
     private static Class<?> getFieldValueType(Field field) {
