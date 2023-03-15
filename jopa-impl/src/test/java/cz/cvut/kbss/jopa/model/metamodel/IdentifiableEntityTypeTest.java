@@ -16,10 +16,8 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -63,27 +61,5 @@ class IdentifiableEntityTypeTest {
         et.addDirectTypes(typesSpec);
 
         assertEquals(typesSpec, et.getFieldSpecification(typesSpec.getName()));
-    }
-
-    @Test
-    void setSupertypeSetsInheritanceStrategyFromTheSupertypeWhenItIsEntity() {
-        final IdentifiableEntityType<OWLClassR> rEntityType = new ConcreteEntityType<>(OWLClassR.class.getName(),
-                                                                                       OWLClassR.class, IRI.create(OWLClassR.getClassIri()));
-        final IdentifiableEntityType<OWLClassS> sEntityType = spy(new ConcreteEntityType<>(OWLClassS.class.getName(),
-                                                                                           OWLClassS.class, IRI.create(OWLClassS.getClassIri())));
-        sEntityType.setInheritanceType(InheritanceType.TRY_FIRST);
-        rEntityType.setSupertypes(Collections.singleton(sEntityType));
-
-        assertEquals(InheritanceType.TRY_FIRST, rEntityType.getInheritanceType());
-    }
-
-    @Test
-    void setSupertypeSkipsInheritanceStrategyWhenSupertypeIsNotEntity() {
-        final IdentifiableEntityType<OWLClassQ> qEntityType = new ConcreteEntityType<>(OWLClassQ.class.getName(), OWLClassQ.class,
-                                                                                       IRI.create(OWLClassQ.getClassIri()));
-        final MappedSuperclassTypeImpl<QMappedSuperclass> superclassType = new MappedSuperclassTypeImpl<>(
-                QMappedSuperclass.class);
-        qEntityType.setSupertypes(Collections.singleton(superclassType));
-        assertNull(qEntityType.getInheritanceType());
     }
 }

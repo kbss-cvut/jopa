@@ -479,7 +479,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
             return identifier;
         }
 
-
         List<Identifier<? super X, ?>> foundInSupertypes = getFromSuperTypes(AbstractIdentifiableType::getIdentifier);
         if (foundInSupertypes.size() >= 2) {
             throw new AmbiguousAttributeException("Identifier attribute can be found in multiple parents of this class:  " + javaType.getName());
@@ -487,7 +486,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
             return foundInSupertypes.get(0);
         }
 
-        // This shouldn't happen, because every entity has to contain an identifier, otherwise metamodel building fails
+        // This should happen only during metamodel creation, because every entity has to contain an identifier and this is checked during metamodel creation
         throw new IllegalArgumentException("Identifier attribute is not present in type " + this);
     }
 

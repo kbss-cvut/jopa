@@ -60,19 +60,6 @@ public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType
         return iri;
     }
 
-    @Override
-    void setSupertypes(Set<AbstractIdentifiableType<? super X>> supertypes) {
-        super.setSupertypes(supertypes);
-        /// find unique inheritance types of parents
-        List<InheritanceType> superTypesInheritanceTypes = supertypes.stream()
-                                                           .filter(superType -> superType.getPersistenceType() == PersistenceType.ENTITY)
-                                                           .map(abstractIdentifiableType -> ((IdentifiableEntityType<?>) abstractIdentifiableType).inheritanceType)
-                                                           .distinct()
-                                                           .collect(Collectors.toList());
-        if (superTypesInheritanceTypes.size() == 1) { /// there is an agreement from all parents on inheritance type
-            this.inheritanceType = superTypesInheritanceTypes.get(0);
-        }
-    }
 
     /**
      * Gets inheritance type of this entity type.

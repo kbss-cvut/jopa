@@ -147,7 +147,7 @@ class MetamodelImplInheritanceTest {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final Inheritance inheritance = OWLClassS.class.getDeclaredAnnotation(Inheritance.class);
         final IdentifiableEntityType<OWLClassS> sEntityType = metamodel.entity(OWLClassS.class);
-//        assertEquals(inheritance.strategy(), sEntityType.getInheritanceType()); // do we need inheritance strategy in abstract classes ?
+        assertEquals(inheritance.strategy(), sEntityType.getInheritanceType());
         final IdentifiableEntityType<OWLClassR> rEntityType = metamodel.entity(OWLClassR.class);
         assertEquals(inheritance.strategy(), rEntityType.getInheritanceType());
     }

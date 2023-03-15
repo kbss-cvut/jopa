@@ -16,10 +16,7 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
-import cz.cvut.kbss.jopa.model.annotations.Inheritance;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
@@ -33,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MetamodelBuilder {
 
@@ -97,9 +95,10 @@ public class MetamodelBuilder {
     }
 
 
-
     private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
-        Arrays.stream(cls.getDeclaredMethods()).filter(MetamodelBuilder::isOWLPropertyMethod).forEach(m-> inheritableProperties.put(type,AnnotatedAccessor.from(m)));
+        Arrays.stream(cls.getDeclaredMethods())
+              .filter(MetamodelBuilder::isOWLPropertyMethod)
+              .forEach(m -> inheritableProperties.put(type, AnnotatedAccessor.from(m)));
     }
 
     private static boolean isOWLPropertyMethod(Method m) {
@@ -107,6 +106,7 @@ public class MetamodelBuilder {
                 m.getAnnotation(OWLAnnotationProperty.class) != null ||
                 m.getAnnotation(OWLObjectProperty.class) != null;
     }
+
     private <X> void processManagedType(TypeBuilderContext<X> context) {
         final AbstractIdentifiableType<X> type = context.getType();
         final Class<X> cls = type.getJavaType();
@@ -132,6 +132,9 @@ public class MetamodelBuilder {
             } catch (IllegalArgumentException e) {
                 throw new MetamodelInitializationException("Missing identifier field in entity " + cls);
             }
+        }
+
+        if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
             resolveInheritanceType((IdentifiableEntityType<X>) type);
         }
 
@@ -163,24 +166,43 @@ public class MetamodelBuilder {
         return superTypes;
     }
 
-    private static <X> boolean inheritsInheritanceStrategy(IdentifiableType<X> et) {
-        return et.getSupertypes()
-                 .stream()
-                 .anyMatch(supertype -> supertype.getPersistenceType() != Type.PersistenceType.MAPPED_SUPERCLASS);
+    private static <X> boolean canDeclareInheritanceStrategy(IdentifiableType<X> et) {
+        return et.getSupertypes() == null || et.getSupertypes()
+                                               .stream()
+                                               .noneMatch(supertype -> supertype.getPersistenceType() == Type.PersistenceType.ENTITY);
+    }
+
+    private static <X> InheritanceType getInheritanceTypeFromParents(IdentifiableEntityType<X> et) {
+        List<InheritanceType> superTypesInheritanceTypes = et.getSupertypes().stream()
+                                                             .filter(superType -> superType.getPersistenceType() == Type.PersistenceType.ENTITY)
+                                                             .map(abstractIdentifiableType -> ((IdentifiableEntityType<?>) abstractIdentifiableType).getInheritanceType())
+                                                             .distinct()
+                                                             .collect(Collectors.toList());
+        if (superTypesInheritanceTypes.size() == 1) { /// there is an agreement from all parents on inheritance type
+            return superTypesInheritanceTypes.get(0);
+        } else {
+            throw new MetamodelInitializationException("Entity " + et.getName() + " inherits two distinct inheritance strategies");
+        }
     }
 
     private static <X> void resolveInheritanceType(IdentifiableEntityType<X> et) {
         final Class<X> cls = et.getJavaType();
         final Inheritance inheritance = cls.getDeclaredAnnotation(Inheritance.class);
-        if (inheritance != null) {
-            if (et.getSupertypes() != null && inheritsInheritanceStrategy(et)) {
-                throw new MetamodelInitializationException("Class " + cls +
-                                                                   " cannot declare inheritance strategy, because it already inherits it from its supertype.");
+
+        if (canDeclareInheritanceStrategy(et)) {
+            if (inheritance != null) {
+                et.setInheritanceType(inheritance.strategy());
+            } else {
+                et.setInheritanceType(Constants.DEFAULT_INHERITANCE_TYPE);
             }
-            et.setInheritanceType(inheritance.strategy());
+        } else if (inheritance != null) {
+            throw new MetamodelInitializationException("Class " + cls +
+                                                               " cannot declare inheritance strategy, because it already inherits it from its supertype.");
+
         } else {
-            et.setInheritanceType(Constants.DEFAULT_INHERITANCE_TYPE);
+            et.setInheritanceType(getInheritanceTypeFromParents(et));
         }
+
     }
 
     public Map<Class<?>, ManagedType<?>> getTypeMap() {
@@ -241,7 +263,8 @@ public class MetamodelBuilder {
     public TypeReferenceMap getTypeReferenceMap() {
         return typeReferenceMap;
     }
-    public Collection<AnnotatedAccessor> getTypesPropertyMethods(IdentifiableType<?> k){
-       return inheritableProperties.get(k);
+
+    public Collection<AnnotatedAccessor> getTypesPropertyMethods(IdentifiableType<?> k) {
+        return inheritableProperties.get(k);
     }
 }
