@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.21.1 - 2023-03-21
+- Allow using generic types as plural attribute value elements.
+
 ## 0.21.0 - 2023-03-06
 - Support for mapping Java enums to ontological individuals (`owl:ObjectOneOf`) (Feature #60).
 - Support for mapping Java enums via ordinals or strings (Enhancement #134).
