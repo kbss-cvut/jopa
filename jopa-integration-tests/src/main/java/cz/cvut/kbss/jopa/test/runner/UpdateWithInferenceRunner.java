@@ -16,8 +16,7 @@ import java.net.URI;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -123,5 +122,26 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
             toUpdate.getTypes().remove(typeToRemove);
             em.getTransaction().commit();
         });
+    }
+
+    @Test
+    public void removalOfAssertedValueDoesNotAssertInferredValues() throws Exception {
+        assertNotNull(em);
+        final URI typeToRemove = Generators.generateUri();
+        final URI inferredSupertype = Generators.generateUri();
+        final OWLClassW entityW = new OWLClassW();
+        entityW.setTypes(Collections.singleton(typeToRemove));
+        persistTestData(Collections.singleton(new Quad(typeToRemove, URI.create(RDFS.SUB_CLASS_OF), inferredSupertype)),
+                        em);
+        persist(entityW);
+
+        final OWLClassW toUpdate = findRequired(OWLClassW.class, entityW.getUri());
+        assertThat(toUpdate.getTypes(), hasItems(typeToRemove, inferredSupertype));
+        toUpdate.getTypes().remove(typeToRemove);
+        transactional(() -> em.merge(toUpdate));
+
+        final OWLClassW result = findRequired(OWLClassW.class, entityW.getUri());
+        assertThat(result.getTypes(), not(hasItem(typeToRemove)));
+        assertThat(result.getTypes(), not(hasItem(inferredSupertype)));
     }
 }
