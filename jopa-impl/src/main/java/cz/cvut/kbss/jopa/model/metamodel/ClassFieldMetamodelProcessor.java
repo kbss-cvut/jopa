@@ -138,7 +138,8 @@ class ClassFieldMetamodelProcessor<X> {
     private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Types tt = field.getAnnotation(Types.class);
         mappingValidator.validateTypesField(field);
-        et.addDirectTypes(new TypesSpecificationImpl<>(et, tt.fetchType(), field, fieldValueCls, inference.inferred));
+        final FetchType fetchType = inference.inferred ? FetchType.EAGER : tt.fetchType();
+        et.addDirectTypes(new TypesSpecificationImpl<>(et, fetchType, field, fieldValueCls, inference.inferred));
     }
 
     private static boolean isPropertiesField(Field field) {
@@ -149,8 +150,9 @@ class ClassFieldMetamodelProcessor<X> {
         Properties properties = field.getAnnotation(Properties.class);
         mappingValidator.validatePropertiesField(field);
         final PropertiesParametersResolver paramsResolver = new PropertiesParametersResolver(field);
+        final FetchType fetchType = inference.inferred ? FetchType.EAGER : properties.fetchType();
         et.addOtherProperties(
-                PropertiesSpecificationImpl.declaringType(et).fetchType(properties.fetchType()).javaField(field)
+                PropertiesSpecificationImpl.declaringType(et).fetchType(fetchType).javaField(field)
                         .javaType(fieldValueCls).inferred(inference.inferred)
                         .propertyIdType(paramsResolver.getPropertyIdentifierType())
                         .propertyValueType(paramsResolver.getPropertyValueType()).build());
