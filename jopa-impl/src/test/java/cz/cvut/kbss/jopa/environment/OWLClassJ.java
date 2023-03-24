@@ -20,7 +20,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Set;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassJ")
+@OWLClass(iri = Vocabulary.c_OwlClassJ)
 public class OWLClassJ {
 
     private static final String CLS_A_FIELD = "owlClassA";
@@ -29,7 +29,7 @@ public class OWLClassJ {
     private URI uri;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_A, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<OWLClassA> owlClassA;
 
     public OWLClassJ() {
