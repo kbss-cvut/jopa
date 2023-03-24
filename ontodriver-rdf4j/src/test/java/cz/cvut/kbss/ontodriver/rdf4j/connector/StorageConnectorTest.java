@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
@@ -95,7 +96,7 @@ class StorageConnectorTest {
         final File parentDir = new File(projectRootPath + File.separator + "internal");
         assertFalse(parentDir.exists());
         this.repositoryFolder = parentDir;
-        connector = new StorageConnector(TestUtils.createDriverConfig(fileUri.toString()));
+        connector =createConnector(TestUtils.createDriverConfig(fileUri.toString()));
         assertTrue(parentDir.exists());
         final File repositoryDir = new File(fileUri);
         assertTrue(repositoryDir.exists());
@@ -107,6 +108,12 @@ class StorageConnectorTest {
         return projectRootPath;
     }
 
+    private static StorageConnector createConnector(DriverConfiguration config) throws Rdf4jDriverException {
+        final RepositoryConnectorInitializer initializer = new RepositoryConnectorInitializer(config);
+        initializer.initializeRepository();
+        return new StorageConnector(initializer);
+    }
+
     @Test
     void invalidLocalRepositoryPathThrowsRepositoryCreationException() {
         final URI invalidUri = Paths.get(getProjectRootPath() + File.separator + "reps" + File.separator + "repositoryTest")
@@ -115,7 +122,7 @@ class StorageConnectorTest {
         assertFalse(parentDir.exists());
         this.repositoryFolder = parentDir;
         assertThrows(RepositoryCreationException.class,
-                () -> new StorageConnector(TestUtils.createDriverConfig(invalidUri.toString())));
+                () -> createConnector(TestUtils.createDriverConfig(invalidUri.toString())));
     }
 
     @Test
@@ -131,7 +138,7 @@ class StorageConnectorTest {
         repoManager.addRepositoryConfig(config);
         repoManager.getRepository(repoId);
 
-        final StorageConnector connector = new StorageConnector(TestUtils.createDriverConfig(repoUri.toString()));
+        final StorageConnector connector = createConnector(TestUtils.createDriverConfig(repoUri.toString()));
         assertTrue(connector.isOpen());
         connector.close();
     }
@@ -153,7 +160,7 @@ class StorageConnectorTest {
     private void createInMemoryConnector() throws Rdf4jDriverException {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        this.connector = new StorageConnector(conf);
+        this.connector = createConnector(conf);
     }
 
     @Test
@@ -177,7 +184,7 @@ class StorageConnectorTest {
     @Test
     void setRepositoryThrowsUnsupportedOperationWhenOriginalRepositoryIsNotInMemory() throws Exception {
         this.repositoryFolder = Files.createTempDirectory("rdf4j-storage-connector-test").toFile();
-        connector = new StorageConnector(TestUtils.createDriverConfig(Paths.get(repositoryFolder
+        connector = createConnector(TestUtils.createDriverConfig(Paths.get(repositoryFolder
                 .getAbsolutePath() + File.separator + "repositories" + File.separator + "test").toUri().toString()));
 
         final Repository newRepository = new SailRepository(new MemoryStore());
@@ -210,7 +217,7 @@ class StorageConnectorTest {
     void initializationLoadsRepositoryConfigurationFromFileOnClasspathAndCreatesRepo() throws Exception {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs.ttl");
-        this.connector = new StorageConnector(conf);
+        this.connector = createConnector(conf);
         final Repository repo = connector.unwrap(Repository.class);
         assertTrue(repo instanceof SailRepository);
         assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
@@ -228,7 +235,7 @@ class StorageConnectorTest {
         file.toFile().deleteOnExit();
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, file.toString());
-        this.connector = new StorageConnector(conf);
+        this.connector = createConnector(conf);
         final Repository repo = connector.unwrap(Repository.class);
         assertTrue(repo instanceof SailRepository);
         assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
@@ -239,7 +246,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs-unknown.ttl");
         final RepositoryCreationException result =
-                assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
+                assertThrows(RepositoryCreationException.class, () -> createConnector(conf));
         assertThat(result.getMessage(), containsString("repo-configs/memory-rdfs-unknown.ttl"));
     }
 
@@ -248,7 +255,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "/tmp/memory-rdfs-unknown.ttl");
         final RepositoryCreationException result =
-                assertThrows(RepositoryCreationException.class, () -> new StorageConnector(conf));
+                assertThrows(RepositoryCreationException.class, () -> createConnector(conf));
         assertThat(result.getMessage(), containsString("/tmp/memory-rdfs-unknown.ttl"));
     }
 
@@ -260,7 +267,7 @@ class StorageConnectorTest {
                 .toString(), File.separator + "repositories" + File.separator + "native-lucene").toUri().toString();
         final DriverConfiguration conf = TestUtils.createDriverConfig(physicalUri);
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/native-lucene.ttl");
-        this.connector = new StorageConnector(conf);
+        this.connector = createConnector(conf);
         final Repository repo = connector.unwrap(Repository.class);
         assertTrue(repo instanceof SailRepository);
         assertTrue(((SailRepository) repo).getSail() instanceof LuceneSail);
@@ -273,7 +280,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, "not-a-number");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        assertThrows(Rdf4jDriverException.class, () -> new StorageConnector(conf));
+        assertThrows(Rdf4jDriverException.class, () -> createConnector(conf));
     }
 
     @Test
@@ -281,7 +288,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, "-1");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        assertThrows(Rdf4jDriverException.class, () -> new StorageConnector(conf));
+        assertThrows(Rdf4jDriverException.class, () -> createConnector(conf));
     }
 
     @Test
@@ -290,7 +297,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, Integer.toString(attempts));
-        this.connector = new StorageConnector(conf);
+        this.connector = createConnector(conf);
         final Repository repoMock = mock(Repository.class);
         final Field repoField = StorageConnector.class.getDeclaredField("repository");
         repoField.setAccessible(true);
@@ -308,7 +315,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         conf.setProperty(Rdf4jConfigParam.USE_INFERENCE, Boolean.TRUE.toString());
-        this.connector = new StorageConnector(conf);
+        this.connector = createConnector(conf);
         final ValueFactory vf = SimpleValueFactory.getInstance();
         final IRI childType = vf.createIRI(Generator.generateUri().toString());
         final IRI parentType = vf.createIRI(Generator.generateUri().toString());

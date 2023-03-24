@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.rdf4j.loader;
 
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.AxiomBuilder;
@@ -33,12 +32,11 @@ public class GraphDBStatementLoaderFactory implements StatementLoaderFactory {
      * If, for some reason, data stored in a non-GraphDB repository explicitly use these identifiers, this method will
      * return false positive result.
      *
-     * @param connector Connector to the repository
+     * @param repository RDF4J repository
      * @return {@code true} if repository is determined to be GraphDB, {@code false} otherwise
      */
-    public static boolean isRepositoryGraphDB(Connector connector) throws Rdf4jDriverException {
+    public static boolean isRepositoryGraphDB(Repository repository) throws Rdf4jDriverException {
         try {
-            final Repository repository = connector.unwrap(Repository.class);
             try (final RepositoryConnection connection = repository.getConnection()) {
                 final ValueFactory vf = connection.getValueFactory();
                 // Have to use a SPARQL query, because RDF4J API hasStatement call ended with an error
@@ -47,8 +45,8 @@ public class GraphDBStatementLoaderFactory implements StatementLoaderFactory {
                 query.setBinding("internalId", vf.createIRI(GRAPHDB_INTERNAL_ID_PROPERTY));
                 return query.evaluate();
             }
-        } catch (OntoDriverException e) {
-            throw (Rdf4jDriverException) e;
+        } catch (RuntimeException e) {
+            throw new Rdf4jDriverException(e);
         }
     }
 }
