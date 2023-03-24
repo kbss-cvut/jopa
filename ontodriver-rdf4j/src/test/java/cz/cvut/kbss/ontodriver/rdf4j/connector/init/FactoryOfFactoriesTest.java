@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.rdf4j.loader;
+package cz.cvut.kbss.ontodriver.rdf4j.connector.init;
 
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -16,12 +16,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GraphDBStatementLoaderFactoryTest {
+class FactoryOfFactoriesTest {
 
     @Mock
     private Repository repository;
 
     @Mock
+
     private RepositoryConnection connection;
 
     @Test
@@ -33,7 +34,8 @@ class GraphDBStatementLoaderFactoryTest {
         when(connection.prepareBooleanQuery(anyString())).thenReturn(query);
         when(query.evaluate()).thenReturn(true);
 
-        assertTrue(GraphDBStatementLoaderFactory.isRepositoryGraphDB(repository));
-        verify(query).setBinding(anyString(), eq(vf.createIRI(GraphDBStatementLoaderFactory.GRAPHDB_INTERNAL_ID_PROPERTY)));
+        assertTrue(FactoryOfFactories.isRepositoryGraphDB(repository));
+        verify(query).setBinding(anyString(), eq(vf.createIRI(FactoryOfFactories.GRAPHDB_INTERNAL_ID_PROPERTY)));
     }
+
 }
