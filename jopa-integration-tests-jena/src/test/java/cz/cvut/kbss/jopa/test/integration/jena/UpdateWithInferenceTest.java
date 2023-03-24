@@ -59,4 +59,11 @@ public class UpdateWithInferenceTest extends UpdateWithInferenceRunner {
                                    false, INFERENCE_PROPS);
         super.removalOfInferredValueOfInferredAttributeThrowsInferredAttributeModifiedException();
     }
+
+    @Test
+    @Override
+    public void removalOfAssertedValueDoesNotAssertInferredValues() throws Exception {
+        this.em = getEntityManager("removalOfAssertedValueDoesNotAssertInferredValues", true, INFERENCE_PROPS);
+        super.removalOfAssertedValueDoesNotAssertInferredValues();
+    }
 }

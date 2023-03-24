@@ -12,49 +12,26 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
-import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
-import cz.cvut.kbss.ontodriver.rdf4j.environment.TestUtils;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 public class ConnectorFactoryImplTest {
 
-    private ConnectorFactory factory;
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        if (factory != null && factory.isOpen()) {
-            factory.close();
-        }
-    }
-
     @Test
     public void setRepositoryThrowsIllegalStateWhenCalledOnClosedFactory() throws Exception {
-        final DriverConfiguration config = TestUtils.createDriverConfig("urn:test");
-        config.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        this.factory = new ConnectorFactoryImpl(config);
-        factory.close();
+        final StorageConnector connector = mock(StorageConnector.class);
+        final ConnectorFactory sut = new ConnectorFactoryImpl(connector);
+        sut.close();
         final Repository repo = new SailRepository(new MemoryStore());
         try {
-            assertThrows(IllegalStateException.class, () -> factory.setRepository(repo));
+            assertThrows(IllegalStateException.class, () -> sut.setRepository(repo));
         } finally {
             repo.shutDown();
         }
-    }
-
-    @Test
-    public void constructorInitializesRepositoryConnection() throws Exception {
-        final DriverConfiguration config = TestUtils.createDriverConfig("urn:test");
-        config.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        this.factory = new ConnectorFactoryImpl(config);
-        final Connector connector = factory.createStorageConnector();
-        assertNotNull(connector);
-        assertTrue(connector.unwrap(Repository.class).isInitialized());
     }
 }

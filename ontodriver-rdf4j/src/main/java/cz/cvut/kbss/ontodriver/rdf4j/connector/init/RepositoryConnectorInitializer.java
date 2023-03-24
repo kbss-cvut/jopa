@@ -10,10 +10,12 @@
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
  * <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.rdf4j.connector;
+package cz.cvut.kbss.ontodriver.rdf4j.connector.init;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryNotFoundException;
@@ -48,7 +50,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.Set;
 
-class RepositoryConnectorInitializer {
+public class RepositoryConnectorInitializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepositoryConnectorInitializer.class);
 
@@ -63,12 +65,32 @@ class RepositoryConnectorInitializer {
     private RepositoryManager manager;
     private Repository repository;
 
-    RepositoryConnectorInitializer(DriverConfiguration configuration, int maxReconnectAttempts) {
+    public RepositoryConnectorInitializer(DriverConfiguration configuration) throws Rdf4jDriverException {
         this.configuration = configuration;
-        this.maxReconnectAttempts = maxReconnectAttempts;
+        this.maxReconnectAttempts = resolveMaxReconnectAttempts();
     }
 
-    void initializeRepository() throws Rdf4jDriverException {
+    private int resolveMaxReconnectAttempts() throws Rdf4jDriverException {
+        try {
+            final int attempts = configuration.isSet(Rdf4jConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
+                    configuration.getProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS)) :
+                                 Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
+            if (attempts < 0) {
+                throw invalidReconnectAttemptsConfig();
+            }
+            return attempts;
+        } catch (NumberFormatException e) {
+            throw invalidReconnectAttemptsConfig();
+        }
+    }
+
+    private static Rdf4jDriverException invalidReconnectAttemptsConfig() {
+        return new Rdf4jDriverException(
+                "Invalid value of configuration parameter " + Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS +
+                        ". Must be a non-negative integer.");
+    }
+
+    public void initializeRepository() throws Rdf4jDriverException {
         final URI serverUri = configuration.getStorageProperties().getPhysicalURI();
         LOG.debug("Initializing connector to repository at {}", serverUri);
         try {
@@ -253,11 +275,15 @@ class RepositoryConnectorInitializer {
         }
     }
 
-    RepositoryManager getManager() {
+    public RepositoryManager getManager() {
         return manager;
     }
 
-    Repository getRepository() {
+    public Repository getRepository() {
         return repository;
+    }
+
+    public int getMaxReconnectAttempts() {
+        return maxReconnectAttempts;
     }
 }

@@ -14,11 +14,8 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
-import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
-import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
-import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import org.eclipse.rdf4j.common.iteration.Iterations;
@@ -45,49 +42,17 @@ public class StorageConnector extends AbstractConnector {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
-    private final DriverConfiguration configuration;
-
     private final int maxReconnectAttempts;
 
     private Repository repository;
-    private RepositoryManager manager;
+    private final RepositoryManager manager;
     private RepositoryConnection connection;
 
-    StorageConnector(DriverConfiguration configuration) throws Rdf4jDriverException {
-        assert configuration != null;
-
-        this.configuration = configuration;
-        this.maxReconnectAttempts = resolveMaxReconnectAttempts();
-        initialize();
+    public StorageConnector(RepositoryConnectorInitializer repoInitializer) {
+        this.repository = repoInitializer.getRepository();
+        this.manager = repoInitializer.getManager();
+        this.maxReconnectAttempts = repoInitializer.getMaxReconnectAttempts();
         this.open = true;
-    }
-
-    private int resolveMaxReconnectAttempts() throws Rdf4jDriverException {
-        try {
-            final int attempts = configuration.isSet(Rdf4jConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
-                    configuration.getProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS)) :
-                                 Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
-            if (attempts < 0) {
-                throw invalidReconnectAttemptsConfig();
-            }
-            return attempts;
-        } catch (NumberFormatException e) {
-            throw invalidReconnectAttemptsConfig();
-        }
-    }
-
-    private static Rdf4jDriverException invalidReconnectAttemptsConfig() {
-        return new Rdf4jDriverException(
-                "Invalid value of configuration parameter " + Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS +
-                        ". Must be a non-negative integer.");
-    }
-
-    private void initialize() throws Rdf4jDriverException {
-        final RepositoryConnectorInitializer initializer = new RepositoryConnectorInitializer(configuration,
-                                                                                              maxReconnectAttempts);
-        initializer.initializeRepository();
-        this.manager = initializer.getManager();
-        this.repository = initializer.getRepository();
     }
 
     @Override
@@ -95,7 +60,7 @@ public class StorageConnector extends AbstractConnector {
         if (!open) {
             return;
         }
-        LOG.debug("Closing connector to repository {}.", configuration.getStorageProperties().getPhysicalURI());
+        LOG.debug("Closing repository connector.");
         try {
             repository.shutDown();
             if (manager != null) {
@@ -118,7 +83,7 @@ public class StorageConnector extends AbstractConnector {
     RepositoryConnection acquireConnection() throws Rdf4jDriverException {
         // Workaround for local native storage being reset when multiple drivers access it
         if (!repository.isInitialized()) {
-            initialize();
+            repository.init();
         }
         LOG.trace("Acquiring repository connection.");
         return acquire(1);

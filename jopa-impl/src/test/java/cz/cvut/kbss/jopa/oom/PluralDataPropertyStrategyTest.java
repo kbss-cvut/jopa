@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -18,10 +16,12 @@ import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.Constants;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,10 +31,14 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 class PluralDataPropertyStrategyTest {
@@ -74,7 +78,7 @@ class PluralDataPropertyStrategyTest {
 
     private PluralDataPropertyStrategy<OWLClassM> createStrategyForM() {
         return new PluralDataPropertyStrategy<>(mocks.forOwlClassM().entityType(),
-                mocks.forOwlClassM().integerSetAttribute(), descriptor, mapperMock);
+                                                mocks.forOwlClassM().integerSetAttribute(), descriptor, mapperMock);
     }
 
     private Axiom<Integer> createMSetAxiom() {
@@ -232,5 +236,26 @@ class PluralDataPropertyStrategyTest {
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(m);
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceFiltersOutInferredValues() throws Exception {
+        when(mocks.forOwlClassM().integerSetAttribute().isInferred()).thenReturn(true);
+        final PluralDataPropertyStrategy<OWLClassM> sut = createStrategyForM();
+        final OWLClassM m = new OWLClassM();
+        m.initializeTestValues(true);
+        final Set<Integer> inferred = m.getIntegerSet().stream().filter(i -> Generators.randomBoolean()).collect(
+                Collectors.toSet());
+        doAnswer(args -> inferred.contains((Integer) args.getArgument(0, Axiom.class).getValue().getValue())).when(
+                mapperMock).isInferred(any(Axiom.class), any());
+
+        sut.buildAxiomValuesFromInstance(m, gatherer);
+        final AxiomValueDescriptor axiomDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
+        final List<Value<?>> values = axiomDescriptor.getAssertionValues(
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_IntegerSet), LANG, true));
+        if (inferred.size() < m.getIntegerSet().size()) {
+            assertFalse(values.isEmpty());
+        }
+        inferred.forEach(i -> assertThat(values, not(hasItem(new Value<>(i)))));
     }
 }

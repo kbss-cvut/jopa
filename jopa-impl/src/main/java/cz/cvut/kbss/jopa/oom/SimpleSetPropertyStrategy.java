@@ -72,6 +72,8 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
                 }
             }
         }
-        valueBuilder.addValues(createAssertion(), assertionValues, getAttributeWriteContext());
+        valueBuilder.addValues(createAssertion(),
+                               filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
+                               getAttributeWriteContext());
     }
 }
