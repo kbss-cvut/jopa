@@ -126,6 +126,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
 
     @Test
     public void removalOfAssertedValueDoesNotAssertInferredValues() throws Exception {
+        // TODO Rewrite to a regular attribute instead of types, they are handled differently
         assertNotNull(em);
         final URI typeToRemove = Generators.generateUri();
         final URI inferredSupertype = Generators.generateUri();
@@ -137,6 +138,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
 
         final OWLClassW toUpdate = findRequired(OWLClassW.class, entityW.getUri());
         assertThat(toUpdate.getTypes(), hasItems(typeToRemove, inferredSupertype));
+        em.clear();
         toUpdate.getTypes().remove(typeToRemove);
         transactional(() -> em.merge(toUpdate));
 

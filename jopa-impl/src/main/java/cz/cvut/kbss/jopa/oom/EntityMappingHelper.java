@@ -38,4 +38,6 @@ interface EntityMappingHelper extends ConfigurationHolder {
     Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor listDescriptor);
 
     Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor listDescriptor);
+
+    boolean isInferred(Axiom<?> axiom, URI context);
 }
