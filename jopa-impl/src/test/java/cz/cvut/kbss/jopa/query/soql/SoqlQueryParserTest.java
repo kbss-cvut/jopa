@@ -608,4 +608,12 @@ public class SoqlQueryParserTest {
         holder = sut.parseQuery(javaLikeSoql);
         assertEquals(expectedSparqlQuery, holder.getQuery());
     }
+
+    @Test
+    void testParseQueryWithIdentifierVariable() {
+        final String soql = "SELECT p FROM Person p WHERE p.uri = :pUri";
+        final String expectedSparql = "SELECT ?pUri WHERE { ?pUri a <" + Vocabulary.c_Person + "> . }";
+        QueryHolder holder = sut.parseQuery(soql);
+        assertEquals(expectedSparql, holder.getQuery());
+    }
 }

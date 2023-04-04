@@ -52,6 +52,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     private boolean isSelectedParamCount = false;
 
+    private String rootVariable = "?x";
+
 
     public SoqlQueryListener(MetamodelImpl metamodel) {
         this.metamodel = Objects.requireNonNull(metamodel);
@@ -153,8 +155,8 @@ public class SoqlQueryListener implements SoqlListener {
         String owner = getOwnerFromParam(ctx);
         String attribute = getAttributeFromParam(ctx);
         SoqlNode firstNode = new SoqlNode(owner);
-        SoqlNode lastNode = new SoqlNode(firstNode, attribute);
-        firstNode.setChild(lastNode);
+        SoqlNode childNode = new SoqlNode(firstNode, attribute);
+        firstNode.setChild(childNode);
         setIris(firstNode);
         SoqlAttribute myAttr = new SoqlAttribute(firstNode);
         attributes.add(myAttr);
@@ -413,7 +415,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         if (!attrSet) {
             SoqlAttribute myAttr = new SoqlAttribute(firstNode);
-            myAttr.setValue(orderParam.getAsValue());
+            myAttr.setValue(orderParam.getAsValue(rootVariable));
             myAttr.setOrderBy(true);
             attributes.add(1, myAttr);
             orderParam.setAttribute(myAttr);
@@ -454,7 +456,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         if (!attrSet) {
             SoqlAttribute myAttr = new SoqlAttribute(firstNode);
-            myAttr.setValue(groupParam.getAsValue());
+            myAttr.setValue(groupParam.getAsValue(rootVariable));
             myAttr.setGroupBy(true);
             attributes.add(1, myAttr);
             groupParam.setAttribute(myAttr);
@@ -528,7 +530,10 @@ public class SoqlQueryListener implements SoqlListener {
         return null;
     }
 
-    private void setAllNodesIris(ManagedType<?> entityType, SoqlNode node) {
+    private void setAllNodesIris(EntityType<?> entityType, SoqlNode node) {
+        if (entityType.getIdentifier().getName().equals(node.getValue())) {
+            return;
+        }
         final Attribute<?, ?> abstractAttribute = entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
@@ -537,7 +542,7 @@ public class SoqlQueryListener implements SoqlListener {
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
             }
-            setAllNodesIris((ManagedType<?>) type, node.getChild());
+            setAllNodesIris((EntityType<?>) type, node.getChild());
         }
     }
 
@@ -578,9 +583,9 @@ public class SoqlQueryListener implements SoqlListener {
             newQueryBuilder.append(getCountPart());
         } else {
             if (isSelectedParamDistinct) {
-                newQueryBuilder.append(" ").append(SoqlConstants.DISTINCT);
+                newQueryBuilder.append(' ').append(SoqlConstants.DISTINCT);
             }
-            newQueryBuilder.append(" ?x ");
+            newQueryBuilder.append(' ').append(rootVariable).append(' ');
         }
         newQueryBuilder.append("WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
@@ -591,12 +596,12 @@ public class SoqlQueryListener implements SoqlListener {
         if (!objectOfNextOr.isEmpty()) {
             newQueryBuilder.append("} ");
         }
-        newQueryBuilder.append("}");
+        newQueryBuilder.append('}');
         if (!groupAttributes.isEmpty()) {
-            newQueryBuilder.append(" ").append(buildGrouping());
+            newQueryBuilder.append(' ').append(buildGrouping());
         }
         if (!orderAttributes.isEmpty()) {
-            newQueryBuilder.append(" ").append(buildOrdering());
+            newQueryBuilder.append(' ').append(buildOrdering());
         }
         newQuery = newQueryBuilder.toString();
     }
@@ -604,9 +609,9 @@ public class SoqlQueryListener implements SoqlListener {
     private StringBuilder getCountPart() {
         StringBuilder countPart = new StringBuilder(" (COUNT(");
         if (isSelectedParamDistinct) {
-            countPart.append(SoqlConstants.DISTINCT).append(" ");
+            countPart.append(SoqlConstants.DISTINCT).append(' ');
         }
-        countPart.append("?x) AS ?count) ");
+        countPart.append(rootVariable).append(") AS ?count) ");
         return countPart;
     }
 
@@ -694,13 +699,13 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private StringBuilder processAttribute(SoqlAttribute attr) {
-        return new StringBuilder(attr.getTriplePattern());
+        return new StringBuilder(attr.getTriplePattern(rootVariable));
     }
 
     private StringBuilder buildOrdering() {
         StringBuilder sb = new StringBuilder("ORDER BY");
         for (SoqlOrderParameter orderParam : orderAttributes) {
-            sb.append(" ").append(orderParam.getOrderByPart());
+            sb.append(' ').append(orderParam.getOrderByPart());
         }
         return sb;
     }
@@ -708,7 +713,7 @@ public class SoqlQueryListener implements SoqlListener {
     private StringBuilder buildGrouping() {
         StringBuilder sb = new StringBuilder("GROUP BY");
         for (SoqlGroupParameter groupParam : groupAttributes) {
-            sb.append(" ").append(groupParam.getGroupByPart());
+            sb.append(' ').append(groupParam.getGroupByPart());
         }
         return sb;
     }

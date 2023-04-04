@@ -180,7 +180,7 @@ public class SparqlQueryHolder implements QueryHolder {
     /**
      * Generates a VALUES clause for query parameters that are set and appear in SELECT projection.
      * <p>
-     * Note that the current implementation does not support collection-valued parameters.
+     * TODO Note that the current implementation does not support collection-valued parameters.
      *
      * @param parameters Projected parameters to output into query as VALUES clause
      * @return VALUES clause, if there were any set parameters

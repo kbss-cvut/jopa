@@ -86,10 +86,10 @@ public class SoqlAttribute extends SoqlParameter {
         return operator.toFilterExpression(getAsParam(), toVariable(value));
     }
 
-    public String getTriplePattern() {
-        StringBuilder buildTP = new StringBuilder("?x ");
+    public String getTriplePattern(String rootVariable) {
+        StringBuilder buildTP = new StringBuilder(rootVariable).append(' ');
         if (isObject()) {
-            buildTP.append(SoqlConstants.RDF_TYPE).append(" ")
+            buildTP.append(SoqlConstants.RDF_TYPE).append(' ')
                    .append(toIri(getFirstNode())).append(TRIPLE_END);
         } else {
             SoqlNode pointer = getFirstNode().getChild();
@@ -106,14 +106,14 @@ public class SoqlAttribute extends SoqlParameter {
                     param = toVariable(value);
                 }
             }
-            buildTP.append(toIri(pointer)).append(" ").append(param).append(TRIPLE_END);
+            buildTP.append(toIri(pointer)).append(' ').append(param).append(TRIPLE_END);
             while (pointer.hasNextChild()) {
                 SoqlNode newPointer = pointer.getChild();
-                buildTP.append("?").append(pointer.getValue())
-                       .append(" ").append(toIri(newPointer)).append(" ");
+                buildTP.append('?').append(pointer.getValue())
+                       .append(' ').append(toIri(newPointer)).append(' ');
                 buildParam.append(newPointer.getCapitalizedValue());
                 if (newPointer.hasNextChild()) {
-                    buildTP.append("?").append(pointer.getChild().getValue());
+                    buildTP.append('?').append(pointer.getChild().getValue());
                 } else {
                     if (isFilter()) {
                         buildTP.append(buildParam);
