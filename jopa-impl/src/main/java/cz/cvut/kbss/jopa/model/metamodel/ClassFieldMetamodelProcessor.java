@@ -119,10 +119,10 @@ class ClassFieldMetamodelProcessor<X> {
                 if (propertyBelongsToMethod(field, annotatedAccessor)) {
                     LOG.error("Found belonging - {} - {}", field.getName(), annotatedAccessor.getMethod().getName());
 
-                    if (found) {
+                    if (found && !annotatedAccessor.getMethod().equals(foundMethod)) {
                         throw new MetamodelInitializationException(
                                 "Ambiguous hierarchy - fields can inherit only from one method. However for field "
-                                        + field + " two suitable methods were found - " + foundMethod + " and " + annotatedAccessor);
+                                        + field + " two suitable methods were found - " + foundMethod + " and " + annotatedAccessor.getMethod());
                     }
                     final PropertyInfo info = new PropertyInfo.MethodInfo(annotatedAccessor.getMethod(), field);
 
