@@ -32,4 +32,13 @@ public interface ParameterValue {
      * @return Value as query string
      */
     String getQueryString();
+
+    /**
+     * Whether this parameter value is set or it represents just the parameter identification.
+     *
+     * @return {@code true} if this instance represents an explicit parameter value
+     */
+    default boolean isSet() {
+        return true;
+    }
 }

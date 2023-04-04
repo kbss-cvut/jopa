@@ -357,4 +357,14 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                 .setParameter("type", URI.create(type)).executeUpdate();
         getEntityManager().getTransaction().commit();
     }
+
+    @Test
+    protected void querySupportsSelectionByEntityIdentifier() {
+        final OWLClassA entity = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        final OWLClassA result = getEntityManager().createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", OWLClassA.class)
+                .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_A))
+                .setParameter("x", entity.getUri())
+                .getSingleResult();
+        assertEquals(entity.getUri(), result.getUri());
+    }
 }
