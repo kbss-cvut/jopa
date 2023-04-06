@@ -30,13 +30,6 @@ public class SoqlNode {
         this.value = value;
     }
 
-    public SoqlNode(SoqlNode other) {
-        this.parent = other.parent;
-        this.child = other.child;
-        this.value = other.value;
-        this.iri = other.iri;
-    }
-
     public boolean hasNextChild() {
         return this.child != null;
     }

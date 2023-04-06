@@ -103,9 +103,9 @@ public class SoqlQueryParserTest {
 
     @Test
     public void testParseFindOneQuery() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :username";
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username = :uname";
         final String expectedSparqlQuery =
-                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?username . }";
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?uname . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(2, holder.getParameters().size());

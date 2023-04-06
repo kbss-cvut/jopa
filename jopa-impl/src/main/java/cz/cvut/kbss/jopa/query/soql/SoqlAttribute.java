@@ -103,10 +103,14 @@ public class SoqlAttribute extends SoqlParameter {
             buildParam.append(getFirstNode().getValue());
             buildParam.append(pointer.getCapitalizedValue());
             String param;
-            if (pointer.hasNextChild() || !isFilter()) {
+            if (pointer.hasNextChild() || value == null) {
                 param = "?" + pointer.getValue();
             } else {
-                param = buildParam.toString();
+                if (isFilter()) {
+                    param = buildParam.toString();
+                } else {
+                    param = SoqlUtils.soqlVariableToSparqlVariable(value);
+                }
             }
             buildTP.append(toIri(pointer)).append(' ').append(param).append(TRIPLE_END);
             while (pointer.hasNextChild()) {
