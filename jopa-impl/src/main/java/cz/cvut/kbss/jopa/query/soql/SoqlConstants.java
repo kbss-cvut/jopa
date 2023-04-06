@@ -30,6 +30,13 @@ class SoqlConstants {
      */
     static final String RDF_TYPE = "a";
 
+    /**
+     * SOQL variable prefix.
+     * <p>
+     * Same as in JPQL.
+     */
+    static final char VARIABLE_PREFIX = ':';
+
     private SoqlConstants() {
         throw new AssertionError();
     }

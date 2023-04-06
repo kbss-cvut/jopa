@@ -578,7 +578,7 @@ public class SoqlQueryParserTest {
 
     @Test
     void testParseFindByAttributeValueInVariableWrappedInParentheses() {
-        final String soqlQuery = "SELECT p FROM Person p WHERE p.username IN (:authorizedUsers";
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username IN (:authorizedUsers)";
         final String expectedSparqlQuery =
                 "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername IN (?authorizedUsers)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
@@ -610,9 +610,35 @@ public class SoqlQueryParserTest {
     }
 
     @Test
-    void testParseQueryWithIdentifierVariable() {
+    void testParseQueryWithIdentifierVariableInEqualityExpression() {
         final String soql = "SELECT p FROM Person p WHERE p.uri = :pUri";
         final String expectedSparql = "SELECT ?pUri WHERE { ?pUri a <" + Vocabulary.c_Person + "> . }";
+        QueryHolder holder = sut.parseQuery(soql);
+        assertEquals(expectedSparql, holder.getQuery());
+    }
+
+    @Test
+    void testParseQueryWithIdentifierVariableInInExpression() {
+        final String soql = "SELECT p FROM Person p WHERE p.uri IN :uris";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER (?x IN (?uris)) }";
+        QueryHolder holder = sut.parseQuery(soql);
+        assertEquals(expectedSparql, holder.getQuery());
+    }
+
+    @Test
+    void testParseQueryWithIdentifierVariableInInExpressionAccessedViaAttributeChain() {
+        final String soql = "SELECT p FROM Person p WHERE p.phone.uri IN :uris";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . " +
+                "?x <" + Vocabulary.p_p_hasPhone + "> ?phone . FILTER (?phone IN (?uris)) }";
+        QueryHolder holder = sut.parseQuery(soql);
+        assertEquals(expectedSparql, holder.getQuery());
+    }
+
+    @Test
+    void testParseQueryWithIdentifierVariableAccessViaAttributeChain() {
+        final String soql = "SELECT p FROM Person p WHERE p.phone.uri = :phoneUri";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . " +
+                "?x <" + Vocabulary.p_p_hasPhone + "> ?phoneUri . }";
         QueryHolder holder = sut.parseQuery(soql);
         assertEquals(expectedSparql, holder.getQuery());
     }
