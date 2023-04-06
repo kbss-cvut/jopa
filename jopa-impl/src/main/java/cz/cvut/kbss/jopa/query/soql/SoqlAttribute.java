@@ -83,7 +83,7 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     public String getFilter() {
-        return operator.toFilterExpression(getAsParam(), toVariable(value));
+        return operator.toFilterExpression(getAsParam(), SoqlUtils.soqlVariableToSparqlVariable(value));
     }
 
     public String getTriplePattern(String rootVariable) {
@@ -103,7 +103,7 @@ public class SoqlAttribute extends SoqlParameter {
                 if (isFilter()) {
                     param = buildParam.toString();
                 } else {
-                    param = toVariable(value);
+                    param = SoqlUtils.soqlVariableToSparqlVariable(value);
                 }
             }
             buildTP.append(toIri(pointer)).append(' ').append(param).append(TRIPLE_END);
@@ -118,7 +118,7 @@ public class SoqlAttribute extends SoqlParameter {
                     if (isFilter()) {
                         buildTP.append(buildParam);
                     } else {
-                        buildTP.append(toVariable(value));
+                        buildTP.append(SoqlUtils.soqlVariableToSparqlVariable(value));
                     }
                 }
                 buildTP.append(TRIPLE_END);
@@ -130,9 +130,5 @@ public class SoqlAttribute extends SoqlParameter {
 
     private static String toIri(SoqlNode node) {
         return IdentifierTransformer.stringifyIri(node.getIri());
-    }
-
-    private static String toVariable(String name) {
-        return "?" + name.substring(1);
     }
 }

@@ -52,6 +52,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     private boolean isSelectedParamCount = false;
 
+    private boolean isInObjectIdentifierExpression = false;
+
     private String rootVariable = "?x";
 
 
@@ -154,13 +156,30 @@ public class SoqlQueryListener implements SoqlListener {
     public void enterObjWithAttr(SoqlParser.ObjWithAttrContext ctx) {
         String owner = getOwnerFromParam(ctx);
         String attribute = getAttributeFromParam(ctx);
-        SoqlNode firstNode = new SoqlNode(owner);
-        SoqlNode childNode = new SoqlNode(firstNode, attribute);
-        firstNode.setChild(childNode);
-        setIris(firstNode);
-        SoqlAttribute myAttr = new SoqlAttribute(firstNode);
-        attributes.add(myAttr);
-        attrPointer = myAttr;
+        // objectNode.attributeNode
+        SoqlNode objectNode = new SoqlNode(owner);
+        SoqlNode attributeNode = new SoqlNode(objectNode, attribute);
+        objectNode.setChild(attributeNode);
+        if (!isIdentifier(objectNode, attributeNode)) {
+            setIris(objectNode);
+            SoqlAttribute myAttr = new SoqlAttribute(objectNode);
+            attributes.add(myAttr);
+            attrPointer = myAttr;
+        } else {
+            this.isInObjectIdentifierExpression = true;
+        }
+    }
+
+    private boolean isIdentifier(SoqlNode objectNode, SoqlNode attributeNode) {
+        if (!objectTypes.containsKey(objectNode.getValue())) {
+            return false;
+        }
+        String objectName = objectTypes.get(objectNode.getValue());
+        EntityTypeImpl<?> entityType = getEntityType(objectName);
+        if (entityType == null) {
+            return false;
+        }
+        return entityType.getIdentifier().getName().equals(attributeNode.getValue());
     }
 
     @Override
@@ -264,6 +283,7 @@ public class SoqlQueryListener implements SoqlListener {
             attrPointer.setOperator(InOperator.in());
         }
         attrPointer.setValue(value.getText());
+        this.isInObjectIdentifierExpression = false;
     }
 
     private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
@@ -305,6 +325,7 @@ public class SoqlQueryListener implements SoqlListener {
             ParseTree whereClauseValue = ctx.getChild(2);
             attrPointer.setValue(whereClauseValue.getText());
         }
+        this.isInObjectIdentifierExpression = false;
     }
 
     @Override
@@ -317,8 +338,14 @@ public class SoqlQueryListener implements SoqlListener {
 
         ParseTree whereClauseValue = ctx.getChild(2);
 
-        attrPointer.setOperator(new ComparisonOperator(operator));
-        attrPointer.setValue(whereClauseValue.getText());
+        if (isInObjectIdentifierExpression) {
+            assert Objects.equals(operator, "=");
+            this.rootVariable = SoqlUtils.soqlVariableToSparqlVariable(whereClauseValue.getText());
+        } else {
+            attrPointer.setOperator(new ComparisonOperator(operator));
+            attrPointer.setValue(whereClauseValue.getText());
+        }
+        this.isInObjectIdentifierExpression = false;
     }
 
     @Override
