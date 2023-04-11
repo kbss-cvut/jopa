@@ -27,6 +27,7 @@ import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -342,5 +343,36 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
         final List<OWLClassA> result = getEntityManager().createQuery(query).getResultList();
         assertThat(result, containsSameEntities(aInstances));
+    }
+
+    /**
+     * Enhancement #138
+     */
+    @Test
+    public void testSelectByIdentifierEquality() {
+        final OWLClassA instance = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(cb.equal(root.getAttr("uri"), instance.getUri()));
+
+        final OWLClassA result = getEntityManager().createQuery(query).getSingleResult();
+        assertEquals(instance.getUri(), result.getUri());
+    }
+
+    /**
+     * Enhancement #138
+     */
+    @Test
+    public void testSelectByIdentifierInCollection() {
+        final List<OWLClassA> matchingInstances = QueryTestEnvironment.getData(OWLClassA.class).subList(0, Generators.randomPositiveInt(2, QueryTestEnvironment.getData(OWLClassA.class).size()));
+        final List<URI> ids = matchingInstances.stream().map(OWLClassA::getUri).collect(Collectors.toList());
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(root.getAttr("uri").in(ids));
+
+        final List<OWLClassA> result = getEntityManager().createQuery(query).getResultList();
+        assertThat(result, containsSameEntities(matchingInstances));
     }
 }

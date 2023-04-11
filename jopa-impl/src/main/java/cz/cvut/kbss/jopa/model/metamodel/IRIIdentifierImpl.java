@@ -37,7 +37,7 @@ public class IRIIdentifierImpl<T> implements IRIIdentifier {
     }
 
     @Override
-    public Class getJavaType() {
+    public Class<?> getJavaType() {
         return javaField.getType();
     }
 
@@ -79,5 +79,15 @@ public class IRIIdentifierImpl<T> implements IRIIdentifier {
     @Override
     public boolean isGenerated() {
         return generated;
+    }
+
+    @Override
+    public BindableType getBindableType() {
+        return BindableType.SINGULAR_ATTRIBUTE;
+    }
+
+    @Override
+    public Class<?> getBindableJavaType() {
+        return getJavaType();
     }
 }
