@@ -311,4 +311,14 @@ public class SparqlQueryParserTest {
         assertNotNull(holder.getParameter("p"));
         assertNotNull(holder.getParameter("o"));
     }
+
+    @Test
+    void parseQuerySetsProjectedMarkerOnVariablesAppearingInSelectProjection() {
+        final String query = "SELECT ?x WHERE {?x ?hasPart|?hasQuestion ?part . }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        final QueryParameter<?> xVar = (QueryParameter<?>) holder.getParameter("x");
+        assertTrue(xVar.isProjected());
+        final QueryParameter<?> partVar = (QueryParameter<?>) holder.getParameter("part");
+        assertFalse(partVar.isProjected());
+    }
 }

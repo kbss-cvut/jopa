@@ -85,6 +85,7 @@ public class MetamodelFactory {
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
         when(idMock.getDeclaringType()).thenReturn(etMock);
+        when(idMock.getName()).thenReturn(OWLClassA.class.getDeclaredField("uri").getName());
         when(etMock.getFieldSpecification("uri")).thenReturn(idMock);
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
         addLifecycleCallback(listenerManager, POST_LOAD, OWLClassA.getPostLoadCallback());
@@ -363,6 +364,7 @@ public class MetamodelFactory {
         when(clsHMock.getType()).thenReturn(etHMock);
         when(etMock.getFieldSpecification(clsHMock.getName())).thenReturn(clsHMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getName()).thenReturn(OWLClassG.class.getDeclaredField("uri").getName());
         when(idMock.getJavaField()).thenReturn(OWLClassG.class.getDeclaredField("uri"));
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
@@ -404,6 +406,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
         when(etMock.getFieldSpecification(clsGMock.getName())).thenReturn(clsGMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getName()).thenReturn(OWLClassH.class.getDeclaredField("uri").getName());
         when(idMock.getJavaField()).thenReturn(OWLClassH.class.getDeclaredField("uri"));
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
@@ -1412,6 +1415,7 @@ public class MetamodelFactory {
         when(phoneNumberAttMock.getName()).thenReturn(Phone.class.getDeclaredField("number").getName());
         when(etMock.getAttribute(Phone.class.getDeclaredField("number").getName())).thenReturn(phoneNumberAttMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getName()).thenReturn(Phone.class.getDeclaredField("uri").getName());
         when(idMock.getJavaField()).thenReturn(Phone.class.getDeclaredField("uri"));
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }

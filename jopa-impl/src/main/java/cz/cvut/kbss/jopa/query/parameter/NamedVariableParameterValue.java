@@ -36,4 +36,9 @@ class NamedVariableParameterValue extends AbstractParameterValue {
     public String getQueryString() {
         return "?" + variableName;
     }
+
+    @Override
+    public boolean isSet() {
+        return false;
+    }
 }

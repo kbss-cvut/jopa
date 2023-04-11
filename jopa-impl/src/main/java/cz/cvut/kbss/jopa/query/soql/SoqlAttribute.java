@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.soql;
 
@@ -82,43 +80,54 @@ public class SoqlAttribute extends SoqlParameter {
         return !getFirstNode().hasNextChild();
     }
 
-    public String getFilter() {
-        return operator.toFilterExpression(getAsParam(), toVariable(value));
+    public boolean isInstanceOf() {
+        return !getFirstNode().hasNextChild() && operator == null;
     }
 
-    public String getTriplePattern() {
-        StringBuilder buildTP = new StringBuilder("?x ");
-        if (isObject()) {
-            buildTP.append(SoqlConstants.RDF_TYPE).append(" ")
+    public String getFilter() {
+        assert isFilter();
+        return operator.toFilterExpression(getAsParam(), SoqlUtils.soqlVariableToSparqlVariable(value));
+    }
+
+    public String getTriplePattern(String rootVariable) {
+        StringBuilder buildTP = new StringBuilder(rootVariable).append(' ');
+        if (isInstanceOf()) {
+            buildTP.append(SoqlConstants.RDF_TYPE).append(' ')
                    .append(toIri(getFirstNode())).append(TRIPLE_END);
         } else {
+            if (isObject()) {
+                return "";
+            }
             SoqlNode pointer = getFirstNode().getChild();
             StringBuilder buildParam = new StringBuilder("?");
             buildParam.append(getFirstNode().getValue());
             buildParam.append(pointer.getCapitalizedValue());
             String param;
-            if (pointer.hasNextChild()) {
+            if (pointer.hasNextChild() || value == null) {
                 param = "?" + pointer.getValue();
             } else {
                 if (isFilter()) {
                     param = buildParam.toString();
                 } else {
-                    param = toVariable(value);
+                    param = SoqlUtils.soqlVariableToSparqlVariable(value);
                 }
             }
-            buildTP.append(toIri(pointer)).append(" ").append(param).append(TRIPLE_END);
+            buildTP.append(toIri(pointer)).append(' ').append(param).append(TRIPLE_END);
             while (pointer.hasNextChild()) {
                 SoqlNode newPointer = pointer.getChild();
-                buildTP.append("?").append(pointer.getValue())
-                       .append(" ").append(toIri(newPointer)).append(" ");
+                if (newPointer.getIri().isEmpty()) {
+                    break;
+                }
+                buildTP.append('?').append(pointer.getValue())
+                       .append(' ').append(toIri(newPointer)).append(' ');
                 buildParam.append(newPointer.getCapitalizedValue());
                 if (newPointer.hasNextChild()) {
-                    buildTP.append("?").append(pointer.getChild().getValue());
+                    buildTP.append('?').append(pointer.getChild().getValue());
                 } else {
                     if (isFilter()) {
                         buildTP.append(buildParam);
                     } else {
-                        buildTP.append(toVariable(value));
+                        buildTP.append(SoqlUtils.soqlVariableToSparqlVariable(value));
                     }
                 }
                 buildTP.append(TRIPLE_END);
@@ -130,9 +139,5 @@ public class SoqlAttribute extends SoqlParameter {
 
     private static String toIri(SoqlNode node) {
         return IdentifierTransformer.stringifyIri(node.getIri());
-    }
-
-    private static String toVariable(String name) {
-        return "?" + name.substring(1);
     }
 }
