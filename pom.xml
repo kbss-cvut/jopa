@@ -31,6 +31,7 @@
         <module>jopa-integration-tests-rdf4j</module>
         <module>jopa-distribution</module>
         <module>model-gen</module>
+        <module>static-model-generator-example</module>
     </modules>
 
     <properties>
