@@ -13,6 +13,8 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
+import cz.cvut.kbss.jopa.model.annotations.EnumType;
+import cz.cvut.kbss.jopa.model.annotations.Enumerated;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -88,10 +90,15 @@ class FieldMappingValidator {
 
     void validateAttributeMapping(AbstractAttribute<?, ?> attribute) {
         validateAttributeDoesNotMapRdfType(attribute);
-        if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.DATA
-                || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ANNOTATION) {
-            validateLexicalFormAttribute(attribute);
-            validateSimpleLiteralField(attribute);
+        switch (attribute.getPersistentAttributeType()) {
+            case OBJECT:
+                validateObjectPropertyEnumMapping(attribute);
+                break;
+            case DATA:  // Intentional fall-through
+            case ANNOTATION:
+                validateLexicalFormAttribute(attribute);
+                validateSimpleLiteralField(attribute);
+                break;
         }
     }
 
@@ -103,14 +110,14 @@ class FieldMappingValidator {
     }
 
     private static void validateLexicalFormAttribute(AbstractAttribute<?, ?> attribute) {
-        if (attribute.isLexicalForm() && !String.class.isAssignableFrom(getLiteralFieldType(attribute))) {
+        if (attribute.isLexicalForm() && !String.class.isAssignableFrom(getBindableType(attribute))) {
             throw new InvalidFieldMappingException(
                     attribute + " - lexicalForm mapping can be used only on fields of type String.");
         }
     }
 
     private static void validateSimpleLiteralField(AbstractAttribute<?, ?> attribute) {
-        final Class<?> fieldType = getLiteralFieldType(attribute);
+        final Class<?> fieldType = getBindableType(attribute);
         if (attribute.isSimpleLiteral() && (!String.class.isAssignableFrom(fieldType) && !Enum.class.isAssignableFrom(
                 fieldType) && !attribute.getConverter().supportsAxiomValueType(String.class))) {
             throw new InvalidFieldMappingException(
@@ -118,7 +125,19 @@ class FieldMappingValidator {
         }
     }
 
-    private static Class<?> getLiteralFieldType(AbstractAttribute<?, ?> attribute) {
-        return attribute.isCollection() ? ((AbstractPluralAttribute) attribute).getBindableJavaType() : attribute.getJavaType();
+    private static Class<?> getBindableType(AbstractAttribute<?, ?> attribute) {
+        return attribute.isCollection() ? ((AbstractPluralAttribute) attribute).getBindableJavaType() :
+               attribute.getJavaType();
+    }
+
+    private static void validateObjectPropertyEnumMapping(Attribute<?, ?> attribute) {
+        if (!attribute.getJavaType().isEnum()) {
+            return;
+        }
+        final Enumerated enumeratedAnn = attribute.getJavaField().getAnnotation(Enumerated.class);
+        if (enumeratedAnn == null || enumeratedAnn.value() != EnumType.OBJECT_ONE_OF) {
+            throw new InvalidFieldMappingException(
+                    "Attribute " + attribute + " maps an enum but is not annotated with " + Enumerated.class + " with " + EnumType.OBJECT_ONE_OF + " value.");
+        }
     }
 }

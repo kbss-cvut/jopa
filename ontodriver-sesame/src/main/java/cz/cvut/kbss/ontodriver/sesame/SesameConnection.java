@@ -172,6 +172,13 @@ class SesameConnection implements Connection {
     }
 
     @Override
+    public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException {
+        ensureOpen();
+        // Not implemented. Switch to RDF4J OntoDriver for implementation of new features
+        return true;
+    }
+
+    @Override
     public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(descriptor);

@@ -127,7 +127,7 @@ public class BeanListenerAspect {
         }
     }
 
-    private FieldSpecification<?, ?> getFieldSpecification(Object entity, String fieldName,
+    private static FieldSpecification<?, ?> getFieldSpecification(Object entity, String fieldName,
                                                            UnitOfWorkImpl persistenceContext) {
         final EntityType<?> et = persistenceContext.getMetamodel().entity(entity.getClass());
         assert et != null;

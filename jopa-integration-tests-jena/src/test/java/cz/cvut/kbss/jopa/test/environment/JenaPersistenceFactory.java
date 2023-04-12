@@ -43,7 +43,7 @@ public class JenaPersistenceFactory implements PersistenceFactory {
     private static Map<String, String> initProperties() {
         final Map<String, String> map = new HashMap<>();
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        map.put(JOPAPersistenceProperties.LANG, "en");
+        map.put(JOPAPersistenceProperties.LANG, TestEnvironment.PERSISTENCE_LANGUAGE);
         map.put(JenaOntoDriverProperties.JENA_STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
         map.put(JenaOntoDriverProperties.JENA_TREAT_DEFAULT_GRAPH_AS_UNION, Boolean.toString(true));
         return map;

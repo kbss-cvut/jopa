@@ -21,18 +21,25 @@ public class Vocabulary {
 
     public static final String C_OWL_CLASS_A = CLASS_IRI_BASE + "OWLClassA";
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";
+    public static final String C_OWL_CLASS_C = CLASS_IRI_BASE + "OWLClassC";
     public static final String C_OWL_CLASS_D = CLASS_IRI_BASE + "OWLClassD";
     public static final String C_OWL_CLASS_E = CLASS_IRI_BASE + "OWLClassE";
     public static final String C_OWL_CLASS_F = CLASS_IRI_BASE + "OWLClassF";
     public static final String C_OWL_CLASS_G = CLASS_IRI_BASE + "OWLClassG";
     public static final String C_OWL_CLASS_H = CLASS_IRI_BASE + "OWLClassH";
+    public static final String C_OWL_CLASS_I = CLASS_IRI_BASE + "OWLClassI";
     public static final String C_OWL_CLASS_J = CLASS_IRI_BASE + "OWLClassJ";
+    public static final String C_OWL_CLASS_K = CLASS_IRI_BASE + "OWLClassK";
     public static final String C_OWL_CLASS_L = CLASS_IRI_BASE + "OWLClassL";
     public static final String C_OWL_CLASS_M = CLASS_IRI_BASE + "OWLClassM";
+    public static final String C_OWL_CLASS_N = CLASS_IRI_BASE + "OWLClassN";
+    public static final String C_OWL_CLASS_O = CLASS_IRI_BASE + "OWLClassO";
+    public static final String C_OWL_CLASS_P = CLASS_IRI_BASE + "OWLClassP";
+    public static final String C_OWL_CLASS_Q = CLASS_IRI_BASE + "OWLClassQ";
+    public static final String C_OWL_CLASS_R = CLASS_IRI_BASE + "OWLClassR";
     public static final String C_OWL_CLASS_S = CLASS_IRI_BASE + "OWLClassS";
     public static final String C_OWL_CLASS_T = CLASS_IRI_BASE + "OWLClassT";
     public static final String C_OWL_CLASS_U = CLASS_IRI_BASE + "OWLClassU";
-    public static final String C_OWL_CLASS_Q = CLASS_IRI_BASE + "OWLClassQ";
     public static final String C_OWL_CLASS_S_PARENT = CLASS_IRI_BASE + "OWLClassSParent";
     public static final String C_OWL_CLASS_V = CLASS_IRI_BASE + "OWLClassV";
     public static final String C_OWL_CLASS_W = CLASS_IRI_BASE + "OWLClassW";
@@ -54,6 +61,7 @@ public class Vocabulary {
     public static final String p_m_floatAttribute = ATTRIBUTE_IRI_BASE + "m-floatAttribute";
     public static final String p_m_dateAttribute = ATTRIBUTE_IRI_BASE + "m-dateAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_IRI_BASE + "m-enumAttribute";
+    public static final String p_m_ordinalEnumAttribute = ATTRIBUTE_IRI_BASE + "m-ordinalEnumAttribute";
     public static final String p_m_enumSimpleLiteralAttribute = ATTRIBUTE_IRI_BASE + "m-enumSimpleLiteralAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_IRI_BASE + "m-pluralIntAttribute";
     public static final String p_m_lexicalForm = ATTRIBUTE_IRI_BASE + "m-lexicalForm";
@@ -73,6 +81,7 @@ public class Vocabulary {
 
     public static final String P_T_INTEGER_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "T-integerAttribute";
     public static final String P_HAS_OWL_CLASS_A = ATTRIBUTE_IRI_BASE + "hasOwlClassA";
+    public static final String P_HAS_OBJECT_ONE_OF = ATTRIBUTE_IRI_BASE + "hasObjectOneOf";
 
     public static final String P_Q_PARENT_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "QParent-stringAttribute";
     public static final String P_Q_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "Q-stringAttribute";

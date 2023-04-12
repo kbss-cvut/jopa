@@ -8,7 +8,7 @@ import java.net.URI;
 import java.time.LocalDate;
 
 @OWLClass(iri = "urn:jopa:model:class-with-urn")
-public class OWLClassWithUrn {
+public class OWLClassWithUrn implements HasUri {
 
     @Id
     private URI uri;
@@ -19,6 +19,7 @@ public class OWLClassWithUrn {
     @OWLDataProperty(iri = "urn:jopa:model:created")
     private LocalDate created;
 
+    @Override
     public URI getUri() {
         return uri;
     }

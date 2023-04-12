@@ -12,10 +12,7 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.Convert;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.model.LangString;
@@ -55,6 +52,10 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_enumAttribute)
     private Severity enumAttribute;
+
+    @Enumerated(EnumType.ORDINAL)
+    @OWLDataProperty(iri = Vocabulary.p_m_ordinalEnumAttribute)
+    private Severity ordinalEnumAttribute;
 
     @OWLDataProperty(iri = Vocabulary.p_m_IntegerSet)
     private Set<Integer> integerSet;
@@ -149,6 +150,14 @@ public class OWLClassM {
         this.enumAttribute = enumAttribute;
     }
 
+    public Severity getOrdinalEnumAttribute() {
+        return ordinalEnumAttribute;
+    }
+
+    public void setOrdinalEnumAttribute(Severity ordinalEnumAttribute) {
+        this.ordinalEnumAttribute = ordinalEnumAttribute;
+    }
+
     public Set<Integer> getIntegerSet() {
         return integerSet;
     }
@@ -223,6 +232,7 @@ public class OWLClassM {
                 ", floatAttribute=" + floatAttribute +
                 ", doubleAttribute=" + doubleAttribute +
                 ", enumAttribute=" + enumAttribute +
+                ", ordinalEnumAttribute=" + ordinalEnumAttribute +
                 ", integerSet=" + integerSet +
                 ", lexicalForm=" + lexicalForm +
                 ", simpleLiteral=" + simpleLiteral +
@@ -245,6 +255,7 @@ public class OWLClassM {
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
         this.enumAttribute = Severity.MEDIUM;
+        this.ordinalEnumAttribute = enumAttribute;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
         this.stringCollection = new HashSet<>(Arrays.asList("test-one", "test-two", "test-three"));
         this.enumSimpleLiteral = Severity.HIGH;

@@ -68,7 +68,7 @@ class SnapshotStorageWithInference extends SnapshotStorage {
         this.dataset = DatasetFactory.createGeneral();
     }
 
-    private ReasonerFactory initReasonerFactory(DriverConfiguration configuration) {
+    private static ReasonerFactory initReasonerFactory(DriverConfiguration configuration) {
         final String factoryClass = configuration.getProperty(DriverConfigParam.REASONER_FACTORY_CLASS, "");
         LOG.trace("Creating reasoner using reasoner factory class {}.", factoryClass);
         try {

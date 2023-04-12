@@ -25,6 +25,10 @@ public class QueryHintsHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(QueryHintsHandler.class);
 
+    private QueryHintsHandler() {
+        throw new AssertionError();
+    }
+
     /**
      * Gets query hints supported by this implementation.
      *
@@ -62,7 +66,7 @@ public class QueryHintsHandler {
      * two-element array where the first element is a string representation of the value and the second one is the value
      * itself.
      */
-    static abstract class Hint {
+    abstract static class Hint {
 
         private static final Map<String, Hint> HINTS = new HashMap<>();
 

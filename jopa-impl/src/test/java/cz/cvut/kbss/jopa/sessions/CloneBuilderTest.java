@@ -147,7 +147,8 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildCloneNullOriginal() {
-        assertThrows(NullPointerException.class, () -> builder.buildClone(null, new CloneConfiguration(defaultDescriptor)));
+        assertThrows(NullPointerException.class,
+                     () -> builder.buildClone(null, new CloneConfiguration(defaultDescriptor)));
     }
 
     @Test
@@ -157,7 +158,8 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildCloneNullCloneOwner() {
-        assertThrows(NullPointerException.class, () -> builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor));
+        assertThrows(NullPointerException.class,
+                     () -> builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor));
     }
 
     @Test
@@ -315,7 +317,7 @@ public class CloneBuilderTest {
         final String key = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#attr";
         final String value = "stringValue";
         final Map<String, Set<String>> m = Collections.singletonMap(key,
-                Collections.singleton(value));
+                                                                    Collections.singleton(value));
         entityB.setProperties(m);
         final OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
         assertNotNull(res);
@@ -387,9 +389,9 @@ public class CloneBuilderTest {
         final String newStrAtt = "newString";
         cloneA.setStringAttribute(newStrAtt);
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA,
-                defaultDescriptor);
+                                                                             defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(),
-                newStrAtt));
+                                                   newStrAtt));
         builder.mergeChanges(chSet);
 
         assertEquals(newStrAtt, a.getStringAttribute());
@@ -401,9 +403,9 @@ public class CloneBuilderTest {
         assertNull(b.getProperties());
         b.setProperties(Generators.generateStringProperties());
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityB, b,
-                defaultDescriptor);
+                                                                             defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassB().propertiesSpec(),
-                b.getProperties()));
+                                                   b.getProperties()));
         builder.mergeChanges(chSet);
 
         assertNotNull(entityB.getProperties());
@@ -417,15 +419,15 @@ public class CloneBuilderTest {
         assertNull(entityC.getReferencedList());
         c.setReferencedList(Generators.generateInstances(5));
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
-                defaultDescriptor);
+                                                                             defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassC().referencedListAtt(),
-                c.getReferencedList()));
+                                                   c.getReferencedList()));
         builder.mergeChanges(chSet);
 
         assertNotNull(entityC.getReferencedList());
         for (int i = 0; i < c.getReferencedList().size(); i++) {
             assertEquals(c.getReferencedList().get(i).getUri(), entityC.getReferencedList().get(i)
-                    .getUri());
+                                                                       .getUri());
         }
     }
 
@@ -436,7 +438,7 @@ public class CloneBuilderTest {
         final OWLClassA newA = new OWLClassA();
         c.setReferencedList(Collections.singletonList(newA));
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
-                defaultDescriptor);
+                                                                             defaultDescriptor);
         chSet.addChangeRecord(
                 new ChangeRecordImpl(metamodelMocks.forOwlClassC().referencedListAtt(), c.getReferencedList()));
 

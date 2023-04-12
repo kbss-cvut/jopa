@@ -92,6 +92,11 @@ public class JenaAdapter implements Wrapper {
         return new MainAxiomLoader(connector, inferenceConnector).contains(axiom, contexts);
     }
 
+    boolean isInferred(Axiom<?> axiom, Set<URI> contexts) {
+        beginTransactionIfNotActive();
+        return new MainAxiomLoader(connector, inferenceConnector).isInferred(axiom, contexts);
+    }
+
     List<URI> getContext() {
         beginTransactionIfNotActive();
         return connector.getContexts().stream().map(URI::create).collect(Collectors.toList());

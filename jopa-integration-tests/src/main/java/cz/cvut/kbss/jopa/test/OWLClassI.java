@@ -18,8 +18,8 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassI")
-public class OWLClassI {
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_I)
+public class OWLClassI implements HasUri {
 
     @Id
     private URI uri;
@@ -27,16 +27,11 @@ public class OWLClassI {
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private OWLClassA owlClassA;
 
-    /**
-     * @param uri the uri to set
-     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }

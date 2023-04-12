@@ -37,7 +37,7 @@ class UriParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
-        return IdentifierTransformer.stringify(uri);
+        return IdentifierTransformer.stringifyIri(uri);
     }
 
     @Override

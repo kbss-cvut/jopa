@@ -21,7 +21,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassF")
+@OWLClass(iri = Vocabulary.c_OwlClassF)
 public class OWLClassF {
 
     private static final String STR_ATT_FIELD = "secondStringAttribute";
@@ -31,7 +31,7 @@ public class OWLClassF {
     private URI uri;
 
     @Inferred
-    @OWLDataProperty(iri = "http://F-secondStringAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_f_stringAttribute)
     private String secondStringAttribute;
 
     @Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleNext")

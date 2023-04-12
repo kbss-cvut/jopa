@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import java.net.URI;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_E)
-public class OWLClassE {
+public class OWLClassE implements HasUri {
 
     @Id(generated = true)
     private URI uri;
@@ -29,6 +29,7 @@ public class OWLClassE {
     @OWLDataProperty(iri = Vocabulary.P_E_STRING_ATTRIBUTE)
     private String stringAttribute;
 
+    @Override
     public URI getUri() {
         return uri;
     }

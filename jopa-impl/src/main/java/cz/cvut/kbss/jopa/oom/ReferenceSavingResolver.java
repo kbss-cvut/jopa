@@ -61,7 +61,7 @@ class ReferenceSavingResolver {
      * Used for collections.
      */
     boolean shouldSaveReferenceToItem(Object value, Set<URI> contexts) {
-        if (mapper.isManaged(value)) {
+        if (mapper.isManaged(value) || value.getClass().isEnum()) {
             return true;
         }
         final EntityType<?> et = mapper.getEntityType(value.getClass());

@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.19.3</version>
+        <version>0.21.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -22,11 +22,6 @@
             <id>kbss</id>
             <name>KBSS Maven 2 Repository</name>
             <url>https://kbss.felk.cvut.cz/m2repo</url>
-        </repository>
-        <repository>
-            <id>repository.jboss.org-public</id>
-            <name>JBoss.org Maven repository</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public</url>
         </repository>
     </repositories>
 
@@ -55,6 +50,16 @@
             <artifactId>openllet-owlapi</artifactId>
             <version>${com.github.galigator.openllet.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sourceforge.owlapi</groupId>
+                    <artifactId>owlapi-distribution</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.galigator.openllet</groupId>
@@ -69,14 +74,13 @@
             <version>1.6</version>
             <type>jar</type>
             <scope>test</scope>
-            <optional>false</optional>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>dev.aspectj</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
             </plugin>
 
@@ -98,5 +102,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

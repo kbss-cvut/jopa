@@ -21,7 +21,6 @@ import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Set;
 
@@ -85,14 +84,14 @@ class AxiomDescriptorFactory {
             case DATA:
                 if (withLanguage(att, descriptor)) {
                     return createDataPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                            att.isInferred());
+                                                       att.isInferred());
                 } else {
                     return createDataPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
             case ANNOTATION:
                 if (withLanguage(att, descriptor)) {
                     return createAnnotationPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                            att.isInferred());
+                                                             att.isInferred());
                 } else {
                     return createAnnotationPropertyAssertion(att.getIRI().toURI(), att.isInferred());
                 }
@@ -121,21 +120,21 @@ class AxiomDescriptorFactory {
      */
     Axiom<NamedResource> createForReferenceLoading(URI identifier, EntityType<?> et) {
         return new AxiomImpl<>(NamedResource.create(identifier), Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(et.getIRI().toString())));
+                               new Value<>(NamedResource.create(et.getIRI().toString())));
     }
 
-    AxiomDescriptor createForFieldLoading(URI identifier, Field field, Descriptor entityDescriptor, EntityType<?> et) {
+    AxiomDescriptor createForFieldLoading(URI identifier, FieldSpecification<?, ?> fieldSpec,
+                                          Descriptor entityDescriptor, EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));
         entityDescriptor.getContexts().forEach(descriptor::addSubjectContext);
-        FieldSpecification<?, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {
             assertion = Assertion.createClassAssertion(et.getTypes().isInferred());
         } else if (et.getProperties() != null && fieldSpec.equals(et.getProperties())) {
             assertion = Assertion.createUnspecifiedPropertyAssertion(et.getProperties().isInferred());
         } else {
-            assertion = createAssertion((Attribute<?, ?>) fieldSpec,
-                    entityDescriptor.getAttributeDescriptor(fieldSpec));
+            assertion =
+                    createAssertion((Attribute<?, ?>) fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec));
         }
         addAssertionToDescriptor(entityDescriptor, fieldSpec, descriptor, assertion);
         return descriptor;

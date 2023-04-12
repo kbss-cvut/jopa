@@ -56,9 +56,22 @@ public class MetamodelBuilder {
      * @param classFinder Holder of information about classes relevant for persistence unit building
      */
     public void buildMetamodel(PersistenceUnitClassFinder classFinder) {
+        assert classFinder != null;
         classFinder.getAttributeConverters().forEach(converterResolver::registerConverter);
         classFinder.getEntities().forEach(this::processOWLClass);
         classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
+    }
+
+    /**
+     * Builds persistence unit metamodel based on the specified entity classes.
+     * <p>
+     * No additional metamodel features (e.g., custom attribute converters, query result mappers) are built.
+     *
+     * @param entityClasses Entity classes to build metamodel for
+     */
+    public void buildMetamodel(Set<Class<?>> entityClasses) {
+        assert entityClasses != null;
+        entityClasses.forEach(this::processOWLClass);
     }
 
     private <X> void processOWLClass(final Class<X> cls) {

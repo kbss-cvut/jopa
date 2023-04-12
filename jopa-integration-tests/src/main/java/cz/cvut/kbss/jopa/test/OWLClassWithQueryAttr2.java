@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 @SparqlResultSetMapping(name = OWLClassWithQueryAttr2.MAPPING_NAME, entities = {
@@ -27,7 +26,7 @@ import java.net.URI;
         })
 })
 @OWLClass(iri = Vocabulary.C_OwlClassWithQueryAttr2)
-public class OWLClassWithQueryAttr2 {
+public class OWLClassWithQueryAttr2 implements HasUri {
 
     public static final String MAPPING_NAME = "OWLClassWithQueryAttr2.entityMapping";
 
@@ -50,16 +49,11 @@ public class OWLClassWithQueryAttr2 {
         this.uri = uri;
     }
 
-    /**
-     * @param uri the uri to set
-     */
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -78,14 +72,6 @@ public class OWLClassWithQueryAttr2 {
 
     public void setEntityQueryAttribute(OWLClassA entityQueryAttribute) {
         this.entityQueryAttribute = entityQueryAttribute;
-    }
-
-    public static String getClassIri() {
-        return OWLClassWithQueryAttr2.class.getAnnotation(OWLClass.class).iri();
-    }
-
-    public static Field getEntityAttributeField() throws Exception {
-        return OWLClassWithQueryAttr2.class.getDeclaredField("entityAttribute");
     }
 
     @Override

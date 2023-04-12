@@ -92,7 +92,7 @@ public class OwlapiAdapter {
     boolean isConsistent(URI context) {
         startTransactionIfNotActive();
 
-        return ontologySnapshot.getReasoner().isConsistent();
+        return reasoner().isConsistent();
     }
 
     private OWLReasoner reasoner() {
@@ -127,6 +127,13 @@ public class OwlapiAdapter {
             }
         }
         return false;
+    }
+
+    boolean isInferred(Axiom<?> axiom, Set<URI> contexts) {
+        startTransactionIfNotActive();
+        final Collection<OWLAxiom> owlAxiom = asOwlAxioms(axiom);
+        reasoner().flush();
+        return owlAxiom.stream().anyMatch(a -> reasoner().isEntailed(a) && !ontology().containsAxiom(a));
     }
 
     private Collection<OWLAxiom> asOwlAxioms(Axiom<?> axiom) {
@@ -220,9 +227,9 @@ public class OwlapiAdapter {
         if (cls.isAssignableFrom(this.getClass())) {
             return cls.cast(this);
         } else if (cls.isAssignableFrom(OWLOntology.class)) {
-            return cls.cast(ontologySnapshot.getOntology());
+            return cls.cast(ontology());
         } else if (cls.isAssignableFrom(OWLReasoner.class)) {
-            return cls.cast(ontologySnapshot.getReasoner());
+            return cls.cast(reasoner());
         }
         throw new OwlapiDriverException("Unsupported type " + cls);
     }

@@ -43,22 +43,7 @@ public abstract class AbstractExpression<Y> extends SelectionImpl<Y> implements 
     @Override
     public Predicate in(Collection<?> values) {
         PredicateFactory.In<Y> predicate = cb.in(this);
-        for (Object value : values) {
-            if (value instanceof AbstractExpression) {
-                predicate.value((Expression<? extends Y>) value);
-            } else {
-                predicate.value(cb.literal((Y) value));
-            }
-        }
-        return predicate;
-    }
-
-    @Override
-    public Predicate in(Expression<?>... values) {
-        PredicateFactory.In<Y> predicate = cb.in(this);
-        for (Expression<?> value : values) {
-            predicate.value((Expression<? extends Y>) value);
-        }
+        values.forEach(v -> predicate.value((Y) v));
         return predicate;
     }
 

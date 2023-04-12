@@ -19,8 +19,8 @@ import java.util.Map;
 /**
  * Interface implemented by the persistence provider.
  * <p>
- * It is invoked by the container in Java EE environments and by the Persistence class in Java SE environments to create
- * an EntityManagerFactory and/or to cause schema generation to occur.
+ * It is invoked by the Persistence class in Java SE environments to create an EntityManagerFactory and/or to cause
+ * schema generation to occur.
  */
 public interface PersistenceProvider {
 

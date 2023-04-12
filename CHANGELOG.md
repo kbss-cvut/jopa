@@ -1,5 +1,25 @@
 # JOPA - Release Notes
 
+## 0.21.1 - 2023-03-21
+- Allow using generic types as plural attribute value elements.
+
+## 0.21.0 - 2023-03-06
+- Support for mapping Java enums to ontological individuals (`owl:ObjectOneOf`) (Feature #60).
+- Support for mapping Java enums via ordinals or strings (Enhancement #134).
+
+## 0.20.2 - 2023-02-23
+- Support automatic conversion of language-less strings to `LangString` attributes.
+- Support using `LangString` as query parameters.
+- Support joining over plural attributes in SOQL/Criteria API (Bug #135).
+- Implement stricter cleanup after EMF close (Enhancement #136).
+
+## 0.20.1 - 2023-02-07
+- Allow building a restricted metamodel from a set of entity classes (will be used by static metamodel generator).
+
+## 0.20.0 - 2023-01-26
+- Allow editing inferred attributes (see Wiki for details) (Feature #121).
+- Support for `IN`, `NOT LIKE`, `<>` (`!=`) operators in SOQL (and the corresponding operators in Criteria API). (Enhancement #123, #129).
+
 ## 0.19.3 - 2022-12-13
 - Allow excluding `@OWLClass` annotated classes from persistence by using `NonEntity` (Enhancement #124).
 - Update dependencies: SF4J 2.0.6, Logback 1.3.5, Mockito 4.9.0.

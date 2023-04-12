@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.19.3</version>
+        <version>0.21.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jopa-integration-tests-rdf4j</artifactId>
@@ -38,7 +38,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>dev.aspectj</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
             </plugin>
 

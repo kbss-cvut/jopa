@@ -30,8 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.net.URI;
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,20 +56,6 @@ public class EpistemicAxiomRemoverTest {
         this.descriptor = new AxiomDescriptor(SUBJECT);
 
         this.axiomRemover = new EpistemicAxiomRemover(connectorMock, vf);
-    }
-
-    @Test
-    public void removeSkipsInferredAssertions() throws Exception {
-        final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(PROPERTY), true);
-        descriptor.addAssertion(ass);
-
-        axiomRemover.remove(descriptor);
-        verify(connectorMock, never())
-                .findStatements(eq(vf.createIRI(SUBJECT.toString())), eq(vf.createIRI(PROPERTY)), any(), anyBoolean(),
-                        any());
-        verify(connectorMock, never())
-                .findStatements(eq(vf.createIRI(SUBJECT.toString())), eq(vf.createIRI(PROPERTY)), any(), anyBoolean(),
-                        any());
     }
 
     @Test

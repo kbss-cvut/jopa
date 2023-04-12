@@ -1,28 +1,31 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassC;
-import cz.cvut.kbss.jopa.environment.OWLClassJ;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,9 +35,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -65,7 +77,8 @@ class PluralObjectPropertyStrategyTest {
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
                 .thenReturn(aInstance);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
-                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                                                           Assertion.createObjectPropertyAssertion(
+                                                                   URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
         sut.addValueFromAxiom(axiom);
@@ -78,7 +91,7 @@ class PluralObjectPropertyStrategyTest {
 
     private PluralObjectPropertyStrategy<?, OWLClassJ> strategy() {
         return new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute(),
-                descriptor, mapperMock);
+                                               descriptor, mapperMock);
     }
 
     @Test
@@ -89,7 +102,8 @@ class PluralObjectPropertyStrategyTest {
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
                 .thenReturn(null);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
-                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                                                           Assertion.createObjectPropertyAssertion(
+                                                                   URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
         sut.addValueFromAxiom(axiom);
@@ -107,7 +121,8 @@ class PluralObjectPropertyStrategyTest {
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
                 .thenReturn(null);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
-                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                                                           Assertion.createObjectPropertyAssertion(
+                                                                   URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
         sut.addValueFromAxiom(axiom);
@@ -117,7 +132,7 @@ class PluralObjectPropertyStrategyTest {
     @Test
     void buildAxiomValuesFromInstanceChecksForReferenceExistenceUsingTargetReferenceContext() {
         final Descriptor aDescriptor = new ObjectPropertyCollectionDescriptor(Generators.createIndividualIdentifier(),
-                mocks.forOwlClassJ().setAttribute());
+                                                                              mocks.forOwlClassJ().setAttribute());
         descriptor.addAttributeDescriptor(mocks.forOwlClassJ().setAttribute(), aDescriptor);
         final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
         final ReferenceSavingResolver resolverMock = mock(ReferenceSavingResolver.class);
@@ -132,11 +147,11 @@ class PluralObjectPropertyStrategyTest {
     @Test
     void buildAxiomValuesFromInstanceChecksForListItemReferenceExistenceUsingTargetReferenceContext() {
         final Descriptor aDescriptor = new ObjectPropertyCollectionDescriptor(Generators.createIndividualIdentifier(),
-                mocks.forOwlClassC().simpleListAtt());
+                                                                              mocks.forOwlClassC().simpleListAtt());
         descriptor.addAttributeDescriptor(mocks.forOwlClassC().simpleListAtt(), aDescriptor);
         final SimpleListPropertyStrategy<OWLClassC> sut =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(),
-                        mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
+                                                 mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
         final ReferenceSavingResolver resolverMock = mock(ReferenceSavingResolver.class);
         sut.setReferenceSavingResolver(resolverMock);
         final OWLClassC instance = new OWLClassC(ID);
@@ -144,5 +159,116 @@ class PluralObjectPropertyStrategyTest {
         instance.setSimpleList(Collections.singletonList(aInstance));
         sut.buildAxiomValuesFromInstance(instance, new AxiomValueGatherer(NamedResource.create(ID), null));
         verify(resolverMock).shouldSaveReferenceToItem(aInstance, aDescriptor.getContexts());
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsCorrespondingToAttributeValue() {
+        final OWLClassC instance = new OWLClassC(ID);
+        instance.setSimpleList(Generators.generateInstances(5));
+        final SimpleListPropertyStrategy<OWLClassC> sut =
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(),
+                                                 mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
+        when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
+        assertEquals(instance.getSimpleList().size(), result.size());
+        final NamedResource subject = NamedResource.create(ID);
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(mocks.forOwlClassC().simpleListAtt().getIRI()
+                                                             .toURI(), false);
+        instance.getSimpleList().forEach(
+                a -> assertThat(result, hasItem(new AxiomImpl<>(subject, assertion,
+                                                                new Value<>(NamedResource.create(a.getUri()))))));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsAxiomsWithIdentifiersWhenAttributeValueIsCollectionOfIdentifiers() {
+        final SimpleSetPropertyStrategy<OWLClassP> sut =
+                new SimpleSetPropertyStrategy<>(mocks.forOwlClassP().entityType(),
+                                                mocks.forOwlClassP().pUrlsAttribute(), descriptor, mapperMock);
+        final OWLClassP p = new OWLClassP();
+        p.setUri(Generators.createIndividualIdentifier());
+        p.setIndividualUrls(IntStream.range(0, 5).mapToObj(i -> {
+            try {
+                return Generators.createIndividualIdentifier().toURL();
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }).collect(Collectors.toSet()));
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(p);
+        assertEquals(p.getIndividualUrls().size(), result.size());
+        final NamedResource subject = NamedResource.create(p.getUri());
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(mocks.forOwlClassP().pUrlsAttribute().getIRI().toURI(), false);
+        p.getIndividualUrls().forEach(u -> assertThat(result, hasItem(new AxiomImpl<>(subject, assertion, new Value<>(
+                NamedResource.create(u.toString()))))));
+    }
+
+    @Test
+    void buildAxiomsFromInstanceReturnsEmptyCollectionWhenAttributeValueIsEmpty() {
+        final OWLClassC instance = new OWLClassC(ID);
+        instance.setSimpleList(null);
+        final SimpleListPropertyStrategy<OWLClassC> sut =
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(),
+                                                 mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void addValueFromAxiomConvertsNamedResourceToEnumConstantForEnumValuedObjectProperty() throws Exception {
+        final SimpleSetPropertyStrategy<EntityWithPluralObjectPropertyEnum> sut = initEnumAttributeStrategy();
+        final NamedResource value = NamedResource.create(OWL.ANNOTATION_PROPERTY);
+
+        sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(
+                URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false), new Value<>(value)));
+        final EntityWithPluralObjectPropertyEnum instance = new EntityWithPluralObjectPropertyEnum();
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(Collections.singleton(OneOfEnum.ANNOTATION_PROPERTY), instance.enumSet);
+    }
+
+    private SimpleSetPropertyStrategy<EntityWithPluralObjectPropertyEnum> initEnumAttributeStrategy() throws NoSuchFieldException {
+        final EntityType<EntityWithPluralObjectPropertyEnum> et = mock(EntityType.class);
+        final AbstractPluralAttribute<EntityWithPluralObjectPropertyEnum, Set<OneOfEnum>, OneOfEnum> att =
+                mock(AbstractPluralAttribute.class);
+        when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
+        when(att.getJavaField()).thenReturn(EntityWithPluralObjectPropertyEnum.class.getDeclaredField("enumSet"));
+        when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
+        when(att.getCollectionType()).thenReturn(CollectionType.SET);
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
+        final Identifier id = mock(Identifier.class);
+        when(id.getJavaField()).thenReturn(EntityWithPluralObjectPropertyEnum.class.getDeclaredField("uri"));
+        when(et.getIdentifier()).thenReturn(id);
+        return new SimpleSetPropertyStrategy<>(et, att, descriptor, mapperMock);
+    }
+
+    static class EntityWithPluralObjectPropertyEnum {
+
+        @Id
+        URI uri;
+
+        Set<OneOfEnum> enumSet;
+    }
+
+    @Test
+    void buildAxiomsFromInstanceConvertsEnumConstantsToNamedResourcesForEnumValuedObjectProperty() throws Exception {
+        final SimpleSetPropertyStrategy<EntityWithPluralObjectPropertyEnum> sut = initEnumAttributeStrategy();
+        final EntityWithPluralObjectPropertyEnum instance = new EntityWithPluralObjectPropertyEnum();
+        instance.uri = ID;
+        instance.enumSet = new HashSet<>(Arrays.asList(OneOfEnum.ANNOTATION_PROPERTY, OneOfEnum.OBJECT_PROPERTY));
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
+        assertEquals(instance.enumSet.size(), result.size());
+        final Assertion assertion =
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false);
+        assertThat(result, hasItems(
+                new AxiomImpl<>(NamedResource.create(ID), assertion,
+                                new Value<>(NamedResource.create(OWL.ANNOTATION_PROPERTY))),
+                new AxiomImpl<>(NamedResource.create(ID), assertion,
+                                new Value<>(NamedResource.create(OWL.OBJECT_PROPERTY)))
+        ));
     }
 }

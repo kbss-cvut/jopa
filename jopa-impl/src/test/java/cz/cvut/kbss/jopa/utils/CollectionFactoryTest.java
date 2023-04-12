@@ -16,27 +16,33 @@ package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionFactoryTest {
 
-    @Test
-    void createDefaultCollectionReturnsListImplementationForListType() {
-        assertTrue(CollectionFactory.createDefaultCollection(CollectionType.LIST) instanceof List);
+
+    @ParameterizedTest
+    @MethodSource("collectionTypeMapping")
+    void createDefaultCollectionReturnsCorrectTypeInstance(CollectionType collectionType, Class<?> expected) {
+        assertInstanceOf(expected, CollectionFactory.createDefaultCollection(collectionType));
     }
 
-    @Test
-    void createDefaultCollectionReturnsSetImplementationForSetType() {
-        assertTrue(CollectionFactory.createDefaultCollection(CollectionType.SET) instanceof Set);
-    }
-
-    @Test
-    void createDefaultCollectionReturnsSetImplementationForCollectionType() {
-        assertTrue(CollectionFactory.createDefaultCollection(CollectionType.COLLECTION) instanceof Set);
+    static Stream<Arguments> collectionTypeMapping() {
+        return Stream.of(
+                Arguments.of(CollectionType.LIST, List.class),
+                Arguments.of(CollectionType.SET, Set.class),
+                Arguments.of(CollectionType.COLLECTION, Set.class)
+        );
     }
 
     @Test
@@ -44,5 +50,29 @@ class CollectionFactoryTest {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> CollectionFactory.createDefaultCollection(CollectionType.MAP));
         assertEquals("Collection type " + CollectionType.MAP + " is not supported.", ex.getMessage());
+    }
+
+    @ParameterizedTest
+    @MethodSource("resolvedCollectionTypes")
+    void resolveCollectionTypeReturnsCorrectCollectionType(CollectionType expected, Class<?> cls) {
+        assertEquals(expected, CollectionFactory.resolveCollectionType(cls));
+    }
+
+    static Stream<Arguments> resolvedCollectionTypes() {
+        return Stream.of(
+                Arguments.of(CollectionType.LIST, List.class),
+                Arguments.of(CollectionType.SET, Set.class),
+                Arguments.of(CollectionType.COLLECTION, Collection.class)
+        );
+    }
+
+    @Test
+    void resolveCollectionTypeReturnsMapTypeForMapClass() {
+        assertEquals(CollectionType.MAP, CollectionFactory.resolveCollectionType(Map.class));
+    }
+
+    @Test
+    void resolveCollectionTypeThrowsIllegalArgumentExceptionForUnsupportedType() {
+        assertThrows(IllegalArgumentException.class, () -> CollectionFactory.resolveCollectionType(String.class));
     }
 }

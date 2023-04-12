@@ -1,33 +1,39 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.*;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
+import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.model.query.criteria.Root;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,7 +79,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
-        Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute),expected.getStringAttribute(),"en");
+        Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute), expected.getStringAttribute(), "en");
         query.select(root).where(restriction);
         TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         final OWLClassA result = tq.getSingleResult();
@@ -89,7 +95,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
-        Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute), unexpected.getStringAttribute(),"en");
+        Predicate restriction =
+                cb.equal(root.getAttr(OWLClassA_.stringAttribute), unexpected.getStringAttribute(), "en");
         query.select(root).where(cb.not(restriction));
         TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         final List<OWLClassA> result = tq.getResultList();
@@ -109,7 +116,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         Root<OWLClassT> root = query.from(OWLClassT.class);
         Predicate firstRestriction = cb.not(cb.equal(root.getAttr("owlClassA"), unexpected.getOwlClassA().getUri()));
         Predicate secondRestriction = cb.lessThan(root.getAttr("intAttribute"), intThreshold);
-        Predicate restrictions = cb.and(firstRestriction,secondRestriction);
+        Predicate restrictions = cb.and(firstRestriction, secondRestriction);
         query.select(root).where(restrictions);
         TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
@@ -127,7 +134,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<OWLClassD> query = cb.createQuery(OWLClassD.class);
         Root<OWLClassD> root = query.from(OWLClassD.class);
-        Predicate restriction = cb.equal(root.getAttr("owlClassA"),expected.getOwlClassA().getUri());
+        Predicate restriction = cb.equal(root.getAttr("owlClassA"), expected.getOwlClassA().getUri());
         query.select(root).where(restriction);
         TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query);
         final OWLClassD result = tq.getSingleResult();
@@ -142,9 +149,9 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<OWLClassT> query = cb.createQuery(OWLClassT.class);
         Root<OWLClassT> root = query.from(OWLClassT.class);
-        Predicate firstRestriction = cb.equal(root.getAttr("owlClassA"),sample.getOwlClassA().getUri());
-        Predicate secondRestriction = cb.lessThanOrEqual(root.getAttr("intAttribute"),sample.getIntAttribute());
-        query.select(root).where(firstRestriction,secondRestriction);
+        Predicate firstRestriction = cb.equal(root.getAttr("owlClassA"), sample.getOwlClassA().getUri());
+        Predicate secondRestriction = cb.lessThanOrEqual(root.getAttr("intAttribute"), sample.getIntAttribute());
+        query.select(root).where(firstRestriction, secondRestriction);
         TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
 
@@ -162,8 +169,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaQuery<OWLClassT> query = cb.createQuery(OWLClassT.class);
         Root<OWLClassT> root = query.from(OWLClassT.class);
         List<Predicate> restrictions = new ArrayList<>();
-        restrictions.add(cb.equal(root.getAttr("owlClassA"),sample.getOwlClassA().getUri()));
-        restrictions.add(cb.lessThanOrEqual(root.getAttr("intAttribute"),sample.getIntAttribute()));
+        restrictions.add(cb.equal(root.getAttr("owlClassA"), sample.getOwlClassA().getUri()));
+        restrictions.add(cb.lessThanOrEqual(root.getAttr("intAttribute"), sample.getIntAttribute()));
         query.select(root).where(restrictions);
         TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
@@ -198,9 +205,9 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<OWLClassT> query = cb.createQuery(OWLClassT.class);
         Root<OWLClassT> root = query.from(OWLClassT.class);
-        Predicate firstRestriction = cb.equal(root.getAttr("owlClassA"),sample.getOwlClassA().getUri());
-        Predicate secondRestriction = cb.lessThanOrEqual(root.getAttr("intAttribute"),sample.getIntAttribute());
-        query.select(root).where(cb.or(firstRestriction,secondRestriction));
+        Predicate firstRestriction = cb.equal(root.getAttr("owlClassA"), sample.getOwlClassA().getUri());
+        Predicate secondRestriction = cb.lessThanOrEqual(root.getAttr("intAttribute"), sample.getIntAttribute());
+        query.select(root).where(cb.or(firstRestriction, secondRestriction));
         TypedQuery<OWLClassT> tq = getEntityManager().createQuery(query);
         final List<OWLClassT> result = tq.getResultList();
 
@@ -218,7 +225,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<OWLClassD> query = cb.createQuery(OWLClassD.class);
         Root<OWLClassD> root = query.from(OWLClassD.class);
-        Predicate restrictions = cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"), expected.getOwlClassA().getStringAttribute(),"en");
+        Predicate restrictions = cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"),
+                                          expected.getOwlClassA().getStringAttribute(), "en");
         query.select(root).where(restrictions);
         TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query);
         final OWLClassD result = tq.getSingleResult();
@@ -269,7 +277,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
-        Predicate restriction = cb.equal(root.getAttr(OWLClassA_.stringAttribute), cb.literal(expected.getStringAttribute(),"en"));
+        Predicate restriction =
+                cb.equal(root.getAttr(OWLClassA_.stringAttribute), cb.literal(expected.getStringAttribute(), "en"));
         query.select(root).where(restriction);
         TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
         final OWLClassA result = tq.getSingleResult();
@@ -277,5 +286,61 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         assertEquals(expected.getUri(), result.getUri());
         assertEquals(expected.getStringAttribute(), result.getStringAttribute());
         assertEquals(expected.getTypes(), result.getTypes());
+    }
+
+    @Test
+    public void testFindByAttributeValueIn() {
+        final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
+        final List<OWLClassA> matching;
+        if (Generators.randomBoolean()) {
+            matching = aInstances.subList(0, aInstances.size() / 2);
+        } else {
+            matching = aInstances.subList(aInstances.size() / 2, aInstances.size());
+        }
+        final List<OWLClassD> expected = QueryTestEnvironment.getData(OWLClassD.class).stream()
+                                                             .filter(d -> matching.stream().anyMatch(
+                                                                     a -> d.getOwlClassA().getUri().equals(a.getUri())))
+                                                             .collect(Collectors.toList());
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<OWLClassD> query = cb.createQuery(OWLClassD.class);
+        Root<OWLClassD> root = query.from(OWLClassD.class);
+        query.select(root).where(root.getAttr("owlClassA").in(matching));
+
+        final List<OWLClassD> result = getEntityManager().createQuery(query).getResultList();
+        assertThat(result, containsSameEntities(expected));
+    }
+
+    /**
+     * Bug #135
+     */
+    @Test
+    public void testJoinOnPluralAttribute() {
+        final List<OWLClassJ> jInstances = QueryTestEnvironment.getData(OWLClassJ.class);
+        final OWLClassJ matching = Generators.getRandomItem(jInstances);
+        final Set<LangString> stringSet =
+                matching.getOwlClassA().stream()
+                        .map(a -> new LangString(a.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE))
+                        .collect(Collectors.toSet());
+
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassJ> query = cb.createQuery(OWLClassJ.class);
+        final Root<OWLClassJ> root = query.from(OWLClassJ.class);
+        query.select(root).where(root.getAttr("owlClassA").getAttr("stringAttribute").in(stringSet));
+
+        final List<OWLClassJ> result = getEntityManager().createQuery(query).getResultList();
+        assertFalse(result.isEmpty());
+        assertTrue(result.stream().anyMatch(j -> j.getUri().equals(matching.getUri())));
+    }
+
+    @Test
+    public void testQueryOnlyRootWithEmptyWhereClauseWorks() {
+        final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where();
+
+        final List<OWLClassA> result = getEntityManager().createQuery(query).getResultList();
+        assertThat(result, containsSameEntities(aInstances));
     }
 }

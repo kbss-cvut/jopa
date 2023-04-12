@@ -16,8 +16,6 @@ package cz.cvut.kbss.jopa.query;
 
 /**
  * Used to parse queries into builders which enable the query to be further manipulated, e.g. set parameters.
- *
- * @author kidney
  */
 public interface QueryParser {
 

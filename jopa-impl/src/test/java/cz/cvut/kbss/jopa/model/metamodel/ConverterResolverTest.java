@@ -12,14 +12,12 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassM;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
-import cz.cvut.kbss.jopa.environment.ZoneOffsetConverter;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.EnumType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.oom.converter.*;
@@ -50,6 +48,9 @@ class ConverterResolverTest {
         final Field field = OWLClassD.getOwlClassAField();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final EntityType et = mock(EntityType.class);
+        when(et.getJavaType()).thenReturn(OWLClassA.class);
+        when(pa.getType()).thenReturn(et);
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertFalse(result.isPresent());
     }
@@ -102,15 +103,15 @@ class ConverterResolverTest {
     }
 
     @Test
-    void resolveConverterReturnsBuiltInEnumConverterForEnumDataPropertyField() throws Exception {
+    void resolveConverterReturnsBuiltInStringEnumConverterForStringEnumDataPropertyField() throws Exception {
         final Field field = OWLClassM.getEnumAttributeField();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(pa.getEnumType()).thenReturn(EnumType.STRING);
         doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
-        assertThat(result.get(), instanceOf(EnumConverter.class));
-        assertTrue(result.get().supportsAxiomValueType(String.class));
+        assertInstanceOf(StringEnumConverter.class, result.get());
     }
 
     @Test
@@ -225,5 +226,29 @@ class ConverterResolverTest {
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(ZoneOffset.class)).when(pa).getType();
         assertThrows(InvalidConverterException.class, () -> sut.resolveConverter(field, pa));
+    }
+
+    @Test
+    void resolveConverterReturnsObjectOneOfEnumConverterForEnumValuedObjectPropertyAttribute() throws Exception {
+        final Field field = OWLClassM.getObjectOneOfEnumAttributeField();
+        final ObjectPropertyAttributes pa = mock(ObjectPropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(pa.getEnumType()).thenReturn(EnumType.OBJECT_ONE_OF);
+        doReturn(BasicTypeImpl.get(OneOfEnum.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertInstanceOf(ObjectOneOfEnumConverter.class, result.get());
+    }
+
+    @Test
+    void resolveConverterReturnsBuiltInOrdinalEnumConverterForOrdinalEnumDataPropertyField() throws Exception {
+        final Field field = OWLClassM.getOrdinalEnumAttributeField();
+        final PropertyAttributes pa = mock(PropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(pa.getEnumType()).thenReturn(EnumType.ORDINAL);
+        doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertInstanceOf(OrdinalEnumConverter.class, result.get());
     }
 }

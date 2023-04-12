@@ -112,10 +112,13 @@ class ClassFieldMetamodelProcessor<X> {
             throw new OWLPersistenceException("Only collections with a single generic parameter are supported.");
         }
         Type type = t[0];
-        if (!(type instanceof Class<?>)) {
-            throw new OWLPersistenceException("Only Classes are valid parameters for generic lists and sets.");
+        if (type instanceof Class<?>) {
+            return (Class<?>) type;
+        } else if (type instanceof ParameterizedType) {
+            final Type rawType = ((ParameterizedType) type).getRawType();
+            return (Class<?>) rawType;
         }
-        return (Class<?>) type;
+        throw new OWLPersistenceException("Unsupported collection element type " + type);
     }
 
     private InferenceInfo processInferenceInfo(Field field) {

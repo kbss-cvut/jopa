@@ -42,7 +42,7 @@ public class OwlapiPersistenceFactory implements PersistenceFactory {
     private static Map<String, String> initProperties() {
         final Map<String, String> map = new HashMap<>();
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        map.put(JOPAPersistenceProperties.LANG, "en");
+        map.put(JOPAPersistenceProperties.LANG, TestEnvironment.PERSISTENCE_LANGUAGE);
         map.put(OntoDriverProperties.REASONER_FACTORY_CLASS, OpenlletReasonerFactory.class.getName());
         return map;
     }

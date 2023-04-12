@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 @SparqlResultSetMapping(name = OWLClassD.MAPPING_NAME, entities = {
@@ -26,7 +25,7 @@ import java.net.URI;
         })
 })
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_D)
-public class OWLClassD {
+public class OWLClassD implements HasUri {
 
     public static final String MAPPING_NAME = "OWLClassD.entityMapping";
 
@@ -58,6 +57,7 @@ public class OWLClassD {
     /**
      * @return the uri
      */
+    @Override
     public URI getUri() {
         return uri;
     }
@@ -75,9 +75,5 @@ public class OWLClassD {
         String out = "OWLClassD: uri = " + uri;
         out += ", owlClassA = " + owlClassA;
         return out;
-    }
-
-    public static Field getOwlClassAField() throws Exception {
-        return OWLClassD.class.getDeclaredField("owlClassA");
     }
 }

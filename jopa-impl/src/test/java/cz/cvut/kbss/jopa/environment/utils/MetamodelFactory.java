@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -32,7 +30,6 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.*;
@@ -53,6 +50,7 @@ public class MetamodelFactory {
     public static void initOWLClassAMocks(EntityTypeImpl<OWLClassA> etMock, AbstractAttribute strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
+        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
         when(etMock.getName()).thenReturn(OWLClassA.class.getSimpleName());
@@ -180,12 +178,12 @@ public class MetamodelFactory {
         when(simpleListMock.getName()).thenReturn(OWLClassC.getSimpleListField().getName());
         when(etMock.getFieldSpecification(simpleListMock.getName())).thenReturn(simpleListMock);
         String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                .ClassOWLListIRI();
+                                        .ClassOWLListIRI();
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
         when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
         String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI();
+                                     .ObjectPropertyHasNextIRI();
         when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
         when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(simpleListMock.getPersistentAttributeType())
@@ -206,10 +204,10 @@ public class MetamodelFactory {
         when(refListMock.getName()).thenReturn(OWLClassC.getRefListField().getName());
         when(etMock.getFieldSpecification(refListMock.getName())).thenReturn(refListMock);
         hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI();
+                              .ObjectPropertyHasNextIRI();
         when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
         final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasContentsIRI();
+                                           .ObjectPropertyHasContentsIRI();
         when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(contentIri));
         attIri = OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri();
         when(refListMock.getIRI()).thenReturn(IRI.create(attIri));
@@ -238,32 +236,10 @@ public class MetamodelFactory {
         });
     }
 
-    public static void initOWLClassEMocks(EntityTypeImpl<OWLClassE> etMock, AbstractAttribute strAttMock,
-                                          Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassE.class);
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassE.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassE.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassE.getStrAttField().getName())).thenReturn(strAttMock);
-        when(etMock.getAttributes()).thenReturn(Collections.singleton(strAttMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassE, ?>>asList(strAttMock, idMock)));
-        when(strAttMock.getJavaField()).thenReturn(OWLClassE.getStrAttField());
-        final String stringAttIri = OWLClassE.getStrAttField().getAnnotation(OWLDataProperty.class)
-                .iri();
-        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(strAttMock.getDeclaringType()).thenReturn(etMock);
-        when(strAttMock.hasLanguage()).thenReturn(true);
-        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassE.class.getDeclaredField("uri"));
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
-    }
-
     /**
      * Initializes the specified mock objects to return reasonable values.
      */
-    public static void initOWLClassDMocks(EntityTypeImpl<OWLClassD> etMock, AbstractAttribute clsAMock,
+    public static void initOWLClassDMocks(EntityTypeImpl<OWLClassD> etMock, SingularAttributeImpl clsAMock,
                                           Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassD.class);
@@ -277,7 +253,7 @@ public class MetamodelFactory {
         when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsAIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
         when(clsAMock.getName()).thenReturn(OWLClassD.getOwlClassAField().getName());
@@ -285,12 +261,35 @@ public class MetamodelFactory {
         when(clsAMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(clsAMock.getDeclaringType()).thenReturn(etMock);
         when(clsAMock.isAssociation()).thenReturn(true);
+        when(clsAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassD.getUriField());
         when(idMock.getName()).thenReturn(OWLClassD.getUriField().getName());
         when(idMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getFieldSpecification(OWLClassD.getUriField().getName())).thenReturn(idMock);
+        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+    }
+
+    public static void initOWLClassEMocks(EntityTypeImpl<OWLClassE> etMock, AbstractAttribute strAttMock,
+                                          Identifier idMock) throws NoSuchFieldException, SecurityException {
+        when(etMock.getJavaType()).thenReturn(OWLClassE.class);
+        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassE.getClassIri()));
+        when(etMock.getName()).thenReturn(OWLClassE.class.getSimpleName());
+        when(etMock.getAttribute(OWLClassE.getStrAttField().getName())).thenReturn(strAttMock);
+        when(etMock.getAttributes()).thenReturn(Collections.singleton(strAttMock));
+        when(etMock.getFieldSpecifications())
+                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassE, ?>>asList(strAttMock, idMock)));
+        when(strAttMock.getJavaField()).thenReturn(OWLClassE.getStrAttField());
+        final String stringAttIri = OWLClassE.getStrAttField().getAnnotation(OWLDataProperty.class)
+                                             .iri();
+        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
+        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(strAttMock.getDeclaringType()).thenReturn(etMock);
+        when(strAttMock.hasLanguage()).thenReturn(true);
+        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(OWLClassE.class.getDeclaredField("uri"));
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
@@ -326,7 +325,7 @@ public class MetamodelFactory {
         when(strAttMock.getJavaType()).thenReturn(OWLClassF.getStrAttField().getType());
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
         final String stringAttIri = OWLClassF.getStrAttField().getAnnotation(OWLDataProperty.class)
-                .iri();
+                                             .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getName()).thenReturn(OWLClassF.getStrAttField().getName());
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -342,66 +341,65 @@ public class MetamodelFactory {
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void iniOWLClassGMocks(EntityTypeImpl<OWLClassG> etMock, AbstractAttribute clsHMock,
-                                         Identifier idMock)
+    public static void initOWLClassGMocks(EntityTypeImpl<OWLClassG> etMock, SingularAttributeImpl clsHMock,
+                                          EntityTypeImpl<OWLClassH> etHMock, Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassG.class);
+        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassG.getClassIri()));
         when(etMock.getAttribute(OWLClassG.getOwlClassHField().getName())).thenReturn(clsHMock);
         when(etMock.getName()).thenReturn(OWLClassG.class.getSimpleName());
-        when(etMock.getAttributes()).thenReturn(
-                Collections.singleton(clsHMock));
+        when(etMock.getAttributes()).thenReturn(Collections.singleton(clsHMock));
         when(etMock.getFieldSpecifications())
                 .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassG, ?>>asList(clsHMock, idMock)));
         when(clsHMock.getJavaField()).thenReturn(OWLClassG.getOwlClassHField());
         when(clsHMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final String clsHIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
-        when(clsHMock.getIRI()).thenReturn(IRI.create(clsHIri));
+        when(clsHMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_g_hasH));
         when(clsHMock.getJavaType()).thenReturn(OWLClassH.class);
         when(clsHMock.getName()).thenReturn(OWLClassG.getOwlClassHField().getName());
         when(clsHMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(clsHMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(clsHMock.getDeclaringType()).thenReturn(etMock);
+        when(clsHMock.getType()).thenReturn(etHMock);
         when(etMock.getFieldSpecification(clsHMock.getName())).thenReturn(clsHMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassG.class.getDeclaredField("uri"));
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
-    public static void initOWLClassHMocks(EntityTypeImpl<OWLClassH> etMock, AbstractAttribute clsAMock,
-                                          Attribute clsGMock,
+    public static void initOWLClassHMocks(EntityTypeImpl<OWLClassH> etMock, SingularAttributeImpl clsAMock,
+                                          SingularAttributeImpl clsGMock, EntityTypeImpl<OWLClassA> etAMock,
+                                          EntityTypeImpl<OWLClassG> etGMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassH.class);
+        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassH.getClassIri()));
         when(etMock.getAttribute(OWLClassH.getOwlClassAField().getName())).thenReturn(clsAMock);
         when(etMock.getName()).thenReturn(OWLClassH.class.getSimpleName());
-        when(etMock.getAttributes())
-                .thenReturn(new HashSet<>(Arrays.<Attribute<OWLClassH, ?>>asList(clsAMock, clsGMock)));
+        when(etMock.getAttributes()).thenReturn(
+                new HashSet<>(Arrays.<Attribute<OWLClassH, ?>>asList(clsAMock, clsGMock)));
         when(etMock.getFieldSpecifications())
                 .thenReturn(new HashSet<>(
                         Arrays.<FieldSpecification<OWLClassH, ?>>asList(clsAMock, clsGMock, idMock)));
         when(clsAMock.getJavaField()).thenReturn(OWLClassH.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final String clsAIri = OWLClassH.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
-        when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
+        when(clsAMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_h_hasA));
         when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
         when(clsAMock.getName()).thenReturn(OWLClassH.getOwlClassAField().getName());
         when(clsAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(clsAMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(clsAMock.getDeclaringType()).thenReturn(etMock);
+        when(clsAMock.getType()).thenReturn(etAMock);
 
         when(clsGMock.getJavaField()).thenReturn(OWLClassH.getOwlClassGField());
         when(clsGMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final String clsGIri = OWLClassH.getOwlClassGField().getAnnotation(OWLObjectProperty.class)
-                .iri();
-        when(clsGMock.getIRI()).thenReturn(IRI.create(clsGIri));
+        when(clsGMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_h_hasG));
         when(clsGMock.getJavaType()).thenReturn(OWLClassG.class);
         when(clsGMock.getName()).thenReturn(OWLClassH.getOwlClassGField().getName());
         when(clsGMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(clsGMock.getFetchType()).thenReturn(FetchType.LAZY);
         when(clsGMock.getDeclaringType()).thenReturn(etMock);
+        when(clsGMock.getType()).thenReturn(etGMock);
 
         when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
         when(etMock.getFieldSpecification(clsGMock.getName())).thenReturn(clsGMock);
@@ -424,7 +422,7 @@ public class MetamodelFactory {
         when(setAMock.getCascadeTypes())
                 .thenReturn(OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).cascade());
         final String clsAIri = OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(setAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(setAMock.getJavaType()).thenReturn(Set.class);
         when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
@@ -450,7 +448,7 @@ public class MetamodelFactory {
         when(clsEMock.getJavaField()).thenReturn(OWLClassK.getOwlClassEField());
         when(clsEMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsEIri = OWLClassK.getOwlClassEField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsEMock.getIRI()).thenReturn(IRI.create(clsEIri));
         when(clsEMock.getJavaType()).thenReturn(OWLClassE.class);
         when(clsEMock.getDeclaringType()).thenReturn(etMock);
@@ -479,7 +477,7 @@ public class MetamodelFactory {
                 Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassL, ?>>asList(refListMock, simpleListMock, setMock,
-                        simpleListMock, idMock)));
+                                                                        simpleListMock, idMock)));
 
         when(refListMock.getJavaField()).thenReturn(OWLClassL.getReferencedListField());
         when(refListMock.getName()).thenReturn(OWLClassL.getReferencedListField().getName());
@@ -550,10 +548,12 @@ public class MetamodelFactory {
     public static void initOWLClassMMock(EntityTypeImpl<OWLClassM> etMock, AbstractAttribute booleanAtt,
                                          AbstractAttribute intAtt, SingularAttributeImpl longAtt,
                                          AbstractAttribute doubleAtt, AbstractAttribute dateAtt,
-                                         AbstractAttribute enumAtt, AbstractPluralAttribute intSetAtt,
-                                         SingularAttributeImpl lexicalFormAtt, SingularAttributeImpl simpleLiteralAtt,
+                                         AbstractAttribute enumAtt, AbstractAttribute ordinalEnumAtt,
+                                         AbstractPluralAttribute intSetAtt, SingularAttributeImpl lexicalFormAtt,
+                                         SingularAttributeImpl simpleLiteralAtt,
                                          SingularAttributeImpl explicitDatatypeAtt,
                                          SingularAttributeImpl mWithConverterAtt,
+                                         SingularAttributeImpl mObjectOneOfEnumAttribute,
                                          Identifier idMock)
             throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassM.class);
@@ -566,10 +566,16 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                        dateAtt, enumAtt, intSetAtt, lexicalFormAtt, simpleLiteralAtt, explicitDatatypeAtt)));
+                                                                             dateAtt, enumAtt, ordinalEnumAtt,
+                                                                             intSetAtt, lexicalFormAtt,
+                                                                             simpleLiteralAtt, explicitDatatypeAtt,
+                                                                             mObjectOneOfEnumAttribute)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                        enumAtt, intSetAtt, lexicalFormAtt, simpleLiteralAtt, explicitDatatypeAtt, idMock)));
+                                                                        enumAtt, ordinalEnumAtt, intSetAtt,
+                                                                        lexicalFormAtt, simpleLiteralAtt,
+                                                                        explicitDatatypeAtt, mObjectOneOfEnumAttribute,
+                                                                        idMock)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(booleanAtt.getName()).thenReturn(OWLClassM.getBooleanAttributeField().getName());
@@ -649,11 +655,25 @@ public class MetamodelFactory {
         when(enumAtt.isCollection()).thenReturn(false);
         when(enumAtt.getDeclaringType()).thenReturn(etMock);
         when(enumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(enumAtt.getConverter()).thenReturn(new EnumConverter<>(OWLClassM.Severity.class));
+        when(enumAtt.getConverter()).thenReturn(new StringEnumConverter<>(OWLClassM.Severity.class));
         when(enumAtt.hasLanguage()).thenReturn(true);
         when(enumAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
         when(etMock.getAttribute(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
+
+        when(ordinalEnumAtt.getJavaField()).thenReturn(OWLClassM.getOrdinalEnumAttributeField());
+        when(ordinalEnumAtt.getName()).thenReturn(OWLClassM.getOrdinalEnumAttributeField().getName());
+        when(ordinalEnumAtt.getJavaType()).thenReturn(OWLClassM.getOrdinalEnumAttributeField().getType());
+        when(ordinalEnumAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_ordinalEnumAttribute));
+        when(ordinalEnumAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(ordinalEnumAtt.isCollection()).thenReturn(false);
+        when(ordinalEnumAtt.getDeclaringType()).thenReturn(etMock);
+        when(ordinalEnumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(ordinalEnumAtt.getConverter()).thenReturn(new OrdinalEnumConverter(OWLClassM.Severity.class));
+        when(ordinalEnumAtt.hasLanguage()).thenReturn(false);
+        when(etMock.getFieldSpecification(OWLClassM.getOrdinalEnumAttributeField().getName())).thenReturn(
+                ordinalEnumAtt);
+        when(etMock.getAttribute(OWLClassM.getOrdinalEnumAttributeField().getName())).thenReturn(ordinalEnumAtt);
 
         when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
         when(intSetAtt.getName()).thenReturn(OWLClassM.getIntegerSetField().getName());
@@ -708,8 +728,9 @@ public class MetamodelFactory {
         when(explicitDatatypeAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
         when(explicitDatatypeAtt.isSimpleLiteral()).thenReturn(false);
         when(explicitDatatypeAtt.getDatatype()).thenReturn(OWLClassM.getExplicitDatatypeField()
-                .getAnnotation(OWLDataProperty.class).datatype());
-        when(etMock.getFieldSpecification(OWLClassM.getExplicitDatatypeField().getName())).thenReturn(explicitDatatypeAtt);
+                                                                    .getAnnotation(OWLDataProperty.class).datatype());
+        when(etMock.getFieldSpecification(OWLClassM.getExplicitDatatypeField().getName())).thenReturn(
+                explicitDatatypeAtt);
         when(etMock.getAttribute(OWLClassM.getExplicitDatatypeField().getName())).thenReturn(explicitDatatypeAtt);
 
         when(mWithConverterAtt.getJavaField()).thenReturn(OWLClassM.getWithConverterField());
@@ -720,10 +741,27 @@ public class MetamodelFactory {
         when(mWithConverterAtt.isCollection()).thenReturn(false);
         when(mWithConverterAtt.getDeclaringType()).thenReturn(etMock);
         when(mWithConverterAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(mWithConverterAtt.getConverter()).thenReturn(new CustomConverterWrapper(new ZoneOffsetConverter(), String.class));
+        when(mWithConverterAtt.getConverter()).thenReturn(
+                new CustomConverterWrapper(new ZoneOffsetConverter(), String.class));
         when(mWithConverterAtt.isSimpleLiteral()).thenReturn(false);
         when(etMock.getFieldSpecification(OWLClassM.getWithConverterField().getName())).thenReturn(mWithConverterAtt);
         when(etMock.getAttribute(OWLClassM.getWithConverterField().getName())).thenReturn(mWithConverterAtt);
+
+        when(mObjectOneOfEnumAttribute.getJavaField()).thenReturn(OWLClassM.getObjectOneOfEnumAttributeField());
+        when(mObjectOneOfEnumAttribute.getName()).thenReturn(OWLClassM.getObjectOneOfEnumAttributeField().getName());
+        when(mObjectOneOfEnumAttribute.getJavaType()).thenReturn(OneOfEnum.class);
+        when(mObjectOneOfEnumAttribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
+        when(mObjectOneOfEnumAttribute.getPersistentAttributeType()).thenReturn(
+                Attribute.PersistentAttributeType.OBJECT);
+        when(mObjectOneOfEnumAttribute.isCollection()).thenReturn(false);
+        when(mObjectOneOfEnumAttribute.getDeclaringType()).thenReturn(etMock);
+        when(mObjectOneOfEnumAttribute.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(mObjectOneOfEnumAttribute.getConverter()).thenReturn(new ObjectOneOfEnumConverter(OneOfEnum.class));
+        when(mObjectOneOfEnumAttribute.hasLanguage()).thenReturn(false);
+        when(etMock.getFieldSpecification(OWLClassM.getObjectOneOfEnumAttributeField().getName())).thenReturn(
+                mObjectOneOfEnumAttribute);
+        when(etMock.getAttribute(OWLClassM.getObjectOneOfEnumAttributeField().getName())).thenReturn(
+                mObjectOneOfEnumAttribute);
 
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
@@ -740,10 +778,10 @@ public class MetamodelFactory {
         when(idN.getJavaField()).thenReturn(OWLClassN.getUriField());
         when(et.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                        pluralAnnotationAtt, props, idN)));
+                                                                        pluralAnnotationAtt, props, idN)));
         when(et.getAttributes()).thenReturn(new HashSet<>(
                 Arrays.<Attribute<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                        pluralAnnotationAtt)));
+                                                               pluralAnnotationAtt)));
 
         when(annotationAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationPropertyField());
         when(annotationAtt.getJavaType()).thenReturn(OWLClassN.getAnnotationPropertyField().getType());
@@ -844,7 +882,8 @@ public class MetamodelFactory {
                 .thenReturn(
                         new HashSet<>(
                                 Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt,
-                                        refListAtt, props, types, idP)));
+                                                                                        refListAtt, props, types,
+                                                                                        idP)));
         when(et.getAttributes())
                 .thenReturn(new HashSet<>(
                         Arrays.<Attribute<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt, refListAtt)));
@@ -939,11 +978,12 @@ public class MetamodelFactory {
                 .thenReturn(
                         new HashSet<>(
                                 Arrays.<FieldSpecification<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt,
-                                        qLabelAtt, qOwlClassAAtt, idQ)));
+                                                                                        qLabelAtt, qOwlClassAAtt,
+                                                                                        idQ)));
         when(et.getAttributes())
                 .thenReturn(new HashSet<>(
                         Arrays.<Attribute<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt, qLabelAtt,
-                                qOwlClassAAtt)));
+                                                                       qOwlClassAAtt)));
 
         when(qStringAtt.getJavaField()).thenReturn(OWLClassQ.getStringAttributeField());
         when(qStringAtt.getJavaType()).thenReturn(OWLClassQ.getStringAttributeField().getType());
@@ -1021,7 +1061,7 @@ public class MetamodelFactory {
         when(superclassType.getDeclaredAttribute(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
         when(superclassType.getIdentifier()).thenReturn(idQ);
         doReturn(new HashSet<>(Arrays.asList(qLabelAtt, qParentStringAtt, qOwlClassAAtt))).when(superclassType)
-                .getDeclaredAttributes();
+                                                                                          .getDeclaredAttributes();
     }
 
     public static void initOwlClassSMock(EntityTypeImpl<OWLClassS> et, SingularAttributeImpl sNameAtt,
@@ -1289,13 +1329,14 @@ public class MetamodelFactory {
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassWithQueryAttr.getClassIri()));
         when(etMock.getAttribute(OWLClassWithQueryAttr.getStrAttField().getName())).thenReturn(strAttMock);
         when(etMock.getQueryAttribute(OWLClassWithQueryAttr.getStrQueryAttField()
-                .getName())).thenReturn(strQueryAttMock);
+                                                           .getName())).thenReturn(strQueryAttMock);
         when(etMock.getName()).thenReturn(OWLClassWithQueryAttr.class.getSimpleName());
 
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassWithQueryAttr, ?>>asList(strAttMock, entityAttMock)));
         when(etMock.getQueryAttributes()).thenReturn(
-                new HashSet<>(Arrays.<QueryAttribute<? super OWLClassWithQueryAttr, ?>>asList(strQueryAttMock, entityQueryAttMock)));
+                new HashSet<>(Arrays.<QueryAttribute<? super OWLClassWithQueryAttr, ?>>asList(strQueryAttMock,
+                                                                                              entityQueryAttMock)));
         when(etMock.getFieldSpecifications()).thenReturn(
                 new HashSet<>(Arrays.<FieldSpecification<? super OWLClassWithQueryAttr, ?>>asList(
                         strAttMock, strQueryAttMock, entityAttMock, entityQueryAttMock, idMock)));
@@ -1314,7 +1355,7 @@ public class MetamodelFactory {
         when(entityAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getEntityAttField());
         when(entityAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getEntityAttField().getType());
         final String entityAttIri = OWLClassWithQueryAttr.getEntityAttField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                                         .iri();
         when(entityAttMock.getIRI()).thenReturn(IRI.create(entityAttIri));
         when(entityAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(entityAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getEntityAttField().getName());
@@ -1350,5 +1391,82 @@ public class MetamodelFactory {
         when(idMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.class.getDeclaredField("uri"));
         when(idMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+    }
+
+    public static void initPhoneMocks(EntityTypeImpl<Phone> etMock, AbstractAttribute phoneNumberAttMock,
+                                      Identifier idMock) throws NoSuchFieldException, SecurityException {
+        when(etMock.getJavaType()).thenReturn(Phone.class);
+        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+        when(etMock.getIRI()).thenReturn(IRI.create(Vocabulary.c_Phone));
+        when(etMock.getName()).thenReturn(Phone.class.getSimpleName());
+        when(etMock.getAttribute(Phone.class.getDeclaredField("number").getName())).thenReturn(phoneNumberAttMock);
+        when(etMock.getAttributes()).thenReturn(Collections.singleton(phoneNumberAttMock));
+        when(etMock.getFieldSpecifications())
+                .thenReturn(new HashSet<>(
+                        Arrays.<FieldSpecification<? super Phone, ?>>asList(phoneNumberAttMock, idMock)));
+        when(phoneNumberAttMock.getJavaField()).thenReturn(Phone.class.getDeclaredField("number"));
+        when(phoneNumberAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_phoneNumber));
+        when(phoneNumberAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(phoneNumberAttMock.getDeclaringType()).thenReturn(etMock);
+        when(phoneNumberAttMock.hasLanguage()).thenReturn(false);
+        when(phoneNumberAttMock.getName()).thenReturn(Phone.class.getDeclaredField("number").getName());
+        when(etMock.getAttribute(Phone.class.getDeclaredField("number").getName())).thenReturn(phoneNumberAttMock);
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(Phone.class.getDeclaredField("uri"));
+        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+    }
+
+    public static void initPersonMocks(EntityTypeImpl<Person> etMock, AbstractAttribute usernameAttMock,
+                                       AbstractAttribute genderAttMock,
+                                       AbstractAttribute ageAttMock, SingularAttributeImpl phoneAttMock,
+                                       EntityTypeImpl<Phone> etPhone,
+                                       Identifier idMock) throws NoSuchFieldException, SecurityException {
+        when(etMock.getJavaType()).thenReturn(Person.class);
+        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+        when(etMock.getIRI()).thenReturn(IRI.create(Vocabulary.c_Person));
+        when(etMock.getName()).thenReturn(Person.class.getSimpleName());
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(Person.class.getDeclaredField("uri"));
+        when(idMock.getName()).thenReturn(Person.class.getDeclaredField("uri").getName());
+        when(idMock.getDeclaringType()).thenReturn(etMock);
+        when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
+        when(etMock.getAttributes()).thenReturn(
+                new HashSet<>(Arrays.<Attribute<? super Person, ?>>asList(usernameAttMock, genderAttMock, ageAttMock,
+                                                                          phoneAttMock)));
+        when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
+                Arrays.<FieldSpecification<? super Person, ?>>asList(usernameAttMock, genderAttMock, ageAttMock,
+                                                                     phoneAttMock, idMock)));
+        when(usernameAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("username"));
+        when(usernameAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_username));
+        when(usernameAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(usernameAttMock.getDeclaringType()).thenReturn(etMock);
+        when(usernameAttMock.hasLanguage()).thenReturn(false);
+        when(usernameAttMock.getName()).thenReturn(Person.class.getDeclaredField("username").getName());
+        when(etMock.getAttribute(Person.class.getDeclaredField("username").getName())).thenReturn(usernameAttMock);
+
+        when(genderAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("gender"));
+        when(genderAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_gender));
+        when(genderAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(genderAttMock.getDeclaringType()).thenReturn(etMock);
+        when(genderAttMock.hasLanguage()).thenReturn(false);
+        when(genderAttMock.getName()).thenReturn(Person.class.getDeclaredField("gender").getName());
+        when(etMock.getAttribute(Person.class.getDeclaredField("gender").getName())).thenReturn(genderAttMock);
+
+        when(ageAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("age"));
+        when(ageAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_age));
+        when(ageAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(ageAttMock.getDeclaringType()).thenReturn(etMock);
+        when(ageAttMock.hasLanguage()).thenReturn(false);
+        when(ageAttMock.getName()).thenReturn(Person.class.getDeclaredField("age").getName());
+        when(etMock.getAttribute(Person.class.getDeclaredField("age").getName())).thenReturn(ageAttMock);
+
+        when(phoneAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("phone"));
+        when(phoneAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_hasPhone));
+        when(phoneAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(phoneAttMock.getDeclaringType()).thenReturn(etMock);
+        when(phoneAttMock.hasLanguage()).thenReturn(false);
+        when(phoneAttMock.getName()).thenReturn(Person.class.getDeclaredField("phone").getName());
+        when(phoneAttMock.getType()).thenReturn(etPhone);
+        when(etMock.getAttribute(Person.class.getDeclaredField("phone").getName())).thenReturn(phoneAttMock);
     }
 }

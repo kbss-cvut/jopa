@@ -27,6 +27,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -34,8 +35,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils.toRdf4jIri;
 
 class Rdf4jAdapter implements Closeable, Wrapper {
 
@@ -144,13 +143,23 @@ class Rdf4jAdapter implements Closeable, Wrapper {
 
     private boolean isIdentifierUnique(URI identifier, URI classUri) throws Rdf4jDriverException {
         return !connector.containsStatement(
-                toRdf4jIri(identifier, valueFactory), RDF.TYPE,
-                toRdf4jIri(classUri, valueFactory), true, Collections.emptySet());
+                Rdf4jUtils.toRdf4jIri(identifier, valueFactory), RDF.TYPE,
+                Rdf4jUtils.toRdf4jIri(classUri, valueFactory), true, Collections.emptySet());
     }
 
     boolean contains(Axiom<?> axiom, Set<URI> contexts) throws Rdf4jDriverException {
         startTransactionIfNotActive();
-        Value value;
+        final Value value = axiomObjectToRdf4jValue(axiom);
+        return connector.containsStatement(
+                Rdf4jUtils.toRdf4jIri(axiom.getSubject(), valueFactory),
+                Rdf4jUtils.toRdf4jIri(axiom.getAssertion(), valueFactory), value,
+                axiom.getAssertion().isInferred(),
+                contexts.stream().map(c -> Rdf4jUtils.toRdf4jIri(c, valueFactory)).collect(Collectors.toSet()));
+
+    }
+
+    private Value axiomObjectToRdf4jValue(Axiom<?> axiom) {
+        final Value value;
         if (Rdf4jUtils.isResourceIdentifier(axiom.getValue().getValue())) {
             value = valueFactory.createIRI(axiom.getValue().stringValue());
         } else {
@@ -158,12 +167,16 @@ class Rdf4jAdapter implements Closeable, Wrapper {
                     axiom.getAssertion().hasLanguage() ? axiom.getAssertion().getLanguage() : Constants.DEFAULT_LANG;
             value = Rdf4jUtils.createLiteral(axiom.getValue().getValue(), lang, valueFactory);
         }
-        return connector.containsStatement(
-                toRdf4jIri(axiom.getSubject().getIdentifier(), valueFactory),
-                toRdf4jIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
-                axiom.getAssertion().isInferred(),
-                contexts.stream().map(c -> toRdf4jIri(c, valueFactory)).collect(Collectors.toSet()));
+        return value;
+    }
 
+    boolean isInferred(Axiom<?> axiom, Set<URI> contexts) throws Rdf4jDriverException {
+        startTransactionIfNotActive();
+        final Value value = axiomObjectToRdf4jValue(axiom);
+        final Statement s = valueFactory.createStatement(Rdf4jUtils.toRdf4jIri(axiom.getSubject(), valueFactory),
+                Rdf4jUtils.toRdf4jIri(axiom.getAssertion(), valueFactory), value);
+        return connector.isInferred(s, contexts.stream().map(c -> Rdf4jUtils.toRdf4jIri(c, valueFactory))
+                .collect(Collectors.toSet()));
     }
 
     Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws Rdf4jDriverException {

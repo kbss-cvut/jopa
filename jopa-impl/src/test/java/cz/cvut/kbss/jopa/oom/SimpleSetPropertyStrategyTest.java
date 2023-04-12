@@ -1,30 +1,30 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassJ;
-import cz.cvut.kbss.jopa.environment.OWLClassP;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,11 +38,12 @@ import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SimpleSetPropertyStrategyTest {
 
@@ -91,7 +92,8 @@ class SimpleSetPropertyStrategyTest {
         final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(
                 OWLObjectProperty.class);
         final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(op.iri()),
-                OWLClassJ.getOwlClassAField().getAnnotation(Inferred.class) != null);
+                                                                      OWLClassJ.getOwlClassAField()
+                                                                               .getAnnotation(Inferred.class) != null);
         assertEquals(expected.size(), res.getAssertionValues(ass).size());
         for (URI u : expected) {
             assertTrue(res.getAssertionValues(ass).contains(new Value<>(NamedResource.create(u))));
@@ -110,7 +112,7 @@ class SimpleSetPropertyStrategyTest {
 
         strategy.buildAxiomValuesFromInstance(j, gatherer);
         final Set<URI> expected = j.getOwlClassA().stream().filter(Objects::nonNull).map(OWLClassA::getUri)
-                .collect(Collectors.toSet());
+                                   .collect(Collectors.toSet());
         verifyExtractedValues(expected);
     }
 
@@ -119,7 +121,7 @@ class SimpleSetPropertyStrategyTest {
         for (int i = 0; i < 10; i++) {
             final OWLClassA a = new OWLClassA();
             if (withUris) {
-                a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
+                a.setUri(Generators.createIndividualIdentifier());
             }
             set.add(a);
         }
@@ -140,7 +142,8 @@ class SimpleSetPropertyStrategyTest {
         final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(
                 OWLObjectProperty.class);
         final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(op.iri()),
-                OWLClassJ.getOwlClassAField().getAnnotation(Inferred.class) != null);
+                                                                      OWLClassJ.getOwlClassAField()
+                                                                               .getAnnotation(Inferred.class) != null);
         assertEquals(1, res.getAssertionValues(ass).size());
         assertSame(Value.nullValue(), res.getAssertionValues(ass).get(0));
     }
@@ -149,7 +152,7 @@ class SimpleSetPropertyStrategyTest {
         final NamedResource subject = NamedResource.create(PK);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(property, false);
         return set.stream().map(a -> new AxiomImpl<>(subject, assertion, new Value<>(NamedResource.create(a.getUri()))))
-                .collect(Collectors.toList());
+                  .collect(Collectors.toList());
     }
 
     @Test
@@ -238,5 +241,36 @@ class SimpleSetPropertyStrategyTest {
         final NamedResource subject = NamedResource.create(PK);
         j.getOwlClassA().forEach(a -> verify(
                 referenceResolverMock).registerPendingReference(subject, strategy.createAssertion(), a, null));
+    }
+
+    @Test
+    void extractValuesConvertsEnumConstantsToNamedResourcesForEnumValuedObjectProperty() throws Exception {
+        final EntityType<PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum> et =
+                mock(EntityType.class);
+        final AbstractPluralAttribute<PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum, Set<OneOfEnum>, OneOfEnum>
+                att = mock(AbstractPluralAttribute.class);
+        when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
+        when(att.getJavaField()).thenReturn(
+                PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum.class.getDeclaredField("enumSet"));
+        when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
+        when(att.getCollectionType()).thenReturn(CollectionType.SET);
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
+        final SimpleSetPropertyStrategy<PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum> sut =
+                strategy(et, att);
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        when(referenceResolverMock.shouldSaveReference(any(OneOfEnum.class), anySet())).thenReturn(true);
+
+        final PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum instance =
+                new PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum();
+        instance.uri = PK;
+        instance.enumSet = new HashSet<>(Arrays.asList(OneOfEnum.ANNOTATION_PROPERTY, OneOfEnum.DATATYPE_PROPERTY));
+
+        sut.buildAxiomValuesFromInstance(instance, gatherer);
+        final AxiomValueDescriptor axiomDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
+        final List<Value<?>> values = axiomDescriptor.getAssertionValues(
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false));
+        assertEquals(instance.enumSet.size(), values.size());
+        assertThat(values, hasItems(new Value<>(NamedResource.create(OWL.DATATYPE_PROPERTY)),
+                                    new Value<>(NamedResource.create(OWL.ANNOTATION_PROPERTY))));
     }
 }

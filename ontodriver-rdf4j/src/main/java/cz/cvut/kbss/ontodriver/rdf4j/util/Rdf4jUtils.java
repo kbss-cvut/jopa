@@ -16,6 +16,7 @@ import cz.cvut.kbss.jopa.datatype.xsd.XsdDatatypeMapper;
 import cz.cvut.kbss.jopa.datatype.xsd.XsdTemporalMapper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
 import java.util.Date;
@@ -173,11 +175,22 @@ public final class Rdf4jUtils {
      * Constructs a RDF4J IRI from the specified java.net.URI.
      *
      * @param javaUri The uri to convert
-     * @param factory ValueFactory used for the conversion
+     * @param factory RDF4J value factory used for the conversion
      * @return RDF4J IRI
      */
     public static IRI toRdf4jIri(java.net.URI javaUri, ValueFactory factory) {
         return (javaUri != null ? factory.createIRI(javaUri.toString()) : null);
+    }
+
+    /**
+     * Constructs a RDF4J IRI from identifier of the specified resource.
+     * @param resource Resource whose identifier to transform
+     * @param factory RDF4J value factory used for the conversion
+     * @return RDF4J IRI
+     * @see #toRdf4jIri(URI, ValueFactory)
+     */
+    public static IRI toRdf4jIri(NamedResource resource, ValueFactory factory) {
+        return toRdf4jIri(resource.getIdentifier(), factory);
     }
 
     public static java.net.URI toJavaUri(Resource resource) {

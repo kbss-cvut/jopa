@@ -119,6 +119,7 @@ public class TtlCacheManager implements CacheManager {
             sweeperScheduler.shutdown();
         }
         this.sweeperFuture = null;
+        evictAll();
     }
 
     @Override

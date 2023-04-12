@@ -19,7 +19,7 @@ public class SoqlGroupParameter extends SoqlParameter {
     private SoqlAttribute attribute;
 
     public SoqlGroupParameter(SoqlNode firstNode) {
-        setFirstNode(firstNode);
+        super(firstNode);
     }
 
     public SoqlAttribute getAttribute() {
