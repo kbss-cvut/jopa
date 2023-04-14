@@ -19,10 +19,8 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SoqlQueryListener implements SoqlListener {
 
@@ -436,7 +434,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
-
+        final String token = ctx.getChild(0).getText();
+        this.attrPointer = new SoqlAttribute(this.attrPointer.getFirstNode());
     }
 
     @Override
@@ -770,7 +769,7 @@ public class SoqlQueryListener implements SoqlListener {
             if (myAttr.isNot()) {
                 toInvFilter.add(myAttr);
             } else {
-                if (myAttr.isFilter()) {
+                if (myAttr.requiresFilter()) {
                     toFilter.add(myAttr);
                 }
                 attributesPart.append(processAttribute(myAttr));
@@ -797,12 +796,8 @@ public class SoqlQueryListener implements SoqlListener {
             return "";
         }
         buildFilter.append("FILTER (");
-        for (SoqlAttribute attr : toFilter) {
-            if (toFilter.indexOf(attr) != 0) {
-                buildFilter.append(" && ");
-            }
-            buildFilter.append(attr.getFilter());
-        }
+        buildFilter.append(toFilter.stream().map(SoqlAttribute::getFilterExpressions).flatMap(Collection::stream)
+                                   .collect(Collectors.joining("&&")));
         buildFilter.append(") ");
         return buildFilter.toString();
     }
@@ -816,7 +811,7 @@ public class SoqlQueryListener implements SoqlListener {
         buildInvFilter.append("FILTER NOT EXISTS { ");
         for (SoqlAttribute attr : toInvFilter) {
             buildInvFilter.append(processAttribute(attr));
-            if (attr.isFilter()) {
+            if (attr.requiresFilter()) {
                 toFilter.add(attr);
             }
         }

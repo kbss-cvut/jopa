@@ -23,6 +23,8 @@ import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -603,26 +605,27 @@ public class SoqlQueryParserTest {
         final String javaLikeSoql = "SELECT p FROM Person p WHERE p.username != :username";
         final String expectedSparqlQuery =
                 "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (?pUsername != ?username) }";
-        QueryHolder holder = sut.parseQuery(standardSoql);
-        assertEquals(expectedSparqlQuery, holder.getQuery());
-        holder = sut.parseQuery(javaLikeSoql);
-        assertEquals(expectedSparqlQuery, holder.getQuery());
+        parseAndAssertEquality(standardSoql, expectedSparqlQuery);
+        parseAndAssertEquality(javaLikeSoql, expectedSparqlQuery);
+    }
+
+    private void parseAndAssertEquality(String soql, String expectedSparql) {
+        final QueryHolder holder = sut.parseQuery(soql);
+        assertEquals(expectedSparql, holder.getQuery());
     }
 
     @Test
     void testParseQueryWithIdentifierVariableInEqualityExpression() {
         final String soql = "SELECT p FROM Person p WHERE p.uri = :pUri";
         final String expectedSparql = "SELECT ?pUri WHERE { ?pUri a <" + Vocabulary.c_Person + "> . }";
-        QueryHolder holder = sut.parseQuery(soql);
-        assertEquals(expectedSparql, holder.getQuery());
+        parseAndAssertEquality(soql, expectedSparql);
     }
 
     @Test
     void testParseQueryWithIdentifierVariableInInExpression() {
         final String soql = "SELECT p FROM Person p WHERE p.uri IN :uris";
         final String expectedSparql = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . FILTER (?x IN (?uris)) }";
-        QueryHolder holder = sut.parseQuery(soql);
-        assertEquals(expectedSparql, holder.getQuery());
+        parseAndAssertEquality(soql, expectedSparql);
     }
 
     @Test
@@ -630,8 +633,7 @@ public class SoqlQueryParserTest {
         final String soql = "SELECT p FROM Person p WHERE p.phone.uri IN :uris";
         final String expectedSparql = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . " +
                 "?x <" + Vocabulary.p_p_hasPhone + "> ?phone . FILTER (?phone IN (?uris)) }";
-        QueryHolder holder = sut.parseQuery(soql);
-        assertEquals(expectedSparql, holder.getQuery());
+        parseAndAssertEquality(soql, expectedSparql);
     }
 
     @Test
@@ -639,7 +641,21 @@ public class SoqlQueryParserTest {
         final String soql = "SELECT p FROM Person p WHERE p.phone.uri = :phoneUri";
         final String expectedSparql = "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . " +
                 "?x <" + Vocabulary.p_p_hasPhone + "> ?phoneUri . }";
-        QueryHolder holder = sut.parseQuery(soql);
-        assertEquals(expectedSparql, holder.getQuery());
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "UPPER, UCASE",
+            "LOWER, LCASE"
+    })
+    void testParseQueryWithStringCapitalizationFunctionsGeneratesFilterWithSparqlFunctions(String soqlFunction,
+                                                                                           String sparqlFunction) {
+        final String soql = "SELECT p FROM Person p WHERE " + soqlFunction + "(p.username) = :username";
+        final String expectedSparql = "SELECT ?x WHERE { " +
+                "?x a <" + Vocabulary.c_Person + "> . " +
+                "?x <" + Vocabulary.p_p_username + "> ?pUsername . " +
+                "FILTER (" + sparqlFunction + "(?pUsername) = ?username) }";
+        parseAndAssertEquality(soql, expectedSparql);
     }
 }

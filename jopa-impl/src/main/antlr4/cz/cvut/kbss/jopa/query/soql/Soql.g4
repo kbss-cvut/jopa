@@ -84,7 +84,7 @@ likeExpression
 comparisonExpression
    : stringExpression COMPARISON_OPERATOR stringExpression
    | simpleArithmeticExpression COMPARISON_OPERATOR simpleArithmeticExpression
-   | whereClauseParam ('=' | '<>' | '!=' ) ( whereClauseParam | whereClauseValue )
+   | whereClauseParam COMPARISON_OPERATOR ( whereClauseParam | whereClauseValue )
    ;
 
 whereClauseValue: (QMARK TEXT QMARK) | inputParameter ;

@@ -14,6 +14,9 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
+import java.util.Collections;
+import java.util.List;
+
 public class SoqlAttribute extends SoqlParameter {
 
     private static final String TRIPLE_END = " . ";
@@ -72,7 +75,7 @@ public class SoqlAttribute extends SoqlParameter {
         isGroupBy = groupBy;
     }
 
-    public boolean isFilter() {
+    public boolean requiresFilter() {
         return operator != null && operator.requiresFilterExpression();
     }
 
@@ -84,9 +87,9 @@ public class SoqlAttribute extends SoqlParameter {
         return !getFirstNode().hasNextChild() && operator == null;
     }
 
-    public String getFilter() {
-        assert isFilter();
-        return operator.toFilterExpression(getAsParam(), SoqlUtils.soqlVariableToSparqlVariable(value));
+    public List<String> getFilterExpressions() {
+        assert requiresFilter();
+        return Collections.singletonList(operator.toFilterExpression(getAsParam(), SoqlUtils.soqlVariableToSparqlVariable(value)));
     }
 
     public String getTriplePattern(String rootVariable) {
@@ -106,7 +109,7 @@ public class SoqlAttribute extends SoqlParameter {
             if (pointer.hasNextChild() || value == null) {
                 param = "?" + pointer.getValue();
             } else {
-                if (isFilter()) {
+                if (requiresFilter()) {
                     param = buildParam.toString();
                 } else {
                     param = SoqlUtils.soqlVariableToSparqlVariable(value);
@@ -124,7 +127,7 @@ public class SoqlAttribute extends SoqlParameter {
                 if (newPointer.hasNextChild()) {
                     buildTP.append('?').append(pointer.getChild().getValue());
                 } else {
-                    if (isFilter()) {
+                    if (requiresFilter()) {
                         buildTP.append(buildParam);
                     } else {
                         buildTP.append(SoqlUtils.soqlVariableToSparqlVariable(value));
