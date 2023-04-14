@@ -420,6 +420,76 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterStringExpression(SoqlParser.StringExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitStringExpression(SoqlParser.StringExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void enterFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+
+    }
+
+    @Override
+    public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+
+    }
+
+    @Override
+    public void enterSimpleArithmeticExpression(SoqlParser.SimpleArithmeticExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitSimpleArithmeticExpression(SoqlParser.SimpleArithmeticExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void enterArithmeticTerm(SoqlParser.ArithmeticTermContext ctx) {
+
+    }
+
+    @Override
+    public void exitArithmeticTerm(SoqlParser.ArithmeticTermContext ctx) {
+
+    }
+
+    @Override
+    public void enterArithmeticFactor(SoqlParser.ArithmeticFactorContext ctx) {
+
+    }
+
+    @Override
+    public void exitArithmeticFactor(SoqlParser.ArithmeticFactorContext ctx) {
+
+    }
+
+    @Override
+    public void enterArithmeticPrimary(SoqlParser.ArithmeticPrimaryContext ctx) {
+
+    }
+
+    @Override
+    public void exitArithmeticPrimary(SoqlParser.ArithmeticPrimaryContext ctx) {
+
+    }
+
+    @Override
+    public void enterFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
+
+    }
+
+    @Override
+    public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
+
+    }
+
+    @Override
     public void enterOrderByClause(SoqlParser.OrderByClauseContext ctx) {
     }
 
@@ -524,6 +594,16 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitGroupByParam(SoqlParser.GroupByParamContext ctx) {
+    }
+
+    @Override
+    public void enterInputParameter(SoqlParser.InputParameterContext ctx) {
+
+    }
+
+    @Override
+    public void exitInputParameter(SoqlParser.InputParameterContext ctx) {
+
     }
 
     @Override
