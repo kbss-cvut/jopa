@@ -94,7 +94,7 @@ public class MetamodelBuilder {
         processManagedType(et);
     }
 
-
+/// todo test kterej pada tady
     private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
         Arrays.stream(cls.getDeclaredMethods())
               .filter(MetamodelBuilder::isOWLPropertyMethod)
@@ -120,11 +120,11 @@ public class MetamodelBuilder {
 
         final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(context, this);
 
+        processMethods(cls, type);
+
         for (Field f : cls.getDeclaredFields()) {
             fieldProcessor.processField(f);
         }
-
-        processMethods(cls, type);
 
         if (!type.isAbstract()) {
             try {

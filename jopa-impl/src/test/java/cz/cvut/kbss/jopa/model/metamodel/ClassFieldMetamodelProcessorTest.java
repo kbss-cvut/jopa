@@ -47,7 +47,7 @@ class ClassFieldMetamodelProcessorTest {
         when(metamodelBuilder.hasManagedType(InvalidClass.class)).thenReturn(true);
         final ClassFieldMetamodelProcessor<InvalidClass> processor =
                 new ClassFieldMetamodelProcessor<>(new TypeBuilderContext<>(etMock, new NamespaceResolver()),
-                                                   metamodelBuilder);
+                        metamodelBuilder);
         final Field field = InvalidClass.class.getDeclaredField("invalidAttribute");
         assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
     }
@@ -131,13 +131,42 @@ class ClassFieldMetamodelProcessorTest {
 
         final ClassFieldMetamodelProcessor<OWLClassX> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassX.getPropertyField();
-        when(metamodelBuilder.getTypesPropertyMethods(BInterfaceMock)).thenReturn( Collections.singleton(AnnotatedAccessor.from( OWLInterfaceB.class.getMethod("getProperty"))));
-        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn( Collections.singleton(AnnotatedAccessor.from( OWLInterfaceA.class.getMethod("getProperty"))));
+        when(metamodelBuilder.getTypesPropertyMethods(BInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceB.class.getMethod("getProperty"))));
+        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.class.getMethod("getProperty"))));
 
         MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
         assertTrue(ex.getMessage().contains("Ambiguous hierarchy"));
 
     }
+
+    @Test
+    void findPropertyDefinitionInHierarchyDoesNotThrowExceptionIfAnnotationsEqual()
+            throws Exception {
+        final IdentifiableEntityType<OWLClasAA> baseMock = mock(IdentifiableEntityType.class);
+
+        final IdentifiableType<OWLInterfaceF> FInterfaceMock = mock(IdentifiableType.class);
+        final IdentifiableType<OWLInterfaceG> GInterfaceMock = mock(IdentifiableType.class);
+
+        final Set<IdentifiableType<? super OWLClasAA>> classSuperTypes = new HashSet<>();
+
+
+        classSuperTypes.add(FInterfaceMock);
+        classSuperTypes.add(GInterfaceMock);
+
+
+        when(baseMock.getJavaType()).thenReturn(OWLClasAA.class);
+        when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
+
+        final ClassFieldMetamodelProcessor<OWLClasAA> processor = prepareProcessorForClass(baseMock);
+        final Field field = OWLClasAA.getPropertyField();
+        when(metamodelBuilder.getTypesPropertyMethods(FInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceF.class.getMethod("getProperty"))));
+        when(metamodelBuilder.getTypesPropertyMethods(GInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceG.class.getMethod("getProperty"))));
+
+        processor.processField(field);
+
+
+    }
+
     @Test
     void findPropertyDefinitionInHierarchyDoesNotMatchMismatchingTypes()
             throws Exception {
@@ -146,18 +175,17 @@ class ClassFieldMetamodelProcessorTest {
         final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
 
 
-
-
         when(baseMock.getJavaType()).thenReturn(OWLClassZ.class);
         when(baseMock.getSupertypes()).thenReturn(Collections.singleton(AInterfaceMock));
 
         final ClassFieldMetamodelProcessor<OWLClassZ> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassZ.getPropertyField();
-        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn( Collections.singleton(AnnotatedAccessor.from( OWLInterfaceA.class.getMethod("getProperty"))));
+        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.class.getMethod("getProperty"))));
 
         assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
 
     }
+
     private <X> ClassFieldMetamodelProcessor<X> prepareProcessorForClass(IdentifiableEntityType<X> etMock) {
         final TypeBuilderContext<X> context = new TypeBuilderContext<>(etMock, new NamespaceResolver());
         context.setConverterResolver(new ConverterResolver(new Converters(new Configuration())));
@@ -181,6 +209,36 @@ class ClassFieldMetamodelProcessorTest {
         }
     }
 
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceF")
+    public interface OWLInterfaceF {
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyA", lexicalForm = true)
+        String getProperty();
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceG")
+    private interface OWLInterfaceG {
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyA", lexicalForm = true)
+        String getProperty();
+    }
+
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLClassX")
+    private static class OWLClasAA implements OWLInterfaceF, OWLInterfaceG {
+        @Id
+        private URI uri;
+
+        private String property;
+
+        @Override
+        public String getProperty() {
+            return property;
+        }
+
+        public static Field getPropertyField() throws NoSuchFieldException {
+            return OWLClassX.class.getDeclaredField("property");
+        }
+    }
+
     @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceA")
     public interface OWLInterfaceA {
         @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyA")
@@ -189,9 +247,10 @@ class ClassFieldMetamodelProcessorTest {
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLInterfaceB")
     private interface OWLInterfaceB {
-        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyA")
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyB")
         String getProperty();
     }
+
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildClassWithMultipleParents")
     private static class OWLClassY implements OWLInterfaceE, OWLInterfaceC {
@@ -225,11 +284,13 @@ class ClassFieldMetamodelProcessorTest {
         void setName(String name);
     }
 
-    private static class OWLClassZ implements OWLInterfaceA{
+    private static class OWLClassZ implements OWLInterfaceA {
         private Boolean property;
+
         public static Field getPropertyField() throws NoSuchFieldException {
             return OWLClassZ.class.getDeclaredField("property");
         }
+
         @Override
         public String getProperty() {
             return null;

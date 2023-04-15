@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
     void entityCanBeFoundByBothParentTypes() {
         this.em = getEntityManager("entityCanBeFoundByBothParentTypes", false);
 
-        URI id = URI.create("local");
+        URI id = Generators.generateUri();
         final OWLChildClassA child = new OWLChildClassA();
         child.setId(id);
         child.setStringAttribute("AttRVal");
@@ -45,7 +46,7 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
     @Test
     void annotatedMethodPassesDownAnnotationValuesFromSingleParent() {
         this.em = getEntityManager("annotatedMethodPassesDownAnnotationValues", false);
-        URI id = URI.create("ID_VALUE");
+        URI id = Generators.generateUri();
         final OWLClassWithUnProperties subject = new OWLClassWithUnProperties();
 
         subject.setId(id);
@@ -57,9 +58,9 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         OWLClassWithUnProperties found = em.find(OWLClassWithUnProperties.class, id);
 
         IRI namePropertyIRI = em.getMetamodel()
-                                .entity(OWLClassWithUnProperties.class)
-                                .getDeclaredAttribute("name")
-                                .getIRI();
+                .entity(OWLClassWithUnProperties.class)
+                .getDeclaredAttribute("name")
+                .getIRI();
 
         assertNotNull(found);
         assertEquals(subject.getName(), found.getName());
@@ -71,7 +72,7 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
     void annotatedMethodPassesDownAnnotationValuesFromMultipleParents() {
         this.em = getEntityManager("annotatedMethodPassesDownAnnotationValuesFromMultipleParents", false);
 
-        URI id = URI.create("uri2");
+        URI id = Generators.generateUri();
         final OWLChildClassB child = new OWLChildClassB();
         child.setId(id);
         child.setAttributeA("Value");
@@ -94,4 +95,27 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         assertEquals(Vocabulary.p_m_attributeB, childEt.getDeclaredAttribute("attributeB").getIRI().toString());
     }
 
+    @Test
+    void annotationInheritedThroughTwoWaysIsHandledProperly() {
+        this.em = getEntityManager("annotationInheritedThroughTwoWaysIsHandledProperly", false);
+        URI id = Generators.generateUri();
+
+        final OWLChildClassC child = new OWLChildClassC();
+        child.setId(id);
+        child.setName("Name");
+        child.setAttributeB(Generators.randomBoolean());
+
+        em.persist(child);
+        em.clear();
+        final OWLChildClassC found = findRequired(OWLChildClassC.class, id);
+        em.clear();
+        em.clear();
+        final OWLInterfaceAnMethods commonParentFound = findRequired(OWLInterfaceAnMethods.class, id);
+
+        assertEquals(child.getId(), found.getId());
+        assertEquals(child.getName(), found.getName());
+        assertEquals(child.getAttributeB(), found.getAttributeB());
+
+        assertEquals(child.getName(), commonParentFound.getName());
+    }
 }

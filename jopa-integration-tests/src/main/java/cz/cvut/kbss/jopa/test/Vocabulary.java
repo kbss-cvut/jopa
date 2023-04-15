@@ -28,8 +28,11 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_PARENT_A = CLASS_IRI_BASE + "OWLParentA";
     public static final String C_OWL_INTERFACE_A = CLASS_IRI_BASE + "OWLInterfaceA";
     public static final String C_OWL_INTERFACE_B = CLASS_IRI_BASE + "OWLInterfaceB";
+    public static final String C_OWL_INTERFACE_C = CLASS_IRI_BASE + "OWLInterfaceC";
+    public static final String C_OWL_INTERFACE_D = CLASS_IRI_BASE + "OWLInterfaceD";
     public static final String C_OWL_CLASS_CHILD_A = CLASS_IRI_BASE + "OWLChildClassA";
     public static final String C_OWL_CLASS_CHILD_B = CLASS_IRI_BASE + "OWLChildClassB";
+    public static final String C_OWL_CLASS_CHILD_C = CLASS_IRI_BASE + "OWLChildClassC";
     public static final String C_OWL_CLASS_F = CLASS_IRI_BASE + "OWLClassF";
     public static final String C_OWL_CLASS_G = CLASS_IRI_BASE + "OWLClassG";
     public static final String C_OWL_CLASS_H = CLASS_IRI_BASE + "OWLClassH";

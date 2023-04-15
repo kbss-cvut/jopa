@@ -8,4 +8,5 @@ public interface OWLInterfaceAnMethods {
     @OWLDataProperty(iri=Vocabulary.p_m_unannotated_name)
     void setName(String name);
 
+    String getName();
 }
