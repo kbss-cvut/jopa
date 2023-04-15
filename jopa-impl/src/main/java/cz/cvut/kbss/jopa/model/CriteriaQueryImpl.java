@@ -183,7 +183,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         stringBuilder.append(" FROM ").append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
         ((RootImpl) query.getRoot()).setExpressionToQuery(stringBuilder, parameterFiller);
 
-        if (query.getWhere() != null) {
+        if (query.getWhere() != null && !query.getWhere().getExpressions().isEmpty()) {
             stringBuilder.append(" WHERE ");
             ((AbstractPredicate) query.getWhere()).setExpressionToQuery(stringBuilder, parameterFiller);
         }
@@ -195,7 +195,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
             }
         }
 
-        if (query.getHaving() != null) {
+        if (query.getHaving() != null && !query.getHaving().getExpressions().isEmpty()) {
             stringBuilder.append(" HAVING ");
             ((AbstractPredicate) query.getHaving()).setExpressionToQuery(stringBuilder, parameterFiller);
         }

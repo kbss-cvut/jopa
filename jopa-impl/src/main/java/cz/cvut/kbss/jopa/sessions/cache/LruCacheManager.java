@@ -134,7 +134,7 @@ public class LruCacheManager implements CacheManager {
 
     @Override
     public void close() {
-        // No-op
+        evictAll();
     }
 
     @Override

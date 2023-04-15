@@ -34,8 +34,8 @@ class ObjectPropertyAttributes extends PropertyAttributes {
         this.persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;
         this.iri = IRI.create(typeBuilderContext.resolveNamespace(oop.iri()));
 
-        if (validator.isValidIdentifierType(fieldValueCls)) {
-            initPlainIdentifierAttribute(fieldValueCls);
+        if (validator.isValidIdentifierType(fieldValueCls) || fieldValueCls.isEnum()) {
+            initBasicTypeAttribute(fieldValueCls);
         } else {
             this.type = metamodelBuilder.getEntityClass(fieldValueCls);
             this.cascadeTypes = oop.cascade();
@@ -43,7 +43,7 @@ class ObjectPropertyAttributes extends PropertyAttributes {
         }
     }
 
-    private void initPlainIdentifierAttribute(Class<?> targetType) {
+    private void initBasicTypeAttribute(Class<?> targetType) {
         this.type = BasicTypeImpl.get(targetType);
         this.cascadeTypes = new CascadeType[0];
         this.fetchType = FetchType.EAGER;

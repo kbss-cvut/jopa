@@ -49,11 +49,13 @@ public class Vocabulary {
     public static final String p_m_doubleAttribute = ATTRIBUTE_BASE + "m-doubleAttribute";
     public static final String p_m_dateAttribute = ATTRIBUTE_BASE + "m-dateAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_BASE + "m-enumAttribute";
+    public static final String p_m_ordinalEnumAttribute = ATTRIBUTE_BASE + "m-ordinalEnumAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_BASE + "m-pluralIntAttribute";
     public static final String p_m_lexicalForm = ATTRIBUTE_BASE + "m-lexicalForm";
     public static final String p_m_simpleLiteral = ATTRIBUTE_BASE + "m-simpleLiteral";
     public static final String p_m_explicitDatatype = ATTRIBUTE_BASE + "m-explicitDatatype";
     public static final String p_m_withConverter = ATTRIBUTE_BASE + "m-withConverter";
+    public static final String p_m_objectOneOfEnumAttribute = ATTRIBUTE_BASE + "m-objectOneOfEnumAttribute";
 
     public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
     public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";

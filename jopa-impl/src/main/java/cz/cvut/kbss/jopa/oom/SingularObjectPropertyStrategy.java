@@ -14,7 +14,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
@@ -26,13 +26,13 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 
-class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
+class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<? super X, ?>, X> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SingularObjectPropertyStrategy.class);
 
     private Object value;
 
-    SingularObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
+    SingularObjectPropertyStrategy(EntityType<X> et, AbstractAttribute<? super X, ?> att,
                                    Descriptor descriptor, EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
@@ -41,12 +41,18 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     void addValueFromAxiom(Axiom<?> ax) {
         assert ax.getValue().getValue() instanceof NamedResource;
         final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
+        final Class<?> targetType = attribute.getJavaType();
         final Object newValue;
-        if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
-            newValue = IdentifierTransformer
-                    .transformToIdentifier(valueIdentifier.getIdentifier(), attribute.getJavaType());
+        if (IdentifierTransformer.isValidIdentifierType(targetType)) {
+            newValue = IdentifierTransformer.transformToIdentifier(valueIdentifier.getIdentifier(), targetType);
+        } else if (targetType.isEnum()) {
+            assert attribute.getConverter() != null;
+            assert attribute.getConverter().supportsAxiomValueType(NamedResource.class);
+            // Maybe we should catch the exception and just skip the value if it is not convertible to be consistent
+            // with the 'else' branch behavior?
+            newValue = attribute.getConverter().convertToAttribute(valueIdentifier);
         } else {
-            newValue = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
+            newValue = mapper.getEntityFromCacheOrOntology(targetType, valueIdentifier.getIdentifier(),
                                                            entityDescriptor.getAttributeDescriptor(attribute));
             if (newValue == null) {
                 LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
@@ -93,10 +99,14 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
         if (value == null) {
             return Value.nullValue();
         }
-        if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
+        final Class<?> valueType = attribute.getJavaType();
+        if (IdentifierTransformer.isValidIdentifierType(valueType)) {
             return new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value)));
+        } else if (valueType.isEnum()) {
+            assert attribute.getConverter() != null;
+            return new Value<>((NamedResource) attribute.getConverter().convertToAxiomValue(value));
         }
-        final EntityType<? super V> valEt = (EntityType<? super V>) mapper.getEntityType(attribute.getJavaType());
+        final EntityType<? super V> valEt = (EntityType<? super V>) mapper.getEntityType(valueType);
         assert valEt != null;
 
         final URI id = EntityPropertiesUtils.getIdentifier(value, valEt);

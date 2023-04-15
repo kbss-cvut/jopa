@@ -73,6 +73,7 @@ public class Vocabulary {
     public static final String p_m_floatAttribute = ATTRIBUTE_IRI_BASE + "m-floatAttribute";
     public static final String p_m_dateAttribute = ATTRIBUTE_IRI_BASE + "m-dateAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_IRI_BASE + "m-enumAttribute";
+    public static final String p_m_ordinalEnumAttribute = ATTRIBUTE_IRI_BASE + "m-ordinalEnumAttribute";
     public static final String p_m_enumSimpleLiteralAttribute = ATTRIBUTE_IRI_BASE + "m-enumSimpleLiteralAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_IRI_BASE + "m-pluralIntAttribute";
     public static final String p_m_lexicalForm = ATTRIBUTE_IRI_BASE + "m-lexicalForm";
@@ -95,6 +96,7 @@ public class Vocabulary {
 
     public static final String P_T_INTEGER_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "T-integerAttribute";
     public static final String P_HAS_OWL_CLASS_A = ATTRIBUTE_IRI_BASE + "hasOwlClassA";
+    public static final String P_HAS_OBJECT_ONE_OF = ATTRIBUTE_IRI_BASE + "hasObjectOneOf";
 
     public static final String P_Q_PARENT_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "QParent-stringAttribute";
     public static final String P_Q_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "Q-stringAttribute";

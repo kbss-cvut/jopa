@@ -87,4 +87,10 @@ public class QueryTest extends QueryRunner {
     public void executeUpdateRunsInsertOnRepository() {
         // No updates in OWL2Query
     }
+
+    @Disabled
+    @Override
+    public void setParameterSupportsLangStringValue() {
+        // OWL2Query does not support IN operator
+    }
 }

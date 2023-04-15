@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -37,6 +37,7 @@ abstract class PropertyAttributes {
     String language;
     private boolean nonEmpty = false;
     private ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
+    private EnumType enumType = null;
 
     PropertyAttributes(FieldMappingValidator validator) {
         this.validator = validator;
@@ -93,14 +94,12 @@ abstract class PropertyAttributes {
     ParticipationConstraint[] getParticipationConstraints() {
         return participationConstraints;
     }
-
+    public EnumType getEnumType() {
+        return enumType;
+    }
     void resolve(PropertyInfo field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
         resolveParticipationConstraints(field);
-    }
-
-
-    String resolveLanguage(Class<?> fieldValueCls) {
-        return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
+        resolveEnumType(field, fieldValueCls);
     }
 
     private void resolveParticipationConstraints(PropertyInfo propertyInfo) {
@@ -113,6 +112,19 @@ abstract class PropertyAttributes {
                 this.nonEmpty = cons.nonEmpty();
             }
         }
+    }
+    private void resolveEnumType(Field field, Class<?> fieldValueCls) {
+        final Enumerated enumAnn = field.getAnnotation(Enumerated.class);
+        if (enumAnn != null) {
+            this.enumType = enumAnn.value();
+        } else  if (fieldValueCls.isEnum()) {
+            // As per default of Enumerated.value()
+            this.enumType = EnumType.STRING;
+        }
+    }
+
+    String resolveLanguage(Class<?> fieldValueCls) {
+        return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
     }
 
     static PropertyAttributes create(PropertyInfo field, FieldMappingValidator validator, TypeBuilderContext<?> context) {

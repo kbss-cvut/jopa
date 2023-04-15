@@ -22,9 +22,13 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
 
     @Override
     public EntityManagerFactoryImpl createEntityManagerFactory(String emName, Map<String, String> properties) {
-        final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(properties);
+        final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(properties, this::emfClosed);
         EMFS.add(emf);
         return emf;
+    }
+
+    void emfClosed(EntityManagerFactoryImpl emf) {
+        EMFS.remove(emf);
     }
 
     @Override

@@ -14,15 +14,19 @@ package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
@@ -178,5 +182,24 @@ public abstract class SoqlRunner extends BaseQueryRunner {
                                   .setParameter("aInstances", matching)
                                   .getResultList();
         assertThat(result, containsSameEntities(expected));
+    }
+
+    /**
+     * Bug #135
+     */
+    @Test
+    public void testJoinOnPluralAttribute() {
+        final List<OWLClassJ> jInstances = QueryTestEnvironment.getData(OWLClassJ.class);
+        final OWLClassJ matching = Generators.getRandomItem(jInstances);
+        final Set<LangString> stringSet =
+                matching.getOwlClassA().stream()
+                        .map(a -> new LangString(a.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE))
+                        .collect(Collectors.toSet());
+
+        final List<OWLClassJ> result = getEntityManager().createQuery(
+                                                                 "SELECT j FROM OWLClassJ j WHERE j.owlClassA.stringAttribute IN :stringSet", OWLClassJ.class)
+                                                         .setParameter("stringSet", stringSet).getResultList();
+        assertFalse(result.isEmpty());
+        assertTrue(result.stream().anyMatch(j -> j.getUri().equals(matching.getUri())));
     }
 }

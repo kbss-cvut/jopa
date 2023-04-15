@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
@@ -362,5 +363,15 @@ class MetamodelBuilderTest {
     private static class ClassChild extends BParent implements AParentI  {
 
     }
-}
 
+    @Test
+    void buildMetamodelBuildsAttributeWithConverterForEnumValuedObjectProperty() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<OWLClassM> et = builder.entity(OWLClassM.class);
+        final AbstractAttribute<? super OWLClassM, ?> att = et.getAttribute(OWLClassM.getObjectOneOfEnumAttributeField().getName());
+        assertNotNull(att.getConverter());
+        assertInstanceOf(ObjectOneOfEnumConverter.class, att.getConverter());
+        assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
+    }
+}

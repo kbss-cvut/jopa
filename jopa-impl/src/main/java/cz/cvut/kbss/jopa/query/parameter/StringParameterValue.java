@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
+import cz.cvut.kbss.ontodriver.model.LangString;
+
 import java.util.Objects;
 
 class StringParameterValue extends AbstractParameterValue {
@@ -29,6 +31,12 @@ class StringParameterValue extends AbstractParameterValue {
     StringParameterValue(String value, String language) {
         this.value = Objects.requireNonNull(value);
         this.language = language;
+    }
+
+    StringParameterValue(LangString langString) {
+        Objects.requireNonNull(langString);
+        this.value = langString.getValue();
+        this.language = langString.getLanguage().orElse(null);
     }
 
     @Override

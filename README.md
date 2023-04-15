@@ -52,18 +52,20 @@ All this means that individuals belonging to an OWL class can be retrieved as in
 #### Explicit access to inferred knowledge
 
 A member annotated with the `@Inferred` annotation represents a field whose values are retrieved using a reasoner. As such,
-they can for example contain values of a inverse object property (like in [our Jedi example](https://github.com/kbss-cvut/jopa-examples/blob/master/example02-jopa-owlapi/src/main/java/cz/cvut/kbss/jopa/example02/Example.java)).
+they can for example contain values of a inverse object property (like in the [Jedi example](https://github.com/kbss-cvut/jopa-examples/blob/master/example02-jopa-owlapi/src/main/java/cz/cvut/kbss/jopa/example02/Example.java)).
 
 There are limitations to this: JOPA requires explicit class assertion to be able to load individual as instance of a class.
-And, values of inferred members are read-only. These restrictions have pragmatic reasons - if the knowledge is inferred, it
-cannot be directly modified/removed. Therefore, it would make no sense to remove object property value, if it was inferred.
+And, inferred values are read-only (prior to version 0.20.0, all values of an attribute marked with `@Inferred` were read-only, now 
+it applies only to actually inferred values). These restrictions have pragmatic reasons - if the knowledge is inferred, it
+cannot be directly modified/removed. Therefore, it would make no sense to remove a property value, if it was inferred.
 
 #### Access to unmapped properties and individual's types
 
 OOM is not meant to completely capture the ontological model. It would not even make much sense. One of the main features
 of JOPA is its ability to work with knowledge which is not part of the object model. This is done using members annotated
 with `@Types` and `@Properties`. `@Types` field contains all OWL classes whose instance the particular individual represented by
-an object is. `@Properties` field contains values of properties not mapped by object model. This way, the application gets (although limited)
+an object is (except the one mapped by the object's Java class). 
+`@Properties` field contains values of properties not mapped by object model. This way, the application gets (although limited)
 access to unmapped property values (e.g. values of newly added properties), without the need to adjust the object model and recompile.
 
 #### Transactions
@@ -92,7 +94,8 @@ Supported storages:
 
 JOPA currently does not support two important features - multiple inheritance and referential integrity.
 
-Single inheritance (and mapped superclasses) have been supported since version 0.9.0 (0.8.0 resp.), multiple inheritance is currently in planning.
+Single inheritance (and mapped superclasses) have been supported since version 0.9.0 (0.8.0 resp.), 
+multiple inheritance is currently under development.
 
 As for referential integrity, this for example means that removing an instance that is referenced by another instance should
 not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.
@@ -129,13 +132,12 @@ For more practical examples of JOPA features, see the JOPA examples repository a
 
 JOPA examples can be found in a separate repository at [https://github.com/kbss-cvut/jopa-examples](https://github.com/kbss-cvut/jopa-examples).
 
-A simplistic demo of JOPA ([https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016](https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016)) is running at [http://onto.fel.cvut.cz/eswc2016](http://onto.fel.cvut.cz/eswc2016).
-
 A more mature project using JOPA as its persistence provider can be found at [https://github.com/kbss-cvut/reporting-tool](https://github.com/kbss-cvut/reporting-tool).
 It is a safety occurrence reporting tool developed for the aviation industry as part of the INBAS project ([https://www.inbas.cz](https://www.inbas.cz)).
 A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
 
-JOPA is also used in the [BINBAS project](https://www.inbas.cz/web/binbas) [6] and, more recently, in [TermIt](https://github.com/kbss-cvut/termit) - a SKOS vocabulary manager.
+JOPA is also used in the [BINBAS project](https://www.inbas.cz/web/binbas) [6] and, more recently, 
+in [TermIt](https://github.com/kbss-cvut/termit) - a SKOS-compatible vocabulary manager.
 
 Note that JOPA requires Java 8 or later.
 
@@ -165,7 +167,7 @@ Basically, the _jopa-impl_ module and one of the OntoDriver implementations is a
 
 ## More Info
 
-More information about JOPA can be found for example in articles [4], [5] and at [https://kbss.felk.cvut.cz/web/kbss/jopa](https://kbss.felk.cvut.cz/web/kbss/jopa).
+More information about JOPA can be found for example in articles [4], [5] and on the GitHub [Wiki](https://github.com/kbss-cvut/jopa/wiki).
 
 JOPA build status and code metrics can be found at:
 
@@ -174,7 +176,7 @@ JOPA build status and code metrics can be found at:
 
 ### Performance
 
-A performance comparison of JOPA and other object-triple mapping libraries can be found at [https://kbss.felk.cvut.cz/web/kbss/otm-benchmark](https://kbss.felk.cvut.cz/web/kbss/otm-benchmark).
+A performance comparison of JOPA and other object-triple mapping libraries can be found at [https://kbss.felk.cvut.cz/web/otm-benchmark](https://kbss.felk.cvut.cz/web/otm-benchmark).
 
 A comprehensive comparison - feature and performance - of object-triple mapping libraries is presented in [8].
 
@@ -182,9 +184,9 @@ A comprehensive comparison - feature and performance - of object-triple mapping 
 
 Some related libraries:
 
-* [JB4JSON-LD](https://github.com/kbss-cvut/jb4jsonld) - Serialization and deserialization of POJOs into JSON-LD.
+* [JB4JSON-LD](https://github.com/kbss-cvut/jb4jsonld) - Serialization and deserialization of POJOs into JSON-LD. Uses JOPA mapping annotations.
 * [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA.
-* [Reporting Tool](https://github.com/kbss-cvut/reporting-tool) - Real-life use case of JOPA.
+* [Reporting Tool](https://github.com/kbss-cvut/reporting-tool) - Real-life use case of JOPA. _No longer actively maintained_.
 * [TermIt](https://github.com/kbss-cvut/termit) - A more complex and up-to-date use case of JOPA.
 
 ## References

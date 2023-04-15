@@ -1,22 +1,22 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.DataSourceStub;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Types;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,10 +27,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EntityManagerFactoryImplTest {
@@ -40,14 +40,17 @@ class EntityManagerFactoryImplTest {
     @Mock
     private Connection connection;
 
+    @Mock
+    Consumer<EntityManagerFactoryImpl> closeListener;
+
     @BeforeEach
     void setUp() {
         final Map<String, String> props = new HashMap<>();
         props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName());
         props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-                Generators.createIndividualIdentifier().toString());
+                  Generators.createIndividualIdentifier().toString());
         props.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
-        this.emf = new EntityManagerFactoryImpl(props);
+        this.emf = new EntityManagerFactoryImpl(props, closeListener);
         emf.createEntityManager();
         emf.getServerSession().unwrap(DataSourceStub.class).setConnection(connection);
     }
@@ -137,5 +140,21 @@ class EntityManagerFactoryImplTest {
     void getIdentifiersExtractsEntityIdentifier() {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         assertEquals(instance.getUri(), emf.getIdentifier(instance));
+    }
+
+    @Test
+    void closeClearsSecondLevelCache() {
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        final CacheManager cache = emf.unwrap(CacheManager.class);
+        cache.add(instance.getUri(), instance, new EntityDescriptor());
+        assertTrue(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));
+        emf.close();
+        assertFalse(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));
+    }
+
+    @Test
+    void closeInvokesCloseListener() {
+        emf.close();
+        verify(closeListener).accept(emf);
     }
 }
