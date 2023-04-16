@@ -92,14 +92,14 @@ class DataPropertyAttributesTest {
     @Test
     void resolveSetsEnumTypeToValueSpecifiedInEnumeratedAnnotation() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassM.getOrdinalEnumAttributeField(), metamodelBuilder, OWLClassM.Severity.class);
+        sut.resolve(OWLClassM.getOrdinalEnumAttributePropertyInfo(), metamodelBuilder, OWLClassM.Severity.class);
         assertEquals(EnumType.ORDINAL, sut.getEnumType());
     }
 
     @Test
     void resolveSetsEnumTypeToStringWhenEnumeratedAnnotationIsNotSpecifiedOnEnumValuedField() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassM.getEnumAttributeField(), metamodelBuilder, OWLClassM.Severity.class);
+        sut.resolve(OWLClassM.getEnumAttributePropertyInfo(), metamodelBuilder, OWLClassM.Severity.class);
         assertEquals(EnumType.STRING, sut.getEnumType());
     }
 }

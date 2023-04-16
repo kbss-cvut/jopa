@@ -48,11 +48,10 @@ class ConverterResolverTest {
         final PropertyInfo propertyInfo = OWLClassD.getOwlClassAFieldPropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         final EntityType et = mock(EntityType.class);
         when(et.getJavaType()).thenReturn(OWLClassA.class);
         when(pa.getType()).thenReturn(et);
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertFalse(result.isPresent());
     }
 
@@ -242,7 +241,7 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsObjectOneOfEnumConverterForEnumValuedObjectPropertyAttribute() throws Exception {
-        final PropertyInfo propertyInfo = OWLClassM.getObjectOneOfEnumAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getObjectOneOfEnumAttributePropertyInfo();
         final ObjectPropertyAttributes pa = mock(ObjectPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(pa.getEnumType()).thenReturn(EnumType.OBJECT_ONE_OF);
@@ -254,7 +253,7 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsBuiltInOrdinalEnumConverterForOrdinalEnumDataPropertyField() throws Exception {
-        final PropertyInfo propertyInfo = OWLClassM.getOrdinalEnumAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getOrdinalEnumAttributePropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(pa.getEnumType()).thenReturn(EnumType.ORDINAL);

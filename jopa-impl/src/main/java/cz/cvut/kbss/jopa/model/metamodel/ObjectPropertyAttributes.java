@@ -25,10 +25,10 @@ class ObjectPropertyAttributes extends PropertyAttributes {
     }
 
     @Override
-    void resolve(PropertyInfo field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        super.resolve(field, metamodelBuilder, fieldValueCls);
+    void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        super.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
 
-        final OWLObjectProperty oop = field.getAnnotation(OWLObjectProperty.class);
+        final OWLObjectProperty oop = propertyInfo.getAnnotation(OWLObjectProperty.class);
         assert oop != null;
 
         this.persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;

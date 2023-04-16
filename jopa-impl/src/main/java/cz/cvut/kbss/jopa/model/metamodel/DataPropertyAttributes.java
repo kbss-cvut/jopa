@@ -24,10 +24,10 @@ class DataPropertyAttributes extends PropertyAttributes {
     }
 
     @Override
-    void resolve(PropertyInfo field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        super.resolve(field, metamodelBuilder, fieldValueCls);
+    void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        super.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
 
-        final OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
+        final OWLDataProperty odp = propertyInfo.getAnnotation(OWLDataProperty.class);
         assert odp != null;
 
         this.persistentAttributeType = Attribute.PersistentAttributeType.DATA;

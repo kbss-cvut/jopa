@@ -97,9 +97,9 @@ abstract class PropertyAttributes {
     public EnumType getEnumType() {
         return enumType;
     }
-    void resolve(PropertyInfo field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        resolveParticipationConstraints(field);
-        resolveEnumType(field, fieldValueCls);
+    void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        resolveParticipationConstraints(propertyInfo);
+        resolveEnumType(propertyInfo, fieldValueCls);
     }
 
     private void resolveParticipationConstraints(PropertyInfo propertyInfo) {
@@ -113,8 +113,8 @@ abstract class PropertyAttributes {
             }
         }
     }
-    private void resolveEnumType(Field field, Class<?> fieldValueCls) {
-        final Enumerated enumAnn = field.getAnnotation(Enumerated.class);
+    private void resolveEnumType(PropertyInfo propertyInfo, Class<?> fieldValueCls) {
+        final Enumerated enumAnn = propertyInfo.getAnnotation(Enumerated.class);
         if (enumAnn != null) {
             this.enumType = enumAnn.value();
         } else  if (fieldValueCls.isEnum()) {
@@ -154,7 +154,7 @@ abstract class PropertyAttributes {
         }
 
         @Override
-        void resolve(PropertyInfo info, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
             // do nothing
         }
     }
