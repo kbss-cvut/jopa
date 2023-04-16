@@ -103,10 +103,10 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
         LOG.error("finding method to {} ", field);
-        findPropertyDefinitionInHierarchy(field, inference);
+        findPropertyDefinitionInHierarchy(field, inference,fieldValueCls);
     }
 
-    private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference) {
+    private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference,Class<?> fieldValueCls) {
 
         Set<IdentifiableType<?>> stack = new HashSet<>(et.getSupertypes());
         boolean found = false;
@@ -127,7 +127,7 @@ class ClassFieldMetamodelProcessor<X> {
                     final PropertyInfo info = new PropertyInfo.MethodInfo(annotatedAccessor.getMethod(), field);
 
                     final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
-                    propertyAtt.resolve(info, metamodelBuilder, field.getType());
+                    propertyAtt.resolve(info, metamodelBuilder, fieldValueCls);
 
                     final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
                     registerTypeReference(a);
