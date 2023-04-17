@@ -108,7 +108,8 @@ class ClassFieldMetamodelProcessor<X> {
 
     private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference, Class<?> fieldValueCls) {
 
-        Set<IdentifiableType<?>> stack = new HashSet<>(et.getSupertypes());
+        Set<IdentifiableType<?>> stack =  new HashSet<>();
+        stack.add(et);
         boolean found = false;
         Method foundMethod = null;
         while (!stack.isEmpty()) {
@@ -119,10 +120,14 @@ class ClassFieldMetamodelProcessor<X> {
                 if (propertyBelongsToMethod(field, annotatedAccessor)) {
                     LOG.error("Found belonging - {} - {}", field.getName(), annotatedAccessor.getMethod().getName());
 
-                    if (found && !annotatedMethodsEqual(annotatedAccessor.getMethod(), foundMethod)) { ///annotatedAccessor.getMethod().equals(foundMethod)
-                        throw new MetamodelInitializationException(
-                                "Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field "
-                                        + field + " two non-compatible methods were found - " + foundMethod + " and " + annotatedAccessor.getMethod());
+                    if (found) { ///annotatedAccessor.getMethod().equals(foundMethod)
+                        if (annotatedMethodsEqual(annotatedAccessor.getMethod(), foundMethod)) {
+                            continue;
+                        } else {
+                            throw new MetamodelInitializationException(
+                                    "Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field "
+                                            + field + " two non-compatible methods were found - " + foundMethod + " and " + annotatedAccessor.getMethod());
+                        }
                     }
                     final PropertyInfo info = PropertyInfo.from(annotatedAccessor.getMethod(), field);
 
