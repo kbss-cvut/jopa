@@ -26,7 +26,7 @@ public class MetamodelClass {
     }
 
     public String getPaggage() {
-        return paggage;
+        return this.paggage;
     }
 
     public void setPaggage(String paggage) {

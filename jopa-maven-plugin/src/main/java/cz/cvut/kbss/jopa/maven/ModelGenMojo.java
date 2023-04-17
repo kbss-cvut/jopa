@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.maven;
 
-import com.github.jsonldjava.shaded.com.google.common.base.Joiner;
 import com.github.jsonldjava.shaded.com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +31,7 @@ import java.util.concurrent.Future;
 public class ModelGenMojo extends AbstractMojo {
     private static final String JAVA_FILE_FILTER = "/*.java";
 
-    private static final String[] ALL_JAVA_FILES_FILTER = new String[] { "**" + JAVA_FILE_FILTER };
+    private static final String[] ALL_JAVA_FILES_FILTER = new String[]{"**" + JAVA_FILE_FILTER};
     public static final String PLUGIN_PREFIX = "JOPA modelgen: ";
     private static final String OUTPUT_PARAM = "output-directory";
     private static final String SOURCE_PACKAGE_PARAM = "model-directory";
@@ -79,22 +78,7 @@ public class ModelGenMojo extends AbstractMojo {
      */
     private boolean showWarnings = false;
 
-
-    /**
-     * A list of additional source roots for the apt processor
-     *
-     * @parameter required=false
-     */
-    private List<String> additionalSourceRoots;
-
-    /**
-     * A list of additional test source roots for the apt processor
-     *
-     * @parameter required=false
-     */
-    private List<String> additionalTestSourceRoots;
-
-    @Parameter(defaultValue = "${project.build.directory}/generated-sources/model-gen")
+    @Parameter(defaultValue = "${project.build.directory}/generated-sources/static-metamodel/")
     private File outputDirectory;
 
 
@@ -104,10 +88,9 @@ public class ModelGenMojo extends AbstractMojo {
     private boolean ignoreDelta = true;
 
 
-
     /**
      * A list of inclusion package filters for the apt processor.
-     *
+     * <p>
      * If not specified all sources will be used for apt processor
      *
      * <pre>
@@ -116,7 +99,7 @@ public class ModelGenMojo extends AbstractMojo {
      * 	&lt;include&gt;com.mypackge.**.bo.**&lt;/include&gt;
      * &lt;/includes&gt;
      * </pre>
-     *
+     * <p>
      * will include all files which match com/mypackge/ ** /bo/ ** / *.java
      *
      * @parameter
@@ -183,7 +166,7 @@ public class ModelGenMojo extends AbstractMojo {
     }
 
     protected File getOutputDirectory() {
-        return outputDirectory!=null ? outputDirectory : new File("${project.build.directory}/generated-sources/model-gen");
+        return outputDirectory != null ? outputDirectory : new File("${project.build.directory}/generated-sources/model-gen");
     }
 
     @SuppressWarnings("unchecked")
@@ -191,8 +174,7 @@ public class ModelGenMojo extends AbstractMojo {
         File outputDirectory = getOutputDirectory();
         String outputPath = outputDirectory.getAbsolutePath();
         Set<File> directories = new HashSet<File>();
-        List<String> directoryNames = isForTest() ? getTestCompileSourceRoots()
-                : getCompileSourceRoots();
+        List<String> directoryNames = project.getCompileSourceRoots();
         for (String name : directoryNames) {
             File file = new File(name);
             if (!file.getAbsolutePath().equals(outputPath) && file.exists() && file.isDirectory()) {
@@ -200,36 +182,6 @@ public class ModelGenMojo extends AbstractMojo {
             }
         }
         return directories;
-    }
-
-
-
-    private List<String> getTestCompileSourceRoots() {
-        @SuppressWarnings("unchecked")
-        final List<String> testCompileSourceRoots = project.getTestCompileSourceRoots();
-        if (additionalTestSourceRoots == null) {
-            return testCompileSourceRoots;
-        }
-        if (getLog().isDebugEnabled()) {
-            getLog().debug("Adding additional test source roots: " + Joiner.on(", ").skipNulls().join(additionalTestSourceRoots));
-        }
-        List<String> sourceRoots = new ArrayList<String>(testCompileSourceRoots);
-        sourceRoots.addAll(additionalTestSourceRoots);
-        return sourceRoots;
-    }
-
-    private List<String> getCompileSourceRoots() {
-        @SuppressWarnings("unchecked")
-        final List<String> compileSourceRoots = project.getCompileSourceRoots();
-        if (additionalSourceRoots == null) {
-            return compileSourceRoots;
-        }
-        if (getLog().isDebugEnabled()) {
-            getLog().debug("Adding additional source roots: " + Joiner.on(", ").skipNulls().join(additionalSourceRoots));
-        }
-        List<String> sourceRoots = new ArrayList<String>(compileSourceRoots);
-        sourceRoots.addAll(additionalSourceRoots);
-        return sourceRoots;
     }
 
     private Set<File> filterFiles(Set<File> directories) {
@@ -280,6 +232,7 @@ public class ModelGenMojo extends AbstractMojo {
      *   <li>cli build creates log output</li>
      *   <li>m2e build creates markers for eclipse</li>
      * </ul>
+     *
      * @param diagnostics
      */
     private void processDiagnostics(final List<Diagnostic<? extends JavaFileObject>> diagnostics) {
@@ -394,7 +347,7 @@ public class ModelGenMojo extends AbstractMojo {
             File tempDirectory = null;
 
             if (buildContext.isIncremental()) {
-                tempDirectory = new File(project.getBuild().getDirectory(), "apt"+System.currentTimeMillis());
+                tempDirectory = new File(project.getBuild().getDirectory(), "apt" + System.currentTimeMillis());
                 tempDirectory.mkdirs();
                 outputDirectory = tempDirectory.getAbsolutePath();
             }
@@ -441,7 +394,6 @@ public class ModelGenMojo extends AbstractMojo {
     }
 
 
-
     public static void syncFiles(File source, File target) throws IOException {
         Set<String> sourceFiles = Sets.newHashSet(source.list());
         Set<String> targetFiles = Sets.newHashSet(target.list());
@@ -486,6 +438,7 @@ public class ModelGenMojo extends AbstractMojo {
             file.delete();
         }
     }
+
     protected boolean isForTest() {
         return false;
     }
@@ -498,13 +451,11 @@ public class ModelGenMojo extends AbstractMojo {
         getLog().info(param + ": " + value);
     }
 
-    private void info(String msg)
-    {
+    private void info(String msg) {
         getLog().info(PLUGIN_PREFIX + msg);
     }
 
-    private void debug(String msg)
-    {
+    private void debug(String msg) {
         getLog().debug(PLUGIN_PREFIX + msg);
     }
 

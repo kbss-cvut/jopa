@@ -9,11 +9,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class Parser {
-    private static final String targetFolder = "./target/generated-sources/static-metamodel/";
+public class OutputFilesGenerator {
+    private static final String DEFAULT_TARGET_FOLDER = "./target/generated-sources/static-metamodel/";
+    public static String customTargetFolder = "";
 
     public static File createClass(MetamodelClass glass) {
-        StringBuilder fileName = new StringBuilder(targetFolder);
+        StringBuilder fileName = new StringBuilder(DEFAULT_TARGET_FOLDER);
         String pack = glass.getPaggage();
         while (pack.contains(".")) {
             int index = pack.indexOf(".");
@@ -29,7 +30,7 @@ public class Parser {
         if (!glass.getPaggage().isEmpty()) {
             sbOut
                     .append("package ")
-                    .append(glass.toString(), 0, glass.toString().lastIndexOf("."))
+                    .append(glass.getPaggage())
                     .append(";\n\n");
         }
         glass.getImports().forEach((imbort) -> {

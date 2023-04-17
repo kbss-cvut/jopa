@@ -45,7 +45,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 classes.put(elParent.toString(), parentClass);
             }
         }
-        Parser.generateOutputFiles(classes);
+        OutputFilesGenerator.generateOutputFiles(classes);
         return true;
     }
 
