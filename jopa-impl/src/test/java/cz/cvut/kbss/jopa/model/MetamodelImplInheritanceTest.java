@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -67,7 +67,7 @@ class MetamodelImplInheritanceTest {
         assertNotNull(et.getIdentifier());
         assertEquals(OWLClassQ.getUriField(), et.getIdentifier().getJavaField());
         final List<Field> fields = Arrays.asList(OWLClassQ.getOwlClassAField(), OWLClassQ.getLabelField(),
-                                                 OWLClassQ.getParentStringField(), OWLClassQ.getStringAttributeField());
+                OWLClassQ.getParentStringField(), OWLClassQ.getStringAttributeField());
         for (Field f : fields) {
             assertNotNull(et.getFieldSpecification(f.getName()));
             assertEquals(f, et.getFieldSpecification(f.getName()).getJavaField());
@@ -93,7 +93,7 @@ class MetamodelImplInheritanceTest {
         assertNotNull(etR);
         final IdentifiableEntityType<OWLClassS> etS = metamodel.entity(OWLClassS.class);
         assertNotNull(etS);
-        assertEquals(1,etR.getSupertypes().size());
+        assertEquals(1, etR.getSupertypes().size());
         assertTrue(etR.getSupertypes().contains(etS));
     }
 
@@ -115,8 +115,8 @@ class MetamodelImplInheritanceTest {
     @Test
     void buildingMetamodelSetsSubtypesOfMappedSuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
-        final Set< IdentifiableType<? super OWLClassQ>> supertypes =  metamodel.entity(OWLClassQ.class).getSupertypes();
-        assertEquals(1,supertypes.size());
+        final Set<IdentifiableType<? super OWLClassQ>> supertypes = metamodel.entity(OWLClassQ.class).getSupertypes();
+        assertEquals(1, supertypes.size());
 
         final IdentifiableType<? super OWLClassQ> supertype = supertypes.iterator().next();
 
@@ -162,10 +162,10 @@ class MetamodelImplInheritanceTest {
     @Test
     void buildingMetamodelThrowsExceptionWhenInheritanceStrategyIsDeclaredOnSubtype() {
         final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
-                                                                 () -> metamodelFor(OWLClassS.class, SubclassWithInheritanceType.class));
+                () -> metamodelFor(OWLClassS.class, SubclassWithInheritanceType.class));
         assertEquals("Class " + SubclassWithInheritanceType.class +
-                             " cannot declare inheritance strategy, because it already inherits it from its supertype.",
-                     ex.getMessage());
+                        " cannot declare inheritance strategy, because it already inherits it from its supertype.",
+                ex.getMessage());
     }
 
     @Inheritance(strategy = InheritanceType.TRY_FIRST)

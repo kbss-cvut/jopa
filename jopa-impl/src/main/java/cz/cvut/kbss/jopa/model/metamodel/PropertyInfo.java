@@ -57,7 +57,7 @@ public interface PropertyInfo {
 
         @Override
         public String toString() {
-            return "MethodInfo{" +
+            return "FieldInfo{" +
                     "class =" + field.getDeclaringClass().getName() +
                     ", field=" + field.getName() +
                     '}';
@@ -102,8 +102,8 @@ public interface PropertyInfo {
         @Override
         public String toString() {
             return "MethodInfo{" +
-                    "class =" + rawField.getDeclaringClass().getName() +
-                    ", field=" + rawField.getName() +
+                    "method=" + method +
+                    ", rawField=" + rawField +
                     '}';
         }
     }

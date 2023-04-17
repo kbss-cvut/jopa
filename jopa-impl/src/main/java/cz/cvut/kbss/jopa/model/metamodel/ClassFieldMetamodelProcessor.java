@@ -103,10 +103,10 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
         LOG.error("finding method to {} ", field);
-        findPropertyDefinitionInHierarchy(field, inference,fieldValueCls);
+        findPropertyDefinitionInHierarchy(field, inference, fieldValueCls);
     }
 
-    private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference,Class<?> fieldValueCls) {
+    private void findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference, Class<?> fieldValueCls) {
 
         Set<IdentifiableType<?>> stack = new HashSet<>(et.getSupertypes());
         boolean found = false;
@@ -124,7 +124,7 @@ class ClassFieldMetamodelProcessor<X> {
                                 "Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field "
                                         + field + " two non-compatible methods were found - " + foundMethod + " and " + annotatedAccessor.getMethod());
                     }
-                    final PropertyInfo info = new PropertyInfo.MethodInfo(annotatedAccessor.getMethod(), field);
+                    final PropertyInfo info = PropertyInfo.from(annotatedAccessor.getMethod(), field);
 
                     final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
                     propertyAtt.resolve(info, metamodelBuilder, fieldValueCls);
@@ -286,55 +286,55 @@ class ClassFieldMetamodelProcessor<X> {
         et.addDeclaredQueryAttribute(field.getName(), a);
     }
 
-    private AbstractAttribute<X, ?> createAttribute(PropertyInfo field, InferenceInfo inference,
+    private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo inference,
                                                     PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
-        if (field.getType().isAssignableFrom(Collection.class)) {
+        if (property.getType().isAssignableFrom(Collection.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
                     CollectionAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .propertyInfo(field)
+                            .propertyInfo(property)
                             .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
-            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+            context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
-        } else if (field.getType().isAssignableFrom(List.class)) {
-            a = createListAttribute(field, inference, propertyAttributes);
-        } else if (field.getType().isAssignableFrom(Set.class)) {
+        } else if (property.getType().isAssignableFrom(List.class)) {
+            a = createListAttribute(property, inference, propertyAttributes);
+        } else if (property.getType().isAssignableFrom(Set.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder =
                     SetAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .propertyInfo(field)
+                            .propertyInfo(property)
                             .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
-            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+            context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
-        } else if (field.getType().isAssignableFrom(Map.class)) {
+        } else if (property.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
             final SingularAttributeImpl.SingularAttributeBuilder builder =
                     SingularAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .propertyInfo(field)
+                            .propertyInfo(property)
                             .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
-            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+            context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         }
-        et.addDeclaredAttribute(field.getName(), a);
+        et.addDeclaredAttribute(property.getName(), a);
         return a;
     }
 
-    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo propertyInfo,
+    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property,
                                                         InferenceInfo inference,
                                                         PropertyAttributes propertyAttributes) {
-        final Sequence os = propertyInfo.getAnnotation(Sequence.class);
+        final Sequence os = property.getAnnotation(Sequence.class);
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
         }
         final ListAttributeImpl.ListAttributeBuilder builder =
                 ListAttributeImpl.builder(propertyAttributes).declaringType(et)
-                        .propertyInfo(propertyInfo)
+                        .propertyInfo(property)
                         .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
                         .owlListClass(IRI.create(os.ClassOWLListIRI()))
                         .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
                         .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
                         .sequenceType(os.type());
-        context.getConverterResolver().resolveConverter(propertyInfo, propertyAttributes).ifPresent(builder::converter);
+        context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }
 
