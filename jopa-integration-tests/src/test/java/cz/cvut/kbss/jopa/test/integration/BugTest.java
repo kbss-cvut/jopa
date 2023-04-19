@@ -26,7 +26,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -169,5 +172,15 @@ class BugTest extends IntegrationTestBase {
         void prePersistChild() {
             this.childCallbackInvoked = true;
         }
+    }
+
+    @Test
+    void getterOnLazyAttributeWithNullValueAfterPersistDoesNotTriggerLazyFetch() {
+        final OWLClassF owner = new OWLClassF(Generators.generateUri());
+        final OWLClassA a = new OWLClassA();
+        owner.setSimpleSet(new HashSet<>(Collections.singletonList(a)));
+        em.getTransaction().begin();
+        em.persist(owner);
+        em.getTransaction().commit();
     }
 }

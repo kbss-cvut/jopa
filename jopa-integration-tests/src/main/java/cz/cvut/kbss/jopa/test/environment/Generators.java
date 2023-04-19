@@ -177,9 +177,9 @@ public abstract class Generators {
 
     private static Set<String> getTypes() {
         final Set<String> types = new HashSet<>(3);
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassZ");
+        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDF");
+        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDFF");
+        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDFFF");
         return types;
     }
 

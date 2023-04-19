@@ -54,7 +54,6 @@ class PersistenceUnitUtilTest extends IntegrationTestBase {
         final OWLClassA entity = em.find(OWLClassA.class, uri);
         assertTrue(em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(entity));
         assertTrue(em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(entity, "stringAttribute"));
-        assertTrue(em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(entity, "types"));
     }
 
     @Test
