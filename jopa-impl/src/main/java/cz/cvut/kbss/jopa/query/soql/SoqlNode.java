@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.query.soql;
 
-abstract class SoqlNode {
+abstract class SoqlNode implements FilterableExpression {
 
     SoqlNode parent;
     SoqlNode child;
@@ -41,8 +41,4 @@ abstract class SoqlNode {
     public abstract String getIri();
 
     public abstract void setIri(String iri);
-
-    public abstract boolean requiresFilterExpression();
-
-    public abstract String getFilterExpression(String filterParam, String filterValue);
 }

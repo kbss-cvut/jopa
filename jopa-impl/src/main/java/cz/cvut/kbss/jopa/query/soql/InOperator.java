@@ -3,7 +3,7 @@ package cz.cvut.kbss.jopa.query.soql;
 /**
  * SOQL ({@code NOT}) {@code IN} operator.
  */
-class InOperator implements FilterOperator {
+class InOperator implements FilterableExpression {
 
     private final boolean isNot;
 

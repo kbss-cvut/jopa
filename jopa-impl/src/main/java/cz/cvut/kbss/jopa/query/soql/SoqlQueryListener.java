@@ -18,15 +18,20 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SoqlQueryListener implements SoqlListener {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SoqlQueryListener.class);
+
     private final MetamodelImpl metamodel;
 
-    private String newQuery = "";
+    private String soql;
+    private String sparql;
 
     private String typeDef = "SELECT";
 
@@ -68,7 +73,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitQuerySentence(SoqlParser.QuerySentenceContext ctx) {
-        buildQueryString();
+        this.soql = ctx.getText();
+        buildSparqlQueryString();
     }
 
     @Override
@@ -694,13 +700,13 @@ public class SoqlQueryListener implements SoqlListener {
         }
     }
 
-    public String getSoqlQuery() {
-        return newQuery;
+    public String getSparqlQuery() {
+        assert sparql != null;
+        return sparql;
     }
 
-
     //Methods to build new Query
-    private void buildQueryString() {
+    private void buildSparqlQueryString() {
         if (attributes.isEmpty()) {
             return;
         }
@@ -729,7 +735,8 @@ public class SoqlQueryListener implements SoqlListener {
         if (!orderAttributes.isEmpty()) {
             newQueryBuilder.append(' ').append(buildOrdering());
         }
-        newQuery = newQueryBuilder.toString();
+        sparql = newQueryBuilder.toString();
+        LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", soql, sparql);
     }
 
     private StringBuilder getCountPart() {
@@ -773,7 +780,10 @@ public class SoqlQueryListener implements SoqlListener {
                 if (myAttr.requiresFilter()) {
                     toFilter.add(myAttr);
                 }
-                attributesPart.append(processAttribute(myAttr));
+                final String bgp = processAttribute(myAttr);
+                if (attributesPart.indexOf(bgp) == -1) {
+                    attributesPart.append(bgp);
+                }
             }
         }
         attributesPart.append(processAllFilters(toFilter, toInvFilter));
@@ -821,7 +831,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private String processAttribute(SoqlAttribute attr) {
-        return attr.getTriplePattern(rootVariable);
+        return attr.getBasicGraphPattern(rootVariable);
     }
 
     private String buildOrdering() {

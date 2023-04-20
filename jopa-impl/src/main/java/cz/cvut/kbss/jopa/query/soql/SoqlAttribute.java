@@ -25,7 +25,7 @@ public class SoqlAttribute extends SoqlParameter {
 
     private boolean isNot = false;
 
-    private FilterOperator operator;
+    private FilterableExpression operator;
 
     private boolean isOrderBy = false;
 
@@ -51,11 +51,11 @@ public class SoqlAttribute extends SoqlParameter {
         isNot = not;
     }
 
-    public void setOperator(FilterOperator operator) {
+    public void setOperator(FilterableExpression operator) {
         this.operator = operator;
     }
 
-    public FilterOperator getOperator() {
+    public FilterableExpression getOperator() {
         return operator;
     }
 
@@ -92,7 +92,7 @@ public class SoqlAttribute extends SoqlParameter {
         String filterParam = getAsParam();
         final String filterValue = SoqlUtils.soqlVariableToSparqlVariable(value);
         if (getFirstNode().requiresFilterExpression()) {
-            filterParam = getFirstNode().getFilterExpression(filterParam, filterValue);
+            filterParam = getFirstNode().toFilterExpression(filterParam, filterValue);
         }
         if (operator != null && operator.requiresFilterExpression()) {
             return Collections.singletonList(operator.toFilterExpression(filterParam, filterValue));
@@ -101,7 +101,7 @@ public class SoqlAttribute extends SoqlParameter {
         }
     }
 
-    public String getTriplePattern(String rootVariable) {
+    public String getBasicGraphPattern(String rootVariable) {
         StringBuilder buildTP = new StringBuilder(rootVariable).append(' ');
         if (isInstanceOf()) {
             buildTP.append(SoqlConstants.RDF_TYPE).append(' ')

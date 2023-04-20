@@ -58,7 +58,7 @@ public class AttributeNode extends SoqlNode {
     }
 
     @Override
-    public String getFilterExpression(String filterParam, String filterValue) {
+    public String toFilterExpression(String filterParam, String filterValue) {
         return filterParam;
     }
 }
