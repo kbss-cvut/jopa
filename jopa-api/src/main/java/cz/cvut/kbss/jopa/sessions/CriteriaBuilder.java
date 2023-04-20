@@ -14,21 +14,28 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.query.criteria.*;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.Expression;
+import cz.cvut.kbss.jopa.model.query.criteria.Order;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 
+/**
+ * Used to construct criteria queries, compound selections, expressions, predicates, orderings.
+ */
 public interface CriteriaBuilder extends PredicateFactory {
-
 
     /**
      * Create a CriteriaQuery object with the specified result type.
+     *
      * @param resultClass type of the query result
      * @return criteria query object
      */
     <T> CriteriaQuery<T> createQuery(Class<T> resultClass);
 
     /**
-     * Create an aggregate expression applying the count operation.
-     * Return type of count function in SPARQL is xsd:integer which JOPA internally represents as Integer.
+     * Create an aggregate expression applying the count operation. Return type of count function in SPARQL is
+     * xsd:integer which JOPA internally represents as Integer.
+     *
      * @param x expression representing input value to count operation
      * @return count expression
      */
@@ -36,15 +43,17 @@ public interface CriteriaBuilder extends PredicateFactory {
 
     /**
      * Create a parameter expression.
-     * @param paramClass - parameter class
+     *
+     * @param paramClass parameter class
      * @return parameter expression
      */
     <T> ParameterExpression<T> parameter(Class<T> paramClass);
 
     /**
      * Create a parameter expression with the given name.
-     * @param paramClass - parameter class
-     * @param name - name that can be used to refer to the parameter
+     *
+     * @param paramClass parameter class
+     * @param name       name that can be used to refer to the parameter
      * @return parameter expression
      */
     <T> ParameterExpression<T> parameter(Class<T> paramClass, String name);
@@ -52,21 +61,39 @@ public interface CriteriaBuilder extends PredicateFactory {
     /**
      * Create an expression for a literal.
      *
-     * @param value - value represented by the expression
+     * @param value value represented by the expression
      * @return expression literal
      */
     <T> Expression<T> literal(T value);
 
     /**
      * Create an expression for a string literal with language tag.
-     * @param value - string value represented by the expression
-     * @param languageTag - string language tag
+     *
+     * @param value       string value represented by the expression
+     * @param languageTag string language tag
      * @return expression literal
      */
     Expression<String> literal(String value, String languageTag);
 
     /**
+     * Create expression for converting a string to lowercase.
+     *
+     * @param x string expression
+     * @return expression to convert to lowercase
+     */
+    Expression<String> lower(Expression<?> x);
+
+    /**
+     * Create expression for converting a string to uppercase.
+     *
+     * @param x string expression
+     * @return expression to convert to uppercase
+     */
+    Expression<String> upper(Expression<?> x);
+
+    /**
      * Create an ordering by the ascending value of the expression.
+     *
      * @param x expression used to define the ordering
      * @return ascending ordering corresponding to the expression
      */
@@ -74,6 +101,7 @@ public interface CriteriaBuilder extends PredicateFactory {
 
     /**
      * Create an ordering by the descending value of the expression.
+     *
      * @param x expression used to define the ordering
      * @return descending ordering corresponding to the expression
      */

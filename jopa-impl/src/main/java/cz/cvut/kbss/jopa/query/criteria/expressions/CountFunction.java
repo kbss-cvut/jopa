@@ -14,26 +14,17 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
+import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
-public abstract class AbstractAggregateFunctionExpression<X> extends AbstractExpression<X> {
+public class CountFunction extends AbstractFunctionExpression<Integer> {
 
-    protected AbstractPathExpression internExpression;
-
-    public AbstractAggregateFunctionExpression(Class<X> type, AbstractPathExpression internExpression, CriteriaBuilder cb) {
-        super(type, cb);
-        this.internExpression = internExpression;
+    public CountFunction(AbstractPathExpression expression, CriteriaBuilder cb) {
+        super(Integer.class, expression, cb);
     }
 
     @Override
-    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
-        query.append(this.getFunctionName()).append("(");
-        this.internExpression.setExpressionToQuery(query, parameterFiller);
-        query.append(")");
+    public String getFunctionName() {
+        return SoqlConstants.Functions.COUNT;
     }
-
-    public abstract String getFunctionName();
 }
-
-
