@@ -26,11 +26,13 @@ import org.slf4j.Logger;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -215,5 +217,18 @@ public abstract class SoqlRunner extends BaseQueryRunner {
                                   .getSingleResult();
         assertNotNull(result);
         assertEquals(instance.getUri(), result.getUri());
+    }
+
+    @Test
+    public void testSelectByLikeWithUppercase() {
+        final OWLClassA instance = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        final List<OWLClassA> result =
+                getEntityManager().createQuery("SELECT a FROM OWLClassA a WHERE UPPER(a.stringAttribute) LIKE :value",
+                                               OWLClassA.class)
+                                  .setParameter("value", instance.getStringAttribute().substring(0, 3)
+                                                                 .toUpperCase(Locale.ROOT) + ".+")
+                                  .getResultList();
+        assertFalse(result.isEmpty());
+        assertThat(result, hasItem(instance));
     }
 }

@@ -157,8 +157,8 @@ public class SoqlQueryListener implements SoqlListener {
         String owner = getOwnerFromParam(ctx);
         String attribute = getAttributeFromParam(ctx);
         // objectNode.attributeNode
-        SoqlNode objectNode = new SoqlNode(owner);
-        SoqlNode attributeNode = new SoqlNode(objectNode, attribute);
+        SoqlNode objectNode = new AttributeNode(owner);
+        SoqlNode attributeNode = new AttributeNode(objectNode, attribute);
         objectNode.setChild(attributeNode);
         if (isIdentifier(objectNode, attributeNode)) {
             this.isInObjectIdentifierExpression = true;
@@ -290,8 +290,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     private SoqlAttribute createSyntheticAttributeForEntityId() {
         return new SoqlAttribute(
-                attrPointer.getFirstNode().hasNextChild() ? attrPointer.getFirstNode().getChild() :
-                new SoqlNode(rootVariable.substring(1)));
+                attrPointer.getFirstNode().hasChild() ? attrPointer.getFirstNode().getChild() :
+                new AttributeNode(rootVariable.substring(1)));
     }
 
     private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
@@ -391,7 +391,7 @@ public class SoqlQueryListener implements SoqlListener {
         String table = ctx.getChild(0).getChild(0).getText();
         String objectName = ctx.getChild(1).getChild(0).getText();
         objectTypes.put(objectName, table);
-        SoqlNode node = new SoqlNode(table);
+        SoqlNode node = new AttributeNode(table);
         setObjectIri(node);
         SoqlAttribute myAttr = new SoqlAttribute(node);
         pushNewAttribute(myAttr);
@@ -434,8 +434,9 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
-        final String token = ctx.getChild(0).getText();
-        this.attrPointer = new SoqlAttribute(this.attrPointer.getFirstNode());
+        final String functionName = ctx.getChild(0).getText();
+        final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
+        attrPointer.setFirstNode(node);
     }
 
     @Override
@@ -576,11 +577,11 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private SoqlNode linkContextNodes(ParserRuleContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
+        SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
         SoqlNode currentNode = firstNode;
         for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = currentNode;
-            currentNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
+            currentNode = new AttributeNode(prevNode, ctx.getChild(i).getText());
             prevNode.setChild(currentNode);
         }
         setIris(firstNode);
@@ -640,7 +641,7 @@ public class SoqlQueryListener implements SoqlListener {
             return;
         }
         node.setIri(entityType.getIRI().toString());
-        if (node.hasNextChild()) {
+        if (node.hasChild()) {
             setAllNodesIris(entityType, node.getChild());
         }
     }
@@ -662,7 +663,7 @@ public class SoqlQueryListener implements SoqlListener {
         final Attribute<?, ?> abstractAttribute = entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
-        if (node.hasNextChild()) {
+        if (node.hasChild()) {
             final Type<?> type = resolveBindableType(abstractAttribute);
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
@@ -688,7 +689,7 @@ public class SoqlQueryListener implements SoqlListener {
         if (entityType == null) {
             return;
         }
-        if (firstNode.hasNextChild()) {
+        if (firstNode.hasChild()) {
             setAllNodesIris(entityType, firstNode.getChild());
         }
     }
@@ -797,7 +798,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         buildFilter.append("FILTER (");
         buildFilter.append(toFilter.stream().map(SoqlAttribute::getFilterExpressions).flatMap(Collection::stream)
-                                   .collect(Collectors.joining("&&")));
+                                   .collect(Collectors.joining(" && ")));
         buildFilter.append(") ");
         return buildFilter.toString();
     }

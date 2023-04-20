@@ -48,7 +48,7 @@ public class SoqlOrderParameter extends SoqlParameter {
         String param = attribute.requiresFilter() ? getAsParam().substring(1) : attribute.getValue().substring(1);
         StringBuilder sb = new StringBuilder();
         if (ASC_ORDER.equals(orderingBy)) {
-            sb.append("?").append(param).append(" ");
+            sb.append("?").append(param).append(' ');
         } else {
             sb.append(DESC_ORDER).append("(?").append(param).append(") ");
         }

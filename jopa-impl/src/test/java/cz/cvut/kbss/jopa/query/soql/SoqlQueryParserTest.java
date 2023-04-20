@@ -117,7 +117,7 @@ public class SoqlQueryParserTest {
     public void testParseFindOneLikeQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username LIKE :username";
         final String expectedSparqlQuery =
-                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (regex(?pUsername, ?username)) }";
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (REGEX(?pUsername, ?username)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(3, holder.getParameters().size());
@@ -592,7 +592,7 @@ public class SoqlQueryParserTest {
     public void testParseFindOneNotLikeQuery() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username NOT LIKE :username";
         final String expectedSparqlQuery =
-                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (!regex(?pUsername, ?username)) }";
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.c_Person + "> . ?x <" + Vocabulary.p_p_username + "> ?pUsername . FILTER (!REGEX(?pUsername, ?username)) }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
         assertEquals(3, holder.getParameters().size());
@@ -656,6 +656,16 @@ public class SoqlQueryParserTest {
                 "?x a <" + Vocabulary.c_Person + "> . " +
                 "?x <" + Vocabulary.p_p_username + "> ?pUsername . " +
                 "FILTER (" + sparqlFunction + "(?pUsername) = ?username) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void setParseQueryWithUpperAndLikeOperators() {
+        final String soql = "SELECT p FROM Person p WHERE UPPER(p.username) LIKE :value";
+        final String expectedSparql = "SELECT ?x WHERE { " +
+                "?x a <" + Vocabulary.c_Person + "> . " +
+                "?x <" + Vocabulary.p_p_username + "> ?pUsername . " +
+                "FILTER (REGEX(UCASE(?pUsername), ?value)) }";
         parseAndAssertEquality(soql, expectedSparql);
     }
 }

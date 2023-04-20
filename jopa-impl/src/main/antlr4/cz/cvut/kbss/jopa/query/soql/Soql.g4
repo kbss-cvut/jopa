@@ -78,7 +78,7 @@ literal
    ;
 
 likeExpression
-   : whereClauseParam ('NOT')? LIKE whereClauseValue
+   : stringExpression ('NOT')? LIKE whereClauseValue
    ;
 
 comparisonExpression

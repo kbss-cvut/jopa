@@ -76,20 +76,29 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     public boolean requiresFilter() {
-        return operator != null && operator.requiresFilterExpression();
+        return (operator != null && operator.requiresFilterExpression()) || getFirstNode().requiresFilterExpression();
     }
 
     public boolean isObject() {
-        return !getFirstNode().hasNextChild();
+        return !getFirstNode().hasChild();
     }
 
     public boolean isInstanceOf() {
-        return !getFirstNode().hasNextChild() && operator == null;
+        return !getFirstNode().hasChild() && operator == null;
     }
 
     public List<String> getFilterExpressions() {
         assert requiresFilter();
-        return Collections.singletonList(operator.toFilterExpression(getAsParam(), SoqlUtils.soqlVariableToSparqlVariable(value)));
+        String filterParam = getAsParam();
+        final String filterValue = SoqlUtils.soqlVariableToSparqlVariable(value);
+        if (getFirstNode().requiresFilterExpression()) {
+            filterParam = getFirstNode().getFilterExpression(filterParam, filterValue);
+        }
+        if (operator != null && operator.requiresFilterExpression()) {
+            return Collections.singletonList(operator.toFilterExpression(filterParam, filterValue));
+        } else {
+            return Collections.singletonList(filterParam + " = " + filterValue);
+        }
     }
 
     public String getTriplePattern(String rootVariable) {
@@ -106,7 +115,7 @@ public class SoqlAttribute extends SoqlParameter {
             buildParam.append(getFirstNode().getValue());
             buildParam.append(pointer.getCapitalizedValue());
             String param;
-            if (pointer.hasNextChild() || value == null) {
+            if (pointer.hasChild() || value == null) {
                 param = "?" + pointer.getValue();
             } else {
                 if (requiresFilter()) {
@@ -116,7 +125,7 @@ public class SoqlAttribute extends SoqlParameter {
                 }
             }
             buildTP.append(toIri(pointer)).append(' ').append(param).append(TRIPLE_END);
-            while (pointer.hasNextChild()) {
+            while (pointer.hasChild()) {
                 SoqlNode newPointer = pointer.getChild();
                 if (newPointer.getIri().isEmpty()) {
                     break;
@@ -124,7 +133,7 @@ public class SoqlAttribute extends SoqlParameter {
                 buildTP.append('?').append(pointer.getValue())
                        .append(' ').append(toIri(newPointer)).append(' ');
                 buildParam.append(newPointer.getCapitalizedValue());
-                if (newPointer.hasNextChild()) {
+                if (newPointer.hasChild()) {
                     buildTP.append('?').append(pointer.getChild().getValue());
                 } else {
                     if (requiresFilter()) {
