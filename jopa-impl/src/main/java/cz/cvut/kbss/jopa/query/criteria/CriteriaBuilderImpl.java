@@ -34,13 +34,34 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
+    public <N extends Number> Expression<N> abs(Expression<N> x) {
+        validateFunctionArgument(x);
+        return new AbsFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
+    }
+
+    @Override
     public Expression<Integer> count(Expression<?> x) {
-        if (!(x instanceof AbstractPathExpression)) {
-            throw new IllegalArgumentException("Function can be applied only to path expressions.");
-        }
+        validateFunctionArgument(x);
         return new CountFunction((AbstractPathExpression) x, this);
     }
 
+    @Override
+    public <N extends Number> Expression<N> ceil(Expression<N> x) {
+        validateFunctionArgument(x);
+        return new CeilFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public <N extends Number> Expression<N> floor(Expression<N> x) {
+        validateFunctionArgument(x);
+        return new FloorFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public Expression<Integer> length(Expression<String> x) {
+        validateFunctionArgument(x);
+        return new LengthFunction((AbstractPathExpression) x, this);
+    }
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass) {
@@ -67,19 +88,21 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public Expression<String> lower(Expression<?> x) {
-        if (!(x instanceof AbstractPathExpression)) {
-            throw new IllegalArgumentException("Function can be applied only to path expressions.");
-        }
+    public Expression<String> lower(Expression<String> x) {
+        validateFunctionArgument(x);
         return new LowerFunction((AbstractPathExpression) x, this);
     }
 
     @Override
-    public Expression<String> upper(Expression<?> x) {
+    public Expression<String> upper(Expression<String> x) {
+        validateFunctionArgument(x);
+        return new UpperFunction((AbstractPathExpression) x, this);
+    }
+
+    private void validateFunctionArgument(Expression<?> x) {
         if (!(x instanceof AbstractPathExpression)) {
             throw new IllegalArgumentException("Function can be applied only to path expressions.");
         }
-        return new UpperFunction((AbstractPathExpression) x, this);
     }
 
     @Override

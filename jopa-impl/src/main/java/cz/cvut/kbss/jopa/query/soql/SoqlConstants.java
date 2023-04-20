@@ -57,6 +57,26 @@ public class SoqlConstants {
          */
         public static final String COUNT = "COUNT";
 
+        /**
+         * Returns the length of a string.
+         */
+        public static final String LENGTH = "LENGTH";
+
+        /**
+         * Returns the absolute value of the argument.
+         */
+        public static final String ABS = "ABS";
+
+        /**
+         * Returns the smallest number with no fractional part that is not less than the argument.
+         */
+        public static final String CEIL = "CEIL";
+
+        /**
+         * Returns the largest number with no fractional part that is not greater than the argument.
+         */
+        public static final String FLOOR = "FLOOR";
+
         private Functions() {
             throw new AssertionError();
         }

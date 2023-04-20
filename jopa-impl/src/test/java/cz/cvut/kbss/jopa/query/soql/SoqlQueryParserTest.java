@@ -770,4 +770,29 @@ public class SoqlQueryParserTest {
                 "FILTER (?pAge >= ?minAge && ?pAge < ?maxAge) }";
         parseAndAssertEquality(soql, expectedSparql);
     }
+
+    @Test
+    void testParseQueryWithLength() {
+        final String soql = "SELECT p FROM Person p WHERE LENGTH(p.username) <= :minLength";
+        final String expectedSparql = "SELECT ?x WHERE { " +
+                "?x a " + IdentifierTransformer.stringifyIri(Vocabulary.c_Person) + " . " +
+                "?x " + IdentifierTransformer.stringifyIri(Vocabulary.p_p_username) + " ?pUsername . " +
+                "FILTER (STRLEN(?pUsername) <= ?minLength) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            SoqlConstants.Functions.ABS + ", ABS",
+            SoqlConstants.Functions.CEIL + ", CEIL",
+            SoqlConstants.Functions.FLOOR + ", FLOOR",
+    })
+    void testParseQueryWithNumericFunction(String soqlFunction, String sparqlFunction) {
+        final String soql = "SELECT m FROM OWLClassM m WHERE " + soqlFunction + "(m.doubleAttribute) = :value";
+        final String expectedSparql = "SELECT ?x WHERE { " +
+                "?x a " + IdentifierTransformer.stringifyIri(Vocabulary.c_OwlClassM) + " . " +
+                "?x " + IdentifierTransformer.stringifyIri(Vocabulary.p_m_doubleAttribute) + " ?mDoubleAttribute . " +
+                "FILTER (" + sparqlFunction + "(?mDoubleAttribute) = ?value) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }

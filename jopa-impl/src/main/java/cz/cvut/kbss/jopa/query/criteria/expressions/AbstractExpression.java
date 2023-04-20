@@ -25,7 +25,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Parent of all other types of expressions. It offers its children the implementation of methods for IN expression as prescribed by the Expression interface.
+ * Parent of all other types of expressions.
+ * <p>
+ * It offers its children the implementation of methods for IN expression as prescribed by the Expression interface.
  * Prescribes an abstract method for expressing an expression to string builder representing the query.
  */
 public abstract class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {

@@ -17,6 +17,10 @@ class SoqlFunctionTranslator {
         final Map<String, String> map = new HashMap<>();
         map.put(SoqlConstants.Functions.UPPER, "UCASE");
         map.put(SoqlConstants.Functions.LOWER, "LCASE");
+        map.put(SoqlConstants.Functions.LENGTH, "STRLEN");
+        map.put(SoqlConstants.Functions.ABS, "ABS");
+        map.put(SoqlConstants.Functions.CEIL, "CEIL");
+        map.put(SoqlConstants.Functions.FLOOR, "FLOOR");
         return map;
     }
 

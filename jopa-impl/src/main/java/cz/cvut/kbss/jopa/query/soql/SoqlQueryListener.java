@@ -487,12 +487,13 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
-
     }
 
     @Override
     public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
-
+        final String functionName = ctx.getChild(0).getText();
+        final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
+        attrPointer.setFirstNode(node);
     }
 
     @Override

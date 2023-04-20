@@ -33,6 +33,32 @@ public interface CriteriaBuilder extends PredicateFactory {
     <T> CriteriaQuery<T> createQuery(Class<T> resultClass);
 
     /**
+     * Create an expression that returns the absolute value of its argument.
+     *
+     * @param x expression
+     * @return absolute value
+     */
+    <N extends Number> Expression<N> abs(Expression<N> x);
+
+    /**
+     * Create an expression that returns the smallest (closest to negative infinity) numeric value that is greater than
+     * or equal to the argument and is equal to a mathematical integer.
+     *
+     * @param x expression
+     * @return ceiling value
+     */
+    <N extends Number> Expression<N> ceil(Expression<N> x);
+
+    /**
+     * Create an expression that returns the largest (closest to positive infinity) numeric value that is less than or
+     * equal to the argument and is equal to a mathematical integer.
+     *
+     * @param x expression
+     * @return floor value
+     */
+    <N extends Number> Expression<N> floor(Expression<N> x);
+
+    /**
      * Create an aggregate expression applying the count operation. Return type of count function in SPARQL is
      * xsd:integer which JOPA internally represents as Integer.
      *
@@ -40,6 +66,14 @@ public interface CriteriaBuilder extends PredicateFactory {
      * @return count expression
      */
     Expression<Integer> count(Expression<?> x);
+
+    /**
+     * Create expression to return length of a string.
+     *
+     * @param x string expression
+     * @return length expression
+     */
+    Expression<Integer> length(Expression<String> x);
 
     /**
      * Create a parameter expression.
@@ -81,7 +115,7 @@ public interface CriteriaBuilder extends PredicateFactory {
      * @param x string expression
      * @return expression to convert to lowercase
      */
-    Expression<String> lower(Expression<?> x);
+    Expression<String> lower(Expression<String> x);
 
     /**
      * Create expression for converting a string to uppercase.
@@ -89,7 +123,7 @@ public interface CriteriaBuilder extends PredicateFactory {
      * @param x string expression
      * @return expression to convert to uppercase
      */
-    Expression<String> upper(Expression<?> x);
+    Expression<String> upper(Expression<String> x);
 
     /**
      * Create an ordering by the ascending value of the expression.
