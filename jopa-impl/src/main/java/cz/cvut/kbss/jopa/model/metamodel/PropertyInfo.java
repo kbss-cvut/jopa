@@ -5,6 +5,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
+/**
+ * A simple wrapper that enables using annotations from methods while processing fields during metamodel creation.
+ * @see AnnotatedAccessor
+ */
 public interface PropertyInfo {
     <T extends Annotation> T getAnnotation(Class<T> annotationClass);
 
@@ -15,6 +19,7 @@ public interface PropertyInfo {
     Member getMember();
 
     Field getField();
+
     static PropertyInfo from(Field field) {
         return new FieldInfo(field);
     }
@@ -82,7 +87,6 @@ public interface PropertyInfo {
         @Override
         public String getName() {
             return rawField.getName();
-
         }
         @Override
         public Member getMember() {

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -68,7 +68,7 @@ class ClassFieldMetamodelProcessor<X> {
 
         final Class<?> fieldValueCls = getFieldValueType(field);
         field.setAccessible(true);
-        final InferenceInfo inference = processInferenceInfo(field); // todo - is missing in property method
+        final InferenceInfo inference = processInferenceInfo(field);
 
         if (isTypesField(field)) {
             processTypesField(field, fieldValueCls, inference);
@@ -183,7 +183,6 @@ class ClassFieldMetamodelProcessor<X> {
         return false;
     }
 
-    /// todo if not assignable, throw exception ?
     private boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
 
         return property.getName().equals(accessor.getPropertyName()) && property.getType()
