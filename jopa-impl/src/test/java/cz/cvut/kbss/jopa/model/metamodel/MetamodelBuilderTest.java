@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
+import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
@@ -39,7 +40,8 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -170,8 +172,8 @@ class MetamodelBuilderTest {
         assertTrue(childLifecycleManager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
         assertNotNull(childLifecycleManager.getParents());
         assertTrue(childLifecycleManager.getParents()
-                                        .stream()
-                                        .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
+                .stream()
+                .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
     }
 
     @MappedSuperclass
@@ -321,7 +323,7 @@ class MetamodelBuilderTest {
 
         assertNotNull(cClassEt);
         assertThat(cClassEt.getSupertypes(), hasSize(2));
-        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt,BParentEt));
+        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt, BParentEt));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AParentI")
@@ -337,6 +339,7 @@ class MetamodelBuilderTest {
         @Id
         private URI uri;
     }
+
     @Test
     void buildMetamodelSupportsMultipleInheritanceInterfaceAndClass() {
         when(finderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(AParentI.class, BParent.class, ClassChild.class)));
@@ -350,7 +353,7 @@ class MetamodelBuilderTest {
 
         assertNotNull(cClassEt);
         assertThat(cClassEt.getSupertypes(), hasSize(2));
-        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt,BParentEt));
+        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt, BParentEt));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParent")
@@ -360,8 +363,21 @@ class MetamodelBuilderTest {
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "Child")
-    private static class ClassChild extends BParent implements AParentI  {
+    private static class ClassChild extends BParent implements AParentI {
 
+    }
+
+    @Test
+    void buildMetamodelThrowsExceptionIfAnnotatedMethodHasInvalidName() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(InterfaceWithInvalidMethod.class));
+
+        assertThrows(MetamodelInitializationException.class, () -> builder.buildMetamodel(finderMock));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidMethod")
+    private interface InterfaceWithInvalidMethod {
+        @OWLDataProperty(iri = Vocabulary.CLASS_BASE + "name")
+        void getName();
     }
 
     @Test
