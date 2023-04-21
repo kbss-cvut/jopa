@@ -100,7 +100,7 @@ class ClassFieldMetamodelProcessorTest {
         when(eInterfaceMock.getSupertypes()).thenReturn(Collections.singleton(dInterfaceMock));
         final ClassFieldMetamodelProcessor<OWLClassY> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassY.getNameField();
-        when(metamodelBuilder.getTypesPropertyMethods(dInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceD.getSetNameMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(dInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceD.getSetNameMethod())));
 
         processor.processField(field);
 
@@ -130,8 +130,8 @@ class ClassFieldMetamodelProcessorTest {
 
         final ClassFieldMetamodelProcessor<OWLClassX> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassX.getPropertyField();
-        when(metamodelBuilder.getTypesPropertyMethods(BInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceB.getPropertyMethod())));
-        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(BInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceB.getPropertyMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
 
         MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
         assertTrue(ex.getMessage().contains("Ambiguous hierarchy"));
@@ -157,8 +157,8 @@ class ClassFieldMetamodelProcessorTest {
 
         final ClassFieldMetamodelProcessor<OWLClasAA> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClasAA.getPropertyField();
-        when(metamodelBuilder.getTypesPropertyMethods(FInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceF.getPropertyMethod())));
-        when(metamodelBuilder.getTypesPropertyMethods(GInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceG.getPropertyMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(FInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceF.getPropertyMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(GInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceG.getPropertyMethod())));
 
         processor.processField(field);
 
@@ -180,7 +180,7 @@ class ClassFieldMetamodelProcessorTest {
 
         final ClassFieldMetamodelProcessor<OWLClassZ> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassZ.getPropertyField();
-        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
 
         assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
 
@@ -204,8 +204,8 @@ class ClassFieldMetamodelProcessorTest {
         final ClassFieldMetamodelProcessor<OWLClassWithAnnotatedPropertyAndMethod> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassWithAnnotatedPropertyAndMethod.getIsNiceField();
 
-        when(metamodelBuilder.getTypesPropertyMethods(baseMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLClassWithAnnotatedPropertyAndMethod.getIsNiceMethod())));
-        when(metamodelBuilder.getTypesPropertyMethods(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(baseMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLClassWithAnnotatedPropertyAndMethod.getIsNiceMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
 
         processor.processField(field);
 

@@ -4,12 +4,15 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 
 import java.net.URI;
+import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_CHILD_C)
 public class OWLChildClassC implements OWLInterfaceC, OWLInterfaceD {
     private String name;
 
     private Boolean attributeB;
+
+    Set<String> titles;
     @Id
     private URI id;
 
@@ -39,4 +42,14 @@ public class OWLChildClassC implements OWLInterfaceC, OWLInterfaceD {
     public Boolean getAttributeB() {
         return attributeB;
     }
+
+    @Override
+    public Set<String> getTitles() {
+        return titles;
+    }
+
+    public void setTitles(Set<String> titles) {
+        this.titles = titles;
+    }
 }
+

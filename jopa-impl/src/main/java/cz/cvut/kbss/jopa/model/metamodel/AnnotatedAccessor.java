@@ -5,6 +5,10 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import java.beans.Introspector;
 import java.lang.reflect.Method;
 
+/**
+ * Class used for extracting field name from getter or setter.
+ */
+
 public abstract class AnnotatedAccessor {
     protected final Method method;
     protected final String propertyName;
