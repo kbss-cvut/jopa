@@ -25,9 +25,6 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -132,14 +129,14 @@ class ClassFieldMetamodelProcessor<X> {
                 }
 
                 LOG.debug("Found annotated method belonging to field - {} - {}", annotatedAccessor.getMethod().getName(), field.getName());
-                if (!found) {
+                if (!found) {  // first belonging method
                     createAndRegisterAttribute(field, inference, fieldValueCls, annotatedAccessor);
 
                     found = true;
                     foundMethod = annotatedAccessor.getMethod();
-                } else if (annotatedMethodsEqual(annotatedAccessor.getMethod(), foundMethod)) {
+                } else if (methodsAnnotationsEqual(annotatedAccessor.getMethod(), foundMethod)) {
                     LOG.debug("Methods are equal, skipping");
-                } else {
+                } else { /// Two non-equal methods that could belong to the field - ambiguous
                     throw new MetamodelInitializationException("Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field " + field + " two non-compatible methods were found - " + foundMethod + " and " + annotatedAccessor.getMethod());
                 }
 
@@ -163,7 +160,7 @@ class ClassFieldMetamodelProcessor<X> {
         registerTypeReference(a);
     }
 
-    private boolean annotatedMethodsEqual(Method newMethod, Method foundMethod) {
+    private boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
 
         if (foundMethod.getAnnotation(OWLObjectProperty.class) != null) {
             return foundMethod.getAnnotation(OWLObjectProperty.class).equals(newMethod.getAnnotation(OWLObjectProperty.class));
