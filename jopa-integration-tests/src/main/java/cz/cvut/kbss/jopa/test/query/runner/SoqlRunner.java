@@ -12,10 +12,7 @@
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassJ;
-import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
@@ -230,5 +227,18 @@ public abstract class SoqlRunner extends BaseQueryRunner {
                                   .getResultList();
         assertFalse(result.isEmpty());
         assertThat(result, hasItem(instance));
+    }
+
+    @Test
+    public void testSelectByAbsoluteValueOfAnInteger() {
+        final List<OWLClassM> instances = QueryTestEnvironment.getData(OWLClassM.class);
+        final int value = Math.abs(Generators.randomInt());
+        final List<OWLClassM> matching = instances.stream().filter(m -> Math.abs(m.getIntAttribute()) <= value).collect(
+                Collectors.toList());
+        final List<OWLClassM> result = getEntityManager().createQuery("SELECT m FROM OWLClassM m WHERE ABS(m.intAttribute) <= :value", OWLClassM.class)
+                .setParameter("value", value)
+                .getResultList();
+        assertEquals(matching.size(), result.size());
+        matching.forEach(m -> assertTrue(result.stream().anyMatch(rm -> rm.getKey().equals(m.getKey()))));
     }
 }
