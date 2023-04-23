@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,26 +14,36 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
+import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class MultipleInheritanceTestRunner extends BaseRunner {
+    protected OWLClassWithUnProperties classWithUnProperties;
+    protected OWLClassWithPartConstraintsInInterfaceParent classWithPartConstraintsInInterfaceParent;
+
     public MultipleInheritanceTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
+        classWithUnProperties = new OWLClassWithUnProperties(Generators.generateUri());
+        classWithPartConstraintsInInterfaceParent = new OWLClassWithPartConstraintsInInterfaceParent(Generators.generateUri());
+        classWithPartConstraintsInInterfaceParent.setData(new OWLClassWithUnProperties(Generators.generateUri()));
     }
+
 
     @Test
     void entityCanBeFoundByBothParentTypes() {
@@ -61,24 +71,21 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
     @Test
     void annotatedMethodPassesDownAnnotationValuesFromSingleParent() {
         this.em = getEntityManager("annotatedMethodPassesDownAnnotationValues", false);
-        URI id = Generators.generateUri();
-        final OWLClassWithUnProperties subject = new OWLClassWithUnProperties();
 
-        subject.setId(id);
-        subject.setName("NAME_VALUE");
-        subject.setTitles(Collections.singleton("title"));
-        em.persist(subject);
+        classWithUnProperties.setName("NAME_VALUE");
+        classWithUnProperties.setTitles(Collections.singleton("title"));
+        em.persist(classWithUnProperties);
         em.clear();
 
-        OWLClassWithUnProperties found = em.find(OWLClassWithUnProperties.class, id);
+        OWLClassWithUnProperties found = em.find(OWLClassWithUnProperties.class, classWithUnProperties.getId());
 
         IRI namePropertyIRI = em.getMetamodel().entity(OWLClassWithUnProperties.class).getDeclaredAttribute("name").getIRI();
 
         assertNotNull(found);
-        assertEquals(subject.getName(), found.getName());
-        assertEquals(subject.getId(), found.getId());
+        assertEquals(classWithUnProperties.getName(), found.getName());
+        assertEquals(classWithUnProperties.getId(), found.getId());
         assertEquals(Vocabulary.p_m_unannotated_name, namePropertyIRI.toString());
-        assertEquals(subject.getTitles(),found.getTitles());
+        assertEquals(classWithUnProperties.getTitles(), found.getTitles());
 
     }
 
@@ -130,5 +137,86 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         assertEquals(child.getAttributeB(), found.getAttributeB());
 
         assertEquals(child.getName(), commonParentFound.getName());
+    }
+
+
+    @Test
+    void nonEmptyParticipationConstraintsInInterfaceThrowExceptionIfNotMet() {
+        this.em = getEntityManager("nonEmptyParticipationConstraintsInInterfaceThrowExceptionIfNotMet", false);
+
+        /// violate constraints
+        classWithPartConstraintsInInterfaceParent.setData(null);
+        em.getTransaction().begin();
+
+        em.persist(classWithPartConstraintsInInterfaceParent);
+
+        assertThrows(RollbackException.class, () -> em.getTransaction().commit());
+
+    }
+
+    @Test
+    void nonEmptyParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet() {
+        this.em = getEntityManager("nonEmptyParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet", false);
+
+
+        em.getTransaction().begin();
+
+        em.persist(classWithPartConstraintsInInterfaceParent);
+
+        em.getTransaction().commit();
+
+        verifyExists(OWLClassWithPartConstraintsInInterfaceParent.class, classWithPartConstraintsInInterfaceParent.getUri());
+    }
+
+
+    @Test
+    void maxParticipationConstraintsInInterfaceThrowExceptionIfNotMet() {
+        this.em = getEntityManager("maxParticipationConstraintsInInterfaceThrowExceptionIfNotMet", false);
+
+        Set<OWLClassWithUnProperties> dataList = new HashSet<>();
+        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
+        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
+        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
+        classWithPartConstraintsInInterfaceParent.setDataList(dataList);
+
+        em.getTransaction().begin();
+
+        em.persist(classWithPartConstraintsInInterfaceParent);
+
+        assertThrows(RollbackException.class, () -> em.getTransaction().commit());
+    }
+
+    @Test
+    void maxParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet() {
+        this.em = getEntityManager("maxParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet", false);
+
+        Set<OWLClassWithUnProperties> dataList = new HashSet<>();
+        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
+        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
+        classWithPartConstraintsInInterfaceParent.setDataList(dataList);
+
+        em.getTransaction().begin();
+
+        em.persist(classWithPartConstraintsInInterfaceParent);
+
+        em.getTransaction().commit();
+
+        verifyExists(OWLClassWithPartConstraintsInInterfaceParent.class, classWithPartConstraintsInInterfaceParent.getUri());
+    }
+
+    @Test
+    void converterAnnotatedFieldsGetConverted() throws Exception {
+        this.em = getEntityManager("converterAnnotatedFieldsGetConverted", false);
+
+        classWithPartConstraintsInInterfaceParent.setData(classWithUnProperties);
+
+        final ZoneOffset value = ZoneOffset.ofHours(2);
+        classWithPartConstraintsInInterfaceParent.setWithConverter(value);
+
+        persist(classWithPartConstraintsInInterfaceParent);
+
+        verifyStatementsPresent(Collections.singleton(
+                new Quad(classWithPartConstraintsInInterfaceParent.getUri(), URI.create(Vocabulary.p_m_withConverter),
+                        classWithPartConstraintsInInterfaceParent.getWithConverter().getId(), (String) null)), em);
     }
 }

@@ -45,6 +45,13 @@ public class OWLClassWithUnProperties implements OWLInterfaceAnMethods {
         return name;
     }
 
+    public OWLClassWithUnProperties() {
+    }
+
+    public OWLClassWithUnProperties(URI id) {
+        this.id = id;
+    }
+
     @Override
     public void setName(String name) {
         this.name = name;
@@ -66,4 +73,6 @@ public class OWLClassWithUnProperties implements OWLInterfaceAnMethods {
     public void setTitles(Set<String> titles) {
         this.titles = titles;
     }
+
+
 }
