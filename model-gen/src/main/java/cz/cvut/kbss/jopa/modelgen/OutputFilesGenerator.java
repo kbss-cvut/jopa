@@ -153,10 +153,10 @@ public class OutputFilesGenerator {
     }
 
     public static boolean isAnnotatedWith(Field field, AnnotationEnum annotationEnum) {
-        List<String> annotations = field.getAnnotatedWith();
+        List<AnnotationEnum> annotations = field.getAnnotatedWith();
         if (annotations.isEmpty()) return false;
-        for (String an : annotations) {
-            if (an.contains(annotationEnum.getAnnotation())) {
+        for (AnnotationEnum an : annotations) {
+            if (an.equals(annotationEnum)) {
                 return true;
             }
         }

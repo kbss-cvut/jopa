@@ -1,7 +1,10 @@
 package cz.cvut.kbss.jopa.modelgen.classmodel;
 
+import cz.cvut.kbss.jopa.modelgen.AnnotationEnum;
+
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,13 +13,18 @@ public class Field {
     private String name;
     private Type type;
     private String parentName;
-    private List<String> annotatedWith;
+    private List<AnnotationEnum> annotatedWith;
 
     public Field(Element elProperty, Element elParent) {
         this.name = elProperty.toString();
         this.type = new Type(elProperty.asType());
         this.parentName = elParent.toString();
-        this.annotatedWith = elProperty.getAnnotationMirrors().stream().map(prop -> prop.getAnnotationType().toString()).collect(Collectors.toList());
+        this.annotatedWith = Arrays.stream(AnnotationEnum.values())
+                .filter(annotationEnum -> elProperty.getAnnotationMirrors().stream()
+                        .anyMatch(annotationMirror ->
+                                annotationMirror.getAnnotationType().toString()
+                                        .contains(annotationEnum.getAnnotation())))
+                .collect(Collectors.toList());
         imports = new ArrayList<>();
         if (type.getIsSimple()) {
             imports.add(type.getTypeName());
@@ -52,11 +60,11 @@ public class Field {
         this.parentName = parentName;
     }
 
-    public List<String> getAnnotatedWith() {
+    public List<AnnotationEnum> getAnnotatedWith() {
         return annotatedWith;
     }
 
-    public void setAnnotatedWith(List<String> annotatedWith) {
+    public void setAnnotatedWith(List<AnnotationEnum> annotatedWith) {
         this.annotatedWith = annotatedWith;
     }
 
