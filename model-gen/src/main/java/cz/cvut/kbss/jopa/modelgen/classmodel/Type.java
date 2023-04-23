@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.modelgen;
+package cz.cvut.kbss.jopa.modelgen.classmodel;
 
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -6,19 +6,19 @@ import java.util.*;
 
 public class Type {
     private String typeName;
-    private Boolean simple;
+    private Boolean isSimple;
     private List<Type> types;
 
     public Type(TypeMirror tMirror) {
         List<? extends TypeMirror> typeArgs = ((DeclaredType) tMirror).getTypeArguments();
 
         if (isSimple(tMirror.toString())) {
-            this.simple = true;
+            this.isSimple = true;
             this.types = null;
             this.typeName = tMirror.toString();
         } else {
             this.typeName = ((DeclaredType) tMirror).asElement().toString();
-            this.simple = false;
+            this.isSimple = false;
             this.types = new ArrayList<>();
             typeArgs.forEach((typeMirror ->
                     this.types.add(new Type(typeMirror))
@@ -34,12 +34,12 @@ public class Type {
         this.typeName = typeName;
     }
 
-    public Boolean getSimple() {
-        return simple;
+    public Boolean getIsSimple() {
+        return isSimple;
     }
 
-    public void setSimple(Boolean simple) {
-        this.simple = simple;
+    public void setIsSimple(Boolean isSimple) {
+        this.isSimple = isSimple;
     }
 
     public List<Type> getTypes() {

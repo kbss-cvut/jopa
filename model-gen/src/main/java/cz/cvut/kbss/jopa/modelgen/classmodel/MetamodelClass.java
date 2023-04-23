@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.modelgen;
+package cz.cvut.kbss.jopa.modelgen.classmodel;
 
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ public class MetamodelClass {
     private String paggage;
     private String name;
     private List<String> imports;
-    private List<Property> properties;
+    private List<Field> properties;
 
     public MetamodelClass(Element elClass) {
         String fullName = elClass.toString();
@@ -49,20 +49,20 @@ public class MetamodelClass {
         this.imports = imports;
     }
 
-    public List<Property> getProperties() {
+    public List<Field> getProperties() {
         return properties;
     }
 
-    public void addProperty(Property property) {
-        this.properties.add(property);
-        property.getImports().forEach((imbort) -> {
+    public void addProperty(Field field) {
+        this.properties.add(field);
+        field.getImports().forEach((imbort) -> {
             if (!imports.contains(imbort)) {
                 imports.add(imbort);
             }
         });
     }
 
-    public void setProperties(List<Property> properties) {
+    public void setProperties(List<Field> properties) {
         this.properties = properties;
     }
 }

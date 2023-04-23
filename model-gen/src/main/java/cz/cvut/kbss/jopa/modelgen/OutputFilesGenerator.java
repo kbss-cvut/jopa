@@ -1,6 +1,9 @@
 package cz.cvut.kbss.jopa.modelgen;
 
-import javax.lang.model.element.AnnotationMirror;
+import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
+import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
+import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,10 +14,10 @@ import java.util.Set;
 
 public class OutputFilesGenerator {
     private static final String DEFAULT_TARGET_FOLDER = "./target/generated-sources/static-metamodel/";
-    public static String customTargetFolder = "";
+    public static String finalTargetFolder = "";
 
     public static File createClass(MetamodelClass glass) {
-        StringBuilder fileName = new StringBuilder(DEFAULT_TARGET_FOLDER);
+        StringBuilder fileName = new StringBuilder(finalTargetFolder);
         String pack = glass.getPaggage();
         while (pack.contains(".")) {
             int index = pack.indexOf(".");
@@ -44,7 +47,7 @@ public class OutputFilesGenerator {
                 .append(".class)\n")
                 .append("public class ")
                 .append(glass.getName())
-                .append("_ {\n");
+                .append("_ {\n\n");
 
         try {
             File file = new File(fileName.toString());
@@ -61,36 +64,36 @@ public class OutputFilesGenerator {
 
     public static void appendProperties(MetamodelClass glass, File classFile) {
         StringBuilder propertiesString = new StringBuilder();
-        for (Property property : glass.getProperties()) {
-            propertiesString.append("\n\t public static volatile ");
+        for (Field field : glass.getProperties()) {
+            propertiesString.append("\t public static volatile ");
             //@Id
-            if (isAnnotatedWith(property, AnnotationEnum.ID)) {
+            if (isAnnotatedWith(field, AnnotationEnum.ID)) {
                 propertiesString
                         .append("Identifier<")
-                        .append(property.getParentName().substring(property.getParentName().lastIndexOf(".") + 1))
+                        .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
                         .append(", ")
-                        .append(property.getType().getTypeName().substring(property.getType().getTypeName().lastIndexOf(".") + 1));
+                        .append(field.getType().getTypeName().substring(field.getType().getTypeName().lastIndexOf(".") + 1));
                 //@Types
-            } else if (isAnnotatedWith(property, AnnotationEnum.TYPES)) {
+            } else if (isAnnotatedWith(field, AnnotationEnum.TYPES)) {
                 propertiesString
                         .append("TypesSpecification<")
-                        .append(property.getParentName().substring(property.getParentName().lastIndexOf(".") + 1))
+                        .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
                         .append(", ");
-                if (property.getType().getSimple()) {
+                if (field.getType().getIsSimple()) {
                     //TODO: raw types? napriklad Set<> Object?? idk
                     propertiesString
-                            .append(property.getType().getTypeName().substring(property.getType().getTypeName().lastIndexOf(".") + 1));
+                            .append(field.getType().getTypeName().substring(field.getType().getTypeName().lastIndexOf(".") + 1));
                 } else {
                     propertiesString
-                            .append(property.getType().getTypes().get(0).getTypeName().substring(property.getType().getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
+                            .append(field.getType().getTypes().get(0).getTypeName().substring(field.getType().getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
                 }
                 //@Properties
-            } else if (isAnnotatedWith(property, AnnotationEnum.PROPERTIES)) {
+            } else if (isAnnotatedWith(field, AnnotationEnum.PROPERTIES)) {
                 propertiesString
                         .append("PropertiesSpecification<")
-                        .append(property.getParentName().substring(property.getParentName().lastIndexOf(".") + 1))
+                        .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
                         .append(", ");
-                Type type = property.getType();
+                Type type = field.getType();
                 if (!Objects.equals(type.getTypeName(), Map.class.getName())) {
                     propertiesString
                             .append(type.getTypes().get(0).getTypeName().substring(type.getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
@@ -101,14 +104,14 @@ public class OutputFilesGenerator {
                             .append(", ")
                             .append(type.getTypes().get(1).getTypes().get(0).getTypeName().substring(type.getTypes().get(1).getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
                 }
-            } else if (isAnnotatedWith(property, AnnotationEnum.DATAPROPERTY)
-                    || isAnnotatedWith(property, AnnotationEnum.OBJECTPROPERTY)
-                    || isAnnotatedWith(property, AnnotationEnum.ANNOTATIONPROPERTY)) {
-                Type type = property.getType();
-                if (type.getSimple()) {
+            } else if (isAnnotatedWith(field, AnnotationEnum.DATAPROPERTY)
+                    || isAnnotatedWith(field, AnnotationEnum.OBJECTPROPERTY)
+                    || isAnnotatedWith(field, AnnotationEnum.ANNOTATIONPROPERTY)) {
+                Type type = field.getType();
+                if (type.getIsSimple()) {
                     propertiesString
                             .append("SingularAttribute<")
-                            .append(property.getParentName().substring(property.getParentName().lastIndexOf(".") + 1))
+                            .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
                             .append(", ")
                             .append(type.getTypeName().substring(type.getTypeName().lastIndexOf(".") + 1));
                 } else {
@@ -120,14 +123,14 @@ public class OutputFilesGenerator {
                                 .append("SetAttribute<");
                     }
                     propertiesString
-                            .append(property.getParentName().substring(property.getParentName().lastIndexOf(".") + 1))
+                            .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
                             .append(", ")
                             .append(type.getTypes().get(0).getTypeName().substring(type.getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
                 }
             }
             propertiesString
                     .append("> ")
-                    .append(property.getName())
+                    .append(field.getName())
                     .append(";\n");
         }
         try {
@@ -149,18 +152,21 @@ public class OutputFilesGenerator {
         }
     }
 
-    public static boolean isAnnotatedWith(Property property, AnnotationEnum annotationEnum) {
-        List<? extends AnnotationMirror> annotations = property.getAnnotatedWith();
+    public static boolean isAnnotatedWith(Field field, AnnotationEnum annotationEnum) {
+        List<String> annotations = field.getAnnotatedWith();
         if (annotations.isEmpty()) return false;
-        for (AnnotationMirror an : annotations) {
-            if (an.getAnnotationType().toString().contains(annotationEnum.getAnnotation())) {
+        for (String an : annotations) {
+            if (an.contains(annotationEnum.getAnnotation())) {
                 return true;
             }
         }
         return false;
     }
 
-    public static void generateOutputFiles(Map<String, MetamodelClass> classes) {
+    public static void generateOutputFiles(Map<String, MetamodelClass> classes, String outputFolder) {
+        if (outputFolder != null) finalTargetFolder = outputFolder;
+
+        else finalTargetFolder = DEFAULT_TARGET_FOLDER;
         for (Map.Entry<String, MetamodelClass> entry : classes.entrySet()) {
             MetamodelClass glass = entry.getValue();
             File outputFile = createClass(glass);

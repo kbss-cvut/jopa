@@ -1,6 +1,9 @@
 package cz.cvut.kbss.jopa.modelgen;
 
 
+import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
+import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
+
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -13,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 @SupportedAnnotationTypes({"cz.cvut.kbss.jopa.model.annotations.OWLClass", "cz.cvut.kbss.jopa.model.annotations.MappedSuperclass"})
-public class AnnotationProcessor extends AbstractProcessor {
+public class ModelGenProcessor extends AbstractProcessor {
     Messager messager;
     private Elements elementUtils;
 
@@ -38,14 +41,14 @@ public class AnnotationProcessor extends AbstractProcessor {
                 List<? extends Element> properties = elParent.getEnclosedElements();
                 for (Element elProperty : properties) {
                     if (propertyIsWanted(elProperty)) {
-                        Property property = new Property(elProperty, elParent);
-                        parentClass.addProperty(property);
+                        Field field = new Field(elProperty, elParent);
+                        parentClass.addProperty(field);
                     }
                 }
                 classes.put(elParent.toString(), parentClass);
             }
         }
-        OutputFilesGenerator.generateOutputFiles(classes);
+        OutputFilesGenerator.generateOutputFiles(classes, null);
         return true;
     }
 
@@ -53,14 +56,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         List<? extends AnnotationMirror> paramAnnotations = param.getAnnotationMirrors();
         if (!paramAnnotations.isEmpty()) {
             for (AnnotationMirror paramAnnotation : paramAnnotations) {
-                if (paramAnnotation.toString().contains("@cz.cvut.kbss.jopa.model.annotations.Id") ||
-                        paramAnnotation.toString().contains("@cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty") ||
-                        paramAnnotation.toString().contains("@cz.cvut.kbss.jopa.model.annotations.OWLDataProperty") ||
-                        paramAnnotation.toString().contains("@cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty") ||
-                        paramAnnotation.toString().contains("@cz.cvut.kbss.jopa.model.annotations.Types") ||
-                        paramAnnotation.toString().contains("@cz.cvut.kbss.jopa.model.annotations.Properties")
-                ) {
-                    return true;
+                for (AnnotationEnum anEnum : AnnotationEnum.values()) {
+                    if (paramAnnotation.toString().contains(anEnum.getAnnotation())) return true;
                 }
             }
         }

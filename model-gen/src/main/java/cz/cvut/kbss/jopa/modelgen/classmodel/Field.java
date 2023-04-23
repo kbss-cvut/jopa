@@ -1,24 +1,24 @@
-package cz.cvut.kbss.jopa.modelgen;
+package cz.cvut.kbss.jopa.modelgen.classmodel;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class Property {
+public class Field {
     private List<String> imports;
     private String name;
     private Type type;
     private String parentName;
-    private List<? extends AnnotationMirror> annotatedWith;
+    private List<String> annotatedWith;
 
-    public Property(Element elProperty, Element elParent) {
+    public Field(Element elProperty, Element elParent) {
         this.name = elProperty.toString();
         this.type = new Type(elProperty.asType());
         this.parentName = elParent.toString();
-        this.annotatedWith = elProperty.getAnnotationMirrors();
+        this.annotatedWith = elProperty.getAnnotationMirrors().stream().map(prop -> prop.getAnnotationType().toString()).collect(Collectors.toList());
         imports = new ArrayList<>();
-        if (type.getSimple()) {
+        if (type.getIsSimple()) {
             imports.add(type.getTypeName());
         } else {
             for (Type type : type.getTypes()) {
@@ -52,11 +52,11 @@ public class Property {
         this.parentName = parentName;
     }
 
-    public List<? extends AnnotationMirror> getAnnotatedWith() {
+    public List<String> getAnnotatedWith() {
         return annotatedWith;
     }
 
-    public void setAnnotatedWith(List<? extends AnnotationMirror> annotatedWith) {
+    public void setAnnotatedWith(List<String> annotatedWith) {
         this.annotatedWith = annotatedWith;
     }
 
