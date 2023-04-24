@@ -24,6 +24,8 @@ public class ModelGenMojo extends AbstractMojo {
 
     private static final String OUTPUT_PARAM = "output-directory";
 
+    //package ve kterým mám hledat soubory
+
 
     /**
      * @parameter expression="${project}" readonly=true required=true

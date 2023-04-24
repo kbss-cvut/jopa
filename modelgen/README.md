@@ -11,10 +11,11 @@ The generator need to be defined in maven-compiler-plugin of project which you w
 The configuration must be following:
 
 ```xml
+
 <configuration>
     <annotationProcessors>
         <annotationProcessor>
-            cz.cvut.kbss.jopa.modelgen.AnnotationProcessor
+            cz.cvut.kbss.jopa.modelgen.ModelGenProcessor
         </annotationProcessor>
     </annotationProcessors>
     <annotationProcessorPaths>

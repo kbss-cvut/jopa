@@ -11,7 +11,7 @@
     </parent>
 
     <name>Static metamodel generator</name>
-    <artifactId>model-gen</artifactId>
+    <artifactId>modelgen</artifactId>
     <packaging>jar</packaging>
     <description>
         Generator of JOPA static metamodel
