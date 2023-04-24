@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MetamodelClass {
-    private String paggage;
+    private String pckg;
     private String name;
     private List<String> imports;
     private List<Field> properties;
@@ -14,9 +14,9 @@ public class MetamodelClass {
         String fullName = elClass.toString();
         boolean packag = fullName.contains(".");
         if (packag) {
-            paggage = elClass.toString().substring(0, elClass.toString().lastIndexOf("."));
+            pckg = elClass.toString().substring(0, elClass.toString().lastIndexOf("."));
         } else {
-            paggage = "";
+            pckg = "";
         }
         name = elClass.getSimpleName().toString();
         imports = new ArrayList<>();
@@ -25,12 +25,12 @@ public class MetamodelClass {
         properties = new ArrayList<>();
     }
 
-    public String getPaggage() {
-        return this.paggage;
+    public String getPckg() {
+        return this.pckg;
     }
 
-    public void setPaggage(String paggage) {
-        this.paggage = paggage;
+    public void setPckg(String pckg) {
+        this.pckg = pckg;
     }
 
     public String getName() {

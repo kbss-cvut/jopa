@@ -18,7 +18,7 @@ public class OutputFilesGenerator {
 
     public static File createClass(MetamodelClass glass) {
         StringBuilder fileName = new StringBuilder(finalTargetFolder);
-        String pack = glass.getPaggage();
+        String pack = glass.getPckg();
         while (pack.contains(".")) {
             int index = pack.indexOf(".");
             fileName.append(pack, 0, index).append("/");
@@ -30,10 +30,10 @@ public class OutputFilesGenerator {
                 .append("_.java");
         StringBuilder sbOut = new StringBuilder();
 
-        if (!glass.getPaggage().isEmpty()) {
+        if (!glass.getPckg().isEmpty()) {
             sbOut
                     .append("package ")
-                    .append(glass.getPaggage())
+                    .append(glass.getPckg())
                     .append(";\n\n");
         }
         glass.getImports().forEach((imbort) -> {
