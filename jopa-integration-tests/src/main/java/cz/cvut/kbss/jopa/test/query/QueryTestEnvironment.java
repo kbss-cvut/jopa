@@ -257,8 +257,8 @@ public final class QueryTestEnvironment {
             final OWLClassM m = new OWLClassM();
             m.setKey(Vocabulary.C_OWL_CLASS_M + Generators.randomPositiveInt(0, 10000));
             m.setBooleanAttribute(Generators.randomBoolean());
-            m.setDoubleAttribute(Generators.getRandomGenerator().nextDouble());
-            m.setFloatAttribute(Generators.getRandomGenerator().nextFloat());
+            m.setDoubleAttribute(Generators.getRandomGenerator().nextDouble() * 100);
+            m.setFloatAttribute(Generators.getRandomGenerator().nextFloat() * 100);
             m.setIntAttribute(Generators.randomInt());
             m.setLongAttribute((long) Generators.randomInt());
             m.setEnumAttribute(Generators.getRandomItem(Arrays.asList(OWLClassM.Severity.values())));

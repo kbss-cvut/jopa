@@ -402,12 +402,12 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     public void testSelectUsingMathFloorFunction() {
         final List<OWLClassM> instances = QueryTestEnvironment.getData(OWLClassM.class);
         final OWLClassM match = Generators.getRandomItem(instances);
-        final double value = Math.floor(match.getDoubleAttribute() * 100);
+        final double value = Math.floor(match.getDoubleAttribute());
         final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassM> query = cb.createQuery(OWLClassM.class);
         final Root<OWLClassM> root = query.from(OWLClassM.class);
         final ParameterExpression<Double> param = cb.parameter(Double.class);
-        query.select(root).where(cb.equal(root.getAttr("doubleAttribute"), param));
+        query.select(root).where(cb.equal(cb.floor(root.getAttr("doubleAttribute")), param));
 
         final List<OWLClassM> result = getEntityManager().createQuery(query)
                 .setParameter(param, value)
