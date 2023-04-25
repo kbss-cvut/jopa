@@ -28,14 +28,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -365,7 +363,12 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
      */
     @Test
     public void testSelectByIdentifierInCollection() {
-        final List<OWLClassA> matchingInstances = QueryTestEnvironment.getData(OWLClassA.class).subList(0, Generators.randomPositiveInt(2, QueryTestEnvironment.getData(OWLClassA.class).size()));
+        final List<OWLClassA> matchingInstances = QueryTestEnvironment.getData(OWLClassA.class).subList(0,
+                                                                                                        Generators.randomPositiveInt(
+                                                                                                                2,
+                                                                                                                QueryTestEnvironment.getData(
+                                                                                                                                            OWLClassA.class)
+                                                                                                                                    .size()));
         final List<URI> ids = matchingInstances.stream().map(OWLClassA::getUri).collect(Collectors.toList());
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
@@ -374,5 +377,42 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
         final List<OWLClassA> result = getEntityManager().createQuery(query).getResultList();
         assertThat(result, containsSameEntities(matchingInstances));
+    }
+
+    @Test
+    public void testSelectUsingStringUppercaseFunction() {
+        final List<OWLClassA> instances = QueryTestEnvironment.getData(OWLClassA.class);
+        final OWLClassA sample = Generators.getRandomItem(instances);
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        final ParameterExpression<String> param = cb.parameter(String.class);
+        query.select(root).where(cb.like(cb.upper(root.getAttr("stringAttribute")), param));
+
+        final List<OWLClassA> result = getEntityManager().createQuery(query)
+                                                         .setParameter(param,
+                                                                       sample.getStringAttribute().substring(0, 5)
+                                                                             .toUpperCase(Locale.ROOT) + ".+")
+                                                         .getResultList();
+        assertFalse(result.isEmpty());
+        assertThat(result, hasItem(sample));
+    }
+
+    @Test
+    public void testSelectUsingMathFloorFunction() {
+        final List<OWLClassM> instances = QueryTestEnvironment.getData(OWLClassM.class);
+        final OWLClassM match = Generators.getRandomItem(instances);
+        final double value = Math.floor(match.getDoubleAttribute());
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassM> query = cb.createQuery(OWLClassM.class);
+        final Root<OWLClassM> root = query.from(OWLClassM.class);
+        final ParameterExpression<Double> param = cb.parameter(Double.class);
+        query.select(root).where(cb.equal(cb.floor(root.getAttr("doubleAttribute")), param));
+
+        final List<OWLClassM> result = getEntityManager().createQuery(query)
+                .setParameter(param, value)
+                .getResultList();
+        assertFalse(result.isEmpty());
+        assertTrue(result.stream().anyMatch(rm -> rm.getKey().equals(match.getKey())));
     }
 }

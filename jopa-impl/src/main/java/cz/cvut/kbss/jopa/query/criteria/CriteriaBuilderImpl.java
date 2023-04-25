@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.criteria;
 
@@ -36,14 +34,34 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public Expression<Integer> count(Expression<?> x) {
-        if (x == null) throw new IllegalArgumentException("Aggregate function cannot be applied to null expression.");
-        if (x instanceof AbstractPathExpression) {
-            return new ExpressionCountImpl<>(Integer.class, (AbstractPathExpression) x, this);
-        }
-        throw new IllegalArgumentException("Aggregate function can be applied only to path expressions.");
+    public <N extends Number> Expression<N> abs(Expression<N> x) {
+        validateFunctionArgument(x);
+        return new AbsFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
     }
 
+    @Override
+    public Expression<Integer> count(Expression<?> x) {
+        validateFunctionArgument(x);
+        return new CountFunction((AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public <N extends Number> Expression<N> ceil(Expression<N> x) {
+        validateFunctionArgument(x);
+        return new CeilFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public <N extends Number> Expression<N> floor(Expression<N> x) {
+        validateFunctionArgument(x);
+        return new FloorFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public Expression<Integer> length(Expression<String> x) {
+        validateFunctionArgument(x);
+        return new LengthFunction((AbstractPathExpression) x, this);
+    }
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass) {
@@ -67,6 +85,24 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public Expression<String> literal(String value, String languageTag) {
         if (value == null) throw new IllegalArgumentException("Literal cannot be null.");
         return new ExpressionLiteralImpl<>(value, languageTag, this);
+    }
+
+    @Override
+    public Expression<String> lower(Expression<String> x) {
+        validateFunctionArgument(x);
+        return new LowerFunction((AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public Expression<String> upper(Expression<String> x) {
+        validateFunctionArgument(x);
+        return new UpperFunction((AbstractPathExpression) x, this);
+    }
+
+    private void validateFunctionArgument(Expression<?> x) {
+        if (!(x instanceof AbstractPathExpression)) {
+            throw new IllegalArgumentException("Function can be applied only to path expressions.");
+        }
     }
 
     @Override
@@ -105,48 +141,63 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
 
     @Override
     public Predicate equal(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression<?>) x, (AbstractExpression<?>) y, this), this);
+        return new SimplePredicateImpl(
+                new ExpressionEqualImpl((AbstractExpression<?>) x, (AbstractExpression<?>) y, this), this);
     }
 
     @Override
     public Predicate equal(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y, this), this), this);
     }
 
     @Override
     public Predicate equal(Expression<?> x, String y, String languageTag) {
-        return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y, languageTag, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y, languageTag, this),
+                                        this), this);
     }
 
     @Override
     public Predicate notEqual(Expression<?> x, Expression<?> y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualImpl((AbstractExpression<?>) x, (AbstractExpression<?>) y, this), this);
+        return new SimplePredicateImpl(
+                new ExpressionNotEqualImpl((AbstractExpression<?>) x, (AbstractExpression<?>) y, this), this);
     }
 
     @Override
     public Predicate notEqual(Expression<?> x, Object y) {
-        return new SimplePredicateImpl(new ExpressionNotEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionNotEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y, this), this),
+                this);
 
     }
 
     @Override
     public Predicate like(Expression<String> x, Expression<String> pattern) {
-        return new SimplePredicateImpl(new ExpressionLikeImpl((AbstractExpression<String>) x, (AbstractExpression<String>) pattern, this), this);
+        return new SimplePredicateImpl(
+                new ExpressionLikeImpl((AbstractExpression<String>) x, (AbstractExpression<String>) pattern, this),
+                this);
     }
 
     @Override
     public Predicate like(Expression<String> x, String pattern) {
-        return new SimplePredicateImpl(new ExpressionLikeImpl((AbstractExpression<String>) x, new ExpressionLiteralImpl<>(pattern, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionLikeImpl((AbstractExpression<String>) x, new ExpressionLiteralImpl<>(pattern, this),
+                                       this), this);
     }
 
     @Override
     public Predicate notLike(Expression<String> x, Expression<String> pattern) {
-        return new SimplePredicateImpl(new ExpressionNotLikeImpl((AbstractExpression<String>) x, (AbstractExpression<String>) pattern, this), this);
+        return new SimplePredicateImpl(
+                new ExpressionNotLikeImpl((AbstractExpression<String>) x, (AbstractExpression<String>) pattern, this),
+                this);
     }
 
     @Override
     public Predicate notLike(Expression<String> x, String pattern) {
-        return new SimplePredicateImpl(new ExpressionNotLikeImpl((AbstractExpression<String>) x, new ExpressionLiteralImpl<>(pattern, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionNotLikeImpl((AbstractExpression<String>) x, new ExpressionLiteralImpl<>(pattern, this),
+                                          this), this);
     }
 
     @Override
@@ -167,51 +218,66 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
+    public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x,
+                                                                   Expression<? extends Y> y) {
+        return new SimplePredicateImpl(
+                new ExpressionGreaterThanImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThan(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionGreaterThanImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this), this),
+                this);
     }
 
     @Override
-    public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
+    public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x,
+                                                                          Expression<? extends Y> y) {
+        return new SimplePredicateImpl(
+                new ExpressionGreaterThanOrEqualImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionGreaterThanOrEqualImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionGreaterThanOrEqualImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this),
+                                                     this), this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionLessThanImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
+        return new SimplePredicateImpl(
+                new ExpressionLessThanImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThan(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionLessThanImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionLessThanImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this), this),
+                this);
     }
 
     @Override
-    public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y) {
-        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
+    public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x,
+                                                                       Expression<? extends Y> y) {
+        return new SimplePredicateImpl(
+                new ExpressionLessThanOrEqualImpl((AbstractExpression<Y>) x, (AbstractExpression<Y>) y, this), this);
     }
 
     @Override
     public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Y y) {
-        return new SimplePredicateImpl(new ExpressionLessThanOrEqualImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this), this), this);
+        return new SimplePredicateImpl(
+                new ExpressionLessThanOrEqualImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this),
+                                                  this), this);
     }
 
 
     /**
-     * Method wraps given boolean expression to Predicate and if path expression occur, it wrap it to ExpressionEqualsImpl before.
-     * For example:
-     * {@literal Expression<Boolean> expression = factory.get("attributeName");}
-     * Looks like boolean expression but in fact it is not boolean expression, so we need to fix this.
+     * Method wraps given boolean expression to Predicate and if path expression occur, it wrap it to
+     * ExpressionEqualsImpl before. For example: {@literal Expression<Boolean> expression =
+     * factory.get("attributeName");} Looks like boolean expression but in fact it is not boolean expression, so we need
+     * to fix this.
      *
      * @param expression - boolean or path expression
      * @return Expression wrapped in Predicate
@@ -220,7 +286,9 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         if (expression instanceof Predicate) {
             return (Predicate) expression;
         } else if (expression instanceof AbstractPathExpression) {
-            return new SimplePredicateImpl(new ExpressionEqualImpl((AbstractExpression) expression, (AbstractExpression) this.literal(true), this), this);
+            return new SimplePredicateImpl(
+                    new ExpressionEqualImpl((AbstractExpression) expression, (AbstractExpression) this.literal(true),
+                                            this), this);
         } else {
             return new SimplePredicateImpl(expression, this);
         }
