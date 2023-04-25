@@ -14,7 +14,9 @@
  */
 package cz.cvut.kbss.jopa.test.integration;
 
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
@@ -181,6 +183,7 @@ class BugTest extends IntegrationTestBase {
         owner.setSimpleSet(new HashSet<>(Collections.singletonList(a)));
         em.getTransaction().begin();
         em.persist(owner);
-        em.getTransaction().commit();
+        final RollbackException ex = assertThrows(RollbackException.class, () -> em.getTransaction().commit());
+        assertInstanceOf(UnpersistedChangeException.class, ex.getCause());
     }
 }
