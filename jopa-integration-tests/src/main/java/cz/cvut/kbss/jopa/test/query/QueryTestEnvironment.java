@@ -167,6 +167,7 @@ public final class QueryTestEnvironment {
         m.put(OWLClassD.class, generateOwlClassDInstances(aa));
         m.put(OWLClassE.class, generateOwlClassEInstances());
         m.put(OWLClassJ.class, generateOwlClassJInstances(aa));
+        m.put(OWLClassM.class, generateOwlClassMInstances());
         m.put(OWLClassT.class, generateOwlClassTInstances(aa));
         return m;
     }
@@ -246,6 +247,24 @@ public final class QueryTestEnvironment {
                 inst.getOwlClassA().add(Generators.getRandomItem(aList));
             }
             lst.add(inst);
+        }
+        return lst;
+    }
+
+    private static List<OWLClassM> generateOwlClassMInstances() {
+        final List<OWLClassM> lst = new ArrayList<>();
+        for (int i = 0; i < ITEM_COUNT; i++) {
+            final OWLClassM m = new OWLClassM();
+            m.setKey(Vocabulary.C_OWL_CLASS_M + Generators.randomPositiveInt(0, 10000));
+            m.setBooleanAttribute(Generators.randomBoolean());
+            m.setDoubleAttribute(Generators.getRandomGenerator().nextDouble() * 100);
+            m.setFloatAttribute(Generators.getRandomGenerator().nextFloat() * 100);
+            m.setIntAttribute(Generators.randomInt());
+            m.setLongAttribute((long) Generators.randomInt());
+            m.setEnumAttribute(Generators.getRandomItem(Arrays.asList(OWLClassM.Severity.values())));
+            m.setEnumSimpleLiteral(m.getEnumAttribute());
+            m.setOrdinalEnumAttribute(m.getEnumAttribute());
+            lst.add(m);
         }
         return lst;
     }

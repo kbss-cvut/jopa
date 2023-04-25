@@ -14,15 +14,26 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
-public class ExpressionCountImpl<Y> extends AbstractAggregateFunctionExpression<Y> {
-    public ExpressionCountImpl(Class<Y> type, AbstractPathExpression expression, CriteriaBuilder cb) {
-        super(type, expression, cb);
+public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X> {
+
+    protected AbstractPathExpression argumentExpression;
+
+    public AbstractFunctionExpression(Class<X> type, AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
+        super(type, cb);
+        this.argumentExpression = argumentExpression;
     }
 
     @Override
-    public String getFunctionName() {
-        return "COUNT";
+    public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
+        query.append(getFunctionName()).append("(");
+        argumentExpression.setExpressionToQuery(query, parameterFiller);
+        query.append(")");
     }
+
+    public abstract String getFunctionName();
 }
+
+

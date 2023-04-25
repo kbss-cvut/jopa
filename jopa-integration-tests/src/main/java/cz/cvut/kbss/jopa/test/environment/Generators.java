@@ -250,6 +250,10 @@ public abstract class Generators {
      * @return Random item from the list
      */
     public static <T> T getRandomItem(List<T> items) {
-        return items.get(randomInt(items.size()));
+        return items.get(randomPositiveInt(0, items.size()));
+    }
+
+    public static Random getRandomGenerator() {
+        return RANDOM;
     }
 }

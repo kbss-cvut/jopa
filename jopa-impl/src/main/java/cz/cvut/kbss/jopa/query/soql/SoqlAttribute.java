@@ -14,6 +14,9 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
+import java.util.Collections;
+import java.util.List;
+
 public class SoqlAttribute extends SoqlParameter {
 
     private static final String TRIPLE_END = " . ";
@@ -22,7 +25,7 @@ public class SoqlAttribute extends SoqlParameter {
 
     private boolean isNot = false;
 
-    private FilterOperator operator;
+    private FilterableExpression operator;
 
     private boolean isOrderBy = false;
 
@@ -48,11 +51,11 @@ public class SoqlAttribute extends SoqlParameter {
         isNot = not;
     }
 
-    public void setOperator(FilterOperator operator) {
+    public void setOperator(FilterableExpression operator) {
         this.operator = operator;
     }
 
-    public FilterOperator getOperator() {
+    public FilterableExpression getOperator() {
         return operator;
     }
 
@@ -72,24 +75,33 @@ public class SoqlAttribute extends SoqlParameter {
         isGroupBy = groupBy;
     }
 
-    public boolean isFilter() {
-        return operator != null && operator.requiresFilterExpression();
+    public boolean requiresFilter() {
+        return (operator != null && operator.requiresFilterExpression()) || getFirstNode().requiresFilterExpression();
     }
 
     public boolean isObject() {
-        return !getFirstNode().hasNextChild();
+        return !getFirstNode().hasChild();
     }
 
     public boolean isInstanceOf() {
-        return !getFirstNode().hasNextChild() && operator == null;
+        return !getFirstNode().hasChild() && operator == null;
     }
 
-    public String getFilter() {
-        assert isFilter();
-        return operator.toFilterExpression(getAsParam(), SoqlUtils.soqlVariableToSparqlVariable(value));
+    public List<String> getFilterExpressions() {
+        assert requiresFilter();
+        String filterParam = getAsParam();
+        final String filterValue = SoqlUtils.soqlVariableToSparqlVariable(value);
+        if (getFirstNode().requiresFilterExpression()) {
+            filterParam = getFirstNode().toFilterExpression(filterParam, filterValue);
+        }
+        if (operator != null && operator.requiresFilterExpression()) {
+            return Collections.singletonList(operator.toFilterExpression(filterParam, filterValue));
+        } else {
+            return Collections.singletonList(filterParam + " = " + filterValue);
+        }
     }
 
-    public String getTriplePattern(String rootVariable) {
+    public String getBasicGraphPattern(String rootVariable) {
         StringBuilder buildTP = new StringBuilder(rootVariable).append(' ');
         if (isInstanceOf()) {
             buildTP.append(SoqlConstants.RDF_TYPE).append(' ')
@@ -103,17 +115,17 @@ public class SoqlAttribute extends SoqlParameter {
             buildParam.append(getFirstNode().getValue());
             buildParam.append(pointer.getCapitalizedValue());
             String param;
-            if (pointer.hasNextChild() || value == null) {
+            if (pointer.hasChild() || value == null) {
                 param = "?" + pointer.getValue();
             } else {
-                if (isFilter()) {
+                if (requiresFilter()) {
                     param = buildParam.toString();
                 } else {
                     param = SoqlUtils.soqlVariableToSparqlVariable(value);
                 }
             }
             buildTP.append(toIri(pointer)).append(' ').append(param).append(TRIPLE_END);
-            while (pointer.hasNextChild()) {
+            while (pointer.hasChild()) {
                 SoqlNode newPointer = pointer.getChild();
                 if (newPointer.getIri().isEmpty()) {
                     break;
@@ -121,10 +133,10 @@ public class SoqlAttribute extends SoqlParameter {
                 buildTP.append('?').append(pointer.getValue())
                        .append(' ').append(toIri(newPointer)).append(' ');
                 buildParam.append(newPointer.getCapitalizedValue());
-                if (newPointer.hasNextChild()) {
+                if (newPointer.hasChild()) {
                     buildTP.append('?').append(pointer.getChild().getValue());
                 } else {
-                    if (isFilter()) {
+                    if (requiresFilter()) {
                         buildTP.append(buildParam);
                     } else {
                         buildTP.append(SoqlUtils.soqlVariableToSparqlVariable(value));

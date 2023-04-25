@@ -18,17 +18,20 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SoqlQueryListener implements SoqlListener {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SoqlQueryListener.class);
+
     private final MetamodelImpl metamodel;
 
-    private String newQuery = "";
+    private String soql;
+    private String sparql;
 
     private String typeDef = "SELECT";
 
@@ -70,7 +73,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitQuerySentence(SoqlParser.QuerySentenceContext ctx) {
-        buildQueryString();
+        this.soql = ctx.getText();
+        buildSparqlQueryString();
     }
 
     @Override
@@ -159,8 +163,8 @@ public class SoqlQueryListener implements SoqlListener {
         String owner = getOwnerFromParam(ctx);
         String attribute = getAttributeFromParam(ctx);
         // objectNode.attributeNode
-        SoqlNode objectNode = new SoqlNode(owner);
-        SoqlNode attributeNode = new SoqlNode(objectNode, attribute);
+        SoqlNode objectNode = new AttributeNode(owner);
+        SoqlNode attributeNode = new AttributeNode(objectNode, attribute);
         objectNode.setChild(attributeNode);
         if (isIdentifier(objectNode, attributeNode)) {
             this.isInObjectIdentifierExpression = true;
@@ -292,8 +296,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     private SoqlAttribute createSyntheticAttributeForEntityId() {
         return new SoqlAttribute(
-                attrPointer.getFirstNode().hasNextChild() ? attrPointer.getFirstNode().getChild() :
-                new SoqlNode(rootVariable.substring(1)));
+                attrPointer.getFirstNode().hasChild() ? attrPointer.getFirstNode().getChild() :
+                new AttributeNode(rootVariable.substring(1)));
     }
 
     private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
@@ -393,7 +397,7 @@ public class SoqlQueryListener implements SoqlListener {
         String table = ctx.getChild(0).getChild(0).getText();
         String objectName = ctx.getChild(1).getChild(0).getText();
         objectTypes.put(objectName, table);
-        SoqlNode node = new SoqlNode(table);
+        SoqlNode node = new AttributeNode(table);
         setObjectIri(node);
         SoqlAttribute myAttr = new SoqlAttribute(node);
         pushNewAttribute(myAttr);
@@ -417,6 +421,79 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitWhereClauseParam(SoqlParser.WhereClauseParamContext ctx) {
+    }
+
+    @Override
+    public void enterStringExpression(SoqlParser.StringExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitStringExpression(SoqlParser.StringExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void enterFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+
+    }
+
+    @Override
+    public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+        final String functionName = ctx.getChild(0).getText();
+        final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
+        attrPointer.setFirstNode(node);
+    }
+
+    @Override
+    public void enterSimpleArithmeticExpression(SoqlParser.SimpleArithmeticExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitSimpleArithmeticExpression(SoqlParser.SimpleArithmeticExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void enterArithmeticTerm(SoqlParser.ArithmeticTermContext ctx) {
+
+    }
+
+    @Override
+    public void exitArithmeticTerm(SoqlParser.ArithmeticTermContext ctx) {
+
+    }
+
+    @Override
+    public void enterArithmeticFactor(SoqlParser.ArithmeticFactorContext ctx) {
+
+    }
+
+    @Override
+    public void exitArithmeticFactor(SoqlParser.ArithmeticFactorContext ctx) {
+
+    }
+
+    @Override
+    public void enterArithmeticPrimary(SoqlParser.ArithmeticPrimaryContext ctx) {
+
+    }
+
+    @Override
+    public void exitArithmeticPrimary(SoqlParser.ArithmeticPrimaryContext ctx) {
+
+    }
+
+    @Override
+    public void enterFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
+    }
+
+    @Override
+    public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
+        final String functionName = ctx.getChild(0).getText();
+        final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
+        attrPointer.setFirstNode(node);
     }
 
     @Override
@@ -507,11 +584,11 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private SoqlNode linkContextNodes(ParserRuleContext ctx) {
-        SoqlNode firstNode = new SoqlNode(getOwnerFromParam(ctx));
+        SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
         SoqlNode currentNode = firstNode;
         for (int i = 2; i < ctx.getChildCount(); i += 2) {
             SoqlNode prevNode = currentNode;
-            currentNode = new SoqlNode(prevNode, ctx.getChild(i).getText());
+            currentNode = new AttributeNode(prevNode, ctx.getChild(i).getText());
             prevNode.setChild(currentNode);
         }
         setIris(firstNode);
@@ -524,6 +601,16 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitGroupByParam(SoqlParser.GroupByParamContext ctx) {
+    }
+
+    @Override
+    public void enterInputParameter(SoqlParser.InputParameterContext ctx) {
+
+    }
+
+    @Override
+    public void exitInputParameter(SoqlParser.InputParameterContext ctx) {
+
     }
 
     @Override
@@ -561,7 +648,7 @@ public class SoqlQueryListener implements SoqlListener {
             return;
         }
         node.setIri(entityType.getIRI().toString());
-        if (node.hasNextChild()) {
+        if (node.hasChild()) {
             setAllNodesIris(entityType, node.getChild());
         }
     }
@@ -583,7 +670,7 @@ public class SoqlQueryListener implements SoqlListener {
         final Attribute<?, ?> abstractAttribute = entityType.getAttribute(node.getValue());
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(abstractAttribute.getIRI().toString());
-        if (node.hasNextChild()) {
+        if (node.hasChild()) {
             final Type<?> type = resolveBindableType(abstractAttribute);
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
@@ -609,18 +696,18 @@ public class SoqlQueryListener implements SoqlListener {
         if (entityType == null) {
             return;
         }
-        if (firstNode.hasNextChild()) {
+        if (firstNode.hasChild()) {
             setAllNodesIris(entityType, firstNode.getChild());
         }
     }
 
-    public String getSoqlQuery() {
-        return newQuery;
+    public String getSparqlQuery() {
+        assert sparql != null;
+        return sparql;
     }
 
-
     //Methods to build new Query
-    private void buildQueryString() {
+    private void buildSparqlQueryString() {
         if (attributes.isEmpty()) {
             return;
         }
@@ -649,7 +736,8 @@ public class SoqlQueryListener implements SoqlListener {
         if (!orderAttributes.isEmpty()) {
             newQueryBuilder.append(' ').append(buildOrdering());
         }
-        newQuery = newQueryBuilder.toString();
+        sparql = newQueryBuilder.toString();
+        LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", soql, sparql);
     }
 
     private StringBuilder getCountPart() {
@@ -690,10 +778,13 @@ public class SoqlQueryListener implements SoqlListener {
             if (myAttr.isNot()) {
                 toInvFilter.add(myAttr);
             } else {
-                if (myAttr.isFilter()) {
+                if (myAttr.requiresFilter()) {
                     toFilter.add(myAttr);
                 }
-                attributesPart.append(processAttribute(myAttr));
+                final String bgp = processAttribute(myAttr);
+                if (attributesPart.indexOf(bgp) == -1) {
+                    attributesPart.append(bgp);
+                }
             }
         }
         attributesPart.append(processAllFilters(toFilter, toInvFilter));
@@ -717,12 +808,8 @@ public class SoqlQueryListener implements SoqlListener {
             return "";
         }
         buildFilter.append("FILTER (");
-        for (SoqlAttribute attr : toFilter) {
-            if (toFilter.indexOf(attr) != 0) {
-                buildFilter.append(" && ");
-            }
-            buildFilter.append(attr.getFilter());
-        }
+        buildFilter.append(toFilter.stream().map(SoqlAttribute::getFilterExpressions).flatMap(Collection::stream)
+                                   .collect(Collectors.joining(" && ")));
         buildFilter.append(") ");
         return buildFilter.toString();
     }
@@ -736,7 +823,7 @@ public class SoqlQueryListener implements SoqlListener {
         buildInvFilter.append("FILTER NOT EXISTS { ");
         for (SoqlAttribute attr : toInvFilter) {
             buildInvFilter.append(processAttribute(attr));
-            if (attr.isFilter()) {
+            if (attr.requiresFilter()) {
                 toFilter.add(attr);
             }
         }
@@ -745,7 +832,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private String processAttribute(SoqlAttribute attr) {
-        return attr.getTriplePattern(rootVariable);
+        return attr.getBasicGraphPattern(rootVariable);
     }
 
     private String buildOrdering() {
