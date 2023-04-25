@@ -255,7 +255,7 @@ public final class QueryTestEnvironment {
         final List<OWLClassM> lst = new ArrayList<>();
         for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassM m = new OWLClassM();
-            m.setKey(Vocabulary.C_OWL_CLASS_M + Generators.randomPositiveInt(0, 10000));
+            m.setKey(Vocabulary.C_OWL_CLASS_M + Generators.randomPositiveInt(0, Integer.MAX_VALUE));
             m.setBooleanAttribute(Generators.randomBoolean());
             m.setDoubleAttribute(Generators.getRandomGenerator().nextDouble() * 100);
             m.setFloatAttribute(Generators.getRandomGenerator().nextFloat() * 100);
