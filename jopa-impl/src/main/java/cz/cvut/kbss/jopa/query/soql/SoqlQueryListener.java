@@ -38,16 +38,16 @@ public class SoqlQueryListener implements SoqlListener {
     // keeps pointer at created object of SoqlAttribute while processing other necessary rules
     private SoqlAttribute attrPointer;
 
-    private final ArrayList<SoqlAttribute> attributes;
+    private final List<SoqlAttribute> attributes;
 
     // keeps index of first object of SoqlAttribute after OR operator
-    private final ArrayList<SoqlAttribute> objectOfNextOr;
+    private final Set<SoqlAttribute> objectOfNextOr;
 
-    private final ArrayList<SoqlOrderParameter> orderAttributes;
+    private final List<SoqlOrderParameter> orderAttributes;
 
-    private final ArrayList<SoqlGroupParameter> groupAttributes;
+    private final List<SoqlGroupParameter> groupAttributes;
 
-    private final HashMap<String, String> objectTypes;
+    private final Map<String, String> objectTypes;
 
     private boolean isSelectedParamDistinct = false;
 
@@ -61,7 +61,7 @@ public class SoqlQueryListener implements SoqlListener {
     public SoqlQueryListener(MetamodelImpl metamodel) {
         this.metamodel = Objects.requireNonNull(metamodel);
         this.attributes = new ArrayList<>();
-        this.objectOfNextOr = new ArrayList<>();
+        this.objectOfNextOr = new HashSet<>();
         this.orderAttributes = new ArrayList<>();
         this.groupAttributes = new ArrayList<>();
         this.objectTypes = new HashMap<>();

@@ -34,6 +34,6 @@ public enum CollectionType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unsupported collection class " + cls);
+        throw new IllegalArgumentException("Unsupported collection type " + cls);
     }
 }
