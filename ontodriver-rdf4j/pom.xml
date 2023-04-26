@@ -10,7 +10,7 @@
     <parent>
         <artifactId>jopa-all</artifactId>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <version>0.21.2-SNAPSHOT</version>
+        <version>0.22.0</version>
     </parent>
 
     <properties>

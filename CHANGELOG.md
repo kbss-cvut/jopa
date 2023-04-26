@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.22.0 - 2023-04-26
+- Allow selecting entities by identifier in SOQL/Criteria API (Enhancement #138).
+- Extend SOQL/Criteria API with additional functions - `lower`, `upper`, `length`, `abs`, `ceil`, `floor` (Enhancement #152).
+- Fix an issue with interaction of lazy loading with inferred-valued attributes (Bug #150).
+- Fix a possible NPX when unpersisted empty entity is referenced in another entity's equals/hashCode.
+
 ## 0.21.1 - 2023-03-21
 - Allow using generic types as plural attribute value elements.
 
