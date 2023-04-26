@@ -15,17 +15,16 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
+import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.model.annotations.Convert;
-import cz.cvut.kbss.jopa.model.annotations.EnumType;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.oom.converter.*;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -35,6 +34,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -250,5 +250,36 @@ class ConverterResolverTest {
         final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
         assertTrue(result.isPresent());
         assertInstanceOf(OrdinalEnumConverter.class, result.get());
+    }
+
+    @Test
+    void resolveConverterThrowsInvalidConverterExceptionWhenAttemptingToUseCustomConverterOnObjectPropertyField() throws Exception {
+        final Field field = ClassWithConverterOnObjectProperty.class.getDeclaredField("converted");
+        final PropertyAttributes pa = mock(PropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final EntityType et = mock(EntityType.class);
+        when(et.getJavaType()).thenReturn(ClassWithConverterOnObjectProperty.class);
+        when(pa.getType()).thenReturn(et);
+        final InvalidConverterException ex = assertThrows(InvalidConverterException.class, () -> sut.resolveConverter(field, pa));
+        assertThat(ex.getMessage(), containsString("object properties"));
+    }
+
+    private static class ClassWithConverterOnObjectProperty {
+        @Convert(converter = ObjectPropertyConverter.class)
+        @OWLObjectProperty(iri = Vocabulary.p_h_hasA)
+        private OWLClassA converted;
+
+    }
+
+    public static class ObjectPropertyConverter implements AttributeConverter<OWLClassA, NamedResource> {
+        @Override
+        public NamedResource convertToAxiomValue(OWLClassA value) {
+            return NamedResource.create(value.getUri());
+        }
+
+        @Override
+        public OWLClassA convertToAttribute(NamedResource value) {
+            return new OWLClassA(value.getIdentifier());
+        }
     }
 }

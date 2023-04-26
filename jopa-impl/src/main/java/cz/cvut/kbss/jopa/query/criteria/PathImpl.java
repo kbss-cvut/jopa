@@ -14,6 +14,7 @@ package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Bindable;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
@@ -22,16 +23,16 @@ import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 public class PathImpl<X> extends AbstractPathExpression<X> implements Path<X> {
 
     protected String attributeName;
-    protected Attribute<?, ?> attribute;
+    protected FieldSpecification<?, ?> attribute;
 
-    public PathImpl(Metamodel metamodel, AbstractPathExpression pathSource, Attribute<?, ?> attribute,
+    public PathImpl(Metamodel metamodel, AbstractPathExpression pathSource, FieldSpecification<?, ?> attribute,
                     CriteriaBuilder cb) {
         super(resolveBindableJavaType(attribute), pathSource, metamodel, cb);
         this.attribute = attribute;
         this.attributeName = attribute.getName();
     }
 
-    private static <E> Class<E> resolveBindableJavaType(Attribute<?, ?> attribute) {
+    private static <E> Class<E> resolveBindableJavaType(FieldSpecification<?, ?> attribute) {
         assert attribute instanceof Bindable;
         return ((Bindable<E>) attribute).getBindableJavaType();
     }

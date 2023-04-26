@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.sparql;
 
@@ -25,6 +23,9 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -49,7 +50,11 @@ public class NamedParameterSparqlQueryHolderTest {
     public void setUp() {
         final Map<String, QueryParameter<?>> paramsByName = new HashMap<>();
         for (String n : PARAM_NAMES) {
-            paramsByName.put(n, new QueryParameter<>(n, paramValueFactory));
+            final QueryParameter<?> qp = new QueryParameter<>(n, paramValueFactory);
+            if ("craft".equals(n)) {
+                qp.setProjected(true);
+            }
+            paramsByName.put(n, qp);
         }
         final List<QueryParameter<?>> parameters = PARAMS.stream().map(paramsByName::get).collect(Collectors.toList());
         this.holder = new SparqlQueryHolder(QUERY, PARTS, parameters);
@@ -179,10 +184,13 @@ public class NamedParameterSparqlQueryHolderTest {
     }
 
     @Test
-    public void setParameterReplacesAllOccurrencesOfVariable() {
+    void setParameterAddsValuesClauseWhenSetParameterIsInProjection() {
         final QueryParameter<?> qp = new QueryParameter<>("craft", paramValueFactory);
+        qp.setProjected(true);
         holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz/apollo7"));
         final String result = holder.assembleQuery();
-        assertFalse(result.contains("?craft"));
+        assertThat(result, endsWith("VALUES (?craft) {(" + holder.getParameter("craft").getValue()
+                .getQueryString() + ")}"));
+        assertThat(result, containsString(QUERY));
     }
 }

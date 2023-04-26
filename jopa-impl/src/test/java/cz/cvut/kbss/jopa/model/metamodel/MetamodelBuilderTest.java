@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
@@ -314,5 +315,40 @@ class MetamodelBuilderTest {
         assertNotNull(att.getConverter());
         assertInstanceOf(ObjectOneOfEnumConverter.class, att.getConverter());
         assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
+    }
+
+    @Test
+    void buildMetamodelOverridesFetchTypeOfInferredTypesSpecificationToEager() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(WithInferredTypesAndProperties.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<WithInferredTypesAndProperties> et = builder.entity(WithInferredTypesAndProperties.class);
+        final TypesSpecification<? super WithInferredTypesAndProperties, ?> types = et.getTypes();
+        assertTrue(types.isInferred());
+        assertEquals(FetchType.EAGER, types.getFetchType());
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInferredTypesAndProperties")
+    private static class WithInferredTypesAndProperties {
+
+        @Id
+        private URI uri;
+
+        @Inferred
+        @Types(fetchType = FetchType.LAZY)
+        private Set<String> types;
+
+        @Inferred
+        @Properties(fetchType = FetchType.LAZY)
+        private Map<String, Set<String>> properties;
+    }
+
+    @Test
+    void buildMetamodelOverridesFetchTypeOfInferredPropertiesSpecificationToEager() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(WithInferredTypesAndProperties.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<WithInferredTypesAndProperties> et = builder.entity(WithInferredTypesAndProperties.class);
+        final PropertiesSpecification<? super WithInferredTypesAndProperties, ?, ? , ?> types = et.getProperties();
+        assertTrue(types.isInferred());
+        assertEquals(FetchType.EAGER, types.getFetchType());
     }
 }

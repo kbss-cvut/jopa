@@ -14,9 +14,11 @@
  */
 package cz.cvut.kbss.jopa.model.query.criteria;
 
+import cz.cvut.kbss.jopa.model.query.TupleElement;
+
 import java.util.List;
 
-public interface Selection<X> {
+public interface Selection<X> extends TupleElement<X> {
 
     /**
      * Whether the selection item is a compound selection.

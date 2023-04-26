@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
  * @param <X> Declaring class
  * @param <E> Type of the ID field
  */
-public interface Identifier<X, E> extends FieldSpecification<X, E> {
+public interface Identifier<X, E> extends FieldSpecification<X, E>, Bindable<E> {
 
     void accept(IdentifierVisitor i);
 

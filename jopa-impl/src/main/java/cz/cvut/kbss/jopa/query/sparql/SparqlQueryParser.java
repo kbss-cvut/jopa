@@ -24,7 +24,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A simplified SPARQL query parser.
+ * <p>
+ * This implementation does not use any AST tree-based query string parsing as its only purpose is to split the query
+ * into chunks delimited by variable occurrences, so that the variables can be bound using parameters in the query API.
+ * <p>
+ * More diligent query parsing is left to the engine used to execute the resulting query.
+ */
 public class SparqlQueryParser implements QueryParser {
+
+    private static final String SELECT = "SELECT";
+    private static final String WHERE = "WHERE";
 
     private final ParameterValueFactory parameterValueFactory;
 
@@ -41,6 +52,8 @@ public class SparqlQueryParser implements QueryParser {
     private int lastParamEndIndex;
     private int paramStartIndex;
     private ParamType currentParamType;
+    private StringBuilder currentWord;
+    private boolean inProjection;
 
     public SparqlQueryParser(ParameterValueFactory parameterValueFactory) {
         this.parameterValueFactory = parameterValueFactory;
@@ -65,6 +78,7 @@ public class SparqlQueryParser implements QueryParser {
         this.lastParamEndIndex = 0;
         this.paramStartIndex = 0;
         this.currentParamType = null;
+        this.currentWord = new StringBuilder();
         int i;
         for (i = 0; i < query.length(); i++) {
             final char c = query.charAt(i);
@@ -85,7 +99,6 @@ public class SparqlQueryParser implements QueryParser {
                         parameterStart(i, ParamType.NAMED);
                     }
                     break;
-                // TODO Use an algebra and AST to parse queries
                 case '<':
                 case '>':
                 case ',':
@@ -106,8 +119,10 @@ public class SparqlQueryParser implements QueryParser {
                     if (inParam) {
                         parameterEnd(i);
                     }
+                    wordEnd();
                     break;
                 default:
+                    currentWord.append(c);
                     break;
             }
         }
@@ -162,18 +177,28 @@ public class SparqlQueryParser implements QueryParser {
     private QueryParameter<?> getQueryParameter(String name) {
         // We want to reuse the param instances, so that changes to them apply throughout the whole query
         if (!uniqueParams.containsKey(name)) {
-            uniqueParams.put(name, new QueryParameter<>(name, parameterValueFactory));
+            final QueryParameter<?> qp = new QueryParameter<>(name, parameterValueFactory);
+            qp.setProjected(inProjection);
+            uniqueParams.put(name, qp);
         }
         return uniqueParams.get(name);
     }
 
     private QueryParameter<?> getQueryParameter(Integer position) {
-        // We want to reuse the param instances, so that changes to them apply throughout the whole query
         if (uniqueParams.containsKey(position)) {
             throw new QueryParserException("Parameter with position " + position + " already found in query " + query);
         }
         final QueryParameter<?> qp = new QueryParameter<>(position, parameterValueFactory);
         uniqueParams.put(position, qp);
         return qp;
+    }
+
+    private void wordEnd() {
+        if (SELECT.equalsIgnoreCase(currentWord.toString())) {
+            this.inProjection = true;
+        } else if (inProjection && WHERE.equalsIgnoreCase(currentWord.toString())) {
+            this.inProjection = false;
+        }
+        currentWord = new StringBuilder();
     }
 }
