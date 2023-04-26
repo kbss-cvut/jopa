@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
 
+import javax.annotation.processing.Messager;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,11 +14,11 @@ import java.util.Objects;
 import java.util.Set;
 
 public class OutputFilesGenerator {
-    private static final String DEFAULT_TARGET_FOLDER = "./target/generated-sources/static-metamodel/";
     public static String finalTargetFolder = "";
 
     public static File createClass(MetamodelClass glass) {
         StringBuilder fileName = new StringBuilder(finalTargetFolder);
+        fileName.append("/");
         String pack = glass.getPckg();
         while (pack.contains(".")) {
             int index = pack.indexOf(".");
@@ -42,13 +43,14 @@ public class OutputFilesGenerator {
                     .append(";\n");
         });
         sbOut
+                .append("\n@Generated(value = \"")
+                .append("cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")")
                 .append("\n@StaticMetamodel(")
                 .append(glass.getName())
                 .append(".class)\n")
                 .append("public class ")
                 .append(glass.getName())
                 .append("_ {\n\n");
-
         try {
             File file = new File(fileName.toString());
             file.getParentFile().mkdirs();
@@ -163,15 +165,14 @@ public class OutputFilesGenerator {
         return false;
     }
 
-    public static void generateOutputFiles(Map<String, MetamodelClass> classes, String outputFolder) {
-        if (outputFolder != null) finalTargetFolder = outputFolder;
-
-        else finalTargetFolder = DEFAULT_TARGET_FOLDER;
+    public static void generateOutputFiles(Map<String, MetamodelClass> classes, String outputDirectory, Messager messager) {
+        finalTargetFolder = outputDirectory;
         for (Map.Entry<String, MetamodelClass> entry : classes.entrySet()) {
             MetamodelClass glass = entry.getValue();
             File outputFile = createClass(glass);
             appendProperties(glass, outputFile);
             finishClass(outputFile);
+            //messager.printMessage(Diagnostic.Kind.NOTE, "\t - File " + outputFile.getName() + " created.");
         }
     }
 }

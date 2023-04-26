@@ -10,13 +10,20 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @SupportedAnnotationTypes({"cz.cvut.kbss.jopa.model.annotations.OWLClass", "cz.cvut.kbss.jopa.model.annotations.MappedSuperclass"})
+@SupportedOptions({
+        ModelGenProcessor.OUTPUT_DIRECTORY_PARAM,
+        ModelGenProcessor.SOURCE_PACKAGE_PARAM
+})
 public class ModelGenProcessor extends AbstractProcessor {
+    public static final String OUTPUT_DIRECTORY_PARAM = "outputDirectory";
+    public static final String SOURCE_PACKAGE_PARAM = "sourcePackage";
     Messager messager;
     private Elements elementUtils;
 
@@ -24,31 +31,45 @@ public class ModelGenProcessor extends AbstractProcessor {
 
     private ProcessingEnvironment env;
 
+    private String sourcePackage;
+    private String outputDirectory;
+
     @Override
     public void init(ProcessingEnvironment env) {
-        messager = env.getMessager();
         super.init(env);
         this.env = env;
+        messager = env.getMessager();
+        messager.printMessage(Diagnostic.Kind.NOTE, "Inicializing ModelGenProcessor.");
         this.elementUtils = env.getElementUtils();
         classes = new HashMap<>();
+        sourcePackage = env.getOptions().get("sourcePackage");
+        outputDirectory = env.getOptions().get("outputDirectory");
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        messager.printMessage(Diagnostic.Kind.NOTE, "Processing annotations began:");
         for (TypeElement te : annotations) {
             for (Element elParent : roundEnv.getElementsAnnotatedWith(te)) {
-                MetamodelClass parentClass = new MetamodelClass(elParent);
-                List<? extends Element> properties = elParent.getEnclosedElements();
-                for (Element elProperty : properties) {
-                    if (propertyIsWanted(elProperty)) {
-                        Field field = new Field(elProperty, elParent);
-                        parentClass.addProperty(field);
+                if (sourcePackage == null || elParent.asType().toString().contains(sourcePackage)) {
+                    MetamodelClass parentClass = new MetamodelClass(elParent);
+
+                    //messager.printMessage(Diagnostic.Kind.NOTE, "\t - Started processing class " + parentClass.getName());
+                    List<? extends Element> properties = elParent.getEnclosedElements();
+                    for (Element elProperty : properties) {
+                        if (propertyIsWanted(elProperty)) {
+                            Field field = new Field(elProperty, elParent);
+                            //messager.printMessage(Diagnostic.Kind.NOTE, "\t\t - Processing field " + field.getName());
+                            parentClass.addProperty(field);
+                        }
                     }
+                    classes.put(elParent.toString(), parentClass);
+                    //messager.printMessage(Diagnostic.Kind.NOTE, "\t - Finished processing " + parentClass.getName());
                 }
-                classes.put(elParent.toString(), parentClass);
             }
         }
-        OutputFilesGenerator.generateOutputFiles(classes, null);
+        //messager.printMessage(Diagnostic.Kind.NOTE, "Starting to generate output files:");
+        OutputFilesGenerator.generateOutputFiles(classes, outputDirectory, messager);
         return true;
     }
 

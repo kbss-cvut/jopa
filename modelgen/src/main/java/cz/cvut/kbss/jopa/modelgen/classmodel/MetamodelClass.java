@@ -21,6 +21,7 @@ public class MetamodelClass {
         name = elClass.getSimpleName().toString();
         imports = new ArrayList<>();
         imports.add("cz.cvut.kbss.jopa.model.metamodel.*");
+        imports.add("javax.annotation.processing.Generated");
         imports.add(fullName);
         properties = new ArrayList<>();
     }
