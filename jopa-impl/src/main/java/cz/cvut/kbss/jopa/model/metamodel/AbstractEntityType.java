@@ -17,6 +17,16 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
 
+/**
+ *  Instances of the type AbstractEntityType represent entity
+ *  types which are abstract - represented entity type cannot be instantiated.
+ *  Instead, some child class represented by {@link ConcreteEntityType} will be instantiated when loading class from storage
+ *
+ *
+ *  These entity types are not Java classes, but interfaces.
+ *
+ * @param <X> Entity type being represented by this instance
+ */
 public class AbstractEntityType<X> extends IdentifiableEntityType<X>  {
     public AbstractEntityType(String name, Class<X> javaType, IRI iri) {
         super(name, javaType, iri);

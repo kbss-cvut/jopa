@@ -17,7 +17,14 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
 
-public class ConcreteEntityType<X> extends IdentifiableEntityType<X>{
+/**
+ * Instances of the type ConcreteEntityType represent entity
+ * types which are can be directly instantiated while loading from storage.
+ *
+ *
+ * @param <X> Entity type being represented by this instance
+ */
+public class ConcreteEntityType<X> extends IdentifiableEntityType<X> {
 
     public ConcreteEntityType(String name, Class<X> javaType, IRI iri) {
         super(name, javaType, iri);

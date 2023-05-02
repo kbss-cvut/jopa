@@ -99,9 +99,14 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        if (!findPropertyDefinitionInHierarchy(field, inference, fieldValueCls)) {
-            throw new MetamodelInitializationException("Unable to process field " + field + ". It is not transient but has no mapping information.");
+        AnnotatedAccessor fieldAccessor = findAnnotatedMethodBelongingToField(field);
+
+        if (fieldAccessor != null) {
+            createAndRegisterAttribute(field, inference, fieldValueCls, fieldAccessor);
+            return;
         }
+
+        throw new MetamodelInitializationException("Unable to process field " + field + ". It is not transient but has no mapping information.");
     }
 
     /**
@@ -109,14 +114,14 @@ class ClassFieldMetamodelProcessor<X> {
      * This is used when a property annotation ( {@link OWLDataProperty,OWLObjectProperty,OWLAnnotationProperty)
      * is declared on method, not on field.
      */
-    private boolean findPropertyDefinitionInHierarchy(Field field, InferenceInfo inference, Class<?> fieldValueCls) {
+    private AnnotatedAccessor findAnnotatedMethodBelongingToField(Field field) {
         LOG.debug("finding property definition to field {} ", field);
 
         Deque<IdentifiableType<?>> toVisit = new ArrayDeque<>();
         toVisit.add(et);
 
         boolean found = false;
-        Method foundMethod = null;
+        AnnotatedAccessor foundAcessor = null;
 
         while (!toVisit.isEmpty()) {
             IdentifiableType<?> top = toVisit.peek();
@@ -130,14 +135,12 @@ class ClassFieldMetamodelProcessor<X> {
 
                 LOG.debug("Found annotated method belonging to field - {} - {}", annotatedAccessor.getMethod().getName(), field.getName());
                 if (!found) {  // first belonging method
-                    createAndRegisterAttribute(field, inference, fieldValueCls, annotatedAccessor);
-
                     found = true;
-                    foundMethod = annotatedAccessor.getMethod();
-                } else if (methodsAnnotationsEqual(annotatedAccessor.getMethod(), foundMethod)) {
+                    foundAcessor = annotatedAccessor;
+                } else if (methodsAnnotationsEqual(annotatedAccessor.getMethod(), foundAcessor.getMethod())) {
                     LOG.debug("Methods are equal, skipping");
                 } else { /// Two non-equal methods that could belong to the field - ambiguous
-                    throw new MetamodelInitializationException("Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field " + field + " two non-compatible methods were found - " + foundMethod + " and " + annotatedAccessor.getMethod());
+                    throw new MetamodelInitializationException("Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field " + field + " two non-compatible methods were found - " + foundAcessor.getMethod() + " and " + annotatedAccessor.getMethod());
                 }
 
             }
@@ -147,7 +150,7 @@ class ClassFieldMetamodelProcessor<X> {
             toVisit.addAll(top.getSupertypes());
         }
 
-        return found;
+        return foundAcessor;
     }
 
     private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls, AnnotatedAccessor annotatedAccessor) {
@@ -170,7 +173,6 @@ class ClassFieldMetamodelProcessor<X> {
             return foundMethod.getAnnotation(OWLAnnotationProperty.class) != null && foundMethod.getAnnotation(OWLAnnotationProperty.class).equals(newMethod.getAnnotation(OWLAnnotationProperty.class));
         }
     }
-
 
 
     private boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {

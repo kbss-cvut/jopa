@@ -17,10 +17,12 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+/**
+ *  Instances of the type IdentifiableEntityType represent entity
+ *  types which can be saved to and read from storage.
+ *
+ * @param <X> Entity type being represented by this instance
+ */
 public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType<X> implements EntityType<X> {
 
     private final String name;
