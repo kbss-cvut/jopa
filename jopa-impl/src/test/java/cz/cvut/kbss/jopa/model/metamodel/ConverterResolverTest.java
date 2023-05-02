@@ -265,7 +265,7 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterThrowsInvalidConverterExceptionWhenAttemptingToUseCustomConverterOnObjectPropertyField() throws Exception {
-        final Field field = ClassWithConverterOnObjectProperty.class.getDeclaredField("converted");
+        final PropertyInfo field =PropertyInfo.from(ClassWithConverterOnObjectProperty.class.getDeclaredField("converted"));
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final EntityType et = mock(EntityType.class);

@@ -183,7 +183,7 @@ public class SoqlQueryListener implements SoqlListener {
             return false;
         }
         String objectName = objectTypes.get(objectNode.getValue());
-        EntityTypeImpl<?> entityType = getEntityType(objectName);
+        IdentifiableEntityType<?> entityType = getEntityType(objectName);
         if (entityType == null) {
             return false;
         }
