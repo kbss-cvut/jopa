@@ -18,10 +18,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.junit.jupiter.api.Test;
@@ -119,19 +116,43 @@ class ClassFieldMetamodelProcessorTest {
         final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
 
         final Set<IdentifiableType<? super OWLClassX>> classSuperTypes = new HashSet<>();
-
-
         classSuperTypes.add(BInterfaceMock);
         classSuperTypes.add(AInterfaceMock);
 
 
-        when(baseMock.getJavaType()).thenReturn(OWLClassX.class);
-        when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
-
         final ClassFieldMetamodelProcessor<OWLClassX> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassX.getPropertyField();
+
+        when(baseMock.getJavaType()).thenReturn(OWLClassX.class);
+        when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
         when(metamodelBuilder.getAnnotatedAccessorsForClass(BInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceB.getPropertyMethod())));
         when(metamodelBuilder.getAnnotatedAccessorsForClass(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
+
+        MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
+        assertTrue(ex.getMessage().contains("Ambiguous hierarchy"));
+
+    }
+
+    @Test
+    void findPropertyDefinitionInHierarchyThrowsExceptionIfMultipleAnnotationsDoNotEqual() throws Exception {
+        final IdentifiableEntityType<OWLClassZ> baseMock = mock(IdentifiableEntityType.class);
+        final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
+
+
+        Set<AnnotatedAccessor> owlClassZAccessors = new HashSet<>();
+        owlClassZAccessors.add(AnnotatedAccessor.from(OWLClassZ.getAmbiguousPropertyGetMethod()));
+        owlClassZAccessors.add(AnnotatedAccessor.from(OWLClassZ.getAmbiguousPropertySetMethod()));
+
+
+
+        final ClassFieldMetamodelProcessor<OWLClassZ> processor = prepareProcessorForClass(baseMock);
+        final Field field = OWLClassZ.getAmbigousField();
+
+        when(baseMock.getJavaType()).thenReturn(OWLClassZ.class);
+        when(baseMock.getSupertypes()).thenReturn(Collections.singleton(AInterfaceMock));
+
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(AInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceA.getPropertyMethod())));
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(baseMock)).thenReturn(owlClassZAccessors);
 
         MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
         assertTrue(ex.getMessage().contains("Ambiguous hierarchy"));
@@ -152,11 +173,12 @@ class ClassFieldMetamodelProcessorTest {
         classSuperTypes.add(GInterfaceMock);
 
 
-        when(baseMock.getJavaType()).thenReturn(OWLClasAA.class);
-        when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
 
         final ClassFieldMetamodelProcessor<OWLClasAA> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClasAA.getPropertyField();
+
+        when(baseMock.getJavaType()).thenReturn(OWLClasAA.class);
+        when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
         when(metamodelBuilder.getAnnotatedAccessorsForClass(FInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceF.getPropertyMethod())));
         when(metamodelBuilder.getAnnotatedAccessorsForClass(GInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceG.getPropertyMethod())));
 
@@ -290,6 +312,7 @@ class ClassFieldMetamodelProcessorTest {
     private interface OWLInterfaceB {
         @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "propertyB")
         String getProperty();
+
         static Method getPropertyMethod() throws NoSuchMethodException {
             return OWLInterfaceB.class.getMethod("getProperty");
         }
@@ -326,8 +349,9 @@ class ClassFieldMetamodelProcessorTest {
 
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "name")
         void setName(String name);
+
         static Method getSetNameMethod() throws NoSuchMethodException {
-            return OWLInterfaceD.class.getMethod("setName",String.class);
+            return OWLInterfaceD.class.getMethod("setName", String.class);
         }
 
     }
@@ -336,8 +360,34 @@ class ClassFieldMetamodelProcessorTest {
     private static class OWLClassZ implements OWLInterfaceA {
         private Boolean property;
 
+        private String ambiguousProperty;
+
         public static Field getPropertyField() throws NoSuchFieldException {
             return OWLClassZ.class.getDeclaredField("property");
+        }
+
+        public static Field getAmbigousField() throws NoSuchFieldException {
+            return OWLClassZ.class.getDeclaredField("ambiguousProperty");
+        }
+
+        @OWLDataProperty(iri = Vocabulary.CLASS_BASE + "ambiguousProperty")
+        @ParticipationConstraints(nonEmpty = false)
+        public String getAmbiguousProperty() {
+            return ambiguousProperty;
+        }
+
+        @OWLDataProperty(iri = Vocabulary.CLASS_BASE + "ambiguousProperty")
+        @ParticipationConstraints(nonEmpty = true)
+        public void setAmbiguousProperty(String ambiguousProperty) {
+            this.ambiguousProperty = ambiguousProperty;
+        }
+
+        static Method getAmbiguousPropertyGetMethod() throws NoSuchMethodException {
+            return OWLClassZ.class.getMethod("getAmbiguousProperty");
+        }
+
+        static Method getAmbiguousPropertySetMethod() throws NoSuchMethodException {
+            return OWLClassZ.class.getMethod("setAmbiguousProperty", String.class);
         }
 
         @Override
@@ -369,6 +419,8 @@ class ClassFieldMetamodelProcessorTest {
             return property;
         }
     }
+
+
 }
 
 

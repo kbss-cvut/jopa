@@ -165,13 +165,12 @@ class ClassFieldMetamodelProcessor<X> {
 
     private boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
 
-        if (foundMethod.getAnnotation(OWLObjectProperty.class) != null) {
-            return foundMethod.getAnnotation(OWLObjectProperty.class).equals(newMethod.getAnnotation(OWLObjectProperty.class));
-        } else if (foundMethod.getAnnotation(OWLDataProperty.class) != null) {
-            return foundMethod.getAnnotation(OWLDataProperty.class).equals(newMethod.getAnnotation(OWLDataProperty.class));
-        } else {
-            return foundMethod.getAnnotation(OWLAnnotationProperty.class) != null && foundMethod.getAnnotation(OWLAnnotationProperty.class).equals(newMethod.getAnnotation(OWLAnnotationProperty.class));
-        }
+        return Objects.equals(newMethod.getAnnotation(OWLObjectProperty.class), foundMethod.getAnnotation(OWLObjectProperty.class)) &&
+                Objects.equals(newMethod.getAnnotation(OWLDataProperty.class), foundMethod.getAnnotation(OWLDataProperty.class)) &&
+                Objects.equals(newMethod.getAnnotation(OWLAnnotationProperty.class), foundMethod.getAnnotation(OWLAnnotationProperty.class)) &&
+                Objects.equals(newMethod.getAnnotation(Convert.class), foundMethod.getAnnotation(Convert.class)) &&
+                Objects.equals(newMethod.getAnnotation(ParticipationConstraints.class), foundMethod.getAnnotation(ParticipationConstraints.class));
+
     }
 
 
