@@ -51,7 +51,7 @@ public interface PropertyInfo {
         }
 
         @Override
-        public <T1 extends Annotation> T1 getAnnotation(Class<T1> annotationClass) {
+        public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
             return field.getAnnotation(annotationClass);
         }
 

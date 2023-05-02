@@ -133,5 +133,14 @@ For more examples, see integration tests in ``MultipleInheritanceTestRunner.java
 
 
 
+## Notes 
+
+### Mixing field annotations and method annotations
+
+Do not mix field and method annotations on single property.
+Field annotations SHOULD overwrite the method annotations,
+but it is looked upon as an undefined behaviour.
+
+
 
 
