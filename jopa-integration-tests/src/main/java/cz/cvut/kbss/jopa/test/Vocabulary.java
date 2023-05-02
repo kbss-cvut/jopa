@@ -67,6 +67,7 @@ public class Vocabulary {
     public static final String C_OwlInterfaceAnMethods = CLASS_IRI_BASE + "OWLInterfaceAnMethods";
 
     public static final String C_OwlClassWithUnProperties = CLASS_IRI_BASE + "OWLClassWithUnProperties";
+    public static final String C_ChildOfMappedSuperClass = CLASS_IRI_BASE + "ChildOfMappedSuperClass";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";

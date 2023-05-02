@@ -219,4 +219,28 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
                 new Quad(classWithPartConstraintsInInterfaceParent.getUri(), URI.create(Vocabulary.p_m_withConverter),
                         classWithPartConstraintsInInterfaceParent.getWithConverter().getId(), (String) null)), em);
     }
+
+    @Test
+    void mappedSuperClassSupportsAnnotatedMethods() {
+        this.em = getEntityManager("mappedSuperClassSupportsAnnotatedMethods", false);
+
+        ChildOfMappedSuperClass childOfMappedSuperClass = new ChildOfMappedSuperClass();
+        URI uri = Generators.generateUri();
+
+        String label = "LABEL_VALUE";
+        childOfMappedSuperClass.setUri(uri);
+        childOfMappedSuperClass.setLabel(label);
+
+        em.getTransaction().begin();
+
+        em.persist(childOfMappedSuperClass);
+
+        em.getTransaction().commit();
+
+
+        verifyExists(ChildOfMappedSuperClass.class, uri);
+        em.clear();
+        final ChildOfMappedSuperClass found = findRequired(ChildOfMappedSuperClass.class, uri);
+        assertEquals(label, found.getLabel());
+    }
 }
