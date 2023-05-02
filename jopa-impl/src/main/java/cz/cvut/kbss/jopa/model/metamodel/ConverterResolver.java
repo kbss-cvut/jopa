@@ -59,7 +59,7 @@ public class ConverterResolver {
      */
     public Optional<ConverterWrapper<?, ?>> resolveConverter(PropertyInfo field, PropertyAttributes config) {
         final Class<?> attValueType = config.getType().getJavaType();
-        final Optional<ConverterWrapper<?, ?>> localCustomConverter = resolveCustomConverter(field);
+        final Optional<ConverterWrapper<?, ?>> localCustomConverter = resolveCustomConverter(field, config);
         if (localCustomConverter.isPresent()) {
             return localCustomConverter;
         }
@@ -99,10 +99,13 @@ public class ConverterResolver {
         }
     }
 
-    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field) {
+    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field, PropertyAttributes config) {
         final Convert convertAnn = field.getAnnotation(Convert.class);
         if (convertAnn == null || convertAnn.disableConversion()) {
             return Optional.empty();
+        }
+        if (config.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
+            throw new InvalidConverterException("Attribute converters cannot be declared attributes mapped to object properties.");
         }
         return Optional.of(createCustomConverter(convertAnn.converter()));
     }

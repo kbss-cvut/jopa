@@ -236,8 +236,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                         "Error while calculating changes for new objects. Original not found.");
             }
             newObjectsCloneToOriginal.put(clone, original);
-            changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone,
-                                                                                   c));
+            changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone, c));
         }
     }
 
@@ -706,8 +705,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
-        instanceDescriptors
-                .put(clone, InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass())));
+        final InstanceDescriptor<?> instanceDesc = identifier != null ? InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass())) : InstanceDescriptorFactory.createAllLoaded(clone, (EntityType<Object>) entityType(clone.getClass()));
+        instanceDescriptors.put(clone, instanceDesc);
         registerEntityWithPersistenceContext(clone);
         registerEntityWithOntologyContext(clone, descriptor);
     }
@@ -759,7 +758,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
         for (ChangeRecord change : chSet.getChanges()) {
             storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(),
-                          descriptor.getAttributeDescriptor(change.getAttribute()));
+                    descriptor.getAttributeDescriptor(change.getAttribute()));
         }
     }
 
@@ -995,7 +994,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-               LoadState.UNKNOWN;
+                LoadState.UNKNOWN;
     }
 
     @Override

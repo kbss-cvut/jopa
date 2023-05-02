@@ -21,13 +21,9 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.FactoryOfFactories;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
-import cz.cvut.kbss.ontodriver.rdf4j.loader.DefaultContextInferenceStatementLoaderFactory;
-import cz.cvut.kbss.ontodriver.rdf4j.loader.DefaultStatementLoaderFactory;
-import cz.cvut.kbss.ontodriver.rdf4j.loader.GraphDBStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
 import org.eclipse.rdf4j.repository.Repository;
 
@@ -56,25 +52,10 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
         this.configuration = new DriverConfiguration(storageProperties);
         configuration.addConfiguration(properties, CONFIGS);
         this.openedConnections = new HashSet<>();
-        this.connectorFactory = initConnectorFactory(configuration);
-        this.statementLoaderFactory = initStatementLoaderFactory(connectorFactory);
+        final FactoryOfFactories factory = new FactoryOfFactories(configuration);
+        this.connectorFactory = factory.createConnectorFactory();
+        this.statementLoaderFactory = factory.createStatementLoaderFactory();
         this.open = true;
-    }
-
-    private ConnectorFactory initConnectorFactory(DriverConfiguration configuration) throws Rdf4jDriverException {
-        return new ConnectorFactoryImpl(configuration);
-    }
-
-    private StatementLoaderFactory initStatementLoaderFactory(
-            ConnectorFactory connectorFactory) throws Rdf4jDriverException {
-        if (configuration.is(Rdf4jConfigParam.INFERENCE_IN_DEFAULT_CONTEXT)) {
-            return new DefaultContextInferenceStatementLoaderFactory();
-        }
-        final Connector connector = connectorFactory.createStorageConnector();
-        if (GraphDBStatementLoaderFactory.isRepositoryGraphDB(connector)) {
-            return new GraphDBStatementLoaderFactory();
-        }
-        return new DefaultStatementLoaderFactory();
     }
 
     @Override

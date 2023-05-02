@@ -51,15 +51,15 @@ public interface Predicate extends Expression<Boolean> {
         AND("AND"),
         OR("OR");
 
-        private final String booleanOperator;
+        private final String operator;
 
-        BooleanOperator(String booleanOperator) {
-            this.booleanOperator = booleanOperator;
+        BooleanOperator(String operator) {
+            this.operator = operator;
         }
 
         @Override
         public String toString() {
-            return booleanOperator;
+            return operator;
         }
     }
 }

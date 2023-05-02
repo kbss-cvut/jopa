@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -221,7 +221,8 @@ class ClassFieldMetamodelProcessor<X> {
     private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Types tt = field.getAnnotation(Types.class);
         mappingValidator.validateTypesField(field);
-        et.addDirectTypes(new TypesSpecificationImpl<>(et, tt.fetchType(), field, fieldValueCls, inference.inferred));
+        final FetchType fetchType = inference.inferred ? FetchType.EAGER : tt.fetchType();
+        et.addDirectTypes(new TypesSpecificationImpl<>(et, fetchType, field, fieldValueCls, inference.inferred));
     }
 
     private static boolean isPropertiesField(Field field) {
@@ -232,7 +233,12 @@ class ClassFieldMetamodelProcessor<X> {
         Properties properties = field.getAnnotation(Properties.class);
         mappingValidator.validatePropertiesField(field);
         final PropertiesParametersResolver paramsResolver = new PropertiesParametersResolver(field);
-        et.addOtherProperties(PropertiesSpecificationImpl.declaringType(et).fetchType(properties.fetchType()).javaField(field).javaType(fieldValueCls).inferred(inference.inferred).propertyIdType(paramsResolver.getPropertyIdentifierType()).propertyValueType(paramsResolver.getPropertyValueType()).build());
+        final FetchType fetchType = inference.inferred ? FetchType.EAGER : properties.fetchType();
+        et.addOtherProperties(
+                PropertiesSpecificationImpl.declaringType(et).fetchType(fetchType).javaField(field)
+                        .javaType(fieldValueCls).inferred(inference.inferred)
+                        .propertyIdType(paramsResolver.getPropertyIdentifierType())
+                        .propertyValueType(paramsResolver.getPropertyValueType()).build());
     }
 
     private static boolean isQueryAttribute(Field field) {

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -18,11 +16,11 @@ import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.*;
 
 import java.net.URI;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @param <T> The attribute specification type, e.g. {@link SingularAttribute}, {@link ListAttribute}
@@ -255,4 +253,32 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * @return Property assertion
      */
     abstract Assertion createAssertion();
+
+    /**
+     * Returns only values that are not inferred in the repository for the specified subject.
+     * <p>
+     * This method goes through the specified values and if the property represented by this strategy can contain
+     * inferred values (i.e., {@link FieldSpecification#isInferred()} returns true), it returns only those values that
+     * are NOT inferred in the repository.
+     *
+     * The reasoning of this method is that the current implementation of a property values update is done by
+     * removing all its values as asserting new ones extracted from the entity. However, if an attribute value is a mix
+     * of inferred and asserted values, this will basically assert values that are already inferred, which is not correct.
+     * This method thus removes inferred values from the values passed to the OntoDriver for saving. Note that there
+     * is a minor caveat in that one is not able to intentionally assert already inferred values this way, but it is
+     * considered not important to work resolve at the moment.
+     *
+     * @param subject Subject whose property values are examined
+     * @param values  Values to filter
+     * @return Asserted values
+     */
+    protected Set<Value<?>> filterOutInferredValues(NamedResource subject, Set<Value<?>> values) {
+        if (!attribute.isInferred()) {
+            return values;
+        }
+        final Assertion assertion = createAssertion();
+        final URI ctx = getAttributeWriteContext();
+        return values.stream().filter(v -> !mapper.isInferred(new AxiomImpl<>(subject, assertion, v), ctx))
+                     .collect(Collectors.toSet());
+    }
 }

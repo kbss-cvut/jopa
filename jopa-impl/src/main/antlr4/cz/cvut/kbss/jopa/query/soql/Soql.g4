@@ -25,9 +25,9 @@ objWithOutAttr: object ;
 
 distinct: DISTINCT ;
 
-object: TEXT ;
+object: IDENTIFICATION_VARIABLE ;
 
-attribute: TEXT ;
+attribute: IDENTIFICATION_VARIABLE ;
 
 joinedParams: object DOT attribute (DOT attribute)+ ;
 
@@ -35,9 +35,9 @@ joinedParams: object DOT attribute (DOT attribute)+ ;
 
 tables: tableWithName ;
 
-table: TEXT ;
+table: IDENTIFICATION_VARIABLE ;
 
-tableName: TEXT ;
+tableName: IDENTIFICATION_VARIABLE ;
 
 tableWithName: table tableName ;
 
@@ -78,14 +78,59 @@ literal
    ;
 
 likeExpression
-   : whereClauseParam ('NOT')? LIKE whereClauseValue
+   : stringExpression ('NOT')? LIKE whereClauseValue
    ;
 
-comparisonExpression: whereClauseParam COMPARISON_OPERATOR whereClauseValue;
+comparisonExpression
+   : stringExpression COMPARISON_OPERATOR stringExpression
+   | simpleArithmeticExpression COMPARISON_OPERATOR simpleArithmeticExpression
+   | whereClauseParam COMPARISON_OPERATOR ( whereClauseParam | whereClauseValue )
+   ;
 
-whereClauseValue: (QMARK TEXT QMARK) | COLONTEXT ;
+whereClauseValue: (QMARK TEXT QMARK) | inputParameter ;
 
 whereClauseParam: param | joinedParams ;
+
+stringExpression
+   : whereClauseParam
+   | inputParameter
+   | functionsReturningStrings
+   ;
+
+functionsReturningStrings
+   : 'CONCAT' '(' stringExpression ',' stringExpression ')'
+   | 'SUBSTRING' '(' stringExpression ',' simpleArithmeticExpression ',' simpleArithmeticExpression ')'
+   | 'LOWER' '(' stringExpression ')'
+   | 'UPPER' '(' stringExpression ')'
+   ;
+
+simpleArithmeticExpression
+   : (arithmeticTerm) (('+' | '-') arithmeticTerm)*
+   ;
+
+arithmeticTerm
+   : (arithmeticFactor) (('*' | '/') arithmeticFactor)*
+   ;
+
+arithmeticFactor
+   : ('+' | '-')? arithmeticPrimary
+   ;
+
+arithmeticPrimary
+   : param
+   | literal
+   | '(' simpleArithmeticExpression ')'
+   | inputParameter
+   | functionsReturningNumerics
+   ;
+
+functionsReturningNumerics
+   : 'LENGTH' '(' stringExpression ')'
+   | 'ABS' '(' simpleArithmeticExpression ')'
+   | 'ROUND' '(' simpleArithmeticExpression ')'
+   | 'CEIL' '(' simpleArithmeticExpression ')'
+   | 'FLOOR' '(' simpleArithmeticExpression ')'
+   ;
 
 orderByClause: ORDERBY orderByFullFormComma orderByFullFormComma* ;
 
@@ -101,6 +146,7 @@ groupByParamComma: groupByParam ','? ;
 
 groupByParam: object DOT attribute (DOT attribute)* ;
 
+inputParameter: COLON IDENTIFICATION_VARIABLE ;
 
 
 SELECT: 'SELECT' ;
@@ -143,9 +189,9 @@ QMARK: '"' ;
 
 COLON: ':' ;
 
-TEXT: (LOWERCASE | UPPERCASE | DIGIT)+ ;
+IDENTIFICATION_VARIABLE: (LOWERCASE | UPPERCASE | '_') (LOWERCASE | UPPERCASE | DIGIT | '_')* ;
 
-COLONTEXT: COLON TEXT ;
+TEXT: (LOWERCASE | UPPERCASE | DIGIT)+ ;
 
 UPPERCASE: ('A'..'Z');
 

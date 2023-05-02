@@ -14,12 +14,11 @@
  */
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.query.TupleElement;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
 
 import java.util.List;
 
-public abstract class SelectionImpl<X> implements Selection<X>, TupleElement<X> {
+public abstract class SelectionImpl<X> implements Selection<X> {
     protected final Class<X> type;
 
     public SelectionImpl(Class<X> type) {

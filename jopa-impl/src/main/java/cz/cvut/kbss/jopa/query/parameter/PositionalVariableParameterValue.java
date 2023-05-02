@@ -36,4 +36,9 @@ class PositionalVariableParameterValue extends AbstractParameterValue {
     public String getQueryString() {
         return "$" + position;
     }
+
+    @Override
+    public boolean isSet() {
+        return false;
+    }
 }

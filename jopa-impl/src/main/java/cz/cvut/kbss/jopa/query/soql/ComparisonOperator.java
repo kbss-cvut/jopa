@@ -3,7 +3,7 @@ package cz.cvut.kbss.jopa.query.soql;
 /**
  * Comparison operator, e.g., &lt;, &gt;.
  */
-class ComparisonOperator implements FilterOperator {
+class ComparisonOperator implements FilterableExpression {
 
     private final String operator;
 

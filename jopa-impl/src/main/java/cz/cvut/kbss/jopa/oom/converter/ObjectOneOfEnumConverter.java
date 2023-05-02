@@ -18,7 +18,7 @@ public class ObjectOneOfEnumConverter<E extends Enum<E>> implements ConverterWra
     }
 
     private EnumMap<E, NamedResource> buildValueMap(Class<E> enumType) {
-        final EnumMap<E, NamedResource> valueMap = new EnumMap<>(enumType);
+        final EnumMap<E, NamedResource> map = new EnumMap<>(enumType);
         try {
             for (Field f : enumType.getDeclaredFields()) {
                 if (!f.isEnumConstant()) {
@@ -29,12 +29,12 @@ public class ObjectOneOfEnumConverter<E extends Enum<E>> implements ConverterWra
                     throw new InvalidEnumMappingException(
                             "Enum constant " + f + " must be mapped to an ontological individual via the " + Individual.class.getSimpleName() + " annotation.");
                 }
-                valueMap.put((E) f.get(null), NamedResource.create(individual.iri()));
+                map.put((E) f.get(null), NamedResource.create(individual.iri()));
             }
         } catch (IllegalAccessException e) {
             throw new OWLPersistenceException("Unable to initialize enum mapping.", e);
         }
-        return valueMap;
+        return map;
     }
 
     @Override

@@ -46,7 +46,7 @@ public class OWLClassA implements HasUri {
     public static final String CONSTRUCTOR_MAPPING = "OWLClassA.constructorMapping";
     public static final String ENTITY_MAPPING = "OWLClassA.entityMapping";
 
-    @Types(fetchType = FetchType.EAGER)
+    @Types
     private Set<String> types;
 
     @Id
@@ -95,14 +95,14 @@ public class OWLClassA implements HasUri {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof OWLClassA)) return false;
         OWLClassA owlClassA = (OWLClassA) o;
-        return Objects.equals(uri, owlClassA.uri);
+        return Objects.equals(getTypes(), owlClassA.getTypes()) && Objects.equals(getUri(), owlClassA.getUri()) && Objects.equals(getStringAttribute(), owlClassA.getStringAttribute());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uri);
+        return Objects.hash(getTypes(), getUri(), getStringAttribute());
     }
 
     @Override

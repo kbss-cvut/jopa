@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.query.soql;
 
 public class SoqlParameter {
 
-    private final SoqlNode firstNode;
+    private SoqlNode firstNode;
 
     public SoqlParameter(SoqlNode firstNode) {
         this.firstNode = firstNode;
@@ -26,25 +26,29 @@ public class SoqlParameter {
         StringBuilder buildParam = new StringBuilder("?");
         buildParam.append(firstNode.getValue());
         SoqlNode pointer = firstNode;
-        while (pointer.hasNextChild()) {
+        while (pointer.hasChild()) {
             pointer = pointer.getChild();
             buildParam.append(pointer.getCapitalizedValue());
         }
         return buildParam.toString();
     }
 
+    public void setFirstNode(SoqlNode firstNode) {
+        this.firstNode = firstNode;
+    }
+
     public SoqlNode getFirstNode() {
         return firstNode;
     }
 
-    public String getAsValue() {
+    public String getAsValue(String rootVariable) {
         StringBuilder buildParam = new StringBuilder("?");
-        if (!firstNode.hasNextChild()) {
-            return "?x";
+        if (!firstNode.hasChild()) {
+            return rootVariable;
         }
         SoqlNode pointer = firstNode.getChild();
         buildParam.append(pointer.getValue());
-        while (pointer.hasNextChild()) {
+        while (pointer.hasChild()) {
             pointer = pointer.getChild();
             buildParam.append(pointer.getCapitalizedValue());
         }

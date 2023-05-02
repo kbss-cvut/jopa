@@ -12,9 +12,7 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
-import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.repository.Repository;
 
 public final class ConnectorFactoryImpl implements ConnectorFactory {
@@ -23,9 +21,9 @@ public final class ConnectorFactoryImpl implements ConnectorFactory {
 
     private StorageConnector centralConnector;
 
-    public ConnectorFactoryImpl(DriverConfiguration configuration) throws Rdf4jDriverException {
+    public ConnectorFactoryImpl(StorageConnector connector) {
         this.open = true;
-        initCentralConnector(configuration);
+        this.centralConnector = connector;
     }
 
     @Override
@@ -38,10 +36,6 @@ public final class ConnectorFactoryImpl implements ConnectorFactory {
         if (!open) {
             throw new IllegalStateException("The factory is closed!");
         }
-    }
-
-    private void initCentralConnector(DriverConfiguration configuration) throws Rdf4jDriverException {
-        this.centralConnector = new StorageConnector(configuration);
     }
 
     @Override
