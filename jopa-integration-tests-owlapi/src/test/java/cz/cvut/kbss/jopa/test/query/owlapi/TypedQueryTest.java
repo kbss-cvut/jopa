@@ -95,11 +95,4 @@ public class TypedQueryTest extends TypedQueryRunner {
     protected void querySupportsSelectionByDate() {
         // OWL2Query does not support filter by date and delete (used in cleanup)
     }
-
-    @Disabled
-    @Test
-    @Override
-    protected void querySupportsSelectionByEntityIdentifier() {
-        // OWL2Query does not support VALUES (it ignores them)
-    }
 }
