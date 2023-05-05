@@ -63,6 +63,11 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.classSupertype = classSupertype;
     }
 
+    /**
+     * Set supertypes of this instance, and for all given supertypes add this as their subtype.
+     * This method should not be called multiple times on one instance.
+     * @param supertypes
+     */
     void setSupertypes(Set<AbstractIdentifiableType<? super X>> supertypes) {
         assert supertypes != null;
         this.supertypes = supertypes;

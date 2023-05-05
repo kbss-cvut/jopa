@@ -56,11 +56,6 @@
             <artifactId>antlr4-runtime</artifactId>
             <version>${org.antlr4.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
-        </dependency>
     </dependencies>
 
 

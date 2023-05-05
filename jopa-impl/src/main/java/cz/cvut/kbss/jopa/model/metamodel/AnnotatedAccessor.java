@@ -10,6 +10,11 @@ import java.lang.reflect.Method;
  */
 
 public abstract class AnnotatedAccessor {
+    private static final String GET_PREFIX="get";
+    private static final String SET_PREFIX="set";
+    private static final String IS_PREFIX="is";
+    private static final String HAS_PREFIX="has";
+
     protected final Method method;
     protected final String propertyName;
     protected final Class<?> propertyType;
@@ -36,7 +41,7 @@ public abstract class AnnotatedAccessor {
     protected abstract Class<?> extractPropertyTypeNameFromMethod(Method m);
 
     private static boolean isSetter(Method m) {
-        return m.getName().startsWith("set") && m.getParameterCount() == 1;
+        return m.getName().startsWith(SET_PREFIX) && m.getParameterCount() == 1;
     }
 
     private static boolean isGetter(Method m) {
@@ -44,11 +49,11 @@ public abstract class AnnotatedAccessor {
             return false;
         }
 
-        if (m.getName().startsWith("get")) {
+        if (m.getName().startsWith(GET_PREFIX)) {
             return true;
         } else if (m.getReturnType()
                     .isAssignableFrom(Boolean.class)) {/// getter on bools - can start with is,get or has
-            return m.getName().startsWith("is") || m.getName().startsWith("has");
+            return m.getName().startsWith(IS_PREFIX) || m.getName().startsWith(HAS_PREFIX);
         } else {
             return false;
         }
@@ -79,7 +84,7 @@ public abstract class AnnotatedAccessor {
 
         @Override
         protected String extractPropertyNameFromMethod(Method m) {
-            String trimmedName = m.getName().substring(3); /// always starts with set
+            String trimmedName = m.getName().substring(SET_PREFIX.length()); /// always starts with set
             return Introspector.decapitalize(trimmedName);
         }
     }
@@ -93,10 +98,10 @@ public abstract class AnnotatedAccessor {
         protected String extractPropertyNameFromMethod(Method m) {
             String trimmedName;
 
-            if (m.getName().startsWith("is")) {
-                trimmedName = m.getName().substring(2);
-            } else if (m.getName().startsWith("get") || m.getName().startsWith("has")) {
-                trimmedName = m.getName().substring(3);
+            if (m.getName().startsWith(IS_PREFIX)) {
+                trimmedName = m.getName().substring(IS_PREFIX.length());
+            } else if (m.getName().startsWith(GET_PREFIX) || m.getName().startsWith(HAS_PREFIX)) {
+                trimmedName = m.getName().substring(GET_PREFIX.length());
             } else {
                 throw new MetamodelInitializationException("Failed to extract property name from annotated getter.");
             }

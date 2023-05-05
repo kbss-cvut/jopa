@@ -174,7 +174,6 @@ class EntityLifecycleListenerManagerTest {
                 ParentListener.class.getDeclaredMethod("postLoad", Parent.class));
         parentManager.addLifecycleCallback(LifecycleEvent.POST_LOAD, Parent.class.getDeclaredMethod("postLoad"));
         manager.addParent(parentManager);
-        manager.addParent(parentManager); /// todo check if need to be two same lines
         final ChildListener childListener = spy(new ChildListener());
         manager.addEntityListener(childListener);
         manager.addEntityListenerCallback(childListener, LifecycleEvent.POST_LOAD,

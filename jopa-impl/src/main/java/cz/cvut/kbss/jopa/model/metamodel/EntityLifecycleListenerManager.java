@@ -83,9 +83,9 @@ public class EntityLifecycleListenerManager {
     }
 
     private void invokeEntityListenerCallbacks(Object instance, LifecycleEvent lifecycleEvent) {
-        if (!parents.isEmpty()) {
-            parents.forEach(parent -> parent.invokeEntityListenerCallbacks(instance, lifecycleEvent));
-        }
+
+        parents.forEach(parent -> parent.invokeEntityListenerCallbacks(instance, lifecycleEvent));
+
         if (entityListeners != null) {
             entityListeners
                     .forEach(listener -> getEntityListenerCallback(listener, lifecycleEvent).ifPresent(method -> {
@@ -107,9 +107,9 @@ public class EntityLifecycleListenerManager {
     }
 
     private void invokeInternalCallbacks(Object instance, LifecycleEvent lifecycleEvent) {
-        if (!parents.isEmpty()) {
-            parents.forEach(parent -> parent.invokeInternalCallbacks(instance, lifecycleEvent));
-        }
+
+        parents.forEach(parent -> parent.invokeInternalCallbacks(instance, lifecycleEvent));
+
         if (lifecycleCallbacks.containsKey(lifecycleEvent)) {
             final Method listener = lifecycleCallbacks.get(lifecycleEvent);
             if (!listener.isAccessible()) {

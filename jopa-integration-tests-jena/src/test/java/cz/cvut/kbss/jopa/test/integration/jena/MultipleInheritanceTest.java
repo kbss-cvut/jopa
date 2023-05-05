@@ -6,10 +6,10 @@ import cz.cvut.kbss.jopa.test.runner.MultipleInheritanceTestRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MultipleInheritanceContextTest  extends MultipleInheritanceTestRunner {
-    private static final Logger LOG = LoggerFactory.getLogger(MultipleInheritanceContextTest.class);
+public class MultipleInheritanceTest extends MultipleInheritanceTestRunner {
+    private static final Logger LOG = LoggerFactory.getLogger(MultipleInheritanceTest.class);
 
-    public MultipleInheritanceContextTest() {
+    public MultipleInheritanceTest() {
         super(LOG, new JenaPersistenceFactory(), new JenaDataAccessor());
     }
 }
