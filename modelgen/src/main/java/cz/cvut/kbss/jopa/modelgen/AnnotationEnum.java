@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.modelgen;
 
+import java.util.List;
+
 public enum AnnotationEnum {
     ID("cz.cvut.kbss.jopa.model.annotations.Id"),
     PROPERTIES("cz.cvut.kbss.jopa.model.annotations.Properties"),
@@ -16,6 +18,10 @@ public enum AnnotationEnum {
 
     public String getAnnotation() {
         return annotation;
+    }
+
+    public static List<AnnotationEnum> getAll() {
+        return List.of(PROPERTIES, OBJECTPROPERTY, DATAPROPERTY, ANNOTATIONPROPERTY, TYPES, ID);
     }
 
 }

@@ -85,7 +85,6 @@ public class OutputFilesGenerator {
                         .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
                         .append(", ");
                 if (field.getType().getIsSimple()) {
-                    //TODO: raw types? napriklad Set<> Object?? idk
                     propertiesString
                             .append(field.getType().getTypeName().substring(field.getType().getTypeName().lastIndexOf(".") + 1));
                 } else {
@@ -170,6 +169,7 @@ public class OutputFilesGenerator {
 
     public static void generateOutputFiles(Map<String, MetamodelClass> classes, String outputDirectory, Messager messager, boolean debugOption) {
         finalTargetFolder = outputDirectory;
+        OutputFilesGenerator.debugOption = debugOption;
         for (Map.Entry<String, MetamodelClass> entry : classes.entrySet()) {
             MetamodelClass glass = entry.getValue();
             File outputFile = createClass(glass);
