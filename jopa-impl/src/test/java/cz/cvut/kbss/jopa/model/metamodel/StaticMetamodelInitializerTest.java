@@ -17,8 +17,8 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.StaticMetamodelInitializationException;
-import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -237,7 +237,9 @@ class StaticMetamodelInitializerTest {
         final Identifier id = mock(Identifier.class);
         when(id.getJavaField()).thenReturn(SuperClass.class.getDeclaredField("uri"));
         when(et.getIdentifier()).thenReturn(id);
-        final MappedSuperclassType<SuperClass> superType = mock(MappedSuperclassType.class);
+
+        final MappedSuperclassTypeImpl<SuperClass> superType = mock(MappedSuperclassTypeImpl.class);
+
         when(superType.getIdentifier()).thenReturn(id);
         when(superType.getJavaType()).thenReturn(SuperClass.class);
         when(et.getSupertypes()).thenReturn(Collections.singleton(superType));

@@ -18,8 +18,8 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
-import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
@@ -41,7 +41,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
@@ -324,7 +324,7 @@ class MetamodelBuilderTest {
 
         assertNotNull(cClassEt);
         assertThat(cClassEt.getSupertypes(), hasSize(2));
-        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt, BParentEt));
+        assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AParentI")
@@ -354,7 +354,7 @@ class MetamodelBuilderTest {
 
         assertNotNull(cClassEt);
         assertThat(cClassEt.getSupertypes(), hasSize(2));
-        assertThat(cClassEt.getSupertypes(), hasItems(AParentEt, BParentEt));
+        assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParent")
@@ -422,7 +422,7 @@ class MetamodelBuilderTest {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(WithInferredTypesAndProperties.class));
         builder.buildMetamodel(finderMock);
         final AbstractIdentifiableType<WithInferredTypesAndProperties> et = builder.entity(WithInferredTypesAndProperties.class);
-        final PropertiesSpecification<? super WithInferredTypesAndProperties, ?, ? , ?> types = et.getProperties();
+        final PropertiesSpecification<? super WithInferredTypesAndProperties, ?, ?, ?> types = et.getProperties();
         assertTrue(types.isInferred());
         assertEquals(FetchType.EAGER, types.getFetchType());
     }

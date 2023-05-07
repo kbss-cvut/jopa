@@ -59,13 +59,10 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         declaredQueryAttributes.put(name, a);
     }
 
-    private void setClassSupertype(AbstractIdentifiableType<? super X> classSupertype) {
-        this.classSupertype = classSupertype;
-    }
-
     /**
      * Set supertypes of this instance, and for all given supertypes add this as their subtype.
      * This method should not be called multiple times on one instance.
+     *
      * @param supertypes
      */
     void setSupertypes(Set<AbstractIdentifiableType<? super X>> supertypes) {
@@ -74,8 +71,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
         supertypes.forEach(supertype -> supertype.addSubtype(this));
         /// find non-abstract parent (class), and use it later for finding attributes, as attributes can be only in AITs that represent classes
-        supertypes.stream().filter(ait -> !ait.getJavaType().isInterface()).findAny().ifPresent(this::setClassSupertype);
-
+        supertypes.stream().filter(ait -> !ait.getJavaType().isInterface()).findAny().ifPresent(clsSupertype -> this.classSupertype = clsSupertype);
     }
 
     private void addSubtype(AbstractIdentifiableType<? extends X> subtype) {
@@ -109,8 +105,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public Set<IdentifiableType<? super X>> getSupertypes() {
-        return (Set) supertypes;
+    public Set<AbstractIdentifiableType<? super X>> getSupertypes() {
+        return supertypes;
     }
 
     /**

@@ -52,7 +52,7 @@ class EntityLifecycleCallbackResolver {
         resolveLifecycleCallbacks();
         resolveEntityListeners();
         if (managedType.getSupertypes() != null) {
-            managedType.getSupertypes().forEach(supertype -> manager.addParent(((AbstractIdentifiableType<?>) supertype).getLifecycleListenerManager()));
+            managedType.getSupertypes().forEach(supertype -> manager.addParent(supertype.getLifecycleListenerManager()));
         }
         return manager;
     }

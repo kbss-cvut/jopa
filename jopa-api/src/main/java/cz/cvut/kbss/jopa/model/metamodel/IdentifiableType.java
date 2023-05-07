@@ -64,7 +64,7 @@ public interface IdentifiableType<X> extends ManagedType<X> {
      *
      *         such supertype
      */
-    Set<IdentifiableType<? super X>> getSupertypes();
+    Set<? extends IdentifiableType<? super X>> getSupertypes();
 
     /**
      * Whether the identifiable type has a single id attribute. Returns true for

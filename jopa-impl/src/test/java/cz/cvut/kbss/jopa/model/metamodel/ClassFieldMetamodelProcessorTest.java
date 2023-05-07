@@ -82,10 +82,10 @@ class ClassFieldMetamodelProcessorTest {
     void findPropertyDefinitionInHierarchyFindsAttributeDeeplyNested() throws Exception {
         final IdentifiableEntityType<OWLClassY> baseMock = mock(IdentifiableEntityType.class);
 
-        final IdentifiableType<OWLInterfaceD> dInterfaceMock = mock(IdentifiableType.class);
-        final IdentifiableType<OWLInterfaceE> eInterfaceMock = mock(IdentifiableType.class);
-        final IdentifiableType<OWLInterfaceC> cInterfaceMock = mock(IdentifiableType.class);
-        final Set<IdentifiableType<? super OWLClassY>> classSuperTypes = new HashSet<>();
+        final AbstractIdentifiableType<OWLInterfaceD> dInterfaceMock = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceE> eInterfaceMock = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceC> cInterfaceMock = mock(AbstractIdentifiableType.class);
+        final Set<AbstractIdentifiableType<? super OWLClassY>> classSuperTypes = new HashSet<>();
 
 
         classSuperTypes.add(cInterfaceMock);
@@ -112,10 +112,10 @@ class ClassFieldMetamodelProcessorTest {
     void findPropertyDefinitionInHierarchyThrowsExceptionIfAmbiguous() throws Exception {
         final IdentifiableEntityType<OWLClassX> baseMock = mock(IdentifiableEntityType.class);
 
-        final IdentifiableType<OWLInterfaceB> BInterfaceMock = mock(IdentifiableType.class);
-        final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceB> BInterfaceMock = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceA> AInterfaceMock = mock(AbstractIdentifiableType.class);
 
-        final Set<IdentifiableType<? super OWLClassX>> classSuperTypes = new HashSet<>();
+        final Set<AbstractIdentifiableType<? super OWLClassX>> classSuperTypes = new HashSet<>();
         classSuperTypes.add(BInterfaceMock);
         classSuperTypes.add(AInterfaceMock);
 
@@ -136,7 +136,7 @@ class ClassFieldMetamodelProcessorTest {
     @Test
     void findPropertyDefinitionInHierarchyThrowsExceptionIfMultipleAnnotationsDoNotEqual() throws Exception {
         final IdentifiableEntityType<OWLClassZ> baseMock = mock(IdentifiableEntityType.class);
-        final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceA> AInterfaceMock = mock(AbstractIdentifiableType.class);
 
 
         Set<AnnotatedAccessor> owlClassZAccessors = new HashSet<>();
@@ -163,10 +163,10 @@ class ClassFieldMetamodelProcessorTest {
     void findPropertyDefinitionInHierarchyDoesNotThrowExceptionIfAnnotationsEqual() throws Exception {
         final IdentifiableEntityType<OWLClasAA> baseMock = mock(IdentifiableEntityType.class);
 
-        final IdentifiableType<OWLInterfaceF> FInterfaceMock = mock(IdentifiableType.class);
-        final IdentifiableType<OWLInterfaceG> GInterfaceMock = mock(IdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceF> FInterfaceMock = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceG> GInterfaceMock = mock(AbstractIdentifiableType.class);
 
-        final Set<IdentifiableType<? super OWLClasAA>> classSuperTypes = new HashSet<>();
+        final Set<AbstractIdentifiableType<? super OWLClasAA>> classSuperTypes = new HashSet<>();
 
 
         classSuperTypes.add(FInterfaceMock);
@@ -194,7 +194,7 @@ class ClassFieldMetamodelProcessorTest {
     void findPropertyDefinitionInHierarchyDoesNotMatchMismatchingTypes() throws Exception {
         final IdentifiableEntityType<OWLClassZ> baseMock = mock(IdentifiableEntityType.class);
 
-        final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceA> AInterfaceMock = mock(AbstractIdentifiableType.class);
 
 
         when(baseMock.getJavaType()).thenReturn(OWLClassZ.class);
@@ -212,9 +212,9 @@ class ClassFieldMetamodelProcessorTest {
     void findPropertyDefinitionInHierarchyFindsDefinitionInSameClass() throws NoSuchFieldException, NoSuchMethodException {
         final IdentifiableEntityType<OWLClassWithAnnotatedPropertyAndMethod> baseMock = mock(IdentifiableEntityType.class);
 
-        final IdentifiableType<OWLInterfaceA> AInterfaceMock = mock(IdentifiableType.class);
+        final AbstractIdentifiableType<OWLInterfaceA> AInterfaceMock = mock(AbstractIdentifiableType.class);
 
-        final Set<IdentifiableType<? super OWLClassWithAnnotatedPropertyAndMethod>> classSuperTypes = new HashSet<>();
+        final Set<AbstractIdentifiableType<? super OWLClassWithAnnotatedPropertyAndMethod>> classSuperTypes = new HashSet<>();
 
 
         classSuperTypes.add(AInterfaceMock);

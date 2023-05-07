@@ -115,13 +115,13 @@ class MetamodelImplInheritanceTest {
     @Test
     void buildingMetamodelSetsSubtypesOfMappedSuperclass() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
-        final Set<IdentifiableType<? super OWLClassQ>> supertypes = metamodel.entity(OWLClassQ.class).getSupertypes();
+        final Set<AbstractIdentifiableType<? super OWLClassQ>> supertypes = metamodel.entity(OWLClassQ.class).getSupertypes();
+
         assertEquals(1, supertypes.size());
+        final AbstractIdentifiableType<? super OWLClassQ> mappedSupertype = supertypes.iterator().next();
 
-        final IdentifiableType<? super OWLClassQ> supertype = supertypes.iterator().next();
+        assertNotNull(mappedSupertype);
 
-        assertNotNull(supertype);
-        final AbstractIdentifiableType<? super OWLClassQ> mappedSupertype = (AbstractIdentifiableType<? super OWLClassQ>) supertype;
         assertTrue(mappedSupertype.hasSubtypes());
         assertTrue(mappedSupertype.getSubtypes().contains(metamodel.entity(OWLClassQ.class)));
     }
