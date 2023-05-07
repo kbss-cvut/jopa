@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
 
 import javax.annotation.processing.Messager;
+import javax.tools.Diagnostic;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,6 +16,8 @@ import java.util.Set;
 
 public class OutputFilesGenerator {
     public static String finalTargetFolder = "";
+
+    public static boolean debugOption;
 
     public static File createClass(MetamodelClass glass) {
         StringBuilder fileName = new StringBuilder(finalTargetFolder);
@@ -165,14 +168,15 @@ public class OutputFilesGenerator {
         return false;
     }
 
-    public static void generateOutputFiles(Map<String, MetamodelClass> classes, String outputDirectory, Messager messager) {
+    public static void generateOutputFiles(Map<String, MetamodelClass> classes, String outputDirectory, Messager messager, boolean debugOption) {
         finalTargetFolder = outputDirectory;
         for (Map.Entry<String, MetamodelClass> entry : classes.entrySet()) {
             MetamodelClass glass = entry.getValue();
             File outputFile = createClass(glass);
             appendProperties(glass, outputFile);
             finishClass(outputFile);
-            //messager.printMessage(Diagnostic.Kind.NOTE, "\t - File " + outputFile.getName() + " created.");
+            if (debugOption)
+                messager.printMessage(Diagnostic.Kind.NOTE, "\t - File " + outputFile.getName() + " created.");
         }
     }
 }

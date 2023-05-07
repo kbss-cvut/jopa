@@ -10,6 +10,15 @@ public class MetamodelClass {
     private List<String> imports;
     private List<Field> properties;
 
+    public MetamodelClass() {
+        pckg = "";
+        name = "";
+        imports = new ArrayList<>();
+        imports.add("cz.cvut.kbss.jopa.model.metamodel.*");
+        imports.add("javax.annotation.processing.Generated");
+        properties = new ArrayList<>();
+    }
+
     public MetamodelClass(Element elClass) {
         String fullName = elClass.toString();
         boolean packag = fullName.contains(".");

@@ -8,10 +8,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
+import javax.tools.*;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -28,6 +25,7 @@ public class ModelGenMojo extends AbstractMojo {
 
     private static final String OUTPUT_DIRECTORY_PARAM = "output-directory";
     private static final String SOURCE_PACKAGE_PARAM = "source-package";
+    public static final String DEBUG_PARAM = "debug-option";
 
     //package ve kterým mám hledat soubory
 
@@ -38,6 +36,9 @@ public class ModelGenMojo extends AbstractMojo {
     private String outputDirectory;
     @Parameter(alias = SOURCE_PACKAGE_PARAM)
     private String sourcePackage;
+    @Parameter(alias = DEBUG_PARAM, defaultValue = "false")
+    private String debugOption;
+
 
     public void execute() throws MojoExecutionException {
         printParameterValues();
@@ -65,7 +66,13 @@ public class ModelGenMojo extends AbstractMojo {
             options.add("-AsourcePackage=" + sourcePackage);
         }
 
+        if (isNotBlank(debugOption)) {
+            options.add("-AdebugOption=" + debugOption);
+        }
+
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+
+        DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
 
         List<File> sourceFiles = new ArrayList<>();
 
@@ -76,11 +83,14 @@ public class ModelGenMojo extends AbstractMojo {
         Iterable<? extends JavaFileObject> compilationUnits =
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
 
-        JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, options, null, compilationUnits);
+        JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector, options, null, compilationUnits);
         try {
             task.call();
         } catch (Exception e) {
             throw e;
+        }
+        for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
+            getLog().info(diagnostic.toString());
         }
     }
 

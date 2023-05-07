@@ -9,6 +9,13 @@ public class Type {
     private Boolean isSimple;
     private List<Type> types;
 
+
+    public Type() {
+        typeName = "";
+        isSimple = true;
+        types = new ArrayList<>();
+    }
+
     public Type(TypeMirror tMirror) {
         List<? extends TypeMirror> typeArgs = ((DeclaredType) tMirror).getTypeArguments();
 

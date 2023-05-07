@@ -15,6 +15,15 @@ public class Field {
     private String parentName;
     private List<AnnotationEnum> annotatedWith;
 
+    public Field() {
+        name = "";
+        type = null;
+        imports = new ArrayList<>();
+        parentName = "";
+        annotatedWith = new ArrayList<>();
+
+    }
+
     public Field(Element elProperty, Element elParent) {
         this.name = elProperty.toString();
         this.type = new Type(elProperty.asType());

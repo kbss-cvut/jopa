@@ -19,11 +19,13 @@ import java.util.Set;
 @SupportedAnnotationTypes({"cz.cvut.kbss.jopa.model.annotations.OWLClass", "cz.cvut.kbss.jopa.model.annotations.MappedSuperclass"})
 @SupportedOptions({
         ModelGenProcessor.OUTPUT_DIRECTORY_PARAM,
-        ModelGenProcessor.SOURCE_PACKAGE_PARAM
+        ModelGenProcessor.SOURCE_PACKAGE_PARAM,
+        ModelGenProcessor.DEBUG_PARAM
 })
 public class ModelGenProcessor extends AbstractProcessor {
     public static final String OUTPUT_DIRECTORY_PARAM = "outputDirectory";
     public static final String SOURCE_PACKAGE_PARAM = "sourcePackage";
+    public static final String DEBUG_PARAM = "debugOption";
     Messager messager;
     private Elements elementUtils;
 
@@ -33,6 +35,7 @@ public class ModelGenProcessor extends AbstractProcessor {
 
     private String sourcePackage;
     private String outputDirectory;
+    private boolean debugOption;
 
     @Override
     public void init(ProcessingEnvironment env) {
@@ -42,34 +45,38 @@ public class ModelGenProcessor extends AbstractProcessor {
         messager.printMessage(Diagnostic.Kind.NOTE, "Inicializing ModelGenProcessor.");
         this.elementUtils = env.getElementUtils();
         classes = new HashMap<>();
-        sourcePackage = env.getOptions().get("sourcePackage");
-        outputDirectory = env.getOptions().get("outputDirectory");
+        sourcePackage = env.getOptions().get(SOURCE_PACKAGE_PARAM);
+        outputDirectory = env.getOptions().get(OUTPUT_DIRECTORY_PARAM);
+        debugOption = Boolean.parseBoolean(env.getOptions().get(DEBUG_PARAM));
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        messager.printMessage(Diagnostic.Kind.NOTE, "Processing annotations began:");
+        messager.printMessage(Diagnostic.Kind.NOTE, "Processing annotations began.");
         for (TypeElement te : annotations) {
             for (Element elParent : roundEnv.getElementsAnnotatedWith(te)) {
                 if (sourcePackage == null || elParent.asType().toString().contains(sourcePackage)) {
                     MetamodelClass parentClass = new MetamodelClass(elParent);
 
-                    //messager.printMessage(Diagnostic.Kind.NOTE, "\t - Started processing class " + parentClass.getName());
+                    if (debugOption)
+                        messager.printMessage(Diagnostic.Kind.NOTE, "\t - Started processing class " + parentClass.getName());
                     List<? extends Element> properties = elParent.getEnclosedElements();
                     for (Element elProperty : properties) {
                         if (propertyIsWanted(elProperty)) {
                             Field field = new Field(elProperty, elParent);
-                            //messager.printMessage(Diagnostic.Kind.NOTE, "\t\t - Processing field " + field.getName());
+                            if (debugOption)
+                                messager.printMessage(Diagnostic.Kind.NOTE, "\t\t - Processing field " + field.getName());
                             parentClass.addProperty(field);
                         }
                     }
                     classes.put(elParent.toString(), parentClass);
-                    //messager.printMessage(Diagnostic.Kind.NOTE, "\t - Finished processing " + parentClass.getName());
+                    if (debugOption)
+                        messager.printMessage(Diagnostic.Kind.NOTE, "\t - Finished processing " + parentClass.getName());
                 }
             }
         }
-        //messager.printMessage(Diagnostic.Kind.NOTE, "Starting to generate output files:");
-        OutputFilesGenerator.generateOutputFiles(classes, outputDirectory, messager);
+        if (debugOption) messager.printMessage(Diagnostic.Kind.NOTE, "Starting to generate output files:");
+        OutputFilesGenerator.generateOutputFiles(classes, outputDirectory, messager, debugOption);
         return true;
     }
 
