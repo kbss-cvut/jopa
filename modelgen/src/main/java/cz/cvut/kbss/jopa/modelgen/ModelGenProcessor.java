@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.modelgen;
 
 
+import cz.cvut.kbss.jopa.modelgen.classmodel.AnnotationEnum;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 
@@ -55,23 +56,25 @@ public class ModelGenProcessor extends AbstractProcessor {
         messager.printMessage(Diagnostic.Kind.NOTE, "Processing annotations began.");
         for (TypeElement te : annotations) {
             for (Element elParent : roundEnv.getElementsAnnotatedWith(te)) {
-                if (sourcePackage == null || elParent.asType().toString().contains(sourcePackage)) {
-                    MetamodelClass parentClass = new MetamodelClass(elParent);
+                if (!isAnnotatedWithNonEntity(elParent)) {
+                    if (sourcePackage == null || elParent.asType().toString().contains(sourcePackage)) {
+                        MetamodelClass parentClass = new MetamodelClass(elParent);
 
-                    if (debugOption)
-                        messager.printMessage(Diagnostic.Kind.NOTE, "\t - Started processing class " + parentClass.getName());
-                    List<? extends Element> properties = elParent.getEnclosedElements();
-                    for (Element elProperty : properties) {
-                        if (propertyIsWanted(elProperty)) {
-                            Field field = new Field(elProperty, elParent);
-                            if (debugOption)
-                                messager.printMessage(Diagnostic.Kind.NOTE, "\t\t - Processing field " + field.getName());
-                            parentClass.addProperty(field);
+                        if (debugOption)
+                            messager.printMessage(Diagnostic.Kind.NOTE, "\t - Started processing class " + parentClass.getName());
+                        List<? extends Element> properties = elParent.getEnclosedElements();
+                        for (Element elProperty : properties) {
+                            if (propertyIsWanted(elProperty)) {
+                                Field field = new Field(elProperty, elParent);
+                                if (debugOption)
+                                    messager.printMessage(Diagnostic.Kind.NOTE, "\t\t - Processing field " + field.getName());
+                                parentClass.addProperty(field);
+                            }
                         }
+                        classes.put(elParent.toString(), parentClass);
+                        if (debugOption)
+                            messager.printMessage(Diagnostic.Kind.NOTE, "\t - Finished processing " + parentClass.getName());
                     }
-                    classes.put(elParent.toString(), parentClass);
-                    if (debugOption)
-                        messager.printMessage(Diagnostic.Kind.NOTE, "\t - Finished processing " + parentClass.getName());
                 }
             }
         }
@@ -81,15 +84,23 @@ public class ModelGenProcessor extends AbstractProcessor {
     }
 
     private boolean propertyIsWanted(Element param) {
+        boolean containsWanted = false;
         List<? extends AnnotationMirror> paramAnnotations = param.getAnnotationMirrors();
         if (!paramAnnotations.isEmpty()) {
             for (AnnotationMirror paramAnnotation : paramAnnotations) {
-                for (AnnotationEnum anEnum : AnnotationEnum.values()) {
-                    if (paramAnnotation.toString().contains(anEnum.getAnnotation())) return true;
+                if (paramAnnotation.toString().contains("cz.cvut.kbss.jopa.model.annotations.Transient")) {
+                    return false;
                 }
+                for (AnnotationEnum anEnum : AnnotationEnum.values()) {
+                    if (paramAnnotation.toString().contains(anEnum.getAnnotation())) {
+                        containsWanted = true;
+                        break;
+                    }
+                }
+
             }
         }
-        return false;
+        return containsWanted;
     }
 
     @Override
@@ -99,5 +110,16 @@ public class ModelGenProcessor extends AbstractProcessor {
 
     public ProcessingEnvironment getEnv() {
         return env;
+    }
+
+    public boolean isAnnotatedWithNonEntity(Element element) {
+        TypeElement typeElement = (TypeElement) element;
+        List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+        for (AnnotationMirror annotation : annotations) {
+            if (annotation.getAnnotationType().toString().equals("cz.cvut.kbss.jopa.model.annotations.util.NonEntity")) {
+                return true;
+            }
+        }
+        return false;
     }
 }

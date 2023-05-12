@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.modelgen.classmodel;
 
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import java.util.*;
 
 public class Type {
@@ -17,20 +18,41 @@ public class Type {
     }
 
     public Type(TypeMirror tMirror) {
-        List<? extends TypeMirror> typeArgs = ((DeclaredType) tMirror).getTypeArguments();
 
         if (isSimple(tMirror.toString())) {
             this.isSimple = true;
             this.types = null;
-            this.typeName = tMirror.toString();
+            TypeMirror upperBound = getUpperBound(tMirror);
+            String fullName = "";
+            if (upperBound == null) {
+                fullName = tMirror.toString();
+            } else {
+                fullName = upperBound.toString();
+            }
+            if (fullName.contains("<")) {
+                this.typeName = fullName.substring(0, fullName.indexOf("<"));
+            } else {
+                this.typeName = fullName;
+            }
         } else {
+            List<? extends TypeMirror> typeArgs = ((DeclaredType) tMirror).getTypeArguments();
             this.typeName = ((DeclaredType) tMirror).asElement().toString();
             this.isSimple = false;
             this.types = new ArrayList<>();
-            typeArgs.forEach((typeMirror ->
-                    this.types.add(new Type(typeMirror))
+            typeArgs.forEach((typeMirror -> {
+                this.types.add(new Type(typeMirror));
+            }
             ));
         }
+    }
+
+    private TypeMirror getUpperBound(TypeMirror type) {
+        if (type instanceof TypeVariable) {
+            TypeVariable typeVar = (TypeVariable) type;
+            TypeMirror upperBound = typeVar.getUpperBound();
+            return upperBound;
+        }
+        return null;
     }
 
     public String getTypeName() {

@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.modelgen.classmodel;
 
-import cz.cvut.kbss.jopa.modelgen.AnnotationEnum;
-
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +34,11 @@ public class Field {
                 .collect(Collectors.toList());
         imports = new ArrayList<>();
         if (type.getIsSimple()) {
-            imports.add(type.getTypeName());
+            if (!type.getTypeName().contains(" ")) {
+                imports.add(type.getTypeName());
+            } else {
+                imports.add(type.getTypeName().substring(type.getTypeName().lastIndexOf(" ") + 1));
+            }
         } else {
             for (Type type : type.getTypes()) {
                 imports.add(type.getTypeName());

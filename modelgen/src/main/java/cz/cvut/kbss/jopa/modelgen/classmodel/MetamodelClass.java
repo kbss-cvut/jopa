@@ -1,12 +1,14 @@
 package cz.cvut.kbss.jopa.modelgen.classmodel;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MetamodelClass {
     private String pckg;
     private String name;
+    private String extend;
     private List<String> imports;
     private List<Field> properties;
 
@@ -28,6 +30,11 @@ public class MetamodelClass {
             pckg = "";
         }
         name = elClass.getSimpleName().toString();
+        extend = ((TypeElement) elClass).getSuperclass().toString();
+        if (extend.equals(Object.class.getName())) extend = "";
+        else if (extend.contains("<")) {
+            extend = extend.substring(0, extend.indexOf("<"));
+        }
         imports = new ArrayList<>();
         imports.add("cz.cvut.kbss.jopa.model.metamodel.*");
         imports.add("javax.annotation.processing.Generated");
@@ -49,6 +56,14 @@ public class MetamodelClass {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getExtend() {
+        return extend;
+    }
+
+    public void setExtend(String extend) {
+        this.extend = extend;
     }
 
     public List<String> getImports() {

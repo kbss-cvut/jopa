@@ -6,7 +6,7 @@
     <parent>
         <artifactId>jopa-all</artifactId>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <version>0.19.3</version>
+        <version>0.30.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,31 +19,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.sun.codemodel</groupId>
-            <artifactId>codemodel</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-all</artifactId>
+            <groupId>com.google.testing.compile</groupId>
+            <artifactId>compile-testing</artifactId>
             <version>0.21.0</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-impl</artifactId>
-            <version>0.19.3</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-api</artifactId>
-            <version>0.19.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.testing.compile</groupId>
-            <artifactId>compile-testing</artifactId>
-            <version>0.21.0</version>
+            <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -74,14 +58,6 @@
                             modelgen.sh
                         </exclude>
                     </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>9</source>
-                    <target>9</target>
                 </configuration>
             </plugin>
         </plugins>

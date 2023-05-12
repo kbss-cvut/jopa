@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.modelgen;
 
+import cz.cvut.kbss.jopa.modelgen.classmodel.AnnotationEnum;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
@@ -23,6 +24,15 @@ public class OutputFilesGenerator {
         StringBuilder fileName = new StringBuilder(finalTargetFolder);
         fileName.append("/");
         String pack = glass.getPckg();
+        String extend = "";
+        if (!glass.getExtend().isEmpty()) {
+            extend = "extends ";
+            if (glass.getExtend().contains(".")) {
+                extend += glass.getExtend().substring(glass.getExtend().lastIndexOf(".") + 1) + "_ ";
+            } else {
+                extend += glass.getExtend();
+            }
+        }
         while (pack.contains(".")) {
             int index = pack.indexOf(".");
             fileName.append(pack, 0, index).append("/");
@@ -45,15 +55,24 @@ public class OutputFilesGenerator {
                     .append(imbort)
                     .append(";\n");
         });
+        if (!glass.getExtend().isEmpty()) {
+            sbOut.append("import ")
+                    .append(glass.getExtend())
+                    .append("_;\n");
+        }
         sbOut
                 .append("\n@Generated(value = \"")
                 .append("cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")")
                 .append("\n@StaticMetamodel(")
                 .append(glass.getName())
                 .append(".class)\n")
-                .append("public class ")
+                .append("public ")
+                .append("abstract ")
+                .append("class ")
                 .append(glass.getName())
-                .append("_ {\n\n");
+                .append("_ ")
+                .append(extend)
+                .append("{\n\n");
         try {
             File file = new File(fileName.toString());
             file.getParentFile().mkdirs();
@@ -135,7 +154,7 @@ public class OutputFilesGenerator {
             propertiesString
                     .append("> ")
                     .append(field.getName())
-                    .append(";\n");
+                    .append(";\n\n");
         }
         try {
             FileWriter fw = new FileWriter(classFile, true);

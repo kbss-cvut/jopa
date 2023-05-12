@@ -1,11 +1,14 @@
 package cz.cvut.kbss.jopa.maven;
 
 import cz.cvut.kbss.jopa.modelgen.ModelGenProcessor;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import javax.tools.*;
@@ -20,7 +23,12 @@ import static org.apache.commons.lang3.StringUtils.join;
 
 
 //not working
-@Mojo(name = "gen-model")
+@Mojo(
+        requiresDependencyResolution = ResolutionScope.COMPILE,
+        defaultPhase = LifecyclePhase.GENERATE_SOURCES,
+        name = "modelgen",
+        requiresProject = true
+)
 public class ModelGenMojo extends AbstractMojo {
 
     private static final String OUTPUT_DIRECTORY_PARAM = "output-directory";
@@ -29,8 +37,11 @@ public class ModelGenMojo extends AbstractMojo {
 
     //package ve kterým mám hledat soubory
 
-
-    @Parameter(defaultValue = "${project}")
+    @Parameter(
+            defaultValue = "${project}",
+            readonly = true,
+            required = true
+    )
     private MavenProject project;
     @Parameter(alias = OUTPUT_DIRECTORY_PARAM, defaultValue = "./target/generated-sources/static-metamodel")
     private String outputDirectory;
@@ -42,6 +53,7 @@ public class ModelGenMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         printParameterValues();
+        getLog().info("");
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
         List<String> options = new ArrayList<>();
@@ -56,6 +68,8 @@ public class ModelGenMojo extends AbstractMojo {
         options.add(compileClassPath);
 
         options.add("-d");
+        File folder = new File("./target/classes");
+        if (!folder.exists()) folder.mkdirs();
         options.add("./target/classes");
 
         if (isNotBlank(outputDirectory)) {
@@ -92,6 +106,8 @@ public class ModelGenMojo extends AbstractMojo {
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
             getLog().info(diagnostic.toString());
         }
+        getLog().info("Static metamodel generated.");
+        getLog().info("------------------------------------------------------------------------");
     }
 
 

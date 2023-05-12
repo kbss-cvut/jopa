@@ -75,15 +75,15 @@ class ModelGenProcessorTests {
                 "\n" +
                 "@Generated(value = \"cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")\n" +
                 "@StaticMetamodel(TestingClass.class)\n" +
-                "public class TestingClass_ {\n" +
+                "public abstract class TestingClass_ {\n" +
                 "\n" +
-                "\t public static volatile Identifier<TestingClass, URI> uri;\n" +
-                "\t public static volatile SingularAttribute<TestingClass, String> stringAttribute;\n" +
-                "\t public static volatile SingularAttribute<TestingClass, TestingClass> testingClass;\n" +
-                "\t public static volatile PropertiesSpecification<TestingClass, Map, String, String> properties;\n" +
-                "\t public static volatile PropertiesSpecification<TestingClass, Map, URI, Object> propertie;\n" +
-                "\t public static volatile ListAttribute<TestingClass, String> listAttribute;\n" +
-                "\t public static volatile SetAttribute<TestingClass, String> setAttribute;\n" +
+                "\t public static volatile Identifier<TestingClass, URI> uri;\n\n" +
+                "\t public static volatile SingularAttribute<TestingClass, String> stringAttribute;\n\n" +
+                "\t public static volatile SingularAttribute<TestingClass, TestingClass> testingClass;\n\n" +
+                "\t public static volatile PropertiesSpecification<TestingClass, Map, String, String> properties;\n\n" +
+                "\t public static volatile PropertiesSpecification<TestingClass, Map, URI, Object> propertie;\n\n" +
+                "\t public static volatile ListAttribute<TestingClass, String> listAttribute;\n\n" +
+                "\t public static volatile SetAttribute<TestingClass, String> setAttribute;\n\n" +
                 "}", readFileAsString(resultFile));
     }
 

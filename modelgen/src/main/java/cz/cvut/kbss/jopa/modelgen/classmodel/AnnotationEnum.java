@@ -1,5 +1,6 @@
-package cz.cvut.kbss.jopa.modelgen;
+package cz.cvut.kbss.jopa.modelgen.classmodel;
 
+import java.util.Arrays;
 import java.util.List;
 
 public enum AnnotationEnum {
@@ -21,7 +22,7 @@ public enum AnnotationEnum {
     }
 
     public static List<AnnotationEnum> getAll() {
-        return List.of(PROPERTIES, OBJECTPROPERTY, DATAPROPERTY, ANNOTATIONPROPERTY, TYPES, ID);
+        return Arrays.asList(PROPERTIES, OBJECTPROPERTY, DATAPROPERTY, ANNOTATIONPROPERTY, TYPES, ID);
     }
 
 }
