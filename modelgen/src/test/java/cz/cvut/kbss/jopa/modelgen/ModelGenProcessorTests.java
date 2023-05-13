@@ -2,23 +2,27 @@ package cz.cvut.kbss.jopa.modelgen;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ModelGenProcessorTests {
 
-
+    static String actualResult = "";
     @Test
-    void modelGenProcessorSuccessTest() {
+    void createSMClassSuccess(){
         String outputDirectory = "./target/generated-test-sources/static-metamodel";
 
         List<String> options = new ArrayList<>();
@@ -27,68 +31,29 @@ class ModelGenProcessorTests {
         Compilation compilation =
                 javac()
                         .withProcessors(new ModelGenProcessor()).withOptions(options)
-                        .compile(JavaFileObjects.forSourceString(
-                                "cz.test.ex.TestingClass", "package cz.test.ex;\n" +
-                                        "\n" +
-                                        "import cz.cvut.kbss.jopa.model.annotations.*;\n" +
-                                        "\n" +
-                                        "import java.net.URI;\n" +
-                                        "import java.util.List;\n" +
-                                        "import java.util.Map;\n" +
-                                        "import java.util.Set;\n" +
-                                        "\n" +
-                                        "@MappedSuperclass\n" +
-                                        "public class TestingClass {\n" +
-                                        "    @Id(generated = true)\n" +
-                                        "    private URI uri;\n" +
-                                        "\n" +
-                                        "    @OWLDataProperty(iri = \"http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute\")\n" +
-                                        "    private String stringAttribute;\n" +
-                                        "\n" +
-                                        "    @OWLDataProperty(iri = \"http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute\")\n" +
-                                        "    private TestingClass testingClass;\n" +
-                                        "\n" +
-                                        "    @Inferred\n" +
-                                        "    @Properties(fetchType = FetchType.LAZY)\n" +
-                                        "    private Map<String, Set<String>> properties;\n" +
-                                        "    @Properties\n" +
-                                        "    private Map<URI, Set<Object>> propertie;\n" +
-                                        "    @OWLObjectProperty(iri = \"http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute\")\n" +
-                                        "    private List<String> listAttribute;\n" +
-                                        "    @OWLObjectProperty(iri = \"http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute\")\n" +
-                                        "    private Set<String> setAttribute;" +
-                                        "}"
-                        ));
+                        .compile(
+                                JavaFileObjects.forSourceLines("cz.test.ex.TestingClassOWL",readFileAsString(new File("src/test/java/cz/test/ex/TestingClassOWL.java"))),
+                                JavaFileObjects.forSourceLines("cz.test.ex.TestingClassNonEntity",readFileAsString(new File("src/test/java/cz/test/ex/TestingClassNonEntity.java"))),
+                                JavaFileObjects.forSourceLines("cz.test.ex.TestingClassNotOWL",readFileAsString(new File("src/test/java/cz/test/ex/TestingClassNotOWL.java"))));
         assertThat(compilation).succeededWithoutWarnings();
 
-        File resultFile = new File(outputDirectory + "/cz/test/ex/TestingClass_.java");
-        assertEquals("package cz.test.ex;\n" +
-                "\n" +
-                "import cz.cvut.kbss.jopa.model.metamodel.*;\n" +
-                "import javax.annotation.processing.Generated;\n" +
-                "import cz.test.ex.TestingClass;\n" +
-                "import java.net.URI;\n" +
-                "import java.lang.String;\n" +
-                "import java.util.Map;\n" +
-                "import java.util.Set;\n" +
-                "import java.util.List;\n" +
-                "\n" +
-                "@Generated(value = \"cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")\n" +
-                "@StaticMetamodel(TestingClass.class)\n" +
-                "public abstract class TestingClass_ {\n" +
-                "\n" +
-                "\t public static volatile Identifier<TestingClass, URI> uri;\n\n" +
-                "\t public static volatile SingularAttribute<TestingClass, String> stringAttribute;\n\n" +
-                "\t public static volatile SingularAttribute<TestingClass, TestingClass> testingClass;\n\n" +
-                "\t public static volatile PropertiesSpecification<TestingClass, Map, String, String> properties;\n\n" +
-                "\t public static volatile PropertiesSpecification<TestingClass, Map, URI, Object> propertie;\n\n" +
-                "\t public static volatile ListAttribute<TestingClass, String> listAttribute;\n\n" +
-                "\t public static volatile SetAttribute<TestingClass, String> setAttribute;\n\n" +
-                "}", readFileAsString(resultFile));
+        assertFalse(Files.exists(Paths.get(outputDirectory + "/cz/test/ex/TestingClassNonEntity_.java")));
+        assertFalse(Files.exists(Paths.get(outputDirectory + "/cz/test/ex/TestingClassNotOWL_.java")));
+
+        actualResult = readFileAsString(new File(outputDirectory + "/cz/test/ex/TestingClassOWL_.java"));
+    }
+    @AfterAll
+    static void deleteSMClass() {
+        File file = new File("./target/generated-test-sources/static-metamodel/cz/test/ex/TestingClass_.java");
+        file.delete();
+    }
+    @Test
+    void doesntContainInferred() {
+        assertFalse(actualResult.isEmpty());
+        assertFalse(actualResult.contains("public static volatile SingularAttribute<TestingClass, String> stringAttribute;"));
     }
 
-
-    String readFileAsString(File file) {
+    static String readFileAsString(File file) {
         try {
             Scanner scanner = new Scanner(file);
             String fileContents = scanner.useDelimiter("\\Z").next();

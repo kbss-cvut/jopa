@@ -7,24 +7,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@MappedSuperclass
-public class TestingClass {
+@OWLClass(iri="")
+public class TestingClassOWL {
     @Id(generated = true)
     private URI uri;
 
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute")
-    private String stringAttribute;
-
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute")
-    private TestingClass testingClass;
+    private TestingClassOWL testingClassOWL;
 
     @Inferred
     @Properties(fetchType = FetchType.LAZY)
     private Map<String, Set<String>> properties;
     @Properties
     private Map<URI, Set<Object>> propertie;
-    @Properties
-    private List<String> properti;
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
     private List<String> listAttribute;
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")

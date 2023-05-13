@@ -32,6 +32,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 public class ModelGenMojo extends AbstractMojo {
 
     private static final String OUTPUT_DIRECTORY_PARAM = "output-directory";
+    private static final String ADDITIONAL_SORCES_PARAM = "additional-sources";
     private static final String SOURCE_PACKAGE_PARAM = "source-package";
     public static final String DEBUG_PARAM = "debug-option";
 
@@ -49,6 +50,8 @@ public class ModelGenMojo extends AbstractMojo {
     private String sourcePackage;
     @Parameter(alias = DEBUG_PARAM, defaultValue = "false")
     private String debugOption;
+    @Parameter(alias = ADDITIONAL_SORCES_PARAM, defaultValue = "")
+    private String additionalSources;
 
 
     public void execute() throws MojoExecutionException {
@@ -98,13 +101,31 @@ public class ModelGenMojo extends AbstractMojo {
                 fileManager.getJavaFileObjectsFromFiles(sourceFiles);
 
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector, options, null, compilationUnits);
+
+        getLog().info("Processing annotations began.");
         try {
             task.call();
         } catch (Exception e) {
             throw e;
         }
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
-            getLog().info(diagnostic.toString());
+            switch (diagnostic.getKind()){
+                case ERROR:
+                    getLog().error(diagnostic.getMessage(null));
+                    break;
+                case WARNING:
+                    getLog().warn(diagnostic.getMessage(null));
+                    break;
+                case MANDATORY_WARNING:
+                    getLog().warn(diagnostic.getMessage(null));
+                    break;
+                case NOTE:
+                    getLog().info(diagnostic.getMessage(null));
+                    break;
+                case OTHER:
+                    getLog().info(diagnostic.getMessage(null));
+                    break;
+            }
         }
         getLog().info("Static metamodel generated.");
         getLog().info("------------------------------------------------------------------------");
@@ -119,7 +140,7 @@ public class ModelGenMojo extends AbstractMojo {
         List<String> directoryNames = getCompileSourceRoots();
         for (String name : directoryNames) {
             File file = new File(name);
-            if (!file.getAbsolutePath().equals(outputPath) && file.exists() && file.isDirectory()) {
+            if (file.exists() && file.isDirectory()) {
                 directories.add(file);
             }
         }
@@ -129,6 +150,9 @@ public class ModelGenMojo extends AbstractMojo {
 
     private List<String> getCompileSourceRoots() {
         @SuppressWarnings("unchecked") final List<String> compileSourceRoots = project.getCompileSourceRoots();
+        if (!additionalSources.isEmpty()) {
+            compileSourceRoots.add(additionalSources);
+        }
         return new ArrayList<String>(compileSourceRoots);
     }
 
@@ -189,6 +213,8 @@ public class ModelGenMojo extends AbstractMojo {
     private void printParameterValues() {
         print(OUTPUT_DIRECTORY_PARAM, outputDirectory);
         print(SOURCE_PACKAGE_PARAM, sourcePackage);
+        print(DEBUG_PARAM, debugOption);
+        print(ADDITIONAL_SORCES_PARAM, additionalSources);
     }
 
     private void print(String param, Object value) {

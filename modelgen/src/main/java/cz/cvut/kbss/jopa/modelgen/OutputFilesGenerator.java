@@ -88,7 +88,7 @@ public class OutputFilesGenerator {
 
     public static void appendProperties(MetamodelClass glass, File classFile) {
         StringBuilder propertiesString = new StringBuilder();
-        for (Field field : glass.getProperties()) {
+        for (Field field : glass.getFields()) {
             propertiesString.append("\t public static volatile ");
             //@Id
             if (isAnnotatedWith(field, AnnotationEnum.ID)) {

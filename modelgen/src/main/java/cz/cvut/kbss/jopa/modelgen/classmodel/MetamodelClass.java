@@ -10,7 +10,7 @@ public class MetamodelClass {
     private String name;
     private String extend;
     private List<String> imports;
-    private List<Field> properties;
+    private List<Field> fields;
 
     public MetamodelClass() {
         pckg = "";
@@ -18,7 +18,7 @@ public class MetamodelClass {
         imports = new ArrayList<>();
         imports.add("cz.cvut.kbss.jopa.model.metamodel.*");
         imports.add("javax.annotation.processing.Generated");
-        properties = new ArrayList<>();
+        fields = new ArrayList<>();
     }
 
     public MetamodelClass(Element elClass) {
@@ -39,7 +39,7 @@ public class MetamodelClass {
         imports.add("cz.cvut.kbss.jopa.model.metamodel.*");
         imports.add("javax.annotation.processing.Generated");
         imports.add(fullName);
-        properties = new ArrayList<>();
+        fields = new ArrayList<>();
     }
 
     public String getPckg() {
@@ -74,12 +74,12 @@ public class MetamodelClass {
         this.imports = imports;
     }
 
-    public List<Field> getProperties() {
-        return properties;
+    public List<Field> getFields() {
+        return fields;
     }
 
-    public void addProperty(Field field) {
-        this.properties.add(field);
+    public void addField(Field field) {
+        this.fields.add(field);
         field.getImports().forEach((imbort) -> {
             if (!imports.contains(imbort)) {
                 imports.add(imbort);
@@ -87,7 +87,7 @@ public class MetamodelClass {
         });
     }
 
-    public void setProperties(List<Field> properties) {
-        this.properties = properties;
+    public void setFields(List<Field> properties) {
+        this.fields = properties;
     }
 }

@@ -53,7 +53,6 @@ public class ModelGenProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        messager.printMessage(Diagnostic.Kind.NOTE, "Processing annotations began.");
         for (TypeElement te : annotations) {
             for (Element elParent : roundEnv.getElementsAnnotatedWith(te)) {
                 if (!isAnnotatedWithNonEntity(elParent)) {
@@ -68,7 +67,7 @@ public class ModelGenProcessor extends AbstractProcessor {
                                 Field field = new Field(elProperty, elParent);
                                 if (debugOption)
                                     messager.printMessage(Diagnostic.Kind.NOTE, "\t\t - Processing field " + field.getName());
-                                parentClass.addProperty(field);
+                                parentClass.addField(field);
                             }
                         }
                         classes.put(elParent.toString(), parentClass);
