@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * The {@code Convert} annotation may be applied to a basic attribute or to an element collection of basic type (in
  * which case the converter is applied to the elements of the collection).
  */
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Convert {
 

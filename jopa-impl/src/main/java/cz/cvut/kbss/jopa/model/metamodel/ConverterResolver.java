@@ -57,7 +57,7 @@ public class ConverterResolver {
      * @return Possible converter instance to be used for transformation of values of the specified field. Returns empty
      * {@code Optional} if no suitable converter is found (or needed)
      */
-    public Optional<ConverterWrapper<?, ?>> resolveConverter(Field field, PropertyAttributes config) {
+    public Optional<ConverterWrapper<?, ?>> resolveConverter(PropertyInfo field, PropertyAttributes config) {
         final Class<?> attValueType = config.getType().getJavaType();
         final Optional<ConverterWrapper<?, ?>> localCustomConverter = resolveCustomConverter(field, config);
         if (localCustomConverter.isPresent()) {
@@ -91,7 +91,7 @@ public class ConverterResolver {
         }
     }
 
-    private static void verifyTypeIsString(Field field, Class<?> attValueType) {
+    private static void verifyTypeIsString(PropertyInfo field, Class<?> attValueType) {
         if (!attValueType.equals(String.class)) {
             throw new InvalidFieldMappingException(
                     "Attributes with explicit datatype identifier must have values of type String. " +
@@ -99,7 +99,7 @@ public class ConverterResolver {
         }
     }
 
-    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(Field field, PropertyAttributes config) {
+    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field, PropertyAttributes config) {
         final Convert convertAnn = field.getAnnotation(Convert.class);
         if (convertAnn == null || convertAnn.disableConversion()) {
             return Optional.empty();

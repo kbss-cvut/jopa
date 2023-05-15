@@ -20,6 +20,10 @@ import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+
 import static org.mockito.Mockito.*;
 
 class EntityLifecycleListenerManagerTest {
@@ -46,7 +50,7 @@ class EntityLifecycleListenerManagerTest {
     void listenerInvocationInvokesListenersTopDown() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         parentManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Parent.class.getDeclaredMethod("prePersist"));
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         manager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Child.class.getDeclaredMethod("prePersistChild"));
         final Child instance = spy(new Child());
         manager.invokePrePersistCallbacks(instance);
@@ -59,7 +63,7 @@ class EntityLifecycleListenerManagerTest {
     void listenerInvocationInvokesAncestorListenersWhenNoneAreDeclaredDirectlyOnEntity() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         parentManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Parent.class.getDeclaredMethod("prePersist"));
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         final Child instance = spy(new Child());
         manager.invokePrePersistCallbacks(instance);
         verify(instance).prePersist();
@@ -131,7 +135,7 @@ class EntityLifecycleListenerManagerTest {
         parentManager.addEntityListener(parentListener);
         parentManager.addEntityListenerCallback(parentListener, LifecycleEvent.POST_LOAD,
                 ParentListener.class.getDeclaredMethod("postLoad", Parent.class));
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         final ChildListener childListener = spy(new ChildListener());
         manager.addEntityListener(childListener);
         manager.addEntityListenerCallback(childListener, LifecycleEvent.POST_LOAD,
@@ -169,8 +173,7 @@ class EntityLifecycleListenerManagerTest {
         parentManager.addEntityListenerCallback(parentListener, LifecycleEvent.POST_LOAD,
                 ParentListener.class.getDeclaredMethod("postLoad", Parent.class));
         parentManager.addLifecycleCallback(LifecycleEvent.POST_LOAD, Parent.class.getDeclaredMethod("postLoad"));
-        manager.setParent(parentManager);
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         final ChildListener childListener = spy(new ChildListener());
         manager.addEntityListener(childListener);
         manager.addEntityListenerCallback(childListener, LifecycleEvent.POST_LOAD,

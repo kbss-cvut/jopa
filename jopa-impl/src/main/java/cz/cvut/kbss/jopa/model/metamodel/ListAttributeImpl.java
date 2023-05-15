@@ -93,8 +93,8 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         }
 
         @Override
-        public ListAttributeBuilder<X, V> field(Field field) {
-            super.field(field);
+        public ListAttributeBuilder<X, V> propertyInfo(PropertyInfo propertyInfo) {
+            super.propertyInfo(propertyInfo);
             return this;
         }
 

@@ -29,7 +29,9 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,7 +54,7 @@ public class EntityLifecycleCallbackResolverTest {
     private <T> AbstractIdentifiableType<T> typeFor(Class<T> cls) {
         final String name = cls.getName();
         final String iri = cls.getDeclaredAnnotation(OWLClass.class).iri();
-        return new EntityTypeImpl<>(name, cls, IRI.create(iri));
+        return new ConcreteEntityType<>(name, cls, IRI.create(iri));
     }
 
     @Test
@@ -154,11 +156,14 @@ public class EntityLifecycleCallbackResolverTest {
         final AbstractIdentifiableType<OWLClassS> parent = typeFor(OWLClassS.class);
         parent.setLifecycleListenerManager(resolve(parent));
         final AbstractIdentifiableType<OWLClassR> child = typeFor(OWLClassR.class);
-        child.setSupertype(parent);
+        child.setSupertypes(Collections.singleton(parent));
         final EntityLifecycleListenerManager result = resolve(child);
-        final Field parentField = EntityLifecycleListenerManager.class.getDeclaredField("parent");
-        parentField.setAccessible(true);
-        assertEquals(parent.getLifecycleListenerManager(), parentField.get(result));
+        final Field parentsField = EntityLifecycleListenerManager.class.getDeclaredField("parents");
+        parentsField.setAccessible(true);
+
+        Set<?> parentsFieldValue = (Set<?>) parentsField.get(result);
+        assertEquals(1, parentsFieldValue.size());
+        assertTrue(parentsFieldValue.contains(parent.getLifecycleListenerManager()));
     }
 
     @Test

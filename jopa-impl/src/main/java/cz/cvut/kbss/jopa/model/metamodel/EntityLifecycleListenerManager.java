@@ -30,7 +30,7 @@ public class EntityLifecycleListenerManager {
 
     private static final EntityLifecycleListenerManager EMPTY = new EntityLifecycleListenerManager();
 
-    private EntityLifecycleListenerManager parent;
+    private Set<EntityLifecycleListenerManager> parents = new HashSet<>();
 
     private final Map<LifecycleEvent, Method> lifecycleCallbacks = new EnumMap<>(LifecycleEvent.class);
 
@@ -83,9 +83,9 @@ public class EntityLifecycleListenerManager {
     }
 
     private void invokeEntityListenerCallbacks(Object instance, LifecycleEvent lifecycleEvent) {
-        if (parent != null) {
-            parent.invokeEntityListenerCallbacks(instance, lifecycleEvent);
-        }
+
+        parents.forEach(parent -> parent.invokeEntityListenerCallbacks(instance, lifecycleEvent));
+
         if (entityListeners != null) {
             entityListeners
                     .forEach(listener -> getEntityListenerCallback(listener, lifecycleEvent).ifPresent(method -> {
@@ -107,9 +107,9 @@ public class EntityLifecycleListenerManager {
     }
 
     private void invokeInternalCallbacks(Object instance, LifecycleEvent lifecycleEvent) {
-        if (parent != null) {
-            parent.invokeInternalCallbacks(instance, lifecycleEvent);
-        }
+
+        parents.forEach(parent -> parent.invokeInternalCallbacks(instance, lifecycleEvent));
+
         if (lifecycleCallbacks.containsKey(lifecycleEvent)) {
             final Method listener = lifecycleCallbacks.get(lifecycleEvent);
             if (!listener.isAccessible()) {
@@ -213,12 +213,18 @@ public class EntityLifecycleListenerManager {
         invokeCallbacks(instance, LifecycleEvent.POST_REMOVE);
     }
 
-    void setParent(EntityLifecycleListenerManager parent) {
-        this.parent = parent;
+    void setParents(Set<EntityLifecycleListenerManager> parents) {
+        assert parents != null;
+        this.parents = parents;
     }
 
-    EntityLifecycleListenerManager getParent() {
-        return parent;
+    void addParent(EntityLifecycleListenerManager parent) {
+        assert parent != null;
+        this.parents.add(parent);
+    }
+
+    Set<EntityLifecycleListenerManager> getParents() {
+        return parents;
     }
 
     void addEntityListener(Object entityListener) {
@@ -255,7 +261,7 @@ public class EntityLifecycleListenerManager {
 
     Map<Object, Map<LifecycleEvent, Method>> getEntityListenerCallbacks() {
         return entityListenerCallbacks != null ? Collections.unmodifiableMap(entityListenerCallbacks) :
-               Collections.emptyMap();
+                Collections.emptyMap();
     }
 
     void addEntityListenerCallback(Object listener, LifecycleEvent event, Method callback) {

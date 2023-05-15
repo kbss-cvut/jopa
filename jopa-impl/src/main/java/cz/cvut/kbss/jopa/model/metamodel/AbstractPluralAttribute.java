@@ -91,8 +91,8 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
         }
 
         @Override
-        public PluralAttributeBuilder<X, C, E> field(Field field) {
-            super.field(field);
+        public PluralAttributeBuilder<X, C, E> propertyInfo(PropertyInfo propertyInfo) {
+            super.propertyInfo(propertyInfo);
             return this;
         }
 

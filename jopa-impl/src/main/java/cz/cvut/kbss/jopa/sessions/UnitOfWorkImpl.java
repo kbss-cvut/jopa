@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
@@ -514,7 +514,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalStateException("This unit of work is not in a transaction.");
         }
         final Descriptor descriptor = getDescriptor(entity);
-        final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
+        final IdentifiableEntityType<Object> et = entityType((Class<Object>) entity.getClass());
         final FieldSpecification<Object, ?> fieldSpec = et.getFieldSpecification(f.getName());
         final Object original = getOriginal(entity);
         if (fieldSpec.isInferred() && original != null) {
@@ -601,7 +601,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
         assert entity != null;
-        final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
+        final IdentifiableEntityType<T> et = (IdentifiableEntityType<T>) entityType(entity.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         final T clone = getInstanceForMerge(idUri, et, descriptor);
@@ -730,7 +730,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalArgumentException(
                     "Cannot call refresh on an instance not managed by this persistence context.");
         }
-        final EntityTypeImpl<T> et = entityType((Class<T>) object.getClass());
+        final IdentifiableEntityType<T> et = entityType((Class<T>) object.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
         final Descriptor descriptor = getDescriptor(object);
 
@@ -777,7 +777,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @param descriptor Entity descriptor, specifying optionally contexts into which the entity will be persisted
      */
     private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
-        final EntityTypeImpl<?> eType = entityType(entity.getClass());
+        final IdentifiableEntityType<?> eType = entityType(entity.getClass());
         eType.getLifecycleListenerManager().invokePrePersistCallbacks(entity);
         Object id = getIdentifier(entity);
         if (id == null) {
@@ -823,7 +823,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalArgumentException(
                     "Cannot remove entity which is not managed in the current persistence context.");
         }
-        final EntityTypeImpl<?> et = entityType(entity.getClass());
+        final IdentifiableEntityType<?> et = entityType(entity.getClass());
         et.getLifecycleListenerManager().invokePreRemoveCallbacks(entity);
         final Object primaryKey = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
@@ -897,7 +897,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return parent.getMetamodel();
     }
 
-    private <T> EntityTypeImpl<T> entityType(Class<T> cls) {
+    private <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
         return getMetamodel().entity(cls);
     }
 

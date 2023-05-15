@@ -54,14 +54,14 @@ class DataPropertyAttributesTest {
     @Test
     void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassM.getLexicalFormField(), metamodelBuilder, OWLClassM.getLexicalFormField().getType());
+        sut.resolve(OWLClassM.getLexicalFormFieldPropertyInfo(), metamodelBuilder, OWLClassM.getLexicalFormField().getType());
         assertTrue(sut.isLexicalForm());
     }
 
     @Test
     void resolveResolvesSimpleLiteralConfigurationFromAnnotation() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassM.getSimpleLiteralField(), metamodelBuilder, OWLClassM.getSimpleLiteralField().getType());
+        sut.resolve(OWLClassM.getSimpleLiteralFieldPropertyInfo(), metamodelBuilder, OWLClassM.getSimpleLiteralField().getType());
         assertTrue(sut.isSimpleLiteral());
     }
 
@@ -69,21 +69,21 @@ class DataPropertyAttributesTest {
     void resolveSetsLanguageFromPersistenceUnitLanguageConfiguration() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, OWLClassA.getStrAttField().getType());
+        sut.resolve(OWLClassA.getStrAttFieldPropertyInfo(), metamodelBuilder, OWLClassA.getStrAttField().getType());
         assertEquals("en", sut.getLanguage());
     }
 
     @Test
     void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassA.getStrAttField(), metamodelBuilder, MultilingualString.class);
+        sut.resolve(OWLClassA.getStrAttFieldPropertyInfo(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
     }
 
     @Test
     void resolveSetsDatatypeToValueSpecifiedInAnnotation() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassM.getExplicitDatatypeField(), metamodelBuilder, String.class);
+        sut.resolve(OWLClassM.getExplicitDatatypeFieldPropertyInfo(), metamodelBuilder, String.class);
         assertNotNull(sut.getDatatype());
         assertEquals(OWLClassM.getExplicitDatatypeField().getAnnotation(OWLDataProperty.class)
                 .datatype(), sut.getDatatype());
@@ -92,14 +92,14 @@ class DataPropertyAttributesTest {
     @Test
     void resolveSetsEnumTypeToValueSpecifiedInEnumeratedAnnotation() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassM.getOrdinalEnumAttributeField(), metamodelBuilder, OWLClassM.Severity.class);
+        sut.resolve(OWLClassM.getOrdinalEnumAttributePropertyInfo(), metamodelBuilder, OWLClassM.Severity.class);
         assertEquals(EnumType.ORDINAL, sut.getEnumType());
     }
 
     @Test
     void resolveSetsEnumTypeToStringWhenEnumeratedAnnotationIsNotSpecifiedOnEnumValuedField() throws Exception {
         final DataPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassM.getEnumAttributeField(), metamodelBuilder, OWLClassM.Severity.class);
+        sut.resolve(OWLClassM.getEnumAttributePropertyInfo(), metamodelBuilder, OWLClassM.Severity.class);
         assertEquals(EnumType.STRING, sut.getEnumType());
     }
 }

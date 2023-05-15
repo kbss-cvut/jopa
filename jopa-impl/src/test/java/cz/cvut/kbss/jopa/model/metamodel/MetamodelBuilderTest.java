@@ -16,9 +16,10 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
+import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
-import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
@@ -40,6 +41,8 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -142,7 +145,7 @@ class MetamodelBuilderTest {
     void buildMetamodelBuildsEntityWithBuiltInConverters() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
-        final EntityTypeImpl<OWLClassM> et = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
+        final IdentifiableEntityType<OWLClassM> et = (IdentifiableEntityType<OWLClassM>) builder.getEntityClass(OWLClassM.class);
         final AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer> result =
                 (AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer>) et
                         .getDeclaredAttribute(OWLClassM.getIntegerSetField().getName());
@@ -153,7 +156,7 @@ class MetamodelBuilderTest {
     void buildMetamodelBuildsEntityWithLocalDateTimeConverter() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassT.class));
         builder.buildMetamodel(finderMock);
-        final EntityTypeImpl<OWLClassT> et = (EntityTypeImpl<OWLClassT>) builder.getEntityClass(OWLClassT.class);
+        final IdentifiableEntityType<OWLClassT> et = (IdentifiableEntityType<OWLClassT>) builder.getEntityClass(OWLClassT.class);
         final AbstractAttribute<OWLClassT, LocalDateTime> result = (AbstractAttribute<OWLClassT, LocalDateTime>) et
                 .getDeclaredAttribute(OWLClassT.getLocalDateTimeField().getName());
         assertThat(result.getConverter(), instanceOf(LocalDateTimeConverter.class));
@@ -163,13 +166,15 @@ class MetamodelBuilderTest {
     void buildMetamodelBuildsEntityWithParentLifecycleCallbacks() {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(ChildWithCallback.class));
         builder.buildMetamodel(finderMock);
-        final EntityTypeImpl<ChildWithCallback> result = (EntityTypeImpl<ChildWithCallback>) builder
+        final IdentifiableEntityType<ChildWithCallback> result = (IdentifiableEntityType<ChildWithCallback>) builder
                 .getEntityClass(ChildWithCallback.class);
         final EntityLifecycleListenerManager childLifecycleManager = result.getLifecycleListenerManager();
         assertFalse(childLifecycleManager.getLifecycleCallbacks().isEmpty());
         assertTrue(childLifecycleManager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
-        assertNotNull(childLifecycleManager.getParent());
-        assertTrue(childLifecycleManager.getParent().hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
+        assertNotNull(childLifecycleManager.getParents());
+        assertTrue(childLifecycleManager.getParents()
+                .stream()
+                .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
     }
 
     @MappedSuperclass
@@ -198,7 +203,7 @@ class MetamodelBuilderTest {
     void buildMetamodelSetsLexicalFormConfigOnAttributeMappingBasedOnAnnotation() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
-        final EntityTypeImpl<OWLClassM> result = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
+        final IdentifiableEntityType<OWLClassM> result = (IdentifiableEntityType<OWLClassM>) builder.getEntityClass(OWLClassM.class);
         final AbstractAttribute<OWLClassM, String> att = (AbstractAttribute<OWLClassM, String>) result
                 .getAttribute(OWLClassM.getLexicalFormField().getName());
         assertTrue(att.isLexicalForm());
@@ -208,7 +213,7 @@ class MetamodelBuilderTest {
     void buildMetamodelSetsSimpleLiteralConfigOnAttributeMappingBasedOnAnnotation() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
-        final EntityTypeImpl<OWLClassM> result = (EntityTypeImpl<OWLClassM>) builder.getEntityClass(OWLClassM.class);
+        final IdentifiableEntityType<OWLClassM> result = (IdentifiableEntityType<OWLClassM>) builder.getEntityClass(OWLClassM.class);
         final AbstractAttribute<OWLClassM, String> att = (AbstractAttribute<OWLClassM, String>) result
                 .getAttribute(OWLClassM.getSimpleLiteralField().getName());
         assertTrue(att.isSimpleLiteral());
@@ -218,7 +223,7 @@ class MetamodelBuilderTest {
     void buildMetamodelSupportsPluralSimpleLiteralAttributes() {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(WithPluralSimpleLiteral.class));
         builder.buildMetamodel(finderMock);
-        final EntityTypeImpl<WithPluralSimpleLiteral> result = (EntityTypeImpl<WithPluralSimpleLiteral>) builder
+        final IdentifiableEntityType<WithPluralSimpleLiteral> result = (IdentifiableEntityType<WithPluralSimpleLiteral>) builder
                 .getEntityClass(WithPluralSimpleLiteral.class);
         final AbstractPluralAttribute<WithPluralSimpleLiteral, Set<String>, String> att = (AbstractPluralAttribute<WithPluralSimpleLiteral, Set<String>, String>) result
                 .getAttribute("pluralSimpleLiteral");
@@ -244,7 +249,7 @@ class MetamodelBuilderTest {
                 .thenReturn(new HashSet<>(Arrays.asList(WithCollectionAttributes.class, OWLClassA.class)));
         builder.buildMetamodel(finderMock);
 
-        final EntityTypeImpl<WithCollectionAttributes> et = (EntityTypeImpl<WithCollectionAttributes>) builder
+        final IdentifiableEntityType<WithCollectionAttributes> et = (IdentifiableEntityType<WithCollectionAttributes>) builder
                 .getEntityClass(WithCollectionAttributes.class);
         assertNotNull(et);
         final PluralAttribute<WithCollectionAttributes, Collection<String>, String> dataAtt = (PluralAttribute<WithCollectionAttributes, Collection<String>, String>) et
@@ -307,6 +312,76 @@ class MetamodelBuilderTest {
     }
 
     @Test
+    void buildMetamodelSupportsMultipleInheritanceInterfaceOnly() {
+        when(finderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(AParentI.class, BParentI.class, InterfaceChild.class)));
+        builder.buildMetamodel(finderMock);
+
+        final EntityType<InterfaceChild> cClassEt = (EntityType<InterfaceChild>) builder.getEntityClass(InterfaceChild.class);
+        final EntityType<AParentI> AParentEt = (EntityType<AParentI>) builder.getEntityClass(AParentI.class);
+        final EntityType<BParentI> BParentEt = (EntityType<BParentI>) builder.getEntityClass(BParentI.class);
+
+        assertThat(builder.getEntities().entrySet(), hasSize(3));
+
+        assertNotNull(cClassEt);
+        assertThat(cClassEt.getSupertypes(), hasSize(2));
+        assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "AParentI")
+    private interface AParentI {
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "BParentI")
+    private interface BParentI {
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "InterfaceChild")
+    private static class InterfaceChild implements AParentI, BParentI {
+        @Id
+        private URI uri;
+    }
+
+    @Test
+    void buildMetamodelSupportsMultipleInheritanceInterfaceAndClass() {
+        when(finderMock.getEntities()).thenReturn(new HashSet<>(Arrays.asList(AParentI.class, BParent.class, ClassChild.class)));
+        builder.buildMetamodel(finderMock);
+
+        final EntityType<ClassChild> cClassEt = (EntityType<ClassChild>) builder.getEntityClass(ClassChild.class);
+        final EntityType<AParentI> AParentEt = (EntityType<AParentI>) builder.getEntityClass(AParentI.class);
+        final EntityType<BParent> BParentEt = (EntityType<BParent>) builder.getEntityClass(BParent.class);
+
+        assertThat(builder.getEntities().entrySet(), hasSize(3));
+
+        assertNotNull(cClassEt);
+        assertThat(cClassEt.getSupertypes(), hasSize(2));
+        assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "BParent")
+    private static class BParent {
+        @Id
+        private URI uri;
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "Child")
+    private static class ClassChild extends BParent implements AParentI {
+
+    }
+
+    @Test
+    void buildMetamodelThrowsExceptionIfAnnotatedMethodHasInvalidName() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(InterfaceWithInvalidMethod.class));
+
+        assertThrows(MetamodelInitializationException.class, () -> builder.buildMetamodel(finderMock));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidMethod")
+    private interface InterfaceWithInvalidMethod {
+        @OWLDataProperty(iri = Vocabulary.CLASS_BASE + "name")
+        void getName();
+    }
+
+    @Test
     void buildMetamodelBuildsAttributeWithConverterForEnumValuedObjectProperty() throws Exception {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
@@ -347,7 +422,7 @@ class MetamodelBuilderTest {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(WithInferredTypesAndProperties.class));
         builder.buildMetamodel(finderMock);
         final AbstractIdentifiableType<WithInferredTypesAndProperties> et = builder.entity(WithInferredTypesAndProperties.class);
-        final PropertiesSpecification<? super WithInferredTypesAndProperties, ?, ? , ?> types = et.getProperties();
+        final PropertiesSpecification<? super WithInferredTypesAndProperties, ?, ?, ?> types = et.getProperties();
         assertTrue(types.isInferred());
         assertEquals(FetchType.EAGER, types.getFetchType());
     }

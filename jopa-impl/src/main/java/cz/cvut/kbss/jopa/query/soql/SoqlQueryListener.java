@@ -14,6 +14,9 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -180,7 +183,7 @@ public class SoqlQueryListener implements SoqlListener {
             return false;
         }
         String objectName = objectTypes.get(objectNode.getValue());
-        EntityTypeImpl<?> entityType = getEntityType(objectName);
+        IdentifiableEntityType<?> entityType = getEntityType(objectName);
         if (entityType == null) {
             return false;
         }
@@ -643,7 +646,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private void setObjectIri(SoqlNode node) {
-        EntityTypeImpl<?> entityType = getEntityType(node.getValue());
+        IdentifiableEntityType<?> entityType = getEntityType(node.getValue());
         if (entityType == null) {
             return;
         }
@@ -653,9 +656,9 @@ public class SoqlQueryListener implements SoqlListener {
         }
     }
 
-    private EntityTypeImpl<?> getEntityType(String name) {
+    private IdentifiableEntityType<?> getEntityType(String name) {
         for (EntityType<?> type : metamodel.getEntities()) {
-            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) type;
+            IdentifiableEntityType<?> entityType = (IdentifiableEntityType<?>) type;
             if (entityType.getName().equals(name)) {
                 return entityType;
             }
@@ -692,7 +695,7 @@ public class SoqlQueryListener implements SoqlListener {
             return;
         }
         String objectName = objectTypes.get(firstNode.getValue());
-        EntityTypeImpl<?> entityType = getEntityType(objectName);
+        IdentifiableEntityType<?> entityType = getEntityType(objectName);
         if (entityType == null) {
             return;
         }

@@ -21,6 +21,11 @@ public class MappedSuperclassTypeImpl<X> extends AbstractIdentifiableType<X> imp
     }
 
     @Override
+    public boolean isAbstract() {
+        return true;
+    }
+
+    @Override
     public PersistenceType getPersistenceType() {
         return PersistenceType.MAPPED_SUPERCLASS;
     }
