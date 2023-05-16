@@ -169,6 +169,8 @@ class ClassFieldMetamodelProcessor<X> {
                 Objects.equals(newMethod.getAnnotation(OWLDataProperty.class), foundMethod.getAnnotation(OWLDataProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(OWLAnnotationProperty.class), foundMethod.getAnnotation(OWLAnnotationProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(Convert.class), foundMethod.getAnnotation(Convert.class)) &&
+                Objects.equals(newMethod.getAnnotation(Sequence.class), foundMethod.getAnnotation(Sequence.class)) &&
+                Objects.equals(newMethod.getAnnotation(Enumerated.class), foundMethod.getAnnotation(Enumerated.class)) &&
                 Objects.equals(newMethod.getAnnotation(ParticipationConstraints.class), foundMethod.getAnnotation(ParticipationConstraints.class));
 
     }

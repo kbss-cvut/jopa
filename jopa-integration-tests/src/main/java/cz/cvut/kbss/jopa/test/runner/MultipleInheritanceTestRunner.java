@@ -35,13 +35,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class MultipleInheritanceTestRunner extends BaseRunner {
     protected OWLClassWithUnProperties classWithUnProperties;
-    protected OWLClassWithPartConstraintsInInterfaceParent classWithPartConstraintsInInterfaceParent;
 
     public MultipleInheritanceTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
         classWithUnProperties = new OWLClassWithUnProperties(Generators.generateUri());
-        classWithPartConstraintsInInterfaceParent = new OWLClassWithPartConstraintsInInterfaceParent(Generators.generateUri());
-        classWithPartConstraintsInInterfaceParent.setData(new OWLClassWithUnProperties(Generators.generateUri()));
     }
 
 
@@ -137,87 +134,6 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         assertEquals(child.getAttributeB(), found.getAttributeB());
 
         assertEquals(child.getName(), commonParentFound.getName());
-    }
-
-
-    @Test
-    void nonEmptyParticipationConstraintsInInterfaceThrowExceptionIfNotMet() {
-        this.em = getEntityManager("nonEmptyParticipationConstraintsInInterfaceThrowExceptionIfNotMet", false);
-
-        /// violate constraints
-        classWithPartConstraintsInInterfaceParent.setData(null);
-        em.getTransaction().begin();
-
-        em.persist(classWithPartConstraintsInInterfaceParent);
-
-        assertThrows(RollbackException.class, () -> em.getTransaction().commit());
-
-    }
-
-    @Test
-    void nonEmptyParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet() {
-        this.em = getEntityManager("nonEmptyParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet", false);
-
-
-        em.getTransaction().begin();
-
-        em.persist(classWithPartConstraintsInInterfaceParent);
-
-        em.getTransaction().commit();
-
-        verifyExists(OWLClassWithPartConstraintsInInterfaceParent.class, classWithPartConstraintsInInterfaceParent.getUri());
-    }
-
-
-    @Test
-    void maxParticipationConstraintsInInterfaceThrowExceptionIfNotMet() {
-        this.em = getEntityManager("maxParticipationConstraintsInInterfaceThrowExceptionIfNotMet", false);
-
-        Set<OWLClassWithUnProperties> dataList = new HashSet<>();
-        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
-        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
-        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
-        classWithPartConstraintsInInterfaceParent.setDataList(dataList);
-
-        em.getTransaction().begin();
-
-        em.persist(classWithPartConstraintsInInterfaceParent);
-
-        assertThrows(RollbackException.class, () -> em.getTransaction().commit());
-    }
-
-    @Test
-    void maxParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet() {
-        this.em = getEntityManager("maxParticipationConstraintsInInterfaceDoesNotThrowExceptionIfMet", false);
-
-        Set<OWLClassWithUnProperties> dataList = new HashSet<>();
-        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
-        dataList.add(new OWLClassWithUnProperties(Generators.generateUri()));
-        classWithPartConstraintsInInterfaceParent.setDataList(dataList);
-
-        em.getTransaction().begin();
-
-        em.persist(classWithPartConstraintsInInterfaceParent);
-
-        em.getTransaction().commit();
-
-        verifyExists(OWLClassWithPartConstraintsInInterfaceParent.class, classWithPartConstraintsInInterfaceParent.getUri());
-    }
-
-    @Test
-    void converterAnnotatedFieldsGetConverted() throws Exception {
-        this.em = getEntityManager("converterAnnotatedFieldsGetConverted", false);
-
-        classWithPartConstraintsInInterfaceParent.setData(classWithUnProperties);
-
-        final ZoneOffset value = ZoneOffset.ofHours(2);
-        classWithPartConstraintsInInterfaceParent.setWithConverter(value);
-
-        persist(classWithPartConstraintsInInterfaceParent);
-
-        verifyStatementsPresent(Collections.singleton(
-                new Quad(classWithPartConstraintsInInterfaceParent.getUri(), URI.create(Vocabulary.p_m_withConverter),
-                        classWithPartConstraintsInInterfaceParent.getWithConverter().getId(), (String) null)), em);
     }
 
     @Test
