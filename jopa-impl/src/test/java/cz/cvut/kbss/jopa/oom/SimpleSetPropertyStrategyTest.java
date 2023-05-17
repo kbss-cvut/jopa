@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -272,5 +272,28 @@ class SimpleSetPropertyStrategyTest {
         assertEquals(instance.enumSet.size(), values.size());
         assertThat(values, hasItems(new Value<>(NamedResource.create(OWL.DATATYPE_PROPERTY)),
                                     new Value<>(NamedResource.create(OWL.ANNOTATION_PROPERTY))));
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceSkipsInferredValues() throws Exception{
+        when(mocks.forOwlClassJ().setAttribute().isInferred()).thenReturn(true);
+        final SimpleSetPropertyStrategy<OWLClassJ> sut =
+                strategy(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute());
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        final OWLClassJ instance = new OWLClassJ(PK);
+        final List<OWLClassA> aList = Arrays.asList(Generators.generateOwlClassAInstance(), Generators.generateOwlClassAInstance());
+        instance.setOwlClassA(new HashSet<>(aList));
+        when(referenceResolverMock.shouldSaveReferenceToItem(any(), anySet())).thenReturn(true);
+        doAnswer(args -> {
+            final Axiom<?> ax = args.getArgument(0, Axiom.class);
+            return ax.getValue().stringValue().equals(aList.get(0).getUri().toString());
+        }).when(mapperMock).isInferred(any(Axiom.class), any());
+
+        sut.buildAxiomValuesFromInstance(instance, gatherer);
+        final AxiomValueDescriptor axiomDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
+        final List<Value<?>> values = axiomDescriptor.getAssertionValues(
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), true));
+        assertThat(values, hasItem(new Value<>(NamedResource.create(aList.get(1).getUri()))));
+        assertThat(values, not(hasItem(new Value<>(NamedResource.create(aList.get(0).getUri())))));
     }
 }

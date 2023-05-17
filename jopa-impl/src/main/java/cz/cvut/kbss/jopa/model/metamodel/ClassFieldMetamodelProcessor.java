@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -58,8 +59,7 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
         if (field.getType().isPrimitive()) {
-            throw new MetamodelInitializationException(
-                    "Primitive types cannot be used for entity fields. Field " + field + " in class " + cls);
+            throw new MetamodelInitializationException("Primitive types cannot be used for entity fields. Field " + field + " in class " + cls);
         }
 
         final Class<?> fieldValueCls = getFieldValueType(field);
@@ -80,19 +80,111 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator, context);
-        propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
+        PropertyInfo propertyInfo = PropertyInfo.from(field);
+
+        final PropertyAttributes propertyAtt = PropertyAttributes.create(propertyInfo, mappingValidator, context);
+        propertyAtt.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
-            final AbstractAttribute<X, ?> a = createAttribute(field, inference, propertyAtt);
+            final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
             registerTypeReference(a);
-        } else if (!isAspectIntegrationField(field)) {
-            final boolean success = processIdentifierField(field);
-            if (!success) {
-                throw new MetamodelInitializationException(
-                        "Unable to process field " + field + ". It is not transient but has no mapping information.");
-            }
+            return;
         }
+
+        if (isAspectIntegrationField(field)) {
+            return;
+        }
+
+        if (tryProcessIdentifierField(field)) {
+            return;
+        }
+
+        AnnotatedAccessor fieldAccessor = findAnnotatedMethodBelongingToField(field);
+
+        if (fieldAccessor != null) {
+            createAndRegisterAttribute(field, inference, fieldValueCls, fieldAccessor);
+            return;
+        }
+
+        throw new MetamodelInitializationException("Unable to process field " + field + ". It is not transient but has no mapping information.");
+    }
+
+    /**
+     * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field.
+     * This is used when a property annotation ( {@link OWLDataProperty,OWLObjectProperty,OWLAnnotationProperty)
+     * is declared on method, not on field.
+     */
+    private AnnotatedAccessor findAnnotatedMethodBelongingToField(Field field) {
+        LOG.debug("finding property definition to field {} ", field);
+
+        Deque<IdentifiableType<?>> toVisit = new ArrayDeque<>();
+        toVisit.add(et);
+
+        boolean found = false;
+        AnnotatedAccessor foundAcessor = null;
+
+        while (!toVisit.isEmpty()) {
+            IdentifiableType<?> top = toVisit.peek();
+            Collection<AnnotatedAccessor> accessorsInParent = metamodelBuilder.getAnnotatedAccessorsForClass(top);
+
+            for (AnnotatedAccessor annotatedAccessor : accessorsInParent) {
+
+                if (!propertyBelongsToMethod(field, annotatedAccessor)) {
+                    continue;
+                }
+
+                LOG.debug("Found annotated method belonging to field - {} - {}", annotatedAccessor.getMethod().getName(), field.getName());
+                if (!found) {  // first belonging method
+                    found = true;
+                    foundAcessor = annotatedAccessor;
+                } else if (methodsAnnotationsEqual(annotatedAccessor.getMethod(), foundAcessor.getMethod())) {
+                    LOG.debug("Methods are equal, skipping");
+                } else { /// Two non-equal methods that could belong to the field - ambiguous
+                    throw new MetamodelInitializationException("Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field " + field + " two non-compatible methods were found - " + foundAcessor.getMethod() + " and " + annotatedAccessor.getMethod());
+                }
+
+            }
+            /// remove top
+            toVisit.pop();
+            /// add all parents
+            toVisit.addAll(top.getSupertypes());
+        }
+
+        return foundAcessor;
+    }
+
+    private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls, AnnotatedAccessor annotatedAccessor) {
+        final PropertyInfo info = PropertyInfo.from(annotatedAccessor.getMethod(), field);
+
+        final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
+        propertyAtt.resolve(info, metamodelBuilder, fieldValueCls);
+
+        final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
+        registerTypeReference(a);
+    }
+
+    private boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
+
+        return Objects.equals(newMethod.getAnnotation(OWLObjectProperty.class), foundMethod.getAnnotation(OWLObjectProperty.class)) &&
+                Objects.equals(newMethod.getAnnotation(OWLDataProperty.class), foundMethod.getAnnotation(OWLDataProperty.class)) &&
+                Objects.equals(newMethod.getAnnotation(OWLAnnotationProperty.class), foundMethod.getAnnotation(OWLAnnotationProperty.class)) &&
+                Objects.equals(newMethod.getAnnotation(Convert.class), foundMethod.getAnnotation(Convert.class)) &&
+                Objects.equals(newMethod.getAnnotation(Sequence.class), foundMethod.getAnnotation(Sequence.class)) &&
+                Objects.equals(newMethod.getAnnotation(Enumerated.class), foundMethod.getAnnotation(Enumerated.class)) &&
+                Objects.equals(newMethod.getAnnotation(ParticipationConstraints.class), foundMethod.getAnnotation(ParticipationConstraints.class));
+
+    }
+
+
+    private boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
+        if (!property.getName().equals(accessor.getPropertyName())) {
+            return false;
+        }
+        if (!property.getType().isAssignableFrom(accessor.getPropertyType())) {
+            throw new MetamodelInitializationException("Non-compatible types between method " + accessor + " and field " + property.getName() + ". Method is accessor to type " + accessor.getPropertyType() + ", field type is "+property.getType());
+        }
+
+        return true;
     }
 
     private static Class<?> getFieldValueType(Field field) {
@@ -138,7 +230,8 @@ class ClassFieldMetamodelProcessor<X> {
     private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Types tt = field.getAnnotation(Types.class);
         mappingValidator.validateTypesField(field);
-        et.addDirectTypes(new TypesSpecificationImpl<>(et, tt.fetchType(), field, fieldValueCls, inference.inferred));
+        final FetchType fetchType = inference.inferred ? FetchType.EAGER : tt.fetchType();
+        et.addDirectTypes(new TypesSpecificationImpl<>(et, fetchType, field, fieldValueCls, inference.inferred));
     }
 
     private static boolean isPropertiesField(Field field) {
@@ -149,8 +242,9 @@ class ClassFieldMetamodelProcessor<X> {
         Properties properties = field.getAnnotation(Properties.class);
         mappingValidator.validatePropertiesField(field);
         final PropertiesParametersResolver paramsResolver = new PropertiesParametersResolver(field);
+        final FetchType fetchType = inference.inferred ? FetchType.EAGER : properties.fetchType();
         et.addOtherProperties(
-                PropertiesSpecificationImpl.declaringType(et).fetchType(properties.fetchType()).javaField(field)
+                PropertiesSpecificationImpl.declaringType(et).fetchType(fetchType).javaField(field)
                         .javaType(fieldValueCls).inferred(inference.inferred)
                         .propertyIdType(paramsResolver.getPropertyIdentifierType())
                         .propertyValueType(paramsResolver.getPropertyValueType()).build());
@@ -177,8 +271,7 @@ class ClassFieldMetamodelProcessor<X> {
             type = BasicTypeImpl.get(fieldValueCls);
         }
 
-        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver()
-                .resolveConverter(type);
+        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
         ConverterWrapper<?, ?> converterWrapper = null;
 
         if (optionalConverterWrapper.isPresent()) {
@@ -196,67 +289,49 @@ class ClassFieldMetamodelProcessor<X> {
         et.addDeclaredQueryAttribute(field.getName(), a);
     }
 
-    private AbstractAttribute<X, ?> createAttribute(Field field, InferenceInfo inference,
-                                                    PropertyAttributes propertyAttributes) {
+    private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo
+            inference, PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
-        if (field.getType().isAssignableFrom(Collection.class)) {
-            final AbstractPluralAttribute.PluralAttributeBuilder builder =
-                    CollectionAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .field(field)
-                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
-            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+        if (property.getType().isAssignableFrom(Collection.class)) {
+            final AbstractPluralAttribute.PluralAttributeBuilder builder = CollectionAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+            context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
-        } else if (field.getType().isAssignableFrom(List.class)) {
-            a = createListAttribute(field, inference, propertyAttributes);
-        } else if (field.getType().isAssignableFrom(Set.class)) {
-            final AbstractPluralAttribute.PluralAttributeBuilder builder =
-                    SetAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .field(field)
-                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
-            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+        } else if (property.getType().isAssignableFrom(List.class)) {
+            a = createListAttribute(property, inference, propertyAttributes);
+        } else if (property.getType().isAssignableFrom(Set.class)) {
+            final AbstractPluralAttribute.PluralAttributeBuilder builder = SetAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+            context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
-        } else if (field.getType().isAssignableFrom(Map.class)) {
+        } else if (property.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            final SingularAttributeImpl.SingularAttributeBuilder builder =
-                    SingularAttributeImpl.builder(propertyAttributes).declaringType(et)
-                            .field(field)
-                            .inferred(inference.inferred).includeExplicit(inference.includeExplicit);
-            context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+            final SingularAttributeImpl.SingularAttributeBuilder builder = SingularAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+            context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         }
-        et.addDeclaredAttribute(field.getName(), a);
+        et.addDeclaredAttribute(property.getName(), a);
         return a;
     }
 
-    private AbstractAttribute<X, ?> createListAttribute(Field field,
-                                                        InferenceInfo inference,
-                                                        PropertyAttributes propertyAttributes) {
-        final Sequence os = field.getAnnotation(Sequence.class);
+    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceInfo
+            inference, PropertyAttributes propertyAttributes) {
+        final Sequence os = property.getAnnotation(Sequence.class);
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
         }
-        final ListAttributeImpl.ListAttributeBuilder builder =
-                ListAttributeImpl.builder(propertyAttributes).declaringType(et)
-                        .field(field)
-                        .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
-                        .owlListClass(IRI.create(os.ClassOWLListIRI()))
-                        .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
-                        .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
-                        .sequenceType(os.type());
-        context.getConverterResolver().resolveConverter(field, propertyAttributes).ifPresent(builder::converter);
+        final ListAttributeImpl.ListAttributeBuilder builder = ListAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit).owlListClass(IRI.create(os.ClassOWLListIRI())).hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI())).hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI())).sequenceType(os.type());
+        context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }
 
     private void registerTypeReference(Attribute<X, ?> attribute) {
-        final Class<?> type = attribute.isCollection() ? ((PluralAttribute<X, ?, ?>) attribute).getBindableJavaType() :
-                attribute.getJavaType();
+        final Class<?> type = attribute.isCollection() ? ((PluralAttribute<X, ?, ?>) attribute).getBindableJavaType() : attribute.getJavaType();
         if (metamodelBuilder.hasManagedType(type)) {
             metamodelBuilder.registerTypeReference(type, et.getJavaType());
         }
     }
 
-    private boolean processIdentifierField(Field field) {
+    private boolean tryProcessIdentifierField(Field field) {
         final Id id = field.getAnnotation(Id.class);
         if (id == null) {
             return false;

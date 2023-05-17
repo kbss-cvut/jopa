@@ -153,10 +153,16 @@ public class SparqlQueryHolder implements QueryHolder {
     @Override
     public String assembleQuery() {
         final StringBuilder sb = new StringBuilder();
+        final Set<QueryParameter<?>> projectedParams = new LinkedHashSet<>();
         for (int i = 0; i < parameters.size(); i++) {
             sb.append(queryParts.get(i));
-            final String paramValue = parameters.get(i).getValue().getQueryString();
-            sb.append(paramValue);
+            final QueryParameter<?> qp = parameters.get(i);
+            if (qp.isProjected() && qp.getValue().isSet()) {
+                projectedParams.add(qp);
+                sb.append(qp.getIdentifierAsQueryString());
+            } else {
+                sb.append(qp.getValue().getQueryString());
+            }
         }
         if (queryParts.size() > parameters.size()) {
             sb.append(queryParts.get(parameters.size()));
@@ -167,7 +173,32 @@ public class SparqlQueryHolder implements QueryHolder {
         if (offset != 0) {
             sb.append(SPARQL_OFFSET).append(offset);
         }
+        assembleValuesClause(projectedParams).ifPresent(sb::append);
         return sb.toString();
+    }
+
+    /**
+     * Generates a VALUES clause for query parameters that are set and appear in SELECT projection.
+     * <p>
+     * TODO Note that the current implementation does not support collection-valued parameters.
+     *
+     * @param parameters Projected parameters to output into query as VALUES clause
+     * @return VALUES clause, if there were any set parameters
+     */
+    private Optional<String> assembleValuesClause(Set<QueryParameter<?>> parameters) {
+        if (parameters.isEmpty()) {
+            return Optional.empty();
+        }
+        final StringBuilder variables = new StringBuilder();
+        final StringBuilder data = new StringBuilder();
+        for (QueryParameter<?> qp : parameters) {
+            if (variables.length() > 0) {
+                variables.append(' ');
+            }
+            variables.append(qp.getIdentifierAsQueryString());
+            data.append('(').append(qp.getValue().getQueryString()).append(')');
+        }
+        return Optional.of(" VALUES (" + variables + ") {" + data + "}");
     }
 
     @Override

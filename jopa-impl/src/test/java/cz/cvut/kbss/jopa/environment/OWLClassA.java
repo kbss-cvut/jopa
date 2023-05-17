@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -104,6 +105,9 @@ public class OWLClassA {
 
     public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
         return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
+    }
+    public static PropertyInfo getStrAttFieldPropertyInfo() throws NoSuchFieldException, SecurityException {
+        return PropertyInfo.from(OWLClassA.getStrAttField());
     }
 
     public static Field getTypesField() throws NoSuchFieldException, SecurityException {

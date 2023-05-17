@@ -24,6 +24,16 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_C = CLASS_IRI_BASE + "OWLClassC";
     public static final String C_OWL_CLASS_D = CLASS_IRI_BASE + "OWLClassD";
     public static final String C_OWL_CLASS_E = CLASS_IRI_BASE + "OWLClassE";
+    public static final String C_OWL_CLASS_PARENT_B = CLASS_IRI_BASE + "OWLParentB";
+    public static final String C_OWL_CLASS_PARENT_A = CLASS_IRI_BASE + "OWLParentA";
+    public static final String C_OWL_INTERFACE_A = CLASS_IRI_BASE + "OWLInterfaceA";
+    public static final String C_OWL_INTERFACE_B = CLASS_IRI_BASE + "OWLInterfaceB";
+    public static final String C_OWL_INTERFACE_C = CLASS_IRI_BASE + "OWLInterfaceC";
+    public static final String C_OWL_INTERFACE_D = CLASS_IRI_BASE + "OWLInterfaceD";
+    public static final String C_OWL_INTERFACE_E = CLASS_IRI_BASE + "OWLInterfaceE";
+    public static final String C_OWL_CLASS_CHILD_A = CLASS_IRI_BASE + "OWLChildClassA";
+    public static final String C_OWL_CLASS_CHILD_B = CLASS_IRI_BASE + "OWLChildClassB";
+    public static final String C_OWL_CLASS_CHILD_C = CLASS_IRI_BASE + "OWLChildClassC";
     public static final String C_OWL_CLASS_F = CLASS_IRI_BASE + "OWLClassF";
     public static final String C_OWL_CLASS_G = CLASS_IRI_BASE + "OWLClassG";
     public static final String C_OWL_CLASS_H = CLASS_IRI_BASE + "OWLClassH";
@@ -46,6 +56,7 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_X = CLASS_IRI_BASE + "OWLClassX";
     public static final String C_OWL_CLASS_Y = CLASS_IRI_BASE + "OWLClassY";
     public static final String C_OWL_CLASS_Z = CLASS_IRI_BASE + "OWLClassZ";
+    public static final String C_OWL_CLASS_PART_CONSTR_IN_PARENT = CLASS_IRI_BASE + "OWLClassWithPartConstraintsInInterfaceParent";
     public static final String C_OWL_CLASS_Z_CHILD = CLASS_IRI_BASE + "OWLClassZChild";
     public static final String C_OwlClassWithQueryAttr = CLASS_IRI_BASE + "OWLClassWithQueryAttr";
     public static final String C_OwlClassWithQueryAttr2 = CLASS_IRI_BASE + "OWLClassWithQueryAttr2";
@@ -53,6 +64,10 @@ public class Vocabulary {
     public static final String C_OwlClassWithQueryAttr4 = CLASS_IRI_BASE + "OWLClassWithQueryAttr4";
     public static final String C_OwlClassWithQueryAttr5 = CLASS_IRI_BASE + "OWLClassWithQueryAttr5";
     public static final String C_OwlClassWithQueryAttr6 = CLASS_IRI_BASE + "OWLClassWithQueryAttr6";
+    public static final String C_OwlInterfaceAnMethods = CLASS_IRI_BASE + "OWLInterfaceAnMethods";
+
+    public static final String C_OwlClassWithUnProperties = CLASS_IRI_BASE + "OWLClassWithUnProperties";
+    public static final String C_ChildOfMappedSuperClass = CLASS_IRI_BASE + "ChildOfMappedSuperClass";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
@@ -70,6 +85,13 @@ public class Vocabulary {
     public static final String p_m_explicitDatatype = ATTRIBUTE_IRI_BASE + "m-explicitDatatype";
     public static final String p_m_langString = ATTRIBUTE_IRI_BASE + "m-langString";
     public static final String p_m_withConverter = ATTRIBUTE_IRI_BASE + "m-withConverter";
+    public static final String p_m_unannotated_name = ATTRIBUTE_IRI_BASE + "name";
+    public static final String p_m_attributeA = ATTRIBUTE_IRI_BASE + "attributeA";
+    public static final String p_m_attributeB = ATTRIBUTE_IRI_BASE + "attributeB";
+    public static final String p_m_data = ATTRIBUTE_IRI_BASE + "data";
+    public static final String p_m_multiple_data = ATTRIBUTE_IRI_BASE + "multipleData";
+    public static final String p_m_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
+    public static final String p_m_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
     public static final String P_N_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "N-stringAttribute";

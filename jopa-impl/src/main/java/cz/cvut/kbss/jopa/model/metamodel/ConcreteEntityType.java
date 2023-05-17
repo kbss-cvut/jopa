@@ -12,17 +12,26 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+package cz.cvut.kbss.jopa.model.metamodel;
 
-public class ExpressionCountImpl<Y> extends AbstractAggregateFunctionExpression<Y> {
-    public ExpressionCountImpl(Class<Y> type, AbstractPathExpression expression, CriteriaBuilder cb) {
-        super(type, expression, cb);
+import cz.cvut.kbss.jopa.model.IRI;
+
+/**
+ * Instances of the type ConcreteEntityType represent entity
+ * types which are can be directly instantiated while loading from storage.
+ *
+ *
+ * @param <X> Entity type being represented by this instance
+ */
+public class ConcreteEntityType<X> extends IdentifiableEntityType<X> {
+
+    public ConcreteEntityType(String name, Class<X> javaType, IRI iri) {
+        super(name, javaType, iri);
     }
 
     @Override
-    public String getFunctionName() {
-        return "COUNT";
+    public boolean isAbstract() {
+        return false;
     }
 }

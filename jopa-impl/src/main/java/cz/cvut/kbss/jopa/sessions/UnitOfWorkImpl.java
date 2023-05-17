@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
@@ -236,8 +236,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                         "Error while calculating changes for new objects. Original not found.");
             }
             newObjectsCloneToOriginal.put(clone, original);
-            changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone,
-                                                                                   c));
+            changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone, c));
         }
     }
 
@@ -515,7 +514,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalStateException("This unit of work is not in a transaction.");
         }
         final Descriptor descriptor = getDescriptor(entity);
-        final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
+        final IdentifiableEntityType<Object> et = entityType((Class<Object>) entity.getClass());
         final FieldSpecification<Object, ?> fieldSpec = et.getFieldSpecification(f.getName());
         final Object original = getOriginal(entity);
         if (fieldSpec.isInferred() && original != null) {
@@ -602,7 +601,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
         assert entity != null;
-        final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
+        final IdentifiableEntityType<T> et = (IdentifiableEntityType<T>) entityType(entity.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         final T clone = getInstanceForMerge(idUri, et, descriptor);
@@ -706,8 +705,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
-        instanceDescriptors
-                .put(clone, InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass())));
+        final InstanceDescriptor<?> instanceDesc = identifier != null ? InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass())) : InstanceDescriptorFactory.createAllLoaded(clone, (EntityType<Object>) entityType(clone.getClass()));
+        instanceDescriptors.put(clone, instanceDesc);
         registerEntityWithPersistenceContext(clone);
         registerEntityWithOntologyContext(clone, descriptor);
     }
@@ -731,7 +730,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalArgumentException(
                     "Cannot call refresh on an instance not managed by this persistence context.");
         }
-        final EntityTypeImpl<T> et = entityType((Class<T>) object.getClass());
+        final IdentifiableEntityType<T> et = entityType((Class<T>) object.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
         final Descriptor descriptor = getDescriptor(object);
 
@@ -759,7 +758,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
         for (ChangeRecord change : chSet.getChanges()) {
             storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(),
-                          descriptor.getAttributeDescriptor(change.getAttribute()));
+                    descriptor.getAttributeDescriptor(change.getAttribute()));
         }
     }
 
@@ -778,7 +777,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @param descriptor Entity descriptor, specifying optionally contexts into which the entity will be persisted
      */
     private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
-        final EntityTypeImpl<?> eType = entityType(entity.getClass());
+        final IdentifiableEntityType<?> eType = entityType(entity.getClass());
         eType.getLifecycleListenerManager().invokePrePersistCallbacks(entity);
         Object id = getIdentifier(entity);
         if (id == null) {
@@ -824,7 +823,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalArgumentException(
                     "Cannot remove entity which is not managed in the current persistence context.");
         }
-        final EntityTypeImpl<?> et = entityType(entity.getClass());
+        final IdentifiableEntityType<?> et = entityType(entity.getClass());
         et.getLifecycleListenerManager().invokePreRemoveCallbacks(entity);
         final Object primaryKey = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
@@ -898,7 +897,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return parent.getMetamodel();
     }
 
-    private <T> EntityTypeImpl<T> entityType(Class<T> cls) {
+    private <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
         return getMetamodel().entity(cls);
     }
 
@@ -995,7 +994,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-               LoadState.UNKNOWN;
+                LoadState.UNKNOWN;
     }
 
     @Override

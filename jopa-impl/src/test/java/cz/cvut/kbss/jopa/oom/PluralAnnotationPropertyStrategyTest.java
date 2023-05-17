@@ -137,7 +137,7 @@ class PluralAnnotationPropertyStrategyTest {
                                                                                            ConverterWrapper converter)
             throws
             Exception {
-        final EntityTypeImpl<T> et = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<T> et = mock(IdentifiableEntityType.class);
         final AbstractPluralAttribute<T, Set, X> att = mock(AbstractPluralAttribute.class);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(elementType));
         when(att.getCollectionType()).thenReturn(CollectionType.SET);

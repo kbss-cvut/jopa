@@ -14,7 +14,8 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
@@ -33,8 +34,14 @@ public abstract class AbstractPathExpression<X> extends AbstractExpression<X> im
     }
 
     public <Y> Path<Y> getAttr(String attributeName) {
-        Attribute attribute = metamodel.entity(type).getAttribute(attributeName);
-        return new PathImpl<>(this.metamodel, this, attribute, this.cb);
+        final EntityType<X> et = metamodel.entity(type);
+        final FieldSpecification<? super X, ?> fs;
+        if (et.getIdentifier().getName().equals(attributeName)) {
+            fs = et.getIdentifier();
+        } else {
+            fs = et.getAttribute(attributeName);
+        }
+        return new PathImpl<>(this.metamodel, this, fs, this.cb);
     }
 
     public <Y> Path<Y> getAttr(SingularAttribute<? super X, Y> attribute) {

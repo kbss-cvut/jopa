@@ -25,8 +25,8 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface OWLDataProperty {
+@Target({ElementType.FIELD,ElementType.METHOD})
+public @interface OWLDataProperty{
 
     /**
      * IRI of the data property

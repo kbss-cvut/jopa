@@ -17,19 +17,19 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 
-public abstract class AbstractAggregateFunctionExpression<X> extends AbstractExpression<X> {
+public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X> {
 
-    protected AbstractPathExpression internExpression;
+    protected AbstractPathExpression argumentExpression;
 
-    public AbstractAggregateFunctionExpression(Class<X> type, AbstractPathExpression internExpression, CriteriaBuilder cb) {
+    public AbstractFunctionExpression(Class<X> type, AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
         super(type, cb);
-        this.internExpression = internExpression;
+        this.argumentExpression = argumentExpression;
     }
 
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
-        query.append(this.getFunctionName()).append("(");
-        this.internExpression.setExpressionToQuery(query, parameterFiller);
+        query.append(getFunctionName()).append("(");
+        argumentExpression.setExpressionToQuery(query, parameterFiller);
         query.append(")");
     }
 

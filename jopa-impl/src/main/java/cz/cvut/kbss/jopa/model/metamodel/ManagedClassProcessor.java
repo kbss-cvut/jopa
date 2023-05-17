@@ -23,6 +23,10 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Utility methods for processing managed types for metamodel construction.
@@ -68,13 +72,16 @@ class ManagedClassProcessor {
         }
     }
 
-    private static <T> EntityTypeImpl<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver) {
+    private static <T> IdentifiableEntityType<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver) {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
         assert c != null;
 
-        checkForNoArgConstructor(cls);
-
-        return new EntityTypeImpl<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers())) {
+            return new AbstractEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        } else {
+            checkForNoArgConstructor(cls);
+            return new ConcreteEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        }
     }
 
     private static <T> void checkForNoArgConstructor(Class<T> cls) {
@@ -91,13 +98,17 @@ class ManagedClassProcessor {
         return new MappedSuperclassTypeImpl<>(cls);
     }
 
-    static <T> Class<? super T> getManagedSupertype(Class<T> cls) {
+    static <T> Class<? super T> getManagedSuperClass(Class<T> cls) {
         if (cls.getSuperclass() != null && isManagedType(cls.getSuperclass())) {
             return cls.getSuperclass();
         }
         return null;
     }
-
+    public static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
+       return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
+                                          .map(clazz -> (Class<? super T>) clazz)
+                                          .collect(Collectors.toSet());
+    }
     static boolean isManagedType(Class<?> cls) {
         return isEntityType(cls) || isMappedSuperclassType(cls);
     }

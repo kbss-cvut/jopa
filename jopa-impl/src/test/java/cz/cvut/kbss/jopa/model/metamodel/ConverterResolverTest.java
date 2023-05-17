@@ -15,17 +15,16 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
+import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.model.annotations.Convert;
-import cz.cvut.kbss.jopa.model.annotations.EnumType;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.oom.converter.*;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -35,6 +34,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -45,23 +45,23 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsEmptyOptionalForObjectPropertyWithEntityTarget() throws Exception {
-        final Field field = OWLClassD.getOwlClassAField();
+        final PropertyInfo propertyInfo = OWLClassD.getOwlClassAFieldPropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final EntityType et = mock(EntityType.class);
         when(et.getJavaType()).thenReturn(OWLClassA.class);
         when(pa.getType()).thenReturn(et);
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertFalse(result.isPresent());
     }
 
     @Test
     void resolveConverterReturnsBuiltInIntegerConverterForIntegerDataPropertyField() throws Exception {
-        final Field field = OWLClassM.getIntAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getIntAttributeFieldPropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(Integer.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Integer.class));
         assertThat(result.get(), instanceOf(ToIntegerConverter.class));
@@ -69,11 +69,11 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsBuiltInDateConverterForDataPropertyWithDateTarget() throws Exception {
-        final Field field = OWLClassM.getDateAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getDateAttributeFieldPropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(Date.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Literal.class));
         assertThat(result.get(), instanceOf(DateConverter.class));
@@ -81,22 +81,22 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsBuiltInInstantConverterForInstantDataPropertyField() throws Exception {
-        final Field field = OWLClassM.getDateAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getDateAttributeFieldPropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(Instant.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(InstantConverter.class));
     }
 
     @Test
     void resolveConverterReturnsBuiltInIntegerConverterForPluralIntegerDataPropertyField() throws Exception {
-        final Field field = OWLClassM.getIntegerSetField();
+        final PropertyInfo propertyInfo = OWLClassM.getIntegerSetFieldPropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(Integer.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Integer.class));
         assertThat(result.get(), instanceOf(ToIntegerConverter.class));
@@ -104,35 +104,35 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsBuiltInStringEnumConverterForStringEnumDataPropertyField() throws Exception {
-        final Field field = OWLClassM.getEnumAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getEnumAttributeFieldPropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(pa.getEnumType()).thenReturn(EnumType.STRING);
         doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertInstanceOf(StringEnumConverter.class, result.get());
     }
 
     @Test
     void resolveConverterReturnsToLexicalFormConverterForFieldWithLexicalForm() throws Exception {
-        final Field field = OWLClassM.getLexicalFormField();
+        final PropertyInfo propertyInfo = OWLClassM.getLexicalFormFieldPropertyInfo();
         final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(pa.isLexicalForm()).thenReturn(true);
         doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(ToLexicalFormConverter.class));
     }
 
     @Test
     void resolveConverterReturnsObjectConverterForFieldOfObjectType() throws Exception {
-        final Field field = ClassWithObjectAnnotation.class.getDeclaredField("singularAnnotation");
+        final PropertyInfo propertyInfo = ClassWithObjectAnnotation.getsingularAnnotationPropertyInfo();
         final AnnotationPropertyAttributes pa = mock(AnnotationPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(ObjectConverter.class));
     }
@@ -140,6 +140,10 @@ class ConverterResolverTest {
     private static class ClassWithObjectAnnotation {
         @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "singularAnnotation")
         private Object singularAnnotation;
+
+        public static PropertyInfo getsingularAnnotationPropertyInfo() throws NoSuchFieldException, SecurityException {
+            return PropertyInfo.from(ClassWithObjectAnnotation.class.getDeclaredField("singularAnnotation"));
+        }
     }
 
     @Test
@@ -147,11 +151,11 @@ class ConverterResolverTest {
         final Configuration config = new Configuration();
         config.set(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING, Boolean.TRUE.toString());
         sut = new ConverterResolver(new Converters(config));
-        final Field field = ClassWithObjectAnnotation.class.getDeclaredField("singularAnnotation");
+        final PropertyInfo propertyInfo = ClassWithObjectAnnotation.getsingularAnnotationPropertyInfo();
         final AnnotationPropertyAttributes pa = mock(AnnotationPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(ObjectConverter.class));
         final ObjectConverter objectConverter = (ObjectConverter) result.get();
@@ -160,36 +164,36 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsToRdfLiteralConverterForAttributeWithExplicitDatatypeMapping() throws Exception {
-        final Field field = OWLClassM.getExplicitDatatypeField();
+        final PropertyInfo propertyInfo = OWLClassM.getExplicitDatatypeFieldPropertyInfo();
         final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
         when(pa.hasDatatype()).thenReturn(true);
         when(pa.getDatatype()).thenReturn(XSD.DURATION);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(String.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(ToRdfLiteralConverter.class));
     }
 
     @Test
     void resolveConverterThrowsInvalidFieldMappingExceptionWhenFieldWithExplicitDatatypeIsNotOfTypeString() throws Exception {
-        final Field field = OWLClassM.getIntAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getIntAttributeFieldPropertyInfo();
         final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
         when(pa.hasDatatype()).thenReturn(true);
         when(pa.getDatatype()).thenReturn(XSD.DURATION);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(Integer.class)).when(pa).getType();
-        assertThrows(InvalidFieldMappingException.class, () -> sut.resolveConverter(field, pa));
+        assertThrows(InvalidFieldMappingException.class, () -> sut.resolveConverter(propertyInfo, pa));
     }
 
     @Test
     void resolveConverterReturnsCustomConverterInstanceSpecifiedByConvertAnnotation() throws Exception {
-        final Field field = OWLClassM.getWithConverterField();
+        final PropertyInfo propertyInfo = OWLClassM.getWithConverterFieldPropertyInfo();
         final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
         when(pa.hasDatatype()).thenReturn(false);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(ZoneOffset.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(CustomConverterWrapper.class));
         assertThat(((CustomConverterWrapper<?, ?>) result.get()).getWrappedConverter(),
@@ -199,12 +203,12 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsOptionalWhenConvertAnnotationDisablesConversion() throws Exception {
-        final Field field = ClassWithDisabledConverter.class.getDeclaredField("zoneOffset");
+        final PropertyInfo propertyInfo = ClassWithDisabledConverter.getZoneOffsetFieldPropertyInfo();
         final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
         when(pa.hasDatatype()).thenReturn(false);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(ZoneOffset.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertFalse(result.isPresent());
     }
 
@@ -216,39 +220,77 @@ class ConverterResolverTest {
         @Convert(converter = ConverterResolver.class)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "with-bad-converter")
         private ZoneOffset badConverter;
+
+        public static PropertyInfo getZoneOffsetFieldPropertyInfo() throws Exception {
+            return PropertyInfo.from(ClassWithDisabledConverter.class.getDeclaredField("zoneOffset"));
+        }
+        public static PropertyInfo getBadConverterFieldPropertyInfo() throws Exception {
+            return PropertyInfo.from(ClassWithDisabledConverter.class.getDeclaredField("badConverter"));
+        }
     }
 
     @Test
     void resolveConverterThrowsInvalidConverterExceptionWhenConverterDoesNotImplementAttributeConverter() throws Exception {
-        final Field field = ClassWithDisabledConverter.class.getDeclaredField("badConverter");
+        final PropertyInfo propertyInfo = ClassWithDisabledConverter.getBadConverterFieldPropertyInfo();
         final DataPropertyAttributes pa = mock(DataPropertyAttributes.class);
         when(pa.hasDatatype()).thenReturn(false);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         doReturn(BasicTypeImpl.get(ZoneOffset.class)).when(pa).getType();
-        assertThrows(InvalidConverterException.class, () -> sut.resolveConverter(field, pa));
+        assertThrows(InvalidConverterException.class, () -> sut.resolveConverter(propertyInfo, pa));
     }
 
     @Test
     void resolveConverterReturnsObjectOneOfEnumConverterForEnumValuedObjectPropertyAttribute() throws Exception {
-        final Field field = OWLClassM.getObjectOneOfEnumAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getObjectOneOfEnumAttributePropertyInfo();
         final ObjectPropertyAttributes pa = mock(ObjectPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(pa.getEnumType()).thenReturn(EnumType.OBJECT_ONE_OF);
         doReturn(BasicTypeImpl.get(OneOfEnum.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertInstanceOf(ObjectOneOfEnumConverter.class, result.get());
     }
 
     @Test
     void resolveConverterReturnsBuiltInOrdinalEnumConverterForOrdinalEnumDataPropertyField() throws Exception {
-        final Field field = OWLClassM.getOrdinalEnumAttributeField();
+        final PropertyInfo propertyInfo = OWLClassM.getOrdinalEnumAttributePropertyInfo();
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(pa.getEnumType()).thenReturn(EnumType.ORDINAL);
         doReturn(BasicTypeImpl.get(OWLClassM.Severity.class)).when(pa).getType();
-        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
         assertTrue(result.isPresent());
         assertInstanceOf(OrdinalEnumConverter.class, result.get());
+    }
+
+    @Test
+    void resolveConverterThrowsInvalidConverterExceptionWhenAttemptingToUseCustomConverterOnObjectPropertyField() throws Exception {
+        final PropertyInfo field =PropertyInfo.from(ClassWithConverterOnObjectProperty.class.getDeclaredField("converted"));
+        final PropertyAttributes pa = mock(PropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final EntityType et = mock(EntityType.class);
+        when(et.getJavaType()).thenReturn(ClassWithConverterOnObjectProperty.class);
+        when(pa.getType()).thenReturn(et);
+        final InvalidConverterException ex = assertThrows(InvalidConverterException.class, () -> sut.resolveConverter(field, pa));
+        assertThat(ex.getMessage(), containsString("object properties"));
+    }
+
+    private static class ClassWithConverterOnObjectProperty {
+        @Convert(converter = ObjectPropertyConverter.class)
+        @OWLObjectProperty(iri = Vocabulary.p_h_hasA)
+        private OWLClassA converted;
+
+    }
+
+    public static class ObjectPropertyConverter implements AttributeConverter<OWLClassA, NamedResource> {
+        @Override
+        public NamedResource convertToAxiomValue(OWLClassA value) {
+            return NamedResource.create(value.getUri());
+        }
+
+        @Override
+        public OWLClassA convertToAttribute(NamedResource value) {
+            return new OWLClassA(value.getIdentifier());
+        }
     }
 }

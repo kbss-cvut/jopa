@@ -47,6 +47,6 @@ public class SoqlQueryParser implements QueryParser {
         final ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(listener, tree);
 
-        return sparqlParser.parseQuery(listener.getSoqlQuery());
+        return sparqlParser.parseQuery(listener.getSparqlQuery());
     }
 }

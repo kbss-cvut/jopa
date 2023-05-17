@@ -17,7 +17,13 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 
-public class EntityTypeImpl<X> extends AbstractIdentifiableType<X> implements EntityType<X> {
+/**
+ *  Instances of the type IdentifiableEntityType represent entity
+ *  types which can be saved to and read from storage.
+ *
+ * @param <X> Entity type being represented by this instance
+ */
+public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType<X> implements EntityType<X> {
 
     private final String name;
 
@@ -25,7 +31,7 @@ public class EntityTypeImpl<X> extends AbstractIdentifiableType<X> implements En
 
     private InheritanceType inheritanceType;
 
-    public EntityTypeImpl(String name, Class<X> javaType, final IRI iri) {
+    public IdentifiableEntityType(String name, Class<X> javaType, final IRI iri) {
         super(javaType);
         this.name = name;
         this.iri = iri;
@@ -56,13 +62,6 @@ public class EntityTypeImpl<X> extends AbstractIdentifiableType<X> implements En
         return iri;
     }
 
-    @Override
-    void setSupertype(AbstractIdentifiableType<? super X> supertype) {
-        super.setSupertype(supertype);
-        if (supertype.getPersistenceType() == PersistenceType.ENTITY) {
-            this.inheritanceType = ((EntityTypeImpl) supertype).inheritanceType;
-        }
-    }
 
     /**
      * Gets inheritance type of this entity type.

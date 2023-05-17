@@ -32,8 +32,7 @@ class EntityLoader implements Consumer<Class<?>> {
 
     @Override
     public void accept(Class<?> cls) {
-        if (cls.getAnnotation(OWLClass.class) != null
-                && cls.getAnnotation(NonEntity.class) == null && !cls.isInterface()) {
+        if (cls.getAnnotation(OWLClass.class) != null  && cls.getAnnotation(NonEntity.class) == null) {
             entities.add(cls);
         }
     }

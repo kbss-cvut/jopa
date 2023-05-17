@@ -82,8 +82,8 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         }
 
         @Override
-        public SingularAttributeBuilder<X, Y> field(Field field) {
-            super.field(field);
+        public SingularAttributeBuilder<X, Y> propertyInfo(PropertyInfo propertyInfo) {
+            super.propertyInfo(propertyInfo);
             return this;
         }
 

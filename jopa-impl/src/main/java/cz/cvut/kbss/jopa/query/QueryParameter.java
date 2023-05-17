@@ -24,6 +24,7 @@ public class QueryParameter<T> implements Parameter<T> {
 
     private final String name;
     private final Integer position;
+    private boolean projected;
 
     private final ParameterValueFactory valueFactory;
 
@@ -57,8 +58,20 @@ public class QueryParameter<T> implements Parameter<T> {
         return name != null ? name : position;
     }
 
+    public String getIdentifierAsQueryString() {
+        return createVariableValue().getQueryString();
+    }
+
     public ParameterValue getValue() {
         return value;
+    }
+
+    public void setProjected(boolean projected) {
+        this.projected = projected;
+    }
+
+    public boolean isProjected() {
+        return projected;
     }
 
     public void setValue(Object value) {
@@ -77,8 +90,11 @@ public class QueryParameter<T> implements Parameter<T> {
     }
 
     public void resetValue() {
-        this.value =
-                name != null ? valueFactory.createVariableValue(name) : valueFactory.createVariableValue(position);
+        this.value =createVariableValue();
+    }
+
+    private ParameterValue createVariableValue() {
+        return name != null ? valueFactory.createVariableValue(name) : valueFactory.createVariableValue(position);
     }
 
     @Override

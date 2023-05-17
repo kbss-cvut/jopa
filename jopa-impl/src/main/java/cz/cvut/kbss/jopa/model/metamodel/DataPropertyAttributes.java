@@ -17,8 +17,6 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-import java.lang.reflect.Field;
-
 class DataPropertyAttributes extends PropertyAttributes {
 
     DataPropertyAttributes(FieldMappingValidator validator) {
@@ -26,9 +24,10 @@ class DataPropertyAttributes extends PropertyAttributes {
     }
 
     @Override
-    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        super.resolve(field, metamodelBuilder, fieldValueCls);
-        final OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
+    void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        super.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
+
+        final OWLDataProperty odp = propertyInfo.getAnnotation(OWLDataProperty.class);
         assert odp != null;
 
         this.persistentAttributeType = Attribute.PersistentAttributeType.DATA;

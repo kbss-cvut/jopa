@@ -1,6 +1,5 @@
-package cz.cvut.kbss.ontodriver.rdf4j.loader;
+package cz.cvut.kbss.ontodriver.rdf4j.connector.init;
 
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BooleanQuery;
@@ -17,28 +16,26 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GraphDBStatementLoaderFactoryTest {
+class FactoryOfFactoriesTest {
 
     @Mock
     private Repository repository;
 
     @Mock
-    private RepositoryConnection connection;
 
-    @Mock
-    private Connector connector;
+    private RepositoryConnection connection;
 
     @Test
     void isRepositoryGraphDBChecksForPresenceOfInternalGraphDBEntityIds() throws Exception {
         when(repository.getConnection()).thenReturn(connection);
         final ValueFactory vf = SimpleValueFactory.getInstance();
         when(connection.getValueFactory()).thenReturn(vf);
-        when(connector.unwrap(Repository.class)).thenReturn(repository);
         final BooleanQuery query = mock(BooleanQuery.class);
         when(connection.prepareBooleanQuery(anyString())).thenReturn(query);
         when(query.evaluate()).thenReturn(true);
 
-        assertTrue(GraphDBStatementLoaderFactory.isRepositoryGraphDB(connector));
-        verify(query).setBinding(anyString(), eq(vf.createIRI(GraphDBStatementLoaderFactory.GRAPHDB_INTERNAL_ID_PROPERTY)));
+        assertTrue(FactoryOfFactories.isRepositoryGraphDB(repository));
+        verify(query).setBinding(anyString(), eq(vf.createIRI(FactoryOfFactories.GRAPHDB_INTERNAL_ID_PROPERTY)));
     }
+
 }

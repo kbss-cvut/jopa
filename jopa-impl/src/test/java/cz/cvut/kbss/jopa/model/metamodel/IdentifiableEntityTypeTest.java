@@ -16,14 +16,12 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class EntityTypeImplTest {
+class IdentifiableEntityTypeTest {
 
     private static Class<OWLClassA> cls;
     private static IRI classIri;
@@ -38,52 +36,30 @@ class EntityTypeImplTest {
 
     @Test
     void getAttributeThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new EntityTypeImpl<>(className, cls, classIri);
+        final EntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
         assertThrows(IllegalArgumentException.class, () -> et.getAttribute("someUnknownAttribute"));
     }
 
     @Test
     void getDeclaredAttributeThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new EntityTypeImpl<>(className, cls, classIri);
+        final EntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
         assertThrows(IllegalArgumentException.class, () -> et.getDeclaredAttribute("someUnknownAttribute"));
     }
 
     @Test
     void getFieldSpecificationThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new EntityTypeImpl<>(className, cls, classIri);
+        final EntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
         assertThrows(IllegalArgumentException.class, () -> et.getFieldSpecification("someUnknownAttribute"));
     }
 
     @Test
     void getFieldSpecificationReturnsTypesIfNameMatches() throws Exception {
-        final EntityTypeImpl<OWLClassA> et = new EntityTypeImpl<>(className, cls, classIri);
+        final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
         final TypesSpecification typesSpec = mock(TypesSpecification.class);
         when(typesSpec.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesSpec.getJavaField()).thenReturn(OWLClassA.getTypesField());
         et.addDirectTypes(typesSpec);
 
         assertEquals(typesSpec, et.getFieldSpecification(typesSpec.getName()));
-    }
-
-    @Test
-    void setSupertypeSetsInheritanceStrategyFromTheSupertypeWhenItIsEntity() {
-        final EntityTypeImpl<OWLClassR> rEntityType = new EntityTypeImpl<>(OWLClassR.class.getName(),
-                OWLClassR.class, IRI.create(OWLClassR.getClassIri()));
-        final EntityTypeImpl<OWLClassS> sEntityType = spy(new EntityTypeImpl<>(OWLClassS.class.getName(),
-                OWLClassS.class, IRI.create(OWLClassS.getClassIri())));
-        sEntityType.setInheritanceType(InheritanceType.TRY_FIRST);
-        rEntityType.setSupertype(sEntityType);
-
-        assertEquals(InheritanceType.TRY_FIRST, rEntityType.getInheritanceType());
-    }
-
-    @Test
-    void setSupertypeSkipsInheritanceStrategyWhenSupertypeIsNotEntity() {
-        final EntityTypeImpl<OWLClassQ> qEntityType = new EntityTypeImpl<>(OWLClassQ.class.getName(), OWLClassQ.class,
-                IRI.create(OWLClassQ.getClassIri()));
-        final MappedSuperclassTypeImpl<QMappedSuperclass> superclassType = new MappedSuperclassTypeImpl<>(
-                QMappedSuperclass.class);
-        qEntityType.setSupertype(superclassType);
-        assertNull(qEntityType.getInheritanceType());
     }
 }
