@@ -114,4 +114,11 @@ public abstract class AnnotatedAccessor {
         }
     }
 
+    @Override
+    public String toString() {
+        return "AnnotatedAccessor{" +
+                "method=" + method +
+                ", propertyType=" + propertyType +
+                '}';
+    }
 }

@@ -237,6 +237,25 @@ class ClassFieldMetamodelProcessorTest {
         assertNotNull(captor.getValue());
     }
 
+    @Test
+    void fieldProcessingFailsOnNonCompatibleTypes() throws NoSuchFieldException, NoSuchMethodException {
+        final IdentifiableEntityType<OWLClassWithWrongTypes> baseMock = mock(IdentifiableEntityType.class);
+
+
+
+        when(baseMock.getJavaType()).thenReturn(OWLClassWithWrongTypes.class);
+        when(baseMock.getSupertypes()).thenReturn(Collections.emptySet());
+
+        final ClassFieldMetamodelProcessor<OWLClassWithWrongTypes> processor = prepareProcessorForClass(baseMock);
+        final Field field = OWLClassWithWrongTypes.getCountField();
+
+        when(metamodelBuilder.getAnnotatedAccessorsForClass(baseMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLClassWithWrongTypes.getSetCountMethod())));
+
+        MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class, () -> processor.processField(field));
+        assertTrue(ex.getMessage().contains("Non-compatible types"));
+    }
+
+
     private <X> ClassFieldMetamodelProcessor<X> prepareProcessorForClass(IdentifiableEntityType<X> etMock) {
         final TypeBuilderContext<X> context = new TypeBuilderContext<>(etMock, new NamespaceResolver());
         context.setConverterResolver(new ConverterResolver(new Converters(new Configuration())));
@@ -420,6 +439,23 @@ class ClassFieldMetamodelProcessorTest {
         }
     }
 
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLClassWithWrongTypes")
+    private static class OWLClassWithWrongTypes{
+        private Integer count;
+
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "count")
+        public void setCount(String  count){
+            System.out.println("NOP");
+        }
+        public static Field getCountField() throws NoSuchFieldException {
+            return OWLClassWithWrongTypes.class.getDeclaredField("count");
+        }
+
+        public static Method getSetCountMethod() throws NoSuchMethodException {
+            return OWLClassWithWrongTypes.class.getMethod("setCount", String.class);
+        }
+
+    }
 
 }
 

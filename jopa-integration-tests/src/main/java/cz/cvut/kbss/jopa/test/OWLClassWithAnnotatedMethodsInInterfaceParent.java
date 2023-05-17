@@ -19,20 +19,23 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 
 import java.net.URI;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_PART_CONSTR_IN_PARENT)
-public class OWLClassWithPartConstraintsInInterfaceParent implements OWLInterfaceE {
+public class OWLClassWithAnnotatedMethodsInInterfaceParent implements OWLInterfaceE {
 
     protected OWLClassWithUnProperties data;
     protected Set<OWLClassWithUnProperties> dataList;
     protected ZoneOffset withConverter;
+    protected Color ordinalEnumAttribute;
+    protected List<URI> simpleList;
 
-    public OWLClassWithPartConstraintsInInterfaceParent(URI uri) {
+    public OWLClassWithAnnotatedMethodsInInterfaceParent(URI uri) {
         this.uri = uri;
     }
 
-    public OWLClassWithPartConstraintsInInterfaceParent() {
+    public OWLClassWithAnnotatedMethodsInInterfaceParent() {
     }
 
     @Id
@@ -71,5 +74,23 @@ public class OWLClassWithPartConstraintsInInterfaceParent implements OWLInterfac
 
     public void setWithConverter(ZoneOffset withConverter) {
         this.withConverter = withConverter;
+    }
+
+    @Override
+    public Color getOrdinalEnumAttribute() {
+        return ordinalEnumAttribute;
+    }
+
+    public void setOrdinalEnumAttribute(Color ordinalEnumAttribute) {
+        this.ordinalEnumAttribute = ordinalEnumAttribute;
+    }
+
+    @Override
+    public List<URI> getSimpleList() {
+        return simpleList;
+    }
+
+    public void setSimpleList(List<URI> simpleList) {
+        this.simpleList = simpleList;
     }
 }

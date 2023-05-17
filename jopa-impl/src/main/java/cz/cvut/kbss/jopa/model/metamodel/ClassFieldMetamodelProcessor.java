@@ -169,14 +169,22 @@ class ClassFieldMetamodelProcessor<X> {
                 Objects.equals(newMethod.getAnnotation(OWLDataProperty.class), foundMethod.getAnnotation(OWLDataProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(OWLAnnotationProperty.class), foundMethod.getAnnotation(OWLAnnotationProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(Convert.class), foundMethod.getAnnotation(Convert.class)) &&
+                Objects.equals(newMethod.getAnnotation(Sequence.class), foundMethod.getAnnotation(Sequence.class)) &&
+                Objects.equals(newMethod.getAnnotation(Enumerated.class), foundMethod.getAnnotation(Enumerated.class)) &&
                 Objects.equals(newMethod.getAnnotation(ParticipationConstraints.class), foundMethod.getAnnotation(ParticipationConstraints.class));
 
     }
 
 
     private boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
+        if (!property.getName().equals(accessor.getPropertyName())) {
+            return false;
+        }
+        if (!property.getType().isAssignableFrom(accessor.getPropertyType())) {
+            throw new MetamodelInitializationException("Non-compatible types between method " + accessor + " and field " + property.getName() + ". Method is accessor to type " + accessor.getPropertyType() + ", field type is "+property.getType());
+        }
 
-        return property.getName().equals(accessor.getPropertyName()) && property.getType().isAssignableFrom(accessor.getPropertyType());
+        return true;
     }
 
     private static Class<?> getFieldValueType(Field field) {
@@ -281,7 +289,8 @@ class ClassFieldMetamodelProcessor<X> {
         et.addDeclaredQueryAttribute(field.getName(), a);
     }
 
-    private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo inference, PropertyAttributes propertyAttributes) {
+    private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo
+            inference, PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
         if (property.getType().isAssignableFrom(Collection.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder = CollectionAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit);
@@ -304,7 +313,8 @@ class ClassFieldMetamodelProcessor<X> {
         return a;
     }
 
-    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceInfo inference, PropertyAttributes propertyAttributes) {
+    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceInfo
+            inference, PropertyAttributes propertyAttributes) {
         final Sequence os = property.getAnnotation(Sequence.class);
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
