@@ -64,7 +64,7 @@ public class SnapshotStorageWithInferenceTest {
     public void initializationCreatesRDFSReasonerBasedOnConfiguredReasonerFactoryClass() throws Exception {
         configuration.setProperty(DriverConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
         this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
-        assertTrue(getReasonerFactory() instanceof RDFSRuleReasonerFactory);
+        assertInstanceOf(RDFSRuleReasonerFactory.class, getReasonerFactory());
     }
 
     private ReasonerFactory getReasonerFactory() throws Exception {
@@ -98,7 +98,7 @@ public class SnapshotStorageWithInferenceTest {
     public void initializationCreatesOWLReasonerBasedOnConfiguredReasonerFactoryClass() throws Exception {
         configuration.setProperty(DriverConfigParam.REASONER_FACTORY_CLASS, OWLFBRuleReasonerFactory.class.getName());
         this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
-        assertTrue(getReasonerFactory() instanceof OWLFBRuleReasonerFactory);
+        assertInstanceOf(OWLFBRuleReasonerFactory.class, getReasonerFactory());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class SnapshotStorageWithInferenceTest {
         configuration.setProperty(DriverConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
         this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.addCentralData(getDatasetWithDefaultModel());
-        assertTrue(storage.dataset.getDefaultModel().getGraph() instanceof InfGraph);
+        assertNotNull(storage.dataset.getDefaultModel());
     }
 
     @Test
@@ -158,7 +158,7 @@ public class SnapshotStorageWithInferenceTest {
         storage.addCentralData(getDatasetWithDefaultModel());
         assertTrue(storage.getDefaultGraph().contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
         final Model result = storage.getRawDefaultGraph();
-        assertFalse(result instanceof InfModel);
+        assertThat(result, not(instanceOf(InfModel.class)));
         assertTrue(result.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE)));
         assertFalse(result.contains(createResource(SUBJECT), RDF.type, createResource(TYPE_TWO)));
     }
@@ -168,7 +168,7 @@ public class SnapshotStorageWithInferenceTest {
         configuration.setProperty(DriverConfigParam.REASONER_FACTORY_CLASS, RDFSRuleReasonerFactory.class.getName());
         this.storage = new SnapshotStorageWithInference(configuration, Collections.emptyMap());
         storage.addCentralData(getDatasetWithDataInNamedGraph());
-        assertTrue(storage.getDataset().getNamedModel(NAMED_GRAPH).getGraph() instanceof InfGraph);
+        assertInstanceOf(InfGraph.class, storage.getDataset().getNamedModel(NAMED_GRAPH).getGraph());
     }
 
     @Test

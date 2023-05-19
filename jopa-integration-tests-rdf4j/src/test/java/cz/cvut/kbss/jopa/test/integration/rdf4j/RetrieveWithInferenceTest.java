@@ -19,9 +19,11 @@ import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
 import cz.cvut.kbss.jopa.test.integration.rdf4j.model.Concept;
 import cz.cvut.kbss.jopa.test.runner.RetrieveWithInferenceRunner;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
+import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,15 +54,18 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         super.retrievedEntityWithInferredTypesContainsInferredData();
     }
 
+    // Apparently, RDF4J supports only SHACL validation, not SHACL inference with SPARQL rules
+    // See https://github.com/eclipse/rdf4j/issues/191
+    @Disabled
     @Test
     void retrieveSupportsLoadingInferredStatementsFromDefaultContext() {
         final Map<String, String> inferenceProps = new HashMap<>();
         inferenceProps.put(Rdf4jOntoDriverProperties.USE_INFERENCE, Boolean.TRUE.toString());
-        inferenceProps.put(Rdf4jOntoDriverProperties.REPOSITORY_CONFIG, "classpath:rdf4j-memory-spin-rdfs.ttl");
+        inferenceProps.put(Rdf4jOntoDriverProperties.REPOSITORY_CONFIG, "classpath:rdf4j-memory-shacl-rdfs.ttl");
         inferenceProps.put(Rdf4jOntoDriverProperties.INFERENCE_IN_DEFAULT_CONTEXT, Boolean.TRUE.toString());
         this.em =
                 getEntityManager("RetrieveSupportsLoadingInferredStatementsFromDefaultContext", false, inferenceProps);
-        loadSpinRules();
+        loadShaclRules();
         final URI context = Generators.generateUri();
         final EntityDescriptor descriptor = new EntityDescriptor(context);
 
@@ -78,12 +83,12 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         assertTrue(resultParent.getNarrower().stream().anyMatch(c -> c.getUri().equals(child.getUri())));
     }
 
-    private void loadSpinRules() {
+    private void loadShaclRules() {
         transactional(() -> {
             final Repository repo = em.unwrap(Repository.class);
             try (final RepositoryConnection conn = repo.getConnection()) {
-                final InputStream rulesIn = this.getClass().getClassLoader().getResourceAsStream("test-spin-rules.ttl");
-                conn.add(rulesIn, RDFFormat.TURTLE);
+                final InputStream rulesIn = this.getClass().getClassLoader().getResourceAsStream("test-shacl-rules.ttl");
+                conn.add(rulesIn, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
             } catch (IOException e) {
                 fail(e);
             }
