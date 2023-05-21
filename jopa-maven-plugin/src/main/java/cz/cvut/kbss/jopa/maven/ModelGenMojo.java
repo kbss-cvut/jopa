@@ -22,7 +22,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.join;
 
 
-//not working
 @Mojo(
         requiresDependencyResolution = ResolutionScope.COMPILE,
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
@@ -35,8 +34,6 @@ public class ModelGenMojo extends AbstractMojo {
     private static final String ADDITIONAL_SORCES_PARAM = "additional-sources";
     private static final String SOURCE_PACKAGE_PARAM = "source-package";
     public static final String DEBUG_PARAM = "debug-option";
-
-    //package ve kterým mám hledat soubory
 
     @Parameter(
             defaultValue = "${project}",

@@ -139,7 +139,7 @@ class OutputFilesGeneratorTests {
         }
 
         @Test
-        void containsProperties() {
+        void containsTypedProperties() {
             assertTrue(actualResult.contains("public static volatile PropertiesSpecification<TestingClass, Map, URI, Object> propertie;"));
         }
 

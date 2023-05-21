@@ -15,11 +15,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Class for generating output files
+ */
 public class OutputFilesGenerator {
     public static String finalTargetFolder = "";
 
     public static boolean debugOption;
 
+    /**
+     * Method for creating first part of final class file.
+     * @param glass Object for which class want to be generated.
+     * @return  returns File object.
+     */
     public static File createClass(MetamodelClass glass) {
         StringBuilder fileName = new StringBuilder(finalTargetFolder);
         fileName.append("/");
@@ -86,6 +94,11 @@ public class OutputFilesGenerator {
         }
     }
 
+    /**
+     * Method for appending correct static metamodel fields to file.
+     * @param glass object with fields
+     * @param classFile file in which will be fields appended
+     */
     public static void appendProperties(MetamodelClass glass, File classFile) {
         StringBuilder propertiesString = new StringBuilder();
         for (Field field : glass.getFields()) {
@@ -165,6 +178,10 @@ public class OutputFilesGenerator {
         }
     }
 
+    /**
+     * Method for closing the class file
+     * @param outputFile class file wanted to be closed
+     */
     public static void finishClass(File outputFile) {
         try {
             FileWriter fw = new FileWriter(outputFile, true);
@@ -175,6 +192,12 @@ public class OutputFilesGenerator {
         }
     }
 
+    /**
+     * Checking method whether Field has given annotation
+     * @param field
+     * @param annotationEnum
+     * @return
+     */
     public static boolean isAnnotatedWith(Field field, AnnotationEnum annotationEnum) {
         List<AnnotationEnum> annotations = field.getAnnotatedWith();
         if (annotations.isEmpty()) return false;
@@ -185,6 +208,14 @@ public class OutputFilesGenerator {
         }
         return false;
     }
+
+    /**
+     * Class which will generate all given MetamodelClass objects. It works with every method in OutputFilesGenerator class.
+     * @param classes   MetamodelClass objects wanted to be generated.
+     * @param outputDirectory Output directory for metamodel
+     * @param messager messager for console output
+     * @param debugOption controller of console output.
+     */
 
     public static void generateOutputFiles(Map<String, MetamodelClass> classes, String outputDirectory, Messager messager, boolean debugOption) {
         finalTargetFolder = outputDirectory;

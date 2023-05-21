@@ -17,6 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Annotation processor class
+ *
+ */
 @SupportedAnnotationTypes({"cz.cvut.kbss.jopa.model.annotations.OWLClass", "cz.cvut.kbss.jopa.model.annotations.MappedSuperclass"})
 @SupportedOptions({
         ModelGenProcessor.OUTPUT_DIRECTORY_PARAM,
