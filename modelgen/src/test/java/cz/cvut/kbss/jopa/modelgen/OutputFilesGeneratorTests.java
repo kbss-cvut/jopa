@@ -8,7 +8,7 @@ import cz.test.ex.TestingClassOWL;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,9 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class OutputFilesGeneratorTests {
 
     static String actualResult = "";
-    static final String expectedResult = readFileAsString(new File("./src/test/resources/TestingClassOWL_.txt"));
     @BeforeAll
-    static void createSMClass(){
+    static void createSMClass() throws FileNotFoundException {
         Map<String, MetamodelClass> map = new HashMap<>();
         MetamodelClass cl = new MetamodelClass();
         Class<TestingClassOWL> testingClass = TestingClassOWL.class;
@@ -53,7 +52,7 @@ class OutputFilesGeneratorTests {
 
         Field field5 = new Field();
         field5.setAnnotatedWith(Arrays.asList(AnnotationEnum.DATAPROPERTY));
-        field5.setName("data-list");
+        field5.setName("dataList");
         field5.setParentName("cz.test.ex.TestingClassOWL");
         Type type5 = new Type();
         type5.setTypeName(List.class.getName());
@@ -65,7 +64,7 @@ class OutputFilesGeneratorTests {
 
         Field field6 = new Field();
         field6.setAnnotatedWith(Arrays.asList(AnnotationEnum.DATAPROPERTY));
-        field6.setName("data-set");
+        field6.setName("dataSet");
         field6.setParentName("cz.test.ex.TestingClassOWL");
         Type type6 = new Type();
         type6.setTypeName(Set.class.getName());
@@ -145,26 +144,21 @@ class OutputFilesGeneratorTests {
 
         @Test
         void containsListAttribute() {
-            assertTrue(actualResult.contains("public static volatile ListAttribute<TestingClassOWL, Test> data-list;"));
+            assertTrue(actualResult.contains("public static volatile ListAttribute<TestingClassOWL, Test> dataList;"));
         }
 
         @Test
         void containsSetAttribute() {
-            assertTrue(actualResult.contains("public static volatile SetAttribute<TestingClassOWL, Test> data-set;"));
+            assertTrue(actualResult.contains("public static volatile SetAttribute<TestingClassOWL, Test> dataSet;"));
         }
 
     }
 
 
-    static String readFileAsString(File file) {
-        try {
-            Scanner scanner = new Scanner(file);
-            String fileContents = scanner.useDelimiter("\\Z").next();
-            scanner.close();
-            return fileContents;
-        } catch (IOException e) {
-            System.err.println("Chyba cteni");
-        }
-        return "";
+    static String readFileAsString(File file) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        String fileContents = scanner.useDelimiter("\\Z").next();
+        scanner.close();
+        return fileContents;
     }
 }
