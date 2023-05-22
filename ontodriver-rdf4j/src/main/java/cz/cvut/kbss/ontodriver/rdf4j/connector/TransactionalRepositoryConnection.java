@@ -15,8 +15,8 @@
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 
-import org.eclipse.rdf4j.IsolationLevel;
 import org.eclipse.rdf4j.common.iteration.Iteration;
+import org.eclipse.rdf4j.common.transaction.IsolationLevel;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.Repository;

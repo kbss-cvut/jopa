@@ -93,7 +93,7 @@
 
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>ontodriver-sesame</artifactId>
+            <artifactId>ontodriver-rdf4j</artifactId>
             <version>${project.version}</version>
         </dependency>
 

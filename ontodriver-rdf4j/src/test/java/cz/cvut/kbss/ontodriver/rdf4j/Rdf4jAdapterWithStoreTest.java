@@ -105,12 +105,14 @@ public class Rdf4jAdapterWithStoreTest {
                     Collectors.toSet());
             assertTrue(types.contains(tOne));
             assertTrue(types.contains(tTwo));
-            final RepositoryResult<Statement> aStringProp = connection
-                    .getStatements(subj, vf.createIRI(pOne), null, false);
-            assertTrue(aStringProp.hasNext());
-            final RepositoryResult<Statement> bStringProp = connection
-                    .getStatements(subj, vf.createIRI(pTwo), null, false);
-            assertTrue(bStringProp.hasNext());
+            try (final RepositoryResult<Statement> aStringProp = connection
+                    .getStatements(subj, vf.createIRI(pOne), null, false)) {
+                assertTrue(aStringProp.hasNext());
+            }
+            try (final RepositoryResult<Statement> bStringProp = connection
+                    .getStatements(subj, vf.createIRI(pTwo), null, false)) {
+                assertTrue(bStringProp.hasNext());
+            }
         }
     }
 }
