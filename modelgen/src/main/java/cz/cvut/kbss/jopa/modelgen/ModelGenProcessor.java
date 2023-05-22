@@ -91,6 +91,9 @@ public class ModelGenProcessor extends AbstractProcessor {
         List<? extends AnnotationMirror> paramAnnotations = param.getAnnotationMirrors();
         if (!paramAnnotations.isEmpty()) {
             for (AnnotationMirror paramAnnotation : paramAnnotations) {
+                if (paramAnnotation.toString().contains("cz.cvut.kbss.jopa.model.annotations.Transient")) {
+                    return false;
+                }
                 for (AnnotationEnum anEnum : AnnotationEnum.values()) {
                     if (paramAnnotation.toString().contains(anEnum.getAnnotation())) {
                         containsWanted = true;
