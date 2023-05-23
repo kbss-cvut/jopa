@@ -116,21 +116,17 @@ public class OWL2JavaMojo extends AbstractMojo {
     }
 
     private void printParameterValues() {
-        print(MAPPING_FILE_PARAM, pMappingFile);
-        print(PACKAGE_PARAM, pPackage);
-        print(CONTEXT_PARAM, pContextName);
-        print(ONTOLOGY_PARAM, pOntologyIRI);
-        print(OUTPUT_PARAM, pOutputDirectory);
-        print(W_OWLAPI_PARAM, pWithOWLAPI);
-        print(ALL_IC_PARAM, pWholeOntologyAsICS);
-        print(VOCABULARY_PARAM, pVocabularyOnly);
-        print(IGNORE_FAILED_IMPORTS_PARAM, ignoreFailedImports);
-        print(PROPERTIES_TYPE,pPropertiesType);
-        print(GENERATE_JAVADOC, generateJavadoc);
-        print(PREFER_MULTILINGUAL_STRINGS, preferMultilingualStrings);
-    }
-
-    private void print(String param, Object value) {
-        getLog().info(param + ": " + value);
+        Utils.logParameterValue(MAPPING_FILE_PARAM, pMappingFile, getLog());
+        Utils.logParameterValue(PACKAGE_PARAM, pPackage, getLog());
+        Utils.logParameterValue(CONTEXT_PARAM, pContextName, getLog());
+        Utils.logParameterValue(ONTOLOGY_PARAM, pOntologyIRI, getLog());
+        Utils.logParameterValue(OUTPUT_PARAM, pOutputDirectory, getLog());
+        Utils.logParameterValue(W_OWLAPI_PARAM, pWithOWLAPI, getLog());
+        Utils.logParameterValue(ALL_IC_PARAM, pWholeOntologyAsICS, getLog());
+        Utils.logParameterValue(VOCABULARY_PARAM, pVocabularyOnly, getLog());
+        Utils.logParameterValue(IGNORE_FAILED_IMPORTS_PARAM, ignoreFailedImports, getLog());
+        Utils.logParameterValue(PROPERTIES_TYPE,pPropertiesType, getLog());
+        Utils.logParameterValue(GENERATE_JAVADOC, generateJavadoc, getLog());
+        Utils.logParameterValue(PREFER_MULTILINGUAL_STRINGS, preferMultilingualStrings, getLog());
     }
 }
