@@ -8,7 +8,7 @@ import cz.test.ex.TestingClassOWL;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,9 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class OutputFilesGeneratorTests {
 
     static String actualResult = "";
-    static final String expectedResult = readFileAsString(new File("./src/test/resources/TestingClass_.txt"));
     @BeforeAll
-    static void createSMClass(){
+    static void createSMClass() throws FileNotFoundException {
         Map<String, MetamodelClass> map = new HashMap<>();
         MetamodelClass cl = new MetamodelClass();
         Class<TestingClassOWL> testingClass = TestingClassOWL.class;
@@ -30,8 +29,8 @@ class OutputFilesGeneratorTests {
 
         Field field1 = new Field();
         field1.setAnnotatedWith(Arrays.asList(AnnotationEnum.ID));
-        field1.setName("id");
-        field1.setParentName("cz.test.ex.TestingClass");
+        field1.setName("uri");
+        field1.setParentName("cz.test.ex.TestingClassOWL");
         Type type1 = new Type();
         type1.setTypeName("Test");
         field1.setType(type1);
@@ -40,21 +39,21 @@ class OutputFilesGeneratorTests {
         Field field2 = new Field();
         field2.setAnnotatedWith(Arrays.asList(AnnotationEnum.OBJECTPROPERTY));
         field2.setName("object");
-        field2.setParentName("cz.test.ex.TestingClass");
+        field2.setParentName("cz.test.ex.TestingClassOWL");
         field2.setType(type1);
         cl.addField(field2);
 
         Field field3 = new Field();
         field3.setAnnotatedWith(Arrays.asList(AnnotationEnum.TYPES));
         field3.setName("types");
-        field3.setParentName("cz.test.ex.TestingClass");
+        field3.setParentName("cz.test.ex.TestingClassOWL");
         field3.setType(type1);
         cl.addField(field3);
 
         Field field5 = new Field();
         field5.setAnnotatedWith(Arrays.asList(AnnotationEnum.DATAPROPERTY));
-        field5.setName("data-list");
-        field5.setParentName("cz.test.ex.TestingClass");
+        field5.setName("dataList");
+        field5.setParentName("cz.test.ex.TestingClassOWL");
         Type type5 = new Type();
         type5.setTypeName(List.class.getName());
         type5.setIsSimple(false);
@@ -65,8 +64,8 @@ class OutputFilesGeneratorTests {
 
         Field field6 = new Field();
         field6.setAnnotatedWith(Arrays.asList(AnnotationEnum.DATAPROPERTY));
-        field6.setName("data-set");
-        field6.setParentName("cz.test.ex.TestingClass");
+        field6.setName("dataSet");
+        field6.setParentName("cz.test.ex.TestingClassOWL");
         Type type6 = new Type();
         type6.setTypeName(Set.class.getName());
         type6.setIsSimple(false);
@@ -78,18 +77,24 @@ class OutputFilesGeneratorTests {
         Field field8 = new Field();
         field8.setAnnotatedWith(Arrays.asList(AnnotationEnum.PROPERTIES));
         field8.setName("properties");
-        field8.setParentName("cz.test.ex.TestingClass");
+        field8.setParentName("cz.test.ex.TestingClassOWL");
         field8.setType(type6);
         type6.setTypes(Arrays.asList(type1));
         field8.setType(type6);
         cl.addField(field8);
 
-        map.put("cz.test.ex.TestingClass", cl);
+        map.put("cz.test.ex.TestingClassOWL", cl);
         OutputFilesGenerator.generateOutputFiles(map, "./src/test/java", null, false);
 
-         actualResult = readFileAsString(new File("./src/test/java/cz/test/ex/TestingClass_.java"));
+         actualResult = readFileAsString(new File("./src/test/java/cz/test/ex/TestingClassOWL_.java"));
     }
 
+
+    @AfterAll
+    static void deleteSMClass() {
+        File file = new File("./src/test/java/cz/test/ex/TestingClassOWL_.java");
+        file.delete();
+    }
 
     @Test
     void isAnnotatedWithSuccessTest() {
@@ -122,62 +127,38 @@ class OutputFilesGeneratorTests {
     @Nested
     class GenerateOutputFiles {
 
-        @AfterEach
-        void deleteSMClass() {
-            File file = new File("./src/test/java/cz/test/ex/TestingClass_.java");
-            file.delete();
-        }
-
         @Test
         void containsIdentifier() {
-            assertTrue(actualResult.contains("public static volatile Identifier<TestingClass, URI> uri;"));
+            assertTrue(actualResult.contains("public static volatile Identifier<TestingClassOWL, Test> uri;"));
         }
 
         @Test
         void containsSingular() {
-            assertTrue(actualResult.contains("public static volatile SingularAttribute<TestingClass, TestingClass> testingClass;"));
+            assertTrue(actualResult.contains("public static volatile SingularAttribute<TestingClassOWL, Test> object;"));
         }
 
         @Test
         void containsTypedProperties() {
-            assertTrue(actualResult.contains("public static volatile PropertiesSpecification<TestingClass, Map, URI, Object> propertie;"));
+            assertTrue(actualResult.contains("public static volatile PropertiesSpecification<TestingClassOWL, Test> properties;"));
         }
 
         @Test
         void containsListAttribute() {
-            assertTrue(actualResult.contains("public static volatile ListAttribute<TestingClass, String> listAttribute;"));
+            assertTrue(actualResult.contains("public static volatile ListAttribute<TestingClassOWL, Test> dataList;"));
         }
 
         @Test
         void containsSetAttribute() {
-            assertTrue(actualResult.contains("public static volatile SetAttribute<TestingClass, String> setAttribute;"));
-        }
-
-
-        String readFileAsString(File file) {
-            try {
-                Scanner scanner = new Scanner(file);
-                String fileContents = scanner.useDelimiter("\\Z").next();
-                scanner.close();
-                return fileContents;
-            } catch (IOException e) {
-                System.err.println("Chyba cteni");
-            }
-            return "";
+            assertTrue(actualResult.contains("public static volatile SetAttribute<TestingClassOWL, Test> dataSet;"));
         }
 
     }
 
 
-    static String readFileAsString(File file) {
-        try {
-            Scanner scanner = new Scanner(file);
-            String fileContents = scanner.useDelimiter("\\Z").next();
-            scanner.close();
-            return fileContents;
-        } catch (IOException e) {
-            System.err.println("Chyba cteni");
-        }
-        return "";
+    static String readFileAsString(File file) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        String fileContents = scanner.useDelimiter("\\Z").next();
+        scanner.close();
+        return fileContents;
     }
 }
