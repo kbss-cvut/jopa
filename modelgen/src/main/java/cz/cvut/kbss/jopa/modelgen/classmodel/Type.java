@@ -10,7 +10,6 @@ public class Type {
     private Boolean isSimple;
     private List<Type> types;
 
-
     public Type() {
         typeName = "";
         isSimple = true;
@@ -18,12 +17,11 @@ public class Type {
     }
 
     public Type(TypeMirror tMirror) {
-
         if (isSimple(tMirror.toString())) {
             this.isSimple = true;
             this.types = null;
             TypeMirror upperBound = getUpperBound(tMirror);
-            String fullName = "";
+            String fullName;
             if (upperBound == null) {
                 fullName = tMirror.toString();
             } else {
@@ -39,18 +37,13 @@ public class Type {
             this.typeName = ((DeclaredType) tMirror).asElement().toString();
             this.isSimple = false;
             this.types = new ArrayList<>();
-            typeArgs.forEach((typeMirror -> {
-                this.types.add(new Type(typeMirror));
-            }
-            ));
+            typeArgs.forEach((typeMirror -> types.add(new Type(typeMirror))));
         }
     }
 
     private TypeMirror getUpperBound(TypeMirror type) {
         if (type instanceof TypeVariable) {
-            TypeVariable typeVar = (TypeVariable) type;
-            TypeMirror upperBound = typeVar.getUpperBound();
-            return upperBound;
+            return ((TypeVariable) type).getUpperBound();
         }
         return null;
     }

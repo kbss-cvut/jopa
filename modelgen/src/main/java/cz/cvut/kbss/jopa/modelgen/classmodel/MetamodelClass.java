@@ -9,37 +9,38 @@ public class MetamodelClass {
     private String pckg;
     private String name;
     private String extend;
-    private List<String> imports;
-    private List<Field> fields;
+    private final List<String> imports;
+    private final List<Field> fields = new ArrayList<>();
 
     public MetamodelClass() {
-        pckg = "";
-        name = "";
-        imports = new ArrayList<>();
-        imports.add("cz.cvut.kbss.jopa.model.metamodel.*");
-        imports.add("javax.annotation.processing.Generated");
-        fields = new ArrayList<>();
+        this.pckg = "";
+        this.name = "";
+        imports = initDefaultImports();
     }
 
     public MetamodelClass(Element elClass) {
         String fullName = elClass.toString();
-        boolean packag = fullName.contains(".");
-        if (packag) {
-            pckg = elClass.toString().substring(0, elClass.toString().lastIndexOf("."));
+        boolean pckg = fullName.contains(".");
+        if (pckg) {
+            this.pckg = elClass.toString().substring(0, elClass.toString().lastIndexOf("."));
         } else {
-            pckg = "";
+            this.pckg = "";
         }
-        name = elClass.getSimpleName().toString();
-        extend = ((TypeElement) elClass).getSuperclass().toString();
+        this.name = elClass.getSimpleName().toString();
+        this.extend = ((TypeElement) elClass).getSuperclass().toString();
         if (extend.equals(Object.class.getName())) extend = "";
         else if (extend.contains("<")) {
-            extend = extend.substring(0, extend.indexOf("<"));
+            this.extend = extend.substring(0, extend.indexOf("<"));
         }
-        imports = new ArrayList<>();
-        imports.add("cz.cvut.kbss.jopa.model.metamodel.*");
-        imports.add("javax.annotation.processing.Generated");
+        this.imports = initDefaultImports();
         imports.add(fullName);
-        fields = new ArrayList<>();
+    }
+
+    private static List<String> initDefaultImports() {
+        final List<String> result = new ArrayList<>();
+        result.add("cz.cvut.kbss.jopa.model.metamodel.*");
+        result.add("javax.annotation.processing.Generated");
+        return result;
     }
 
     public String getPckg() {
@@ -70,24 +71,12 @@ public class MetamodelClass {
         return imports;
     }
 
-    public void setImports(List<String> imports) {
-        this.imports = imports;
-    }
-
     public List<Field> getFields() {
         return fields;
     }
 
     public void addField(Field field) {
         this.fields.add(field);
-        field.getImports().forEach((imbort) -> {
-            if (!imports.contains(imbort)) {
-                imports.add(imbort);
-            }
-        });
-    }
-
-    public void setFields(List<Field> properties) {
-        this.fields = properties;
+        field.getImports().stream().filter(imp -> !imports.contains(imp)).forEach(imports::add);
     }
 }

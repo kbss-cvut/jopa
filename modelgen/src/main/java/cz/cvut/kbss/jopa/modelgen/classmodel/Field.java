@@ -7,32 +7,29 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Field {
-    private List<String> imports;
+    private final List<String> imports = new ArrayList<>();
     private String name;
     private Type type;
     private String parentName;
-    private List<AnnotationEnum> annotatedWith;
+    private List<MappingAnnotations> annotatedWith;
 
     public Field() {
         name = "";
         type = null;
-        imports = new ArrayList<>();
         parentName = "";
         annotatedWith = new ArrayList<>();
-
     }
 
     public Field(Element elProperty, Element elParent) {
         this.name = elProperty.toString();
         this.type = new Type(elProperty.asType());
         this.parentName = elParent.toString();
-        this.annotatedWith = Arrays.stream(AnnotationEnum.values())
+        this.annotatedWith = Arrays.stream(MappingAnnotations.values())
                 .filter(annotationEnum -> elProperty.getAnnotationMirrors().stream()
                         .anyMatch(annotationMirror ->
                                 annotationMirror.getAnnotationType().toString()
                                         .contains(annotationEnum.getAnnotation())))
                 .collect(Collectors.toList());
-        imports = new ArrayList<>();
         if (type.getIsSimple()) {
             if (!type.getTypeName().contains(" ")) {
                 imports.add(type.getTypeName());
@@ -71,19 +68,15 @@ public class Field {
         this.parentName = parentName;
     }
 
-    public List<AnnotationEnum> getAnnotatedWith() {
+    public List<MappingAnnotations> getAnnotatedWith() {
         return annotatedWith;
     }
 
-    public void setAnnotatedWith(List<AnnotationEnum> annotatedWith) {
+    public void setAnnotatedWith(List<MappingAnnotations> annotatedWith) {
         this.annotatedWith = annotatedWith;
     }
 
     public List<String> getImports() {
         return imports;
-    }
-
-    public void setImports(List<String> imports) {
-        this.imports = imports;
     }
 }

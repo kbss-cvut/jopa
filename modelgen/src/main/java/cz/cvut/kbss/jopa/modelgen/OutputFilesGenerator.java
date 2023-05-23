@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.modelgen;
 
-import cz.cvut.kbss.jopa.modelgen.classmodel.AnnotationEnum;
+import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotations;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
@@ -104,14 +104,14 @@ public class OutputFilesGenerator {
         for (Field field : glass.getFields()) {
             propertiesString.append("\t public static volatile ");
             //@Id
-            if (isAnnotatedWith(field, AnnotationEnum.ID)) {
+            if (isAnnotatedWith(field, MappingAnnotations.ID)) {
                 propertiesString
                         .append("Identifier<")
                         .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
                         .append(", ")
                         .append(field.getType().getTypeName().substring(field.getType().getTypeName().lastIndexOf(".") + 1));
                 //@Types
-            } else if (isAnnotatedWith(field, AnnotationEnum.TYPES)) {
+            } else if (isAnnotatedWith(field, MappingAnnotations.TYPES)) {
                 propertiesString
                         .append("TypesSpecification<")
                         .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
@@ -124,7 +124,7 @@ public class OutputFilesGenerator {
                             .append(field.getType().getTypes().get(0).getTypeName().substring(field.getType().getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
                 }
                 //@Properties
-            } else if (isAnnotatedWith(field, AnnotationEnum.PROPERTIES)) {
+            } else if (isAnnotatedWith(field, MappingAnnotations.PROPERTIES)) {
                 propertiesString
                         .append("PropertiesSpecification<")
                         .append(field.getParentName().substring(field.getParentName().lastIndexOf(".") + 1))
@@ -140,9 +140,9 @@ public class OutputFilesGenerator {
                             .append(", ")
                             .append(type.getTypes().get(1).getTypes().get(0).getTypeName().substring(type.getTypes().get(1).getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
                 }
-            } else if (isAnnotatedWith(field, AnnotationEnum.DATAPROPERTY)
-                    || isAnnotatedWith(field, AnnotationEnum.OBJECTPROPERTY)
-                    || isAnnotatedWith(field, AnnotationEnum.ANNOTATIONPROPERTY)) {
+            } else if (isAnnotatedWith(field, MappingAnnotations.DATA_PROPERTY)
+                    || isAnnotatedWith(field, MappingAnnotations.OBJECT_PROPERTY)
+                    || isAnnotatedWith(field, MappingAnnotations.ANNOTATION_PROPERTY)) {
                 Type type = field.getType();
                 if (type.getIsSimple()) {
                     propertiesString
@@ -195,14 +195,14 @@ public class OutputFilesGenerator {
     /**
      * Checking method whether Field has given annotation
      * @param field
-     * @param annotationEnum
+     * @param mappingAnnotations
      * @return
      */
-    public static boolean isAnnotatedWith(Field field, AnnotationEnum annotationEnum) {
-        List<AnnotationEnum> annotations = field.getAnnotatedWith();
+    public static boolean isAnnotatedWith(Field field, MappingAnnotations mappingAnnotations) {
+        List<MappingAnnotations> annotations = field.getAnnotatedWith();
         if (annotations.isEmpty()) return false;
-        for (AnnotationEnum an : annotations) {
-            if (an.equals(annotationEnum)) {
+        for (MappingAnnotations an : annotations) {
+            if (an.equals(mappingAnnotations)) {
                 return true;
             }
         }
