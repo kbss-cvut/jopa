@@ -731,8 +731,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
                                                              () -> uow.refreshObject(
                                                                      Generators.generateOwlClassAInstance()));
-        assertEquals("Cannot call refresh on an instance not managed by this persistence context.",
-                     result.getMessage());
+        assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
     @Test
@@ -741,8 +740,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.removeObject(a);
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
                                                              () -> uow.refreshObject(a));
-        assertEquals("Cannot call refresh on an instance not managed by this persistence context.",
-                     result.getMessage());
+        assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
     @Test

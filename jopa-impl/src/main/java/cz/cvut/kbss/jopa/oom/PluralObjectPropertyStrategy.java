@@ -102,6 +102,11 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
         }
     }
 
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        return Collections.singleton(resolveValueMapper().apply(value));
+    }
+
     /**
      * Gets the context(s) in which this attribute values are stored.
      * <p>

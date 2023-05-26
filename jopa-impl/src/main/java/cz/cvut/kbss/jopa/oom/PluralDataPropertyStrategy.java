@@ -13,8 +13,8 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -68,11 +68,11 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
                                                                  .filter(Objects::nonNull)
-                                                                 .map(v -> new Value<>(toAxiomValue(v)))
+                                                                 .map(this::convertToAxiomValue)
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(),
-                                   filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
-                                   getAttributeWriteContext());
+                    filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
+                    getAttributeWriteContext());
         }
     }
 
@@ -86,7 +86,8 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
         } else {
             final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
             final Assertion assertion = createAssertion();
-            return valueCollection.stream().map(v -> new AxiomImpl<>(subject, assertion, new Value<>(toAxiomValue(v))))
+            return valueCollection.stream().filter(Objects::nonNull)
+                                  .map(v -> new AxiomImpl<>(subject, assertion, convertToAxiomValue(v)))
                                   .collect(Collectors.toSet());
         }
     }

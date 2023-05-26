@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.*;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -51,6 +52,11 @@ class IdentifierFieldStrategy<X> extends FieldStrategy<Identifier<? super X, ?>,
                 new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
                                 createAssertion(),
                                 new Value<>(et.getIRI().toURI())));
+    }
+
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        return Collections.singleton(new Value<>(et.getIRI().toURI()));
     }
 
     @Override
