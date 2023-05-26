@@ -83,6 +83,11 @@ public class ConnectionWrapper implements Wrapper {
         return mapper.getAttributeAxioms(entity, fieldSpec, entityDescriptor);
     }
 
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> fieldSpec, Object value, Descriptor entityDescriptor) {
+        // TODO
+        return false;
+    }
+
     public void commit() {
         try {
             mapper.checkForUnpersistedChanges();

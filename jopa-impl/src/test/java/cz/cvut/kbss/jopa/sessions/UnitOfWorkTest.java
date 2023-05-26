@@ -1097,4 +1097,17 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
                                        Collections.singleton(CONTEXT_URI));
         verify(storageMock, never()).merge(any(), eq(metamodelMocks.forOwlClassF().stringAttribute()), any());
     }
+
+    @Test
+    void isInferredChecksForValueInferredStatusWithConnectionWrapper() {
+        final OWLClassD instance = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
+        uow.isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA());
+        verify(storageMock).isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA(), descriptor);
+    }
+
+    @Test
+    void isInferredThrowsIllegalArgumentExceptionWhenInstanceIsNotManaged() {
+        assertThrows(IllegalArgumentException.class, () -> uow.isInferred(entityD, metamodelMocks.forOwlClassD().owlClassAAtt(), entityD.getOwlClassA()));
+        verify(storageMock, never()).isInferred(any(), any(), any(), any());
+    }
 }

@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -256,6 +257,21 @@ public interface UnitOfWork extends Session {
      * @see cz.cvut.kbss.jopa.model.ProviderUtil#isLoaded(Object)
      */
     LoadState isLoaded(Object entity);
+
+    /**
+     * Checks whether the specified attribute value of the specified entity is inferred in the underlying repository.
+     * <p>
+     * Note that given the nature of the repository implementation, this method may return true if the corresponding
+     * statement is both inferred and asserted. Also note that this method will use the descriptor associated with the
+     * specified entity in this persistence context to resolve the repository context, but some underlying repositories
+     * do not store inferences in data contexts, so the attribute context may be ignored.
+     *
+     * @param entity    Entity whose attribute to examine. Must be managed by this persistence context
+     * @param attribute Attribute whose value to examine
+     * @param value     The value whose inference to examine
+     * @return {@code true} if the entity attribute value is inferred, {@code false} otherwise
+     */
+    <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
 
     /**
      * Sets the transactional ontology as the one used for SPARQL query processing.
