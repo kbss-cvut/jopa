@@ -59,7 +59,7 @@ public interface ObjectOntologyMapper {
      * Loads entity field value and sets it on the specified entity.
      *
      * @param entity     The entity on which the field value will be set
-     * @param fieldSpec      The field to load
+     * @param fieldSpec  The field to load
      * @param descriptor Descriptor possibly specifying the field context
      */
     <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
@@ -93,7 +93,7 @@ public interface ObjectOntologyMapper {
      * Sets value of property represented by the specified field to the field's value.
      *
      * @param entity     Entity containing the field
-     * @param fieldSpec      The field to update
+     * @param fieldSpec  The field to update
      * @param descriptor Optionally specifies context
      */
     <T> void updateFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
@@ -109,4 +109,21 @@ public interface ObjectOntologyMapper {
      */
     <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,
                                          Descriptor entityDescriptor);
+
+    /**
+     * Checks if the specified attribute value of the specified entity is inferred in the repository.
+     * <p>
+     * Note that attribute context may be ignored by the underlying repository, based on its inference storing strategy.
+     * Also note that if the corresponding statement is both inferred and asserted, this method will return {@code
+     * true}.
+     *
+     * @param entity           Entity whose attribute value to examine
+     * @param fieldSpec        Field specification representing the property to examine
+     * @param value            Value whose inference status to examine
+     * @param entityDescriptor Entity descriptor used to specify repository  context
+     * @param <T>              Entity type
+     * @return {@code true} if the value is inferred, {@code false} otherwise
+     */
+    <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> fieldSpec, Object value,
+                           Descriptor entityDescriptor);
 }

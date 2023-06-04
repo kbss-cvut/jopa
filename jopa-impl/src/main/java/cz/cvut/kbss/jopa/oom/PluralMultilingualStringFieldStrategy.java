@@ -82,16 +82,15 @@ public class PluralMultilingualStringFieldStrategy<X>
         } else {
             final Set<Value<?>> assertionValues = translationsToValues(valueCollection);
             valueBuilder.addValues(createAssertion(),
-                                   filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
-                                   getAttributeWriteContext());
+                    filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
+                    getAttributeWriteContext());
         }
     }
 
     private static Set<Value<?>> translationsToValues(Collection<MultilingualString> valueCollection) {
         return valueCollection.stream()
                               .filter(Objects::nonNull)
-                              .flatMap(v -> v.getValue().entrySet().stream()
-                                             .map(e -> new Value<>(new LangString(e.getValue(), e.getKey()))))
+                              .flatMap(SingularMultilingualStringFieldStrategy::translationsToLangStrings)
                               .collect(Collectors.toSet());
     }
 
@@ -107,5 +106,12 @@ public class PluralMultilingualStringFieldStrategy<X>
         final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
         final Assertion assertion = createAssertion();
         return assertionValues.stream().map(v -> new AxiomImpl<>(subject, assertion, v)).collect(Collectors.toSet());
+    }
+
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        assert value instanceof MultilingualString;
+        return SingularMultilingualStringFieldStrategy.translationsToLangStrings((MultilingualString) value)
+                                                      .collect(Collectors.toList());
     }
 }

@@ -341,6 +341,23 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
+    @Override
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> fieldSpec, Object value,
+                                  Descriptor entityDescriptor) {
+        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec, entityDescriptor, this);
+        final Collection<Value<?>> values = fs.toAxiomValue(value);
+        final Set<URI> contexts = entityDescriptor.getAttributeContexts(fieldSpec);
+        final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(entity, et));
+        return values.stream().map(v -> {
+            try {
+                return storageConnection.isInferred(new AxiomImpl<>(subject, fs.createAssertion(), v), contexts);
+            } catch (OntoDriverException e) {
+                throw new StorageAccessException(e);
+            }
+        }).reduce(false, Boolean::logicalOr);
+    }
+
     public UnitOfWorkImpl getUow() {
         return uow;
     }

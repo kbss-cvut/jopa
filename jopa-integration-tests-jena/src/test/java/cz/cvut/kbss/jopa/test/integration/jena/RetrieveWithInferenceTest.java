@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.test.environment.JenaPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveWithInferenceRunner;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +34,21 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         super(LOG, new JenaPersistenceFactory(), new JenaDataAccessor());
     }
 
+    @Test
     @Override
     public void retrievedEntityWithInferredTypesContainsInferredData() throws Exception {
-        final Map<String, String> inferenceProps =
-                Collections.singletonMap(OntoDriverProperties.REASONER_FACTORY_CLASS,
-                        RDFSRuleReasonerFactory.class.getName());
+        final Map<String, String> inferenceProps = Collections.singletonMap(OntoDriverProperties.REASONER_FACTORY_CLASS,
+                RDFSRuleReasonerFactory.class.getName());
         this.em = getEntityManager("retrievedEntityWithInferredTypesContainsInferredData", false, inferenceProps);
         super.retrievedEntityWithInferredTypesContainsInferredData();
+    }
+
+    @Test
+    @Override
+    public void isInferredReturnsTrueForInferredPropertyValue() throws Exception {
+        final Map<String, String> inferenceProps = Collections.singletonMap(OntoDriverProperties.REASONER_FACTORY_CLASS,
+                RDFSRuleReasonerFactory.class.getName());
+        this.em = getEntityManager("isInferredReturnsTrueForInferredPropertyValue", false, inferenceProps);
+        super.isInferredReturnsTrueForInferredPropertyValue();
     }
 }

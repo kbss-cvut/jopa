@@ -731,8 +731,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
                                                              () -> uow.refreshObject(
                                                                      Generators.generateOwlClassAInstance()));
-        assertEquals("Cannot call refresh on an instance not managed by this persistence context.",
-                     result.getMessage());
+        assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
     @Test
@@ -741,8 +740,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.removeObject(a);
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
                                                              () -> uow.refreshObject(a));
-        assertEquals("Cannot call refresh on an instance not managed by this persistence context.",
-                     result.getMessage());
+        assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
     @Test
@@ -1096,5 +1094,18 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
                                                        new Value<>(original.getSecondStringAttribute())),
                                        Collections.singleton(CONTEXT_URI));
         verify(storageMock, never()).merge(any(), eq(metamodelMocks.forOwlClassF().stringAttribute()), any());
+    }
+
+    @Test
+    void isInferredChecksForValueInferredStatusWithConnectionWrapper() {
+        final OWLClassD instance = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
+        uow.isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA());
+        verify(storageMock).isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA(), descriptor);
+    }
+
+    @Test
+    void isInferredThrowsIllegalArgumentExceptionWhenInstanceIsNotManaged() {
+        assertThrows(IllegalArgumentException.class, () -> uow.isInferred(entityD, metamodelMocks.forOwlClassD().owlClassAAtt(), entityD.getOwlClassA()));
+        verify(storageMock, never()).isInferred(any(), any(), any(), any());
     }
 }

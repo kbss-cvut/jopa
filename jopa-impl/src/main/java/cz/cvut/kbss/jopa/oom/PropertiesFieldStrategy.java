@@ -193,6 +193,11 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
         return Assertion.createUnspecifiedPropertyAssertion(attribute.isInferred());
     }
 
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        return Collections.singleton(new Value<>(value));
+    }
+
     private class PropertiesValueHolder {
 
         private final Map<Object, Set<Object>> map = new HashMap<>();

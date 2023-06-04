@@ -33,4 +33,11 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         this.em = getEntityManager("retrievedEntityWithInferredTypesContainsInferredData", false);
         super.retrievedEntityWithInferredTypesContainsInferredData();
     }
+
+    @Test
+    @Override
+    public void isInferredReturnsTrueForInferredPropertyValue() throws Exception {
+        this.em = getEntityManager("isInferredReturnsTrueForInferredPropertyValue", false);
+        super.isInferredReturnsTrueForInferredPropertyValue();
+    }
 }

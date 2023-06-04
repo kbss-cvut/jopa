@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
@@ -532,6 +533,12 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
+        ensureOpen();
+        return getCurrentPersistenceContext().isInferred(entity, attribute, value);
+    }
+
+    @Override
     public CriteriaBuilder getCriteriaBuilder() {
         return getCurrentPersistenceContext().criteriaFactory();
     }
@@ -570,13 +577,13 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
-    public Object getDelegate() {
+    public EntityManagerImpl getDelegate() {
         return unwrap(EntityManagerImpl.class);
     }
 
     private void ensureOpen() {
         if (!isOpen()) {
-            throw new IllegalStateException("The entity manager is closed !");
+            throw new IllegalStateException("The entity manager is closed!");
         }
     }
 

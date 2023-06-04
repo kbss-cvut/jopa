@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -53,7 +54,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
             newValue = attribute.getConverter().convertToAttribute(valueIdentifier);
         } else {
             newValue = mapper.getEntityFromCacheOrOntology(targetType, valueIdentifier.getIdentifier(),
-                                                           entityDescriptor.getAttributeDescriptor(attribute));
+                    entityDescriptor.getAttributeDescriptor(attribute));
             if (newValue == null) {
                 LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
                 return;
@@ -85,7 +86,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
         } else {
             referenceSavingResolver
                     .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), extractedValue,
-                                              getAttributeWriteContext());
+                            getAttributeWriteContext());
             // This will cause the existing property assertion to be removed
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         }
@@ -122,7 +123,12 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
         }
         return Collections.singleton(
                 new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
-                                createAssertion(), val));
+                        createAssertion(), val));
+    }
+
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        return Collections.singleton(extractReferenceIdentifier(value));
     }
 
     @Override

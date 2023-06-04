@@ -20,6 +20,10 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Value;
+
+import java.util.Collection;
+import java.util.Collections;
 
 abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, ?>, X> extends FieldStrategy<A, X> {
 
@@ -44,8 +48,14 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
         return converter.convertToAttribute(value);
     }
 
-    Object toAxiomValue(Object value) {
-        return value != null ? converter.convertToAxiomValue(value) : null;
+    Value<?> convertToAxiomValue(Object value) {
+        assert value != null;
+        return new Value<>(converter.convertToAxiomValue(value));
+    }
+
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        return Collections.singleton(value != null ? convertToAxiomValue(value) : Value.nullValue());
     }
 
     String getLanguage() {

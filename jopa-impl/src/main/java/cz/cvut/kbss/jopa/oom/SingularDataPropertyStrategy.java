@@ -65,8 +65,8 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
     }
 
     private Value<?> extractValue(X instance) {
-        final Object extractedValue = toAxiomValue(extractFieldValueFromInstance(instance));
-        return extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
+        final Object extractedValue = extractFieldValueFromInstance(instance);
+        return extractedValue != null ? convertToAxiomValue(extractedValue) : Value.nullValue();
     }
 
     @Override

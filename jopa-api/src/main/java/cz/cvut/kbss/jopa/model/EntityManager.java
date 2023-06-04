@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -19,6 +17,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -265,6 +264,21 @@ public interface EntityManager {
      */
     @NonJPA
     boolean isConsistent(URI context);
+
+    /**
+     * Checks whether the specified attribute value of the specified entity is inferred in the underlying repository.
+     * <p>
+     * Note that given the nature of the repository implementation, this method may return true if the corresponding
+     * statement is both inferred and asserted. Also note that this method will use the descriptor associated with the
+     * specified entity in this persistence context to resolve the repository context, but some underlying repositories
+     * do not store inferences in data contexts, so the attribute context may be ignored.
+     *
+     * @param entity    Entity whose attribute to examine. Must be managed by this persistence context
+     * @param attribute Attribute whose value to examine
+     * @param value     The value whose inference to examine
+     * @return {@code true} if the entity attribute value is inferred, {@code false} otherwise
+     */
+    <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
 
     // TODO JPA 2.0 public LockModeType getLockMode(Object entity)
 

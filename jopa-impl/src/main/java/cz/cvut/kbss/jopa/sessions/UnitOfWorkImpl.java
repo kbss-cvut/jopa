@@ -726,10 +726,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     @Override
     public <T> void refreshObject(T object) {
         Objects.requireNonNull(object);
-        if (!isObjectManaged(object)) {
-            throw new IllegalArgumentException(
-                    "Cannot call refresh on an instance not managed by this persistence context.");
-        }
+        ensureManaged(object);
+
         final IdentifiableEntityType<T> et = entityType((Class<T>) object.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
         final Descriptor descriptor = getDescriptor(object);
@@ -752,6 +750,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
         } finally {
             connection.close();
+        }
+    }
+
+    private <T> void ensureManaged(T object) {
+        if (!isObjectManaged(object)) {
+            throw new IllegalArgumentException("Object not managed by this persistence context.");
         }
     }
 
@@ -819,10 +823,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     @Override
     public void removeObject(Object entity) {
         assert entity != null;
-        if (!isObjectManaged(entity)) {
-            throw new IllegalArgumentException(
-                    "Cannot remove entity which is not managed in the current persistence context.");
-        }
+        ensureManaged(entity);
+
         final IdentifiableEntityType<?> et = entityType(entity.getClass());
         et.getLifecycleListenerManager().invokePreRemoveCallbacks(entity);
         final Object primaryKey = getIdentifier(entity);
@@ -987,6 +989,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     @Override
     public List<URI> getContexts() {
         return storage.getContexts();
+    }
+
+    @Override
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(attribute);
+        Objects.requireNonNull(value);
+        ensureManaged(entity);
+
+        final Descriptor descriptor = getDescriptor(entity);
+        return storage.isInferred(entity, attribute, value, descriptor);
     }
 
     @Override
