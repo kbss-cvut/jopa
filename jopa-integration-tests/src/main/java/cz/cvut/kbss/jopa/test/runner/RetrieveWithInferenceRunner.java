@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class RetrieveWithInferenceRunner extends BaseRunner {
@@ -46,5 +47,17 @@ public abstract class RetrieveWithInferenceRunner extends BaseRunner {
 
         final OWLClassW result = findRequired(OWLClassW.class, entityW.getUri());
         assertTrue(result.getTypes().contains(URI.create(Vocabulary.C_OWL_CLASS_A)));
+    }
+
+    @Test
+    public void isInferredReturnsTrueForInferredPropertyValue() throws Exception {
+        persistTestData(Collections.singleton(
+                new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
+                        URI.create(Vocabulary.C_OWL_CLASS_A))), em);
+        persist(entityW);
+
+        final OWLClassW w = findRequired(OWLClassW.class, entityW.getUri());
+        assertTrue(em.isInferred(w, em.getMetamodel().entity(OWLClassW.class).getTypes(), URI.create(Vocabulary.C_OWL_CLASS_A)));
+        assertFalse(em.isInferred(w, em.getMetamodel().entity(OWLClassW.class).getTypes(), URI.create(Vocabulary.C_OWL_CLASS_W)));
     }
 }

@@ -54,6 +54,15 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         super.retrievedEntityWithInferredTypesContainsInferredData();
     }
 
+    @Test
+    @Override
+    public void isInferredReturnsTrueForInferredPropertyValue() throws Exception {
+        final Map<String, String> inferenceProps =
+                Collections.singletonMap(Rdf4jOntoDriverProperties.USE_INFERENCE, Boolean.TRUE.toString());
+        this.em = getEntityManager("isInferredReturnsTrueForInferredPropertyValue", false, inferenceProps);
+        super.isInferredReturnsTrueForInferredPropertyValue();
+    }
+
     // Apparently, RDF4J supports only SHACL validation, not SHACL inference with SPARQL rules
     // See https://github.com/eclipse/rdf4j/issues/191
     @Disabled
