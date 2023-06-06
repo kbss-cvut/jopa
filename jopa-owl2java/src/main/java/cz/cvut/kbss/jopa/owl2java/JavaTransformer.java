@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -265,7 +263,7 @@ public class JavaTransformer {
                     use = fv.annotate(ParticipationConstraints.class).paramArray("value");
                 }
                 JAnnotationUse u = use.annotate(ParticipationConstraint.class)
-                        .param("owlObjectIRI", entities.get(ic.getObject()));
+                                      .param("owlObjectIRI", entities.get(ic.getObject()));
                 setParticipationConstraintCardinality(u, ic);
             }
         }
@@ -323,7 +321,7 @@ public class JavaTransformer {
                 }
 
                 JAnnotationUse u = use.annotate(ParticipationConstraint.class)
-                        .param("owlObjectIRI", comp.getFiller().getIRI().toString());
+                                      .param("owlObjectIRI", comp.getFiller().getIRI().toString());
 
                 setParticipationConstraintCardinality(u, ic);
             }
@@ -351,15 +349,13 @@ public class JavaTransformer {
 
             final AtomicBoolean extendClass = new AtomicBoolean(false);
             context.set.getClassIntegrityConstraints(clazz).stream()
-                    .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
-                        final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
-                        subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology
-                        ));
-                        extendClass.set(true);
-                    });
+                       .filter(ic -> ic instanceof AtomicSubClassConstraint).forEach(ic -> {
+                       final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
+                       subj._extends(ensureCreated(pkg, cm, icc.getSupClass(), ontology));
+                       extendClass.set(true);
+                   });
 
-            if (!extendClass.get())
-                addCommonClassFields(cm, subj, propertiesType);
+            if (!extendClass.get()) {addCommonClassFields(cm, subj, propertiesType);}
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
                 generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop);
             }
@@ -406,9 +402,9 @@ public class JavaTransformer {
     private void generateOntologyIrisConstants(OWLOntologyManager ontologyManager) {
         // Get only unique ontology IRIs sorted
         final List<IRI> ontologyIris = ontologyManager.ontologies().map(o -> o.getOntologyID().getOntologyIRI())
-                .filter(Optional::isPresent).map(Optional::get).distinct()
-                .sorted(Comparator.comparing(IRI::getIRIString))
-                .collect(Collectors.toList());
+                                                      .filter(Optional::isPresent).map(Optional::get).distinct()
+                                                      .sorted(Comparator.comparing(IRI::getIRIString))
+                                                      .collect(Collectors.toList());
         ontologyIris.forEach(iri -> {
             final String fieldName = ensureUniqueIdentifier("ONTOLOGY_IRI_" + validJavaIDForIRI(iri));
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
@@ -454,13 +450,16 @@ public class JavaTransformer {
             return false;
         }
         final List<OWLAnnotation> comments = EntitySearcher.getAnnotations(owlEntity, ontology)
-                .filter(a -> a.getProperty().isComment() && a.getValue().isLiteral()).collect(Collectors.toList());
+                                                           .filter(a -> a.getProperty().isComment() && a.getValue()
+                                                                                                        .isLiteral())
+                                                           .collect(Collectors.toList());
         final Optional<OWLAnnotation> langComment = comments.stream().filter(a -> a.getValue().asLiteral()
-                .map(l -> l.hasLang(LANGUAGE)).orElse(false)).findFirst();
+                                                                                   .map(l -> l.hasLang(LANGUAGE))
+                                                                                   .orElse(false)).findFirst();
         // First try finding a comment with a matching language tag
         if (langComment.isPresent()) {
             langComment.flatMap(a -> a.getValue().asLiteral())
-                    .ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral()));
+                       .ifPresent(lit -> javaElem.javadoc().add(lit.getLiteral()));
             return true;
         }
         // If there is none such, just use the first available one
@@ -495,44 +494,47 @@ public class JavaTransformer {
     /**
      * Add common properties such as id and type
      */
-    private static void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls,
+    private void addCommonClassFields(final JCodeModel cm, final JDefinedClass cls,
                                       final PropertiesType propertiesType) {
         // @Id(generated = true) protected String id;
         final JClass ftId = cm.ref(String.class);
-        final JFieldVar fvId = addField("id", cls, ftId);
+        final JFieldVar fvId = addField(ID_FIELD_NAME, cls, ftId);
         JAnnotationUse a = fvId.annotate(Id.class);
         a.param("generated", true);
 
-        // RDFS label
-        final JClass ftLabel = cm.ref(String.class);
-        final JFieldVar fvLabel = addField("name", cls, ftLabel);
-        fvLabel.annotate(OWLAnnotationProperty.class).param("iri", cm.ref(RDFS.class).staticRef("LABEL"));
+        JFieldVar fvLabel = null;
+        if (configuration.shouldGenerateLabelDescriptionFields()) {
+            // @OWLAnnotationProperty(iri = RDFS.LABEL) String name;
+            final JClass ftLabel = cm.ref(String.class);
+            fvLabel = addField(LABEL_FIELD_NAME, cls, ftLabel);
+            fvLabel.annotate(OWLAnnotationProperty.class).param("iri", cm.ref(RDFS.class).staticRef("LABEL"));
 
-        // DC description
-        final JClass ftDescription = cm.ref(String.class);
-        final JFieldVar fvDescription = addField("description", cls, ftDescription);
-        fvDescription.annotate(OWLAnnotationProperty.class)
-                .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
+            // @OWLAnnotationProperty(iri = DC.Terms.DESCRIPTION) String description;
+            final JClass ftDescription = cm.ref(String.class);
+            final JFieldVar fvDescription = addField(DESCRIPTION_FIELD_NAME, cls, ftDescription);
+            fvDescription.annotate(OWLAnnotationProperty.class)
+                         .param("iri", cm.ref(DC.Elements.class).staticRef("DESCRIPTION"));
+        }
 
         // @Types Set<String> types;
         final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
-        final JFieldVar fvTypes = addField("types", cls, ftTypes);
+        final JFieldVar fvTypes = addField(TYPES_FIELD_NAME, cls, ftTypes);
         fvTypes.annotate(Types.class);
 
         // @Properties public final Map<String,Set<String>> properties;
         final Class<?> propertiesTypeC = (propertiesType == PropertiesType.object ? Object.class : String.class);
         final JClass ftProperties = cm.ref(Map.class)
-                .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
-        final JFieldVar fvProperties = addField("properties", cls, ftProperties);
+                                      .narrow(cm.ref(String.class), cm.ref(Set.class).narrow(propertiesTypeC));
+        final JFieldVar fvProperties = addField(PROPERTIES_FIELD_NAME, cls, ftProperties);
         fvProperties.annotate(Properties.class);
 
-        generateToStringMethod(cls, fvId.name(), fvLabel.name());
+        generateToStringMethod(cls, fvId, fvLabel);
     }
 
     private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
         final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
-                .filter(a -> isJavaClassNameAnnotation(a) &&
-                        a.getValue().isLiteral()).findFirst();
+                                                          .filter(a -> isJavaClassNameAnnotation(a) &&
+                                                                  a.getValue().isLiteral()).findFirst();
         if (res.isPresent()) {
             return res.get().getValue().asLiteral().get().getLiteral();
         } else {
@@ -548,13 +550,15 @@ public class JavaTransformer {
         generateAuthorshipDoc(javaElem);
     }
 
-    private static void generateToStringMethod(JDefinedClass cls, String idFieldName, String labelFieldName) {
+    private static void generateToStringMethod(JDefinedClass cls, JFieldVar idField, JFieldVar labelField) {
         final JMethod toString = cls.method(JMod.PUBLIC, String.class, "toString");
         toString.annotate(Override.class);
         final JBlock body = toString.body();
         JExpression expression = JExpr.lit(cls.name() + " {");
-        expression = expression.plus(JExpr.ref(labelFieldName));
-        expression = expression.plus(JExpr.lit("<")).plus(JExpr.ref(idFieldName)).plus(JExpr.lit(">"));
+        if (labelField != null) {
+            expression = expression.plus(JExpr.ref(labelField.name()));
+        }
+        expression = expression.plus(JExpr.lit("<")).plus(JExpr.ref(idField.name())).plus(JExpr.lit(">"));
         expression = expression.plus(JExpr.lit("}"));
 
         body._return(expression);
@@ -570,7 +574,7 @@ public class JavaTransformer {
 
     private boolean isJavaClassNameAnnotation(OWLAnnotation a) {
         final String classNameProperty = (String) configuration.getCliParams()
-                .valueOf(Option.JAVA_CLASSNAME_ANNOTATION.arg);
+                                                               .valueOf(Option.JAVA_CLASSNAME_ANNOTATION.arg);
         return a.getProperty().getIRI()
                 .equals(IRI.create(classNameProperty != null ? classNameProperty : Constants.P_CLASS_NAME));
     }

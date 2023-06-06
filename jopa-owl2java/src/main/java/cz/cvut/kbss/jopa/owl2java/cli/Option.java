@@ -73,9 +73,11 @@ public enum Option {
      */
     JAVA_CLASSNAME_ANNOTATION("jca", "java class name annotation"),
     /**
-     * Configures whether properties with RDF langString range should be mapped to {@link cz.cvut.kbss.jopa.model.MultilingualString} typed fields.
-     *
-     * Defaults to {@link cz.cvut.kbss.jopa.owl2java.config.Defaults#PREFER_MULTILINGUAL_STRINGS}. If false, the fields will have type {@link String}.
+     * Configures whether properties with RDF langString range should be mapped to {@link
+     * cz.cvut.kbss.jopa.model.MultilingualString} typed fields.
+     * <p>
+     * Defaults to {@link cz.cvut.kbss.jopa.owl2java.config.Defaults#PREFER_MULTILINGUAL_STRINGS}. If false, the fields
+     * will have type {@link String}.
      */
     PREFER_MULTILINGUAL_STRINGS("langStrings", "prefer multilingual strings"),
     /**
@@ -88,10 +90,16 @@ public enum Option {
     /**
      * Whether to generate Javadoc from values of {@code rdfs:comment} annotations.
      * <p>
-     * By default, OWL2Java will generate Javadoc from the first rdfs:comment it finds for each axioms. This leads to
+     * By default, OWL2Java will generate Javadoc from the first rdfs:comment it finds for each axiom. This leads to
      * documentation being created for classes, their attributes and vocabulary constants.
      */
-    GENERATE_JAVADOC_FROM_COMMENT("doc", "generate Javadoc from rdfs:comment annotations");
+    GENERATE_JAVADOC_FROM_COMMENT("doc", "generate Javadoc from rdfs:comment annotations"),
+
+    /**
+     * Whether automatic generation of name ({@literal rdfs:label}) and description ({@literal dc:description}) fields
+     * should be disabled.
+     */
+    GENERATE_LABEL_DESCRIPTION_FIELDS("generateLabelDescription", "automatically generate rdfs:label and dc:description attributes for all entities");
 
     public final String arg;
     final String description;

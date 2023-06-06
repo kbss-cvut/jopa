@@ -48,6 +48,31 @@ public class Constants {
     public static final String LANGUAGE = "en";
 
     /**
+     * Name of the field representing entity identifier.
+     */
+    public static final String ID_FIELD_NAME = "id";
+
+    /**
+     * Name of the field representing the {@link cz.cvut.kbss.jopa.vocabulary.RDFS#LABEL} property.
+     */
+    public static final String LABEL_FIELD_NAME = "name";
+
+    /**
+     * Name of the field representing the {@link cz.cvut.kbss.jopa.vocabulary.DC.Terms#DESCRIPTION} property.
+     */
+    public static final String DESCRIPTION_FIELD_NAME = "description";
+
+    /**
+     * Name of the field representing {@link cz.cvut.kbss.jopa.model.annotations.Types}.
+     */
+    public static final String TYPES_FIELD_NAME = "types";
+
+    /**
+     * Name of the field representing {@link cz.cvut.kbss.jopa.model.annotations.Properties}.
+     */
+    public static final String PROPERTIES_FIELD_NAME = "properties";
+
+    /**
      * Tool version.
      */
     public static final String VERSION = "$VERSION$";

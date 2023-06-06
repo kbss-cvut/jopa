@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -30,7 +28,9 @@ import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JavaTransformerTest {
@@ -97,8 +97,7 @@ class JavaTransformerTest {
     }
 
     private void checkHasFieldWithName(final JDefinedClass cls, final String name) {
-        for (final JFieldVar f : cls.fields().values())
-            if (f.name().equals(name)) return;
+        for (final JFieldVar f : cls.fields().values()) {if (f.name().equals(name)) {return;}}
         fail();
     }
 
@@ -132,8 +131,7 @@ class JavaTransformerTest {
     }
 
     private void checkHasNoFieldWithName(final JDefinedClass cls, final String name) {
-        for (final JFieldVar f : cls.fields().values())
-            assertNotEquals(f.name(), name);
+        for (final JFieldVar f : cls.fields().values()) {assertNotEquals(f.name(), name);}
     }
 
     @Test
@@ -170,7 +168,8 @@ class JavaTransformerTest {
 
     @Test
     void generateModelGeneratesFieldOfTypeStringForLangStringRangeWhenConfiguredNotToPreferMultilingualStrings() {
-        this.sut = new JavaTransformer(TransformationConfiguration.builder().preferMultilingualStrings(false).packageName("").build());
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().preferMultilingualStrings(false)
+                                                                  .packageName("").build());
         final String className = "TestClass";
         final String fieldName = "multilingualString";
         final ContextDefinition context = generateAxiomsForLangStrings(className, fieldName);
@@ -216,5 +215,24 @@ class JavaTransformerTest {
         final JDefinedClass resultClass =
                 result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         assertThat(resultClass.javadoc().toString(), containsString(expectedComment));
+    }
+
+    @Test
+    void generateModelDoesNotGenerateLabelAndDescriptionFieldsWhenDisabled() {
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
+                                                                  .generateLabelDescriptionFields(false).build());
+        final String className = "TestClass";
+        final IRI iri = IRI.create(PREFIX + className);
+        final OWLClass owlClass = dataFactory.getOWLClass(iri);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(owlClass));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iri));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+        final Map<String, JFieldVar> fields = resultClass.fields();
+        assertThat(fields, not(hasKey(Constants.LABEL_FIELD_NAME)));
+        assertThat(fields, not(hasKey(Constants.DESCRIPTION_FIELD_NAME)));
     }
 }
