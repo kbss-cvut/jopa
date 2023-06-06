@@ -110,7 +110,7 @@ public class OWL2JavaMojo extends AbstractMojo {
         final TransformationConfiguration config =
                 builder.packageName(pPackage).targetDir(pOutputDirectory).addOwlapiIris(pWithOWLAPI)
                        .generateJavadoc(generateJavadoc).preferMultilingualStrings(preferMultilingualStrings)
-                       .generateLabelDescriptionFields(generateAnnotationFields).build();
+                       .generateAnnotationFields(generateAnnotationFields).build();
 
         if (pVocabularyOnly) {
             owl2java.generateVocabulary(config);

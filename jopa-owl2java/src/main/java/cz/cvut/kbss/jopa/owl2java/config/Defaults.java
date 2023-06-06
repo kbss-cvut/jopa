@@ -67,7 +67,7 @@ public class Defaults {
     public static final boolean GENERATE_JAVADOC_FROM_COMMENT = true;
 
     /**
-     * @see Option#GENERATE_LABEL_DESCRIPTION_FIELDS
+     * @see Option#GENERATE_ANNOTATION_FIELDS
      */
     public static final boolean GENERATE_LABEL_DESCRIPTION_FIELDS = true;
 

@@ -34,7 +34,7 @@ public class TransformationConfiguration {
 
     private final PropertiesType propertiesType;
 
-    private final boolean generateLabelDescriptionFields;
+    private final boolean generateAnnotationFields;
 
     private final CliParams cliParams;
 
@@ -46,7 +46,7 @@ public class TransformationConfiguration {
         this.generateJavadoc = builder.generateJavadoc;
         this.preferMultilingualStrings = builder.preferMultilingualStrings;
         this.propertiesType = builder.propertiesType;
-        this.generateLabelDescriptionFields = builder.generateLabelDescriptionFields;
+        this.generateAnnotationFields = builder.generateAnnotationFields;
         this.cliParams = CliParams.empty();
     }
 
@@ -60,7 +60,7 @@ public class TransformationConfiguration {
         this.generateJavadoc = cliParams.is(Option.GENERATE_JAVADOC_FROM_COMMENT.arg, Defaults.GENERATE_JAVADOC_FROM_COMMENT);
         this.preferMultilingualStrings = cliParams.is(Option.PREFER_MULTILINGUAL_STRINGS.arg, Defaults.PREFER_MULTILINGUAL_STRINGS);
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
-        this.generateLabelDescriptionFields = cliParams.is(Option.GENERATE_LABEL_DESCRIPTION_FIELDS.arg, Defaults.GENERATE_LABEL_DESCRIPTION_FIELDS);
+        this.generateAnnotationFields = cliParams.is(Option.GENERATE_ANNOTATION_FIELDS.arg, Defaults.GENERATE_LABEL_DESCRIPTION_FIELDS);
     }
 
     public String getContext() {
@@ -95,8 +95,8 @@ public class TransformationConfiguration {
         return propertiesType;
     }
 
-    public boolean shouldGenerateLabelDescriptionFields() {
-        return generateLabelDescriptionFields;
+    public boolean shouldGenerateAnnotationFields() {
+        return generateAnnotationFields;
     }
 
     public CliParams getCliParams() {
@@ -119,7 +119,7 @@ public class TransformationConfiguration {
         private boolean owlapiIris = Defaults.WITH_IRIS;
         private boolean generateJavadoc = Defaults.GENERATE_JAVADOC_FROM_COMMENT;
         private boolean preferMultilingualStrings = Defaults.PREFER_MULTILINGUAL_STRINGS;
-        private boolean generateLabelDescriptionFields = Defaults.GENERATE_LABEL_DESCRIPTION_FIELDS;
+        private boolean generateAnnotationFields = Defaults.GENERATE_LABEL_DESCRIPTION_FIELDS;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -156,9 +156,8 @@ public class TransformationConfiguration {
             return this;
         }
 
-        public TransformationConfigurationBuilder generateLabelDescriptionFields(
-                boolean generateLabelDescriptionFields) {
-            this.generateLabelDescriptionFields = generateLabelDescriptionFields;
+        public TransformationConfigurationBuilder generateAnnotationFields(boolean generateAnnotationFields) {
+            this.generateAnnotationFields = generateAnnotationFields;
             return this;
         }
 

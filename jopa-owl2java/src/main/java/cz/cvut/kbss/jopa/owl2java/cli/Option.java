@@ -99,7 +99,7 @@ public enum Option {
      * Whether automatic generation of name ({@literal rdfs:label}) and description ({@literal dc:description}) fields
      * should be disabled.
      */
-    GENERATE_LABEL_DESCRIPTION_FIELDS("ann", "automatically generate rdfs:label and dc:description attributes for all entities");
+    GENERATE_ANNOTATION_FIELDS("ann", "automatically generate rdfs:label and dc:description attributes for all entities");
 
     public final String arg;
     final String description;

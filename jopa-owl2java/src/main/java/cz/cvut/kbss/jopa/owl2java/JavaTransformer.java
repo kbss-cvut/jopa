@@ -503,7 +503,7 @@ public class JavaTransformer {
         a.param("generated", true);
 
         JFieldVar fvLabel = null;
-        if (configuration.shouldGenerateLabelDescriptionFields()) {
+        if (configuration.shouldGenerateAnnotationFields()) {
             // @OWLAnnotationProperty(iri = RDFS.LABEL) String name;
             final JClass ftLabel = cm.ref(String.class);
             fvLabel = addField(LABEL_FIELD_NAME, cls, ftLabel);

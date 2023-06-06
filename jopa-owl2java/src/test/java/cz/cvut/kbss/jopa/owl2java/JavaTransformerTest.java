@@ -220,7 +220,7 @@ class JavaTransformerTest {
     @Test
     void generateModelDoesNotGenerateLabelAndDescriptionFieldsWhenDisabled() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .generateLabelDescriptionFields(false).build());
+                                                                  .generateAnnotationFields(false).build());
         final String className = "TestClass";
         final IRI iri = IRI.create(PREFIX + className);
         final OWLClass owlClass = dataFactory.getOWLClass(iri);
