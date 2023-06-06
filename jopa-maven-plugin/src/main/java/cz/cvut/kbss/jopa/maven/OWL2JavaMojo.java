@@ -38,6 +38,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String GENERATE_JAVADOC = "javadoc-from-rdfs-comment";
     private static final String PREFER_MULTILINGUAL_STRINGS = "prefer-multilingual-strings";
     private static final String GENERATE_ANNOTATION_FIELDS = "generate-annotation-fields";
+    private static final String GENERATE_THING = "generate-thing";
 
     @Parameter(alias = MAPPING_FILE_PARAM)
     private String pMappingFile;
@@ -78,6 +79,9 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = GENERATE_ANNOTATION_FIELDS, defaultValue = "true")
     private boolean generateAnnotationFields;
 
+    @Parameter(alias = GENERATE_THING, defaultValue = "true")
+    private boolean generateThing;
+
     @Override
     public void execute() {
         OWL2JavaTransformer owl2java = new OWL2JavaTransformer();
@@ -110,7 +114,7 @@ public class OWL2JavaMojo extends AbstractMojo {
         final TransformationConfiguration config =
                 builder.packageName(pPackage).targetDir(pOutputDirectory).addOwlapiIris(pWithOWLAPI)
                        .generateJavadoc(generateJavadoc).preferMultilingualStrings(preferMultilingualStrings)
-                       .generateAnnotationFields(generateAnnotationFields).build();
+                       .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing).build();
 
         if (pVocabularyOnly) {
             owl2java.generateVocabulary(config);
@@ -131,10 +135,11 @@ public class OWL2JavaMojo extends AbstractMojo {
         print(ALL_IC_PARAM, pWholeOntologyAsICS);
         print(VOCABULARY_PARAM, pVocabularyOnly);
         print(IGNORE_FAILED_IMPORTS_PARAM, ignoreFailedImports);
-        print(PROPERTIES_TYPE,pPropertiesType);
+        print(PROPERTIES_TYPE, pPropertiesType);
         print(GENERATE_JAVADOC, generateJavadoc);
         print(PREFER_MULTILINGUAL_STRINGS, preferMultilingualStrings);
         print(GENERATE_ANNOTATION_FIELDS, generateAnnotationFields);
+        print(GENERATE_THING, generateThing);
     }
 
     private void print(String param, Object value) {
