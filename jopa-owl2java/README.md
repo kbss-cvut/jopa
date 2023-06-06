@@ -22,5 +22,6 @@ Possible configuration parameters are:
 |     -pt      |                             `string`                              | Type to use for `@Properties` value. Options are `String` and `Object` .                                                          |
 |     -doc     |                              `true`                               | Whether to generate Javadoc using values of `rdfs:comment` axioms.                                                                |
 |     -ann     |                              `true`                               | Whether to automatically generate annotation fields corresponding to `rdfs:label` and `dc:description` for all entity classes.    |
+|    -thing    |                              `true`                               | Whether to automatically generate an entity class corresponding to `owl:Thing`.                                                   |
 
 OWL2Java CLI prints help for all the supported tasks, including explanation of all options.

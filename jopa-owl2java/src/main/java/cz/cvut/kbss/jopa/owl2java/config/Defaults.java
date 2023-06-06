@@ -69,7 +69,12 @@ public class Defaults {
     /**
      * @see Option#GENERATE_ANNOTATION_FIELDS
      */
-    public static final boolean GENERATE_LABEL_DESCRIPTION_FIELDS = true;
+    public static final boolean GENERATE_ANNOTATION_FIELDS = true;
+
+    /**
+     * @see Option#GENERATE_THING
+     */
+    public static final boolean GENERATE_THING = true;
 
     private Defaults() {
         throw new AssertionError();

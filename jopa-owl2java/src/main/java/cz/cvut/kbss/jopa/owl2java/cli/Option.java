@@ -96,10 +96,14 @@ public enum Option {
     GENERATE_JAVADOC_FROM_COMMENT("doc", "generate Javadoc from rdfs:comment annotations"),
 
     /**
-     * Whether automatic generation of name ({@literal rdfs:label}) and description ({@literal dc:description}) fields
-     * should be disabled.
+     * Whether to automatically generate name ({@literal rdfs:label}) and description ({@literal dc:description}) fields.
      */
-    GENERATE_ANNOTATION_FIELDS("ann", "automatically generate rdfs:label and dc:description attributes for all entities");
+    GENERATE_ANNOTATION_FIELDS("ann", "automatically generate rdfs:label and dc:description attributes for all entities"),
+
+    /**
+     * Whether to automatically generate an entity class corresponding to {@literal owl:Thing}.
+     */
+    GENERATE_THING("thing", "automatically generate an entity class corresponding to owl:Thing");
 
     public final String arg;
     final String description;

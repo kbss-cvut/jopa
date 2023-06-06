@@ -341,7 +341,9 @@ public class JavaTransformer {
         LOG.info("Generating model ...");
         final PropertiesType propertiesType = configuration.getPropertiesType();
 
-        context.classes.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
+        if (configuration.shouldGenerateThing()) {
+            context.classes.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
+        }
 
         for (final OWLClass clazz : context.classes) {
             LOG.info("  Generating class '{}'.", clazz);
@@ -355,7 +357,9 @@ public class JavaTransformer {
                        extendClass.set(true);
                    });
 
-            if (!extendClass.get()) {addCommonClassFields(cm, subj, propertiesType);}
+            if (!extendClass.get()) {
+                addCommonClassFields(cm, subj, propertiesType);
+            }
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
                 generateObjectProperty(ontology, cm, context, pkg, clazz, subj, prop);
             }

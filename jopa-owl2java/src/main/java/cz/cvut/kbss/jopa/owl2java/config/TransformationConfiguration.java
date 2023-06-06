@@ -36,6 +36,8 @@ public class TransformationConfiguration {
 
     private final boolean generateAnnotationFields;
 
+    private final boolean generateThing;
+
     private final CliParams cliParams;
 
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
@@ -47,6 +49,7 @@ public class TransformationConfiguration {
         this.preferMultilingualStrings = builder.preferMultilingualStrings;
         this.propertiesType = builder.propertiesType;
         this.generateAnnotationFields = builder.generateAnnotationFields;
+        this.generateThing = builder.generateThing;
         this.cliParams = CliParams.empty();
     }
 
@@ -60,7 +63,8 @@ public class TransformationConfiguration {
         this.generateJavadoc = cliParams.is(Option.GENERATE_JAVADOC_FROM_COMMENT.arg, Defaults.GENERATE_JAVADOC_FROM_COMMENT);
         this.preferMultilingualStrings = cliParams.is(Option.PREFER_MULTILINGUAL_STRINGS.arg, Defaults.PREFER_MULTILINGUAL_STRINGS);
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
-        this.generateAnnotationFields = cliParams.is(Option.GENERATE_ANNOTATION_FIELDS.arg, Defaults.GENERATE_LABEL_DESCRIPTION_FIELDS);
+        this.generateAnnotationFields = cliParams.is(Option.GENERATE_ANNOTATION_FIELDS.arg, Defaults.GENERATE_ANNOTATION_FIELDS);
+        this.generateThing = cliParams.is(Option.GENERATE_THING.arg, Defaults.GENERATE_THING);
     }
 
     public String getContext() {
@@ -99,6 +103,10 @@ public class TransformationConfiguration {
         return generateAnnotationFields;
     }
 
+    public boolean shouldGenerateThing() {
+        return generateThing;
+    }
+
     public CliParams getCliParams() {
         return cliParams;
     }
@@ -119,7 +127,8 @@ public class TransformationConfiguration {
         private boolean owlapiIris = Defaults.WITH_IRIS;
         private boolean generateJavadoc = Defaults.GENERATE_JAVADOC_FROM_COMMENT;
         private boolean preferMultilingualStrings = Defaults.PREFER_MULTILINGUAL_STRINGS;
-        private boolean generateAnnotationFields = Defaults.GENERATE_LABEL_DESCRIPTION_FIELDS;
+        private boolean generateAnnotationFields = Defaults.GENERATE_ANNOTATION_FIELDS;
+        private boolean generateThing = Defaults.GENERATE_THING;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -158,6 +167,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder generateAnnotationFields(boolean generateAnnotationFields) {
             this.generateAnnotationFields = generateAnnotationFields;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder generateThing(boolean generateThing) {
+            this.generateThing = generateThing;
             return this;
         }
 

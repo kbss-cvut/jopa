@@ -235,4 +235,15 @@ class JavaTransformerTest {
         assertThat(fields, not(hasKey(Constants.LABEL_FIELD_NAME)));
         assertThat(fields, not(hasKey(Constants.DESCRIPTION_FIELD_NAME)));
     }
+
+    @Test
+    void generateModelDoesNotGenerateThingEntityClassWhenDisabled() {
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false).build());
+        final ContextDefinition context = new ContextDefinition();
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final JDefinedClass resultClass =
+                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + "Thing");
+        assertNull(resultClass);
+    }
 }
