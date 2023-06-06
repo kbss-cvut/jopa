@@ -18,10 +18,11 @@ import cz.cvut.kbss.jopa.owl2java.OWL2JavaTransformer;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-@Mojo(name = "owl2java-transform")
+@Mojo(name = "owl2java-transform", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class OWL2JavaMojo extends AbstractMojo {
 
     private static final String MAPPING_FILE_PARAM = "mapping-file";
@@ -40,7 +41,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = MAPPING_FILE_PARAM)
     private String pMappingFile;
 
-    @Parameter(alias = PACKAGE_PARAM)
+    @Parameter(alias = PACKAGE_PARAM, required = true)
     private String pPackage;
 
     @Parameter(alias = CONTEXT_PARAM)
@@ -49,7 +50,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = ONTOLOGY_PARAM)
     private String pOntologyIRI;
 
-    @Parameter(alias = OUTPUT_PARAM)
+    @Parameter(alias = OUTPUT_PARAM, defaultValue = "${project.basedir}/src/main/generated-sources")
     private String pOutputDirectory;
 
     @Parameter(alias = W_OWLAPI_PARAM, defaultValue = "false")
