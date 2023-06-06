@@ -86,7 +86,7 @@ public enum Option {
      * Possible options are {@link PropertiesType#string} for {@code <String, Set<String>>} or {@link
      * PropertiesType#object} for {@code <String, Set<Object>>}.
      */
-    PROPERTIES_TYPE("pt", "type of the @Properties map value set - String (default), Object"),
+    PROPERTIES_TYPE("pt", "type of the @Properties map value set - string (default), object"),
     /**
      * Whether to generate Javadoc from values of {@code rdfs:comment} annotations.
      * <p>
@@ -99,7 +99,7 @@ public enum Option {
      * Whether automatic generation of name ({@literal rdfs:label}) and description ({@literal dc:description}) fields
      * should be disabled.
      */
-    GENERATE_LABEL_DESCRIPTION_FIELDS("generateLabelDescription", "automatically generate rdfs:label and dc:description attributes for all entities");
+    GENERATE_LABEL_DESCRIPTION_FIELDS("ann", "automatically generate rdfs:label and dc:description attributes for all entities");
 
     public final String arg;
     final String description;
