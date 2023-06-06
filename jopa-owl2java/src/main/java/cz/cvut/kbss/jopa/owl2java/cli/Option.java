@@ -73,9 +73,11 @@ public enum Option {
      */
     JAVA_CLASSNAME_ANNOTATION("jca", "java class name annotation"),
     /**
-     * Configures whether properties with RDF langString range should be mapped to {@link cz.cvut.kbss.jopa.model.MultilingualString} typed fields.
-     *
-     * Defaults to {@link cz.cvut.kbss.jopa.owl2java.config.Defaults#PREFER_MULTILINGUAL_STRINGS}. If false, the fields will have type {@link String}.
+     * Configures whether properties with RDF langString range should be mapped to {@link
+     * cz.cvut.kbss.jopa.model.MultilingualString} typed fields.
+     * <p>
+     * Defaults to {@link cz.cvut.kbss.jopa.owl2java.config.Defaults#PREFER_MULTILINGUAL_STRINGS}. If false, the fields
+     * will have type {@link String}.
      */
     PREFER_MULTILINGUAL_STRINGS("langStrings", "prefer multilingual strings"),
     /**
@@ -84,14 +86,24 @@ public enum Option {
      * Possible options are {@link PropertiesType#string} for {@code <String, Set<String>>} or {@link
      * PropertiesType#object} for {@code <String, Set<Object>>}.
      */
-    PROPERTIES_TYPE("pt", "type of the @Properties map value set - String (default), Object"),
+    PROPERTIES_TYPE("pt", "type of the @Properties map value set - string (default), object"),
     /**
      * Whether to generate Javadoc from values of {@code rdfs:comment} annotations.
      * <p>
-     * By default, OWL2Java will generate Javadoc from the first rdfs:comment it finds for each axioms. This leads to
+     * By default, OWL2Java will generate Javadoc from the first rdfs:comment it finds for each axiom. This leads to
      * documentation being created for classes, their attributes and vocabulary constants.
      */
-    GENERATE_JAVADOC_FROM_COMMENT("doc", "generate Javadoc from rdfs:comment annotations");
+    GENERATE_JAVADOC_FROM_COMMENT("doc", "generate Javadoc from rdfs:comment annotations"),
+
+    /**
+     * Whether to automatically generate name ({@literal rdfs:label}) and description ({@literal dc:description}) fields.
+     */
+    GENERATE_ANNOTATION_FIELDS("ann", "automatically generate rdfs:label and dc:description attributes for all entities"),
+
+    /**
+     * Whether to automatically generate an entity class corresponding to {@literal owl:Thing}.
+     */
+    GENERATE_THING("thing", "automatically generate an entity class corresponding to owl:Thing");
 
     public final String arg;
     final String description;
