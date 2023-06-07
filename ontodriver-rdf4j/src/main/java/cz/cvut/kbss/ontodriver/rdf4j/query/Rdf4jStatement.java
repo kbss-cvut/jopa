@@ -19,6 +19,7 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -67,8 +68,12 @@ public class Rdf4jStatement implements Statement {
         return QuerySpecification.query(sparql).includeInference(!inferenceDisabled);
     }
 
-    private static boolean isAskQuery(String query) {
-        return QueryParserUtil.parseOperation(QueryLanguage.SPARQL, query, null) instanceof ParsedBooleanQuery;
+    private static boolean isAskQuery(String query) throws Rdf4jDriverException {
+        try {
+            return QueryParserUtil.parseOperation(QueryLanguage.SPARQL, query, null) instanceof ParsedBooleanQuery;
+        } catch (MalformedQueryException e) {
+            throw new Rdf4jDriverException("Invalid query \"" + query + "\".", e);
+        }
     }
 
     @Override

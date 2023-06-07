@@ -55,6 +55,8 @@ public class SoqlQueryListener implements SoqlListener {
 
     private boolean isInObjectIdentifierExpression = false;
 
+    private String projectedVariable;
+
     private String rootVariable = "?x";
 
 
@@ -139,6 +141,9 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitSelectedParam(SoqlParser.SelectedParamContext ctx) {
+        if (!isSelectedParamCount) {
+            this.projectedVariable = ctx.getText();
+        }
     }
 
     @Override
@@ -148,6 +153,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitCount(SoqlParser.CountContext ctx) {
+        this.projectedVariable = ctx.getChild(1).getText();
     }
 
     @Override
@@ -168,6 +174,9 @@ public class SoqlQueryListener implements SoqlListener {
         objectNode.setChild(attributeNode);
         if (isIdentifier(objectNode, attributeNode)) {
             this.isInObjectIdentifierExpression = true;
+            if (projectedVariable.equals(objectNode.getValue())) {
+                attrPointer.setProjected(true);
+            }
         } else {
             setIris(objectNode);
             SoqlAttribute myAttr = new SoqlAttribute(objectNode);
@@ -179,7 +188,7 @@ public class SoqlQueryListener implements SoqlListener {
         if (!objectTypes.containsKey(objectNode.getValue())) {
             return false;
         }
-        String objectName = objectTypes.get(objectNode.getValue());
+        final String objectName = objectTypes.get(objectNode.getValue());
         EntityTypeImpl<?> entityType = getEntityType(objectName);
         if (entityType == null) {
             return false;
@@ -297,7 +306,7 @@ public class SoqlQueryListener implements SoqlListener {
     private SoqlAttribute createSyntheticAttributeForEntityId() {
         return new SoqlAttribute(
                 attrPointer.getFirstNode().hasChild() ? attrPointer.getFirstNode().getChild() :
-                new AttributeNode(rootVariable.substring(1)));
+                        new AttributeNode(rootVariable.substring(1)));
     }
 
     private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
@@ -354,9 +363,10 @@ public class SoqlQueryListener implements SoqlListener {
 
         if (isInObjectIdentifierExpression) {
             assert Objects.equals(operator, "=");
-            if (attributes.size() == 1) {
+            if (attrPointer.isProjected()) {
                 this.rootVariable = SoqlUtils.soqlVariableToSparqlVariable(whereClauseValue.getText());
-            } else {
+            }
+            if (attributes.size() > 1) {
                 final String varName = whereClauseValue.getText();
                 attrPointer.getFirstNode().getChild().setValue(
                         varName.charAt(0) == SoqlConstants.VARIABLE_PREFIX ? varName.substring(1) : varName);

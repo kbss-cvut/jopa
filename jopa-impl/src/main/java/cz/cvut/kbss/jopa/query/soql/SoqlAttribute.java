@@ -31,6 +31,8 @@ public class SoqlAttribute extends SoqlParameter {
 
     private boolean isGroupBy = false;
 
+    private boolean projected;
+
     public SoqlAttribute(SoqlNode firstNode) {
         super(firstNode);
     }
@@ -73,6 +75,14 @@ public class SoqlAttribute extends SoqlParameter {
 
     public void setGroupBy(boolean groupBy) {
         isGroupBy = groupBy;
+    }
+
+    public boolean isProjected() {
+        return projected;
+    }
+
+    public void setProjected(boolean projected) {
+        this.projected = projected;
     }
 
     public boolean requiresFilter() {

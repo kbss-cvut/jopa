@@ -34,13 +34,13 @@ Similarly to ORM, OOM enables to map ontological constructs to constructs of an 
 
 More specifically, OOM in JOPA maps (using the JLS [3] terminology):
 
-| Ontology   | OO Language    |
-| ---------- | -------------- |
-| OWL Class  | Reference type |
-| Object property | Reference type member |
-| Data property | Primitive type member (+ String, Date) |
-| Annotation property | Reference or primitive type member |
-| Class assertions | Reference type instance or @Types record |
+| Ontology            | OO Language                              |
+|---------------------|------------------------------------------|
+| OWL Class           | Reference type                           |
+| Object property     | Reference type member                    |
+| Data property       | Primitive type member (+ String, Date)   |
+| Annotation property | Reference or primitive type member       |
+| Class assertions    | Reference type instance or @Types record |
 
 All this means that individuals belonging to an OWL class can be retrieved as instances of a (Java) class.
 
