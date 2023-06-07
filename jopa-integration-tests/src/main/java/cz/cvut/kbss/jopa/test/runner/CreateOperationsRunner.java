@@ -619,11 +619,9 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertFalse(entityM.getStringCollection().isEmpty());
         persist(entityM);
 
-        verifyStatementsPresent(entityM.getStringCollection().stream().map(s -> new Quad(URI.create(entityM.getKey()),
-                URI.create(
-                        Vocabulary.p_m_StringCollection),
-                s, "en")).collect(
-                Collectors.toSet()), em);
+        verifyStatementsPresent(entityM.getStringCollection().stream()
+                                       .map(s -> new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), s, "en"))
+                                       .collect(Collectors.toSet()), em);
     }
 
     @Test

@@ -118,7 +118,7 @@ public class AxiomSaverTest {
     @Test
     public void saveAxiomsAddsResourceStatementsForAnnotationPropertyAxiomsWithIriValue() {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
-        final Assertion assertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
+        final Assertion assertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), "en",false);
         final String value = Generator.generateUri().toString();
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);
