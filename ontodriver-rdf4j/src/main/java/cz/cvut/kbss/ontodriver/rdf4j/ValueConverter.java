@@ -59,10 +59,11 @@ class ValueConverter {
     }
 
     private Value resolvePropertyValue(Assertion assertion, cz.cvut.kbss.ontodriver.model.Value<?> val) {
-        if (Rdf4jUtils.isResourceIdentifier(val.getValue())) {
-            return vf.createIRI(val.getValue().toString());
+        final Object value = val.getValue();
+        if (!(value instanceof String && !assertion.hasLanguage()) && Rdf4jUtils.isResourceIdentifier(value)) {
+            return vf.createIRI(value.toString());
         } else {
-            return Rdf4jUtils.createLiteral(val.getValue(), language(assertion), vf);
+            return Rdf4jUtils.createLiteral(value, language(assertion), vf);
         }
     }
 }
