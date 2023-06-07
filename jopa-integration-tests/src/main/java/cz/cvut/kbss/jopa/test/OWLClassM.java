@@ -82,6 +82,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_withConverter, simpleLiteral = true)
     private ZoneOffset withConverter;
 
+    @OWLAnnotationProperty(iri = Vocabulary.p_m_annotationSimpleLiteral, simpleLiteral = true)
+    private String annotationSimpleLiteral;
+
     public enum Severity {
         LOW, MEDIUM, HIGH
     }
@@ -222,6 +225,14 @@ public class OWLClassM {
         this.withConverter = withConverter;
     }
 
+    public String getAnnotationSimpleLiteral() {
+        return annotationSimpleLiteral;
+    }
+
+    public void setAnnotationSimpleLiteral(String annotationSimpleLiteral) {
+        this.annotationSimpleLiteral = annotationSimpleLiteral;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -241,6 +252,7 @@ public class OWLClassM {
                 ", langString=" + langString +
                 ", enumSimpleLiteral=" + enumSimpleLiteral +
                 ", withConverter=" + withConverter +
+                ", annotationSimpleLiteral=" + annotationSimpleLiteral +
                 '}';
     }
 
