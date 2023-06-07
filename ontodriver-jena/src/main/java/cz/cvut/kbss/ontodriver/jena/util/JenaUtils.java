@@ -50,7 +50,9 @@ public class JenaUtils {
      */
     public static <T> RDFNode valueToRdfNode(Assertion assertion, Value<T> value) {
         final T val = value.getValue();
-        if (IdentifierUtils.isResourceIdentifier(val)) {
+        if (val instanceof String && !assertion.hasLanguage()) {
+            return ResourceFactory.createTypedLiteral(val);
+        } else if (IdentifierUtils.isResourceIdentifier(val)) {
             return ResourceFactory.createResource(value.stringValue());
         } else if (val instanceof LangString) {
             final LangString langString = (LangString) val;
