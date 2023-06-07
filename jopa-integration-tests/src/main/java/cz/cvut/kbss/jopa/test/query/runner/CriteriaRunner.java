@@ -225,7 +225,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaQuery<OWLClassD> query = cb.createQuery(OWLClassD.class);
         Root<OWLClassD> root = query.from(OWLClassD.class);
         Predicate restrictions = cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"),
-                                          expected.getOwlClassA().getStringAttribute(), "en");
+                expected.getOwlClassA().getStringAttribute(), "en");
         query.select(root).where(restrictions);
         TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query);
         final OWLClassD result = tq.getSingleResult();
@@ -364,11 +364,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     @Test
     public void testSelectByIdentifierInCollection() {
         final List<OWLClassA> matchingInstances = QueryTestEnvironment.getData(OWLClassA.class).subList(0,
-                                                                                                        Generators.randomPositiveInt(
-                                                                                                                2,
-                                                                                                                QueryTestEnvironment.getData(
-                                                                                                                                            OWLClassA.class)
-                                                                                                                                    .size()));
+                Generators.randomPositiveInt(2, QueryTestEnvironment.getData(OWLClassA.class).size()));
         final List<URI> ids = matchingInstances.stream().map(OWLClassA::getUri).collect(Collectors.toList());
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
@@ -391,8 +387,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
         final List<OWLClassA> result = getEntityManager().createQuery(query)
                                                          .setParameter(param,
-                                                                       sample.getStringAttribute().substring(0, 5)
-                                                                             .toUpperCase(Locale.ROOT) + ".+")
+                                                                 sample.getStringAttribute().substring(0, 5)
+                                                                       .toUpperCase(Locale.ROOT) + ".+")
                                                          .getResultList();
         assertFalse(result.isEmpty());
         assertThat(result, hasItem(sample));
@@ -410,9 +406,24 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         query.select(root).where(cb.equal(cb.floor(root.getAttr("doubleAttribute")), param));
 
         final List<OWLClassM> result = getEntityManager().createQuery(query)
-                .setParameter(param, value)
-                .getResultList();
+                                                         .setParameter(param, value)
+                                                         .getResultList();
         assertFalse(result.isEmpty());
         assertTrue(result.stream().anyMatch(rm -> rm.getKey().equals(match.getKey())));
+    }
+
+    @Test
+    public void testSelectByIdentifierAndAttributeEquality() {
+        final OWLClassA instance = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(
+                cb.equal(root.getAttr("stringAttribute"), instance.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE),
+                cb.equal(root.getAttr("uri"), instance.getUri())
+        );
+
+        final OWLClassA result = getEntityManager().createQuery(query).getSingleResult();
+        assertEquals(instance.getUri(), result.getUri());
     }
 }
