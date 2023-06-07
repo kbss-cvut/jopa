@@ -86,4 +86,16 @@ class AxiomAdapterTest {
         assertEquals(ax.getValue().getValue(), literal.get().getLiteral());
         assertFalse(literal.get().hasLang());
     }
+
+    @Test
+    void toOwlAnnotationPropertyAssertionAxiomCreatesSimpleLiteralForStringLiteralContainingColonAndAnnotationPropertyAssertion() {
+        final Axiom<String> ax = new AxiomImpl<>(NamedResource.create(INDIVIDUAL),
+                Assertion.createAnnotationPropertyAssertion(PROPERTY, false), new Value<>("test:value"));
+        final OWLAxiom axiom = adapter.toOwlAnnotationPropertyAssertionAxiom(ax);
+        final OWLAnnotationAssertionAxiom apAxiom = (OWLAnnotationAssertionAxiom) axiom;
+        final Optional<OWLLiteral> literal = apAxiom.getValue().asLiteral();
+        assertTrue(literal.isPresent());
+        assertEquals(ax.getValue().getValue(), literal.get().getLiteral());
+        assertFalse(literal.get().hasLang());
+    }
 }
