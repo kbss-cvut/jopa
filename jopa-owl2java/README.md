@@ -10,7 +10,7 @@ Possible configuration parameters are:
 
 |  Parameter   |                           Default value                           | Explanation                                                                                                                       |
 |:------------:|:-----------------------------------------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------|
-|      -m      |                                ""                                 | Path to a mapping file which allows to resolve ontology IRIs to local files.                                                      |
+|      -m      |                                ""                                 | Path to a mapping file which allows resolving ontology IRIs to local files.                                                       |
 |      -c      |                                ""                                 | Name of context specified by IC annotations. If specified, only axioms annotated with the correct context will be processed.      |
 |      -p      |                            `generated`                            | Name of the package into which the vocabulary file and the model will be generated.                                               |
 |      -d      |                                ""                                 | Directory into which the target files (with package) will be generated.                                                           |
