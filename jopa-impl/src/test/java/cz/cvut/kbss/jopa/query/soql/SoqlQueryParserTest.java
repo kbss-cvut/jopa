@@ -726,6 +726,13 @@ public class SoqlQueryParserTest {
         parseAndAssertEquality(soqlIdSecond, expectedSparql);
     }
 
+    @Test
+    void parseQueryWithTypesAndMemberOf() {
+        final String soql = "SELECT p FROM Person p WHERE :type MEMBER OF p.types";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x a ?type . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
     /**
      * Bug #178
      */
