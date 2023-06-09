@@ -283,6 +283,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<Person, Integer> personAgeAtt;
     @Mock
     private SingularAttributeImpl<Person, Phone> personPhoneAtt;
+    @Mock
+    private TypesSpecification<Person, String> personTypes;
 
     @Mock
     private EntityTypeImpl<Phone> etPhone;
@@ -330,7 +332,7 @@ public class MetamodelMocks {
                                                         qaEntityAtt, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
         MetamodelFactory.initPersonMocks(etPerson, personUsernameAtt, personGenderAtt, personAgeAtt, personPhoneAtt,
-                                         etPhone, idPerson);
+                                         etPhone, personTypes, idPerson);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -959,6 +961,10 @@ public class MetamodelMocks {
 
         public SingularAttributeImpl<Person, Phone> phoneAttribute() {
             return MetamodelMocks.this.personPhoneAtt;
+        }
+
+        public TypesSpecification<Person, String> typesSpecification() {
+            return MetamodelMocks.this.personTypes;
         }
     }
 }

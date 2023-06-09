@@ -72,6 +72,7 @@ public class MetamodelFactory {
         when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(strAttMock.hasLanguage()).thenReturn(true);
         when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
+        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
@@ -79,7 +80,6 @@ public class MetamodelFactory {
         when(typesMock.getElementType()).thenReturn(String.class);
         when(typesMock.isCollection()).thenReturn(true);
         when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
 
         when(etMock.getIdentifier()).thenReturn(idMock);
@@ -1423,7 +1423,7 @@ public class MetamodelFactory {
     public static void initPersonMocks(EntityTypeImpl<Person> etMock, AbstractAttribute usernameAttMock,
                                        AbstractAttribute genderAttMock,
                                        AbstractAttribute ageAttMock, SingularAttributeImpl phoneAttMock,
-                                       EntityTypeImpl<Phone> etPhone,
+                                       EntityTypeImpl<Phone> etPhone, TypesSpecification typesMock,
                                        Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(Person.class);
         when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
@@ -1472,5 +1472,14 @@ public class MetamodelFactory {
         when(phoneAttMock.getName()).thenReturn(Person.class.getDeclaredField("phone").getName());
         when(phoneAttMock.getType()).thenReturn(etPhone);
         when(etMock.getAttribute(Person.class.getDeclaredField("phone").getName())).thenReturn(phoneAttMock);
+
+        when(typesMock.getJavaField()).thenReturn(Person.class.getDeclaredField("types"));
+        when(typesMock.getName()).thenReturn("types");
+        when(typesMock.getDeclaringType()).thenReturn(etMock);
+        when(typesMock.getJavaType()).thenReturn(Set.class);
+        when(typesMock.getElementType()).thenReturn(String.class);
+        when(typesMock.isCollection()).thenReturn(true);
+        when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
     }
 }
