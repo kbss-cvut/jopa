@@ -33,27 +33,43 @@ import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
 import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SingularAnnotationPropertyStrategyTest {
 
     private static final String LANG = "en";
-    private static final URI PK = Generators.createIndividualIdentifier();
+    private static final URI ID = Generators.createIndividualIdentifier();
 
     @Mock
     private EntityMappingHelper mapperMock;
@@ -64,7 +80,6 @@ class SingularAnnotationPropertyStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final Configuration configuration = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.LANG, LANG));
         when(mapperMock.getConfiguration()).thenReturn(configuration);
@@ -75,7 +90,7 @@ class SingularAnnotationPropertyStrategyTest {
     void addAxiomValueAddsStringAnnotationValue() {
         final String str = "stringValue";
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
-        final Axiom<String> ax = new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>(str));
+        final Axiom<String> ax = new AxiomImpl<>(NamedResource.create(ID), annotationForN(), new Value<>(str));
 
         strategy.addValueFromAxiom(ax);
         final OWLClassN n = new OWLClassN();
@@ -96,7 +111,7 @@ class SingularAnnotationPropertyStrategyTest {
     @Test
     void addAxiomValueSkipsAxiomWhoseValueDoesNotMatchTargetFieldType() {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
-        final Axiom<Integer> ax = new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>(117));
+        final Axiom<Integer> ax = new AxiomImpl<>(NamedResource.create(ID), annotationForN(), new Value<>(117));
 
         strategy.addValueFromAxiom(ax);
         final OWLClassN n = new OWLClassN();
@@ -106,11 +121,11 @@ class SingularAnnotationPropertyStrategyTest {
 
     @Test
     void addAxiomValueAddsPlainIdentifierValueOfAnnotationProperty() {
-        final URI value = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationValue");
+        final URI value = Generators.createIndividualIdentifier();
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(
                 mocks.forOwlClassN().annotationUriAttribute());
-        final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(PK), annotationWithUriForN(),
-                new Value<>(NamedResource.create(value)));
+        final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(ID), annotationWithUriForN(),
+                                                        new Value<>(NamedResource.create(value)));
 
         strategy.addValueFromAxiom(ax);
         final OWLClassN n = new OWLClassN();
@@ -128,7 +143,7 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final List<Axiom<String>> axioms = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            axioms.add(new AxiomImpl<>(NamedResource.create(PK), annotationForN(), new Value<>("String" + i)));
+            axioms.add(new AxiomImpl<>(NamedResource.create(ID), annotationForN(), new Value<>("String" + i)));
         }
 
         assertThrows(IntegrityConstraintViolatedException.class, () -> axioms.forEach(strategy::addValueFromAxiom));
@@ -139,9 +154,9 @@ class SingularAnnotationPropertyStrategyTest {
         final String str = "stringValue";
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final OWLClassN n = new OWLClassN();
-        n.setId(PK.toString());
+        n.setId(ID.toString());
         n.setAnnotationProperty(str);
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(ID), null);
         strategy.buildAxiomValuesFromInstance(n, builder);
 
         final Value<?> val = getValueForAssertion(builder, annotationForN());
@@ -157,13 +172,13 @@ class SingularAnnotationPropertyStrategyTest {
 
     @Test
     void buildAxiomsExtractsPlainIdentifiersAttributeValuesAsNamedResources() throws Exception {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationValue");
+        final URI uri = Generators.createIndividualIdentifier();
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(
                 mocks.forOwlClassN().annotationUriAttribute());
         final OWLClassN n = new OWLClassN();
-        n.setId(PK.toString());
+        n.setId(ID.toString());
         n.setAnnotationUri(uri);
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(ID), null);
         strategy.buildAxiomValuesFromInstance(n, builder);
 
         final Value<?> val = getValueForAssertion(builder, annotationWithUriForN());
@@ -176,8 +191,8 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(
                 mocks.forOwlClassN().annotationUriAttribute());
         final OWLClassN n = new OWLClassN();
-        n.setId(PK.toString());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        n.setId(ID.toString());
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(ID), null);
         strategy.buildAxiomValuesFromInstance(n, builder);
 
         final Value<?> val = getValueForAssertion(builder, annotationWithUriForN());
@@ -193,10 +208,10 @@ class SingularAnnotationPropertyStrategyTest {
     private void buildAxiomsAndVerifyLanguageTag(String expectedLang) throws Exception {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final OWLClassN n = new OWLClassN();
-        n.setId(PK.toString());
+        n.setId(ID.toString());
         n.setAnnotationProperty("english");
 
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(ID), null);
         strategy.buildAxiomValuesFromInstance(n, builder);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
@@ -216,11 +231,11 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<OWLClassM> sut = new SingularAnnotationPropertyStrategy<>(
                 mocks.forOwlClassM().entityType(), mocks.forOwlClassM().lexicalFormAttribute(), descriptor, mapperMock);
         final Integer value = 117;
-        final Axiom<Integer> axiom = new AxiomImpl<>(NamedResource.create(PK), lexicalFormAssertion(),
-                new Value<>(value));
+        final Axiom<Integer> axiom = new AxiomImpl<>(NamedResource.create(ID), lexicalFormAssertion(),
+                                                     new Value<>(value));
         sut.addValueFromAxiom(axiom);
         final OWLClassM result = new OWLClassM();
-        result.setKey(PK.toString());
+        result.setKey(ID.toString());
         sut.buildInstanceFieldValue(result);
         assertEquals(value.toString(), result.getLexicalForm());
     }
@@ -237,11 +252,11 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<OWLClassM> sut = new SingularAnnotationPropertyStrategy<>(
                 mocks.forOwlClassM().entityType(), mocks.forOwlClassM().lexicalFormAttribute(), descriptor, mapperMock);
         final URI identifier = Generators.createIndividualIdentifier();
-        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(PK), lexicalFormAssertion(),
-                new Value<>(NamedResource.create(identifier)));
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID), lexicalFormAssertion(),
+                                                           new Value<>(NamedResource.create(identifier)));
         sut.addValueFromAxiom(axiom);
         final OWLClassM result = new OWLClassM();
-        result.setKey(PK.toString());
+        result.setKey(ID.toString());
         sut.buildInstanceFieldValue(result);
         assertEquals(identifier.toString(), result.getLexicalForm());
     }
@@ -253,8 +268,8 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new SingularAnnotationPropertyStrategy<>(
                 et, att, descriptor, mapperMock);
         final URI identifier = Generators.createIndividualIdentifier();
-        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(PK), annotationWithUriForN(),
-                new Value<>(NamedResource.create(identifier)));
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID), annotationWithUriForN(),
+                                                           new Value<>(NamedResource.create(identifier)));
         sut.addValueFromAxiom(axiom);
         final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
         sut.buildInstanceFieldValue(instance);
@@ -290,7 +305,7 @@ class SingularAnnotationPropertyStrategyTest {
         final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
         instance.singularAnnotation = Generators.createIndividualIdentifier();
 
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(ID), null);
         sut.buildAxiomValuesFromInstance(instance, builder);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
@@ -310,7 +325,7 @@ class SingularAnnotationPropertyStrategyTest {
         final MultilingualString mls = MultilingualString.create("test", "en");
         mls.set("cs", "test");
         instance.singularAnnotation = mls;
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(ID), null);
         sut.buildAxiomValuesFromInstance(instance, builder);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
@@ -328,12 +343,19 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new SingularAnnotationPropertyStrategy<>(
                 et, att, descriptor, mapperMock);
         final LangString langString = new LangString("test", "en");
-        final Axiom<LangString> axiom = new AxiomImpl<>(NamedResource.create(PK), annotationWithUriForN(),
-                new Value<>(langString));
+        final Axiom<LangString> axiom = new AxiomImpl<>(NamedResource.create(ID), annotationWithUriForN(),
+                                                        new Value<>(langString));
         sut.addValueFromAxiom(axiom);
         final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
         sut.buildInstanceFieldValue(instance);
         assertEquals(MultilingualString.create(langString.getValue(), langString.getLanguage().get()),
                 instance.singularAnnotation);
+    }
+
+    @Test
+    void isResourceIdentifierTypeReturnsTrueForUriAndUrl() {
+        assertTrue(SingularAnnotationPropertyStrategy.isResourceIdentifierType(URI.class));
+        assertTrue(SingularAnnotationPropertyStrategy.isResourceIdentifierType(URL.class));
+        assertFalse(SingularAnnotationPropertyStrategy.isResourceIdentifierType(String.class));
     }
 }

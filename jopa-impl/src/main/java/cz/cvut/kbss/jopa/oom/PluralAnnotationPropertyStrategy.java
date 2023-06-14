@@ -68,7 +68,7 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
     }
 
     private Function<Object, Collection<Value<?>>> resolveValueMapper() {
-        if (IdentifierTransformer.isValidIdentifierType(elementType) && !elementType.isAssignableFrom(String.class)) {
+        if (SingularAnnotationPropertyStrategy.isResourceIdentifierType(elementType)) {
             return  v -> Collections.singleton(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v))));
         } else {
             return v -> v instanceof MultilingualString ?

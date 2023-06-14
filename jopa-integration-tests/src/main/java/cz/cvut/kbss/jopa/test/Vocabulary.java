@@ -94,6 +94,7 @@ public class Vocabulary {
     public static final String p_m_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
+    public static final String P_N_URI_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationUri";
     public static final String P_N_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "N-stringAttribute";
 
     public static final String P_A_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
