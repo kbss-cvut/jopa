@@ -29,7 +29,7 @@ public class OWLClassN {
     @OWLAnnotationProperty(iri = Vocabulary.P_N_STR_ANNOTATION_PROPERTY)
     private String annotationProperty;
 
-    @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationUri")
+    @OWLAnnotationProperty(iri = Vocabulary.P_N_URI_ANNOTATION_PROPERTY)
     private URI annotationUri;
 
     @ParticipationConstraints(nonEmpty = true)

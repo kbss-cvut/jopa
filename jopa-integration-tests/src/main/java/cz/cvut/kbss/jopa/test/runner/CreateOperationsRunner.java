@@ -19,10 +19,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.environment.DataAccessor;
-import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.*;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -245,7 +242,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistWithProperties() {
+    void testPersistWithProperties() throws Exception {
         this.em = getEntityManager("PersistWithProperties", false);
         final Map<String, Set<String>> props = new HashMap<>(3);
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne", Collections
@@ -265,14 +262,10 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNotNull(res.getProperties());
         assertFalse(res.getProperties().isEmpty());
         assertEquals(expected.size(), res.getProperties().size());
-        for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
-            assertTrue(res.getProperties().containsKey(e.getKey()));
-            final Set<String> s = e.getValue();
-            final Set<String> resS = res.getProperties().get(e.getKey());
-            assertNotNull(resS);
-            assertEquals(1, resS.size());
-            assertEquals(s.iterator().next(), resS.iterator().next());
-        }
+        assertEquals(expected, res.getProperties());
+        final List<Quad> expectedStatements = new ArrayList<>();
+        props.forEach((k, vs) -> vs.forEach(v -> expectedStatements.add(new Quad(entityB.getUri(), URI.create(k), v, (String) null))));
+        verifyStatementsPresent(expectedStatements, em);
     }
 
     @Test
@@ -362,7 +355,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistTypedProperties() {
+    void testPersistTypedProperties() throws Exception {
         this.em = getEntityManager("PersistTypedProperties", false);
         entityP.setProperties(Generators.createTypedProperties());
         persist(entityP);
@@ -370,6 +363,9 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(entityP.getProperties(), res.getProperties());
+        final List<Quad> expectedStatements = new ArrayList<>();
+        entityP.getProperties().forEach((k, vs) -> vs.forEach(v -> expectedStatements.add(new Quad(entityP.getUri(), k, v, (String) null))));
+        verifyStatementsPresent(expectedStatements, em);
     }
 
     @Test
@@ -419,16 +415,21 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistInstanceWithAnnotationProperties() {
+    void annotationPropertyValueIsSavedAsStringUnlessItsTypeIsUri() throws Exception {
         this.em = getEntityManager("PersistInstanceWithAnnotationPropertyValues", false);
-        final String apValue = "annotationPropertyValue";
-        final URI apUriValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue");
+        final String apValue = Generators.generateUri().toString();
+        final URI apUriValue = Generators.generateUri();
         entityN.setAnnotationProperty(apValue);
         entityN.setAnnotationUri(apUriValue);
         persist(entityN);
         em.clear();
         assertNotNull(entityN.getId());
 
+        final URI id = URI.create(entityN.getId());
+        verifyStatementsPresent(Set.of(
+                new Quad(id, URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY), apValue, TestEnvironment.PERSISTENCE_LANGUAGE),
+                new Quad(id, URI.create(Vocabulary.P_N_URI_ANNOTATION_PROPERTY), apUriValue)
+        ), em);
         final OWLClassN res = findRequired(OWLClassN.class, entityN.getId());
         assertEquals(apValue, res.getAnnotationProperty());
         assertEquals(apUriValue, res.getAnnotationUri());

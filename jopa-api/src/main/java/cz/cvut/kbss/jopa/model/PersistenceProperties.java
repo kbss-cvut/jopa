@@ -14,9 +14,6 @@ package cz.cvut.kbss.jopa.model;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 public class PersistenceProperties {
@@ -35,8 +32,7 @@ public class PersistenceProperties {
      * This set represents the Java types that can be used as entity identifiers or as {@link
      * cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty} property values.
      */
-    public static final Set<Class<?>> IDENTIFIER_TYPES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(URI.class, URL.class, String.class)));
+    public static final Set<Class<?>> IDENTIFIER_TYPES = Set.of(URI.class, URL.class, String.class);
 
     PersistenceProperties() {
         throw new AssertionError();

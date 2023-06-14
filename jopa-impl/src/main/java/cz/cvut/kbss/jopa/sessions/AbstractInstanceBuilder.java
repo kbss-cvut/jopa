@@ -93,19 +93,6 @@ abstract class AbstractInstanceBuilder {
         return c;
     }
 
-    /**
-     * This helper method returns the first declared constructor of the specified class. It may be used only in cases
-     * when the caller knows exactly which constructor is the first one declared by the class. A use case may be a class
-     * with only one declared constructor, which is not a zero argument one.
-     *
-     * @param javaClass The class whose constructors should be searched.
-     * @return The first declared constructor of the specified class.
-     */
-    protected static Constructor<?> getFirstDeclaredConstructorFor(Class<?> javaClass) {
-        Constructor<?>[] constructors = javaClass.getDeclaredConstructors();
-        return constructors[0];
-    }
-
     protected static void logConstructorAccessException(Constructor<?> constructor, Exception e) {
         LOG.warn("Exception caught when invoking constructor " + constructor + ". Exception: " + e);
     }

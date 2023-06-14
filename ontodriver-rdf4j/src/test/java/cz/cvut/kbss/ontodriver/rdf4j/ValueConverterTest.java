@@ -20,32 +20,32 @@ import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class ValueConverterTest {
 
     private static final String LANG = "en";
-    private static final URI PROPERTY = URI.create("https://onto.fel.cvut.cz/ontologies/jopa#property");
+    private static final URI PROPERTY = Generator.generateUri();
 
-    private ValueConverter converter;
+    private final ValueFactory vf = SimpleValueFactory.getInstance();
 
-    @BeforeEach
-    void setUp() {
-        this.converter = new ValueConverter(SimpleValueFactory.getInstance());
-    }
+    private final ValueConverter sut = new ValueConverter(SimpleValueFactory.getInstance());
 
     @Test
     void convertsObjectPropertyNamedResourceToRdf4jIri() throws Exception {
-        final Value res = converter.toRdf4jValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY),
-                value(NamedResource.create(Generator.generateUri())));
-        assertTrue(res instanceof org.eclipse.rdf4j.model.IRI);
+        final Value res = sut.toRdf4jValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY),
+                                           value(NamedResource.create(Generator.generateUri())));
+        assertTrue(res.isIRI());
     }
 
     private Assertion assertion(Assertion.AssertionType type) {
@@ -72,76 +72,77 @@ class ValueConverterTest {
     @Test
     void convertsDataPropertyValueToRdf4jLiteral() throws Exception {
         final int val = 117;
-        final Value res = converter.toRdf4jValue(assertion(Assertion.AssertionType.DATA_PROPERTY), value(val));
-        assertTrue(res instanceof Literal);
-        assertEquals(val, ((Literal) res).intValue());
+        final Value res = sut.toRdf4jValue(assertion(Assertion.AssertionType.DATA_PROPERTY), value(val));
+        assertTrue(res.isLiteral());
+        assertEquals(vf.createLiteral(val), res);
     }
 
     @Test
     void convertsAnnotationPropertyLiteralValueToRdf4jLiteral() throws Exception {
         final String val = "AnnotationValue";
-        final Value res = converter.toRdf4jValue(assertion(Assertion.AssertionType.ANNOTATION_PROPERTY), value(val));
-        assertTrue(res instanceof Literal);
-        assertEquals(val, ((Literal) res).getLabel());
+        final Value res = sut.toRdf4jValue(assertion(Assertion.AssertionType.ANNOTATION_PROPERTY), value(val));
+        assertTrue(res.isLiteral());
+        assertEquals(vf.createLiteral(val), res);
     }
 
     @Test
     void convertsAnnotationPropertyNamedResourceToRdf4jIri() throws Exception {
         final NamedResource val = NamedResource.create(Generator.generateUri());
-        final Value res = converter.toRdf4jValue(assertion(Assertion.AssertionType.ANNOTATION_PROPERTY), value(val));
-        assertTrue(res instanceof org.eclipse.rdf4j.model.IRI);
-        assertEquals(val.toString(), res.toString());
+        final Value res = sut.toRdf4jValue(assertion(Assertion.AssertionType.ANNOTATION_PROPERTY), value(val));
+        assertTrue(res.isIRI());
+        assertEquals(vf.createIRI(val.toString()), res);
     }
 
     @Test
     void conversionThrowsExceptionWhenObjectPropertyValueIsNotUri() {
         assertThrows(Rdf4jDriverException.class,
-                     () -> converter.toRdf4jValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY), value(117)));
+                     () -> sut.toRdf4jValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY), value(117)));
     }
 
     @Test
     void convertsStringLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
         final String value = "hodnota v cestine";
         final Assertion dpAssertion = Assertion.createDataPropertyAssertion(PROPERTY, LANG, false);
-        final Value res = converter.toRdf4jValue(dpAssertion, value(value));
-        assertTrue(res instanceof Literal);
-        final Literal literal = (Literal) res;
-        assertTrue(literal.getLanguage().isPresent());
-        assertEquals(LANG, literal.getLanguage().get());
-        assertEquals(value, literal.stringValue());
+        final Value res = sut.toRdf4jValue(dpAssertion, value(value));
+        assertTrue(res.isLiteral());
+        assertEquals(vf.createLiteral(value, LANG), res);
     }
 
     @Test
-    void convertsStringLiteralIntoValueWithoutLanguageWhenAssertionHasNoLanguage()
-            throws Exception {
+    void convertsStringLiteralIntoValueWithoutLanguageWhenAssertionHasNoLanguage() throws Exception {
         final String value = "hodnota v cestine";
         final Assertion dpAssertion = Assertion.createDataPropertyAssertion(PROPERTY, false);
-        final Value res = converter.toRdf4jValue(dpAssertion, value(value));
-        assertTrue(res instanceof Literal);
-        final Literal literal = (Literal) res;
-        assertFalse(literal.getLanguage().isPresent());
+        final Value res = sut.toRdf4jValue(dpAssertion, value(value));
+        assertTrue(res.isLiteral());
+        assertFalse(((Literal) res).getLanguage().isPresent());
+        assertEquals(vf.createLiteral(value), res);
     }
 
     @Test
     void convertsAnnotationLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
         final String value = "hodnota v cestine";
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, LANG, false);
-        final Value res = converter.toRdf4jValue(apAssertion, value(value));
-        assertTrue(res instanceof Literal);
-        final Literal literal = (Literal) res;
-        assertTrue(literal.getLanguage().isPresent());
-        assertEquals(LANG, literal.getLanguage().get());
-        assertEquals(value, literal.stringValue());
+        final Value res = sut.toRdf4jValue(apAssertion, value(value));
+        assertTrue(res.isLiteral());
+        assertEquals(vf.createLiteral(value, LANG), res);
     }
 
     @Test
-    void convertsAnnotationLiteralIntoValueWithoutLanguageWhenAssertionHasNoLanguage()
-            throws Exception {
+    void convertsAnnotationLiteralIntoValueWithoutLanguageWhenAssertionHasNoLanguage() throws Exception {
         final String value = "hodnota v cestine";
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, false);
-        final Value res = converter.toRdf4jValue(apAssertion, value(value));
-        assertTrue(res instanceof Literal);
-        final Literal literal = (Literal) res;
-        assertFalse(literal.getLanguage().isPresent());
+        final Value res = sut.toRdf4jValue(apAssertion, value(value));
+        assertTrue(res.isLiteral());
+        assertFalse(((Literal) res).getLanguage().isPresent());
+        assertEquals(vf.createLiteral(value), res);
+    }
+
+    @Test
+    void convertsAnnotationLiteralRepresentingUriToStringLiteralWithLanguage() throws Exception {
+        final String value = Generator.generateUri().toString();
+        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, LANG,false);
+        final Value res = sut.toRdf4jValue(apAssertion, value(value));
+        assertTrue(res.isLiteral());
+        assertEquals(vf.createLiteral(value, LANG), res);
     }
 }

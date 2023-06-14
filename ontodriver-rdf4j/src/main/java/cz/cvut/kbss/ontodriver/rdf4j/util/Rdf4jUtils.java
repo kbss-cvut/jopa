@@ -83,7 +83,7 @@ public final class Rdf4jUtils {
         final IRI datatype = literal.getDatatype();
         if (datatype.equals(XSD.STRING) || datatype.equals(XSD.NORMALIZEDSTRING) ||
                 datatype.equals(RDF.LANGSTRING)) {
-            return language == null || !literal.getLanguage().isPresent() ||
+            return language == null || literal.getLanguage().isEmpty() ||
                     literal.getLanguage().get().equals(language);
         }
         return true;
@@ -161,14 +161,14 @@ public final class Rdf4jUtils {
 
     /**
      * Resolves whether the specified value is a resource identifier.
-     * <p>
-     * Only absolute IRIs are supported (i.e. no blank node identifiers).
+     *
+     * Only values of supported identifier types are considered identifiers.
      *
      * @param value The value to check
-     * @return {@code true} if the value is either an URI or an URL
+     * @return {@code true} if the value is either a URI or a URL
      */
     public static boolean isResourceIdentifier(Object value) {
-        return IdentifierUtils.isResourceIdentifier(value);
+        return value != null && IdentifierUtils.isResourceIdentifierType(value.getClass());
     }
 
     /**

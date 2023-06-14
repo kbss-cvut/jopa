@@ -290,4 +290,11 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         return values.stream().filter(v -> !mapper.isInferred(new AxiomImpl<>(subject, assertion, v), ctx))
                      .collect(Collectors.toSet());
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" +
+                "attribute=" + attribute +
+                '}';
+    }
 }

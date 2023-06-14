@@ -26,9 +26,10 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.Date;
@@ -37,9 +38,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 public class AxiomSaverTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
@@ -51,7 +54,6 @@ public class AxiomSaverTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.saver = new AxiomSaver(connectorMock);
     }
 
@@ -119,14 +121,14 @@ public class AxiomSaverTest {
     public void saveAxiomsAddsResourceStatementsForAnnotationPropertyAxiomsWithIriValue() {
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         final Assertion assertion = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
-        final String value = Generator.generateUri().toString();
+        final URI value = Generator.generateUri();
         descriptor.addAssertionValue(assertion, new Value<>(value));
         saver.saveAxioms(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture(), eq(null));
         final List<Statement> arg = captor.getValue();
         assertEquals(1, arg.size());
-        assertEquals(ResourceFactory.createResource(value), arg.get(0).getObject());
+        assertEquals(ResourceFactory.createResource(value.toString()), arg.get(0).getObject());
     }
 
     @Test
