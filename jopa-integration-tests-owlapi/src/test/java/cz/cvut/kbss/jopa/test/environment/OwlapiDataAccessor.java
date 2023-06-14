@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.environment;
 
@@ -79,8 +77,11 @@ public class OwlapiDataAccessor implements DataAccessor {
             return ontology.containsAxiom(df.getOWLClassAssertionAxiom(cls, ind));
         } else if (quad.getValue() instanceof URI) {
             final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(quad.getProperty()));
+            final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(quad.getProperty()));
             final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) quad.getValue()));
-            return ontology.containsAxiom(df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));
+            return ontology.containsAxiom(
+                    df.getOWLObjectPropertyAssertionAxiom(op, ind, obj)) || ontology.containsAxiom(
+                    df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), obj.getIRI()));
         } else {
             final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(quad.getProperty()));
             final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(quad.getValue(), quad.getLanguage());
@@ -102,7 +103,7 @@ public class OwlapiDataAccessor implements DataAccessor {
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
         EntitySearcher
                 .getDataPropertyValues(df.getOWLNamedIndividual(identifier.toString()), df.getOWLDataProperty(property),
-                        ontology)
+                                       ontology)
                 .forEach(lit -> assertEquals(df.getOWLDatatype(expectedDatatype), lit.getDatatype()));
     }
 }
