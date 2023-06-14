@@ -14,14 +14,12 @@
  */
 package cz.cvut.kbss.ontodriver.util;
 
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class IdentifierUtilsTest {
 
@@ -46,40 +44,5 @@ class IdentifierUtilsTest {
         final URI clsUri = URI.create(URI_WITH_SLASH);
         final URI result = IdentifierUtils.generateIdentifier(clsUri);
         assertThat(result.toString(), containsString("/instance"));
-    }
-
-    @Test
-    void isResourceReturnsTrueForUri() {
-        assertTrue(IdentifierUtils.isResourceIdentifier(URI.create(URI_WITH_SLASH)));
-    }
-
-    @Test
-    void isResourceReturnsTrueForNamedResource() {
-        assertTrue(IdentifierUtils.isResourceIdentifier(NamedResource.create(URI_WITH_SLASH)));
-    }
-
-    @Test
-    void isResourceReturnsTrueForStringUri() {
-        assertTrue(IdentifierUtils.isResourceIdentifier(URI_WITH_SLASH));
-    }
-
-    @Test
-    void isResourceReturnsFalseForNonStringValue() {
-        assertFalse(IdentifierUtils.isResourceIdentifier(117));
-    }
-
-    @Test
-    void isResourceReturnsFalseForNonAbsoluteUriStringValue() {
-        assertFalse(IdentifierUtils.isResourceIdentifier("jdf123"));
-    }
-
-    @Test
-    void isResourceReturnsFalseForBlankNodeIdentifier() {
-        assertFalse(IdentifierUtils.isResourceIdentifier("_:123"));
-    }
-
-    @Test
-    void isResourceReturnsFalseForNullArgument() {
-        assertFalse(IdentifierUtils.isResourceIdentifier(null));
     }
 }

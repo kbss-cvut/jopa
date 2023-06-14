@@ -66,30 +66,4 @@ public class IdentifierUtils {
     public static boolean isResourceIdentifierType(Class<?> cls) {
         return IDENTIFIER_TYPES.contains(cls);
     }
-
-    /**
-     * Resolves whether the specified value is a resource identifier.
-     * <p>
-     * Only absolute IRIs are supported (i.e. no blank node identifiers).
-     *
-     * @param value The value to check
-     * @return {@code true} if the value is either a URI or a URL
-     */
-    public static boolean isResourceIdentifier(Object value) {
-        if (value == null) {
-            return false;
-        }
-        if (IDENTIFIER_TYPES.contains(value.getClass())) {
-            return true;
-        }
-        if (!(value instanceof String)) {
-            return false;
-        }
-        try {
-            final java.net.URI uri = java.net.URI.create(value.toString());
-            return uri.isAbsolute();
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
 }

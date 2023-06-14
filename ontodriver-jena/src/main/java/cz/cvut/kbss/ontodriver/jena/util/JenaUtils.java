@@ -31,6 +31,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Utility methods for working with Jena API.
@@ -50,7 +51,8 @@ public class JenaUtils {
      */
     public static <T> RDFNode valueToRdfNode(Assertion assertion, Value<T> value) {
         final T val = value.getValue();
-        if (IdentifierUtils.isResourceIdentifier(val)) {
+        Objects.requireNonNull(val);
+        if (IdentifierUtils.isResourceIdentifierType(val.getClass())) {
             return ResourceFactory.createResource(value.stringValue());
         } else if (val instanceof LangString) {
             final LangString langString = (LangString) val;

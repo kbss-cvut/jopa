@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -169,5 +171,26 @@ public class JenaUtilsTest {
         assertTrue(result.isLiteral());
         assertEquals(jopaLiteral.getLexicalForm(), result.asLiteral().getLexicalForm());
         assertEquals(jopaLiteral.getDatatype(), result.asLiteral().getDatatypeURI());
+    }
+
+    @Test
+    void valueToRdfNodeCreatesResourceForIdentifierTypes() throws Exception {
+        final URI uriValue = Generator.generateUri();
+        final RDFNode uriResult = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(uriValue));
+        assertTrue(uriResult.isURIResource());
+        assertEquals(ResourceFactory.createResource(uriValue.toString()), uriResult);
+        final URL urlValue = Generator.generateUri().toURL();
+        final RDFNode urlResult = JenaUtils.valueToRdfNode(ASSERTION, new Value<>(urlValue));
+        assertTrue(urlResult.isURIResource());
+        assertEquals(ResourceFactory.createResource(urlValue.toString()), urlResult);
+    }
+
+    @Test
+    void valueToRdfNodeCreatesStringLiteralForStringUri() {
+        final String value = Generator.generateUri().toString();
+        final RDFNode result = JenaUtils.valueToRdfNode(
+                Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), "en", false), new Value<>(value));
+        assertTrue(result.isLiteral());
+        assertEquals(ResourceFactory.createLangLiteral(value, "en"), result);
     }
 }
