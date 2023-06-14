@@ -62,11 +62,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         if (container instanceof IndirectCollection<?>) {
             container = (Collection<?>) ((IndirectCollection<?>) container).unwrap();
         }
-        if (Collections.emptyList() == container) {
-            return Collections.emptyList();
-        }
-        if (Collections.emptySet() == container) {
-            return Collections.emptySet();
+        if (Collections.emptyList() == container || Collections.emptySet() == container) {
+            return container;
         }
         Object clone = cloneUsingDefaultConstructor(cloneOwner, field, container, configuration);
         if (clone == null) {

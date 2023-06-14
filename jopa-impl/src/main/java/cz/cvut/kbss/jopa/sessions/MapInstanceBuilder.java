@@ -44,6 +44,9 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         if (original instanceof IndirectCollection) {
             orig = ((IndirectCollection<Map<?, ?>>) original).unwrap();
         }
+        if (orig == Collections.emptyMap()) {
+            return orig;
+        }
         final Class<?> origCls = orig.getClass();
         Map<?, ?> clone;
         clone = cloneUsingDefaultConstructor(cloneOwner, field, origCls, orig, configuration);
