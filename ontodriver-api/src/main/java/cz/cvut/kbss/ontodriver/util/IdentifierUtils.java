@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.util;
 
@@ -20,11 +18,14 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 
 /**
- * Utility for automatic identifier generation.
+ * Utility for working with resource identifiers.
  */
 public class IdentifierUtils {
+
+    public static final Set<Class<?>> IDENTIFIER_TYPES = Set.of(NamedResource.class, URI.class, URL.class);
 
     private static final Random RANDOM = new Random();
 
@@ -56,15 +57,29 @@ public class IdentifierUtils {
     }
 
     /**
+     * Checks if the specified class represents a resource identifier.
+     *
+     * @param cls Class to check
+     * @return {@code true} if instances of the specified class represent resource identifiers, {@code false} otherwise
+     * @see #IDENTIFIER_TYPES
+     */
+    public static boolean isResourceIdentifierType(Class<?> cls) {
+        return IDENTIFIER_TYPES.contains(cls);
+    }
+
+    /**
      * Resolves whether the specified value is a resource identifier.
      * <p>
      * Only absolute IRIs are supported (i.e. no blank node identifiers).
      *
      * @param value The value to check
-     * @return {@code true} if the value is either an URI or an URL
+     * @return {@code true} if the value is either a URI or a URL
      */
     public static boolean isResourceIdentifier(Object value) {
-        if (value instanceof NamedResource || value instanceof java.net.URI || value instanceof URL) {
+        if (value == null) {
+            return false;
+        }
+        if (IDENTIFIER_TYPES.contains(value.getClass())) {
             return true;
         }
         if (!(value instanceof String)) {
