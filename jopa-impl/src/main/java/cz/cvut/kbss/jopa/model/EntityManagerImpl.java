@@ -544,30 +544,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
-    public void setUseTransactionalOntologyForQueryProcessing() {
-        ensureOpen();
-        getCurrentPersistenceContext().setUseTransactionalOntologyForQueryProcessing();
-    }
-
-    @Override
-    public boolean useTransactionalOntologyForQueryProcessing() {
-        ensureOpen();
-        return getCurrentPersistenceContext().useTransactionalOntologyForQueryProcessing();
-    }
-
-    @Override
-    public void setUseBackupOntologyForQueryProcessing() {
-        ensureOpen();
-        getCurrentPersistenceContext().setUseBackupOntologyForQueryProcessing();
-    }
-
-    @Override
-    public boolean useBackupOntologyForQueryProcessing() {
-        ensureOpen();
-        return getCurrentPersistenceContext().useBackupOntologyForQueryProcessing();
-    }
-
-    @Override
     public <T> T unwrap(Class<T> cls) {
         ensureOpen();
         if (cls.isAssignableFrom(this.getClass())) {

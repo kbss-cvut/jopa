@@ -380,22 +380,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testUseTransactionalOntologyForQueryProcessing() {
-        assertTrue(uow.useTransactionalOntologyForQueryProcessing());
-        assertFalse(uow.useBackupOntologyForQueryProcessing());
-    }
-
-    @Test
-    void testSwitchQueryProcessingOntology() {
-        uow.setUseBackupOntologyForQueryProcessing();
-        assertTrue(uow.useBackupOntologyForQueryProcessing());
-        assertFalse(uow.useTransactionalOntologyForQueryProcessing());
-        uow.setUseTransactionalOntologyForQueryProcessing();
-        assertTrue(uow.useTransactionalOntologyForQueryProcessing());
-        assertFalse(uow.useBackupOntologyForQueryProcessing());
-    }
-
-    @Test
     void testCommitInactive() {
         uow.release();
         assertThrows(IllegalStateException.class, () -> uow.commit());

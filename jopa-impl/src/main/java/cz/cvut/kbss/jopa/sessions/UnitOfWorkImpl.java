@@ -1016,26 +1016,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded() : LoadState.UNKNOWN;
     }
 
-    @Override
-    public void setUseTransactionalOntologyForQueryProcessing() {
-        this.useTransactionalOntology = true;
-    }
-
-    @Override
-    public boolean useTransactionalOntologyForQueryProcessing() {
-        return useTransactionalOntology;
-    }
-
-    @Override
-    public void setUseBackupOntologyForQueryProcessing() {
-        this.useTransactionalOntology = false;
-    }
-
-    @Override
-    public boolean useBackupOntologyForQueryProcessing() {
-        return !useTransactionalOntology;
-    }
-
     public SparqlQueryFactory sparqlQueryFactory() {
         return queryFactory;
     }

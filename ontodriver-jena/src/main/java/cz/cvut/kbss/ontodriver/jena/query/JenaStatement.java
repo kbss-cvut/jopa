@@ -28,7 +28,7 @@ public class JenaStatement implements Statement {
 
     private final StatementExecutor executor;
 
-    private StatementOntology targetOntology = StatementOntology.CENTRAL;
+    private StatementOntology targetOntology = StatementOntology.SHARED;
     private boolean open = true;
 
     private AbstractResultSet currentResultSet;

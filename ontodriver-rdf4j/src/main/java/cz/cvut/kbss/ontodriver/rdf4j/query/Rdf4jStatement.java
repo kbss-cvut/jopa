@@ -129,12 +129,12 @@ public class Rdf4jStatement implements Statement {
 
     public void setUseBackupOntology() {
         ensureOpen();
-        this.targetOntology = StatementOntology.CENTRAL;
+        this.targetOntology = StatementOntology.SHARED;
     }
 
     public boolean useBackupOntology() {
         ensureOpen();
-        return targetOntology == StatementOntology.CENTRAL;
+        return targetOntology == StatementOntology.SHARED;
     }
 
     @Override

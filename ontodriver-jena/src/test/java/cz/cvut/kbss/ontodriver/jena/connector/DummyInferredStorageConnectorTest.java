@@ -93,9 +93,9 @@ public class DummyInferredStorageConnectorTest {
     @Test
     public void executeAskQueryForwardsCallToWrappedConnector() throws Exception {
         final Query query = QueryFactory.create("ASK { ?x a <" + TYPE_ONE + "> . }");
-        final AbstractResultSet resultSet = connector.executeAskQuery(query, Statement.StatementOntology.CENTRAL);
+        final AbstractResultSet resultSet = connector.executeAskQuery(query, Statement.StatementOntology.SHARED);
         assertNotNull(resultSet);
-        verify(wrappedConnector).executeAskQuery(query, Statement.StatementOntology.CENTRAL);
+        verify(wrappedConnector).executeAskQuery(query, Statement.StatementOntology.SHARED);
     }
 
     @Test

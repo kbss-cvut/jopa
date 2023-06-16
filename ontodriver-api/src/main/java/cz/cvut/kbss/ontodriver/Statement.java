@@ -30,7 +30,7 @@ public interface Statement extends AutoCloseable {
         /**
          * The main ontology in the current state. No uncommitted changes are present in it.
          */
-        CENTRAL
+        SHARED
     }
 
     /**
@@ -53,9 +53,11 @@ public interface Statement extends AutoCloseable {
     /**
      * Sets which ontology is used to evaluate this statement.
      * <p>
-     * {@link Statement.StatementOntology#TRANSACTIONAL} ontology is the transactional snapshot. It may contain
+     * {@link Statement.StatementOntology#TRANSACTIONAL} ontology is the transactional version. It may contain
      * uncommitted changes and thus the query results may differ from evaluation against {@link
-     * Statement.StatementOntology#CENTRAL}.
+     * Statement.StatementOntology#SHARED}.
+     * <p>
+     * Note that implementations may ignore this setting depending on their internal transaction management mechanisms.
      *
      * @param ontology Which ontology to use
      */

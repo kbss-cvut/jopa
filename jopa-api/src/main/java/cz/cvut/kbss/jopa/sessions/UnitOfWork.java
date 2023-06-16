@@ -272,28 +272,4 @@ public interface UnitOfWork extends Session {
      * @return {@code true} if the entity attribute value is inferred, {@code false} otherwise
      */
     <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
-
-    /**
-     * Sets the transactional ontology as the one used for SPARQL query processing.
-     */
-    void setUseTransactionalOntologyForQueryProcessing();
-
-    /**
-     * Returns true if the transactional ontology is set as the one processing SPARQL queries.
-     *
-     * @return boolean
-     */
-    boolean useTransactionalOntologyForQueryProcessing();
-
-    /**
-     * Sets the backup (central) ontology as the one used for SPARQL query processing.
-     */
-    void setUseBackupOntologyForQueryProcessing();
-
-    /**
-     * Returns true if the backup (central) ontology is set as the one processing SPARQL queries.
-     *
-     * @return boolean
-     */
-    boolean useBackupOntologyForQueryProcessing();
 }

@@ -46,8 +46,6 @@ abstract class AbstractQuery implements Query {
     private final Map<String, Object> hints = new HashMap<>();
     private final ConnectionWrapper connection;
 
-    private boolean useBackupOntology = false;
-
     private Procedure rollbackOnlyMarker;
     private Procedure ensureOpenProcedure = () -> {
     };
@@ -57,27 +55,9 @@ abstract class AbstractQuery implements Query {
         this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
     }
 
-    /**
-     * Sets ontology used for processing of this query.
-     *
-     * @param useBackupOntology If true, the backup (central) ontology is used, otherwise the transactional ontology is
-     *                          used (default)
-     */
-    public void useBackupOntology(boolean useBackupOntology) {
-        this.useBackupOntology = useBackupOntology;
-    }
-
     private void logQuery() {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Executing query: {}", query.assembleQuery());
-        }
-    }
-
-    private void setTargetOntology(Statement stmt) {
-        if (useBackupOntology) {
-            stmt.useOntology(Statement.StatementOntology.CENTRAL);
-        } else {
-            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
         }
     }
 
@@ -126,7 +106,6 @@ abstract class AbstractQuery implements Query {
         ensureOpen();
         final Statement stmt = connection.createStatement();
         try {
-            setTargetOntology(stmt);
             applyQueryHints(stmt);
             logQuery();
             stmt.executeUpdate(query.assembleQuery());
@@ -290,7 +269,6 @@ abstract class AbstractQuery implements Query {
      */
     void executeQuery(ThrowingConsumer<ResultRow, OntoDriverException> consumer) throws OntoDriverException {
         try (final Statement stmt = connection.createStatement()) {
-            setTargetOntology(stmt);
             applyQueryHints(stmt);
             logQuery();
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
@@ -306,7 +284,6 @@ abstract class AbstractQuery implements Query {
 
     <R> Stream<R> executeQueryForStream(Function<ResultRow, Optional<R>> function) throws OntoDriverException {
         final Statement stmt = connection.createStatement();
-        setTargetOntology(stmt);
         applyQueryHints(stmt);
         logQuery();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());

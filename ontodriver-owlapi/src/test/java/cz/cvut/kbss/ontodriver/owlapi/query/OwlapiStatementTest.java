@@ -67,9 +67,9 @@ public class OwlapiStatementTest {
     @Test
     public void executeUpdateOnCentralUsesTheLiveOntology() throws Exception {
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
-        statement.useOntology(Statement.StatementOntology.CENTRAL);
+        statement.useOntology(Statement.StatementOntology.SHARED);
         statement.executeUpdate(UPDATE);
-        verify(executorFactoryMock).getStatementExecutor(Statement.StatementOntology.CENTRAL);
+        verify(executorFactoryMock).getStatementExecutor(Statement.StatementOntology.SHARED);
         verify(executorMock).executeUpdate(QuerySpecification.query(UPDATE));
     }
 

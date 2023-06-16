@@ -102,7 +102,7 @@ public class JenaPreparedStatementTest {
         final String expected = QUERY.replace("?y", value);
         statement.executeQuery();
         verify(executor)
-                .executeSelectQuery(eq(QueryFactory.create(expected)), eq(Statement.StatementOntology.CENTRAL));
+                .executeSelectQuery(eq(QueryFactory.create(expected)), eq(Statement.StatementOntology.SHARED));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class JenaPreparedStatementTest {
         statement.setObject("type", value);
         final String expected = update.replace("?type", value);
         statement.executeUpdate();
-        verify(executor).executeUpdate(eq(expected), eq(Statement.StatementOntology.CENTRAL));
+        verify(executor).executeUpdate(eq(expected), eq(Statement.StatementOntology.SHARED));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class JenaPreparedStatementTest {
         statement.clearParameters();
         statement.executeQuery();
         verify(executor)
-                .executeSelectQuery(eq(QueryFactory.create(QUERY)), eq(Statement.StatementOntology.CENTRAL));
+                .executeSelectQuery(eq(QueryFactory.create(QUERY)), eq(Statement.StatementOntology.SHARED));
     }
 
     @Test

@@ -98,7 +98,7 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
 
     private void applyTransactionUpdateQueries() throws JenaDriverException {
         for (String query : transactionalUpdates) {
-            centralConnector.executeUpdate(query, StatementOntology.CENTRAL);
+            centralConnector.executeUpdate(query, StatementOntology.SHARED);
         }
     }
 

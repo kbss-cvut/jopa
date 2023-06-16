@@ -57,8 +57,6 @@ public class SparqlQueryFactoryTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        when(uowMock.useBackupOntologyForQueryProcessing()).thenReturn(Boolean.FALSE);
-        when(uowMock.useTransactionalOntologyForQueryProcessing()).thenReturn(Boolean.TRUE);
         when(uowMock.getNamedQueryManager()).thenReturn(namedQueryManagerMock);
         final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         new MetamodelMocks().setMocks(metamodel);
@@ -68,9 +66,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateNativeQuery() {
-        final Query q = factory.createNativeQuery(QUERY);
-        assertNotNull(q);
-        verify(uowMock).useBackupOntologyForQueryProcessing();
+        assertNotNull(factory.createNativeQuery(QUERY));
     }
 
     @Test
@@ -80,9 +76,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateNativeQueryTyped() {
-        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, CLS);
-        assertNotNull(q);
-        verify(uowMock).useBackupOntologyForQueryProcessing();
+        assertNotNull(factory.createNativeQuery(QUERY, CLS));
     }
 
     @Test
@@ -97,9 +91,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateQuery() {
-        final Query q = factory.createQuery(SOQL_QUERY);
-        assertNotNull(q);
-        verify(uowMock).useBackupOntologyForQueryProcessing();
+        assertNotNull(factory.createQuery(SOQL_QUERY));
     }
 
     @Test
@@ -109,9 +101,7 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateQueryTyped() {
-        final TypedQuery<OWLClassA> q = factory.createQuery(SOQL_QUERY, CLS);
-        assertNotNull(q);
-        verify(uowMock).useBackupOntologyForQueryProcessing();
+        assertNotNull(factory.createQuery(SOQL_QUERY, CLS));
     }
 
     @Test

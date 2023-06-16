@@ -48,7 +48,7 @@ public class JenaStatementTest {
         when(executor.executeSelectQuery(any(), any())).thenReturn(rsMock);
         final String query = "SELECT * WHERE { ?x ?y ?z .}";
         final ResultSet rs = statement.executeQuery(query);
-        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.CENTRAL));
+        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.SHARED));
         assertSame(rsMock, rs);
     }
 
@@ -58,7 +58,7 @@ public class JenaStatementTest {
         when(executor.executeAskQuery(any(), any())).thenReturn(rsMock);
         final String query = "ASK { ?x a <http://xmlns.com/foaf/0.1/Person> . }";
         final ResultSet rs = statement.executeQuery(query);
-        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.CENTRAL));
+        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.SHARED));
         assertSame(rsMock, rs);
     }
 
@@ -69,7 +69,7 @@ public class JenaStatementTest {
         final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
                 "ASK { ?x a foaf:Person . }";
         statement.executeQuery(query);
-        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.CENTRAL));
+        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.SHARED));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class JenaStatementTest {
     public void executeUpdateExecutesUpdateQuery() throws JenaDriverException {
         final String query = "INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }";
         statement.executeUpdate(query);
-        verify(executor).executeUpdate(query, Statement.StatementOntology.CENTRAL);
+        verify(executor).executeUpdate(query, Statement.StatementOntology.SHARED);
     }
 
     @Test

@@ -357,21 +357,21 @@ public class ChangeTrackingStorageConnectorTest {
     @Test
     public void executeSelectQueryPassesQueryToSharedConnector() throws Exception {
         final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
-        connector.executeSelectQuery(query, StatementOntology.CENTRAL);
-        verify(centralConnector).executeSelectQuery(query, StatementOntology.CENTRAL);
+        connector.executeSelectQuery(query, StatementOntology.SHARED);
+        verify(centralConnector).executeSelectQuery(query, StatementOntology.SHARED);
     }
 
     @Test
     public void executeAskQueryPassesQueryToSharedConnector() throws Exception {
         final Query query = QueryFactory.create("ASK WHERE { ?x a <" + Generator.generateUri() + ">. }");
-        connector.executeAskQuery(query, StatementOntology.CENTRAL);
-        verify(centralConnector).executeAskQuery(query, StatementOntology.CENTRAL);
+        connector.executeAskQuery(query, StatementOntology.SHARED);
+        verify(centralConnector).executeAskQuery(query, StatementOntology.SHARED);
     }
 
     @Test
     public void executeUpdateQueryPassesQueryToSharedConnector() throws Exception {
         final String query = "INSERT DATA { _:a a <" + Generator.generateUri() + "> . }";
-        connector.executeUpdate(query, StatementOntology.CENTRAL);
-        verify(centralConnector).executeUpdate(query, StatementOntology.CENTRAL);
+        connector.executeUpdate(query, StatementOntology.SHARED);
+        verify(centralConnector).executeUpdate(query, StatementOntology.SHARED);
     }
 }

@@ -34,7 +34,7 @@ public class StatementExecutorFactory {
         switch (ontology) {
             case TRANSACTIONAL:
                 return new TransactionalStatementExecutor(transactionalSnapshot);
-            case CENTRAL:
+            case SHARED:
                 return new LiveOntologyStatementExecutor(connector);
             default:
                 throw new IllegalArgumentException("Unsupported statement ontology type " + ontology);
