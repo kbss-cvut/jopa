@@ -209,4 +209,40 @@ public interface Descriptor {
     default boolean overridesAssertionContext() {
         return false;
     }
+
+    /**
+     * Whether to include inferred statements when loading data corresponding to this descriptor.
+     * <p>
+     * Note that this setting is taken into account only for attributes that are declared as possibly containing
+     * inferred values (using the {@link cz.cvut.kbss.jopa.model.annotations.Inferred} annotation). For explicit
+     * attributes, this setting is ignored.
+     * <p>
+     * The setting in this descriptor is applied recursively to all the descriptors it may be composed of, unless a
+     * different value is specified explicitly for them.
+     *
+     * @return Whether to include inferred values for inferred attributes
+     * @see #disableInference()
+     * @see #enableInference()
+     */
+    boolean includeInferred();
+
+    /**
+     * Instructs this descriptor to specify that only asserted statements should be loaded for otherwise inferred
+     * attributes.
+     *
+     * @return This descriptor
+     * @see #includeInferred()
+     */
+    Descriptor disableInference();
+
+    /**
+     * Instructs this descriptor to specify that both inferred and asserted statements should be loaded for otherwise
+     * inferred attributes.
+     * <p>
+     * This is the default setting.
+     *
+     * @return This descriptor
+     * @see #includeInferred()
+     */
+    Descriptor enableInference();
 }
