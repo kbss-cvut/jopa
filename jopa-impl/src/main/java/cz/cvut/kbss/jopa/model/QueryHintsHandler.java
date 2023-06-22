@@ -77,6 +77,7 @@ public class QueryHintsHandler {
 
         static {
             registerHint(new DisableInferenceHint());
+            registerHint(new TargetOntologyHint());
         }
 
         Hint(String name, Object defaultValue) {
@@ -153,7 +154,7 @@ public class QueryHintsHandler {
         DisableInferenceHint() {
             super(QueryHints.DISABLE_INFERENCE, Boolean.FALSE);
             this.valueArray =
-                    new Object[][]{{Boolean.TRUE.toString(), Boolean.TRUE}, {Boolean.FALSE.toString(), Boolean.FALSE},};
+                    new Object[][]{{Boolean.TRUE.toString(), Boolean.TRUE}, {Boolean.FALSE.toString(), Boolean.FALSE}};
         }
 
         @Override
@@ -162,6 +163,22 @@ public class QueryHintsHandler {
             if (Boolean.TRUE == hintValue) {
                 statement.disableInference();
             }
+        }
+    }
+
+    protected static class TargetOntologyHint extends Hint {
+        public TargetOntologyHint() {
+            super(QueryHints.TARGET_ONTOLOGY, Statement.StatementOntology.SHARED);
+            this.valueArray = new Object[][]{{Statement.StatementOntology.SHARED.toString(),
+                                              Statement.StatementOntology.SHARED},
+                                             {Statement.StatementOntology.TRANSACTIONAL.toString(),
+                                              Statement.StatementOntology.TRANSACTIONAL}};
+        }
+
+        @Override
+        void applyToQuery(Object hintValue, AbstractQuery query, Statement statement) {
+            assert hintValue instanceof Statement.StatementOntology;
+            statement.useOntology((Statement.StatementOntology) hintValue);
         }
     }
 }

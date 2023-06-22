@@ -104,10 +104,7 @@ abstract class AbstractQuery implements Query {
     @Override
     public void executeUpdate() {
         ensureOpen();
-        final Statement stmt = connection.createStatement();
-        try {
-            applyQueryHints(stmt);
-            logQuery();
+        try (final Statement stmt = initQueryStatement()) {
             stmt.executeUpdate(query.assembleQuery());
         } catch (OntoDriverException e) {
             markTransactionForRollback();
@@ -115,13 +112,15 @@ abstract class AbstractQuery implements Query {
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after update execution.", e);
-            }
         }
+    }
+
+    private Statement initQueryStatement() {
+        final Statement stmt = connection.createStatement();
+        stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
+        applyQueryHints(stmt);
+        logQuery();
+        return stmt;
     }
 
     public boolean hasParameter(String name) {
@@ -268,9 +267,7 @@ abstract class AbstractQuery implements Query {
      * @throws OntoDriverException When something goes wrong during query evaluation or result set processing
      */
     void executeQuery(ThrowingConsumer<ResultRow, OntoDriverException> consumer) throws OntoDriverException {
-        try (final Statement stmt = connection.createStatement()) {
-            applyQueryHints(stmt);
-            logQuery();
+        try (final Statement stmt = initQueryStatement()) {
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
             for (ResultRow row : rs) {
                 consumer.accept(row);
@@ -283,9 +280,7 @@ abstract class AbstractQuery implements Query {
     }
 
     <R> Stream<R> executeQueryForStream(Function<ResultRow, Optional<R>> function) throws OntoDriverException {
-        final Statement stmt = connection.createStatement();
-        applyQueryHints(stmt);
-        logQuery();
+        final Statement stmt = initQueryStatement();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());
         return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), function, () -> {
             try {

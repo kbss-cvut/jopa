@@ -370,8 +370,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final EntityManager em = getEntityManager();
         final OWLClassA instance = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         assertNotNull(instance.getStringAttribute());
-        final String update = "DELETE { ?inst ?property ?origValue . } WHERE {" +
-                "?inst ?property ?origValue . }";
+        final String update = "DELETE { ?inst ?property ?origValue . } WHERE { ?inst ?property ?origValue . }";
         em.createNativeQuery(update).setParameter("inst", instance.getUri())
           .setParameter("property", URI.create(Vocabulary.P_A_STRING_ATTRIBUTE)).executeUpdate();
 
