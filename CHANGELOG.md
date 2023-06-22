@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.22.2 - 2023-06-22
+- Fix an issue with commutativity of AND in SOQL when selection by entity identifier is used (Bug #178).
+
 ## 0.22.1 - 2023-06-07
 - Allow using SPARQL SELECT queries without WHERE keyword (Bug #165).
 - Allow disabling generation of annotation fields and the `Thing` class in OWL2Java (Enhancement #170).
