@@ -366,7 +366,7 @@ public class SoqlQueryListener implements SoqlListener {
             if (attrPointer.isProjected()) {
                 this.rootVariable = SoqlUtils.soqlVariableToSparqlVariable(whereClauseValue.getText());
             }
-            if (attributes.size() > 1) {
+            if (attributes.size() > 1 && !attrPointer.getFirstNode().getChild().hasChild()) {
                 final String varName = whereClauseValue.getText();
                 attrPointer.getFirstNode().getChild().setValue(
                         varName.charAt(0) == SoqlConstants.VARIABLE_PREFIX ? varName.substring(1) : varName);

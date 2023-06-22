@@ -299,7 +299,7 @@ public class MetamodelMocks {
         MetamodelClassInitializer.initMetamodelClassOWLClassB(bStringAtt, bProperties, idB);
         MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);
         MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, idC);
-        MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, idD);
+        MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, etA, idD);
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
         MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
