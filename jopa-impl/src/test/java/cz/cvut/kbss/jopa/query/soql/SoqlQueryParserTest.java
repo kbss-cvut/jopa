@@ -710,8 +710,8 @@ public class SoqlQueryParserTest {
         parseAndAssertEquality(soql, expectedSparql);
     }
 
-    private static String strUri(String c_OwlClassM) {
-        return IdentifierTransformer.stringifyIri(c_OwlClassM);
+    private static String strUri(String uri) {
+        return IdentifierTransformer.stringifyIri(uri);
     }
 
     @Test
@@ -720,6 +720,20 @@ public class SoqlQueryParserTest {
         final String soqlIdSecond = "SELECT p FROM Person p WHERE p.username = :username AND p.uri = :uri";
         final String expectedSparql = "SELECT ?uri WHERE { ?uri a " + strUri(Vocabulary.c_Person) + " . " +
                 "?uri " + strUri(Vocabulary.p_p_username) + " ?username . }";
+        parseAndAssertEquality(soqlIdFirst, expectedSparql);
+        parseAndAssertEquality(soqlIdSecond, expectedSparql);
+    }
+
+    /**
+     * Bug #178
+     */
+    @Test
+    void parseQueryWithRelatedAttributeAndIdentifierIsCommutative() {
+        final String soqlIdFirst = "SELECT d FROM OWLClassD d WHERE d.uri = :uri AND d.owlClassA.stringAttribute = :stringAtt";
+        final String soqlIdSecond = "SELECT d FROM OWLClassD d WHERE d.owlClassA.stringAttribute = :stringAtt AND d.uri = :uri";
+        final String expectedSparql = "SELECT ?uri WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " +
+                "?owlClassA " + strUri(Vocabulary.p_a_stringAttribute) + " ?stringAtt . }";
         parseAndAssertEquality(soqlIdFirst, expectedSparql);
         parseAndAssertEquality(soqlIdSecond, expectedSparql);
     }
