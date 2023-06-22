@@ -16,16 +16,13 @@ package cz.cvut.kbss.jopa.query.soql;
 
 public class SoqlOrderParameter extends SoqlParameter {
 
-    private static final String ASC_ORDER = "ASC";
-    private static final String DESC_ORDER = "DESC";
-
     private String orderingBy;
 
     private SoqlAttribute attribute;
 
     public SoqlOrderParameter(SoqlNode firstNode, String orderingBy) {
         super(firstNode);
-        this.orderingBy = orderingBy.isEmpty() ? ASC_ORDER : orderingBy;
+        this.orderingBy = orderingBy.isEmpty() ? SoqlConstants.ASC : orderingBy;
     }
 
     public String getOrderingBy() {
@@ -47,10 +44,10 @@ public class SoqlOrderParameter extends SoqlParameter {
     public String getOrderByPart() {
         String param = attribute.requiresFilter() ? getAsParam().substring(1) : attribute.getValue().substring(1);
         StringBuilder sb = new StringBuilder();
-        if (ASC_ORDER.equals(orderingBy)) {
+        if (SoqlConstants.ASC.equals(orderingBy)) {
             sb.append("?").append(param).append(' ');
         } else {
-            sb.append(DESC_ORDER).append("(?").append(param).append(") ");
+            sb.append(SoqlConstants.DESC).append("(?").append(param).append(") ");
         }
         return sb.toString();
     }

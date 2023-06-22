@@ -13,7 +13,12 @@
 package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -21,7 +26,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SoqlQueryListener implements SoqlListener {
@@ -33,7 +46,7 @@ public class SoqlQueryListener implements SoqlListener {
     private String soql;
     private String sparql;
 
-    private String typeDef = "SELECT";
+    private String typeDef = SoqlConstants.SELECT;
 
     // keeps pointer at created object of SoqlAttribute while processing other necessary rules
     private SoqlAttribute attrPointer;
@@ -366,7 +379,7 @@ public class SoqlQueryListener implements SoqlListener {
             if (attrPointer.isProjected()) {
                 this.rootVariable = SoqlUtils.soqlVariableToSparqlVariable(whereClauseValue.getText());
             }
-            if (attributes.size() > 1) {
+            if (attributes.size() > 1 && !attrPointer.getFirstNode().getChild().hasChild()) {
                 final String varName = whereClauseValue.getText();
                 attrPointer.getFirstNode().getChild().setValue(
                         varName.charAt(0) == SoqlConstants.VARIABLE_PREFIX ? varName.substring(1) : varName);
@@ -846,7 +859,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private String buildOrdering() {
-        StringBuilder sb = new StringBuilder("ORDER BY");
+        StringBuilder sb = new StringBuilder(SoqlConstants.ORDER_BY);
         for (SoqlOrderParameter orderParam : orderAttributes) {
             sb.append(' ').append(orderParam.getOrderByPart());
         }
@@ -854,7 +867,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private String buildGrouping() {
-        StringBuilder sb = new StringBuilder("GROUP BY");
+        StringBuilder sb = new StringBuilder(SoqlConstants.GROUP_BY);
         for (SoqlGroupParameter groupParam : groupAttributes) {
             sb.append(' ').append(groupParam.getGroupByPart());
         }

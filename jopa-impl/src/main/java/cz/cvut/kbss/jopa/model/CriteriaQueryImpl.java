@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.*;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
+import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.util.*;
@@ -174,22 +175,22 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
      */
     public String translateQuery(CriteriaParameterFiller parameterFiller) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("SELECT ");
+        stringBuilder.append(SoqlConstants.SELECT).append(' ');
         if (isDistinct()) {
-            stringBuilder.append("DISTINCT ");
+            stringBuilder.append(SoqlConstants.DISTINCT).append(' ');
         }
         ((AbstractExpression) query.getSelection()).setExpressionToQuery(stringBuilder, parameterFiller);
 
-        stringBuilder.append(" FROM ").append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
+        stringBuilder.append(' ').append(SoqlConstants.FROM).append(' ').append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
         ((RootImpl) query.getRoot()).setExpressionToQuery(stringBuilder, parameterFiller);
 
         if (query.getWhere() != null && !query.getWhere().getExpressions().isEmpty()) {
-            stringBuilder.append(" WHERE ");
+            stringBuilder.append(' ').append(SoqlConstants.WHERE).append(' ');
             ((AbstractPredicate) query.getWhere()).setExpressionToQuery(stringBuilder, parameterFiller);
         }
 
         if (query.getGroupBy() != null && !query.getGroupBy().isEmpty()) {
-            stringBuilder.append(" GROUP BY ");
+            stringBuilder.append(' ').append(SoqlConstants.GROUP_BY).append(' ');
             for (Expression groupBy : query.getGroupBy()) {
                 ((AbstractExpression) groupBy).setExpressionToQuery(stringBuilder, parameterFiller);
             }
@@ -201,11 +202,11 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         }
 
         if (!getOrderList().isEmpty()) {
-            stringBuilder.append(" ORDER BY ");
+            stringBuilder.append(' ').append(SoqlConstants.ORDER_BY).append(' ');
             List<Order> orders = getOrderList();
             for (int i = 0; i < orders.size(); i++) {
                 ((AbstractExpression) orders.get(i).getExpression()).setExpressionToQuery(stringBuilder, parameterFiller);
-                stringBuilder.append(orders.get(i).isAscending() ? " ASC" : " DESC");
+                stringBuilder.append(' ').append(orders.get(i).isAscending() ? SoqlConstants.ASC : SoqlConstants.DESC);
                 if (orders.size() > 1 && (i + 1) != orders.size()) {
                     stringBuilder.append(", ");
                 }
