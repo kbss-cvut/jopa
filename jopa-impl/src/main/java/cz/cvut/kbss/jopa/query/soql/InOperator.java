@@ -13,7 +13,7 @@ class InOperator implements FilterableExpression {
 
     @Override
     public String toFilterExpression(String parameter, String value) {
-        return parameter + " " + (isNot ? SoqlConstants.NOT_IN : SoqlConstants.IN) + " (" + value + ')';
+        return parameter + (isNot ? " " + SoqlConstants.NOT : "") + " " + SoqlConstants.IN + " (" + value + ')';
     }
 
     static InOperator in() {
