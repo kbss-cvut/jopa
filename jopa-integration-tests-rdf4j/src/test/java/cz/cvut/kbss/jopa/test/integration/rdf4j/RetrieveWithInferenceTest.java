@@ -103,4 +103,22 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
             }
         });
     }
+
+    @Test
+    @Override
+    public void findReturnsOnlyAssertedDataWhenDescriptorDisablesInference() throws Exception {
+        final Map<String, String> inferenceProps =
+                Collections.singletonMap(Rdf4jOntoDriverProperties.USE_INFERENCE, Boolean.TRUE.toString());
+        this.em = getEntityManager("findReturnsOnlyAssertedDataWhenDescriptorDisablesInference", false, inferenceProps);
+        super.findReturnsOnlyAssertedDataWhenDescriptorDisablesInference();
+    }
+
+    @Test
+    @Override
+    public void selectQueryWithDisabledInferenceAppliesThisSettingToLoadedResultsAsWell() throws Exception {
+        final Map<String, String> inferenceProps =
+                Collections.singletonMap(Rdf4jOntoDriverProperties.USE_INFERENCE, Boolean.TRUE.toString());
+        this.em = getEntityManager("selectQueryWithDisabledInferenceAppliesThisSettingToLoadedResultsAsWell", false, inferenceProps);
+        super.selectQueryWithDisabledInferenceAppliesThisSettingToLoadedResultsAsWell();
+    }
 }
