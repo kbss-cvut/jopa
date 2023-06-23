@@ -223,6 +223,12 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     @Override
+    public TypedQuery<X> setHint(String hintName, Object value) {
+        super.setHint(hintName, value);
+        return this;
+    }
+
+    @Override
     public TypedQuery<X> setDescriptor(Descriptor descriptor) {
         this.descriptor = descriptor;
         return this;

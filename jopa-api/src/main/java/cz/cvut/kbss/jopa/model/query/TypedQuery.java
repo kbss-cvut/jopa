@@ -113,6 +113,12 @@ public interface TypedQuery<X> extends Query {
     <T> TypedQuery<X> setUntypedParameter(Parameter<T> parameter, T value);
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    TypedQuery<X> setHint(String hintName, Object value);
+
+    /**
      * Sets descriptor to use with this query.
      * <p>
      * The descriptor may specify contexts and languages for the retrieved query results. Note that the descriptor
