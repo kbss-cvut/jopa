@@ -12,13 +12,50 @@
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassG;
+import cz.cvut.kbss.jopa.environment.OWLClassH;
+import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.OWLClassK;
+import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassN;
+import cz.cvut.kbss.jopa.environment.OWLClassO;
+import cz.cvut.kbss.jopa.environment.OWLClassP;
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.OWLClassR;
+import cz.cvut.kbss.jopa.environment.OWLClassS;
+import cz.cvut.kbss.jopa.environment.OWLClassT;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
+import cz.cvut.kbss.jopa.environment.OneOfEnum;
+import cz.cvut.kbss.jopa.environment.Person;
+import cz.cvut.kbss.jopa.environment.Phone;
+import cz.cvut.kbss.jopa.environment.QMappedSuperclass;
 import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
 import cz.cvut.kbss.jopa.environment.listener.ParentListener;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.MultilingualString;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.SetAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.SingularQueryAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -27,7 +64,11 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -109,7 +150,7 @@ public class MetamodelMocks {
     @Mock
     private Identifier<OWLClassJ, URI> idJ;
     @Mock
-    private AbstractPluralAttribute<OWLClassJ, Set<OWLClassA>, OWLClassA> jSetAtt;
+    private SetAttributeImpl<OWLClassJ, OWLClassA> jSetAtt;
 
     @Mock
     private IdentifiableEntityType<OWLClassK> etK;
@@ -471,7 +512,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.aStringAtt;
         }
 
-        public TypesSpecification<OWLClassA, ?> typesSpec() {
+        public TypesSpecification<OWLClassA, String> typesSpec() {
             return MetamodelMocks.this.aTypes;
         }
     }
@@ -600,7 +641,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idJ;
         }
 
-        public AbstractPluralAttribute<OWLClassJ, Set<OWLClassA>, OWLClassA> setAttribute() {
+        public SetAttributeImpl<OWLClassJ, OWLClassA> setAttribute() {
             return MetamodelMocks.this.jSetAtt;
         }
     }
