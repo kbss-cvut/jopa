@@ -16,10 +16,10 @@ package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.Collections;
@@ -27,9 +27,15 @@ import java.util.Collections;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EntityDescriptorTest {
 
     private static final URI CONTEXT_ONE = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/contextOne");
@@ -45,26 +51,19 @@ class EntityDescriptorTest {
     @Mock
     private Attribute<RecursiveClass, RecursiveClass> parentAtt;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
+    @Test
+    void fieldDescriptorByDefaultInheritsEntityContext() throws Exception {
         when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
         when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(intAtt.getJavaField()).thenReturn(TestClass.intAttField());
-        when(intAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
-        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-    }
-
-    @Test
-    void fieldDescriptorByDefaultInheritsEntityContext() {
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor result = descriptor.getAttributeDescriptor(stringAtt);
         assertEquals(Collections.singleton(CONTEXT_ONE), result.getContexts());
     }
 
     @Test
-    void fieldDescriptorHasItsOwnContextWhenItIsSetForIt() {
+    void fieldDescriptorHasItsOwnContextWhenItIsSetForIt() throws Exception {
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
         descriptor.addAttributeContext(stringAtt, CONTEXT_TWO);
 
@@ -107,7 +106,10 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoEntityDescriptorsAreEqualWhenTheirFieldDescriptorsHaveTheSameContexts() {
+    void twoEntityDescriptorsAreEqualWhenTheirFieldDescriptorsHaveTheSameContexts() throws Exception {
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(intAtt.getJavaField()).thenReturn(TestClass.intAttField());
         final EntityDescriptor dOne = new EntityDescriptor(CONTEXT_ONE);
         final EntityDescriptor dTwo = new EntityDescriptor(CONTEXT_ONE);
         dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
@@ -121,7 +123,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoEntityDescriptorsAreNotEqualWhenTheyDifferInFieldContext() {
+    void twoEntityDescriptorsAreNotEqualWhenTheyDifferInFieldContext() throws Exception {
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         final EntityDescriptor dOne = new EntityDescriptor(CONTEXT_ONE);
         final EntityDescriptor dTwo = new EntityDescriptor(CONTEXT_ONE);
         dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
@@ -148,7 +152,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoDescriptorsWithDifferentLanguageTagsAreNotEqual() {
+    void twoDescriptorsWithDifferentLanguageTagsAreNotEqual() throws Exception {
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         final Descriptor dOne = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor dTwo = new EntityDescriptor(CONTEXT_ONE);
         dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
@@ -160,7 +166,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoDescriptorsWithDifferentAttributeLanguageTagsAreNotEqual() {
+    void twoDescriptorsWithDifferentAttributeLanguageTagsAreNotEqual() throws Exception {
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         final Descriptor dOne = new EntityDescriptor();
         final Descriptor dTwo = new EntityDescriptor();
         dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
@@ -174,7 +182,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoDescriptorsWithSameAttributeLanguageTagsAreEqual() {
+    void twoDescriptorsWithSameAttributeLanguageTagsAreEqual() throws Exception {
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         final Descriptor dOne = new EntityDescriptor();
         final Descriptor dTwo = new EntityDescriptor();
         dOne.setAttributeLanguage(stringAtt, "en");
@@ -184,7 +194,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void twoDescriptorsWithNullLanguageTagSetAreEqual() {
+    void twoDescriptorsWithNullLanguageTagSetAreEqual() throws Exception {
+        when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         final Descriptor dOne = new EntityDescriptor();
         final Descriptor dTwo = new EntityDescriptor();
         dOne.addAttributeContext(stringAtt, CONTEXT_TWO);
@@ -210,7 +222,7 @@ class EntityDescriptorTest {
         dOne.addAttributeDescriptor(intAtt, new FieldDescriptor(CONTEXT_TWO, intAtt));
         assertFalse(dOne.getAttributeDescriptors().isEmpty());
         assertEquals(Collections.singleton(CONTEXT_TWO),
-                dOne.getAttributeDescriptors().iterator().next().getContexts());
+                     dOne.getAttributeDescriptors().iterator().next().getContexts());
     }
 
     @Test
@@ -252,7 +264,8 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void hashCodeHandlesRecursiveDescriptors() {
+    void hashCodeHandlesRecursiveDescriptors() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
         final EntityDescriptor descriptor = new EntityDescriptor(CONTEXT_ONE);
         descriptor.addAttributeDescriptor(parentAtt, descriptor);
 
@@ -287,7 +300,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void addAttributeContextCreatesEntityDescriptorAndAddsContextToItWhenItDidNotExist() {
+    void addAttributeContextCreatesEntityDescriptorAndAddsContextToItWhenItDidNotExist() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final EntityDescriptor sut = new EntityDescriptor();
         sut.addAttributeContext(parentAtt, CONTEXT_ONE);
 
@@ -307,7 +322,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void addAttributeContextSupportsMultipleContextsAddedToObjectPropertyAttribute() {
+    void addAttributeContextSupportsMultipleContextsAddedToObjectPropertyAttribute() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final EntityDescriptor sut = new EntityDescriptor();
         sut.addAttributeContext(parentAtt, CONTEXT_ONE).addAttributeContext(parentAtt, CONTEXT_TWO);
 
@@ -330,7 +347,9 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void addAttributeContextSupportsCreatesObjectPropertyCollectionDescriptorForPluralObjectProperty() {
+    void addAttributeContextSupportsCreatesObjectPropertyCollectionDescriptorForPluralObjectProperty() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(parentAtt.isCollection()).thenReturn(true);    // Abusing existing field specification
         final EntityDescriptor sut = new EntityDescriptor();
         sut.addAttributeContext(parentAtt, CONTEXT_ONE);
@@ -388,5 +407,28 @@ class EntityDescriptorTest {
         sut.addAttributeContext(stringAtt, CONTEXT_ONE);
         sut.addAttributeContext(stringAtt, CONTEXT_TWO);
         assertThrows(AmbiguousContextException.class, () -> sut.getSingleAttributeContext(stringAtt));
+    }
+
+    @Test
+    void includeInferredIsByDefaultInheritedFromParentEntityDescriptor() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.disableInference();
+        assertFalse(sut.includeInferred());
+        final Descriptor attDesc = sut.getAttributeDescriptor(parentAtt);
+        assertFalse(attDesc.includeInferred());
+    }
+
+    @Test
+    void includeInferredInheritedFromParentDescriptorCanBeOverridenInChildEntityDescriptor() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.disableInference();
+        assertFalse(sut.includeInferred());
+        final Descriptor attDesc = sut.getAttributeDescriptor(parentAtt);
+        attDesc.enableInference();
+        assertTrue(attDesc.includeInferred());
     }
 }
