@@ -131,6 +131,7 @@ public interface TypedQuery<X> extends Query {
      *
      * @param descriptor The descriptor to use
      * @return This query instance
+     * @throws NullPointerException If the provided argument is {@code null}
      */
     TypedQuery<X> setDescriptor(Descriptor descriptor);
 }
