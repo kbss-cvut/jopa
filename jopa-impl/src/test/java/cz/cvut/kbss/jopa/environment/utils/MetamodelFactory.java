@@ -103,7 +103,7 @@ public class MetamodelFactory {
                                              Method callback) throws Exception {
         final Method addCallback = EntityLifecycleListenerManager.class
                 .getDeclaredMethod("addLifecycleCallback", LifecycleEvent.class, Method.class);
-        if (!addCallback.isAccessible()) {
+        if (!addCallback.canAccess(manager)) {
             addCallback.setAccessible(true);
         }
         addCallback.invoke(manager, evt, callback);
@@ -1191,7 +1191,7 @@ public class MetamodelFactory {
             throws Exception {
         final Method addListenerCallback = EntityLifecycleListenerManager.class
                 .getDeclaredMethod("addEntityListenerCallback", Object.class, LifecycleEvent.class, Method.class);
-        if (!addListenerCallback.isAccessible()) {
+        if (!addListenerCallback.canAccess(manager)) {
             addListenerCallback.setAccessible(true);
         }
         addListenerCallback.invoke(manager, listener, evt, callback);

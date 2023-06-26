@@ -19,8 +19,6 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import org.semanticweb.owlapi.model.OWLObject;
 
-import java.util.Observer;
-
 public abstract class AbstractResultSet implements ResultSet {
 
     private boolean open;
@@ -50,11 +48,6 @@ public abstract class AbstractResultSet implements ResultSet {
     @Override
     public boolean isOpen() {
         return open;
-    }
-
-    @Override
-    public void registerObserver(Observer observer) {
-        throw new UnsupportedOperationException("Not supported by the current version.");
     }
 
     public static ResultSet createResultSet(QueryResult<OWLObject> result, Statement statement, String query) {

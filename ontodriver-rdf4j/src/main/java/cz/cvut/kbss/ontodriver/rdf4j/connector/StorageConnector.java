@@ -18,13 +18,15 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
-import org.eclipse.rdf4j.common.iteration.Iterations;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.Sail;
@@ -37,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class StorageConnector extends AbstractConnector {
 
@@ -130,8 +133,7 @@ public class StorageConnector extends AbstractConnector {
     @Override
     public List<Resource> getContexts() throws Rdf4jDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
-            final RepositoryResult<Resource> res = conn.getContextIDs();
-            return Iterations.asList(res);
+            return conn.getContextIDs().stream().collect(Collectors.toList());
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
         }
@@ -220,9 +222,8 @@ public class StorageConnector extends AbstractConnector {
                                                 Value value, boolean includeInferred, Collection<IRI> context)
             throws Rdf4jDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
-            final RepositoryResult<Statement> m;
-            m = conn.getStatements(subject, property, null, includeInferred, context.toArray(new IRI[0]));
-            return Iterations.asList(m);
+            return conn.getStatements(subject, property, null, includeInferred, context.toArray(new IRI[0])).stream()
+                       .collect(Collectors.toList());
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
         }

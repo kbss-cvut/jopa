@@ -101,61 +101,6 @@ public class DatatypeTransformer {
         return type;
     }
 
-    public static boolean isSupportedJavaType(Class<?> dt) {
-        return DATATYPE_MAP.containsValue(dt);
-    }
-
-    /**
-     * Transforms the specified {@link OWLLiteral} to the corresponding Java type (if possible).
-     * <p>
-     * For instance, literals of type {@code xsd:int} are transformed to Java {@link Integer}s.
-     *
-     * @param literal Literal to transform
-     * @return Java object corresponding to the literal
-     * @deprecated Use datatype mappers from the {@code datatype} module instead
-     */
-    @Deprecated
-    public static Object transform(final OWLLiteral literal) {
-        if (literal.isRDFPlainLiteral()) {
-            return literal.getLiteral();
-        } else if (literal.getDatatype().isBuiltIn()) {
-            switch (literal.getDatatype().getBuiltInDatatype()) {
-                case XSD_SHORT:
-                case XSD_UNSIGNED_BYTE:
-                    return Short.parseShort(literal.getLiteral());
-                case XSD_LONG:
-                case XSD_UNSIGNED_INT:
-                    return Long.parseLong(literal.getLiteral());
-                case XSD_INT:
-                case XSD_INTEGER:
-                case XSD_NON_NEGATIVE_INTEGER:
-                case XSD_NON_POSITIVE_INTEGER:
-                case XSD_POSITIVE_INTEGER:
-                case XSD_NEGATIVE_INTEGER:
-                case XSD_UNSIGNED_SHORT:
-                    return Integer.parseInt(literal.getLiteral());
-                case XSD_DOUBLE:
-                    return Double.parseDouble(literal.getLiteral());
-                case XSD_FLOAT:
-                    return Float.parseFloat(literal.getLiteral());
-                case XSD_DECIMAL:
-                    return new BigDecimal(literal.getLiteral());
-                case XSD_STRING:
-                case RDF_XML_LITERAL:
-                    return literal.getLiteral();
-                case RDF_LANG_STRING:
-                    return new LangString(literal.getLiteral(), literal.getLang());
-                case XSD_BOOLEAN:
-                    return Boolean.parseBoolean(literal.getLiteral());
-                case XSD_ANY_URI:
-                    return URI.create(literal.getLiteral());
-                default:
-                    break;
-            }
-        }
-        return new Literal(literal.getLiteral(), literal.getDatatype().toStringID());
-    }
-
     /**
      * Transforms the specified Java object to an {@link OWLLiteral}.
      * <p>

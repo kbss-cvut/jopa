@@ -89,7 +89,7 @@ public class EntityLifecycleListenerManager {
         if (entityListeners != null) {
             entityListeners
                     .forEach(listener -> getEntityListenerCallback(listener, lifecycleEvent).ifPresent(method -> {
-                        if (!method.isAccessible()) {
+                        if (!method.canAccess(listener)) {
                             method.setAccessible(true);
                         }
                         try {
@@ -112,7 +112,7 @@ public class EntityLifecycleListenerManager {
 
         if (lifecycleCallbacks.containsKey(lifecycleEvent)) {
             final Method listener = lifecycleCallbacks.get(lifecycleEvent);
-            if (!listener.isAccessible()) {
+            if (!listener.canAccess(instance)) {
                 listener.setAccessible(true);
             }
             try {

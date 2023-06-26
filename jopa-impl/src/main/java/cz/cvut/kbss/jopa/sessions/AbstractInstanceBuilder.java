@@ -79,7 +79,7 @@ abstract class AbstractInstanceBuilder {
         Constructor<?> c;
         try {
             c = javaClass.getDeclaredConstructor(args);
-            if (!c.isAccessible()) {
+            if (!c.canAccess(null)) {
                 c.setAccessible(true);
             }
         } catch (NoSuchMethodException e) {

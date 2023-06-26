@@ -14,10 +14,17 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Caches local transactional changes to the RDF4J repository model.
@@ -36,14 +43,14 @@ class LocalModel {
         this.removedStatements = new LinkedHashModel();
     }
 
-    void enhanceStatements(Collection<Statement> statements, Resource subject, IRI property,
-                           Value object, Collection<IRI> context) {
-        final Collection<Statement> added, removed;
+    List<Statement> enhanceStatements(Stream<Statement> statements, Resource subject, IRI property,
+                                      Value object, Collection<IRI> context) {
         final IRI[] ctxArray = context.toArray(new IRI[0]);
-        added = addedStatements.filter(subject, property, object, ctxArray);
-        removed = removedStatements.filter(subject, property, object, ctxArray);
-        statements.addAll(added);
-        statements.removeAll(removed);
+        final Collection<Statement> added = addedStatements.filter(subject, property, object, ctxArray);
+        final Collection<Statement> removed = removedStatements.filter(subject, property, object, ctxArray);
+        final List<Statement> result = statements.filter(s -> !removed.contains(s)).collect(Collectors.toList());
+        result.addAll(added);
+        return result;
     }
 
     Contains contains(Resource subject, IRI property, Value object, Collection<IRI> contexts) {

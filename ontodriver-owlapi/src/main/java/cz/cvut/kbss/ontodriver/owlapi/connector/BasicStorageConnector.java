@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +73,7 @@ public class BasicStorageConnector extends AbstractConnector {
         }
         final OntologyStorageProperties storageProperties = configuration.getStorageProperties();
         LOG.debug("Loading ontology {} from {}.", storageProperties.getOntologyURI(),
-                  storageProperties.getPhysicalURI());
+                storageProperties.getPhysicalURI());
         resolveIriMapper();
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         setIriMapper(ontologyManager);
@@ -131,9 +132,14 @@ public class BasicStorageConnector extends AbstractConnector {
             return;
         }
         try {
-            this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass).newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass).getDeclaredConstructor()
+                                                             .newInstance();
+        } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
             final String msg = "Unable to instantiate reasoner factory class " + reasonerFactoryClass;
+            LOG.error(msg);
+            throw new ReasonerNotAvailableException(msg, e);
+        } catch (NoSuchMethodException e) {
+            final String msg = "Reasoner factory class " + reasonerFactoryClass + " does not have a public no-arg constructor.";
             LOG.error(msg);
             throw new ReasonerNotAvailableException(msg, e);
         } catch (ClassNotFoundException e) {
@@ -158,7 +164,7 @@ public class BasicStorageConnector extends AbstractConnector {
             final OWLOntology snapshot = ontologyManager.createOntology();
             cloneOntologyContent(snapshot);
             return new OntologySnapshot(snapshot, ontologyManager, ontologyManager.getOWLDataFactory(),
-                                        getReasoner(snapshot));
+                    getReasoner(snapshot));
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
         } finally {

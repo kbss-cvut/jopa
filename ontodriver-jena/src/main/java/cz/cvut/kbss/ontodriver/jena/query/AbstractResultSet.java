@@ -19,7 +19,6 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 
 import java.util.NoSuchElementException;
-import java.util.Observer;
 
 public abstract class AbstractResultSet implements ResultSet {
 
@@ -90,11 +89,6 @@ public abstract class AbstractResultSet implements ResultSet {
     @Override
     public void previous() {
         throw new UnsupportedOperationException("Moving back is not supported by this result set.");
-    }
-
-    @Override
-    public void registerObserver(Observer observer) {
-        throw new UnsupportedOperationException("Not supported by the current version.");
     }
 
     @Override

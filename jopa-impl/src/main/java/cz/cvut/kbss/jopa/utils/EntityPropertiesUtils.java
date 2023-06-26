@@ -64,12 +64,12 @@ public class EntityPropertiesUtils {
      * Sets value of the specified field.
      *
      * @param field    Field to set value on
-     * @param instance Target instance (may be {@code null} for static fields)
-     * @param value    The value to set (may be {@code null})
+     * @param instance Target instance (can be {@code null} for static fields)
+     * @param value    The value to set (can be {@code null})
      */
     public static void setFieldValue(Field field, Object instance, Object value) {
         Objects.requireNonNull(field);
-        if (!field.isAccessible()) {
+        if (!field.canAccess(instance)) {
             field.setAccessible(true);
         }
         try {
@@ -88,7 +88,7 @@ public class EntityPropertiesUtils {
      */
     public static Object getFieldValue(Field field, Object instance) {
         Objects.requireNonNull(field);
-        if (!field.isAccessible()) {
+        if (!field.canAccess(instance)) {
             field.setAccessible(true);
         }
         try {

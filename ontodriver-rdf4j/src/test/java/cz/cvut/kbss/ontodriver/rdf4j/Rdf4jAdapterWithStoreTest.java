@@ -26,7 +26,6 @@ import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
-import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -59,7 +58,7 @@ public class Rdf4jAdapterWithStoreTest {
     @BeforeEach
     public void setUp() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(Rdf4jDataSource.class.getName())
-                .physicalUri("memory-store").build();
+                                                                      .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         configuration.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.toString(true));
         final RepositoryConnectorInitializer connectorInitializer = new RepositoryConnectorInitializer(configuration);
@@ -99,8 +98,8 @@ public class Rdf4jAdapterWithStoreTest {
 
         try (RepositoryConnection connection = repo.getConnection()) {
             final Resource subj = vf.createIRI(SUBJECT.getIdentifier().toString());
-            final List<Statement> classAssertions = Iterations.asList(connection
-                    .getStatements(subj, RDF.TYPE, null, false));
+            final List<Statement> classAssertions = connection.getStatements(subj, RDF.TYPE, null, false).stream()
+                                                              .collect(Collectors.toList());
             final Set<URI> types = classAssertions.stream().map(s -> URI.create(s.getObject().stringValue())).collect(
                     Collectors.toSet());
             assertTrue(types.contains(tOne));

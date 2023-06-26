@@ -15,8 +15,11 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
-import org.eclipse.rdf4j.common.iteration.Iterations;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -26,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 
 public class PoolingStorageConnector extends AbstractConnector {
 
@@ -172,12 +176,10 @@ public class PoolingStorageConnector extends AbstractConnector {
             throws Rdf4jDriverException {
         verifyTransactionActive();
         try {
-            final Collection<Statement> statements;
-            statements = Iterations.asList(connection
-                                                   .getStatements(subject, property, value, includeInferred,
-                                                                  contexts.toArray(new IRI[0])));
-            localModel.enhanceStatements(statements, subject, property, value, contexts);
-            return statements;
+            final Stream<Statement> statements = connection
+                    .getStatements(subject, property, value, includeInferred,
+                            contexts.toArray(new IRI[0])).stream();
+            return localModel.enhanceStatements(statements, subject, property, value, contexts);
         } catch (RepositoryException e) {
             rollback();
             throw new Rdf4jDriverException(e);

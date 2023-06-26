@@ -66,7 +66,7 @@ class ConstructorResultMapper implements SparqlResultMapper {
     private Object buildInstance(Object[] values, Class<?>[] types) {
         try {
             final Constructor<?> ctor = resolveConstructor(types);
-            if (!ctor.isAccessible()) {
+            if (!ctor.canAccess(null)) {
                 ctor.setAccessible(true);
             }
             return ctor.newInstance(values);
