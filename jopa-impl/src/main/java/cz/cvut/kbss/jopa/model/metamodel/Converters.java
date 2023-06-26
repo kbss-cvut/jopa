@@ -38,8 +38,7 @@ public class Converters {
     }
 
     private void initConverters(Configuration configuration) {
-        converters.put(Object.class,
-                new ObjectConverter(configuration.is(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING)));
+        converters.put(Object.class, new ObjectConverter(configuration.is(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING)));
     }
 
     Optional<ConverterWrapper<?, ?>> getCustomConverter(Class<?> attributeType) {
@@ -55,20 +54,18 @@ public class Converters {
     }
 
     private static Map<Class<?>, ConverterWrapper<?, ?>> initDefaultConverters() {
-        final Map<Class<?>, ConverterWrapper<?, ?>> converters = new HashMap<>();
-        converters.put(LocalDateTime.class, new LocalDateTimeConverter());
-        converters.put(LocalTime.class, new LocalTimeConverter());
-        converters.put(Instant.class, new InstantConverter());
-        converters.put(ZonedDateTime.class, new ZonedDateTimeConverter());
-        converters.put(Date.class, new DateConverter());
-        converters.put(Short.class, new ToShortConverter());
-        converters.put(Integer.class, new ToIntegerConverter());
-        converters.put(Long.class, new ToLongConverter());
-        converters.put(Float.class, new ToFloatConverter());
-        converters.put(Double.class, new ToDoubleConverter());
-        converters.put(String.class, new ToStringConverter());
-        converters.put(LangString.class, new ToLangStringConverter());
-        return Collections.unmodifiableMap(converters);
+        return Map.ofEntries(Map.entry(LocalDateTime.class, new LocalDateTimeConverter()),
+                Map.entry(LocalTime.class, new LocalTimeConverter()),
+                Map.entry(Instant.class, new InstantConverter()),
+                Map.entry(ZonedDateTime.class, new ZonedDateTimeConverter()),
+                Map.entry(Date.class, new DateConverter()),
+                Map.entry(Short.class, new ToShortConverter()),
+                Map.entry(Integer.class, new ToIntegerConverter()),
+                Map.entry(Long.class, new ToLongConverter()),
+                Map.entry(Float.class, new ToFloatConverter()),
+                Map.entry(Double.class, new ToDoubleConverter()),
+                Map.entry(String.class, new ToStringConverter()),
+                Map.entry(LangString.class, new ToLangStringConverter()));
     }
 
     /**

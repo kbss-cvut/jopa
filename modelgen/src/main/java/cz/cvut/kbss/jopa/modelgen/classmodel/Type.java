@@ -22,11 +22,7 @@ public class Type {
             this.types = null;
             TypeMirror upperBound = getUpperBound(tMirror);
             String fullName;
-            if (upperBound == null) {
-                fullName = tMirror.toString();
-            } else {
-                fullName = upperBound.toString();
-            }
+            fullName = Objects.requireNonNullElse(upperBound, tMirror).toString();
             if (fullName.contains("<")) {
                 this.typeName = fullName.substring(0, fullName.indexOf("<"));
             } else {

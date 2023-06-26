@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.model;
 
+import java.util.Objects;
+
 /**
  * Holds the global {@link PersistenceProviderResolver} instance.
  * <p>
@@ -43,10 +45,6 @@ public class PersistenceProviderResolverHolder {
      * @param resolver persistence provider resolver to be used
      */
     public static synchronized void setPersistenceProviderResolver(final PersistenceProviderResolver resolver) {
-        if (resolver == null) {
-            instance = new DefaultPersistenceProviderResolver();
-        } else {
-            instance = resolver;
-        }
+        instance = Objects.requireNonNullElseGet(resolver, DefaultPersistenceProviderResolver::new);
     }
 }
