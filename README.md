@@ -2,23 +2,12 @@
 
 [![Build Status](https://kbss.felk.cvut.cz/jenkins/buildStatus/icon?job=jopa-stable)](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable)
 
-JOPA is a Java OWL persistence framework aimed at efficient programmatic access to OWL2 ontologies and RDF graphs in Java. The system is based
-on integrity constraints [1] in OWL that JOPA uses to establish the contract between a JOPA-enabled Java application and
-an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
+JOPA is a Java OWL persistence framework aimed at efficient programmatic access to OWL2 ontologies and RDF graphs in Java. 
+The system is based on integrity constraints [1] in OWL that JOPA uses to establish a contract between a JOPA-enabled Java application and
+an OWL ontology. Note, however, that for practical purposes of working with triple stores, this OWL integrity constraints-based
+contract is not required.
 
-Notable changes:
-
-* **0.20.0** - Allow editing inferred attributes (See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details). Support `IN`, `NOT LIKE`, `<>` operators in SOQL.
-* **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future)
-* **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
-* **0.15.0** - Support for multilingual String attributes. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Multilingual-String-Attributes) for more info
-* **0.14.0** - Support for the Semantic Object Query Language (SOQL). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Semantic-Object-Query-Language) for more info
-* **0.13.0** - Support for RDF simple literals (language-less strings), access to lexical form of literals, updated named graph handling
-* **0.12.0** - Support for `EntityManager.getReference`
-* **0.11.0** - Support for Java 8 Streams in Query API and RDF4J repository configuration file
-* **0.10.0** - Jena OntoDriver implementation
-* **0.9.0** - Single class inheritance support
-* **0.8.0** - Mapped superclass support
+The library architecture and API is similar to JPA (see [2]) so that Java developers find it familiar.
 
 ### Main Features
 
@@ -28,9 +17,9 @@ Notable changes:
 * Transactions,
 * Separate storage access layer - Jena, OWLAPI, RDF4J drivers are available.
 
-#### Object-ontological mapping based on integrity constraints
+#### Object-ontological Mapping Based on Integrity Constraints
 
-Similarly to ORM, OOM enables to map ontological constructs to constructs of an object-oriented programming language and vice versa.
+Similarly to object-relational mapping (ORM), OOM enables to map ontological constructs to constructs of an object-oriented programming language and vice versa.
 
 More specifically, OOM in JOPA maps (using the JLS [3] terminology):
 
@@ -44,22 +33,44 @@ More specifically, OOM in JOPA maps (using the JLS [3] terminology):
 
 All this means that individuals belonging to an OWL class can be retrieved as instances of a (Java) class.
 
-#### Inheritance
+Note: OOM works also for RDFS ontologies. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Object-ontological-Mapping) for details.
 
-* Support for mapped superclasses was added in version __0.8.0__.
-* Support for single inheritance was added in version __0.9.0__.
+Here is a simple example of a JOPA entity:
 
-#### Explicit access to inferred knowledge
+```java
+@Namespace(prefix = "skos", namespace="http://www.w3.org/2004/02/skos/core#")
+@OWLClass(iri = "skos:Concept")
+public class Term {
+  @Id
+  private URI id;
+
+  @OWLAnnotationProperty(iri = "skos:prefLabel")
+  private MultilingualString label;
+
+  @OWLAnnotationProperty(iri = "skos:definition")
+  private MultilingualString definition;
+
+  @OWLObjectProperty(iri = "skos:narrower")
+  private Set<Term> children;
+
+  @Types
+  private Set<String> types;
+
+  @Properties
+  private Map<String, Set<String>> properties;
+}
+```
+
+#### Explicit Access to Inferred Knowledge
 
 A member annotated with the `@Inferred` annotation represents a field whose values are retrieved using a reasoner. As such,
-they can for example contain values of a inverse object property (like in the [Jedi example](https://github.com/kbss-cvut/jopa-examples/blob/master/example02-jopa-owlapi/src/main/java/cz/cvut/kbss/jopa/example02/Example.java)).
+they can, for example, contain values of an inverse object property (like in the [Jedi example](https://github.com/kbss-cvut/jopa-examples/blob/master/example02-jopa-owlapi/src/main/java/cz/cvut/kbss/jopa/example02/Example.java)).
 
 There are limitations to this: JOPA requires explicit class assertion to be able to load individual as instance of a class.
-And, inferred values are read-only (prior to version 0.20.0, all values of an attribute marked with `@Inferred` were read-only, now 
-it applies only to actually inferred values). These restrictions have pragmatic reasons - if the knowledge is inferred, it
-cannot be directly modified/removed. Therefore, it would make no sense to remove a property value, if it was inferred.
+And, inferred values are read-only. These restrictions have pragmatic reasons - if the knowledge is inferred, it
+cannot be directly modified/removed, so attempting to remove an inferred value does not have any direct effects.
 
-#### Access to unmapped properties and individual's types
+#### Access to Unmapped Properties and Individual's Types
 
 OOM is not meant to completely capture the ontological model. It would not even make much sense. One of the main features
 of JOPA is its ability to work with knowledge which is not part of the object model. This is done using members annotated
@@ -74,10 +85,10 @@ JOPA supports object-level transactions. In addition, it makes transactional cha
 This means that when you add an instance of some class during a transaction and then list all instances of that class (during the same
 transaction), you'll see the newly added instance as well. This is a feature not usually seen even in large triple stores.
 
-There are some limitations to this approach. Currently, pending changes are not taken into account when doing inference.
+There are limitations to this approach. Currently, pending changes are not taken into account when doing inference.
 Also, the current version of RDF4J OntoDriver is not able to include pending changes into results of SPARQL queries.
 
-#### Separate storage access layer
+#### Separate Storage Access Layer
 
 Similarly to JPA and JDBC driver, JOPA sits on top of an OntoDriver instance, which provides access to the underlying storage.
 There are two main reasons for such split - first, it decouples storage-specific API usage from the more generic OOM core.
@@ -86,22 +97,17 @@ needs to be modified.
 
 Supported storages:
 
-* Jena (since **0.10.0**)
-* OWLAPI
-* RDF4J
+* [Jena](https://jena.apache.org/)
+* [OWLAPI](https://github.com/owlcs/owlapi)
+* [RDF4J](https://rdf4j.org/)
 
 ### Not Supported, yet
 
-JOPA currently does not support two important features - multiple inheritance and referential integrity.
+JOPA currently does not support referential integrity. This for example means that removing an instance that is referenced 
+by another instance should not be possible. Such feature is vital for object-oriented application, but not compatible with 
+the open-world nature of ontologies. Design possibilities and their implications are currently being studied.
 
-Single inheritance (and mapped superclasses) have been supported since version 0.9.0 (0.8.0 resp.), 
-multiple inheritance is currently under development.
-
-As for referential integrity, this for example means that removing an instance that is referenced by another instance should
-not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.
-Design possibilities and their implications are currently being studied.
-
-Other missing/planned stuff can be found in [TODO.md](TODO.md) and in the GitHub issue tracker.
+Other missing/planned stuff can be found in the GitHub issue tracker and in [TODO.md](TODO.md).
 
 ## Modules
 
@@ -109,22 +115,22 @@ The whole framework consists of several modules:
 
 * _JOPA API_ - definition of the JOPA API, similar to JPA.
 * _OntoDriver API_ - API of the storage access layer.
-* _JOPA Implementation_ - persistence provider implementation.
-* _OntoDriver Sesame_ - OntoDriver implementation for RDF4J (Sesame)-accessed storages. **Deprecated** - use the new _OntoDriver RDF4J_,
+* _JOPA implementation_ - persistence provider implementation.
 * _OntoDriver RDF4J_ - OntoDriver implementation for RDF4J-accessed storages.
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files.
 * _Ontodriver Jena_ - OntoDriver implementation for Jena-based storages.
 * _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-rdf4j-owl2java)).
-* _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
+* _modelgen_ - generates static metamodel.
+* _JOPA Maven plugin_ - Maven plugin for object model (using OWL2Java) and static metamodel(using modelgen) generation.
 
 Other modules represent integration tests and various utilities.
 
 ## Documentation
 
 Check out the [Wiki](https://github.com/kbss-cvut/jopa/wiki) for general information about JOPA, explanation of its features and their usage.
-We will be gradually building up its content.
+The content is being gradually created and updated.
 
-Javadoc of the latest stable version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
+Javadoc of the latest published version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
 
 For more practical examples of JOPA features, see the JOPA examples repository at [https://github.com/kbss-cvut/jopa-examples](https://github.com/kbss-cvut/jopa-examples).
   
@@ -132,18 +138,13 @@ For more practical examples of JOPA features, see the JOPA examples repository a
 
 JOPA examples can be found in a separate repository at [https://github.com/kbss-cvut/jopa-examples](https://github.com/kbss-cvut/jopa-examples).
 
-A more mature project using JOPA as its persistence provider can be found at [https://github.com/kbss-cvut/reporting-tool](https://github.com/kbss-cvut/reporting-tool).
-It is a safety occurrence reporting tool developed for the aviation industry as part of the INBAS project ([https://www.inbas.cz](https://www.inbas.cz)).
-A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
+A real-world, up-to-date project using JOPA is [TermIt](https://github.com/kbss-cvut/termit) - a SKOS-compatible vocabulary manager.
 
-JOPA is also used in the [BINBAS project](https://www.inbas.cz/web/binbas) [6] and, more recently, 
-in [TermIt](https://github.com/kbss-cvut/termit) - a SKOS-compatible vocabulary manager.
-
-Note that JOPA requires Java 8 or later.
+Note that JOPA requires **Java 11** or later.
 
 ## Getting JOPA
 
-There are two ways of getting JOPA for your project:
+There are two ways of getting JOPA for a project:
 
 * Clone repository/download zip and build it with Maven,
 * Use a Maven dependency from the [Maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22cz.cvut.kbss.jopa%22).
@@ -188,6 +189,25 @@ Some related libraries:
 * [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA.
 * [Reporting Tool](https://github.com/kbss-cvut/reporting-tool) - Real-life use case of JOPA. _No longer actively maintained_.
 * [TermIt](https://github.com/kbss-cvut/termit) - A more complex and up-to-date use case of JOPA.
+
+## History
+
+Notable changes:
+
+* **1.0.0** - Support for static metamodel generation and mapping multiple inheritance via Java interfaces.
+* **0.20.0** - Allow editing inferred attributes (See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details). Support `IN`, `NOT LIKE`, `<>` operators in SOQL.
+* **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future)
+* **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
+* **0.15.0** - Support for multilingual String attributes. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Multilingual-String-Attributes) for more info
+* **0.14.0** - Support for the Semantic Object Query Language (SOQL). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Semantic-Object-Query-Language) for more info
+* **0.13.0** - Support for RDF simple literals (language-less strings), access to lexical form of literals, updated named graph handling
+* **0.12.0** - Support for `EntityManager.getReference`
+* **0.11.0** - Support for Java 8 Streams in Query API and RDF4J repository configuration file
+* **0.10.0** - Jena OntoDriver implementation
+* **0.9.0** - Single class inheritance support
+* **0.8.0** - Mapped superclass support
+
+See [CHANGELOG.md](./CHANGELOG.md) for detailed change history.
 
 ## References
   
