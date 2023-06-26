@@ -14,24 +14,30 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.ChildOfMappedSuperClass;
+import cz.cvut.kbss.jopa.test.OWLChildClassA;
+import cz.cvut.kbss.jopa.test.OWLChildClassB;
+import cz.cvut.kbss.jopa.test.OWLChildClassC;
+import cz.cvut.kbss.jopa.test.OWLClassWithUnProperties;
+import cz.cvut.kbss.jopa.test.OWLInterfaceA;
+import cz.cvut.kbss.jopa.test.OWLInterfaceAnMethods;
+import cz.cvut.kbss.jopa.test.OWLInterfaceB;
+import cz.cvut.kbss.jopa.test.OWLParentA;
+import cz.cvut.kbss.jopa.test.OWLParentB;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.environment.Quad;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.time.ZoneOffset;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public abstract class MultipleInheritanceTestRunner extends BaseRunner {
     protected OWLClassWithUnProperties classWithUnProperties;

@@ -8,5 +8,5 @@ public interface OWLInterfaceA {
     @OWLDataProperty(iri = Vocabulary.p_m_attributeA)
     String getAttributeA();
 
-    public void setAttributeA(String attribute);
+    void setAttributeA(String attribute);
 }

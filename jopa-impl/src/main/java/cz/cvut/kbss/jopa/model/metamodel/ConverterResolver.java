@@ -17,10 +17,15 @@ import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
-import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Optional;

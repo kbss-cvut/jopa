@@ -27,21 +27,6 @@ public abstract class TransactionWrapperImpl implements TransactionWrapper {
         this.entityManager = entityManger;
     }
 
-    /**
-     * Check if there is an active transaction running. Returns the transaction
-     * object or null, if there is none.
-     *
-     * @return Object
-     */
-    public abstract Object checkForTransaction();
-
-    /**
-     * Register the given UnitOfWork with the current transaction.
-     *
-     * @param uow UnitOfWork
-     */
-    public abstract void registerUOWWithTransaction(UnitOfWork uow);
-
     public UnitOfWork getTransactionUOW() {
         return transactionUOW;
     }

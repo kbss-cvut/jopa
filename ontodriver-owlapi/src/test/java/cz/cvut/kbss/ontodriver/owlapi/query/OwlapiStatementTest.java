@@ -47,7 +47,7 @@ public class OwlapiStatementTest {
     private OwlapiStatement statement;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.statement = new OwlapiStatement(executorFactoryMock, connectionMock);
     }
 

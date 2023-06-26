@@ -40,7 +40,7 @@ public class ModelGenMojo extends AbstractMojo {
     private String sourcePackage;
     @Parameter(alias = DEBUG_PARAM, defaultValue = "false")
     private String debugOption;
-    @Parameter(alias = ADDITIONAL_SOURCES_PARAM, defaultValue = "")
+    @Parameter(alias = ADDITIONAL_SOURCES_PARAM)
     private String additionalSources;
 
 

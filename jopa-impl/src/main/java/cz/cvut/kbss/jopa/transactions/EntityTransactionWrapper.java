@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.transactions;
 
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 public class EntityTransactionWrapper extends TransactionWrapperImpl {
 
@@ -23,19 +22,6 @@ public class EntityTransactionWrapper extends TransactionWrapperImpl {
 
     public EntityTransactionWrapper(AbstractEntityManager entityManger) {
         super(entityManger);
-    }
-
-    @Override
-    public Object checkForTransaction() {
-        if (entityTransaction != null && entityTransaction.isActive()) {
-            return entityTransaction;
-        }
-        return null;
-    }
-
-    @Override
-    public void registerUOWWithTransaction(UnitOfWork uow) {
-        // Do nothing
     }
 
     @Override

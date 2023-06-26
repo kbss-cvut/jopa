@@ -82,7 +82,7 @@ class StringParameterValue extends AbstractParameterValue {
                     sb.append("\\f");
                     break;
                 case '\'':
-                    sb.append("\\\'");
+                    sb.append("\\'");
                     break;
                 case '\"':
                     sb.append("\\\"");

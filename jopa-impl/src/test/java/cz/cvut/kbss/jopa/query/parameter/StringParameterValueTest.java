@@ -30,7 +30,7 @@ public class StringParameterValueTest {
 
     @Test
     public void getQueryStringEscapesEscapeSequencesInValue() {
-        final String value = "aaa\nbbb\tccc\bdddd\reee\feee\'fff\'ggg\"hhh\"iii\\jjj";
+        final String value = "aaa\nbbb\tccc\bdddd\reee\feee'fff'ggg\"hhh\"iii\\jjj";
         final String expected = "\"aaa\\nbbb\\tccc\\bdddd\\reee\\feee\\'fff\\'ggg\\\"hhh\\\"iii\\\\jjj\"";
 
         final StringParameterValue sut = new StringParameterValue(value);

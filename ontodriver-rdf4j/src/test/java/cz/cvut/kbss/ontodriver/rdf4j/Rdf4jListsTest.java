@@ -47,7 +47,7 @@ public class Rdf4jListsTest {
     private Rdf4jLists lists;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.lists = new Rdf4jLists(adapterMock, beforeMock, afterMock);
     }
 

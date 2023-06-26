@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 

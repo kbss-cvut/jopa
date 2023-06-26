@@ -60,7 +60,7 @@ public class OWL2Java {
 
         final Optional<Command> c = getCommand(args[0]);
 
-        if (!c.isPresent()) {
+        if (c.isEmpty()) {
             System.err
                     .println("Invalid command " + args[0] + ", try 'OWL2Java help' for the list of available commands");
             return;

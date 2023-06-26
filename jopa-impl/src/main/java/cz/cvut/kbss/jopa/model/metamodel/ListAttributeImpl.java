@@ -18,7 +18,6 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>, V>

@@ -15,16 +15,19 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.Vocabulary;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.EntityListeners;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.PostLoad;
+import cz.cvut.kbss.jopa.model.annotations.PrePersist;
+import cz.cvut.kbss.jopa.model.annotations.PreUpdate;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 class EntityLifecycleListenerManagerTest {
 

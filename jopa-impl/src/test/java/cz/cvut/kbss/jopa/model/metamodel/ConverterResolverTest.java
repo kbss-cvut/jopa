@@ -12,13 +12,30 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OneOfEnum;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.ZoneOffsetConverter;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.EnumType;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -27,7 +44,6 @@ import cz.cvut.kbss.ontodriver.model.Literal;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -36,8 +52,13 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ConverterResolverTest {
 
@@ -128,7 +149,7 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterReturnsObjectConverterForFieldOfObjectType() throws Exception {
-        final PropertyInfo propertyInfo = ClassWithObjectAnnotation.getsingularAnnotationPropertyInfo();
+        final PropertyInfo propertyInfo = ClassWithObjectAnnotation.getSingularAnnotationPropertyInfo();
         final AnnotationPropertyAttributes pa = mock(AnnotationPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();
@@ -141,7 +162,7 @@ class ConverterResolverTest {
         @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "singularAnnotation")
         private Object singularAnnotation;
 
-        public static PropertyInfo getsingularAnnotationPropertyInfo() throws NoSuchFieldException, SecurityException {
+        public static PropertyInfo getSingularAnnotationPropertyInfo() throws NoSuchFieldException, SecurityException {
             return PropertyInfo.from(ClassWithObjectAnnotation.class.getDeclaredField("singularAnnotation"));
         }
     }
@@ -151,7 +172,7 @@ class ConverterResolverTest {
         final Configuration config = new Configuration();
         config.set(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING, Boolean.TRUE.toString());
         sut = new ConverterResolver(new Converters(config));
-        final PropertyInfo propertyInfo = ClassWithObjectAnnotation.getsingularAnnotationPropertyInfo();
+        final PropertyInfo propertyInfo = ClassWithObjectAnnotation.getSingularAnnotationPropertyInfo();
         final AnnotationPropertyAttributes pa = mock(AnnotationPropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         doReturn(BasicTypeImpl.get(Object.class)).when(pa).getType();

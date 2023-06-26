@@ -18,7 +18,6 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 
-import java.util.List;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OwlInterfaceAnMethods)

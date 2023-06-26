@@ -146,7 +146,7 @@ class ClassFieldMetamodelProcessorTest {
 
 
         final ClassFieldMetamodelProcessor<OWLClassZ> processor = prepareProcessorForClass(baseMock);
-        final Field field = OWLClassZ.getAmbigousField();
+        final Field field = OWLClassZ.getAmbiguousField();
 
         when(baseMock.getJavaType()).thenReturn(OWLClassZ.class);
         when(baseMock.getSupertypes()).thenReturn(Collections.singleton(AInterfaceMock));
@@ -385,7 +385,7 @@ class ClassFieldMetamodelProcessorTest {
             return OWLClassZ.class.getDeclaredField("property");
         }
 
-        public static Field getAmbigousField() throws NoSuchFieldException {
+        public static Field getAmbiguousField() throws NoSuchFieldException {
             return OWLClassZ.class.getDeclaredField("ambiguousProperty");
         }
 

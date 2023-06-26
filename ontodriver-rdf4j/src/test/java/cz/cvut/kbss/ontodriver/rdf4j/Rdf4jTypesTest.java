@@ -42,7 +42,7 @@ public class Rdf4jTypesTest {
     private Rdf4jTypes types;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.types = new Rdf4jTypes(adapterMock, () -> {
         }, () -> {
         });

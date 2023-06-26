@@ -60,7 +60,7 @@ public class StaticMetamodelInitializer {
 
     private void processType(ManagedType<?> mt) {
         final Optional<Class<?>> smClass = tryFindingClass(mt);
-        if (!smClass.isPresent()) {
+        if (smClass.isEmpty()) {
             LOG.trace("No static metamodel type found for {}.", mt);
             return;
         }
@@ -99,7 +99,7 @@ public class StaticMetamodelInitializer {
             if (idType.getSupertypes() != null && !idType.getSupertypes().isEmpty()) {
                 for (IdentifiableType<?> superType : idType.getSupertypes()) {
                     final Optional<Class<?>> supertypeSm = tryFindingClass(superType);
-                    if (!supertypeSm.isPresent() || !Objects.equals(smClass.getSuperclass(), supertypeSm.get())) {
+                    if (supertypeSm.isEmpty() || !Objects.equals(smClass.getSuperclass(), supertypeSm.get())) {
                         throw new StaticMetamodelInitializationException("Managed type " + type +
                                                                                  " has a managed supertype. A corresponding relationship must exist between static metamodel classes.");
                     }

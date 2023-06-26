@@ -64,7 +64,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void mergeDetachedEvictsInstanceFromCache() throws Exception {
+    void mergeDetachedEvictsInstanceFromCache() {
         when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(Boolean.TRUE);
         mergeDetachedTest();
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);

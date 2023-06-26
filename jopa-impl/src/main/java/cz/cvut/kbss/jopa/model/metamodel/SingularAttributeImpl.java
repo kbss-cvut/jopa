@@ -16,8 +16,6 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
-import java.lang.reflect.Field;
-
 public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> implements SingularAttribute<X, Y> {
 
     private final Type<Y> type;

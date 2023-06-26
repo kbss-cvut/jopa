@@ -117,7 +117,7 @@ class ExplicitAxiomLoader implements AxiomLoader {
         final OWLAnnotationValue value = axiom.getValue();
         final IRI apIri = axiom.getProperty().asOWLAnnotationProperty().getIRI();
         final Optional<Assertion> assertion = assertionForAxiom(apIri);
-        return assertion.isPresent() && (!value.asLiteral().isPresent() ||
+        return assertion.isPresent() && (value.asLiteral().isEmpty() ||
                 OwlapiUtils.doesLanguageMatch(value.asLiteral().get(), assertion.get()));
     }
 
