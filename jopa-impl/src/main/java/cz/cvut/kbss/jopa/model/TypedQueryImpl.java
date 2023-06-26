@@ -43,7 +43,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private UnitOfWork uow;
 
-    private Descriptor descriptor;
+    private Descriptor descriptor = new EntityDescriptor();
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
@@ -73,16 +73,19 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private List<X> getResultListImpl() throws OntoDriverException {
         final boolean isEntityType = metamodelProvider.isEntityType(resultType);
-        final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
         final List<X> res = new ArrayList<>();
         executeQuery(rs -> {
             if (isEntityType) {
-                loadEntityInstance(rs, instDescriptor).ifPresent(res::add);
+                loadEntityInstance(rs, descriptor).ifPresent(res::add);
             } else {
                 loadResultValue(rs).ifPresent(res::add);
             }
         });
         return res;
+    }
+
+    public Descriptor getDescriptor() {
+        return descriptor;
     }
 
     private Optional<X> loadEntityInstance(ResultRow resultRow, Descriptor instanceDescriptor) {
@@ -132,11 +135,10 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public Stream<X> getResultStream() {
         final boolean isEntityType = metamodelProvider.isEntityType(resultType);
-        final Descriptor instDescriptor = descriptor != null ? descriptor : new EntityDescriptor();
         try {
             return executeQueryForStream(row -> {
                 if (isEntityType) {
-                    return loadEntityInstance(row, instDescriptor);
+                    return loadEntityInstance(row, descriptor);
                 } else {
                     return loadResultValue(row);
                 }
@@ -223,8 +225,14 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     @Override
+    public TypedQuery<X> setHint(String hintName, Object value) {
+        super.setHint(hintName, value);
+        return this;
+    }
+
+    @Override
     public TypedQuery<X> setDescriptor(Descriptor descriptor) {
-        this.descriptor = descriptor;
+        this.descriptor = Objects.requireNonNull(descriptor);
         return this;
     }
 }

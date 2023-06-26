@@ -40,4 +40,18 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
         this.em = getEntityManager("isInferredReturnsTrueForInferredPropertyValue", false);
         super.isInferredReturnsTrueForInferredPropertyValue();
     }
+
+    @Test
+    @Override
+    public void findReturnsOnlyAssertedDataWhenDescriptorDisablesInference() throws Exception {
+        this.em = getEntityManager("findReturnsOnlyAssertedDataWhenDescriptorDisablesInference", false);
+        super.findReturnsOnlyAssertedDataWhenDescriptorDisablesInference();
+    }
+
+    @Test
+    @Override
+    public void selectQueryWithDisabledInferenceAppliesThisSettingToLoadedResultsAsWell() throws Exception {
+        this.em = getEntityManager("selectQueryWithDisabledInferenceAppliesThisSettingToLoadedResultsAsWell", false);
+        super.selectQueryWithDisabledInferenceAppliesThisSettingToLoadedResultsAsWell();
+    }
 }

@@ -1,5 +1,8 @@
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,9 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class HintTest {
@@ -127,6 +132,16 @@ public class HintTest {
         final QueryHintsHandler.Hint sut = new QueryHintsHandler.DisableInferenceHint();
         sut.apply(true, query, statement);
         verify(statement).disableInference();
+    }
+
+    @Test
+    void disableInferenceHintDisablesInferenceOnDescriptorForTypedQuery() {
+        final TypedQueryImpl<OWLClassA> tq = mock(TypedQueryImpl.class);
+        final Descriptor descriptor = spy(new EntityDescriptor());
+        when(tq.getDescriptor()).thenReturn(descriptor);
+        final QueryHintsHandler.Hint sut = new QueryHintsHandler.DisableInferenceHint();
+        sut.apply(true, tq, statement);
+        verify(descriptor).disableInference();
     }
 
     @Test

@@ -127,20 +127,26 @@ public class EntityDescriptor extends AbstractDescriptor {
         return Collections.unmodifiableCollection(fieldDescriptors.values());
     }
 
-    private static AbstractDescriptor createDescriptor(FieldSpecification<?, ?> att, Set<URI> contexts) {
+    private AbstractDescriptor createDescriptor(FieldSpecification<?, ?> att, Set<URI> contexts) {
+        final AbstractDescriptor result;
         if (att instanceof Attribute) {
             final Attribute<?, ?> attSpec = (Attribute<?, ?>) att;
             if (attSpec.getPersistentAttributeType() == PersistentAttributeType.OBJECT) {
                 if (attSpec.isCollection()) {
-                    return new ObjectPropertyCollectionDescriptor(contexts, att);
+                    result = new ObjectPropertyCollectionDescriptor(contexts, att);
                 } else {
-                    return new EntityDescriptor(contexts);
+                    result = new EntityDescriptor(contexts);
                 }
+            } else {
+                result = new FieldDescriptor(contexts, att);
             }
         } else if (att instanceof QueryAttribute) {
-            return new EntityDescriptor(contexts);
+            result = new EntityDescriptor(contexts);
+        } else {
+            result = new FieldDescriptor(contexts, att);
         }
-        return new FieldDescriptor(contexts, att);
+        result.setIncludeInferred(includeInferred());
+        return result;
     }
 
     @Override

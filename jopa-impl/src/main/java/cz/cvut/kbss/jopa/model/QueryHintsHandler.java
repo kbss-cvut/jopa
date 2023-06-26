@@ -162,6 +162,9 @@ public class QueryHintsHandler {
             assert statement != null;
             if (Boolean.TRUE == hintValue) {
                 statement.disableInference();
+                if (query instanceof TypedQueryImpl) {
+                    ((TypedQueryImpl<?>) query).getDescriptor().disableInference();
+                }
             }
         }
     }

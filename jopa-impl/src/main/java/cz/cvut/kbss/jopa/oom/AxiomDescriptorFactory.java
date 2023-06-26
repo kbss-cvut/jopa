@@ -1,30 +1,38 @@
 /**
  * Copyright (C) 2022 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.net.URI;
 import java.util.Set;
 
-import static cz.cvut.kbss.ontodriver.model.Assertion.*;
+import static cz.cvut.kbss.ontodriver.model.Assertion.createAnnotationPropertyAssertion;
+import static cz.cvut.kbss.ontodriver.model.Assertion.createDataPropertyAssertion;
+import static cz.cvut.kbss.ontodriver.model.Assertion.createObjectPropertyAssertion;
 
 class AxiomDescriptorFactory {
 
@@ -47,8 +55,10 @@ class AxiomDescriptorFactory {
     private void addForTypes(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final TypesSpecification<?, ?> types = et.getTypes();
         if (types != null && shouldLoad(types.getFetchType(), loadingParams.isForceEager())) {
-            final Assertion typesAssertion = Assertion.createClassAssertion(types.isInferred());
-            addAssertionToDescriptor(loadingParams.getDescriptor(), types, descriptor, typesAssertion);
+            final Descriptor entityDesc = loadingParams.getDescriptor();
+            final Assertion typesAssertion =
+                    Assertion.createClassAssertion(includeInferred(types, entityDesc.getAttributeDescriptor(types)));
+            addAssertionToDescriptor(entityDesc, types, descriptor, typesAssertion);
         }
     }
 
@@ -71,8 +81,10 @@ class AxiomDescriptorFactory {
     private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final PropertiesSpecification<?, ?, ?, ?> props = et.getProperties();
         if (props != null && shouldLoad(props.getFetchType(), loadingParams.isForceEager())) {
-            final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(props.isInferred());
-            addAssertionToDescriptor(loadingParams.getDescriptor(), props, descriptor, propsAssertion);
+            final Descriptor entityDesc = loadingParams.getDescriptor();
+            final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(
+                    includeInferred(props, entityDesc.getAttributeDescriptor(props)));
+            addAssertionToDescriptor(entityDesc, props, descriptor, propsAssertion);
         }
     }
 
@@ -80,20 +92,20 @@ class AxiomDescriptorFactory {
         assert att != null;
         switch (att.getPersistentAttributeType()) {
             case OBJECT:
-                return createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
+                return createObjectPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
             case DATA:
                 if (withLanguage(att, descriptor)) {
                     return createDataPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                                                       att.isInferred());
+                                                       includeInferred(att, descriptor));
                 } else {
-                    return createDataPropertyAssertion(att.getIRI().toURI(), att.isInferred());
+                    return createDataPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
                 }
             case ANNOTATION:
                 if (withLanguage(att, descriptor)) {
                     return createAnnotationPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                                                             att.isInferred());
+                                                             includeInferred(att, descriptor));
                 } else {
-                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), att.isInferred());
+                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
                 }
             default:
                 throw new IllegalArgumentException(
@@ -107,6 +119,10 @@ class AxiomDescriptorFactory {
 
     private static String language(Attribute<?, ?> att, Descriptor descriptor) {
         return descriptor.hasLanguage() ? descriptor.getLanguage() : att.getLanguage();
+    }
+
+    private static boolean includeInferred(FieldSpecification<?, ?> att, Descriptor descriptor) {
+        return att.isInferred() && descriptor.includeInferred();
     }
 
     /**
@@ -129,9 +145,11 @@ class AxiomDescriptorFactory {
         entityDescriptor.getContexts().forEach(descriptor::addSubjectContext);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {
-            assertion = Assertion.createClassAssertion(et.getTypes().isInferred());
+            assertion = Assertion.createClassAssertion(
+                    includeInferred(et.getTypes(), entityDescriptor.getAttributeDescriptor(et.getTypes())));
         } else if (et.getProperties() != null && fieldSpec.equals(et.getProperties())) {
-            assertion = Assertion.createUnspecifiedPropertyAssertion(et.getProperties().isInferred());
+            assertion = Assertion.createUnspecifiedPropertyAssertion(
+                    includeInferred(et.getProperties(), entityDescriptor.getAttributeDescriptor(et.getProperties())));
         } else {
             assertion =
                     createAssertion((Attribute<?, ?>) fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec));
