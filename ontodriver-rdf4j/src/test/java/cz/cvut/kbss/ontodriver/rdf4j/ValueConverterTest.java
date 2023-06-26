@@ -145,4 +145,14 @@ class ValueConverterTest {
         assertTrue(res.isLiteral());
         assertEquals(vf.createLiteral(value, LANG), res);
     }
+
+    @Test
+    void convertsAnnotationStringLiteralContainingColonIntoValueWithoutLanguageWhenAssertionHasNoLanguage() throws Exception {
+        final String value = "test:value";
+        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, false);
+        final Value res = sut.toRdf4jValue(apAssertion, value(value));
+        assertTrue(res instanceof Literal);
+        final Literal literal = (Literal) res;
+        assertFalse(literal.getLanguage().isPresent());
+    }
 }

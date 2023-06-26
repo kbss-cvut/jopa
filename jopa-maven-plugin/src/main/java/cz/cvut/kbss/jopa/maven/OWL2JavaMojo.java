@@ -18,10 +18,11 @@ import cz.cvut.kbss.jopa.owl2java.OWL2JavaTransformer;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-@Mojo(name = "owl2java-transform")
+@Mojo(name = "owl2java-transform", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class OWL2JavaMojo extends AbstractMojo {
 
     private static final String MAPPING_FILE_PARAM = "mapping-file";
@@ -36,11 +37,13 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String PROPERTIES_TYPE = "properties-type";
     private static final String GENERATE_JAVADOC = "javadoc-from-rdfs-comment";
     private static final String PREFER_MULTILINGUAL_STRINGS = "prefer-multilingual-strings";
+    private static final String GENERATE_ANNOTATION_FIELDS = "generate-annotation-fields";
+    private static final String GENERATE_THING = "generate-thing";
 
     @Parameter(alias = MAPPING_FILE_PARAM)
     private String pMappingFile;
 
-    @Parameter(alias = PACKAGE_PARAM)
+    @Parameter(alias = PACKAGE_PARAM, required = true)
     private String pPackage;
 
     @Parameter(alias = CONTEXT_PARAM)
@@ -49,7 +52,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = ONTOLOGY_PARAM)
     private String pOntologyIRI;
 
-    @Parameter(alias = OUTPUT_PARAM)
+    @Parameter(alias = OUTPUT_PARAM, defaultValue = "${project.basedir}/src/main/generated-sources")
     private String pOutputDirectory;
 
     @Parameter(alias = W_OWLAPI_PARAM, defaultValue = "false")
@@ -72,6 +75,12 @@ public class OWL2JavaMojo extends AbstractMojo {
 
     @Parameter(alias = PREFER_MULTILINGUAL_STRINGS, defaultValue = "true")
     private boolean preferMultilingualStrings;
+
+    @Parameter(alias = GENERATE_ANNOTATION_FIELDS, defaultValue = "true")
+    private boolean generateAnnotationFields;
+
+    @Parameter(alias = GENERATE_THING, defaultValue = "true")
+    private boolean generateThing;
 
     @Override
     public void execute() {
@@ -104,7 +113,8 @@ public class OWL2JavaMojo extends AbstractMojo {
 
         final TransformationConfiguration config =
                 builder.packageName(pPackage).targetDir(pOutputDirectory).addOwlapiIris(pWithOWLAPI)
-                       .generateJavadoc(generateJavadoc).preferMultilingualStrings(preferMultilingualStrings).build();
+                       .generateJavadoc(generateJavadoc).preferMultilingualStrings(preferMultilingualStrings)
+                       .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing).build();
 
         if (pVocabularyOnly) {
             owl2java.generateVocabulary(config);
@@ -128,5 +138,7 @@ public class OWL2JavaMojo extends AbstractMojo {
         Utils.logParameterValue(PROPERTIES_TYPE,pPropertiesType, getLog());
         Utils.logParameterValue(GENERATE_JAVADOC, generateJavadoc, getLog());
         Utils.logParameterValue(PREFER_MULTILINGUAL_STRINGS, preferMultilingualStrings, getLog());
+        Utils.logParameterValue(GENERATE_ANNOTATION_FIELDS, generateAnnotationFields, getLog());
+        Utils.logParameterValue(GENERATE_THING, generateThing, getLog());
     }
 }

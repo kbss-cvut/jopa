@@ -241,7 +241,7 @@ public class MetamodelFactory {
      * Initializes the specified mock objects to return reasonable values.
      */
     public static void initOWLClassDMocks(IdentifiableEntityType<OWLClassD> etMock, SingularAttributeImpl clsAMock,
-                                          Identifier idMock)
+                                          IdentifiableEntityType<OWLClassA> etA,Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassD.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassD.getClassIri()));
@@ -253,8 +253,7 @@ public class MetamodelFactory {
                 .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassD, ?>>asList(clsAMock, idMock)));
         when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final String clsAIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                                        .iri();
+        final String clsAIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri();
         when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
         when(clsAMock.getName()).thenReturn(OWLClassD.getOwlClassAField().getName());
@@ -263,6 +262,7 @@ public class MetamodelFactory {
         when(clsAMock.getDeclaringType()).thenReturn(etMock);
         when(clsAMock.isAssociation()).thenReturn(true);
         when(clsAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+        when(clsAMock.getType()).thenReturn(etA);
         when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassD.getUriField());
@@ -480,7 +480,7 @@ public class MetamodelFactory {
                 Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassL, ?>>asList(refListMock, simpleListMock, setMock,
-                                                                        simpleListMock, idMock)));
+                        simpleListMock, idMock)));
 
         when(refListMock.getJavaField()).thenReturn(OWLClassL.getReferencedListField());
         when(refListMock.getName()).thenReturn(OWLClassL.getReferencedListField().getName());
@@ -569,16 +569,16 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                                                                             dateAtt, enumAtt, ordinalEnumAtt,
-                                                                             intSetAtt, lexicalFormAtt,
-                                                                             simpleLiteralAtt, explicitDatatypeAtt,
-                                                                             mObjectOneOfEnumAttribute)));
+                        dateAtt, enumAtt, ordinalEnumAtt,
+                        intSetAtt, lexicalFormAtt,
+                        simpleLiteralAtt, explicitDatatypeAtt,
+                        mObjectOneOfEnumAttribute)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                                                                        enumAtt, ordinalEnumAtt, intSetAtt,
-                                                                        lexicalFormAtt, simpleLiteralAtt,
-                                                                        explicitDatatypeAtt, mObjectOneOfEnumAttribute,
-                                                                        idMock)));
+                        enumAtt, ordinalEnumAtt, intSetAtt,
+                        lexicalFormAtt, simpleLiteralAtt,
+                        explicitDatatypeAtt, mObjectOneOfEnumAttribute,
+                        idMock)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(booleanAtt.getName()).thenReturn(OWLClassM.getBooleanAttributeField().getName());
@@ -781,10 +781,10 @@ public class MetamodelFactory {
         when(idN.getJavaField()).thenReturn(OWLClassN.getUriField());
         when(et.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                                                                        pluralAnnotationAtt, props, idN)));
+                        pluralAnnotationAtt, props, idN)));
         when(et.getAttributes()).thenReturn(new HashSet<>(
                 Arrays.<Attribute<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                                                               pluralAnnotationAtt)));
+                        pluralAnnotationAtt)));
 
         when(annotationAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationPropertyField());
         when(annotationAtt.getJavaType()).thenReturn(OWLClassN.getAnnotationPropertyField().getType());
@@ -885,8 +885,8 @@ public class MetamodelFactory {
                 .thenReturn(
                         new HashSet<>(
                                 Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt,
-                                                                                        refListAtt, props, types,
-                                                                                        idP)));
+                                        refListAtt, props, types,
+                                        idP)));
         when(et.getAttributes())
                 .thenReturn(new HashSet<>(
                         Arrays.<Attribute<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt, refListAtt)));
@@ -981,12 +981,12 @@ public class MetamodelFactory {
                 .thenReturn(
                         new HashSet<>(
                                 Arrays.<FieldSpecification<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt,
-                                                                                        qLabelAtt, qOwlClassAAtt,
-                                                                                        idQ)));
+                                        qLabelAtt, qOwlClassAAtt,
+                                        idQ)));
         when(et.getAttributes())
                 .thenReturn(new HashSet<>(
                         Arrays.<Attribute<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt, qLabelAtt,
-                                                                       qOwlClassAAtt)));
+                                qOwlClassAAtt)));
 
         when(qStringAtt.getJavaField()).thenReturn(OWLClassQ.getStringAttributeField());
         when(qStringAtt.getJavaType()).thenReturn(OWLClassQ.getStringAttributeField().getType());
@@ -1339,7 +1339,7 @@ public class MetamodelFactory {
                 new HashSet<>(Arrays.<Attribute<? super OWLClassWithQueryAttr, ?>>asList(strAttMock, entityAttMock)));
         when(etMock.getQueryAttributes()).thenReturn(
                 new HashSet<>(Arrays.<QueryAttribute<? super OWLClassWithQueryAttr, ?>>asList(strQueryAttMock,
-                                                                                              entityQueryAttMock)));
+                        entityQueryAttMock)));
         when(etMock.getFieldSpecifications()).thenReturn(
                 new HashSet<>(Arrays.<FieldSpecification<? super OWLClassWithQueryAttr, ?>>asList(
                         strAttMock, strQueryAttMock, entityAttMock, entityQueryAttMock, idMock)));
@@ -1436,10 +1436,10 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super Person, ?>>asList(usernameAttMock, genderAttMock, ageAttMock,
-                                                                          phoneAttMock)));
+                        phoneAttMock)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super Person, ?>>asList(usernameAttMock, genderAttMock, ageAttMock,
-                                                                     phoneAttMock, idMock)));
+                        phoneAttMock, idMock)));
         when(usernameAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("username"));
         when(usernameAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_username));
         when(usernameAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);

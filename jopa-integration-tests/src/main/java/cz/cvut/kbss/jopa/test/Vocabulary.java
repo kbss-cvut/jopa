@@ -92,6 +92,7 @@ public class Vocabulary {
     public static final String p_m_multiple_data = ATTRIBUTE_IRI_BASE + "multipleData";
     public static final String p_m_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
     public static final String p_m_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
+    public static final String p_m_annotationSimpleLiteral = ATTRIBUTE_IRI_BASE + "m-annotationSimpleLiteral";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
     public static final String P_N_URI_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationUri";

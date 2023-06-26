@@ -6,9 +6,24 @@ package cz.cvut.kbss.jopa.query.soql;
 public class SoqlConstants {
 
     /**
+     * {@code SELECT} keyword.
+     */
+    public static final String SELECT = "SELECT";
+
+    /**
      * {@code DISTINCT} operator.
      */
     public static final String DISTINCT = "DISTINCT";
+
+    /**
+     * {@code FROM} keyword.
+     */
+    public static final String FROM = "FROM";
+
+    /**
+     * {@code WHERE} keyword.
+     */
+    public static final String WHERE = "WHERE";
 
     /**
      * {@code IN} operator.
@@ -16,14 +31,29 @@ public class SoqlConstants {
     public static final String IN = "IN";
 
     /**
-     * {@code NOT IN} operator.
-     */
-    public static final String NOT_IN = "NOT IN";
-
-    /**
      * {@code NOT} operator.
      */
     public static final String NOT = "NOT";
+
+    /**
+     * {@code GROUP BY} statement.
+     */
+    public static final String GROUP_BY = "GROUP BY";
+
+    /**
+     * {@code ORDER BY} statement.
+     */
+    public static final String ORDER_BY = "ORDER BY";
+
+    /**
+     * {@code ASC} keyword.
+     */
+    public static final String ASC = "ASC";
+
+    /**
+     * {@code DESC} keyword.
+     */
+    public static final String DESC = "DESC";
 
     /**
      * SPARQL shortcut for {@code rdf:type} - {@code a}.

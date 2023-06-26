@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionLiteralImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
+import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class CriteriaParameterFiller {
     public String registerParameter(ExpressionLiteralImpl parameter) {
         String name = generateParameterName();
         literalParameters.put(name, parameter);
-        return ":" + name;
+        return SoqlConstants.VARIABLE_PREFIX + name;
     }
 
     /**
@@ -54,7 +55,7 @@ public class CriteriaParameterFiller {
             String name = generateParameterName();
             ((ParameterExpressionImpl) parameter).setNameIfUnnamed(name);
         }
-        return ":" + parameter.getName();
+        return SoqlConstants.VARIABLE_PREFIX + parameter.getName();
     }
 
     /**

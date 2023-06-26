@@ -193,4 +193,14 @@ public class JenaUtilsTest {
         assertTrue(result.isLiteral());
         assertEquals(ResourceFactory.createLangLiteral(value, "en"), result);
     }
+
+    @Test
+    void valueToRdfNodeReturnsSimpleLiteralForStringValueContainingColonAndAssertionWithoutLanguage() {
+        final Assertion a = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
+        final String value = "test:value";
+        final RDFNode result = JenaUtils.valueToRdfNode(a, new Value<>(value));
+        assertTrue(result.isLiteral());
+        assertEquals(value, result.asLiteral().getLexicalForm());
+        assertEquals(XSD.xstring.getURI(), result.asLiteral().getDatatypeURI());
+    }
 }

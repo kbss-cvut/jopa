@@ -321,4 +321,32 @@ public class SparqlQueryParserTest {
         final QueryParameter<?> partVar = (QueryParameter<?>) holder.getParameter("part");
         assertFalse(partVar.isProjected());
     }
+
+    /**
+     * Bug #165
+     */
+    @Test
+    void parseQueryDoesNotRequireWhereKeywordInSelectQuery() {
+        final String query = "SELECT ?x { ?x <http://www.w3.org/2000/01/rdf-schema#label> ?label . }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(2, holder.getParameters().size());
+        final QueryParameter<?> xVar = (QueryParameter<?>) holder.getParameter("x");
+        assertTrue(xVar.isProjected());
+        final QueryParameter<?> labelVar = (QueryParameter<?>) holder.getParameter("label");
+        assertFalse(labelVar.isProjected());
+    }
+
+    /**
+     * Bug #165
+     */
+    @Test
+    void parseQueryDoesNotRequireWhereKeywordInAskQuery() {
+        final String query = "ASK { ?x <http://www.w3.org/2000/01/rdf-schema#label> ?label . }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(2, holder.getParameters().size());
+        final QueryParameter<?> xVar = (QueryParameter<?>) holder.getParameter("x");
+        assertFalse(xVar.isProjected());
+        final QueryParameter<?> labelVar = (QueryParameter<?>) holder.getParameter("label");
+        assertFalse(labelVar.isProjected());
+    }
 }

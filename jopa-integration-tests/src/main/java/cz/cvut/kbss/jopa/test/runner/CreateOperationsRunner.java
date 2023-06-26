@@ -250,7 +250,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyTwo", Collections
                 .singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeEntity"));
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyThree",
-                  Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+                Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
         final Map<String, Set<String>> expected = new HashMap<>(4);
         expected.putAll(props);
         entityB.setProperties(props);
@@ -502,7 +502,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
-                         "cs")), em);
+                        "cs")), em);
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 
@@ -515,7 +515,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
-                         "en")), em);
+                        "en")), em);
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 
@@ -531,7 +531,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
-                         (String) null)), em);
+                        (String) null)), em);
         final OWLClassA result = findRequired(OWLClassA.class, entityA.getUri());
         // The string attribute should be loaded even though PU language is set to en, because the persisted value has no lang tag
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
@@ -553,9 +553,9 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         final Set<Quad> statements = new HashSet<>(4);
         statements.add(new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
-                                entityN.getAnnotationProperty(), "de"));
+                entityN.getAnnotationProperty(), "de"));
         statements.add(new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE),
-                                entityN.getStringAttribute(), "cs"));
+                entityN.getStringAttribute(), "cs"));
         verifyStatementsPresent(statements, em);
 
         final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
@@ -620,11 +620,9 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertFalse(entityM.getStringCollection().isEmpty());
         persist(entityM);
 
-        verifyStatementsPresent(entityM.getStringCollection().stream().map(s -> new Quad(URI.create(entityM.getKey()),
-                                                                                         URI.create(
-                                                                                                 Vocabulary.p_m_StringCollection),
-                                                                                         s, "en")).collect(
-                Collectors.toSet()), em);
+        verifyStatementsPresent(entityM.getStringCollection().stream()
+                                       .map(s -> new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), s, "en"))
+                                       .collect(Collectors.toSet()), em);
     }
 
     @Test
@@ -757,7 +755,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
-                         entityM.getEnumSimpleLiteral().name(), (String) null)), em);
+                        entityM.getEnumSimpleLiteral().name(), (String) null)), em);
     }
 
     @Test
@@ -770,6 +768,20 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         verifyStatementsPresent(Collections.singleton(
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_withConverter),
-                         entityM.getWithConverter().getId(), (String) null)), em);
+                        entityM.getWithConverter().getId(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsAnnotationPropertyValueMappedToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistSupportsAnnotationPropertyValueMappedToSimpleLiteral", false);
+        entityM.setSimpleLiteral("test:value");
+        entityM.setAnnotationSimpleLiteral("test:value");
+        persist(entityM);
+
+        verifyStatementsPresent(Arrays.asList(
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_annotationSimpleLiteral),
+                        entityM.getAnnotationSimpleLiteral(), (String) null),
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral),
+                        entityM.getSimpleLiteral(), (String) null)), em);
     }
 }

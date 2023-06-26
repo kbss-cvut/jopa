@@ -71,7 +71,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private boolean hasDeleted;
     private boolean shouldReleaseAfterCommit;
     private boolean shouldClearCacheAfterCommit;
-    private boolean useTransactionalOntology;
 
     private boolean isActive;
     private boolean inCommit;
@@ -112,7 +111,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
-        this.useTransactionalOntology = true;
         this.isActive = true;
     }
 

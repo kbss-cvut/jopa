@@ -1,5 +1,15 @@
 # JOPA - Release Notes
 
+## 0.22.2 - 2023-06-22
+- Fix an issue with commutativity of AND in SOQL when selection by entity identifier is used (Bug #178).
+
+## 0.22.1 - 2023-06-07
+- Allow using SPARQL SELECT queries without WHERE keyword (Bug #165).
+- Allow disabling generation of annotation fields and the `Thing` class in OWL2Java (Enhancement #170).
+- Fix `simpleLiteral=true` not being honored when saving annotation property values (Bug #171).
+- Fix an issue with parsing SOQL queries containing selection by identifier and attribute value.
+- Fix selection by identifier in SPARQL when using the OWLAPI driver (was caused by missing support for VALUES).
+
 ## 0.22.0 - 2023-04-26
 - Allow selecting entities by identifier in SOQL/Criteria API (Enhancement #138).
 - Extend SOQL/Criteria API with additional functions - `lower`, `upper`, `length`, `abs`, `ceil`, `floor` (Enhancement #152).

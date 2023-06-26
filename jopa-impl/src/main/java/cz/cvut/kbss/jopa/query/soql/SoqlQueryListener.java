@@ -13,9 +13,11 @@
 package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -24,7 +26,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SoqlQueryListener implements SoqlListener {
@@ -36,7 +46,7 @@ public class SoqlQueryListener implements SoqlListener {
     private String soql;
     private String sparql;
 
-    private String typeDef = "SELECT";
+    private String typeDef = SoqlConstants.SELECT;
 
     // keeps pointer at created object of SoqlAttribute while processing other necessary rules
     private SoqlAttribute attrPointer;
@@ -57,6 +67,8 @@ public class SoqlQueryListener implements SoqlListener {
     private boolean isSelectedParamCount = false;
 
     private boolean isInObjectIdentifierExpression = false;
+
+    private String projectedVariable;
 
     private String rootVariable = "?x";
 
@@ -142,6 +154,9 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitSelectedParam(SoqlParser.SelectedParamContext ctx) {
+        if (!isSelectedParamCount) {
+            this.projectedVariable = ctx.getText();
+        }
     }
 
     @Override
@@ -151,6 +166,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitCount(SoqlParser.CountContext ctx) {
+        this.projectedVariable = ctx.getChild(1).getText();
     }
 
     @Override
@@ -171,6 +187,9 @@ public class SoqlQueryListener implements SoqlListener {
         objectNode.setChild(attributeNode);
         if (isIdentifier(objectNode, attributeNode)) {
             this.isInObjectIdentifierExpression = true;
+            if (projectedVariable.equals(objectNode.getValue())) {
+                attrPointer.setProjected(true);
+            }
         } else {
             setIris(objectNode);
             SoqlAttribute myAttr = new SoqlAttribute(objectNode);
@@ -182,7 +201,7 @@ public class SoqlQueryListener implements SoqlListener {
         if (!objectTypes.containsKey(objectNode.getValue())) {
             return false;
         }
-        String objectName = objectTypes.get(objectNode.getValue());
+        final String objectName = objectTypes.get(objectNode.getValue());
         IdentifiableEntityType<?> entityType = getEntityType(objectName);
         if (entityType == null) {
             return false;
@@ -300,7 +319,7 @@ public class SoqlQueryListener implements SoqlListener {
     private SoqlAttribute createSyntheticAttributeForEntityId() {
         return new SoqlAttribute(
                 attrPointer.getFirstNode().hasChild() ? attrPointer.getFirstNode().getChild() :
-                new AttributeNode(rootVariable.substring(1)));
+                        new AttributeNode(rootVariable.substring(1)));
     }
 
     private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
@@ -357,9 +376,10 @@ public class SoqlQueryListener implements SoqlListener {
 
         if (isInObjectIdentifierExpression) {
             assert Objects.equals(operator, "=");
-            if (attributes.size() == 1) {
+            if (attrPointer.isProjected()) {
                 this.rootVariable = SoqlUtils.soqlVariableToSparqlVariable(whereClauseValue.getText());
-            } else {
+            }
+            if (attributes.size() > 1 && !attrPointer.getFirstNode().getChild().hasChild()) {
                 final String varName = whereClauseValue.getText();
                 attrPointer.getFirstNode().getChild().setValue(
                         varName.charAt(0) == SoqlConstants.VARIABLE_PREFIX ? varName.substring(1) : varName);
@@ -839,7 +859,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private String buildOrdering() {
-        StringBuilder sb = new StringBuilder("ORDER BY");
+        StringBuilder sb = new StringBuilder(SoqlConstants.ORDER_BY);
         for (SoqlOrderParameter orderParam : orderAttributes) {
             sb.append(' ').append(orderParam.getOrderByPart());
         }
@@ -847,7 +867,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private String buildGrouping() {
-        StringBuilder sb = new StringBuilder("GROUP BY");
+        StringBuilder sb = new StringBuilder(SoqlConstants.GROUP_BY);
         for (SoqlGroupParameter groupParam : groupAttributes) {
             sb.append(' ').append(groupParam.getGroupByPart());
         }

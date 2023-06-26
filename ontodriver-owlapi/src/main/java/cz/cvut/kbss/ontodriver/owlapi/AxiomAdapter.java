@@ -57,7 +57,7 @@ public class AxiomAdapter {
                 axiom.getAssertion().getIdentifier()));
         final Object value = axiom.getValue().getValue();
         final OWLAnnotationValue annotationValue;
-        if (OwlapiUtils.isIndividualIri(value)) {
+        if (!(value instanceof String && !axiom.getAssertion().hasLanguage()) && OwlapiUtils.isIndividualIri(value)) {
             annotationValue = IRI.create(value.toString());
         } else {
             annotationValue = OwlapiUtils.createOWLLiteralFromValue(

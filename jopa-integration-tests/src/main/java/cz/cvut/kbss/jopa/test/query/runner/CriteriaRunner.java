@@ -18,7 +18,12 @@ import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassA_;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
@@ -28,14 +33,22 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class CriteriaRunner extends BaseQueryRunner {
 
@@ -225,7 +238,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         CriteriaQuery<OWLClassD> query = cb.createQuery(OWLClassD.class);
         Root<OWLClassD> root = query.from(OWLClassD.class);
         Predicate restrictions = cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"),
-                                          expected.getOwlClassA().getStringAttribute(), "en");
+                expected.getOwlClassA().getStringAttribute(), "en");
         query.select(root).where(restrictions);
         TypedQuery<OWLClassD> tq = getEntityManager().createQuery(query);
         final OWLClassD result = tq.getSingleResult();
@@ -364,11 +377,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     @Test
     public void testSelectByIdentifierInCollection() {
         final List<OWLClassA> matchingInstances = QueryTestEnvironment.getData(OWLClassA.class).subList(0,
-                                                                                                        Generators.randomPositiveInt(
-                                                                                                                2,
-                                                                                                                QueryTestEnvironment.getData(
-                                                                                                                                            OWLClassA.class)
-                                                                                                                                    .size()));
+                Generators.randomPositiveInt(2, QueryTestEnvironment.getData(OWLClassA.class).size()));
         final List<URI> ids = matchingInstances.stream().map(OWLClassA::getUri).collect(Collectors.toList());
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
@@ -391,8 +400,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
         final List<OWLClassA> result = getEntityManager().createQuery(query)
                                                          .setParameter(param,
-                                                                       sample.getStringAttribute().substring(0, 5)
-                                                                             .toUpperCase(Locale.ROOT) + ".+")
+                                                                 sample.getStringAttribute().substring(0, 5)
+                                                                       .toUpperCase(Locale.ROOT) + ".+")
                                                          .getResultList();
         assertFalse(result.isEmpty());
         assertThat(result, hasItem(sample));
@@ -410,9 +419,52 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         query.select(root).where(cb.equal(cb.floor(root.getAttr("doubleAttribute")), param));
 
         final List<OWLClassM> result = getEntityManager().createQuery(query)
-                .setParameter(param, value)
-                .getResultList();
+                                                         .setParameter(param, value)
+                                                         .getResultList();
         assertFalse(result.isEmpty());
         assertTrue(result.stream().anyMatch(rm -> rm.getKey().equals(match.getKey())));
+    }
+
+    @Test
+    public void testSelectByIdentifierAndAttributeEquality() {
+        final OWLClassA instance = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(
+                cb.equal(root.getAttr("stringAttribute"), instance.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE),
+                cb.equal(root.getAttr("uri"), instance.getUri())
+        );
+
+        final OWLClassA result = getEntityManager().createQuery(query).getSingleResult();
+        assertEquals(instance.getUri(), result.getUri());
+    }
+
+    /**
+     * Bug #178.
+     */
+    @Test
+    public void selectByIdAndRelatedAttributeValueIsCommutative() {
+        final OWLClassD instance = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassD.class));
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassD> queryIdFirst = cb.createQuery(OWLClassD.class);
+        final Root<OWLClassD> rootIdFirst = queryIdFirst.from(OWLClassD.class);
+        queryIdFirst.select(rootIdFirst).where(
+                cb.equal(rootIdFirst.getAttr("uri"), instance.getUri()),
+                cb.equal(rootIdFirst.getAttr("owlClassA").getAttr("stringAttribute"), instance.getOwlClassA()
+                                                                                              .getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE));
+
+        final OWLClassD resultIfFirst = getEntityManager().createQuery(queryIdFirst).getSingleResult();
+        assertEquals(instance.getUri(), resultIfFirst.getUri());
+
+
+        final CriteriaQuery<OWLClassD> queryIdSecond = cb.createQuery(OWLClassD.class);
+        final Root<OWLClassD> rootIdSecond = queryIdSecond.from(OWLClassD.class);
+        queryIdSecond.select(rootIdSecond).where(
+                cb.equal(rootIdSecond.getAttr("owlClassA").getAttr("stringAttribute"), instance.getOwlClassA()
+                                                                                               .getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE),
+                cb.equal(rootIdSecond.getAttr("uri"), instance.getUri()));
+        final OWLClassD resultIdSecond = getEntityManager().createQuery(queryIdSecond).getSingleResult();
+        assertEquals(instance.getUri(), resultIdSecond.getUri());
     }
 }
