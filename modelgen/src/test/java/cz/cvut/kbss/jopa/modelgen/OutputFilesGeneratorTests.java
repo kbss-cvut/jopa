@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.modelgen;
 
-import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotations;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
+import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotations;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
 import cz.test.ex.TestingClassOWL;
@@ -12,7 +12,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static cz.cvut.kbss.jopa.modelgen.ModelGenProcessorTests.readFileAsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,11 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OutputFilesGeneratorTests {
 
-    static String actualResult = "";
+    private static String actualResult = "";
 
     @BeforeAll
     static void createSMClass() throws IOException {
-        Map<String, MetamodelClass> map = new HashMap<>();
         MetamodelClass cl = new MetamodelClass();
         Class<TestingClassOWL> testingClass = TestingClassOWL.class;
         cl.setName(testingClass.getSimpleName());
@@ -91,10 +92,9 @@ class OutputFilesGeneratorTests {
         field8.setType(type6);
         cl.addField(field8);
 
-        map.put("cz.test.ex.TestingClassOWL", cl);
-        OutputFilesGenerator.generateOutputFiles(map, "./src/test/java", null, false);
+        new OutputFilesGenerator("./src/test/java", false, null).generateOutputFiles(List.of(cl));
 
-         actualResult = readFileAsString(new File("./src/test/java/cz/test/ex/TestingClassOWL_.java"));
+        actualResult = readFileAsString(new File("./src/test/java/cz/test/ex/TestingClassOWL_.java"));
     }
 
 
@@ -159,6 +159,5 @@ class OutputFilesGeneratorTests {
         void containsSetAttribute() {
             assertThat(actualResult, containsString("public static volatile SetAttribute<TestingClassOWL, Test> dataSet;"));
         }
-
     }
 }

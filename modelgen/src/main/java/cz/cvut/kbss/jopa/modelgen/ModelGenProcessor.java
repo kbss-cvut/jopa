@@ -5,7 +5,12 @@ import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotations;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -21,7 +26,7 @@ import java.util.Set;
  * them.
  */
 @SupportedAnnotationTypes({"cz.cvut.kbss.jopa.model.annotations.OWLClass",
-                           "cz.cvut.kbss.jopa.model.annotations.MappedSuperclass"})
+        "cz.cvut.kbss.jopa.model.annotations.MappedSuperclass"})
 @SupportedOptions({
         ModelGenProcessor.OUTPUT_DIRECTORY_PARAM,
         ModelGenProcessor.SOURCE_PACKAGE_PARAM,
@@ -58,29 +63,35 @@ public class ModelGenProcessor extends AbstractProcessor {
                     if (sourcePackage == null || elParent.asType().toString().contains(sourcePackage)) {
                         MetamodelClass parentClass = new MetamodelClass(elParent);
 
-                        if (debugOption)
+                        if (debugOption) {
                             messager.printMessage(Diagnostic.Kind.NOTE,
-                                                  "\t - Started processing class " + parentClass.getName());
+                                    "\t - Started processing class '" + parentClass.getName() + "'");
+                        }
                         List<? extends Element> properties = elParent.getEnclosedElements();
                         for (Element elProperty : properties) {
                             if (propertyIsWanted(elProperty)) {
                                 Field field = new Field(elProperty, elParent);
-                                if (debugOption)
+                                if (debugOption) {
                                     messager.printMessage(Diagnostic.Kind.NOTE,
-                                                          "\t\t - Processing field " + field.getName());
+                                            "\t\t - Processing field '" + field.getName() + "'");
+                                }
                                 parentClass.addField(field);
                             }
                         }
                         classes.put(elParent.toString(), parentClass);
-                        if (debugOption)
+                        if (debugOption) {
                             messager.printMessage(Diagnostic.Kind.NOTE,
-                                                  "\t - Finished processing " + parentClass.getName());
+                                    "\t - Finished processing class '" + parentClass.getName() + "'");
+                        }
                     }
                 }
             }
         }
-        if (debugOption) messager.printMessage(Diagnostic.Kind.NOTE, "Generating output files:");
-        OutputFilesGenerator.generateOutputFiles(classes, outputDirectory, messager, debugOption);
+        if (debugOption) {
+            messager.printMessage(Diagnostic.Kind.NOTE, "Generating output files.");
+        }
+        final OutputFilesGenerator outputGenerator = new OutputFilesGenerator(outputDirectory, debugOption, messager);
+        outputGenerator.generateOutputFiles(classes.values());
         return true;
     }
 

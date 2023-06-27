@@ -113,11 +113,11 @@ public class ModelGenMojo extends AbstractMojo {
     }
 
     private List<String> getCompileSourceRoots() {
-        @SuppressWarnings("unchecked") final List<String> compileSourceRoots = project.getCompileSourceRoots();
-        if (!additionalSources.isEmpty()) {
+        final List<String> compileSourceRoots = project.getCompileSourceRoots();
+        if (additionalSources != null && !additionalSources.isEmpty()) {
             compileSourceRoots.add(additionalSources);
         }
-        return new ArrayList<>(compileSourceRoots);
+        return compileSourceRoots;
     }
 
     public List<File> findFiles(String directoryName) {
@@ -126,7 +126,7 @@ public class ModelGenMojo extends AbstractMojo {
 
         // Get all files from a directory.
         File[] fList = directory.listFiles();
-        if (fList != null)
+        if (fList != null) {
             for (File file : fList) {
                 if (file.isFile()) {
                     resultList.add(file);
@@ -134,6 +134,7 @@ public class ModelGenMojo extends AbstractMojo {
                     resultList.addAll(findFiles(file.getAbsolutePath()));
                 }
             }
+        }
         return resultList;
 
     }
