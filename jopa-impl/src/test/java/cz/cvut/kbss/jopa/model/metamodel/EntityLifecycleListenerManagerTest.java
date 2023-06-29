@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,12 +15,19 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.Vocabulary;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.EntityListeners;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.PostLoad;
+import cz.cvut.kbss.jopa.model.annotations.PrePersist;
+import cz.cvut.kbss.jopa.model.annotations.PreUpdate;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 class EntityLifecycleListenerManagerTest {
 
@@ -46,7 +53,7 @@ class EntityLifecycleListenerManagerTest {
     void listenerInvocationInvokesListenersTopDown() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         parentManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Parent.class.getDeclaredMethod("prePersist"));
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         manager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Child.class.getDeclaredMethod("prePersistChild"));
         final Child instance = spy(new Child());
         manager.invokePrePersistCallbacks(instance);
@@ -59,7 +66,7 @@ class EntityLifecycleListenerManagerTest {
     void listenerInvocationInvokesAncestorListenersWhenNoneAreDeclaredDirectlyOnEntity() throws Exception {
         final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
         parentManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Parent.class.getDeclaredMethod("prePersist"));
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         final Child instance = spy(new Child());
         manager.invokePrePersistCallbacks(instance);
         verify(instance).prePersist();
@@ -131,7 +138,7 @@ class EntityLifecycleListenerManagerTest {
         parentManager.addEntityListener(parentListener);
         parentManager.addEntityListenerCallback(parentListener, LifecycleEvent.POST_LOAD,
                 ParentListener.class.getDeclaredMethod("postLoad", Parent.class));
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         final ChildListener childListener = spy(new ChildListener());
         manager.addEntityListener(childListener);
         manager.addEntityListenerCallback(childListener, LifecycleEvent.POST_LOAD,
@@ -169,8 +176,7 @@ class EntityLifecycleListenerManagerTest {
         parentManager.addEntityListenerCallback(parentListener, LifecycleEvent.POST_LOAD,
                 ParentListener.class.getDeclaredMethod("postLoad", Parent.class));
         parentManager.addLifecycleCallback(LifecycleEvent.POST_LOAD, Parent.class.getDeclaredMethod("postLoad"));
-        manager.setParent(parentManager);
-        manager.setParent(parentManager);
+        manager.addParent(parentManager);
         final ChildListener childListener = spy(new ChildListener());
         manager.addEntityListener(childListener);
         manager.addEntityListenerCallback(childListener, LifecycleEvent.POST_LOAD,

@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -16,7 +18,7 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
-import cz.cvut.kbss.jopa.model.annotations.Inheritance;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
@@ -26,7 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MetamodelBuilder {
 
@@ -38,6 +42,7 @@ public class MetamodelBuilder {
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
+    private final Map<IdentifiableType<?>, Set<AnnotatedAccessor>> annotatedAccessors = new HashMap<>();
     private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
 
     private final ConverterResolver converterResolver;
@@ -60,6 +65,7 @@ public class MetamodelBuilder {
         classFinder.getAttributeConverters().forEach(converterResolver::registerConverter);
         classFinder.getEntities().forEach(this::processOWLClass);
         classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
+
     }
 
     /**
@@ -88,63 +94,119 @@ public class MetamodelBuilder {
         processManagedType(et);
     }
 
+    private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
+        Arrays.stream(cls.getDeclaredMethods())
+                .filter(MetamodelBuilder::isOWLPropertyMethod)
+                .forEach(m -> addAnnotatedAccessor(type, AnnotatedAccessor.from(m)));
+    }
+
+    private static boolean isOWLPropertyMethod(Method m) {
+        return m.getAnnotation(OWLDataProperty.class) != null ||
+                m.getAnnotation(OWLAnnotationProperty.class) != null ||
+                m.getAnnotation(OWLObjectProperty.class) != null;
+    }
+
+    private void addAnnotatedAccessor(IdentifiableType<?> type, AnnotatedAccessor accessor) {
+        annotatedAccessors.computeIfAbsent(type, t -> new HashSet<>());
+        annotatedAccessors.get(type).add(accessor);
+    }
+
     private <X> void processManagedType(TypeBuilderContext<X> context) {
         final AbstractIdentifiableType<X> type = context.getType();
         final Class<X> cls = type.getJavaType();
         typeMap.put(cls, type);
 
-        final AbstractIdentifiableType<? super X> supertype = processSupertypes(cls);
-        if (supertype != null) {
-            type.setSupertype(supertype);
-        }
+        final Set<AbstractIdentifiableType<? super X>> supertypes = processSupertypes(cls);
+
+        type.setSupertypes(supertypes);
+
         type.setLifecycleListenerManager(new EntityLifecycleCallbackResolver(type).resolve());
 
         final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(context, this);
+
+        processMethods(cls, type);
 
         for (Field f : cls.getDeclaredFields()) {
             fieldProcessor.processField(f);
         }
 
-        if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
+        if (!type.isAbstract()) {
             try {
                 type.getIdentifier();
             } catch (IllegalArgumentException e) {
                 throw new MetamodelInitializationException("Missing identifier field in entity " + cls);
             }
-            resolveInheritanceType((EntityTypeImpl<X>) type);
+        }
+
+        if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
+            resolveInheritanceType((IdentifiableEntityType<X>) type);
         }
 
         queryProcessor.processClass(cls);
     }
 
-    private <X> AbstractIdentifiableType<? super X> processSupertypes(Class<X> cls) {
-        final Class<? super X> managedSupertype = ManagedClassProcessor.getManagedSupertype(cls);
-        if (managedSupertype != null) {
-            if (typeMap.containsKey(managedSupertype)) {
-                return (AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype);
-            }
-            final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
-            context.setConverterResolver(converterResolver);
-            context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
-            processManagedType(context);
-            return context.getType();
+    private <X> Set<AbstractIdentifiableType<? super X>> processSupertypes(Class<X> cls) {
+        Set<AbstractIdentifiableType<? super X>> superTypes = new HashSet<>();
+
+        final Set<Class<? super X>> managedSuperTypes = ManagedClassProcessor.getManagedSuperInterfaces(cls);
+
+        final Class<? super X> managedSuperClass = ManagedClassProcessor.getManagedSuperClass(cls);
+
+        if (managedSuperClass != null) {
+            managedSuperTypes.add(managedSuperClass);
         }
-        return null;
+
+        for (Class<? super X> managedSupertype : managedSuperTypes) {
+            if (typeMap.containsKey(managedSupertype)) {
+                superTypes.add((AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype));
+            } else {
+                final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
+                context.setConverterResolver(converterResolver);
+                context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
+                processManagedType(context);
+                superTypes.add(context.getType());
+            }
+        }
+        return superTypes;
     }
 
-    private static <X> void resolveInheritanceType(EntityTypeImpl<X> et) {
+    private static <X> boolean canDeclareInheritanceStrategy(IdentifiableType<X> et) {
+        return et.getSupertypes() == null || et.getSupertypes()
+                .stream()
+                .noneMatch(supertype -> supertype.getPersistenceType() == Type.PersistenceType.ENTITY);
+    }
+
+    private static <X> InheritanceType getInheritanceTypeFromParents(IdentifiableEntityType<X> et) {
+        List<InheritanceType> superTypesInheritanceTypes = et.getSupertypes().stream()
+                .filter(superType -> superType.getPersistenceType() == Type.PersistenceType.ENTITY)
+                .map(abstractIdentifiableType -> ((IdentifiableEntityType<?>) abstractIdentifiableType).getInheritanceType())
+                .distinct()
+                .collect(Collectors.toList());
+        if (superTypesInheritanceTypes.size() == 1) { /// there is an agreement from all parents on inheritance type
+            return superTypesInheritanceTypes.get(0);
+        } else {
+            throw new MetamodelInitializationException("Entity " + et.getName() + " inherits two distinct inheritance strategies");
+        }
+    }
+
+    private static <X> void resolveInheritanceType(IdentifiableEntityType<X> et) {
         final Class<X> cls = et.getJavaType();
         final Inheritance inheritance = cls.getDeclaredAnnotation(Inheritance.class);
-        if (inheritance != null) {
-            if (et.getSupertype() != null &&
-                    et.getSupertype().getPersistenceType() != Type.PersistenceType.MAPPED_SUPERCLASS) {
-                throw new MetamodelInitializationException("Class " + cls +
-                                                                   " cannot declare inheritance strategy, because it already inherits it from its supertype.");
+
+        if (canDeclareInheritanceStrategy(et)) {
+            if (inheritance != null) {
+                et.setInheritanceType(inheritance.strategy());
+            } else {
+                et.setInheritanceType(Constants.DEFAULT_INHERITANCE_TYPE);
             }
-            et.setInheritanceType(inheritance.strategy());
+        } else if (inheritance != null) {
+            throw new MetamodelInitializationException("Class " + cls +
+                    " cannot declare inheritance strategy, because it already inherits it from its supertype.");
+
         } else {
-            et.setInheritanceType(Constants.DEFAULT_INHERITANCE_TYPE);
+            et.setInheritanceType(getInheritanceTypeFromParents(et));
         }
+
     }
 
     public Map<Class<?>, ManagedType<?>> getTypeMap() {
@@ -158,7 +220,7 @@ public class MetamodelBuilder {
     public Map<Class<?>, EntityType<?>> getEntities() {
         final Map<Class<?>, EntityType<?>> map = new HashMap<>();
         typeMap.entrySet().stream().filter(e -> e.getValue().getPersistenceType() == Type.PersistenceType.ENTITY)
-               .forEach(e -> map.put(e.getKey(), (EntityType<?>) e.getValue()));
+                .forEach(e -> map.put(e.getKey(), (EntityType<?>) e.getValue()));
         return map;
     }
 
@@ -204,5 +266,9 @@ public class MetamodelBuilder {
 
     public TypeReferenceMap getTypeReferenceMap() {
         return typeReferenceMap;
+    }
+
+    public Set<AnnotatedAccessor> getAnnotatedAccessorsForClass(IdentifiableType<?> k) {
+        return annotatedAccessors.getOrDefault(k,Collections.emptySet());
     }
 }

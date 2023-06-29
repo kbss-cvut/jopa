@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.iteration.ResultSetSpliterator;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Observer;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -31,7 +30,8 @@ import java.util.stream.StreamSupport;
  * <p>
  * This interface declares methods for getting values from a set of results of a SPARQL query issued to an ontology.
  * <p>
- * While this class is iterable, it is still necessary to close it either explicitly, or by declaring it within a try-with-resource block.
+ * While this class is iterable, it is still necessary to close it either explicitly, or by declaring it within a
+ * try-with-resource block.
  */
 public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
 
@@ -383,17 +383,6 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
     void previous() throws OntoDriverException;
 
     /**
-     * Registers the specified {@code Observer} at this result set.
-     * <p>
-     * The observer is notified whenever new results of ontology reasoning are available.
-     *
-     * @param observer The observer to register
-     * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If or some other error occurs
-     */
-    void registerObserver(Observer observer) throws OntoDriverException;
-
-    /**
      * Move the cursor a relative number of rows, either positive or negative.
      *
      * @param rows The number of rows to move the cursor of
@@ -439,7 +428,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
     /**
      * Creates a {@link Iterator} over this result set.
      * <p>
-     * Note that the iterator does not close this result set after finishing its iteration. The result has to be closed by the caller.
+     * Note that the iterator does not close this result set after finishing its iteration. The result has to be closed
+     * by the caller.
      *
      * @return Iterator over this result set
      */
@@ -454,7 +444,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
     /**
      * Creates a {@link Spliterator} over this result set.
      * <p>
-     * Note that the spliterator does not close this result set after finishing its iteration. The result has to be closed by the caller.
+     * Note that the spliterator does not close this result set after finishing its iteration. The result has to be
+     * closed by the caller.
      *
      * @return Spliterator over this result set
      */
@@ -471,7 +462,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * <p>
      * The default implementation creates a stream using the default {@link #spliterator()}.
      * <p>
-     * Note that the stream does not close this result set after finishing its iteration. The result set has to be closed by the caller.
+     * Note that the stream does not close this result set after finishing its iteration. The result set has to be
+     * closed by the caller.
      *
      * @return A {@code Stream} over this result set.
      */

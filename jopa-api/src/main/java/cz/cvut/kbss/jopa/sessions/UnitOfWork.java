@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -258,26 +259,17 @@ public interface UnitOfWork extends Session {
     LoadState isLoaded(Object entity);
 
     /**
-     * Sets the transactional ontology as the one used for SPARQL query processing.
-     */
-    void setUseTransactionalOntologyForQueryProcessing();
-
-    /**
-     * Returns true if the transactional ontology is set as the one processing SPARQL queries.
+     * Checks whether the specified attribute value of the specified entity is inferred in the underlying repository.
+     * <p>
+     * Note that given the nature of the repository implementation, this method may return true if the corresponding
+     * statement is both inferred and asserted. Also note that this method will use the descriptor associated with the
+     * specified entity in this persistence context to resolve the repository context, but some underlying repositories
+     * do not store inferences in data contexts, so the attribute context may be ignored.
      *
-     * @return boolean
+     * @param entity    Entity whose attribute to examine. Must be managed by this persistence context
+     * @param attribute Attribute whose value to examine
+     * @param value     The value whose inference to examine
+     * @return {@code true} if the entity attribute value is inferred, {@code false} otherwise
      */
-    boolean useTransactionalOntologyForQueryProcessing();
-
-    /**
-     * Sets the backup (central) ontology as the one used for SPARQL query processing.
-     */
-    void setUseBackupOntologyForQueryProcessing();
-
-    /**
-     * Returns true if the backup (central) ontology is set as the one processing SPARQL queries.
-     *
-     * @return boolean
-     */
-    boolean useBackupOntologyForQueryProcessing();
+    <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
 }

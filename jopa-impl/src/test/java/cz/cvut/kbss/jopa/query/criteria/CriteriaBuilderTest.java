@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -51,8 +51,6 @@ public class CriteriaBuilderTest {
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
-        when(uowMock.useBackupOntologyForQueryProcessing()).thenReturn(Boolean.FALSE);
-        when(uowMock.useTransactionalOntologyForQueryProcessing()).thenReturn(Boolean.TRUE);
         final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         new MetamodelMocks().setMocks(metamodel);
         final MetamodelProvider mpp = mock(MetamodelProvider.class);

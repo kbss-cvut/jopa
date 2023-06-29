@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -127,7 +127,7 @@ public class ResultSetMappingProcessorTest {
     @Test
     public void buildMapperCreatesEntityResultMapperWhenAllFieldMappingsAreSpecified() throws Exception {
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
-        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
+        final IdentifiableEntityType<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
         when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
         final SparqlResultSetMapping mapping = getMapping(WithEntityMapping.class);
         processor.buildMapper(mapping);
@@ -157,7 +157,7 @@ public class ResultSetMappingProcessorTest {
 
     @Test
     public void buildMapperThrowsMappingExceptionWhenMappedFieldDoesNotExist() {
-        final EntityTypeImpl<OWLClassA> etA = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<OWLClassA> etA = mock(IdentifiableEntityType.class);
         when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
         final FieldSpecification idField = mock(Identifier.class);
         when(etA.getFieldSpecification("uri")).thenReturn(idField);
@@ -182,7 +182,7 @@ public class ResultSetMappingProcessorTest {
     @Test
     public void buildMapperGeneratesFieldMappersForFieldsNotConfiguredByFieldResult() throws Exception {
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
-        final EntityTypeImpl<OWLClassM> etM = metamodelMocks.forOwlClassM().entityType();
+        final IdentifiableEntityType<OWLClassM> etM = metamodelMocks.forOwlClassM().entityType();
         when(builderMock.entity(OWLClassM.class)).thenReturn(etM);
 
         processor.buildMapper(getMapping(WithIncompleteEntityMapping.class));
@@ -216,7 +216,7 @@ public class ResultSetMappingProcessorTest {
     @Test
     public void buildMapperSkipsPluralAttributesOfTargetEntityWhenGeneratingFieldResultMappers() throws Exception {
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
-        final EntityTypeImpl<OWLClassM> etM = metamodelMocks.forOwlClassM().entityType();
+        final IdentifiableEntityType<OWLClassM> etM = metamodelMocks.forOwlClassM().entityType();
         final PluralAttribute<OWLClassM, Set<Integer>, Integer> pluralAtt = metamodelMocks.forOwlClassM().integerSetAttribute();
         when(builderMock.entity(OWLClassM.class)).thenReturn(etM);
 
@@ -234,7 +234,7 @@ public class ResultSetMappingProcessorTest {
     @Test
     public void buildMapperSkipsPluralAttributeEvenIfItIsConfiguredViaFieldResult() throws Exception {
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
-        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
+        final IdentifiableEntityType<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
         when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
         final SparqlResultSetMapping mapping = getMapping(WithEntityMapping.class);
         processor.buildMapper(mapping);
@@ -252,8 +252,8 @@ public class ResultSetMappingProcessorTest {
     @Test
     public void buildMapperCreatesReferenceFieldMappersForObjectPropertyFieldResultMappings() throws Exception {
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
-        final EntityTypeImpl<OWLClassD> etD = metamodelMocks.forOwlClassD().entityType();
-        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
+        final IdentifiableEntityType<OWLClassD> etD = metamodelMocks.forOwlClassD().entityType();
+        final IdentifiableEntityType<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
         when(builderMock.entity(OWLClassD.class)).thenReturn(etD);
         when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
         processor.buildMapper(getMapping(WithEntityWithObjectPropertyMapping.class));
@@ -280,8 +280,8 @@ public class ResultSetMappingProcessorTest {
     @Test
     public void buildMapperCreatesReferenceFieldMappersForUnconfiguredObjectPropertyField() throws Exception {
         final MetamodelMocks metamodelMocks = new MetamodelMocks();
-        final EntityTypeImpl<OWLClassD> etD = metamodelMocks.forOwlClassD().entityType();
-        final EntityTypeImpl<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
+        final IdentifiableEntityType<OWLClassD> etD = metamodelMocks.forOwlClassD().entityType();
+        final IdentifiableEntityType<OWLClassA> etA = metamodelMocks.forOwlClassA().entityType();
         when(builderMock.entity(OWLClassD.class)).thenReturn(etD);
         when(builderMock.entity(OWLClassA.class)).thenReturn(etA);
 

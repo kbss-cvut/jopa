@@ -1,0 +1,26 @@
+package cz.test.ex;
+
+import cz.cvut.kbss.jopa.model.metamodel.*;
+import javax.annotation.processing.Generated;
+import cz.test.ex.TestingClassOWL;
+import java.net.URI;
+import java.lang.String;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+
+@Generated(value = \cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\)
+@StaticMetamodel(TestingClass.class)
+public abstract class TestingClass_ {
+
+    public static volatile Identifier<TestingClass, URI> uri;
+
+    public static volatile SingularAttribute<TestingClass, TestingClass> testingClass;
+
+    public static volatile PropertiesSpecification<TestingClass, Map, URI, Object> propertie;
+
+    public static volatile ListAttribute<TestingClass, String> listAttribute;
+
+    public static volatile SetAttribute<TestingClass, String> setAttribute;
+
+}

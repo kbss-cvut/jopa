@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -123,7 +123,7 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
     void setterAspectIgnoresTransientMappedFieldSet() throws Exception {
         final WithTransientMappedField instance = new WithTransientMappedField();
         when(transactionMock.isActive()).thenReturn(true);
-        final EntityTypeImpl<WithTransientMappedField> et = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<WithTransientMappedField> et = mock(IdentifiableEntityType.class);
         doReturn(et).when(metamodelMock).entity(WithTransientMappedField.class);
         final Identifier identifier = mock(Identifier.class);
         when(identifier.getJavaField()).thenReturn(WithTransientMappedField.class.getDeclaredField("id"));
@@ -158,7 +158,7 @@ class BeanListenerAspectTest extends UnitOfWorkTestBase {
     void getterAspectIgnoresTransientMappedFieldGet() throws Exception {
         final WithTransientMappedField instance = new WithTransientMappedField();
         when(transactionMock.isActive()).thenReturn(true);
-        final EntityTypeImpl<WithTransientMappedField> et = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<WithTransientMappedField> et = mock(IdentifiableEntityType.class);
         doReturn(et).when(metamodelMock).entity(WithTransientMappedField.class);
         final Identifier identifier = mock(Identifier.class);
         when(identifier.getJavaField()).thenReturn(WithTransientMappedField.class.getDeclaredField("id"));

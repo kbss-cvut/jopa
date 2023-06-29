@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,10 +22,11 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.*;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class SingularMultilingualStringFieldStrategy<X>
         extends DataPropertyFieldStrategy<AbstractAttribute<? super X, MultilingualString>, X> {
@@ -75,13 +76,12 @@ class SingularMultilingualStringFieldStrategy<X>
         if (attValue == null || attValue.isEmpty()) {
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         } else {
-            valueBuilder.addValues(createAssertion(), translationsToLangStrings(attValue), getAttributeWriteContext());
+            valueBuilder.addValues(createAssertion(), translationsToLangStrings(attValue).collect(Collectors.toList()), getAttributeWriteContext());
         }
     }
 
-    static List<Value<?>> translationsToLangStrings(MultilingualString str) {
-        return str.getValue().entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())))
-                  .collect(Collectors.toList());
+    static Stream<Value<?>> translationsToLangStrings(MultilingualString str) {
+        return str.getValue().entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())));
     }
 
     @Override
@@ -92,8 +92,14 @@ class SingularMultilingualStringFieldStrategy<X>
         } else {
             final NamedResource id = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
             final Assertion assertion = createAssertion();
-            return translationsToLangStrings(attValue).stream().map(v -> new AxiomImpl<>(id, assertion, v)).collect(
+            return translationsToLangStrings(attValue).map(v -> new AxiomImpl<>(id, assertion, v)).collect(
                     Collectors.toSet());
         }
+    }
+
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        assert value instanceof MultilingualString;
+        return translationsToLangStrings((MultilingualString) value).collect(Collectors.toList());
     }
 }

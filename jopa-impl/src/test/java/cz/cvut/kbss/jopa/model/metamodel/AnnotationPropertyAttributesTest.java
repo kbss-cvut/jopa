@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -54,7 +54,7 @@ class AnnotationPropertyAttributesTest {
     @Test
     void resolveResolvesLexicalFormConfigurationFromAnnotation() throws Exception {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(WithLexicalForm.class.getDeclaredField("lexicalForm"), metamodelBuilder, String.class);
+        sut.resolve(PropertyInfo.from(WithLexicalForm.class.getDeclaredField("lexicalForm")), metamodelBuilder, String.class);
         assertTrue(sut.isLexicalForm());
     }
 
@@ -67,7 +67,7 @@ class AnnotationPropertyAttributesTest {
     @Test
     void resolveResolvesSimpleLiteralConfigurationFromAnnotation() throws Exception {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(WithSimpleLiteral.class.getDeclaredField("simpleLiteral"), metamodelBuilder, String.class);
+        sut.resolve(PropertyInfo.from(WithSimpleLiteral.class.getDeclaredField("simpleLiteral")), metamodelBuilder, String.class);
         assertTrue(sut.isSimpleLiteral());
     }
 
@@ -81,7 +81,7 @@ class AnnotationPropertyAttributesTest {
     void resolveSetsLanguageFromPersistenceUnitLanguageConfiguration() throws Exception {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
-        sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder, OWLClassN.getAnnotationPropertyField()
+        sut.resolve(OWLClassN.getAnnotationPropertyFieldInfo(), metamodelBuilder, OWLClassN.getAnnotationPropertyField()
                 .getType());
         assertEquals("en", sut.getLanguage());
     }
@@ -89,14 +89,14 @@ class AnnotationPropertyAttributesTest {
     @Test
     void resolveSetsLanguageToNullWhenFieldIsMultilingualString() throws Exception {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(OWLClassN.getAnnotationPropertyField(), metamodelBuilder, MultilingualString.class);
+        sut.resolve(OWLClassN.getAnnotationPropertyFieldInfo(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
     }
 
     @Test
     void resolveSetsDatatypeToValueSpecifiedInAnnotation() throws Exception {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
-        sut.resolve(WithExplicitDatatype.class.getDeclaredField("explicitDatatype"), metamodelBuilder, String.class);
+        sut.resolve(PropertyInfo.from(WithExplicitDatatype.class.getDeclaredField("explicitDatatype")), metamodelBuilder, String.class);
         assertNotNull(sut.getDatatype());
         assertEquals(XSD.DURATION, sut.getDatatype());
     }
@@ -114,7 +114,7 @@ class AnnotationPropertyAttributesTest {
     void resolveSupportsNamespaceResolutionForExplicitDatatypeMapping() throws Exception {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.resolveNamespace("xsd:time")).thenReturn(XSD.TIME);
-        sut.resolve(WithExplicitDatatype.class.getDeclaredField("explicitDatatypeNamespaced"), metamodelBuilder, String.class);
+        sut.resolve(PropertyInfo.from(WithExplicitDatatype.class.getDeclaredField("explicitDatatypeNamespaced")), metamodelBuilder, String.class);
         assertEquals(XSD.TIME, sut.getDatatype());
     }
 }

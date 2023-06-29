@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -335,9 +335,9 @@ public class SnapshotStorageConnectorTest {
     public void executeSelectQueryPassesQueryToCentralConnectorWhenConfigured() throws OntoDriverException {
         connector.begin();
         final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
-        final AbstractResultSet resultSet = connector.executeSelectQuery(query, StatementOntology.CENTRAL);
+        final AbstractResultSet resultSet = connector.executeSelectQuery(query, StatementOntology.SHARED);
         resultSet.close();
-        verify(centralConnector).executeSelectQuery(query, StatementOntology.CENTRAL);
+        verify(centralConnector).executeSelectQuery(query, StatementOntology.SHARED);
     }
 
     @Test
@@ -360,12 +360,12 @@ public class SnapshotStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), null);
         final Query query = QueryFactory.create("ASK { <" + SUBJECT + "> ?y ?z . }");
-        try (final AbstractResultSet resultSet = connector.executeAskQuery(query, StatementOntology.CENTRAL)) {
+        try (final AbstractResultSet resultSet = connector.executeAskQuery(query, StatementOntology.SHARED)) {
             assertTrue(resultSet.hasNext());
             resultSet.next();
             assertFalse(resultSet.getBoolean(0));
         }
-        verify(centralConnector).executeAskQuery(eq(query), eq(StatementOntology.CENTRAL));
+        verify(centralConnector).executeAskQuery(eq(query), eq(StatementOntology.SHARED));
     }
 
     @Test
@@ -382,8 +382,8 @@ public class SnapshotStorageConnectorTest {
     public void executeUpdatePassesQueryToCentralConnectorWhenConfigured() throws OntoDriverException {
         connector.begin();
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + TYPE_ONE + "> . }";
-        connector.executeUpdate(update, StatementOntology.CENTRAL);
-        verify(centralConnector).executeUpdate(update, StatementOntology.CENTRAL);
+        connector.executeUpdate(update, StatementOntology.SHARED);
+        verify(centralConnector).executeUpdate(update, StatementOntology.SHARED);
     }
 
     @Test
@@ -396,7 +396,7 @@ public class SnapshotStorageConnectorTest {
         assertFalse(centralConnector
                 .contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
         connector.commit();
-        verify(centralConnector).executeUpdate(update, StatementOntology.CENTRAL);
+        verify(centralConnector).executeUpdate(update, StatementOntology.SHARED);
         assertTrue(centralConnector
                 .contains(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE), Collections.emptySet()));
     }

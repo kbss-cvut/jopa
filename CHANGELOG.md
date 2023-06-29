@@ -1,4 +1,21 @@
-# JOPA - Release Notes
+# JOPA - Change Log
+
+
+## 1.0.0 - 2023-06-29
+- Add support for disabling inference when loading an entity (e.g., when loaded with disable inference query hint) (Enhancement #144).
+- Add API allowing to check whether an attribute value is inferred (Enhancement #141).
+- Support multiple inheritance via interfaces in the object model (Enhancement #157).
+- Add implementation of static metamodel generator (Feature #79).
+- Rework annotation property value storage (Enhancement #175).
+- Dependency updates: RDF4J 4.2.3, Jena 4.8.0, OWL API 5.5.0, AspectJ 1.9.17.
+
+### Breaking Changes
+- Removed deprecated Sesame driver (was replaced by RDF4J driver) (#120).
+- Removed deprecated query execution ontology API from EntityManager/Query. Was replaced by a [query hint](https://github.com/kbss-cvut/jopa/wiki/Query-Hints).
+- Reworked storage of annotation property values. From now on, String annotation property values are always stored as string. 
+  Previously, JOPA attempted to guess if the value was a URI/IRI by parsing the value, which lead to incorrect handling of values containing `:`.
+  Now, only values of **type** URI/IRI (or entities) will be stored as individuals/resources.
+- Require Java 11 or later.
 
 ## 0.22.2 - 2023-06-22
 - Fix an issue with commutativity of AND in SOQL when selection by entity identifier is used (Bug #178).

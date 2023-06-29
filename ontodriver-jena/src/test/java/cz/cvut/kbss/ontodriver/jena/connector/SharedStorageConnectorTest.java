@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -334,7 +334,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final Query query = QueryFactory.create("SELECT * WHERE { ?x a <" + TYPE_ONE + "> . }");
-        try (ResultSet result = connector.executeSelectQuery(query, StatementOntology.CENTRAL)) {
+        try (ResultSet result = connector.executeSelectQuery(query, StatementOntology.SHARED)) {
             assertNotNull(result);
             assertTrue(result.hasNext());
             result.next();
@@ -350,7 +350,7 @@ public class SharedStorageConnectorTest {
         // Causes NPX in execution
         doThrow(NullPointerException.class).when(connector.storage).prepareQuery(query);
         final JenaDriverException ex = assertThrows(JenaDriverException.class,
-                () -> connector.executeSelectQuery(query, StatementOntology.CENTRAL));
+                () -> connector.executeSelectQuery(query, StatementOntology.SHARED));
         assertThat(ex.getMessage(), containsString("Execution of query " + query + " failed"));
     }
 
@@ -359,7 +359,7 @@ public class SharedStorageConnectorTest {
         final SharedStorageConnector connector = initConnector();
         generateTestData(connector.storage.getDataset());
         final Query query = QueryFactory.create("ASK WHERE { ?x a <" + TYPE_ONE + "> . }");
-        final ResultSet result = connector.executeAskQuery(query, StatementOntology.CENTRAL);
+        final ResultSet result = connector.executeAskQuery(query, StatementOntology.SHARED);
         assertNotNull(result);
         assertTrue(result.hasNext());
         result.next();
@@ -374,7 +374,7 @@ public class SharedStorageConnectorTest {
         // Causes NPX in execution
         doThrow(NullPointerException.class).when(connector.storage).prepareQuery(query);
         final JenaDriverException ex = assertThrows(JenaDriverException.class,
-                () -> connector.executeAskQuery(query, StatementOntology.CENTRAL));
+                () -> connector.executeAskQuery(query, StatementOntology.SHARED));
         assertThat(ex.getMessage(), containsString("Execution of query " + query + " failed"));
     }
 
@@ -384,7 +384,7 @@ public class SharedStorageConnectorTest {
         generateTestData(connector.storage.getDataset());
         final String newType = Generator.generateUri().toString();
         final String update = "INSERT DATA { <" + SUBJECT + "> a <" + newType + "> . }";
-        connector.executeUpdate(update, StatementOntology.CENTRAL);
+        connector.executeUpdate(update, StatementOntology.SHARED);
         final Collection<Statement> result = connector.find(RESOURCE, RDF.type, null, Collections.emptySet());
         assertTrue(result.stream().anyMatch(s -> s.getObject().asResource().getURI().equals(newType)));
     }
@@ -397,7 +397,7 @@ public class SharedStorageConnectorTest {
         // Malformed query
         final String update = "INSERT DATA {" + SUBJECT + "> a <" + newType + "> . }";
         final JenaDriverException ex = assertThrows(JenaDriverException.class,
-                () -> connector.executeUpdate(update, StatementOntology.CENTRAL));
+                () -> connector.executeUpdate(update, StatementOntology.SHARED));
         assertThat(ex.getMessage(), containsString("Execution of query " + update + " failed"));
     }
 

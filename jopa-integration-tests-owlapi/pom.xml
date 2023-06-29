@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.22.2</version>
+        <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -14,7 +14,7 @@
     <description>Integration tests of JOPA and OWLAPI OntoDriver implementation</description>
 
     <properties>
-        <com.github.galigator.openllet.version>2.6.4</com.github.galigator.openllet.version>
+        <com.github.galigator.openllet.version>2.6.5</com.github.galigator.openllet.version>
     </properties>
 
     <repositories>

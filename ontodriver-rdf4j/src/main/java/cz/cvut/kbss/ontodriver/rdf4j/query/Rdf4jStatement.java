@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -134,12 +134,12 @@ public class Rdf4jStatement implements Statement {
 
     public void setUseBackupOntology() {
         ensureOpen();
-        this.targetOntology = StatementOntology.CENTRAL;
+        this.targetOntology = StatementOntology.SHARED;
     }
 
     public boolean useBackupOntology() {
         ensureOpen();
-        return targetOntology == StatementOntology.CENTRAL;
+        return targetOntology == StatementOntology.SHARED;
     }
 
     @Override

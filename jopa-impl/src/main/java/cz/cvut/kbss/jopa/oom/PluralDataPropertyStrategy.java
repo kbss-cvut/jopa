@@ -1,20 +1,22 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -68,11 +70,11 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
                                                                  .filter(Objects::nonNull)
-                                                                 .map(v -> new Value<>(toAxiomValue(v)))
+                                                                 .map(this::convertToAxiomValue)
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(),
-                                   filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
-                                   getAttributeWriteContext());
+                    filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
+                    getAttributeWriteContext());
         }
     }
 
@@ -86,7 +88,8 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
         } else {
             final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
             final Assertion assertion = createAssertion();
-            return valueCollection.stream().map(v -> new AxiomImpl<>(subject, assertion, new Value<>(toAxiomValue(v))))
+            return valueCollection.stream().filter(Objects::nonNull)
+                                  .map(v -> new AxiomImpl<>(subject, assertion, convertToAxiomValue(v)))
                                   .collect(Collectors.toSet());
         }
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -66,7 +66,7 @@ class ConstructorResultMapper implements SparqlResultMapper {
     private Object buildInstance(Object[] values, Class<?>[] types) {
         try {
             final Constructor<?> ctor = resolveConstructor(types);
-            if (!ctor.isAccessible()) {
+            if (!ctor.canAccess(null)) {
                 ctor.setAccessible(true);
             }
             return ctor.newInstance(values);

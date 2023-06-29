@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,8 +15,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
-
-import java.lang.reflect.Field;
 
 public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> implements SingularAttribute<X, Y> {
 
@@ -82,8 +80,8 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         }
 
         @Override
-        public SingularAttributeBuilder<X, Y> field(Field field) {
-            super.field(field);
+        public SingularAttributeBuilder<X, Y> propertyInfo(PropertyInfo propertyInfo) {
+            super.propertyInfo(propertyInfo);
             return this;
         }
 

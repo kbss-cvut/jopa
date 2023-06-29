@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -451,5 +452,91 @@ class AxiomDescriptorFactoryTest {
                                                         .findAny();
         assertTrue(pluralAssertion.isPresent());
         assertFalse(pluralAssertion.get().hasLanguage());
+    }
+
+    @Test
+    void createForEntityLoadingSetsInferredOnAssertionToFalseWhenDescriptorOverridesMetamodelConfiguration() {
+        final LoadingParameters<OWLClassD> params = new LoadingParameters<>(OWLClassD.class, ID, descriptor);
+        descriptor.disableInference();
+        when(metamodelMocks.forOwlClassD().owlClassAAtt().isInferred()).thenReturn(true);
+
+        final AxiomDescriptor desc = sut.createForEntityLoading(params, metamodelMocks.forOwlClassD().entityType());
+        final Optional<Assertion> assertion =
+                desc.getAssertions().stream().filter(a -> a.getIdentifier().toString().equals(Vocabulary.p_h_hasA))
+                    .findAny();
+        assertTrue(assertion.isPresent());
+        assertFalse(assertion.get().isInferred());
+    }
+
+    @Test
+    void createForEntityLoadingSetsInferredOnClassAssertionToFalseWhenDescriptorOverridesMetamodelConfiguration() {
+        descriptor.disableInference();
+        when(metamodelMocks.forOwlClassA().typesSpec().isInferred()).thenReturn(true);
+        final LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, ID, descriptor);
+        final AxiomDescriptor desc = sut.createForEntityLoading(params, metamodelMocks.forOwlClassA().entityType());
+        final Optional<Assertion> assertion =
+                desc.getAssertions().stream().filter(a -> a.getIdentifier().toString().equals(RDF.TYPE))
+                    .findAny();
+        assertTrue(assertion.isPresent());
+        assertFalse(assertion.get().isInferred());
+    }
+
+    @Test
+    void createForEntityLoadingSetsInferenceOnUnspecifiedPropertyAssertionToFalseWhenDescriptorOverridesMetamodelConfiguration() {
+        descriptor.disableInference();
+        when(metamodelMocks.forOwlClassB().propertiesSpec().isInferred()).thenReturn(true);
+        final LoadingParameters<OWLClassB> params = new LoadingParameters<>(OWLClassB.class, ID, descriptor);
+        final AxiomDescriptor desc = sut.createForEntityLoading(params, metamodelMocks.forOwlClassB().entityType());
+        final Optional<Assertion> assertion =
+                desc.getAssertions().stream().filter(a -> Assertion.createUnspecifiedPropertyAssertion(false).equals(a))
+                    .findAny();
+        assertTrue(assertion.isPresent());
+        assertFalse(assertion.get().isInferred());
+    }
+
+    @Test
+    void createForFieldLoadingSetsInferredOnAssertionToFalseWhenDescriptorOverridesMetamodelConfiguration() {
+        descriptor.disableInference();
+        when(metamodelMocks.forOwlClassA().stringAttribute().isInferred()).thenReturn(true);
+
+        final AxiomDescriptor desc =
+                sut.createForFieldLoading(ID, metamodelMocks.forOwlClassA().stringAttribute(), descriptor,
+                                          metamodelMocks.forOwlClassA().entityType());
+        final Optional<Assertion> assertion = desc.getAssertions().stream()
+                                                  .filter(a -> a.getIdentifier().toString()
+                                                                .equals(Vocabulary.p_a_stringAttribute))
+                                                  .findAny();
+        assertTrue(assertion.isPresent());
+        assertFalse(assertion.get().isInferred());
+    }
+
+    @Test
+    void createForFieldLoadingSetsInferredOnClassAssertionToFalseWhenDescriptorOverridesMetamodelConfiguration() {
+        descriptor.disableInference();
+        when(metamodelMocks.forOwlClassA().typesSpec().isInferred()).thenReturn(true);
+
+        final AxiomDescriptor desc =
+                sut.createForFieldLoading(ID, metamodelMocks.forOwlClassA().typesSpec(), descriptor,
+                                          metamodelMocks.forOwlClassA().entityType());
+        final Optional<Assertion> assertion = desc.getAssertions().stream()
+                                                  .filter(a -> a.getIdentifier().toString().equals(RDF.TYPE))
+                                                  .findAny();
+        assertTrue(assertion.isPresent());
+        assertFalse(assertion.get().isInferred());
+    }
+
+    @Test
+    void createForFieldLoadingSetsInferredOnUnspecifiedPropertyAssertionToFalseWhenDescriptorOverridesMetamodelConfiguration() {
+        descriptor.disableInference();
+        when(metamodelMocks.forOwlClassB().propertiesSpec().isInferred()).thenReturn(true);
+
+        final AxiomDescriptor desc =
+                sut.createForFieldLoading(ID, metamodelMocks.forOwlClassB().propertiesSpec(), descriptor,
+                                          metamodelMocks.forOwlClassB().entityType());
+        final Optional<Assertion> assertion =
+                desc.getAssertions().stream().filter(a -> a.equals(Assertion.createUnspecifiedPropertyAssertion(false)))
+                    .findAny();
+        assertTrue(assertion.isPresent());
+        assertFalse(assertion.get().isInferred());
     }
 }

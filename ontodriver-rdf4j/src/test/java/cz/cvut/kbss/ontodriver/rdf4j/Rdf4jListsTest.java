@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -47,7 +47,7 @@ public class Rdf4jListsTest {
     private Rdf4jLists lists;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.lists = new Rdf4jLists(adapterMock, beforeMock, afterMock);
     }
 

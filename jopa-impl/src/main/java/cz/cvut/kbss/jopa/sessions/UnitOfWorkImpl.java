@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -25,7 +27,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
@@ -71,7 +73,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private boolean hasDeleted;
     private boolean shouldReleaseAfterCommit;
     private boolean shouldClearCacheAfterCommit;
-    private boolean useTransactionalOntology;
 
     private boolean isActive;
     private boolean inCommit;
@@ -112,7 +113,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
-        this.useTransactionalOntology = true;
         this.isActive = true;
     }
 
@@ -514,7 +514,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new IllegalStateException("This unit of work is not in a transaction.");
         }
         final Descriptor descriptor = getDescriptor(entity);
-        final EntityTypeImpl<Object> et = entityType((Class<Object>) entity.getClass());
+        final IdentifiableEntityType<Object> et = entityType((Class<Object>) entity.getClass());
         final FieldSpecification<Object, ?> fieldSpec = et.getFieldSpecification(f.getName());
         final Object original = getOriginal(entity);
         if (fieldSpec.isInferred() && original != null) {
@@ -601,7 +601,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
         assert entity != null;
-        final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
+        final IdentifiableEntityType<T> et = (IdentifiableEntityType<T>) entityType(entity.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(entity, et);
 
         final T clone = getInstanceForMerge(idUri, et, descriptor);
@@ -726,11 +726,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     @Override
     public <T> void refreshObject(T object) {
         Objects.requireNonNull(object);
-        if (!isObjectManaged(object)) {
-            throw new IllegalArgumentException(
-                    "Cannot call refresh on an instance not managed by this persistence context.");
-        }
-        final EntityTypeImpl<T> et = entityType((Class<T>) object.getClass());
+        ensureManaged(object);
+
+        final IdentifiableEntityType<T> et = entityType((Class<T>) object.getClass());
         final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
         final Descriptor descriptor = getDescriptor(object);
 
@@ -752,6 +750,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
         } finally {
             connection.close();
+        }
+    }
+
+    private <T> void ensureManaged(T object) {
+        if (!isObjectManaged(object)) {
+            throw new IllegalArgumentException("Object not managed by this persistence context.");
         }
     }
 
@@ -777,7 +781,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @param descriptor Entity descriptor, specifying optionally contexts into which the entity will be persisted
      */
     private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
-        final EntityTypeImpl<?> eType = entityType(entity.getClass());
+        final IdentifiableEntityType<?> eType = entityType(entity.getClass());
         eType.getLifecycleListenerManager().invokePrePersistCallbacks(entity);
         Object id = getIdentifier(entity);
         if (id == null) {
@@ -819,11 +823,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     @Override
     public void removeObject(Object entity) {
         assert entity != null;
-        if (!isObjectManaged(entity)) {
-            throw new IllegalArgumentException(
-                    "Cannot remove entity which is not managed in the current persistence context.");
-        }
-        final EntityTypeImpl<?> et = entityType(entity.getClass());
+        ensureManaged(entity);
+
+        final IdentifiableEntityType<?> et = entityType(entity.getClass());
         et.getLifecycleListenerManager().invokePreRemoveCallbacks(entity);
         final Object primaryKey = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
@@ -897,7 +899,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return parent.getMetamodel();
     }
 
-    private <T> EntityTypeImpl<T> entityType(Class<T> cls) {
+    private <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
         return getMetamodel().entity(cls);
     }
 
@@ -990,6 +992,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     @Override
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(attribute);
+        Objects.requireNonNull(value);
+        ensureManaged(entity);
+
+        final Descriptor descriptor = getDescriptor(entity);
+        return storage.isInferred(entity, attribute, value, descriptor);
+    }
+
+    @Override
     public LoadState isLoaded(Object entity, String attributeName) {
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
@@ -1001,26 +1014,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     public LoadState isLoaded(Object entity) {
         Objects.requireNonNull(entity);
         return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded() : LoadState.UNKNOWN;
-    }
-
-    @Override
-    public void setUseTransactionalOntologyForQueryProcessing() {
-        this.useTransactionalOntology = true;
-    }
-
-    @Override
-    public boolean useTransactionalOntologyForQueryProcessing() {
-        return useTransactionalOntology;
-    }
-
-    @Override
-    public void setUseBackupOntologyForQueryProcessing() {
-        this.useTransactionalOntology = false;
-    }
-
-    @Override
-    public boolean useBackupOntologyForQueryProcessing() {
-        return !useTransactionalOntology;
     }
 
     public SparqlQueryFactory sparqlQueryFactory() {

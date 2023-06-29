@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 
-import java.lang.reflect.Field;
 
 class AnnotationPropertyAttributes extends PropertyAttributes {
 
@@ -26,9 +25,9 @@ class AnnotationPropertyAttributes extends PropertyAttributes {
     }
 
     @Override
-    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        super.resolve(field, metamodelBuilder, fieldValueCls);
-        final OWLAnnotationProperty oap = field.getAnnotation(OWLAnnotationProperty.class);
+    void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        super.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
+        final OWLAnnotationProperty oap = propertyInfo.getAnnotation(OWLAnnotationProperty.class);
         assert oap != null;
 
         this.persistentAttributeType = Attribute.PersistentAttributeType.ANNOTATION;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,8 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.UnusedJPA;
+
+import java.util.Set;
 
 /**
  * Instances of the type IdentifiableType represent entity or mapped superclass
@@ -55,14 +57,14 @@ public interface IdentifiableType<X> extends ManagedType<X> {
     <Y> SingularAttribute<X, Y> getDeclaredVersion(Class<Y> type);
 
     /**
-     * Return the identifiable type that corresponds to the most specific mapped
+     * Return the identifiable types that corresponds to the most specific mapped
      * superclass or entity extended by the entity or mapped superclass.
      *
      * @return supertype of identifiable type or null if no
      *
      *         such supertype
      */
-    IdentifiableType<? super X> getSupertype();
+    Set<? extends IdentifiableType<? super X>> getSupertypes();
 
     /**
      * Whether the identifiable type has a single id attribute. Returns true for

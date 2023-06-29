@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -71,7 +72,9 @@ public class OWLClassD {
     public static Field getOwlClassAField() throws NoSuchFieldException {
         return OWLClassD.class.getDeclaredField(CLS_A_FIELD);
     }
-
+    public static PropertyInfo getOwlClassAFieldPropertyInfo() throws NoSuchFieldException {
+        return PropertyInfo.from(OWLClassD.getOwlClassAField());
+    }
     @Override
     public String toString() {
         String out = "OWLClassD: uri = " + uri;

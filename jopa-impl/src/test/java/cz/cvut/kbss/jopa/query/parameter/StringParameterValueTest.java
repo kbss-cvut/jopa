@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -30,7 +30,7 @@ public class StringParameterValueTest {
 
     @Test
     public void getQueryStringEscapesEscapeSequencesInValue() {
-        final String value = "aaa\nbbb\tccc\bdddd\reee\feee\'fff\'ggg\"hhh\"iii\\jjj";
+        final String value = "aaa\nbbb\tccc\bdddd\reee\feee'fff'ggg\"hhh\"iii\\jjj";
         final String expected = "\"aaa\\nbbb\\tccc\\bdddd\\reee\\feee\\'fff\\'ggg\\\"hhh\\\"iii\\\\jjj\"";
 
         final StringParameterValue sut = new StringParameterValue(value);

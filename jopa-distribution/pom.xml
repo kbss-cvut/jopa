@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.22.2</version>
+        <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -93,7 +93,7 @@
 
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>ontodriver-sesame</artifactId>
+            <artifactId>ontodriver-rdf4j</artifactId>
             <version>${project.version}</version>
         </dependency>
 

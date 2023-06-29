@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -29,7 +29,7 @@ public class OWLClassN {
     @OWLAnnotationProperty(iri = Vocabulary.P_N_STR_ANNOTATION_PROPERTY)
     private String annotationProperty;
 
-    @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationUri")
+    @OWLAnnotationProperty(iri = Vocabulary.P_N_URI_ANNOTATION_PROPERTY)
     private URI annotationUri;
 
     @ParticipationConstraints(nonEmpty = true)

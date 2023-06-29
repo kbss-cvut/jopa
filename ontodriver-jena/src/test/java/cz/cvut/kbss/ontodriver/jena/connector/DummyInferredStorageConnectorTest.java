@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -93,9 +93,9 @@ public class DummyInferredStorageConnectorTest {
     @Test
     public void executeAskQueryForwardsCallToWrappedConnector() throws Exception {
         final Query query = QueryFactory.create("ASK { ?x a <" + TYPE_ONE + "> . }");
-        final AbstractResultSet resultSet = connector.executeAskQuery(query, Statement.StatementOntology.CENTRAL);
+        final AbstractResultSet resultSet = connector.executeAskQuery(query, Statement.StatementOntology.SHARED);
         assertNotNull(resultSet);
-        verify(wrappedConnector).executeAskQuery(query, Statement.StatementOntology.CENTRAL);
+        verify(wrappedConnector).executeAskQuery(query, Statement.StatementOntology.SHARED);
     }
 
     @Test

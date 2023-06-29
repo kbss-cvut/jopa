@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -46,8 +48,6 @@ abstract class AbstractQuery implements Query {
     private final Map<String, Object> hints = new HashMap<>();
     private final ConnectionWrapper connection;
 
-    private boolean useBackupOntology = false;
-
     private Procedure rollbackOnlyMarker;
     private Procedure ensureOpenProcedure = () -> {
     };
@@ -57,27 +57,9 @@ abstract class AbstractQuery implements Query {
         this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
     }
 
-    /**
-     * Sets ontology used for processing of this query.
-     *
-     * @param useBackupOntology If true, the backup (central) ontology is used, otherwise the transactional ontology is
-     *                          used (default)
-     */
-    public void useBackupOntology(boolean useBackupOntology) {
-        this.useBackupOntology = useBackupOntology;
-    }
-
     private void logQuery() {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Executing query: {}", query.assembleQuery());
-        }
-    }
-
-    private void setTargetOntology(Statement stmt) {
-        if (useBackupOntology) {
-            stmt.useOntology(Statement.StatementOntology.CENTRAL);
-        } else {
-            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
         }
     }
 
@@ -124,11 +106,7 @@ abstract class AbstractQuery implements Query {
     @Override
     public void executeUpdate() {
         ensureOpen();
-        final Statement stmt = connection.createStatement();
-        try {
-            setTargetOntology(stmt);
-            applyQueryHints(stmt);
-            logQuery();
+        try (final Statement stmt = initQueryStatement()) {
             stmt.executeUpdate(query.assembleQuery());
         } catch (OntoDriverException e) {
             markTransactionForRollback();
@@ -136,13 +114,15 @@ abstract class AbstractQuery implements Query {
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
-        } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                LOG.error("Unable to close statement after update execution.", e);
-            }
         }
+    }
+
+    private Statement initQueryStatement() {
+        final Statement stmt = connection.createStatement();
+        stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
+        applyQueryHints(stmt);
+        logQuery();
+        return stmt;
     }
 
     public boolean hasParameter(String name) {
@@ -289,10 +269,7 @@ abstract class AbstractQuery implements Query {
      * @throws OntoDriverException When something goes wrong during query evaluation or result set processing
      */
     void executeQuery(ThrowingConsumer<ResultRow, OntoDriverException> consumer) throws OntoDriverException {
-        try (final Statement stmt = connection.createStatement()) {
-            setTargetOntology(stmt);
-            applyQueryHints(stmt);
-            logQuery();
+        try (final Statement stmt = initQueryStatement()) {
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
             for (ResultRow row : rs) {
                 consumer.accept(row);
@@ -305,10 +282,7 @@ abstract class AbstractQuery implements Query {
     }
 
     <R> Stream<R> executeQueryForStream(Function<ResultRow, Optional<R>> function) throws OntoDriverException {
-        final Statement stmt = connection.createStatement();
-        setTargetOntology(stmt);
-        applyQueryHints(stmt);
-        logQuery();
+        final Statement stmt = initQueryStatement();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());
         return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), function, () -> {
             try {

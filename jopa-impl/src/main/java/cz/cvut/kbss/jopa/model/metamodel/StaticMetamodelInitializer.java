@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -60,17 +60,17 @@ public class StaticMetamodelInitializer {
 
     private void processType(ManagedType<?> mt) {
         final Optional<Class<?>> smClass = tryFindingClass(mt);
-        if (!smClass.isPresent()) {
+        if (smClass.isEmpty()) {
             LOG.trace("No static metamodel type found for {}.", mt);
             return;
         }
         LOG.debug("Processing static metamodel class {} corresponding to {}.", smClass.get(), mt);
-        verifyParent(smClass.get(), mt);
+        verifyParents(smClass.get(), mt);
         try {
             initStaticMembers(mt, smClass.get());
         } catch (IllegalAccessException e) {
             throw new StaticMetamodelInitializationException("Unable to initialize static metamodel class " + smClass,
-                    e);
+                                                             e);
         }
     }
 
@@ -93,14 +93,16 @@ public class StaticMetamodelInitializer {
                 !smClass.getAnnotation(StaticMetamodel.class).value().equals(metamodelClass);
     }
 
-    private static void verifyParent(Class<?> smClass, ManagedType<?> type) {
+    private static void verifyParents(Class<?> smClass, ManagedType<?> type) {
         if (type instanceof IdentifiableType<?>) {
             final IdentifiableType<?> idType = (IdentifiableType<?>) type;
-            if (idType.getSupertype() != null) {
-                final Optional<Class<?>> supertypeSm = tryFindingClass(idType.getSupertype());
-                if (!supertypeSm.isPresent() || !Objects.equals(smClass.getSuperclass(), supertypeSm.get())) {
-                    throw new StaticMetamodelInitializationException("Managed type " + type +
-                            " has a managed supertype. A corresponding relationship must exist between static metamodel classes.");
+            if (idType.getSupertypes() != null && !idType.getSupertypes().isEmpty()) {
+                for (IdentifiableType<?> superType : idType.getSupertypes()) {
+                    final Optional<Class<?>> supertypeSm = tryFindingClass(superType);
+                    if (supertypeSm.isEmpty() || !Objects.equals(smClass.getSuperclass(), supertypeSm.get())) {
+                        throw new StaticMetamodelInitializationException("Managed type " + type +
+                                                                                 " has a managed supertype. A corresponding relationship must exist between static metamodel classes.");
+                    }
                 }
             }
         }
@@ -144,8 +146,8 @@ public class StaticMetamodelInitializer {
         }
         final IdentifiableType<T> mt = (IdentifiableType<T>) type;
         return Objects.equals(field.getName(), mt.getIdentifier().getJavaField().getName()) &&
-                       isDeclaredInClass(mt.getIdentifier(), type.getJavaType()) ?
-               Optional.of((Identifier<T, ?>) mt.getIdentifier()) : Optional.empty();
+                isDeclaredInClass(mt.getIdentifier(), type.getJavaType()) ?
+                Optional.of((Identifier<T, ?>) mt.getIdentifier()) : Optional.empty();
     }
 
     private static boolean isDeclaredInClass(FieldSpecification<?, ?> fs, Class<?> cls) {
@@ -162,16 +164,16 @@ public class StaticMetamodelInitializer {
 
     private static <T> Optional<FieldSpecification<T, ?>> getDeclaredTypes(Field field, ManagedType<T> type) {
         return type.getTypes() != null &&
-                       Objects.equals(field.getName(), type.getTypes().getJavaField().getName()) &&
-                       isDeclaredInClass(type.getTypes(), type.getJavaType()) ?
-               Optional.of((TypesSpecification<T, ?>) type.getTypes()) : Optional.empty();
+                Objects.equals(field.getName(), type.getTypes().getJavaField().getName()) &&
+                isDeclaredInClass(type.getTypes(), type.getJavaType()) ?
+                Optional.of((TypesSpecification<T, ?>) type.getTypes()) : Optional.empty();
     }
 
     private static <T> Optional<FieldSpecification<T, ?>> getDeclaredProperties(Field field, ManagedType<T> type) {
         return type.getProperties() != null &&
-                       Objects.equals(field.getName(), type.getProperties().getJavaField().getName()) &&
-                       isDeclaredInClass(type.getProperties(), type.getJavaType()) ?
-               Optional.of((PropertiesSpecification<T, ?, ?, ?>) type.getProperties()) : Optional.empty();
+                Objects.equals(field.getName(), type.getProperties().getJavaField().getName()) &&
+                isDeclaredInClass(type.getProperties(), type.getJavaType()) ?
+                Optional.of((PropertiesSpecification<T, ?, ?, ?>) type.getProperties()) : Optional.empty();
     }
 
     private void processManagedTypes() {

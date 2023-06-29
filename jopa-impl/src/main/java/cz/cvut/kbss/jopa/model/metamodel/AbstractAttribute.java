@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -25,7 +25,7 @@ import java.lang.reflect.Member;
 
 public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
-    private final Field field;
+    private final PropertyInfo propertyInfo;
 
     private final ManagedType<X> declaringType;
 
@@ -56,7 +56,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
     private final ConverterWrapper converter;
 
     AbstractAttribute(AbstractAttributeBuilder<X, Y> builder) {
-        this.field = builder.field;
+        this.propertyInfo = builder.propertyInfo;
         this.declaringType = builder.declaringType;
         this.attributeType = builder.attributeType;
         this.iri = builder.iri;
@@ -80,7 +80,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     @Override
     public Member getJavaMember() {
-        return field;
+        return propertyInfo.getMember();
     }
 
     @Override
@@ -110,7 +110,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     @Override
     public Field getJavaField() {
-        return field;
+        return propertyInfo.getField();
     }
 
     @Override
@@ -150,7 +150,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     @Override
     public String getName() {
-        return field.getName();
+        return propertyInfo.getName();
     }
 
     public ConverterWrapper getConverter() {
@@ -168,7 +168,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
     }
 
     abstract static class AbstractAttributeBuilder<X, Y> {
-        private Field field;
+        private PropertyInfo propertyInfo;
         private ManagedType<X> declaringType;
         private PersistentAttributeType attributeType;
         private IRI iri;
@@ -201,8 +201,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             return this;
         }
 
-        public AbstractAttributeBuilder<X, Y> field(Field field) {
-            this.field = field;
+        public AbstractAttributeBuilder<X, Y> propertyInfo(PropertyInfo propertyInfo) {
+            this.propertyInfo = propertyInfo;
             return this;
         }
 

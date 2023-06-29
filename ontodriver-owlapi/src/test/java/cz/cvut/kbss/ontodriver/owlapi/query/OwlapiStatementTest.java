@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -47,7 +47,7 @@ public class OwlapiStatementTest {
     private OwlapiStatement statement;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.statement = new OwlapiStatement(executorFactoryMock, connectionMock);
     }
 
@@ -67,9 +67,9 @@ public class OwlapiStatementTest {
     @Test
     public void executeUpdateOnCentralUsesTheLiveOntology() throws Exception {
         when(executorFactoryMock.getStatementExecutor(any())).thenReturn(executorMock);
-        statement.useOntology(Statement.StatementOntology.CENTRAL);
+        statement.useOntology(Statement.StatementOntology.SHARED);
         statement.executeUpdate(UPDATE);
-        verify(executorFactoryMock).getStatementExecutor(Statement.StatementOntology.CENTRAL);
+        verify(executorFactoryMock).getStatementExecutor(Statement.StatementOntology.SHARED);
         verify(executorMock).executeUpdate(QuerySpecification.query(UPDATE));
     }
 

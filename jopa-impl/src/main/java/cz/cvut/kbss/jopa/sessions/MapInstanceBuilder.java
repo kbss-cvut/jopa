@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -43,6 +43,9 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         Map<?, ?> orig = (Map<?, ?>) original;
         if (original instanceof IndirectCollection) {
             orig = ((IndirectCollection<Map<?, ?>>) original).unwrap();
+        }
+        if (orig == Collections.emptyMap()) {
+            return orig;
         }
         final Class<?> origCls = orig.getClass();
         Map<?, ?> clone;

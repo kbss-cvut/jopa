@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -28,7 +28,7 @@ public class JenaStatement implements Statement {
 
     private final StatementExecutor executor;
 
-    private StatementOntology targetOntology = StatementOntology.CENTRAL;
+    private StatementOntology targetOntology = StatementOntology.SHARED;
     private boolean open = true;
 
     private AbstractResultSet currentResultSet;

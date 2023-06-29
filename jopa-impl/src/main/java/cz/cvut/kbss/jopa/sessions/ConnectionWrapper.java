@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -79,8 +79,13 @@ public class ConnectionWrapper implements Wrapper {
     }
 
     public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,
-                                         Descriptor entityDescriptor) {
+                                                Descriptor entityDescriptor) {
         return mapper.getAttributeAxioms(entity, fieldSpec, entityDescriptor);
+    }
+
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> fieldSpec, Object value,
+                                  Descriptor entityDescriptor) {
+        return mapper.isInferred(entity, fieldSpec, value, entityDescriptor);
     }
 
     public void commit() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,11 +20,14 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 
 /**
- * Utility for automatic identifier generation.
+ * Utility for working with resource identifiers.
  */
 public class IdentifierUtils {
+
+    public static final Set<Class<?>> IDENTIFIER_TYPES = Set.of(NamedResource.class, URI.class, URL.class);
 
     private static final Random RANDOM = new Random();
 
@@ -56,25 +59,13 @@ public class IdentifierUtils {
     }
 
     /**
-     * Resolves whether the specified value is a resource identifier.
-     * <p>
-     * Only absolute IRIs are supported (i.e. no blank node identifiers).
+     * Checks if the specified class represents a resource identifier.
      *
-     * @param value The value to check
-     * @return {@code true} if the value is either an URI or an URL
+     * @param cls Class to check
+     * @return {@code true} if instances of the specified class represent resource identifiers, {@code false} otherwise
+     * @see #IDENTIFIER_TYPES
      */
-    public static boolean isResourceIdentifier(Object value) {
-        if (value instanceof NamedResource || value instanceof java.net.URI || value instanceof URL) {
-            return true;
-        }
-        if (!(value instanceof String)) {
-            return false;
-        }
-        try {
-            final java.net.URI uri = java.net.URI.create(value.toString());
-            return uri.isAbsolute();
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+    public static boolean isResourceIdentifierType(Class<?> cls) {
+        return IDENTIFIER_TYPES.contains(cls);
     }
 }

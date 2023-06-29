@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -17,10 +19,15 @@ import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
-import cz.cvut.kbss.jopa.oom.converter.*;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Optional;
@@ -57,7 +64,7 @@ public class ConverterResolver {
      * @return Possible converter instance to be used for transformation of values of the specified field. Returns empty
      * {@code Optional} if no suitable converter is found (or needed)
      */
-    public Optional<ConverterWrapper<?, ?>> resolveConverter(Field field, PropertyAttributes config) {
+    public Optional<ConverterWrapper<?, ?>> resolveConverter(PropertyInfo field, PropertyAttributes config) {
         final Class<?> attValueType = config.getType().getJavaType();
         final Optional<ConverterWrapper<?, ?>> localCustomConverter = resolveCustomConverter(field, config);
         if (localCustomConverter.isPresent()) {
@@ -91,7 +98,7 @@ public class ConverterResolver {
         }
     }
 
-    private static void verifyTypeIsString(Field field, Class<?> attValueType) {
+    private static void verifyTypeIsString(PropertyInfo field, Class<?> attValueType) {
         if (!attValueType.equals(String.class)) {
             throw new InvalidFieldMappingException(
                     "Attributes with explicit datatype identifier must have values of type String. " +
@@ -99,7 +106,7 @@ public class ConverterResolver {
         }
     }
 
-    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(Field field, PropertyAttributes config) {
+    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field, PropertyAttributes config) {
         final Convert convertAnn = field.getAnnotation(Convert.class);
         if (convertAnn == null || convertAnn.disableConversion()) {
             return Optional.empty();

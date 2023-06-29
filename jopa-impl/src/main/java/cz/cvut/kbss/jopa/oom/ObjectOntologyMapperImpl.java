@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -98,7 +100,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
-        final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
         final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntity(loadingParameters);
@@ -115,7 +117,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> T loadReference(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
-        final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
         if (et.hasSubtypes()) {
             return twoStepInstanceLoader.loadReference(loadingParameters);
         } else {
@@ -124,7 +126,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> EntityTypeImpl<T> getEntityType(Class<T> cls) {
+    public <T> IdentifiableEntityType<T> getEntityType(Class<T> cls) {
         return uow.getMetamodel().entity(cls);
     }
 
@@ -339,6 +341,23 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }
+    }
+
+    @Override
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> fieldSpec, Object value,
+                                  Descriptor entityDescriptor) {
+        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec, entityDescriptor, this);
+        final Collection<Value<?>> values = fs.toAxiomValue(value);
+        final Set<URI> contexts = entityDescriptor.getAttributeContexts(fieldSpec);
+        final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(entity, et));
+        return values.stream().map(v -> {
+            try {
+                return storageConnection.isInferred(new AxiomImpl<>(subject, fs.createAssertion(), v), contexts);
+            } catch (OntoDriverException e) {
+                throw new StorageAccessException(e);
+            }
+        }).reduce(false, Boolean::logicalOr);
     }
 
     public UnitOfWorkImpl getUow() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,11 +15,8 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.Assertion.AssertionType;
-
-import java.lang.reflect.Field;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
 final class MappingUtils {
 
@@ -54,24 +51,5 @@ final class MappingUtils {
         final String type = et.getIRI().toString();
         final String val = ax.getValue().stringValue();
         return val.equals(type);
-    }
-
-    /**
-     * Gets field specification for the specified field.
-     * @param field Entity field
-     * @param et Entity type containing field specifications
-     * @param <T> Entity class
-     * @return Field specification (if exists)
-     */
-    static <T> FieldSpecification<? super T, ?> getFieldSpecification(Field field, EntityType<T> et) {
-        assert field != null;
-        assert et != null;
-        if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
-            return et.getTypes();
-        } else if (et.getProperties() != null && et.getProperties().getJavaField().equals(field)) {
-            return et.getProperties();
-        } else {
-            return et.getAttribute(field.getName());
-        }
     }
 }

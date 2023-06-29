@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -117,7 +117,7 @@ class ExplicitAxiomLoader implements AxiomLoader {
         final OWLAnnotationValue value = axiom.getValue();
         final IRI apIri = axiom.getProperty().asOWLAnnotationProperty().getIRI();
         final Optional<Assertion> assertion = assertionForAxiom(apIri);
-        return assertion.isPresent() && (!value.asLiteral().isPresent() ||
+        return assertion.isPresent() && (value.asLiteral().isEmpty() ||
                 OwlapiUtils.doesLanguageMatch(value.asLiteral().get(), assertion.get()));
     }
 

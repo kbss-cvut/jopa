@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.rdf4j;
 
@@ -26,7 +28,6 @@ import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
-import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -59,7 +60,7 @@ public class Rdf4jAdapterWithStoreTest {
     @BeforeEach
     public void setUp() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(Rdf4jDataSource.class.getName())
-                .physicalUri("memory-store").build();
+                                                                      .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         configuration.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.toString(true));
         final RepositoryConnectorInitializer connectorInitializer = new RepositoryConnectorInitializer(configuration);
@@ -99,18 +100,20 @@ public class Rdf4jAdapterWithStoreTest {
 
         try (RepositoryConnection connection = repo.getConnection()) {
             final Resource subj = vf.createIRI(SUBJECT.getIdentifier().toString());
-            final List<Statement> classAssertions = Iterations.asList(connection
-                    .getStatements(subj, RDF.TYPE, null, false));
+            final List<Statement> classAssertions = connection.getStatements(subj, RDF.TYPE, null, false).stream()
+                                                              .collect(Collectors.toList());
             final Set<URI> types = classAssertions.stream().map(s -> URI.create(s.getObject().stringValue())).collect(
                     Collectors.toSet());
             assertTrue(types.contains(tOne));
             assertTrue(types.contains(tTwo));
-            final RepositoryResult<Statement> aStringProp = connection
-                    .getStatements(subj, vf.createIRI(pOne), null, false);
-            assertTrue(aStringProp.hasNext());
-            final RepositoryResult<Statement> bStringProp = connection
-                    .getStatements(subj, vf.createIRI(pTwo), null, false);
-            assertTrue(bStringProp.hasNext());
+            try (final RepositoryResult<Statement> aStringProp = connection
+                    .getStatements(subj, vf.createIRI(pOne), null, false)) {
+                assertTrue(aStringProp.hasNext());
+            }
+            try (final RepositoryResult<Statement> bStringProp = connection
+                    .getStatements(subj, vf.createIRI(pTwo), null, false)) {
+                assertTrue(bStringProp.hasNext());
+            }
         }
     }
 }

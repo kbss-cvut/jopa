@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -13,6 +13,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
+
+import java.util.Objects;
 
 /**
  * Holds the global {@link PersistenceProviderResolver} instance.
@@ -43,10 +45,6 @@ public class PersistenceProviderResolverHolder {
      * @param resolver persistence provider resolver to be used
      */
     public static synchronized void setPersistenceProviderResolver(final PersistenceProviderResolver resolver) {
-        if (resolver == null) {
-            instance = new DefaultPersistenceProviderResolver();
-        } else {
-            instance = resolver;
-        }
+        instance = Objects.requireNonNullElseGet(resolver, DefaultPersistenceProviderResolver::new);
     }
 }
