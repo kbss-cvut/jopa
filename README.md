@@ -11,11 +11,11 @@ The library architecture and API is similar to JPA (see [2]) so that Java develo
 
 ### Main Features
 
-* Object-ontological mapping (OOM) based on integrity constraints,
-* Explicit access to inferred knowledge,
-* Access to unmapped properties and individual's types,
-* Transactions,
-* Separate storage access layer - Jena, OWLAPI, RDF4J drivers are available.
+* Object-ontological mapping (OOM) based on integrity constraints
+* Explicit access to inferred knowledge
+* Access to unmapped properties and individual's types
+* Transactions
+* Separate storage access layer - Jena, OWLAPI, RDF4J drivers are available
 
 #### Object-ontological Mapping Based on Integrity Constraints
 
@@ -83,7 +83,7 @@ access to unmapped property values (e.g. values of newly added properties), with
 
 JOPA supports object-level transactions. In addition, it makes transactional change visible to the transaction that made them.
 This means that when you add an instance of some class during a transaction and then list all instances of that class (during the same
-transaction), you'll see the newly added instance as well. This is a feature not usually seen even in large triple stores.
+transaction), you'll see the newly added instance as well.
 
 There are limitations to this approach. Currently, pending changes are not taken into account when doing inference.
 Also, the current version of RDF4J OntoDriver is not able to include pending changes into results of SPARQL queries.
@@ -91,7 +91,7 @@ Also, the current version of RDF4J OntoDriver is not able to include pending cha
 #### Separate Storage Access Layer
 
 Similarly to JPA and JDBC driver, JOPA sits on top of an OntoDriver instance, which provides access to the underlying storage.
-There are two main reasons for such split - first, it decouples storage-specific API usage from the more generic OOM core.
+There are two main reasons for such a split - first, it decouples storage-specific API usage from the more generic OOM core.
 Second, it enables the application to switch the underlying storage with as little as 2-3 lines of configuration code. Nothing else
 needs to be modified.
 
@@ -103,8 +103,9 @@ Supported storages:
 
 ### Not Supported, yet
 
-JOPA currently does not support referential integrity. This for example means that removing an instance that is referenced 
-by another instance should not be possible. Such feature is vital for object-oriented application, but not compatible with 
+JOPA currently does not support referential integrity. This, for example, means that removing an instance that is referenced 
+by another instance is possible even though it should not. 
+Such feature is vital for object-oriented application, but not compatible with 
 the open-world nature of ontologies. Design possibilities and their implications are currently being studied.
 
 Other missing/planned stuff can be found in the GitHub issue tracker and in [TODO.md](TODO.md).
@@ -120,8 +121,8 @@ The whole framework consists of several modules:
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files.
 * _Ontodriver Jena_ - OntoDriver implementation for Jena-based storages.
 * _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-rdf4j-owl2java)).
-* _modelgen_ - generates static metamodel.
-* _JOPA Maven plugin_ - Maven plugin for object model (using OWL2Java) and static metamodel(using modelgen) generation.
+* _Modelgen_ - [static metamodel generator](https://github.com/kbss-cvut/jopa/wiki/Static-Metamodel).
+* _JOPA Maven plugin_ - Maven plugin for object model (using OWL2Java) and static metamodel (using Modelgen) generation.
 
 Other modules represent integration tests and various utilities.
 
@@ -132,7 +133,7 @@ The content is being gradually created and updated.
 
 Javadoc of the latest published version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
 
-For more practical examples of JOPA features, see the JOPA examples repository at [https://github.com/kbss-cvut/jopa-examples](https://github.com/kbss-cvut/jopa-examples).
+For practical examples of JOPA features, see the [JOPA examples repository](https://github.com/kbss-cvut/jopa-examples).
   
 ## Usage
 
@@ -159,16 +160,16 @@ Basically, the _jopa-impl_ module and one of the OntoDriver implementations is a
     </dependency>
     <dependency>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <artifactId>ontodriver-jena</artifactId>
+        <artifactId>ontodriver-rdf4j</artifactId>
+        <!-- OR <artifactId>ontodriver-jena</artifactId> -->
         <!-- OR <artifactId>ontodriver-owlapi</artifactId> -->
-        <!-- OR <artifactId>ontodriver-rdf4j</artifactId> -->
     </dependency>
 </dependencies>
 ```
 
 ## More Info
 
-More information about JOPA can be found for example in articles [4], [5] and on the GitHub [Wiki](https://github.com/kbss-cvut/jopa/wiki).
+More information about JOPA can be found for example in articles [4], [5], [6] and on the GitHub [Wiki](https://github.com/kbss-cvut/jopa/wiki).
 
 JOPA build status and code metrics can be found at:
 
@@ -179,7 +180,7 @@ JOPA build status and code metrics can be found at:
 
 A performance comparison of JOPA and other object-triple mapping libraries can be found at [https://kbss.felk.cvut.cz/web/otm-benchmark](https://kbss.felk.cvut.cz/web/otm-benchmark).
 
-A comprehensive comparison - feature and performance - of object-triple mapping libraries is presented in [8].
+A comprehensive comparison - feature and performance - of object-triple mapping libraries is presented in [7].
 
 ## Related
 
@@ -198,27 +199,18 @@ Notable changes:
 * **0.20.0** - Allow editing inferred attributes (See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details). Support `IN`, `NOT LIKE`, `<>` operators in SOQL.
 * **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future)
 * **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
-* **0.15.0** - Support for multilingual String attributes. See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Multilingual-String-Attributes) for more info
-* **0.14.0** - Support for the Semantic Object Query Language (SOQL). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Semantic-Object-Query-Language) for more info
-* **0.13.0** - Support for RDF simple literals (language-less strings), access to lexical form of literals, updated named graph handling
-* **0.12.0** - Support for `EntityManager.getReference`
-* **0.11.0** - Support for Java 8 Streams in Query API and RDF4J repository configuration file
-* **0.10.0** - Jena OntoDriver implementation
-* **0.9.0** - Single class inheritance support
-* **0.8.0** - Mapped superclass support
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed change history.
 
 ## References
   
-* [1] J. Tao and E. Sirin, J. Bao, D. L. McGuinness, Integrity Constraints in OWL, The Twenty-Fourth AAAI Conference on Artiﬁcial Intelligence, 2010, available online at [http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229](http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229)
+* [1] J. Tao and E. Sirin, J. Bao, D. L. McGuinness, Integrity Constraints in OWL, The Twenty-Fourth AAAI Conference on Artiﬁcial Intelligence, 2010, available online at [https://ojs.aaai.org/index.php/AAAI/article/view/7525/7386](https://ojs.aaai.org/index.php/AAAI/article/view/7525/7386)
 * [2] JSR 338 [http://jcp.org/en/jsr/detail?id=338](http://jcp.org/en/jsr/detail?id=338)
 * [3] The Java Language Specification, Java SE 8 Edition [https://docs.oracle.com/javase/specs/jls/se8/html/index.html](https://docs.oracle.com/javase/specs/jls/se8/html/index.html)
 * [4] P. Křemen and Z. Kouba: Ontology-Driven Information System Design. IEEE Transactions on Systems, Man, and Cybernetics: Part C, 42(3):334–344, May 2012 [https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6011704](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6011704)
 * [5] M. Ledvinka and P. Křemen: JOPA: Accessing Ontologies in an Object-oriented Way. In Proceedings of the 17th International Conference on Enterprise Information Systems. Porto: SciTePress - Science and Technology Publications, 2015, p. 212-222. ISBN 978-989-758-096-0. [http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1](http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1)
-* [6] Ledvinka, M.; Křemen, P.; Kostov, B. JOPA: Efficient Ontology-based Information System Design In: The Semantic Web: ESWC 2016 Satellite Events. Cham: Springer International Publishing AG, 2016. pp. 156-160. 9989. ISSN 0302-9743. ISBN 978-3-319-47601-8. [ESWC 2016 Demo](http://2016.eswc-conferences.org/sites/default/files/papers/Accepted%20Posters%20and%20Demos/ESWC2016_DEMO_JOPA.pdf)
-* [7] Ledvinka, M.; Křemen, P.; Kostov, B.; Blaško, M. SISel: Aviation Safety Powered by Semantic Technologies In: Data a znalosti 2017. Plzeň: Západočeská univerzita v Plzni, 2017. pp. 77-82. ISBN 978-80-261-0720-0. [https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf](https://daz2017.kiv.zcu.cz/data/DaZ2017-Sbornik-final.pdf)
-* [8] M. Ledvinka and  P. Křemen: A comparison of object-triple mapping libraries Semantic Web, 2019, doi: [10.3233/SW-190345](http://dx.doi.org/10.3233/SW-190345)
+* [6] M. Ledvinka and P. Křemen and B. Kostov: JOPA: Efficient Ontology-based Information System Design In: The Semantic Web: ESWC 2016 Satellite Events. Cham: Springer International Publishing AG, 2016. pp. 156-160. 9989. ISSN 0302-9743. ISBN 978-3-319-47601-8. [ESWC 2016 Demo](http://2016.eswc-conferences.org/sites/default/files/papers/Accepted%20Posters%20and%20Demos/ESWC2016_DEMO_JOPA.pdf)
+* [7] M. Ledvinka and P. Křemen: A comparison of object-triple mapping libraries Semantic Web, 2019, doi: [10.3233/SW-190345](http://dx.doi.org/10.3233/SW-190345)
 
 ## License
 
