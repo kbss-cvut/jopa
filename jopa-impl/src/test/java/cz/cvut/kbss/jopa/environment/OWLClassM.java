@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 
 import java.lang.reflect.Field;
@@ -239,6 +240,10 @@ public class OWLClassM {
         return OWLClassM.class.getDeclaredField("intAttribute");
     }
 
+    public static PropertyInfo getIntAttributeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getIntAttributeField());
+    }
+
     public static Field getLongAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("longAttribute");
     }
@@ -251,35 +256,74 @@ public class OWLClassM {
         return OWLClassM.class.getDeclaredField("dateAttribute");
     }
 
+    public static PropertyInfo getDateAttributeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getDateAttributeField());
+    }
+
     public static Field getEnumAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("enumAttribute");
+    }
+
+    public static PropertyInfo getEnumAttributePropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.class.getDeclaredField("enumAttribute"));
+    }
+
+    public static PropertyInfo getEnumAttributeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getEnumAttributeField());
     }
 
     public static Field getOrdinalEnumAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("ordinalEnumAttribute");
     }
 
+    public static PropertyInfo getOrdinalEnumAttributePropertyInfo() throws Exception {
+        return PropertyInfo.from(getOrdinalEnumAttributeField());
+    }
+
     public static Field getIntegerSetField() throws Exception {
         return OWLClassM.class.getDeclaredField("integerSet");
+    }
+
+    public static PropertyInfo getIntegerSetFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getIntegerSetField());
     }
 
     public static Field getLexicalFormField() throws Exception {
         return OWLClassM.class.getDeclaredField("lexicalForm");
     }
 
+    public static PropertyInfo getLexicalFormFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getLexicalFormField());
+    }
+
     public static Field getSimpleLiteralField() throws Exception {
         return OWLClassM.class.getDeclaredField("simpleLiteral");
+    }
+
+    public static PropertyInfo getSimpleLiteralFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getSimpleLiteralField());
     }
 
     public static Field getExplicitDatatypeField() throws Exception {
         return OWLClassM.class.getDeclaredField("explicitDatatype");
     }
 
+    public static PropertyInfo getExplicitDatatypeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getExplicitDatatypeField());
+    }
+
     public static Field getWithConverterField() throws Exception {
         return OWLClassM.class.getDeclaredField("withConverter");
     }
 
+    public static PropertyInfo getWithConverterFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getWithConverterField());
+    }
+
     public static Field getObjectOneOfEnumAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("objectOneOfEnumAttribute");
+    }
+    public static PropertyInfo getObjectOneOfEnumAttributePropertyInfo() throws Exception {
+        return PropertyInfo.from(getObjectOneOfEnumAttributeField());
     }
 }

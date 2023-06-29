@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -33,6 +33,8 @@ public abstract class AbstractDescriptor implements Descriptor {
 
     private String language;
     private boolean hasLanguage;
+
+    private boolean includeInferred = true;
 
     protected AbstractDescriptor() {
         this(true);
@@ -110,6 +112,27 @@ public abstract class AbstractDescriptor implements Descriptor {
     @Override
     public boolean areAssertionsInSubjectContext() {
         return assertionsInSubjectContext;
+    }
+
+    @Override
+    public boolean includeInferred() {
+        return includeInferred;
+    }
+
+    @Override
+    public Descriptor disableInference() {
+        this.includeInferred = false;
+        return this;
+    }
+
+    @Override
+    public Descriptor enableInference() {
+        this.includeInferred = true;
+        return this;
+    }
+
+    protected void setIncludeInferred(boolean includeInferred) {
+        this.includeInferred = includeInferred;
     }
 
     @Override

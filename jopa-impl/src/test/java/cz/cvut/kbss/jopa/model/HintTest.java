@@ -1,5 +1,22 @@
+/**
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,8 +25,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class HintTest {
@@ -121,5 +146,22 @@ public class HintTest {
         final QueryHintsHandler.Hint sut = new QueryHintsHandler.DisableInferenceHint();
         sut.apply(true, query, statement);
         verify(statement).disableInference();
+    }
+
+    @Test
+    void disableInferenceHintDisablesInferenceOnDescriptorForTypedQuery() {
+        final TypedQueryImpl<OWLClassA> tq = mock(TypedQueryImpl.class);
+        final Descriptor descriptor = spy(new EntityDescriptor());
+        when(tq.getDescriptor()).thenReturn(descriptor);
+        final QueryHintsHandler.Hint sut = new QueryHintsHandler.DisableInferenceHint();
+        sut.apply(true, tq, statement);
+        verify(descriptor).disableInference();
+    }
+
+    @Test
+    void setQueryTargetOntologySelectsStatementOntology() {
+        final QueryHintsHandler.Hint sut = new QueryHintsHandler.TargetOntologyHint();
+        sut.apply(Statement.StatementOntology.TRANSACTIONAL, query, statement);
+        verify(statement).useOntology(Statement.StatementOntology.TRANSACTIONAL);
     }
 }

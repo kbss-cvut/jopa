@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,9 +16,15 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MultilingualString;
-import cz.cvut.kbss.jopa.model.annotations.*;
-
-import java.lang.reflect.Field;
+import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.annotations.EnumType;
+import cz.cvut.kbss.jopa.model.annotations.Enumerated;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 
 abstract class PropertyAttributes {
 
@@ -94,18 +100,17 @@ abstract class PropertyAttributes {
     ParticipationConstraint[] getParticipationConstraints() {
         return participationConstraints;
     }
-
     public EnumType getEnumType() {
         return enumType;
     }
-
-    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
-        resolveParticipationConstraints(field);
-        resolveEnumType(field, fieldValueCls);
+    void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        resolveParticipationConstraints(propertyInfo);
+        resolveEnumType(propertyInfo, fieldValueCls);
     }
 
-    private void resolveParticipationConstraints(Field field) {
-        ParticipationConstraints cons = field.getAnnotation(ParticipationConstraints.class);
+    private void resolveParticipationConstraints(PropertyInfo propertyInfo) {
+        ParticipationConstraints cons = propertyInfo.getAnnotation(ParticipationConstraints.class);
+
         if (cons != null) {
             if (cons.value().length > 0) {
                 this.participationConstraints = cons.value();
@@ -114,9 +119,8 @@ abstract class PropertyAttributes {
             }
         }
     }
-
-    private void resolveEnumType(Field field, Class<?> fieldValueCls) {
-        final Enumerated enumAnn = field.getAnnotation(Enumerated.class);
+    private void resolveEnumType(PropertyInfo propertyInfo, Class<?> fieldValueCls) {
+        final Enumerated enumAnn = propertyInfo.getAnnotation(Enumerated.class);
         if (enumAnn != null) {
             this.enumType = enumAnn.value();
         } else  if (fieldValueCls.isEnum()) {
@@ -129,7 +133,7 @@ abstract class PropertyAttributes {
         return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
     }
 
-    static PropertyAttributes create(Field field, FieldMappingValidator validator, TypeBuilderContext<?> context) {
+    static PropertyAttributes create(PropertyInfo field, FieldMappingValidator validator, TypeBuilderContext<?> context) {
         final PropertyAttributes instance;
         if (field.getAnnotation(OWLObjectProperty.class) != null) {
             instance = new ObjectPropertyAttributes(validator);
@@ -156,7 +160,7 @@ abstract class PropertyAttributes {
         }
 
         @Override
-        void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        void resolve(PropertyInfo propertyInfo, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
             // do nothing
         }
     }

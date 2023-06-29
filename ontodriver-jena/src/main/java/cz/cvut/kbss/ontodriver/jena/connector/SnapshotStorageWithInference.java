@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -65,7 +65,6 @@ class SnapshotStorageWithInference extends SnapshotStorage {
         this.reasonerConfig = reasonerConfig.entrySet().stream()
                                             .filter(e -> SUPPORTED_CONFIG.contains(e.getKey()))
                                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        this.dataset = DatasetFactory.createGeneral();
     }
 
     private static ReasonerFactory initReasonerFactory(DriverConfiguration configuration) {
@@ -91,16 +90,19 @@ class SnapshotStorageWithInference extends SnapshotStorage {
     void addCentralData(Dataset central) {
         Txn.executeRead(central, () -> {
             final Iterator<String> it = central.listNames();
-            InfModel clonedModel;
+            InfModel clonedModel = cloneModel(central.getDefaultModel());
+            inferredGraphs.put(null, clonedModel);
+            // Lazily initialize the dataset to force it to use the cloned model (more specifically its Graph)
+            // This ensures the dataset and the model in inferredGraphs use the same underlying graph as default
+            // This change is force by Jena 4.x, where Dataset.setDefaultModel just copies data to the default
+            // graph instead of using it directly (which is what it does for named graphs)
+            this.dataset = DatasetFactory.create(clonedModel);
             while (it.hasNext()) {
                 final String name = it.next();
                 clonedModel = cloneModel(central.getNamedModel(name));
                 inferredGraphs.put(name, clonedModel);
                 dataset.addNamedModel(name, clonedModel);
             }
-            clonedModel = cloneModel(central.getDefaultModel());
-            inferredGraphs.put(null, clonedModel);
-            dataset.setDefaultModel(clonedModel);
         });
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -117,11 +117,11 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     }
 
     @Override
-    public <X> EntityTypeImpl<X> entity(Class<X> cls) {
+    public <X> IdentifiableEntityType<X> entity(Class<X> cls) {
         if (!isEntityType(cls)) {
             throw new IllegalArgumentException(cls.getName() + " is not a known entity in this persistence unit.");
         }
-        return (EntityTypeImpl<X>) entities.get(cls);
+        return (IdentifiableEntityType<X>) entities.get(cls);
     }
 
     @Override

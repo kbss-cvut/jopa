@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -19,6 +21,7 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.*;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,21 +55,21 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, entityDescriptor, mapper);
         } else if (att instanceof PropertiesSpecification) {
             return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att,
-                                                 entityDescriptor, mapper);
+                    entityDescriptor, mapper);
         }
         final AbstractAttribute<? super X, ?> attribute = (AbstractAttribute<? super X, ?>) att;
         if (attribute.isCollection()) {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
                     return createPluralAnnotationPropertyStrategy(et,
-                                                                  (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                                                                  entityDescriptor, mapper);
+                            (AbstractPluralAttribute<? super X, ?, ?>) attribute,
+                            entityDescriptor, mapper);
                 case DATA:
                     return createPluralDataPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                                                            entityDescriptor, mapper);
+                            entityDescriptor, mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                                                              entityDescriptor, mapper);
+                            entityDescriptor, mapper);
                 default:
                     break;
             }
@@ -91,8 +94,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
             return new PluralMultilingualStringFieldStrategy<>(et,
-                                                               (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
-                                                               descriptor, mapper);
+                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
+                    descriptor, mapper);
         } else {
             return new PluralAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
@@ -103,8 +106,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
             return new PluralMultilingualStringFieldStrategy<>(et,
-                                                               (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
-                                                               descriptor, mapper);
+                    (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
+                    descriptor, mapper);
         } else {
             return new PluralDataPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
@@ -116,7 +119,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         switch (attribute.getCollectionType()) {
             case LIST:
                 return createOwlListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
-                                                     mapper);
+                        mapper);
             case COLLECTION:
             case SET:
                 return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
@@ -145,8 +148,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getJavaType())) {
             return new SingularMultilingualStringFieldStrategy<>(et,
-                                                                 (AbstractAttribute<? super X, MultilingualString>) attribute,
-                                                                 descriptor, mapper);
+                    (AbstractAttribute<? super X, MultilingualString>) attribute,
+                    descriptor, mapper);
         } else {
             return new SingularDataPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
@@ -157,8 +160,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         if (MultilingualString.class.equals(attribute.getJavaType())) {
             return new SingularMultilingualStringFieldStrategy<>(et,
-                                                                 (AbstractAttribute<? super X, MultilingualString>) attribute,
-                                                                 descriptor, mapper);
+                    (AbstractAttribute<? super X, MultilingualString>) attribute,
+                    descriptor, mapper);
         } else {
             return new SingularAnnotationPropertyStrategy<>(et, attribute, descriptor, mapper);
         }
@@ -255,17 +258,25 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     abstract Assertion createAssertion();
 
     /**
+     * Transforms the specified attribute value to an axiom {@link Value}.
+     *
+     * @param value Value to transform
+     * @return Axiom value
+     */
+    abstract Collection<Value<?>> toAxiomValue(Object value);
+
+    /**
      * Returns only values that are not inferred in the repository for the specified subject.
      * <p>
      * This method goes through the specified values and if the property represented by this strategy can contain
      * inferred values (i.e., {@link FieldSpecification#isInferred()} returns true), it returns only those values that
      * are NOT inferred in the repository.
-     *
-     * The reasoning of this method is that the current implementation of a property values update is done by
-     * removing all its values as asserting new ones extracted from the entity. However, if an attribute value is a mix
-     * of inferred and asserted values, this will basically assert values that are already inferred, which is not correct.
-     * This method thus removes inferred values from the values passed to the OntoDriver for saving. Note that there
-     * is a minor caveat in that one is not able to intentionally assert already inferred values this way, but it is
+     * <p>
+     * The reasoning of this method is that the current implementation of a property values update is done by removing
+     * all its values as asserting new ones extracted from the entity. However, if an attribute value is a mix of
+     * inferred and asserted values, this will basically assert values that are already inferred, which is not correct.
+     * This method thus removes inferred values from the values passed to the OntoDriver for saving. Note that there is
+     * a minor caveat in that one is not able to intentionally assert already inferred values this way, but it is
      * considered not important to work resolve at the moment.
      *
      * @param subject Subject whose property values are examined
@@ -280,5 +291,12 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         final URI ctx = getAttributeWriteContext();
         return values.stream().filter(v -> !mapper.isInferred(new AxiomImpl<>(subject, assertion, v), ctx))
                      .collect(Collectors.toSet());
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{" +
+                "attribute=" + attribute +
+                '}';
     }
 }

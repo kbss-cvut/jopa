@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -102,6 +103,9 @@ public class OWLClassN {
 
     public static Field getAnnotationPropertyField() throws Exception {
         return OWLClassN.class.getDeclaredField("annotationProperty");
+    }
+    public static PropertyInfo getAnnotationPropertyFieldInfo() throws Exception {
+        return PropertyInfo.from(OWLClassN.getAnnotationPropertyField());
     }
 
     public static Field getAnnotationUriField() throws Exception {

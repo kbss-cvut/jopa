@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -125,7 +125,7 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) throws OntoDriverException {
+        public boolean isInferred(Axiom<?> axiom, Set<URI> contexts) {
             return true;
         }
 

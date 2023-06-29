@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -266,6 +267,21 @@ public interface EntityManager {
     @NonJPA
     boolean isConsistent(URI context);
 
+    /**
+     * Checks whether the specified attribute value of the specified entity is inferred in the underlying repository.
+     * <p>
+     * Note that given the nature of the repository implementation, this method may return true if the corresponding
+     * statement is both inferred and asserted. Also note that this method will use the descriptor associated with the
+     * specified entity in this persistence context to resolve the repository context, but some underlying repositories
+     * do not store inferences in data contexts, so the attribute context may be ignored.
+     *
+     * @param entity    Entity whose attribute to examine. Must be managed by this persistence context
+     * @param attribute Attribute whose value to examine
+     * @param value     The value whose inference to examine
+     * @return {@code true} if the entity attribute value is inferred, {@code false} otherwise
+     */
+    <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
+
     // TODO JPA 2.0 public LockModeType getLockMode(Object entity)
 
     /**
@@ -442,54 +458,4 @@ public interface EntityManager {
      * @return Metamodel instance
      */
     Metamodel getMetamodel();
-
-    // TODO Remove the following methods and replace them with implementation of JPA flush modes
-
-    /**
-     * Sets the transactional ontology as the one which will be used when processing SPARQL queries.
-     * <p>
-     * This setting may have significant impact on query results, since changes made during transaction are propagated
-     * to the transactional ontology, which is private to this persistence context, before commit. The ontology can even
-     * be in an inconsistent state.
-     * <p>
-     * This is the default setting, unless changed by properties passed on persistence initialization.
-     *
-     * @see #setUseBackupOntologyForQueryProcessing
-     */
-    @NonJPA
-    @Deprecated
-    void setUseTransactionalOntologyForQueryProcessing();
-
-    /**
-     * Returns true if the transactional ontology should be used for SPARQL query processing.
-     *
-     * @return {@code true} if transactional ontology will be used, {@code false} otherwise
-     * @see #setUseTransactionalOntologyForQueryProcessing()
-     */
-    @NonJPA
-    @Deprecated
-    boolean useTransactionalOntologyForQueryProcessing();
-
-    /**
-     * Sets the backup ontology as the one which will be used for processing of SPARQL queries.
-     * <p>
-     * The backup ontology represents the ontology after the last commit done by any transaction and therefore can
-     * produce different results from those produced by the transactional ontology, which is private to this persistence
-     * context.
-     *
-     * @see #setUseTransactionalOntologyForQueryProcessing()
-     */
-    @NonJPA
-    @Deprecated
-    void setUseBackupOntologyForQueryProcessing();
-
-    /**
-     * Returns true if the backup (central) ontology should be used for SPARQL query processing.
-     *
-     * @return {@code true} if the central ontology will be used, {@code false} otherwise
-     * @see #setUseBackupOntologyForQueryProcessing()
-     */
-    @NonJPA
-    @Deprecated
-    boolean useBackupOntologyForQueryProcessing();
 }

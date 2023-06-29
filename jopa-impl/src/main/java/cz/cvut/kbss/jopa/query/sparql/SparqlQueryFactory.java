@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -49,9 +49,7 @@ public class SparqlQueryFactory implements QueryFactory {
     public QueryImpl createNativeQuery(String sparql) {
         Objects.requireNonNull(sparql);
 
-        final QueryImpl q = new QueryImpl(queryParser.parseQuery(sparql), connection);
-        q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
-        return q;
+        return new QueryImpl(queryParser.parseQuery(sparql), connection);
     }
 
     @Override
@@ -66,7 +64,6 @@ public class SparqlQueryFactory implements QueryFactory {
 
         final TypedQueryImpl<T> tq = new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
         tq.setUnitOfWork(uow);
-        tq.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return tq;
     }
 
@@ -76,19 +73,14 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(resultSetMapping, ErrorUtils.getNPXMessageSupplier("resultSetMapping"));
 
         final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
-        final ResultSetMappingQuery q = new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper,
-                uow);
-        q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
-        return q;
+        return new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
     }
 
     @Override
     public QueryImpl createQuery(String query) {
         Objects.requireNonNull(query);
 
-        final QueryImpl q = new QueryImpl(soqlQueryParser.parseQuery(query), connection);
-        q.useBackupOntology(uow.useBackupOntologyForQueryProcessing());
-        return q;
+        return new QueryImpl(soqlQueryParser.parseQuery(query), connection);
     }
 
     @Override

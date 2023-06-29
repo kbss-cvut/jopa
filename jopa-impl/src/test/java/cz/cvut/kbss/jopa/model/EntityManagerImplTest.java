@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,7 +26,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
@@ -381,7 +381,7 @@ class EntityManagerImplTest {
     }
 
     private void metamodelForCascadingTest() throws Exception {
-        final EntityTypeImpl<CascadeCycleOne> etOne = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<CascadeCycleOne> etOne = mock(IdentifiableEntityType.class);
         final Identifier idOne = mock(Identifier.class);
         when(idOne.getJavaField()).thenReturn(CascadeCycleOne.class.getDeclaredField("uri"));
         when(etOne.getIdentifier()).thenReturn(idOne);
@@ -393,7 +393,7 @@ class EntityManagerImplTest {
         when(attOne.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(etOne.getAttributes()).thenReturn(Collections.singleton(attOne));
         when(etOne.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
-        final EntityTypeImpl<CascadeCycleTwo> etTwo = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<CascadeCycleTwo> etTwo = mock(IdentifiableEntityType.class);
         final Identifier idTwo = mock(Identifier.class);
         when(idTwo.getJavaField()).thenReturn(CascadeCycleTwo.class.getDeclaredField("uri"));
         when(etTwo.getIdentifier()).thenReturn(idTwo);

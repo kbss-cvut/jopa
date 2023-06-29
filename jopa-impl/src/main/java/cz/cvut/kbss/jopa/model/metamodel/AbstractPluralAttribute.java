@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
@@ -91,8 +90,8 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
         }
 
         @Override
-        public PluralAttributeBuilder<X, C, E> field(Field field) {
-            super.field(field);
+        public PluralAttributeBuilder<X, C, E> propertyInfo(PropertyInfo propertyInfo) {
+            super.propertyInfo(propertyInfo);
             return this;
         }
 

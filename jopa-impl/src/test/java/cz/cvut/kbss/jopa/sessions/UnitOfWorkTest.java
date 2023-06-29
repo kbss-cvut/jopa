@@ -1,23 +1,35 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.OWLClassR;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
-import cz.cvut.kbss.jopa.exceptions.*;
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
+import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
@@ -38,14 +50,37 @@ import org.mockito.Mockito;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UnitOfWorkTest extends UnitOfWorkTestBase {
 
@@ -380,22 +415,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testUseTransactionalOntologyForQueryProcessing() {
-        assertTrue(uow.useTransactionalOntologyForQueryProcessing());
-        assertFalse(uow.useBackupOntologyForQueryProcessing());
-    }
-
-    @Test
-    void testSwitchQueryProcessingOntology() {
-        uow.setUseBackupOntologyForQueryProcessing();
-        assertTrue(uow.useBackupOntologyForQueryProcessing());
-        assertFalse(uow.useTransactionalOntologyForQueryProcessing());
-        uow.setUseTransactionalOntologyForQueryProcessing();
-        assertTrue(uow.useTransactionalOntologyForQueryProcessing());
-        assertFalse(uow.useBackupOntologyForQueryProcessing());
-    }
-
-    @Test
     void testCommitInactive() {
         uow.release();
         assertThrows(IllegalStateException.class, () -> uow.commit());
@@ -558,9 +577,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void throwsCardinalityViolationWhenMaximumCardinalityIsViolatedOnCommit() {
         final List<OWLClassA> lst = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            final OWLClassA a = new OWLClassA();
-            a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i));
-            lst.add(a);
+            lst.add(Generators.generateOwlClassAInstance());
         }
         entityL.setReferencedList(lst);
         uow.registerNewObject(entityL, descriptor);
@@ -573,9 +590,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final List<OWLClassA> lst = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            final OWLClassA a = new OWLClassA();
-            a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i));
-            lst.add(a);
+            lst.add(Generators.generateOwlClassAInstance());
         }
         entityL.setSimpleList(lst);
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
@@ -590,7 +605,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final List<OWLClassA> lst = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            lst.add(new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i)));
+            lst.add(Generators.generateOwlClassAInstance());
         }
         entityL.setSimpleList(lst);
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
@@ -598,7 +613,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.attributeChanged(clone, OWLClassL.getSimpleListField());
         final List<OWLClassA> updatedList = new ArrayList<>();
         for (int i = 100; i < 103; i++) {
-            updatedList.add(new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i)));
+            updatedList.add(Generators.generateOwlClassAInstance());
         }
         clone.setSimpleList(updatedList);
         uow.attributeChanged(clone, OWLClassL.getSimpleListField());
@@ -632,7 +647,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     private Map<?, ?> getMap(String fieldName) throws Exception {
         final Field field = uow.getClass().getDeclaredField(fieldName);
-        if (!field.isAccessible()) {
+        if (!field.canAccess(uow)) {
             field.setAccessible(true);
         }
         return (Map<?, ?>) field.get(uow);
@@ -641,7 +656,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     private boolean getBoolean(String fieldName) throws Exception {
         final Field field = uow.getClass().getDeclaredField(fieldName);
-        if (!field.isAccessible()) {
+        if (!field.canAccess(uow)) {
             field.setAccessible(true);
         }
         return (boolean) field.get(uow);
@@ -731,8 +746,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
                                                              () -> uow.refreshObject(
                                                                      Generators.generateOwlClassAInstance()));
-        assertEquals("Cannot call refresh on an instance not managed by this persistence context.",
-                     result.getMessage());
+        assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
     @Test
@@ -741,8 +755,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.removeObject(a);
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
                                                              () -> uow.refreshObject(a));
-        assertEquals("Cannot call refresh on an instance not managed by this persistence context.",
-                     result.getMessage());
+        assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
     @Test
@@ -1096,5 +1109,18 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
                                                        new Value<>(original.getSecondStringAttribute())),
                                        Collections.singleton(CONTEXT_URI));
         verify(storageMock, never()).merge(any(), eq(metamodelMocks.forOwlClassF().stringAttribute()), any());
+    }
+
+    @Test
+    void isInferredChecksForValueInferredStatusWithConnectionWrapper() {
+        final OWLClassD instance = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
+        uow.isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA());
+        verify(storageMock).isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA(), descriptor);
+    }
+
+    @Test
+    void isInferredThrowsIllegalArgumentExceptionWhenInstanceIsNotManaged() {
+        assertThrows(IllegalArgumentException.class, () -> uow.isInferred(entityD, metamodelMocks.forOwlClassD().owlClassAAtt(), entityD.getOwlClassA()));
+        verify(storageMock, never()).isInferred(any(), any(), any(), any());
     }
 }

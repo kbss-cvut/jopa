@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -54,7 +54,6 @@ public class JenaOntoDriverProperties {
      * <li>{@link #FILE}</li>
      * <li>{@link #IN_MEMORY}</li>
      * <li>{@link #TDB}</li>
-     * <li>{@link #SDB} - SDB storage is currently not supported (and probably won't be, since SDB development has stopped)</li>
      * </ul>
      */
     public static final String JENA_STORAGE_TYPE = "cz.cvut.kbss.ontodriver.jena.storage";
@@ -79,14 +78,6 @@ public class JenaOntoDriverProperties {
      * @see #JENA_STORAGE_TYPE
      */
     public static final String TDB = "tdb";
-
-    /**
-     * Jena SDB storage.
-     *
-     * @see #JENA_STORAGE_TYPE
-     */
-    @Deprecated
-    public static final String SDB = "sdb";
 
     /**
      * Jena Fuseki server.

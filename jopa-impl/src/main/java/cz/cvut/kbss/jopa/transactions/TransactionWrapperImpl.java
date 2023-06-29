@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -26,21 +26,6 @@ public abstract class TransactionWrapperImpl implements TransactionWrapper {
     public TransactionWrapperImpl(AbstractEntityManager entityManger) {
         this.entityManager = entityManger;
     }
-
-    /**
-     * Check if there is an active transaction running. Returns the transaction
-     * object or null, if there is none.
-     *
-     * @return Object
-     */
-    public abstract Object checkForTransaction();
-
-    /**
-     * Register the given UnitOfWork with the current transaction.
-     *
-     * @param uow UnitOfWork
-     */
-    public abstract void registerUOWWithTransaction(UnitOfWork uow);
 
     public UnitOfWork getTransactionUOW() {
         return transactionUOW;

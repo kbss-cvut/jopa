@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
@@ -532,32 +533,14 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
+    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
+        ensureOpen();
+        return getCurrentPersistenceContext().isInferred(entity, attribute, value);
+    }
+
+    @Override
     public CriteriaBuilder getCriteriaBuilder() {
         return getCurrentPersistenceContext().criteriaFactory();
-    }
-
-    @Override
-    public void setUseTransactionalOntologyForQueryProcessing() {
-        ensureOpen();
-        getCurrentPersistenceContext().setUseTransactionalOntologyForQueryProcessing();
-    }
-
-    @Override
-    public boolean useTransactionalOntologyForQueryProcessing() {
-        ensureOpen();
-        return getCurrentPersistenceContext().useTransactionalOntologyForQueryProcessing();
-    }
-
-    @Override
-    public void setUseBackupOntologyForQueryProcessing() {
-        ensureOpen();
-        getCurrentPersistenceContext().setUseBackupOntologyForQueryProcessing();
-    }
-
-    @Override
-    public boolean useBackupOntologyForQueryProcessing() {
-        ensureOpen();
-        return getCurrentPersistenceContext().useBackupOntologyForQueryProcessing();
     }
 
     @Override
@@ -570,13 +553,13 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
-    public Object getDelegate() {
+    public EntityManagerImpl getDelegate() {
         return unwrap(EntityManagerImpl.class);
     }
 
     private void ensureOpen() {
         if (!isOpen()) {
-            throw new IllegalStateException("The entity manager is closed !");
+            throw new IllegalStateException("The entity manager is closed!");
         }
     }
 

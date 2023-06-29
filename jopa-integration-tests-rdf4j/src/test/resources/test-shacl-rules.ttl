@@ -1,0 +1,23 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ex: <http://example.org/> .
+
+
+ex:ConceptShape
+    a sh:NodeShape ;
+    sh:targetClass: skos:Concept ;
+            sh:rule [
+                a sh:SPARQLRule ;
+                sh:construct """
+                    CONSTRUCT {
+                        ?parent <http://www.w3.org/2004/02/skos/core#narrower> $this .
+                    }
+                    WHERE {
+                        $this a <http://www.w3.org/2004/02/skos/core#Concept> ;
+                              <http://www.w3.org/2004/02/skos/core#broader> ?parent .
+                    }
+                    """ ;
+    		    sh:condition ex:ConceptShape ;
+            ] ;
+.

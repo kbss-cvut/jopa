@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,15 +17,14 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.StaticMetamodelInitializationException;
-import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -217,7 +216,7 @@ class StaticMetamodelInitializerTest {
     void initializeStaticMetamodelInitializesMetamodelForMappedSuperclasses() {
         when(metamodel.getEntities()).thenReturn(Collections.singleton(metamodelMocks.forOwlClassQ().entityType()));
         doReturn(new HashSet<>(Arrays.asList(metamodelMocks.forOwlClassQ().entityType(),
-                metamodelMocks.forOwlClassQ().entityType().getSupertype()))).when(metamodel).getManagedTypes();
+                metamodelMocks.forOwlClassQ().entityType().getSupertypes().iterator().next()))).when(metamodel).getManagedTypes();
         sut.initializeStaticMetamodel();
         assertEquals(metamodelMocks.forOwlClassQ().identifier(), QMappedSuperclass_.uri);
         assertEquals(metamodelMocks.forOwlClassQ().qLabelAtt(), QMappedSuperclass_.label);
@@ -229,8 +228,8 @@ class StaticMetamodelInitializerTest {
     @Test
     void initializeStaticMetamodelChecksThatModelSubclassHasDeclaredSuperclassInStaticMetamodelAsWell()
             throws Exception {
-        final EntityType<SubClass> et = mock(EntityType.class);
-        final SingularAttribute labelAtt = mock(SingularAttribute.class);
+        final IdentifiableEntityType<SubClass> et = mock(IdentifiableEntityType.class);
+        final SingularAttributeImpl labelAtt = mock(SingularAttributeImpl.class);
         when(labelAtt.getJavaField()).thenReturn(SubClass.class.getDeclaredField("label"));
         when(labelAtt.getDeclaringType()).thenReturn(et);
         when(et.getDeclaredAttribute("label")).thenReturn(labelAtt);
@@ -238,10 +237,12 @@ class StaticMetamodelInitializerTest {
         final Identifier id = mock(Identifier.class);
         when(id.getJavaField()).thenReturn(SuperClass.class.getDeclaredField("uri"));
         when(et.getIdentifier()).thenReturn(id);
-        final MappedSuperclassType<SuperClass> superType = mock(MappedSuperclassType.class);
+
+        final MappedSuperclassTypeImpl<SuperClass> superType = mock(MappedSuperclassTypeImpl.class);
+
         when(superType.getIdentifier()).thenReturn(id);
         when(superType.getJavaType()).thenReturn(SuperClass.class);
-        when(et.getSupertype()).thenReturn((IdentifiableType) superType);
+        when(et.getSupertypes()).thenReturn(Collections.singleton(superType));
         when(metamodel.getEntities()).thenReturn(Collections.singleton(et));
         doReturn(new HashSet<>(Arrays.asList(et, superType))).when(metamodel).getManagedTypes();
 

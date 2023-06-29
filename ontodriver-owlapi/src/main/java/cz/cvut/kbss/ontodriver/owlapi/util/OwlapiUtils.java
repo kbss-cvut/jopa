@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Literal;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.config.Constants;
+import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
@@ -115,17 +116,6 @@ public class OwlapiUtils {
      * Strings parseable by {@link URI#create(String)}.
      */
     public static boolean isIndividualIri(Object value) {
-        if (value instanceof NamedResource || value instanceof URI || value instanceof URL || value instanceof IRI) {
-            return true;
-        }
-        if (!(value instanceof String)) {
-            return false;
-        }
-        try {
-            final IRI iri = IRI.create(value.toString());
-            return iri.isAbsolute();
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+        return IdentifierUtils.isResourceIdentifierType(value.getClass()) || value instanceof IRI;
     }
 }

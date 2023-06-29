@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exception.InstantiationException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.metamodel.PolymorphicEntityTypeResolver;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
@@ -36,7 +36,7 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
-        final EntityTypeImpl<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
         try {
             final EntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
             if (et == null) {
@@ -50,7 +50,7 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadReference(LoadingParameters<T> loadingParameters) {
-        final EntityTypeImpl<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
         try {
             final EntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
             return et != null ? entityBuilder.createEntityInstance(loadingParameters.getIdentifier(), et) : null;
@@ -62,7 +62,7 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
     }
 
     private <T> EntityType<? extends T> resolveEntityType(LoadingParameters<T> loadingParameters,
-                                                          EntityTypeImpl<T> rootEt) throws OntoDriverException {
+                                                          IdentifiableEntityType<T> rootEt) throws OntoDriverException {
         NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
         final Set<Axiom<URI>> types = storageConnection.types().getTypes(individual,
                 loadingParameters.getDescriptor().getContexts(), false);

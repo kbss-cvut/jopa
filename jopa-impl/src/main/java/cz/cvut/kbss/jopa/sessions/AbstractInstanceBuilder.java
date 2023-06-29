@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -79,7 +79,7 @@ abstract class AbstractInstanceBuilder {
         Constructor<?> c;
         try {
             c = javaClass.getDeclaredConstructor(args);
-            if (!c.isAccessible()) {
+            if (!c.canAccess(null)) {
                 c.setAccessible(true);
             }
         } catch (NoSuchMethodException e) {
@@ -91,19 +91,6 @@ abstract class AbstractInstanceBuilder {
             return null;
         }
         return c;
-    }
-
-    /**
-     * This helper method returns the first declared constructor of the specified class. It may be used only in cases
-     * when the caller knows exactly which constructor is the first one declared by the class. A use case may be a class
-     * with only one declared constructor, which is not a zero argument one.
-     *
-     * @param javaClass The class whose constructors should be searched.
-     * @return The first declared constructor of the specified class.
-     */
-    protected static Constructor<?> getFirstDeclaredConstructorFor(Class<?> javaClass) {
-        Constructor<?>[] constructors = javaClass.getDeclaredConstructors();
-        return constructors[0];
     }
 
     protected static void logConstructorAccessException(Constructor<?> constructor, Exception e) {

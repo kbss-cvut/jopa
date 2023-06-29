@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,38 +23,24 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import static cz.cvut.kbss.jopa.datatype.DateTimeUtil.SYSTEM_OFFSET;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DatatypeTransformerTest {
 
     private static final OWLDataFactory DATA_FACTORY = new OWLDataFactoryImpl();
-
-    @Test
-    void transformOwlLiteralToObjectReturnsOntoDriverLangStringForRdfLangString() {
-        final OWLLiteral literal = DATA_FACTORY.getOWLLiteral("test", "en");
-        final Object result = DatatypeTransformer.transform(literal);
-        assertThat(result, instanceOf(LangString.class));
-        final LangString lsResult = (LangString) result;
-        assertEquals(literal.getLiteral(), lsResult.getValue());
-        assertTrue(lsResult.getLanguage().isPresent());
-        assertEquals(literal.getLang(), lsResult.getLanguage().get());
-    }
-
-    @Test
-    void transformOwlLiteralToObjectReturnsStringForSimpleLiteral() {
-        final OWLLiteral literal = DATA_FACTORY.getOWLLiteral("test");
-        final Object result = DatatypeTransformer.transform(literal);
-        assertThat(result, instanceOf(String.class));
-        assertEquals(literal.getLiteral(), result);
-    }
 
     @Test
     void transformObjectToOwlLiteralReturnsRdfLangStringForOntoDriverLangStringWithLanguage() {
@@ -62,6 +48,7 @@ class DatatypeTransformerTest {
         final OWLLiteral result = DatatypeTransformer.transform(ls, null);
         assertEquals(OWL2Datatype.RDF_LANG_STRING.getDatatype(DATA_FACTORY), result.getDatatype());
         assertEquals(ls.getValue(), result.getLiteral());
+        assert ls.getLanguage().isPresent();
         assertEquals(ls.getLanguage().get(), result.getLang());
     }
 
@@ -81,16 +68,6 @@ class DatatypeTransformerTest {
         final OWLLiteral result = DatatypeTransformer.transform(ontoLiteral, null);
         assertEquals(ontoLiteral.getLexicalForm(), result.getLiteral());
         assertEquals(XSD.DURATION, result.getDatatype().toStringID());
-    }
-
-    @Test
-    void transformOwlLiteralToObjectReturnsOntoDriverLiteralForUnknownDatatype() {
-        final OWLLiteral literal = DATA_FACTORY.getOWLLiteral("P1Y", DATA_FACTORY.getOWLDatatype(XSD.DURATION));
-        final Object result = DatatypeTransformer.transform(literal);
-        assertThat(result, instanceOf(cz.cvut.kbss.ontodriver.model.Literal.class));
-        final cz.cvut.kbss.ontodriver.model.Literal literalResult = (cz.cvut.kbss.ontodriver.model.Literal) result;
-        assertEquals(literal.getLiteral(), literalResult.getLexicalForm());
-        assertEquals(literal.getDatatype().toStringID(), literalResult.getDatatype());
     }
 
     @Test

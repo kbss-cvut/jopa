@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.oom.metamodel;
 
 import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -32,11 +32,11 @@ public class PolymorphicEntityTypeResolver<T> {
 
     private final NamedResource individual;
     private final Set<URI> types;
-    private final EntityTypeImpl<T> root;
+    private final IdentifiableEntityType<T> root;
 
     private final Set<EntityType<? extends T>> matches = new HashSet<>(2);
 
-    public PolymorphicEntityTypeResolver(NamedResource individual, EntityTypeImpl<T> root,
+    public PolymorphicEntityTypeResolver(NamedResource individual, IdentifiableEntityType<T> root,
                                          Collection<Axiom<URI>> typeAxioms) {
         this.individual = individual;
         this.types = typeAxioms.stream().map(a -> a.getValue().getValue()).collect(Collectors.toSet());
@@ -82,7 +82,7 @@ public class PolymorphicEntityTypeResolver<T> {
         for (AbstractIdentifiableType<? extends T> subtype : parent.getSubtypes()) {
             final Set<EntityType<? extends T>> updatedAncestors = new HashSet<>(ancestors);
             if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY && !subtype.isAbstract()) {
-                final EntityTypeImpl<? extends T> et = (EntityTypeImpl<? extends T>) subtype;
+                final IdentifiableEntityType<? extends T> et = (IdentifiableEntityType<? extends T>) subtype;
                 final URI etUri = et.getIRI().toURI();
                 if (types.contains(etUri)) {
                     addMatchingType(et, ancestors);

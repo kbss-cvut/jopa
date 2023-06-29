@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -44,8 +46,8 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
             values.add(toAttributeValue(value));
         } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) {
             values.add(IdentifierTransformer
-                               .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value),
-                                                      elementType));
+                    .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value),
+                            elementType));
         }
     }
 
@@ -57,23 +59,29 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
         if (valueCollection == null || valueCollection.isEmpty()) {
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeWriteContext());
         } else {
-            final Function<Object, Collection<Value<?>>> mapper;
-            if (IdentifierTransformer.isValidIdentifierType(elementType) && !elementType
-                    .isAssignableFrom(String.class)) {
-                mapper = v -> Collections
-                        .singleton(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v))));
-            } else {
-                mapper = v -> v instanceof MultilingualString ?
-                              SingularMultilingualStringFieldStrategy.translationsToLangStrings(
-                                      (MultilingualString) v) : Collections.singleton(new Value<>(toAxiomValue(v)));
-            }
+            final Function<Object, Collection<Value<?>>> mapper = resolveValueMapper();
             final Set<Value<?>> assertionValues =
                     valueCollection.stream().filter(Objects::nonNull).map(mapper).flatMap(Collection::stream)
                                    .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(),
-                                   filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
-                                   getAttributeWriteContext());
+                    filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
+                    getAttributeWriteContext());
         }
+    }
+
+    private Function<Object, Collection<Value<?>>> resolveValueMapper() {
+        if (SingularAnnotationPropertyStrategy.isResourceIdentifierType(elementType)) {
+            return  v -> Collections.singleton(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v))));
+        } else {
+            return v -> v instanceof MultilingualString ?
+                    SingularMultilingualStringFieldStrategy.translationsToLangStrings(
+                            (MultilingualString) v).collect(Collectors.toList()) : Collections.singleton(convertToAxiomValue(v));
+        }
+    }
+
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        return resolveValueMapper().apply(value);
     }
 
     @Override

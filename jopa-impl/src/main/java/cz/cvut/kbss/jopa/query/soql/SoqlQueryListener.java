@@ -1,21 +1,23 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -202,7 +204,7 @@ public class SoqlQueryListener implements SoqlListener {
             return false;
         }
         final String objectName = objectTypes.get(objectNode.getValue());
-        EntityTypeImpl<?> entityType = getEntityType(objectName);
+        IdentifiableEntityType<?> entityType = getEntityType(objectName);
         if (entityType == null) {
             return false;
         }
@@ -666,7 +668,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private void setObjectIri(SoqlNode node) {
-        EntityTypeImpl<?> entityType = getEntityType(node.getValue());
+        IdentifiableEntityType<?> entityType = getEntityType(node.getValue());
         if (entityType == null) {
             return;
         }
@@ -676,9 +678,9 @@ public class SoqlQueryListener implements SoqlListener {
         }
     }
 
-    private EntityTypeImpl<?> getEntityType(String name) {
+    private IdentifiableEntityType<?> getEntityType(String name) {
         for (EntityType<?> type : metamodel.getEntities()) {
-            EntityTypeImpl<?> entityType = (EntityTypeImpl<?>) type;
+            IdentifiableEntityType<?> entityType = (IdentifiableEntityType<?>) type;
             if (entityType.getName().equals(name)) {
                 return entityType;
             }
@@ -715,7 +717,7 @@ public class SoqlQueryListener implements SoqlListener {
             return;
         }
         String objectName = objectTypes.get(firstNode.getValue());
-        EntityTypeImpl<?> entityType = getEntityType(objectName);
+        IdentifiableEntityType<?> entityType = getEntityType(objectName);
         if (entityType == null) {
             return;
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.*;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -121,6 +122,11 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
             return types.stream().map(t -> new AxiomImpl<>(subject, assertion, new Value<>(URI.create(t.toString()))))
                         .collect(Collectors.toSet());
         }
+    }
+
+    @Override
+    Collection<Value<?>> toAxiomValue(Object value) {
+        return Collections.singleton(new Value<>(URI.create(value.toString())));
     }
 
     @Override

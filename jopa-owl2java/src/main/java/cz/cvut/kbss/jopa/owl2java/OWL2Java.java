@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -60,7 +60,7 @@ public class OWL2Java {
 
         final Optional<Command> c = getCommand(args[0]);
 
-        if (!c.isPresent()) {
+        if (c.isEmpty()) {
             System.err
                     .println("Invalid command " + args[0] + ", try 'OWL2Java help' for the list of available commands");
             return;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -31,6 +31,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Utility methods for working with Jena API.
@@ -50,9 +51,8 @@ public class JenaUtils {
      */
     public static <T> RDFNode valueToRdfNode(Assertion assertion, Value<T> value) {
         final T val = value.getValue();
-        if (val instanceof String && !assertion.hasLanguage()) {
-            return ResourceFactory.createTypedLiteral(val);
-        } else if (IdentifierUtils.isResourceIdentifier(val)) {
+        Objects.requireNonNull(val);
+        if (IdentifierUtils.isResourceIdentifierType(val.getClass())) {
             return ResourceFactory.createResource(value.stringValue());
         } else if (val instanceof LangString) {
             final LangString langString = (LangString) val;

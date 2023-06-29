@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -175,8 +175,6 @@ interface Storage {
                 return new TDBStorage(configuration);
             case JenaOntoDriverProperties.FUSEKI:
                 return new FusekiStorage(configuration);
-            case JenaOntoDriverProperties.SDB:
-                throw new UnsupportedOperationException("Not implemented, yet.");
             default:
                 throw new OntoDriverInitializationException("Unsupported storage type '" + type + "'.");
         }

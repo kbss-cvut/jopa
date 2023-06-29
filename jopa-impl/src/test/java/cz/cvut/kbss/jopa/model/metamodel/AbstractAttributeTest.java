@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -38,8 +38,9 @@ class AbstractAttributeTest {
 
     @Test
     void hasLanguageReturnsFalseWhenAttributeIsSimpleLiteral() throws Exception {
+
         final PropertyAttributes pa = PropertyAttributes
-                .create(OWLClassA.getStrAttField(), new FieldMappingValidator(),
+                .create(OWLClassA.getStrAttFieldPropertyInfo(), new FieldMappingValidator(),
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassA().entityType(), new NamespaceResolver()));
         pa.simpleLiteral = true;
         pa.language = LANG;
@@ -53,7 +54,7 @@ class AbstractAttributeTest {
     @Test
     void hasLanguageReturnsTrueForAttributeWithConfiguredLanguage() throws Exception {
         final PropertyAttributes pa = PropertyAttributes
-                .create(OWLClassA.getStrAttField(), new FieldMappingValidator(),
+                .create(OWLClassA.getStrAttFieldPropertyInfo(), new FieldMappingValidator(),
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassA().entityType(), new NamespaceResolver()));
         pa.language = LANG;
         pa.iri = metamodelMocks.forOwlClassA().stringAttribute().getIRI();
@@ -67,7 +68,7 @@ class AbstractAttributeTest {
     @Test
     void hasLanguageReturnsFalseWhenAttributeIsLexicalFormOnly() throws Exception {
         final PropertyAttributes pa = PropertyAttributes
-                .create(OWLClassA.getStrAttField(), new FieldMappingValidator(),
+                .create(OWLClassA.getStrAttFieldPropertyInfo(), new FieldMappingValidator(),
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassA().entityType(), new NamespaceResolver()));
         pa.lexicalForm = true;
         pa.language = LANG;
@@ -81,7 +82,7 @@ class AbstractAttributeTest {
     @Test
     void hasLanguageReturnsFalseForObjectPropertyAttribute() throws Exception {
         final PropertyAttributes pa = PropertyAttributes
-                .create(OWLClassD.getOwlClassAField(), new FieldMappingValidator(),
+                .create(OWLClassD.getOwlClassAFieldPropertyInfo(), new FieldMappingValidator(),
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassD().entityType(), new NamespaceResolver()));
         pa.persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;
         pa.language = LANG;
@@ -95,7 +96,7 @@ class AbstractAttributeTest {
     @Test
     void getDatatypeReturnsConfiguredAttributeDatatype() throws Exception {
         final PropertyAttributes pa = PropertyAttributes
-                .create(OWLClassM.getExplicitDatatypeField(), new FieldMappingValidator(),
+                .create(OWLClassM.getExplicitDatatypeFieldPropertyInfo(), new FieldMappingValidator(),
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassM().entityType(), new NamespaceResolver()));
         pa.datatype = XSD.DURATION;
         pa.iri = metamodelMocks.forOwlClassM().explicitDatatypeAttribute().getIRI();
@@ -109,7 +110,7 @@ class AbstractAttributeTest {
     @Test
     void getDatatypeReturnsNullWhenDefaultValueIsUsedInAnnotation() throws Exception {
         final PropertyAttributes pa = PropertyAttributes
-                .create(OWLClassA.getStrAttField(), new FieldMappingValidator(),
+                .create(OWLClassA.getStrAttFieldPropertyInfo(), new FieldMappingValidator(),
                         new TypeBuilderContext<>(metamodelMocks.forOwlClassA().entityType(), new NamespaceResolver()));
         pa.datatype = "";
         pa.iri = metamodelMocks.forOwlClassA().stringAttribute().getIRI();

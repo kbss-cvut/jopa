@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -40,13 +40,22 @@ public class EntityLoaderTest {
     }
 
     @Test
-    public void entityLoaderIgnoresInterfaceWithOwlClassAnnotation() {
+    public void entityLoaderAcceptsInterfaceWithOwlClassAnnotation() {
         sut.accept(AnnotatedInterface.class);
-        assertFalse(sut.getEntities().contains(AnnotatedInterface.class));
+        assertTrue(sut.getEntities().contains(AnnotatedInterface.class));
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "interface")
     interface AnnotatedInterface {
+    }
+    interface UnAnnotatedInterface{
+
+    }
+
+    @Test
+    public void entityLoaderIgnoresInterfaceWithoutOwlClassAnnotation() {
+        sut.accept(UnAnnotatedInterface.class);
+        assertFalse(sut.getEntities().contains(UnAnnotatedInterface.class));
     }
 
     @Test

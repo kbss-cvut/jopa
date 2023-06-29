@@ -2,10 +2,6 @@
 
 ## High Priority
 
-- [ ] Inheritance support
-    - [x] Mapped superclass
-    - [x] Single inheritance
-    - [ ] Multiple inheritance
 - [ ] Add support for `orphanRemoval` attribute in object properties
 - [ ] Allow static (annotation, attribute of `@OWLDataProperty`) specification of language of String attributes. 
         This can be overridden on EM operation level (in descriptor).
@@ -13,7 +9,7 @@
 
 ## Low Priority
 
-- [ ] How to enhance query results with transactional changes? Sesame driver
+- [ ] How to enhance query results with transactional changes? RDF4J driver
     - First check how SQL queries in JPA behave
 - [ ] Add possibility to generate integrity constraints from the object model
 - [ ] When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact

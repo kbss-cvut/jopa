@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,8 +18,6 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import org.semanticweb.owlapi.model.OWLObject;
-
-import java.util.Observer;
 
 public abstract class AbstractResultSet implements ResultSet {
 
@@ -50,11 +48,6 @@ public abstract class AbstractResultSet implements ResultSet {
     @Override
     public boolean isOpen() {
         return open;
-    }
-
-    @Override
-    public void registerObserver(Observer observer) {
-        throw new UnsupportedOperationException("Not supported by the current version.");
     }
 
     public static ResultSet createResultSet(QueryResult<OWLObject> result, Statement statement, String query) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,9 +14,15 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
+
+/**
+ * Instances of the type AbstractIdentifiableType represent entity or mapped superclass
+ * types which can be queried for attributes, subtypes and so on.
+ *
+ * @param <X> Entity type being represented by this instance
+ */
 
 public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
 
@@ -24,7 +30,10 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private Identifier<X, ?> identifier;
 
-    private AbstractIdentifiableType<? super X> supertype;
+    private Set<AbstractIdentifiableType<? super X>> supertypes = new HashSet<>();
+
+    /// AIT which is superclass of this AIT, and from which we inherit attributes
+    private AbstractIdentifiableType<? super X> classSupertype;
 
     private Set<AbstractIdentifiableType<? extends X>> subtypes;
 
@@ -50,10 +59,19 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         declaredQueryAttributes.put(name, a);
     }
 
-    void setSupertype(AbstractIdentifiableType<? super X> supertype) {
-        assert supertype != null;
-        this.supertype = supertype;
-        supertype.addSubtype(this);
+    /**
+     * Set supertypes of this instance, and for all given supertypes add this as their subtype.
+     * This method should not be called multiple times on one instance.
+     *
+     * @param supertypes Supertypes to set
+     */
+    void setSupertypes(Set<AbstractIdentifiableType<? super X>> supertypes) {
+        assert supertypes != null;
+        this.supertypes = supertypes;
+
+        supertypes.forEach(supertype -> supertype.addSubtype(this));
+        /// find non-abstract parent (class), and use it later for finding attributes, as attributes can be only in AITs that represent classes
+        supertypes.stream().filter(ait -> !ait.getJavaType().isInterface()).findAny().ifPresent(clsSupertype -> this.classSupertype = clsSupertype);
     }
 
     private void addSubtype(AbstractIdentifiableType<? extends X> subtype) {
@@ -87,8 +105,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public AbstractIdentifiableType<? super X> getSupertype() {
-        return supertype;
+    public Set<AbstractIdentifiableType<? super X>> getSupertypes() {
+        return supertypes;
     }
 
     /**
@@ -105,9 +123,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
      *
      * @return {@code true} if the represented Java type is abstract, {@code false} otherwise
      */
-    public boolean isAbstract() {
-        return Modifier.isAbstract(javaType.getModifiers());
-    }
+    public abstract boolean isAbstract();
 
     public Set<AbstractIdentifiableType<? extends X>> getSubtypes() {
         return subtypes != null ? Collections.unmodifiableSet(subtypes) : Collections.emptySet();
@@ -127,17 +143,19 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public Set<Attribute<? super X, ?>> getAttributes() {
         final Set<Attribute<? super X, ?>> attributes = new HashSet<>(declaredAttributes.values());
-        if (supertype != null) {
-            attributes.addAll(supertype.getAttributes());
+        if (classSupertype != null) {
+            attributes.addAll(classSupertype.getAttributes());
         }
+
         return attributes;
     }
 
     @Override
     public Set<QueryAttribute<? super X, ?>> getQueryAttributes() {
         final Set<QueryAttribute<? super X, ?>> queryAttributes = new HashSet<>(declaredQueryAttributes.values());
-        if (supertype != null) {
-            queryAttributes.addAll(supertype.getQueryAttributes());
+
+        if (classSupertype != null) {
+            queryAttributes.addAll(classSupertype.getQueryAttributes());
         }
         return queryAttributes;
     }
@@ -148,14 +166,15 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (declaredAttributes.containsKey(name)) {
             return declaredAttributes.get(name);
         }
-        if (supertype != null) {
-            return supertype.getAttribute(name);
+
+        if (classSupertype != null) {
+            return classSupertype.getAttribute(name);
         }
         throw attributeMissing(name, false);
     }
 
     protected IllegalArgumentException attributeMissing(String name, boolean declared) {
-        return new IllegalArgumentException("Attribute " + name + " is not "+ (declared ? "declared" : "present") +" in type " + this);
+        return new IllegalArgumentException("Attribute " + name + " is not " + (declared ? "declared" : "present") + " in type " + this);
     }
 
     @Override
@@ -164,8 +183,9 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (declaredQueryAttributes.containsKey(name)) {
             return true;
         }
-        if (supertype != null) {
-            return supertype.hasQueryAttribute(name);
+
+        if (classSupertype != null) {
+            return classSupertype.hasQueryAttribute(name);
         }
         return false;
     }
@@ -176,9 +196,10 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (declaredQueryAttributes.containsKey(name)) {
             return declaredQueryAttributes.get(name);
         }
-        if (supertype != null) {
-            return supertype.getQueryAttribute(name);
+        if (classSupertype != null) {
+            return classSupertype.getQueryAttribute(name);
         }
+
         throw attributeMissing(name, false);
     }
 
@@ -192,20 +213,14 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return getPluralAttribute("Collection", name, elementType, CollectionAttribute.class);
     }
 
-    private <E, R extends PluralAttribute<? super X, ?, E>> R getPluralAttribute(String type, String name,
-                                                                                 Class<E> elementType,
-                                                                                 Class<R> attType) {
+    private <E, R extends PluralAttribute<? super X, ?, E>> R getPluralAttribute(String type, String name, Class<E> elementType, Class<R> attType) {
         final Attribute<? super X, ?> a = getAttribute(name);
 
         checkPluralAttribute(a, type, name, elementType, attType, false);
         return attType.cast(a);
     }
 
-    private <E, R extends PluralAttribute<? super X, ?, E>> void checkPluralAttribute(Attribute<? super X, ?> att,
-                                                                                      String type, String name,
-                                                                                      Class<E> elementType,
-                                                                                      Class<R> attType,
-                                                                                      boolean declared) {
+    private <E, R extends PluralAttribute<? super X, ?, E>> void checkPluralAttribute(Attribute<? super X, ?> att, String type, String name, Class<E> elementType, Class<R> attType, boolean declared) {
         if (!attType.isAssignableFrom(att.getClass())) {
             throw pluralAttNotFound(type, name, elementType, declared);
         }
@@ -216,10 +231,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         }
     }
 
-    private IllegalArgumentException pluralAttNotFound(String type, String name, Class<?> elementType,
-                                                       boolean declared) {
-        return new IllegalArgumentException(type + " attribute " + name + " with element type " + elementType +
-                " is not " + (declared ? "declared" : "present") + " in type " + this);
+    private IllegalArgumentException pluralAttNotFound(String type, String name, Class<?> elementType, boolean declared) {
+        return new IllegalArgumentException(type + " attribute " + name + " with element type " + elementType + " is not " + (declared ? "declared" : "present") + " in type " + this);
     }
 
     @Override
@@ -255,17 +268,18 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public Set<PluralAttribute<? super X, ?, ?>> getPluralAttributes() {
         final Set<PluralAttribute<? super X, ?, ?>> plurals = new HashSet<>(getDeclaredPluralAttributes());
-        if (supertype != null) {
-            plurals.addAll(supertype.getPluralAttributes());
+        if (classSupertype != null) {
+            plurals.addAll(classSupertype.getPluralAttributes());
         }
+
         return plurals;
     }
 
     @Override
     public Set<SingularAttribute<? super X, ?>> getSingularAttributes() {
         final Set<SingularAttribute<? super X, ?>> singulars = new HashSet<>(getDeclaredSingularAttributes());
-        if (supertype != null) {
-            singulars.addAll(supertype.getSingularAttributes());
+        if (classSupertype != null) {
+            singulars.addAll(classSupertype.getSingularAttributes());
         }
         return singulars;
     }
@@ -286,9 +300,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     private IllegalArgumentException singularAttNotFound(String name, Class<?> type, boolean declared) {
-        return new IllegalArgumentException(
-                "Singular attribute " + name + " of type " + type + " is not " + (declared ? "declared" : "present") +
-                        " in type " + this);
+        return new IllegalArgumentException("Singular attribute " + name + " of type " + type + " is not " + (declared ? "declared" : "present") + " in type " + this);
     }
 
     @Override
@@ -303,14 +315,12 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     @Override
     public Set<PluralAttribute<X, ?, ?>> getDeclaredPluralAttributes() {
-        return declaredAttributes.values().stream().filter(Attribute::isCollection)
-                                 .map(a -> (PluralAttribute<X, ?, ?>) a).collect(Collectors.toSet());
+        return declaredAttributes.values().stream().filter(Attribute::isCollection).map(a -> (PluralAttribute<X, ?, ?>) a).collect(Collectors.toSet());
     }
 
     @Override
     public Set<SingularAttribute<X, ?>> getDeclaredSingularAttributes() {
-        return declaredAttributes.values().stream().filter(att -> !att.isCollection()).map(
-                a -> (SingularAttribute<X, ?>) a).collect(Collectors.toSet());
+        return declaredAttributes.values().stream().filter(att -> !att.isCollection()).map(a -> (SingularAttribute<X, ?>) a).collect(Collectors.toSet());
     }
 
     @Override
@@ -326,9 +336,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return getDeclaredPluralAttribute("Collection", name, elementType, CollectionAttribute.class);
     }
 
-    private <E, R extends PluralAttribute<? super X, ?, E>> R getDeclaredPluralAttribute(String type, String name,
-                                                                                         Class<E> elementType,
-                                                                                         Class<R> attType) {
+    private <E, R extends PluralAttribute<? super X, ?, E>> R getDeclaredPluralAttribute(String type, String name, Class<E> elementType, Class<R> attType) {
         final Attribute<? super X, ?> a = getDeclaredAttribute(name);
 
         checkPluralAttribute(a, type, name, elementType, attType, true);
@@ -394,7 +402,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (directTypes != null) {
             return directTypes;
         }
-        return supertype != null ? supertype.getTypes() : null;
+
+        return classSupertype != null ? classSupertype.getTypes() : null;
     }
 
     @Override
@@ -402,7 +411,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (properties != null) {
             return properties;
         }
-        return supertype != null ? supertype.getProperties() : null;
+
+        return classSupertype != null ? classSupertype.getProperties() : null;
     }
 
     @Override
@@ -436,9 +446,10 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         } else if (identifier != null && identifier.getName().equals(fieldName)) {
             return identifier;
         }
-        if (supertype != null) {
-            return supertype.getFieldSpecification(fieldName);
+        if (classSupertype != null) {
+            return classSupertype.getFieldSpecification(fieldName);
         }
+
         throw new IllegalArgumentException("Field " + fieldName + " is not present in type " + this);
     }
 
@@ -447,9 +458,11 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (identifier != null) {
             return identifier;
         }
-        if (supertype != null) {
-            return supertype.getIdentifier();
+
+        if (classSupertype != null) {
+            return classSupertype.getIdentifier();
         }
+
         // This shouldn't happen, because every entity has to contain an identifier, otherwise metamodel building fails
         throw new IllegalArgumentException("Identifier attribute is not present in type " + this);
     }

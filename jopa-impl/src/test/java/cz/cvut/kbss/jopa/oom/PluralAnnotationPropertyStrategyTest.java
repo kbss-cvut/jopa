@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -137,7 +137,7 @@ class PluralAnnotationPropertyStrategyTest {
                                                                                            ConverterWrapper converter)
             throws
             Exception {
-        final EntityTypeImpl<T> et = mock(EntityTypeImpl.class);
+        final IdentifiableEntityType<T> et = mock(IdentifiableEntityType.class);
         final AbstractPluralAttribute<T, Set, X> att = mock(AbstractPluralAttribute.class);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(elementType));
         when(att.getCollectionType()).thenReturn(CollectionType.SET);

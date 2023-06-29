@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -113,6 +113,12 @@ public interface TypedQuery<X> extends Query {
     <T> TypedQuery<X> setUntypedParameter(Parameter<T> parameter, T value);
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    TypedQuery<X> setHint(String hintName, Object value);
+
+    /**
      * Sets descriptor to use with this query.
      * <p>
      * The descriptor may specify contexts and languages for the retrieved query results. Note that the descriptor
@@ -125,6 +131,7 @@ public interface TypedQuery<X> extends Query {
      *
      * @param descriptor The descriptor to use
      * @return This query instance
+     * @throws NullPointerException If the provided argument is {@code null}
      */
     TypedQuery<X> setDescriptor(Descriptor descriptor);
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -65,8 +65,8 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
     }
 
     private Value<?> extractValue(X instance) {
-        final Object extractedValue = toAxiomValue(extractFieldValueFromInstance(instance));
-        return extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
+        final Object extractedValue = extractFieldValueFromInstance(instance);
+        return extractedValue != null ? convertToAxiomValue(extractedValue) : Value.nullValue();
     }
 
     @Override

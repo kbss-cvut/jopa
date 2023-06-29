@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.OWLClassW;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
@@ -26,6 +28,10 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.util.Collections;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class RetrieveWithInferenceRunner extends BaseRunner {
@@ -41,10 +47,50 @@ public abstract class RetrieveWithInferenceRunner extends BaseRunner {
     public void retrievedEntityWithInferredTypesContainsInferredData() throws Exception {
         persistTestData(Collections.singleton(
                 new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
-                        URI.create(Vocabulary.C_OWL_CLASS_A))), em);
+                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
         persist(entityW);
 
         final OWLClassW result = findRequired(OWLClassW.class, entityW.getUri());
-        assertTrue(result.getTypes().contains(URI.create(Vocabulary.C_OWL_CLASS_A)));
+        assertThat(result.getTypes(), hasItem(URI.create(Vocabulary.C_OWL_CLASS_A)));
+    }
+
+    @Test
+    public void isInferredReturnsTrueForInferredPropertyValue() throws Exception {
+        persistTestData(Collections.singleton(
+                new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
+                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
+        persist(entityW);
+
+        final OWLClassW w = findRequired(OWLClassW.class, entityW.getUri());
+        assertTrue(em.isInferred(w, em.getMetamodel().entity(OWLClassW.class).getTypes(),
+                                 URI.create(Vocabulary.C_OWL_CLASS_A)));
+        assertFalse(em.isInferred(w, em.getMetamodel().entity(OWLClassW.class).getTypes(),
+                                  URI.create(Vocabulary.C_OWL_CLASS_W)));
+    }
+
+    @Test
+    public void findReturnsOnlyAssertedDataWhenDescriptorDisablesInference() throws Exception {
+        persistTestData(Collections.singleton(
+                new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
+                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
+        persist(entityW);
+
+        final OWLClassW result =
+                findRequired(OWLClassW.class, entityW.getUri(), new EntityDescriptor().disableInference());
+        assertThat(result.getTypes(), not(hasItem(URI.create(Vocabulary.C_OWL_CLASS_A))));
+    }
+
+    @Test
+    public void selectQueryWithDisabledInferenceAppliesThisSettingToLoadedResultsAsWell() throws Exception {
+        persistTestData(Collections.singleton(
+                new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
+                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
+        persist(entityW);
+
+        final OWLClassW result = em.createQuery("SELECT w FROM OWLClassW w WHERE w.uri = :uri", OWLClassW.class)
+                .setParameter("uri", entityW.getUri())
+                .setHint(QueryHints.DISABLE_INFERENCE, Boolean.TRUE.toString())
+                .getSingleResult();
+        assertThat(result.getTypes(), not(hasItem(URI.create(Vocabulary.C_OWL_CLASS_A))));
     }
 }

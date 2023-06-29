@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
+ * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import org.apache.jena.query.Query;
@@ -57,22 +58,17 @@ class DummyInferredStorageConnector implements InferredStorageConnector {
     }
 
     @Override
-    public AbstractResultSet executeSelectQuery(Query query,
-                                                cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
-            JenaDriverException {
+    public AbstractResultSet executeSelectQuery(Query query, StatementOntology target) throws JenaDriverException {
         return connector.executeSelectQuery(query, target);
     }
 
     @Override
-    public AbstractResultSet executeAskQuery(Query query,
-                                             cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
-            JenaDriverException {
+    public AbstractResultSet executeAskQuery(Query query, StatementOntology target) throws JenaDriverException {
         return connector.executeAskQuery(query, target);
     }
 
     @Override
-    public void executeUpdate(String query, cz.cvut.kbss.ontodriver.Statement.StatementOntology target) throws
-            JenaDriverException {
+    public void executeUpdate(String query, StatementOntology target) throws JenaDriverException {
         connector.executeUpdate(query, target);
     }
 }

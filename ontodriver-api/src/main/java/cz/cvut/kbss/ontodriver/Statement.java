@@ -1,14 +1,16 @@
 /**
- * Copyright (C) 2022 Czech Technical University in Prague
- * <p>
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License along with this program. If not, see
- * <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2023 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver;
 
@@ -30,7 +32,7 @@ public interface Statement extends AutoCloseable {
         /**
          * The main ontology in the current state. No uncommitted changes are present in it.
          */
-        CENTRAL
+        SHARED
     }
 
     /**
@@ -53,9 +55,11 @@ public interface Statement extends AutoCloseable {
     /**
      * Sets which ontology is used to evaluate this statement.
      * <p>
-     * {@link Statement.StatementOntology#TRANSACTIONAL} ontology is the transactional snapshot. It may contain
+     * {@link Statement.StatementOntology#TRANSACTIONAL} ontology is the transactional version. It may contain
      * uncommitted changes and thus the query results may differ from evaluation against {@link
-     * Statement.StatementOntology#CENTRAL}.
+     * Statement.StatementOntology#SHARED}.
+     * <p>
+     * Note that implementations may ignore this setting depending on their internal transaction management mechanisms.
      *
      * @param ontology Which ontology to use
      */
