@@ -231,6 +231,7 @@
                         <exclude>**/*.md</exclude>
                         <exclude>**/maven.yml</exclude>
                         <exclude>**/pom.xml</exclude>
+                        <exclude>.editorconfig</exclude>
                     </excludes>
                 </configuration>
             </plugin>
