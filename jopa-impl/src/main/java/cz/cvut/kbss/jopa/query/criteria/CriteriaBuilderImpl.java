@@ -31,7 +31,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public <T> CriteriaQuery<T> createQuery(Class<T> resultClass) {
+    public <T> CriteriaQueryImpl<T> createQuery(Class<T> resultClass) {
         return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel(), this);
     }
 
@@ -39,6 +39,12 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public <N extends Number> Expression<N> abs(Expression<N> x) {
         validateFunctionArgument(x);
         return new AbsFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
+    }
+
+    private void validateFunctionArgument(Expression<?> x) {
+        if (!(x instanceof AbstractPathExpression)) {
+            throw new IllegalArgumentException("Function can be applied only to path expressions.");
+        }
     }
 
     @Override
@@ -101,10 +107,10 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         return new UpperFunction((AbstractPathExpression) x, this);
     }
 
-    private void validateFunctionArgument(Expression<?> x) {
-        if (!(x instanceof AbstractPathExpression)) {
-            throw new IllegalArgumentException("Function can be applied only to path expressions.");
-        }
+    @Override
+    public Expression<String> lang(Path<String> x) {
+        validateFunctionArgument(x);
+        return new LangFunction((AbstractPathExpression) x, this);
     }
 
     @Override

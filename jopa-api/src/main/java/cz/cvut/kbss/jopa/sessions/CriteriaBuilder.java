@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Order;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
+import cz.cvut.kbss.jopa.model.query.criteria.Path;
 
 /**
  * Used to construct criteria queries, compound selections, expressions, predicates, orderings.
@@ -124,6 +125,14 @@ public interface CriteriaBuilder extends PredicateFactory {
      * @return expression to convert to uppercase
      */
     Expression<String> upper(Expression<String> x);
+
+    /**
+     * Create expression for extracting language tag from a string literal.
+     *
+     * @param x String-valued attribute
+     * @return Expression to extract language tag
+     */
+    Expression<String> lang(Path<String> x);
 
     /**
      * Create an ordering by the ascending value of the expression.
