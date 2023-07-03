@@ -102,6 +102,7 @@ functionsReturningStrings
    | 'SUBSTRING' '(' stringExpression ',' simpleArithmeticExpression ',' simpleArithmeticExpression ')'
    | 'LOWER' '(' stringExpression ')'
    | 'UPPER' '(' stringExpression ')'
+   | 'LANG' '(' whereClauseParam ')'
    ;
 
 simpleArithmeticExpression

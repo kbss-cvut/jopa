@@ -739,4 +739,13 @@ public class SoqlQueryParserTest {
         parseAndAssertEquality(soqlIdFirst, expectedSparql);
         parseAndAssertEquality(soqlIdSecond, expectedSparql);
     }
+
+    @Test
+    void parseQuerySupportsLangExtractionAndComparison() {
+        final String soql = "SELECT u FROM OWLClassU u WHERE LANG(u.singularStringAtt) = :language";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassU) + " . " +
+                "?x " + strUri(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE) + " ?uSingularStringAtt . " +
+                "FILTER (lang(?uSingularStringAtt) = ?language) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }

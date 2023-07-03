@@ -121,6 +121,11 @@ public class SoqlConstants {
          */
         public static final String FLOOR = "FLOOR";
 
+        /**
+         * Returns language tag of a literal, if it has one. Returns an empty string if it has no language tag.
+         */
+        public static final String LANG = "LANG";
+
         private Functions() {
             throw new AssertionError();
         }

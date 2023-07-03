@@ -15,9 +15,11 @@
 package cz.cvut.kbss.jopa.test.query;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,6 +171,7 @@ public final class QueryTestEnvironment {
         m.put(OWLClassJ.class, generateOwlClassJInstances(aa));
         m.put(OWLClassM.class, generateOwlClassMInstances());
         m.put(OWLClassT.class, generateOwlClassTInstances(aa));
+        m.put(OWLClassY.class, generateOwlClassYInstances());
         return m;
     }
 
@@ -265,6 +268,27 @@ public final class QueryTestEnvironment {
             m.setEnumSimpleLiteral(m.getEnumAttribute());
             m.setOrdinalEnumAttribute(m.getEnumAttribute());
             lst.add(m);
+        }
+        return lst;
+    }
+
+    private static List<OWLClassY> generateOwlClassYInstances() {
+        final List<OWLClassY> lst = new ArrayList<>();
+        for (int i = 0; i < ITEM_COUNT; i++) {
+            final OWLClassY y = new OWLClassY();
+            y.setSingularString(MultilingualString.create("Test" + i, TestEnvironment.PERSISTENCE_LANGUAGE));
+            switch (Generators.randomPositiveInt(0, 3)) {
+                case 0:
+                    y.getSingularString().set("Testwert nummer " + i, "de");
+                    break;
+                case 1:
+                    y.getSingularString().set("Testovací hodnota číslo " + i, "cs");
+                    break;
+                case 2:
+                    y.getSingularString().set("nombre de valeurs de test " + i, "fr");
+                    break;
+            }
+            lst.add(y);
         }
         return lst;
     }

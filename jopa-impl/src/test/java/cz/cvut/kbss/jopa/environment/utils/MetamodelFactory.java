@@ -1286,6 +1286,7 @@ public class MetamodelFactory {
         when(et.getJavaType()).thenReturn(OWLClassU.class);
         when(id.getJavaField()).thenReturn(OWLClassU.getIdField());
         when(id.getDeclaringType()).thenReturn(et);
+        when(id.getName()).thenReturn(OWLClassU.getIdField().getName());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassU.getClassIri()));
         when(et.getName()).thenReturn(OWLClassU.class.getSimpleName());
         when(et.getFieldSpecifications())

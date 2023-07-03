@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.OWLClassY;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
@@ -468,5 +469,21 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
                 cb.equal(rootIdSecond.getAttr("uri"), instance.getUri()));
         final OWLClassD resultIdSecond = getEntityManager().createQuery(queryIdSecond).getSingleResult();
         assertEquals(instance.getUri(), resultIdSecond.getUri());
+    }
+
+    @Test
+    public void selectByLanguageTag() {
+        final String language = Generators.getRandomItem(List.of("de", "cs", "fr"));
+        final List<OWLClassY> expected = QueryTestEnvironment.getData(OWLClassY.class).stream()
+                                                             .filter(y -> y.getSingularString().getLanguages()
+                                                                           .contains(language))
+                                                             .collect(Collectors.toList());
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassY> query = cb.createQuery(OWLClassY.class);
+        final Root<OWLClassY> root = query.from(OWLClassY.class);
+        query.select(root).where(cb.equal(cb.lang(root.getAttr("singularString")), language));
+
+        final List<OWLClassY> result = getEntityManager().createQuery(query).getResultList();
+        assertThat(result, containsSameEntities(expected));
     }
 }
