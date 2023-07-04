@@ -26,7 +26,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -107,7 +111,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
 
     protected static JarFile createJarFile(URL elementUrl) throws IOException {
         final String jarPath = sanitizePath(elementUrl).replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
-                .replaceFirst("file:", "");
+                                                       .replaceFirst("file:", "");
         return new JarFile(jarPath);
     }
 
@@ -135,7 +139,8 @@ public class DefaultClasspathScanner implements ClasspathScanner {
                 final String entryName = entry.getName();
                 if (entryName.endsWith(CLASS_FILE_SUFFIX) && entryName.contains(pathPattern)) {
                     String className = entryName.substring(entryName.indexOf(pathPattern));
-                    className = className.replace(JAVA_CLASSPATH_SEPARATOR, JAVA_PACKAGE_SEPARATOR).replace(WINDOWS_FILE_SEPARATOR, JAVA_PACKAGE_SEPARATOR);
+                    className = className.replace(JAVA_CLASSPATH_SEPARATOR, JAVA_PACKAGE_SEPARATOR)
+                                         .replace(WINDOWS_FILE_SEPARATOR, JAVA_PACKAGE_SEPARATOR);
                     className = className.substring(0, className.length() - CLASS_FILE_SUFFIX.length());
                     processClass(className);
                 }
@@ -154,8 +159,9 @@ public class DefaultClasspathScanner implements ClasspathScanner {
         try {
             final Class<?> cls = Class.forName(className, true, classLoader);
             listeners.forEach(listener -> listener.accept(cls));
-        } catch (ClassNotFoundException e) {
-            throw new OWLPersistenceException("Unexpected ClassNotFoundException when scanning for entities.", e);
+        } catch (Throwable e) {
+            LOG.debug("Unable to load class {}, got error {}: {}. Skipping the class. If it is an entity class, ensure it is available on classpath and is built with supported Java version.", className, e.getClass()
+                                                                                                                                                                                                           .getName(), e.getMessage());
         }
     }
 
