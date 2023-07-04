@@ -54,12 +54,11 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PersistenceUnitClassFinderTest {
 
-    private static final Set<Class<?>> ENTITY_CLASSES = initEntityClasses();
+    static final Set<Class<?>> ENTITY_CLASSES = initEntityClasses();
 
     private static Set<Class<?>> initEntityClasses() {
         final Set<Class<?>> set = new HashSet<>();
@@ -93,15 +92,18 @@ public class PersistenceUnitClassFinderTest {
     private final PersistenceUnitClassFinder sut = new PersistenceUnitClassFinder();
 
     @Test
-    public void throwsExceptionWhenScanPackageIsNotSupplied() {
-        final Map<String, String> properties = Collections.emptyMap();
-        assertThrows(IllegalArgumentException.class, () -> sut.scanClasspath(new Configuration(properties)));
+    public void scanClasspathScansWholeClasspathWhenPackageIsNotProvided() {
+        sut.scanClasspath(new Configuration(Map.of(JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS, TestClasspathScanner.class.getName())));
+        assertEquals(Map.of(0, ""), TestClasspathScanner.invocations);
     }
 
     @Test
-    public void throwsExceptionWhenScanPackageIsEmpty() {
-        final Map<String, String> properties = Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "");
-        assertThrows(IllegalArgumentException.class, () -> sut.scanClasspath(new Configuration(properties)));
+    public void scanClasspathScansWholeClasspathWhenPackageIsEmpty() {
+        sut.scanClasspath(new Configuration(Map.of(
+                JOPAPersistenceProperties.SCAN_PACKAGE, "",
+                JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS, TestClasspathScanner.class.getName()
+        )));
+        assertEquals(Map.of(0, ""), TestClasspathScanner.invocations);
     }
 
     @Test
@@ -125,7 +127,7 @@ public class PersistenceUnitClassFinderTest {
         final Map<String, String> properties = new HashMap<>();
         properties.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
         properties.put(JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS,
-                       cz.cvut.kbss.jopa.environment.utils.TestClasspathScanner.class.getCanonicalName());
+                cz.cvut.kbss.jopa.environment.utils.TestClasspathScanner.class.getCanonicalName());
         sut.scanClasspath(new Configuration(properties));
         assertTrue(sut.getEntities().containsAll(ENTITY_CLASSES));
     }
@@ -163,6 +165,16 @@ public class PersistenceUnitClassFinderTest {
         assertEquals(Map.of(0, "cz.cvut.kbss.jopa.environment"), TestClasspathScanner.invocations);
     }
 
+    @Test
+    void scanClasspathUsesClasspathScannerToFindEntityClassesInAllProvidedPackages() {
+        sut.scanClasspath(new Configuration(Map.of(
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment,org.example",
+                JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS, TestClasspathScanner.class.getName()
+        )));
+        assertEquals(Map.of(0, "cz.cvut.kbss.jopa.environment",
+                1, "org.example"), TestClasspathScanner.invocations);
+    }
+
     public static class TestClasspathScanner implements ClasspathScanner {
 
         private static Map<Integer, String> invocations;
@@ -180,15 +192,5 @@ public class PersistenceUnitClassFinderTest {
         public void processClasses(String scanPackage) {
             invocations.put(invocations.size(), scanPackage);
         }
-    }
-
-    @Test
-    void scanClasspathUsesClasspathScannerToFindEntityClassesInAllProvidedPackages() {
-        sut.scanClasspath(new Configuration(Map.of(
-                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment,org.example",
-                JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS, TestClasspathScanner.class.getName()
-        )));
-        assertEquals(Map.of(0, "cz.cvut.kbss.jopa.environment",
-                1, "org.example"), TestClasspathScanner.invocations);
     }
 }

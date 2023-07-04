@@ -54,19 +54,13 @@ public class PersistenceUnitClassFinder {
      */
     public void scanClasspath(Configuration configuration) {
         Objects.requireNonNull(configuration);
-        if (!configuration.contains(JOPAPersistenceProperties.SCAN_PACKAGE)) {
-            throw new IllegalArgumentException("Missing the " + JOPAPersistenceProperties.SCAN_PACKAGE + " property.");
-        }
-        String scanPackageConfig = configuration.get(JOPAPersistenceProperties.SCAN_PACKAGE);
-        if (scanPackageConfig.isEmpty()) {
-            throw new IllegalArgumentException(JOPAPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
-        }
+        String scanPackageConfig = configuration.get(JOPAPersistenceProperties.SCAN_PACKAGE, "");
         final String[] toScan = scanPackageConfig.split(",");
         final ClasspathScanner classpathScanner = resolveClasspathScanner(configuration);
         classpathScanner.addListener(entityLoader);
         classpathScanner.addListener(resultSetMappingLoader);
         classpathScanner.addListener(converterLoader);
-        Stream.of(toScan).map(String::trim).filter(pkg -> !pkg.isEmpty()).forEach(classpathScanner::processClasses);
+        Stream.of(toScan).map(String::trim).forEach(classpathScanner::processClasses);
         this.scanned = true;
     }
 
