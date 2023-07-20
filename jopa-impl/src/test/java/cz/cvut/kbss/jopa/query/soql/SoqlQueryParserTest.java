@@ -748,4 +748,11 @@ public class SoqlQueryParserTest {
                 "FILTER (lang(?uSingularStringAtt) = ?language) }";
         parseAndAssertEquality(soql, expectedSparql);
     }
+
+    @Test
+    void parseQuerySupportsCountById() {
+        final String soql = "SELECT COUNT(a) FROM OWLClassA a WHERE a.uri = :id";
+        final String expectedSparql = "SELECT (COUNT(?id) AS ?count) WHERE { ?id a " + strUri(Vocabulary.c_OwlClassA) + " . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }

@@ -168,7 +168,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitCount(SoqlParser.CountContext ctx) {
-        this.projectedVariable = ctx.getChild(1).getText();
+        this.projectedVariable = ctx.getChild(2).getText();
     }
 
     @Override
