@@ -321,6 +321,7 @@ public class MetamodelFactory {
         when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
+        when(setAMock.getName()).thenReturn(OWLClassF.getSimpleSetField().getName());
         when(etMock.getAttribute(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
         when(etMock.getFieldSpecification(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
 

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
@@ -27,7 +25,8 @@ public abstract class AbstractPathExpression<X> extends AbstractExpression<X> im
     protected AbstractPathExpression pathSource;
     protected final Metamodel metamodel;
 
-    public AbstractPathExpression(Class<X> type, AbstractPathExpression pathSource, Metamodel metamodel, CriteriaBuilder cb) {
+    public AbstractPathExpression(Class<X> type, AbstractPathExpression pathSource, Metamodel metamodel,
+                                  CriteriaBuilder cb) {
         super(type, cb);
         this.pathSource = pathSource;
         this.metamodel = metamodel;
@@ -38,6 +37,8 @@ public abstract class AbstractPathExpression<X> extends AbstractExpression<X> im
         final FieldSpecification<? super X, ?> fs;
         if (et.getIdentifier().getName().equals(attributeName)) {
             fs = et.getIdentifier();
+        } else if (et.getTypes() != null && et.getTypes().getName().equals(attributeName)) {
+            fs = et.getTypes();
         } else {
             fs = et.getAttribute(attributeName);
         }

@@ -18,8 +18,10 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassA_;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassD_;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
@@ -497,6 +499,35 @@ public class CriteriaQueryTranslateQueryTest {
                     "SELECT owlclassm FROM OWLClassM owlclassm ORDER BY owlclassm.intAttribute ASC, owlclassm.doubleAttribute DESC";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
+
+        @Test
+        void translateQueryTranslatesLangMatching() {
+            final CriteriaQueryImpl<OWLClassU> query = cb.createQuery(OWLClassU.class);
+            final Root<OWLClassU> root = query.from(OWLClassU.class);
+            query.select(root).where(cb.equal(cb.lang(root.getAttr("singularStringAtt")), "en"));
+
+            final String result = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoql = "SELECT owlclassu FROM OWLClassU owlclassu WHERE LANG(owlclassu.singularStringAtt) = :generatedName0";
+            assertEquals(expectedSoql, result);
+        }
+
+        @Test
+        void translateQueryTranslatesIsMemberWithLiteralToMemberOfExpression() {
+            final CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            final Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).where(cb.isMember(Generators.createPropertyIdentifier(), root.getAttr("types")));
+            final String expectedSoql = "SELECT owlclassa FROM OWLClassA owlclassa WHERE :generatedName0 MEMBER OF owlclassa.types";
+            assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));
+        }
+
+        @Test
+        void translateQueryTranslatesIsNotMemberWithLiteralToNotMemberOfExpression() {
+            final CriteriaQueryImpl<OWLClassF> query = cb.createQuery(OWLClassF.class);
+            final Root<OWLClassF> root = query.from(OWLClassF.class);
+            query.select(root).where(cb.isNotMember(Generators.createPropertyIdentifier(), root.getAttr("simpleSet")));
+            final String expectedSoql = "SELECT owlclassf FROM OWLClassF owlclassf WHERE :generatedName0 NOT MEMBER OF owlclassf.simpleSet";
+            assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));
+        }
     }
 
     @Nested
@@ -546,17 +577,6 @@ public class CriteriaQueryTranslateQueryTest {
             final String expectedSoqlQuery =
                     "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
-        }
-
-        @Test
-        void translateQueryTranslatesLangMatching() {
-            final CriteriaQueryImpl<OWLClassU> query = cb.createQuery(OWLClassU.class);
-            final Root<OWLClassU> root = query.from(OWLClassU.class);
-            query.select(root).where(cb.equal(cb.lang(root.getAttr("singularStringAtt")), "en"));
-
-            final String result = query.translateQuery(criteriaParameterFiller);
-            final String expectedSoql = "SELECT owlclassu FROM OWLClassU owlclassu WHERE LANG(owlclassu.singularStringAtt) = :generatedName0";
-            assertEquals(expectedSoql, result);
         }
     }
 }
