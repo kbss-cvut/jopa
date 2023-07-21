@@ -5,28 +5,17 @@ package cz.cvut.kbss.jopa.query.soql;
  */
 public class MemberOfOperator implements FilterableExpression {
 
-    private final boolean isNot;
-
-    private MemberOfOperator(boolean isNot) {
-        this.isNot = isNot;
-    }
-
     @Override
     public String toFilterExpression(String parameter, String value) {
-        // TODO FILTER NOT EXISTS
         return "";
     }
 
     @Override
     public boolean requiresFilterExpression() {
-        return isNot;
+        return false;
     }
 
     static MemberOfOperator memberOf() {
-        return new MemberOfOperator(false);
-    }
-
-    static MemberOfOperator notMemberOf() {
-        return new MemberOfOperator(true);
+        return new MemberOfOperator();
     }
 }

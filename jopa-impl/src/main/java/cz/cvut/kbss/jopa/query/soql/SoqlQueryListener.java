@@ -376,15 +376,11 @@ public class SoqlQueryListener implements SoqlListener {
     @Override
     public void exitMemberOfExpression(SoqlParser.MemberOfExpressionContext ctx) {
         if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
-            // TODO
-            attrPointer.setOperator(MemberOfOperator.notMemberOf());
-            ParseTree whereClauseValue = ctx.getChild(3);
-            attrPointer.setValue(whereClauseValue.getText());
-        } else {
-            attrPointer.setOperator(MemberOfOperator.memberOf());
-            ParseTree whereClauseValue = ctx.getChild(0);
-            attrPointer.setValue(whereClauseValue.getText());
+            attrPointer.setNot(true);
         }
+        attrPointer.setOperator(MemberOfOperator.memberOf());
+        ParseTree whereClauseValue = ctx.getChild(0);
+        attrPointer.setValue(whereClauseValue.getText());
         this.isInObjectIdentifierExpression = false;
     }
 

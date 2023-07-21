@@ -778,4 +778,11 @@ public class SoqlQueryParserTest {
         final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
         assertThat(ex.getMessage(), containsString("No matching attribute"));
     }
+
+    @Test
+    void parseQueryTranslatesNotMemberOfToFilterNotExists() {
+        final String soql = "SELECT p FROM Person p WHERE :disabledType NOT MEMBER OF p.types";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . FILTER NOT EXISTS { ?x a ?disabledType . } }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }
