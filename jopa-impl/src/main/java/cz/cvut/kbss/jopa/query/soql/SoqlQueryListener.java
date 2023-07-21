@@ -711,19 +711,20 @@ public class SoqlQueryListener implements SoqlListener {
         if (entityType.getIdentifier().getName().equals(nodeName)) {
             return;
         }
-        final Attribute<?, ?> abstractAttribute = entityType.getAttribute(node.getValue());
-        if (abstractAttribute == null) {
-            if (entityType.getTypes() != null && entityType.getTypes().getName().equals(node.getValue())) {
-                node.setIri(SparqlConstants.RDF_TYPE_SHORTCUT);
-                return;
-            } else {
-                throw new SoqlException("No matching attribute with name '" + node.getValue() + "' found on entity type '" + entityType.getName() + "'.");
-            }
+        if (entityType.getTypes() != null && entityType.getTypes().getName().equals(node.getValue())) {
+            node.setIri(SparqlConstants.RDF_TYPE_SHORTCUT);
+            return;
+        }
+        final Attribute<?, ?> att;
+        try {
+            att = entityType.getAttribute(node.getValue());
+        } catch (IllegalArgumentException e) {
+            throw new SoqlException("No matching attribute with name '" + node.getValue() + "' found on entity type '" + entityType.getName() + "'.");
         }
         //not implemented case of 3 or more fragments (chained SoqlNodes)
-        node.setIri(abstractAttribute.getIRI().toString());
+        node.setIri(att.getIRI().toString());
         if (node.hasChild()) {
-            final Type<?> type = resolveBindableType(abstractAttribute);
+            final Type<?> type = resolveBindableType(att);
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
             }

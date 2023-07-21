@@ -12,6 +12,7 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SoqlException;
@@ -38,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -775,6 +777,7 @@ public class SoqlQueryParserTest {
     @Test
     void parseQueryThrowsSoqlExceptionWhenUnknownAttributeNameIsUsed() {
         final String soql = "SELECT p FROM Person p WHERE p.unknownAttribute = :param";
+        when(metamodel.entity(Person.class).getAttribute(anyString())).thenThrow(IllegalArgumentException.class);
         final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
         assertThat(ex.getMessage(), containsString("No matching attribute"));
     }
