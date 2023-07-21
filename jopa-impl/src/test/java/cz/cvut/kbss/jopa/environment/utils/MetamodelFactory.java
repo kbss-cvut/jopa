@@ -74,6 +74,7 @@ public class MetamodelFactory {
         when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(strAttMock.hasLanguage()).thenReturn(true);
         when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
+        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
@@ -81,7 +82,6 @@ public class MetamodelFactory {
         when(typesMock.getElementType()).thenReturn(String.class);
         when(typesMock.isCollection()).thenReturn(true);
         when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
 
         when(etMock.getIdentifier()).thenReturn(idMock);
@@ -1487,5 +1487,6 @@ public class MetamodelFactory {
         when(typesMock.isCollection()).thenReturn(true);
         when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(etMock.getTypes()).thenReturn(typesMock);
+        when(etMock.getFieldSpecification("types")).thenReturn(typesMock);
     }
 }
