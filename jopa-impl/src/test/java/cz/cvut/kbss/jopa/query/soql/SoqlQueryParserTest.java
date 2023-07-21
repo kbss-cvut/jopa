@@ -14,6 +14,7 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
@@ -31,8 +32,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -766,5 +770,12 @@ public class SoqlQueryParserTest {
         final String soql = "SELECT COUNT(a) FROM OWLClassA a WHERE a.uri = :id";
         final String expectedSparql = "SELECT (COUNT(?id) AS ?count) WHERE { ?id a " + strUri(Vocabulary.c_OwlClassA) + " . }";
         parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryThrowsSoqlExceptionWhenUnknownAttributeNameIsUsed() {
+        final String soql = "SELECT p FROM Person p WHERE p.unknownAttribute = :param";
+        final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
+        assertThat(ex.getMessage(), containsString("No matching attribute"));
     }
 }
