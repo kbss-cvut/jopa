@@ -17,6 +17,8 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 
+import java.util.Collection;
+
 public interface PredicateFactory {
 
     /**
@@ -112,7 +114,8 @@ public interface PredicateFactory {
      * @param y expression
      * @return greaterThanOrEqual predicate
      */
-    <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Expression<? extends Y> y);
+    <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x,
+                                                                   Expression<? extends Y> y);
 
     /**
      * Create a predicate for testing whether the first argument is greater than or equal to the second.
@@ -185,6 +188,26 @@ public interface PredicateFactory {
      * @return like predicate
      */
     Predicate notLike(Expression<String> x, String pattern);
+
+    /**
+     * Creates a predicate that tests whether an element is a member of a collection.
+     *
+     * If the collection is empty, the predicate will be false.
+     * @param elem Element
+     * @param collection Expression
+     * @return is-member predicate
+     */
+    <E, C extends Collection<E>> Predicate isMember(E elem, Expression<C> collection);
+
+    /**
+     * Creates a predicate that tests whether an element is not a member of a collection.
+     *
+     * If the collection is empty, the predicate will be true.
+     * @param elem Element
+     * @param collection Expression
+     * @return is-member predicate
+     */
+    <E, C extends Collection<E>> Predicate isNotMember(E elem, Expression<C> collection);
 
     /**
      * Create a negation of the given restriction.

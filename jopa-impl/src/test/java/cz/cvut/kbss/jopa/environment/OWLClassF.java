@@ -34,8 +34,7 @@ public class OWLClassF {
     @OWLDataProperty(iri = Vocabulary.p_f_stringAttribute)
     private String secondStringAttribute;
 
-    @Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleNext")
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleSequence")
+    @OWLObjectProperty(iri = Vocabulary.p_f_setAttribute)
     private Set<OWLClassA> simpleSet;
 
     public OWLClassF() {

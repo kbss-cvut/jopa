@@ -14,12 +14,10 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
+import java.util.Set;
 
 @OWLClass(iri = Vocabulary.c_Person)
 public class Person {
@@ -38,4 +36,7 @@ public class Person {
 
     @OWLObjectProperty(iri = Vocabulary.p_p_hasPhone)
     private Phone phone;
+
+    @Types
+    private Set<String> types;
 }

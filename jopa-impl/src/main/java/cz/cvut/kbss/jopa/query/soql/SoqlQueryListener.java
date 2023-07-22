@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -21,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -367,6 +369,22 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterMemberOfExpression(SoqlParser.MemberOfExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitMemberOfExpression(SoqlParser.MemberOfExpressionContext ctx) {
+        if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
+            attrPointer.setNot(true);
+        }
+        attrPointer.setOperator(MemberOfOperator.memberOf());
+        ParseTree whereClauseValue = ctx.getChild(0);
+        attrPointer.setValue(whereClauseValue.getText());
+        this.isInObjectIdentifierExpression = false;
+    }
+
+    @Override
     public void enterComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
     }
 
@@ -689,14 +707,24 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private void setAllNodesIris(EntityType<?> entityType, SoqlNode node) {
-        if (entityType.getIdentifier().getName().equals(node.getValue())) {
+        final String nodeName = node.getValue();
+        if (entityType.getIdentifier().getName().equals(nodeName)) {
             return;
         }
-        final Attribute<?, ?> abstractAttribute = entityType.getAttribute(node.getValue());
+        if (entityType.getTypes() != null && entityType.getTypes().getName().equals(node.getValue())) {
+            node.setIri(SparqlConstants.RDF_TYPE_SHORTCUT);
+            return;
+        }
+        final Attribute<?, ?> att;
+        try {
+            att = entityType.getAttribute(node.getValue());
+        } catch (IllegalArgumentException e) {
+            throw new SoqlException("No matching attribute with name '" + node.getValue() + "' found on entity type '" + entityType.getName() + "'.");
+        }
         //not implemented case of 3 or more fragments (chained SoqlNodes)
-        node.setIri(abstractAttribute.getIRI().toString());
+        node.setIri(att.getIRI().toString());
         if (node.hasChild()) {
-            final Type<?> type = resolveBindableType(abstractAttribute);
+            final Type<?> type = resolveBindableType(att);
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
                 return;
             }

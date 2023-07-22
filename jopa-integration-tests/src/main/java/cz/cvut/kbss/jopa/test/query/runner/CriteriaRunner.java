@@ -40,10 +40,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
+import static java.util.function.Predicate.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -485,5 +487,20 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
         final List<OWLClassY> result = getEntityManager().createQuery(query).getResultList();
         assertThat(result, containsSameEntities(expected));
+    }
+
+    @Test
+    public void selectByTypeContainingMember() {
+        final OWLClassA sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        final Optional<String> type = sample.getTypes().stream().filter(not(QueryTestEnvironment.COMMON_TYPE::equals)).findFirst();
+        assert type.isPresent();
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(cb.isMember(URI.create(type.get()), root.getAttr("types")));
+
+        final List<OWLClassA> result = getEntityManager().createQuery(query).getResultList();
+        assertFalse(result.isEmpty());
+        result.forEach(r -> assertThat(r.getTypes(), hasItem(type.get())));
     }
 }

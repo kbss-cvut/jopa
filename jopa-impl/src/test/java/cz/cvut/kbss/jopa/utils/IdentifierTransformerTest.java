@@ -14,13 +14,16 @@
  */
 package cz.cvut.kbss.jopa.utils;
 
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IdentifierTransformerTest {
 
@@ -52,5 +55,11 @@ class IdentifierTransformerTest {
     void transformThrowsIllegalArgumentForUnsupportedTargetType() {
         assertThrows(IllegalArgumentException.class,
                 () -> IdentifierTransformer.transformToIdentifier(IDENTIFIER, Date.class));
+    }
+
+    @Test
+    void stringifyIriReturnsSpecifiedIriInAngledBrackets() {
+        final URI uri = Generators.createIndividualIdentifier();
+        assertEquals("<" + uri + ">", IdentifierTransformer.stringifyIri(uri));
     }
 }

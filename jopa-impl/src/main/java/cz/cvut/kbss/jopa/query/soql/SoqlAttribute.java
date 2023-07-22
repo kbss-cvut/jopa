@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.util.Collections;
@@ -162,6 +163,7 @@ public class SoqlAttribute extends SoqlParameter {
     }
 
     private static String toIri(SoqlNode node) {
-        return IdentifierTransformer.stringifyIri(node.getIri());
+        final String nodeIri = node.getIri();
+        return SparqlConstants.RDF_TYPE_SHORTCUT.equals(nodeIri) ? nodeIri : IdentifierTransformer.stringifyIri(nodeIri);
     }
 }

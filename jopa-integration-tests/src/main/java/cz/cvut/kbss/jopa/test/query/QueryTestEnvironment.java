@@ -34,7 +34,7 @@ public final class QueryTestEnvironment {
     private static final int ITEM_COUNT = 10;
 
     private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
-    private static final String TYPE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
+    public static final String COMMON_TYPE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
     private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
     private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
 
@@ -177,13 +177,16 @@ public final class QueryTestEnvironment {
 
     private static List<OWLClassA> generateOwlClassAInstances() {
         final List<OWLClassA> lst = new ArrayList<>(ITEM_COUNT);
+        final String typeOne = Generators.generateUri().toString();
+        final String typeTwo = Generators.generateUri().toString();
         int randomNum = Generators.randomInt(1000);
         for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassA a = new OWLClassA();
             a.setUri(URI.create(BASE_A + randomNum));
             a.setStringAttribute("stringAttribute" + randomNum);
             final Set<String> s = new HashSet<>();
-            s.add(TYPE_A);
+            s.add(COMMON_TYPE);
+            s.add(Generators.randomBoolean() ? typeOne : typeTwo);
             a.setTypes(s);
             lst.add(a);
             randomNum++;

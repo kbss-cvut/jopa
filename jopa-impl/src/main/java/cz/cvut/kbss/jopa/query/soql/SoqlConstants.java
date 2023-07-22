@@ -45,6 +45,11 @@ public class SoqlConstants {
     public static final String IN = "IN";
 
     /**
+     * {@code MEMBER OF} operator.
+     */
+    public static final String MEMBER_OF = "MEMBER OF";
+
+    /**
      * {@code NOT} operator.
      */
     public static final String NOT = "NOT";
