@@ -231,6 +231,16 @@ class StorageConnectorTest {
     }
 
     @Test
+    void initializationSupportsLegacyRepositoryConfigurationVocabulary() throws Exception {
+        final DriverConfiguration conf = TestUtils.createDriverConfig("test");
+        conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs-legacy.ttl");
+        this.connector = createConnector(conf);
+        final Repository repo = connector.unwrap(Repository.class);
+        assertTrue(repo instanceof SailRepository);
+        assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
+    }
+
+    @Test
     void initializationLoadsRepositoryConfigurationFromFileWithAbsolutePathAndCreatesRepo() throws Exception {
         final Path file = Files.createTempFile("memory-rdfs", ".ttl");
         try (final BufferedReader in = new BufferedReader(

@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryNotFoundException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.vocabulary.CONFIG;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -163,11 +164,17 @@ public class RepositoryConnectorInitializer {
         return manager.getRepository(getRepositoryId());
     }
 
+    @SuppressWarnings("deprecated")
     private RepositoryConfig loadRepositoryConfig() {
         try (final InputStream is = getConfigFileContent()) {
             final Model configModel = Rio.parse(is, "", RDFFormat.TURTLE);
-            final Set<Resource> resources =
-                    configModel.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY).subjects();
+            Set<Resource> resources =
+                    configModel.filter(null, RDF.TYPE, CONFIG.Rep.Repository).subjects();
+            if (resources.isEmpty()) {
+                // Support for legacy repository configuration vocabulary.
+                // https://rdf4j.org/documentation/reference/configuration/#migrating-old-configurations
+                resources = configModel.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY).subjects();
+            }
             assert resources.size() == 1;
             return RepositoryConfig.create(configModel, resources.iterator().next());
         } catch (IOException e) {

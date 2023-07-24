@@ -1,28 +1,20 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-@prefix rep: <http://www.openrdf.org/config/repository#>.
-@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
-@prefix sail: <http://www.openrdf.org/config/sail#>.
-@prefix spin: <http://www.openrdf.org/config/sail/spin#>.
-@prefix sail-luc: <http://www.openrdf.org/config/sail/lucene#>.
-@prefix cgqi: <http://www.openrdf.org/config/sail/customGraphQueryInferencer#>.
-@prefix ns: <http://www.openrdf.org/config/sail/native#>.
-@prefix sp: <http://spinrdf.org/sp#>.
-@prefix sb: <http://www.openrdf.org/config/sail/base#>.
+@prefix config: <tag:rdf4j.org,2023:config/>.
 
 
-[] a rep:Repository ;
-   rep:repositoryID "native-lucene" ;
+[] a config:Repository ;
+   config:rep.id "native-lucene" ;
    rdfs:label "Native store with Lucene Support" ;
-   rep:repositoryImpl [
-      rep:repositoryType "openrdf:SailRepository" ;
-      sr:sailImpl [
-            sail:sailType "openrdf:LuceneSail";
-            sail-luc:indexDir "index/" ;
-            sail:delegate [
-			    sail:sailType "openrdf:NativeStore" ;
-                            sail:iterationCacheSyncThreshold "10000";
-                            ns:tripleIndexes "spoc,posc";
-                            sb:evaluationStrategyFactory "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory"
+   config:rep.impl [
+      config:rep.type "openrdf:SailRepository" ;
+      config:sail.impl [
+            config:sail.type "openrdf:LuceneSail";
+            config:lucene.indexDir "index/" ;
+            config:delegate [
+			    config:sail.type "openrdf:NativeStore" ;
+                config:sail.iterationCacheSyncThreshold "10000";
+                config:native.tripleIndexes "spoc,posc";
+                config:sail.evaluationStrategyFactory "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory"
 			]
         ]
 ].
