@@ -1,5 +1,11 @@
 # JOPA - Change Log
 
+## 1.1.0 - 2023-07-28
+- Add support for MEMBER OF in SOQL/Criteria API (Enhancement #176).
+- Support language matching in SOQL/Criteria API (Enhancement #161).
+- Allow declaring multiple (or no) scan packages (Enhancement #185).
+- Support both legacy and new [RDF4J repository config vocabulary](https://rdf4j.org/documentation/reference/configuration/#migrating-old-configurations).
+- Dependency update: RDF4J 4.3.4, Jena 4.9.0.
 
 ## 1.0.0 - 2023-06-29
 - Add support for disabling inference when loading an entity (e.g., when loaded with disable inference query hint) (Enhancement #144).
