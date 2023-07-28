@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
@@ -33,9 +33,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -726,6 +730,20 @@ public class SoqlQueryParserTest {
         parseAndAssertEquality(soqlIdSecond, expectedSparql);
     }
 
+    @Test
+    void parseQueryWithTypesAndMemberOf() {
+        final String soql = "SELECT p FROM Person p WHERE :type MEMBER OF p.types";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x a ?type . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryWithMemberOfPluralAttribute() {
+        final String soql = "SELECT f FROM OWLClassF f WHERE :aInstance MEMBER OF f.simpleSet";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassF) + " . ?x " + strUri(Vocabulary.p_f_setAttribute) + " ?aInstance . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
     /**
      * Bug #178
      */
@@ -738,5 +756,36 @@ public class SoqlQueryParserTest {
                 "?owlClassA " + strUri(Vocabulary.p_a_stringAttribute) + " ?stringAtt . }";
         parseAndAssertEquality(soqlIdFirst, expectedSparql);
         parseAndAssertEquality(soqlIdSecond, expectedSparql);
+    }
+
+    @Test
+    void parseQuerySupportsLangExtractionAndComparison() {
+        final String soql = "SELECT u FROM OWLClassU u WHERE LANG(u.singularStringAtt) = :language";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassU) + " . " +
+                "?x " + strUri(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE) + " ?uSingularStringAtt . " +
+                "FILTER (lang(?uSingularStringAtt) = ?language) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQuerySupportsCountById() {
+        final String soql = "SELECT COUNT(a) FROM OWLClassA a WHERE a.uri = :id";
+        final String expectedSparql = "SELECT (COUNT(?id) AS ?count) WHERE { ?id a " + strUri(Vocabulary.c_OwlClassA) + " . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryThrowsSoqlExceptionWhenUnknownAttributeNameIsUsed() {
+        final String soql = "SELECT p FROM Person p WHERE p.unknownAttribute = :param";
+        when(metamodel.entity(Person.class).getAttribute(anyString())).thenThrow(IllegalArgumentException.class);
+        final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
+        assertThat(ex.getMessage(), containsString("No matching attribute"));
+    }
+
+    @Test
+    void parseQueryTranslatesNotMemberOfToFilterNotExists() {
+        final String soql = "SELECT p FROM Person p WHERE :disabledType NOT MEMBER OF p.types";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . FILTER NOT EXISTS { ?x a ?disabledType . } }";
+        parseAndAssertEquality(soql, expectedSparql);
     }
 }

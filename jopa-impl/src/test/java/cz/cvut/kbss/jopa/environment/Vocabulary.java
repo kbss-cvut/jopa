@@ -38,6 +38,7 @@ public class Vocabulary {
     public static final String c_Phone = CLASS_BASE + "Phone";
 
     public static final String p_f_stringAttribute = ATTRIBUTE_BASE + "f-stringAttribute";
+    public static final String p_f_setAttribute = ATTRIBUTE_BASE + "f-hasA";
 
     public static final String p_g_hasH = ATTRIBUTE_BASE + "hasH";
     public static final String p_h_hasA = ATTRIBUTE_BASE + "hasA";

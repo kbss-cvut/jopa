@@ -35,6 +35,7 @@ class SoqlFunctionTranslator {
         map.put(SoqlConstants.Functions.ABS, "ABS");
         map.put(SoqlConstants.Functions.CEIL, "CEIL");
         map.put(SoqlConstants.Functions.FLOOR, "FLOOR");
+        map.put(SoqlConstants.Functions.LANG, "lang");
         return map;
     }
 

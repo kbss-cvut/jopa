@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Scans classpath to discover classes relevant to persistence unit building.
@@ -53,18 +54,13 @@ public class PersistenceUnitClassFinder {
      */
     public void scanClasspath(Configuration configuration) {
         Objects.requireNonNull(configuration);
-        if (!configuration.contains(JOPAPersistenceProperties.SCAN_PACKAGE)) {
-            throw new IllegalArgumentException("Missing the " + JOPAPersistenceProperties.SCAN_PACKAGE + " property.");
-        }
-        String toScan = configuration.get(JOPAPersistenceProperties.SCAN_PACKAGE);
-        if (toScan.isEmpty()) {
-            throw new IllegalArgumentException(JOPAPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
-        }
+        String scanPackageConfig = configuration.get(JOPAPersistenceProperties.SCAN_PACKAGE, "");
+        final String[] toScan = scanPackageConfig.split(",");
         final ClasspathScanner classpathScanner = resolveClasspathScanner(configuration);
         classpathScanner.addListener(entityLoader);
         classpathScanner.addListener(resultSetMappingLoader);
         classpathScanner.addListener(converterLoader);
-        classpathScanner.processClasses(toScan);
+        Stream.of(toScan).map(String::trim).forEach(classpathScanner::processClasses);
         this.scanned = true;
     }
 

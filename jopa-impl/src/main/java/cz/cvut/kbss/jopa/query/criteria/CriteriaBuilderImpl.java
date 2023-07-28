@@ -15,12 +15,39 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
-import cz.cvut.kbss.jopa.model.query.criteria.*;
-import cz.cvut.kbss.jopa.query.criteria.expressions.*;
+import cz.cvut.kbss.jopa.model.query.criteria.Expression;
+import cz.cvut.kbss.jopa.model.query.criteria.Order;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
+import cz.cvut.kbss.jopa.model.query.criteria.Path;
+import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbsFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
+import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
+import cz.cvut.kbss.jopa.query.criteria.expressions.CeilFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.CountFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionEqualImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionGreaterThanImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionGreaterThanOrEqualImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionInImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionLessThanImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionLessThanOrEqualImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionLikeImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionLiteralImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionNotEqualImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionNotLikeImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.FloorFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.IsMemberExpression;
+import cz.cvut.kbss.jopa.query.criteria.expressions.LangFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.LengthFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.LowerFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.OrderImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.UpperFunction;
 import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 public class CriteriaBuilderImpl implements CriteriaBuilder {
 
@@ -31,7 +58,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public <T> CriteriaQuery<T> createQuery(Class<T> resultClass) {
+    public <T> CriteriaQueryImpl<T> createQuery(Class<T> resultClass) {
         return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel(), this);
     }
 
@@ -39,6 +66,12 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public <N extends Number> Expression<N> abs(Expression<N> x) {
         validateFunctionArgument(x);
         return new AbsFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
+    }
+
+    private void validateFunctionArgument(Expression<?> x) {
+        if (!(x instanceof AbstractPathExpression)) {
+            throw new IllegalArgumentException("Function can be applied only to path expressions.");
+        }
     }
 
     @Override
@@ -101,10 +134,10 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         return new UpperFunction((AbstractPathExpression) x, this);
     }
 
-    private void validateFunctionArgument(Expression<?> x) {
-        if (!(x instanceof AbstractPathExpression)) {
-            throw new IllegalArgumentException("Function can be applied only to path expressions.");
-        }
+    @Override
+    public Expression<String> lang(Path<String> x) {
+        validateFunctionArgument(x);
+        return new LangFunction((AbstractPathExpression) x, this);
     }
 
     @Override
@@ -217,6 +250,18 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         In<T> inExpression = new ExpressionInImpl<>(expression, this);
         inExpression.not();
         return inExpression;
+    }
+
+    @Override
+    public <E, C extends Collection<E>> Predicate isMember(E elem, Expression<C> collection) {
+        return new IsMemberExpression<>(elem, collection, this);
+    }
+
+    @Override
+    public <E, C extends Collection<E>> Predicate isNotMember(E elem, Expression<C> collection) {
+        final IsMemberExpression<E> expr = new IsMemberExpression<>(elem, collection, this);
+        expr.not();
+        return expr;
     }
 
     @Override

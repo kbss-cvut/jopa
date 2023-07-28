@@ -62,6 +62,7 @@ simpleConditionalExpression
    : comparisonExpression
    | likeExpression
    | inExpression
+   | memberOfExpression
    ;
 
 inExpression
@@ -78,8 +79,12 @@ literal
    ;
 
 likeExpression
-   : stringExpression ('NOT')? LIKE whereClauseValue
+   : stringExpression (NOT)? LIKE whereClauseValue
    ;
+
+memberOfExpression
+    : inItem (NOT)? MEMBEROF whereClauseParam
+    ;
 
 comparisonExpression
    : stringExpression COMPARISON_OPERATOR stringExpression
@@ -102,6 +107,7 @@ functionsReturningStrings
    | 'SUBSTRING' '(' stringExpression ',' simpleArithmeticExpression ',' simpleArithmeticExpression ')'
    | 'LOWER' '(' stringExpression ')'
    | 'UPPER' '(' stringExpression ')'
+   | 'LANG' '(' whereClauseParam ')'
    ;
 
 simpleArithmeticExpression
@@ -180,6 +186,8 @@ COUNT: 'COUNT' ;
 LIKE: 'LIKE' ;
 
 IN: 'IN' ;
+
+MEMBEROF: 'MEMBER OF' ;
 
 COMPARISON_OPERATOR: '>' | '<' | '>=' | '<=' | '=' | '<>' | '!=' ;
 

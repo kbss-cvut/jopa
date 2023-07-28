@@ -45,6 +45,11 @@ public class SoqlConstants {
     public static final String IN = "IN";
 
     /**
+     * {@code MEMBER OF} operator.
+     */
+    public static final String MEMBER_OF = "MEMBER OF";
+
+    /**
      * {@code NOT} operator.
      */
     public static final String NOT = "NOT";
@@ -120,6 +125,11 @@ public class SoqlConstants {
          * Returns the largest number with no fractional part that is not greater than the argument.
          */
         public static final String FLOOR = "FLOOR";
+
+        /**
+         * Returns language tag of a literal, if it has one. Returns an empty string if it has no language tag.
+         */
+        public static final String LANG = "LANG";
 
         private Functions() {
             throw new AssertionError();

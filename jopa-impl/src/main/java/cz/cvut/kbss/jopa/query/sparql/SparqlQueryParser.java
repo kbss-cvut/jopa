@@ -34,9 +34,6 @@ import java.util.Map;
  */
 public class SparqlQueryParser implements QueryParser {
 
-    private static final String SELECT = "SELECT";
-    private static final String WHERE = "WHERE";
-
     private final ParameterValueFactory parameterValueFactory;
 
     private String query;
@@ -195,9 +192,9 @@ public class SparqlQueryParser implements QueryParser {
     }
 
     private void wordEnd() {
-        if (SELECT.equalsIgnoreCase(currentWord.toString())) {
+        if (SparqlConstants.SELECT.equalsIgnoreCase(currentWord.toString())) {
             this.inProjection = true;
-        } else if (inProjection && WHERE.equalsIgnoreCase(currentWord.toString())) {
+        } else if (inProjection && SparqlConstants.WHERE.equalsIgnoreCase(currentWord.toString())) {
             this.inProjection = false;
         }
         currentWord = new StringBuilder();

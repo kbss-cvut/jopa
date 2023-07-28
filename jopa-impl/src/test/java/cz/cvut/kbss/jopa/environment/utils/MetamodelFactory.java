@@ -74,6 +74,7 @@ public class MetamodelFactory {
         when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(strAttMock.hasLanguage()).thenReturn(true);
         when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
+        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
@@ -81,7 +82,6 @@ public class MetamodelFactory {
         when(typesMock.getElementType()).thenReturn(String.class);
         when(typesMock.isCollection()).thenReturn(true);
         when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
 
         when(etMock.getIdentifier()).thenReturn(idMock);
@@ -321,6 +321,7 @@ public class MetamodelFactory {
         when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
+        when(setAMock.getName()).thenReturn(OWLClassF.getSimpleSetField().getName());
         when(etMock.getAttribute(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
         when(etMock.getFieldSpecification(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
 
@@ -341,6 +342,7 @@ public class MetamodelFactory {
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassF.class.getDeclaredField("uri"));
         when(idMock.getDeclaringType()).thenReturn(etMock);
+        when(idMock.getName()).thenReturn("uri");
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 
@@ -1286,6 +1288,7 @@ public class MetamodelFactory {
         when(et.getJavaType()).thenReturn(OWLClassU.class);
         when(id.getJavaField()).thenReturn(OWLClassU.getIdField());
         when(id.getDeclaringType()).thenReturn(et);
+        when(id.getName()).thenReturn(OWLClassU.getIdField().getName());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassU.getClassIri()));
         when(et.getName()).thenReturn(OWLClassU.class.getSimpleName());
         when(et.getFieldSpecifications())
@@ -1426,6 +1429,7 @@ public class MetamodelFactory {
                                        AbstractAttribute genderAttMock,
                                        AbstractAttribute ageAttMock, SingularAttributeImpl phoneAttMock,
                                        AbstractIdentifiableType<Phone> etPhone,
+                                       TypesSpecification typesMock,
                                        Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(Person.class);
         when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
@@ -1474,5 +1478,15 @@ public class MetamodelFactory {
         when(phoneAttMock.getName()).thenReturn(Person.class.getDeclaredField("phone").getName());
         when(phoneAttMock.getType()).thenReturn(etPhone);
         when(etMock.getAttribute(Person.class.getDeclaredField("phone").getName())).thenReturn(phoneAttMock);
+
+        when(typesMock.getJavaField()).thenReturn(Person.class.getDeclaredField("types"));
+        when(typesMock.getName()).thenReturn(Person.class.getDeclaredField("types").getName());
+        when(typesMock.getDeclaringType()).thenReturn(etMock);
+        when(typesMock.getJavaType()).thenReturn(Set.class);
+        when(typesMock.getElementType()).thenReturn(String.class);
+        when(typesMock.isCollection()).thenReturn(true);
+        when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(etMock.getTypes()).thenReturn(typesMock);
+        when(etMock.getFieldSpecification("types")).thenReturn(typesMock);
     }
 }

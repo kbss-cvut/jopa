@@ -15,9 +15,11 @@
 package cz.cvut.kbss.jopa.test.query;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,7 @@ public final class QueryTestEnvironment {
     private static final int ITEM_COUNT = 10;
 
     private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
-    private static final String TYPE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
+    public static final String COMMON_TYPE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
     private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
     private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
 
@@ -169,18 +171,22 @@ public final class QueryTestEnvironment {
         m.put(OWLClassJ.class, generateOwlClassJInstances(aa));
         m.put(OWLClassM.class, generateOwlClassMInstances());
         m.put(OWLClassT.class, generateOwlClassTInstances(aa));
+        m.put(OWLClassY.class, generateOwlClassYInstances());
         return m;
     }
 
     private static List<OWLClassA> generateOwlClassAInstances() {
         final List<OWLClassA> lst = new ArrayList<>(ITEM_COUNT);
+        final String typeOne = Generators.generateUri().toString();
+        final String typeTwo = Generators.generateUri().toString();
         int randomNum = Generators.randomInt(1000);
         for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassA a = new OWLClassA();
             a.setUri(URI.create(BASE_A + randomNum));
             a.setStringAttribute("stringAttribute" + randomNum);
             final Set<String> s = new HashSet<>();
-            s.add(TYPE_A);
+            s.add(COMMON_TYPE);
+            s.add(Generators.randomBoolean() ? typeOne : typeTwo);
             a.setTypes(s);
             lst.add(a);
             randomNum++;
@@ -265,6 +271,27 @@ public final class QueryTestEnvironment {
             m.setEnumSimpleLiteral(m.getEnumAttribute());
             m.setOrdinalEnumAttribute(m.getEnumAttribute());
             lst.add(m);
+        }
+        return lst;
+    }
+
+    private static List<OWLClassY> generateOwlClassYInstances() {
+        final List<OWLClassY> lst = new ArrayList<>();
+        for (int i = 0; i < ITEM_COUNT; i++) {
+            final OWLClassY y = new OWLClassY();
+            y.setSingularString(MultilingualString.create("Test" + i, TestEnvironment.PERSISTENCE_LANGUAGE));
+            switch (Generators.randomPositiveInt(0, 3)) {
+                case 0:
+                    y.getSingularString().set("Testwert nummer " + i, "de");
+                    break;
+                case 1:
+                    y.getSingularString().set("Testovací hodnota číslo " + i, "cs");
+                    break;
+                case 2:
+                    y.getSingularString().set("nombre de valeurs de test " + i, "fr");
+                    break;
+            }
+            lst.add(y);
         }
         return lst;
     }
