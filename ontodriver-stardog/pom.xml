@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <artifactId>ontodriver-stardog</artifactId>
+    <name>OntoDriver - Stardog</name>
+    <description>Implementation of the OntoDriver API connecting to a Stardog database</description>
+    <parent>
+        <artifactId>jopa-all</artifactId>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <version>1.1.0</version>
+    </parent>
+
+    <repositories>
+        <repository>
+            <id>stardog-public</id>
+            <url>https://maven.stardog.com</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-rdf4j</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>
