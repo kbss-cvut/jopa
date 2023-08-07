@@ -16,11 +16,18 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.FactoryOfFactories;
+import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -28,41 +35,59 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class Rdf4jDriverTest {
 
     private static OntologyStorageProperties storageProperties;
 
     private Rdf4jDriver driver;
 
+    @Mock
+    private StatementLoaderFactory statementLoaderFactory;
+
+    @Mock
+    private ConnectorFactory connectorFactory;
+
     @BeforeAll
     public static void setUpBeforeClass() {
         storageProperties = OntologyStorageProperties.physicalUri(URI.create("mem:test"))
-                .driver(Rdf4jDataSource.class.getCanonicalName())
-                .build();
+                                                     .driver(Rdf4jDataSource.class.getCanonicalName())
+                                                     .build();
     }
 
     @BeforeEach
     public void setUp() throws Exception {
         final Map<String, String> properties = new HashMap<>();
         properties.put(Rdf4jOntoDriverProperties.USE_VOLATILE_STORAGE, Boolean.toString(true));
-        this.driver = new Rdf4jDriver(storageProperties, properties);
+        FactoryOfFactories factoryOfFactories = mock(FactoryOfFactories.class);
+        when(factoryOfFactories.createConnectorFactory()).thenReturn(connectorFactory);
+        when(factoryOfFactories.createStatementLoaderFactory()).thenReturn(statementLoaderFactory);
+        this.driver = new Rdf4jDriver(storageProperties, properties) {
+            @Override
+            protected FactoryOfFactories getFactoryOfFactories(DriverConfiguration config) {
+                return factoryOfFactories;
+            }
+        };
     }
 
     @Test
     public void testClose() throws Exception {
-        final Field connectorFactoryField = Rdf4jDriver.class.getDeclaredField("connectorFactory");
-        connectorFactoryField.setAccessible(true);
-        final ConnectorFactory connectorFactory = (ConnectorFactory) connectorFactoryField.get(driver);
         assertTrue(driver.isOpen());
         driver.close();
         assertFalse(driver.isOpen());
-        assertFalse(connectorFactory.isOpen());
+        verify(connectorFactory).close();
     }
 
     @Test
     public void acquiresConnection() {
+        when(connectorFactory.createStorageConnector()).thenReturn(mock(Connector.class));
         final Connection res = driver.acquireConnection();
         assertNotNull(res);
         assertNotNull(res.lists());
@@ -70,9 +95,10 @@ public class Rdf4jDriverTest {
 
     @Test
     public void removesClosedConnectionFromActiveConnections() throws Exception {
+        when(connectorFactory.createStorageConnector()).thenReturn(mock(Connector.class));
         final Connection conn = driver.acquireConnection();
         assertNotNull(conn);
-        final Field connectionsField = Rdf4jDriver.class.getDeclaredField("openedConnections");
+        final Field connectionsField = Rdf4jDriver.class.getDeclaredField("openConnections");
         connectionsField.setAccessible(true);
         final Set<Connection> openedConnections = (Set<Connection>) connectionsField.get(driver);
         assertTrue(openedConnections.contains(conn));

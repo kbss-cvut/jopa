@@ -91,7 +91,7 @@ public class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnectio
         return open;
     }
 
-    Connection acquireConnection() {
+    public Connection acquireConnection() {
         assert open;
         final RuntimeConfiguration config = new RuntimeConfiguration(configuration);
         config.setStatementLoaderFactory(statementLoaderFactory);

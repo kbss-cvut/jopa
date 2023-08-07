@@ -13,11 +13,12 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // JNI bindings path for Stardog must be non-empty
 @EnabledIfSystemProperty(named = "java.library.path", matches = "(.|\\s)*\\S(.|\\s)*")
-// STARDOG_HOME must be non-empty
+// STARDOG_HOME must be non-empty (contains license)
 @EnabledIfEnvironmentVariable(named = "STARDOG_HOME", matches = "(.|\\s)*\\S(.|\\s)*")
 class StardogRepositoryConnectionInitializerTest {
 
@@ -41,6 +42,7 @@ class StardogRepositoryConnectionInitializerTest {
         sut.initializeRepository();
         final Repository repo = sut.getRepository();
         assertNotNull(repo);
+        assertNull(sut.getManager());
         assertTrue(repo.isInitialized());
     }
 }

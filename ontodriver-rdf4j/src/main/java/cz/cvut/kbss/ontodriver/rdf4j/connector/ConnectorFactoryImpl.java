@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.repository.Repository;
 
 public final class ConnectorFactoryImpl implements ConnectorFactory {
@@ -47,7 +47,7 @@ public final class ConnectorFactoryImpl implements ConnectorFactory {
     }
 
     @Override
-    public synchronized void close() throws OntoDriverException {
+    public synchronized void close() throws Rdf4jDriverException {
         if (!open) {
             return;
         }
