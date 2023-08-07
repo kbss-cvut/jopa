@@ -42,7 +42,6 @@ public abstract class RepositoryConnectorInitializer {
                         ". Must be a non-negative integer.");
     }
 
-
     /**
      * Initializes the repository connection.
      * <p>

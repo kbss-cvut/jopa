@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.repository.Repository;
 
@@ -34,7 +33,7 @@ public interface ConnectorFactory {
      *
      * @throws Rdf4jDriverException When storage access error occurs
      */
-    void close() throws OntoDriverException;
+    void close() throws Rdf4jDriverException;
 
     /**
      * Whether this factory is open.

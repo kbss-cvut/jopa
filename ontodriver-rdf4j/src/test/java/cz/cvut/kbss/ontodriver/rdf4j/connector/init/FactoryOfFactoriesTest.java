@@ -50,8 +50,8 @@ class FactoryOfFactoriesTest {
         when(connection.prepareBooleanQuery(anyString())).thenReturn(query);
         when(query.evaluate()).thenReturn(true);
 
-        assertTrue(FactoryOfFactories.isRepositoryGraphDB(repository));
-        verify(query).setBinding(anyString(), eq(vf.createIRI(FactoryOfFactories.GRAPHDB_INTERNAL_ID_PROPERTY)));
+        assertTrue(Rdf4jFactoryOfFactories.isRepositoryGraphDB(repository));
+        verify(query).setBinding(anyString(), eq(vf.createIRI(Rdf4jFactoryOfFactories.GRAPHDB_INTERNAL_ID_PROPERTY)));
     }
 
 }
