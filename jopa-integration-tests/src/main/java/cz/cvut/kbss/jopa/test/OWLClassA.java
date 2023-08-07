@@ -14,7 +14,18 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.ConstructorResult;
+import cz.cvut.kbss.jopa.model.annotations.EntityResult;
+import cz.cvut.kbss.jopa.model.annotations.FieldResult;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.NamedNativeQueries;
+import cz.cvut.kbss.jopa.model.annotations.NamedNativeQuery;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
+import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMappings;
+import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 
 import java.net.URI;
 import java.util.Objects;
@@ -35,7 +46,7 @@ import java.util.Set;
         })
 })})
 @NamedNativeQueries({@NamedNativeQuery(name = "OWLClassA.findAll",
-        query = "SELECT ?x WHERE {?x a <" + Vocabulary.C_OWL_CLASS_A + "> . } ORDER BY ?x"),
+                                       query = "SELECT ?x WHERE {?x a <" + Vocabulary.C_OWL_CLASS_A + "> . } ORDER BY ?x"),
         @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
                 Vocabulary.P_A_STRING_ATTRIBUTE + "> ?str . }")
 })
@@ -94,8 +105,12 @@ public class OWLClassA implements HasUri {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof OWLClassA)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OWLClassA)) {
+            return false;
+        }
         OWLClassA owlClassA = (OWLClassA) o;
         return Objects.equals(getTypes(), owlClassA.getTypes()) && Objects.equals(getUri(), owlClassA.getUri()) && Objects.equals(getStringAttribute(), owlClassA.getStringAttribute());
     }

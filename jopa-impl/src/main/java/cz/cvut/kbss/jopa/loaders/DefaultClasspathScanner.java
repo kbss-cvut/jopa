@@ -159,7 +159,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
         try {
             final Class<?> cls = Class.forName(className, true, classLoader);
             listeners.forEach(listener -> listener.accept(cls));
-        } catch (Throwable e) {
+        } catch (Exception | NoClassDefFoundError e) {
             LOG.debug("Unable to load class {}, got error {}: {}. Skipping the class. If it is an entity class, ensure it is available on classpath and is built with supported Java version.", className, e.getClass()
                                                                                                                                                                                                            .getName(), e.getMessage());
         }

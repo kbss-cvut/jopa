@@ -14,7 +14,13 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
 import java.net.URI;
@@ -32,7 +38,8 @@ public class OWLClassZChild {
     @OWLDataProperty(iri = RDFS.LABEL)
     private String name;
 
-    @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_IRI_BASE + "hasChild", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_IRI_BASE + "hasChild", cascade = CascadeType.ALL,
+                       fetch = FetchType.EAGER)
     private Set<OWLClassZChild> children = new HashSet<>();
 
     public URI getId() {
@@ -61,8 +68,12 @@ public class OWLClassZChild {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         OWLClassZChild that = (OWLClassZChild) o;
         return Objects.equals(id, that.id);
     }

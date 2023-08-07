@@ -22,7 +22,13 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
 /**
  * Default implementation of the {@link PersistenceProviderResolver}, threadsafe.
@@ -63,14 +69,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         List<PersistenceProvider> loadedProviders = new ArrayList<>();
         Iterator<PersistenceProvider> ipp = ServiceLoader.load(PersistenceProvider.class, loader).iterator();
         try {
-            while (ipp.hasNext()) {
-                try {
-                    PersistenceProvider pp = ipp.next();
-                    loadedProviders.add(pp);
-                } catch (ServiceConfigurationError sce) {
-                    LOG.warn("Unable to load PersistenceProvider implementation via service loader.", sce);
-                }
-            }
+            loadProvider(ipp).ifPresent(loadedProviders::add);
         } catch (ServiceConfigurationError sce) {
             LOG.warn("Unable to load PersistenceProvider implementation via service loader.", sce);
         }
@@ -84,6 +83,15 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         providers.put(cacheKey, providersReferent);
 
         return loadedProviders;
+    }
+
+    private Optional<PersistenceProvider> loadProvider(Iterator<PersistenceProvider> ipp) {
+        try {
+            return Optional.of(ipp.next());
+        } catch (ServiceConfigurationError sce) {
+            LOG.warn("Unable to load PersistenceProvider implementation via service loader.", sce);
+            return Optional.empty();
+        }
     }
 
     /**
@@ -103,7 +111,8 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         if (System.getSecurityManager() == null) {
             return Thread.currentThread().getContextClassLoader();
         } else {
-            return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> Thread.currentThread().getContextClassLoader());
+            return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> Thread.currentThread()
+                                                                                             .getContextClassLoader());
         }
     }
 
@@ -192,7 +201,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
                 return clone;
             } catch (CloneNotSupportedException e) {
                 // this should never happen
-                throw new InternalError();
+                throw new InternalError(e);
             }
         }
 

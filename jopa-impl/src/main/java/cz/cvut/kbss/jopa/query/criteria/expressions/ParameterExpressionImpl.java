@@ -30,7 +30,9 @@ public class ParameterExpressionImpl<T> extends AbstractExpression<T> implements
     }
 
     public void setNameIfUnnamed(String name) {
-        if (this.name == null) this.name = name;
+        if (this.name == null) {
+            this.name = name;
+        }
     }
 
     @Override
@@ -56,7 +58,9 @@ public class ParameterExpressionImpl<T> extends AbstractExpression<T> implements
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
         if (o == null || !Parameter.class.isAssignableFrom(o.getClass())) {
             return false;
         }

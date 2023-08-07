@@ -42,7 +42,9 @@ public class MetamodelClass {
         }
         this.name = elClass.getSimpleName().toString();
         this.extend = ((TypeElement) elClass).getSuperclass().toString();
-        if (extend.equals(Object.class.getName())) extend = "";
+        if (extend.equals(Object.class.getName())) {
+            extend = "";
+        }
         else if (extend.contains("<")) {
             this.extend = extend.substring(0, extend.indexOf("<"));
         }

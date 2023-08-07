@@ -83,7 +83,7 @@ public class ModelGenProcessor extends AbstractProcessor {
                         }
                         List<? extends Element> properties = elParent.getEnclosedElements();
                         for (Element elProperty : properties) {
-                            if (propertyIsWanted(elProperty)) {
+                            if (isPropertyPersistent(elProperty)) {
                                 Field field = new Field(elProperty, elParent);
                                 if (debugOption) {
                                     messager.printMessage(Diagnostic.Kind.NOTE,
@@ -109,7 +109,7 @@ public class ModelGenProcessor extends AbstractProcessor {
         return true;
     }
 
-    private boolean propertyIsWanted(Element param) {
+    private static boolean isPropertyPersistent(Element param) {
         boolean containsWanted = false;
         List<? extends AnnotationMirror> paramAnnotations = param.getAnnotationMirrors();
         if (!paramAnnotations.isEmpty()) {
