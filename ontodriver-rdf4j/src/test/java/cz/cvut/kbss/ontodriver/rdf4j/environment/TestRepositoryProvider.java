@@ -24,6 +24,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.Rdf4jRepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 
@@ -42,7 +43,7 @@ public class TestRepositoryProvider {
         configuration.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         configuration.setProperty(Rdf4jConfigParam.USE_INFERENCE, Boolean.toString(useInference));
         configuration.setProperty(DriverConfigParam.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        final RepositoryConnectorInitializer connectorInitializer = new RepositoryConnectorInitializer(configuration);
+        final RepositoryConnectorInitializer connectorInitializer = new Rdf4jRepositoryConnectorInitializer(configuration);
         connectorInitializer.initializeRepository();
         this.factory = new ConnectorFactoryImpl(new StorageConnector(connectorInitializer));
         return factory.createStorageConnector();

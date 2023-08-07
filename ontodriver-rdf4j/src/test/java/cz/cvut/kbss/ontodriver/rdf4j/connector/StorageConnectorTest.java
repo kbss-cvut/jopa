@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.Rdf4jRepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.TestUtils;
@@ -116,7 +117,7 @@ class StorageConnectorTest {
     }
 
     private static StorageConnector createConnector(DriverConfiguration config) throws Rdf4jDriverException {
-        final RepositoryConnectorInitializer initializer = new RepositoryConnectorInitializer(config);
+        final RepositoryConnectorInitializer initializer = new Rdf4jRepositoryConnectorInitializer(config);
         initializer.initializeRepository();
         return new StorageConnector(initializer);
     }

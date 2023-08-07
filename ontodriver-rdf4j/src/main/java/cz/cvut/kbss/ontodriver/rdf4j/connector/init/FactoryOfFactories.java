@@ -45,7 +45,7 @@ public class FactoryOfFactories {
 
     public FactoryOfFactories(DriverConfiguration config) throws Rdf4jDriverException {
         this.config = config;
-        this.connectorInitializer = new RepositoryConnectorInitializer(config);
+        this.connectorInitializer = new Rdf4jRepositoryConnectorInitializer(config);
         connectorInitializer.initializeRepository();
     }
 

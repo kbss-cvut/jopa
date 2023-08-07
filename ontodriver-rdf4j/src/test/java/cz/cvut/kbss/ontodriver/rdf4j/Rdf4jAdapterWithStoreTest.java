@@ -26,6 +26,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.Rdf4jRepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import org.eclipse.rdf4j.model.Resource;
@@ -63,7 +64,7 @@ public class Rdf4jAdapterWithStoreTest {
                                                                       .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         configuration.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.toString(true));
-        final RepositoryConnectorInitializer connectorInitializer = new RepositoryConnectorInitializer(configuration);
+        final RepositoryConnectorInitializer connectorInitializer = new Rdf4jRepositoryConnectorInitializer(configuration);
         connectorInitializer.initializeRepository();
         this.factory = new ConnectorFactoryImpl(new StorageConnector(connectorInitializer));
         this.connector = factory.createStorageConnector();
