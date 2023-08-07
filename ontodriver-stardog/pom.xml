@@ -2,13 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <artifactId>ontodriver-stardog</artifactId>
     <name>OntoDriver - Stardog</name>
     <description>Implementation of the OntoDriver API connecting to a Stardog database</description>
     <parent>
         <artifactId>jopa-all</artifactId>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <version>1.1.0</version>
+        <version>1.2.0-SNAPSHOT</version>
     </parent>
 
     <repositories>
@@ -18,11 +20,29 @@
         </repository>
     </repositories>
 
+    <properties>
+        <com.complexible.stardog.version>9.1.0</com.complexible.stardog.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>ontodriver-rdf4j</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.complexible.stardog.rdf4j</groupId>
+            <artifactId>stardog-rdf4j</artifactId>
+            <version>${com.complexible.stardog.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.complexible.stardog</groupId>
+            <artifactId>client-http</artifactId>
+            <version>${com.complexible.stardog.version}</version>
+            <type>pom</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
