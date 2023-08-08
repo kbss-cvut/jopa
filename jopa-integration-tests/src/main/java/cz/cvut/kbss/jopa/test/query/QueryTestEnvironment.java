@@ -282,13 +282,13 @@ public final class QueryTestEnvironment {
             y.setSingularString(MultilingualString.create("Test" + i, TestEnvironment.PERSISTENCE_LANGUAGE));
             switch (Generators.randomPositiveInt(0, 3)) {
                 case 0:
-                    y.getSingularString().set("Testwert nummer " + i, "de");
+                    y.getSingularString().set("de", "Testwert nummer " + i);
                     break;
                 case 1:
-                    y.getSingularString().set("Testovací hodnota číslo " + i, "cs");
+                    y.getSingularString().set("cs", "Testovací hodnota číslo " + i);
                     break;
                 case 2:
-                    y.getSingularString().set("nombre de valeurs de test " + i, "fr");
+                    y.getSingularString().set("fr", "nombre de valeurs de test " + i);
                     break;
             }
             lst.add(y);
