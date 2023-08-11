@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
+import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
@@ -258,6 +259,9 @@ public class StorageConnector extends AbstractConnector {
         }
         if (cls.isAssignableFrom(repository.getClass())) {
             return cls.cast(repository);
+        }
+        if (repository instanceof Wrapper) {
+            return ((Wrapper) repository).unwrap(cls);
         }
         throw new Rdf4jDriverException("No instance of class " + cls + " found.");
     }
