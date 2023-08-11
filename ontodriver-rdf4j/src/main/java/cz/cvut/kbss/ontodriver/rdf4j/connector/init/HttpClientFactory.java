@@ -35,6 +35,8 @@ class HttpClientFactory {
         final RequestConfig customRequestConfig = RequestConfig.custom()
                                                                .setCookieSpec(CookieSpecs.STANDARD)
                                                                .setConnectionRequestTimeout(1000).build();
+        // TODO Configurable connection request timeout
+        // TODO Set larger max connections and max connections per route
         return HttpClientBuilder.create()
                                 .evictExpiredConnections()
                                 .setRetryHandler(new RetryHandlerStale())
