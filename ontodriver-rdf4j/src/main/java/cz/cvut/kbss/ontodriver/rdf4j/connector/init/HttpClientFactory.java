@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j.connector.init;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import org.apache.http.HttpConnection;
 import org.apache.http.HttpResponse;
@@ -22,11 +23,6 @@ import java.net.HttpURLConnection;
 class HttpClientFactory {
 
     /**
-     * Default max connection pool size.
-     */
-    private static final int DEFAULT_MAX_CONNECTIONS = 5;
-
-    /**
      * Creates a customized {@link HttpClient} instance.
      * <p>
      * The client's configuration is basically the same as the default one used by RDF4J, but it sets a timeout on
@@ -39,8 +35,8 @@ class HttpClientFactory {
     static HttpClient createHttpClient(DriverConfiguration configuration) {
         final RequestConfig customRequestConfig = RequestConfig.custom()
                                                                .setCookieSpec(CookieSpecs.STANDARD)
-                                                               .setConnectionRequestTimeout(1000).build();
-        // TODO Configurable connection request timeout
+                                                               .setConnectionRequestTimeout(getConnectionRequestTimeout(configuration))
+                                                               .build();
         final int maxConnections = getMaxConnections(configuration);
         return HttpClientBuilder.create()
                                 .evictExpiredConnections()
@@ -54,8 +50,13 @@ class HttpClientFactory {
                                 .setDefaultRequestConfig(customRequestConfig).build();
     }
 
+    private static int getConnectionRequestTimeout(DriverConfiguration config) {
+        return config.getProperty(Rdf4jConfigParam.CONNECTION_REQUEST_TIMEOUT, Constants.DEFAULT_CONNECTION_REQUEST_TIMEOUT);
+    }
+
     private static int getMaxConnections(DriverConfiguration config) {
-        final int defaultMaxConnections = Math.max(DEFAULT_MAX_CONNECTIONS, Runtime.getRuntime().availableProcessors());
+        final int defaultMaxConnections = Math.max(Constants.DEFAULT_MAX_CONNECTIONS, Runtime.getRuntime()
+                                                                                             .availableProcessors());
         return config.getProperty(Rdf4jConfigParam.MAX_CONNECTION_POOL_SIZE, defaultMaxConnections);
     }
 
