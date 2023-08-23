@@ -83,6 +83,23 @@ public final class DriverConfiguration {
     }
 
     /**
+     * Gets integer value of the specified property or the default value, if the property is not set.
+     *
+     * @param property     Parameter
+     * @param defaultValue Value to return if the property is not set
+     * @return Value of the property or {@code defaultValue}, if it is not set
+     * @throws IllegalArgumentException If the configured property value is not an integer
+     */
+    public int getProperty(ConfigurationParameter property, int defaultValue) {
+        final String propertyValue = getProperty(property, Integer.toString(defaultValue));
+        try {
+            return Integer.parseInt(propertyValue);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Value '" + propertyValue + "' of property '" + propertyValue + "' is not a valid integer.", e);
+        }
+    }
+
+    /**
      * Returns value of the specified property as boolean.
      * <p>
      * If the property is not configured, {@code false} is returned.
