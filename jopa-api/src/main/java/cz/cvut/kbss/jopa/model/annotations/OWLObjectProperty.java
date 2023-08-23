@@ -14,7 +14,13 @@
  */
 package cz.cvut.kbss.jopa.model.annotations;
 
-import java.lang.annotation.*;
+import cz.cvut.kbss.jopa.model.annotations.util.Property;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Marks an attribute mapped to an OWL object property.
@@ -24,6 +30,7 @@ import java.lang.annotation.*;
  * Note that for use with RDF(S), attributes annotated with this annotation are expected to reference other RDF resources.
  */
 @Documented
+@Property
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD,ElementType.METHOD})
 public @interface OWLObjectProperty {

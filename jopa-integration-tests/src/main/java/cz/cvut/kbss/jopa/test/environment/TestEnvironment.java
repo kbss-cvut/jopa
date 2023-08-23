@@ -69,7 +69,7 @@ public class TestEnvironment {
         for (StorageConfig si : storages) {
             si.setName(baseName);
             si.setDirectory(TEST_RESULTS_DIR);
-            final Map<String, String> config = si.createStorageConfiguration(i++);
+            final Map<String, String> config = new HashMap<>(si.createStorageConfiguration(i++));
             config.putAll(params);
             final EntityManager em = Persistence.createEntityManagerFactory("context-name_" + i, config)
                                                 .createEntityManager();

@@ -19,7 +19,7 @@ import java.util.Random;
 
 class PropertyAssertion extends Assertion {
 
-    private static final URI UNSPECIFIED_PROPERTY = URI.create("http://" + Math.abs(new Random().nextInt()));
+    private static final URI UNSPECIFIED_PROPERTY = URI.create("http://" + Math.abs(new Random().nextInt(Integer.MAX_VALUE)));
 
     PropertyAssertion(boolean isInferred) {
         super(UNSPECIFIED_PROPERTY, isInferred);

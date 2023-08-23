@@ -125,9 +125,9 @@ public class OutputFilesGenerator {
                  .append(cls.getPckg())
                  .append(";\n\n");
         }
-        cls.getImports().forEach((imp) -> sbOut.append("import ")
-                                               .append(imp)
-                                               .append(";\n"));
+        cls.getImports().forEach(imp -> sbOut.append("import ")
+                                             .append(imp)
+                                             .append(";\n"));
         if (!cls.getExtend().isEmpty()) {
             sbOut.append("import ")
                  .append(cls.getExtend())
@@ -148,7 +148,7 @@ public class OutputFilesGenerator {
         return sbOut.toString();
     }
 
-    private String generateAttributes(MetamodelClass cls) {
+    private static String generateAttributes(MetamodelClass cls) {
         StringBuilder attributes = new StringBuilder();
         for (Field field : cls.getFields()) {
             final String declaringClass = field.getParentName().substring(field.getParentName().lastIndexOf('.') + 1);
@@ -231,7 +231,7 @@ public class OutputFilesGenerator {
         return attributes.toString();
     }
 
-    private String generateClassSuffix() {
+    private static String generateClassSuffix() {
         return "}";
     }
 

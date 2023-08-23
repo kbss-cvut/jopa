@@ -22,6 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.time.*;
@@ -35,17 +36,43 @@ class XsdDatatypeMapperTest {
 
     private final XsdDatatypeMapper sut = XsdDatatypeMapper.getInstance();
 
-    @Test
-    void mapReturnsUnsignedByteAsShort() {
-        final byte value = 115;
-        final Literal literal = Literal.from(Byte.toString(value), XSD.UNSIGNED_BYTE);
-        assertEquals((short) value, map(literal));
-    }
-
-    private Object map(Literal literal) {
+    @ParameterizedTest
+    @MethodSource("mapTestArguments")
+    void mapCorrectlyConvertsValues(Object expected, Literal literal) {
         final Optional<Object> result = sut.map(literal);
         assertTrue(result.isPresent());
-        return result.get();
+        assertEquals(expected, result.get());
+    }
+
+    static Stream<Arguments> mapTestArguments() {
+        final long longValue = System.currentTimeMillis();
+        final LocalDate date = LocalDate.now();
+        final OffsetTime time = OffsetTime.of(12, 45, 15, 0, ZoneOffset.UTC);
+        final OffsetDateTime dateTime = OffsetDateTime.of(2021, 11, 17, 12, 23, 10, 0, ZoneOffset.UTC);
+        final Duration duration = Duration.ofHours(24).plusMinutes(15).plusSeconds(44);
+        return Stream.of(
+                Arguments.of(true, Literal.from(Boolean.toString(true), XSD.BOOLEAN)),
+                Arguments.of((byte) 101, Literal.from(Byte.toString((byte) 101), XSD.BYTE)),
+                Arguments.of((short) 115, Literal.from(Byte.toString((byte) 115), XSD.UNSIGNED_BYTE)),
+                Arguments.of(1234, Literal.from(Short.toString((short) 1234), XSD.UNSIGNED_SHORT)),
+                Arguments.of((long) Integer.MAX_VALUE, Literal.from(Integer.toString(Integer.MAX_VALUE), XSD.UNSIGNED_INT)),
+                Arguments.of(BigInteger.valueOf(Integer.MIN_VALUE), Literal.from(Integer.toString(Integer.MIN_VALUE), XSD.INTEGER)),
+                Arguments.of(BigInteger.valueOf(longValue), Literal.from(Long.toString(longValue), XSD.UNSIGNED_LONG)),
+                Arguments.of("test", Literal.from("test", XSD.STRING)),
+                Arguments.of("test", Literal.from("test", XSD.NORMALIZED_STRING)),
+                Arguments.of(date,Literal.from(date.format(DateTimeFormatter.ISO_DATE), XSD.DATE) ),
+                Arguments.of(time, Literal.from(time.format(DateTimeFormatter.ISO_TIME), XSD.TIME)),
+                Arguments.of(dateTime, Literal.from(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), XSD.DATETIME)),
+                Arguments.of(duration, Literal.from(duration.toString(), XSD.DURATION)),
+                Arguments.of(URI.create("https://www.w3.org/TR/xmlschema-2/#anyURI"), Literal.from("https://www.w3.org/TR/xmlschema-2/#anyURI", XSD.ANY_URI)),
+                Arguments.of(new BigDecimal("3.141952"), Literal.from("3.141952", XSD.DECIMAL)),
+                Arguments.of(Float.NaN, Literal.from("NaN", XSD.FLOAT)),
+                Arguments.of(Float.NEGATIVE_INFINITY, Literal.from("-INF", XSD.FLOAT)),
+                Arguments.of(Float.POSITIVE_INFINITY, Literal.from("INF", XSD.FLOAT)),
+                Arguments.of(Double.NaN, Literal.from("NaN", XSD.DOUBLE)),
+                Arguments.of(Double.NEGATIVE_INFINITY, Literal.from("-INF", XSD.DOUBLE)),
+                Arguments.of(Double.POSITIVE_INFINITY, Literal.from("INF", XSD.DOUBLE))
+        );
     }
 
     @Test
@@ -55,102 +82,8 @@ class XsdDatatypeMapperTest {
     }
 
     @Test
-    void mapReturnsUnsignedShortAsInt() {
-        final short value = 1234;
-        final Literal literal = Literal.from(Short.toString(value), XSD.UNSIGNED_SHORT);
-        assertEquals((int) value, map(literal));
-    }
-
-    @Test
     void mapThrowsDatatypeMappingExceptionForInvalidLiteralValue() {
         final Literal invalidValue = Literal.from("abcd", XSD.INT);
         assertThrows(DatatypeMappingException.class, () -> sut.map(invalidValue));
-    }
-
-    @Test
-    void mapReturnsUnsignedIntAsLong() {
-        final int value = Integer.MAX_VALUE;
-        final Literal literal = Literal.from(Integer.toString(value), XSD.UNSIGNED_INT);
-        assertEquals((long) value, map(literal));
-    }
-
-    @Test
-    void mapReturnsIntegerAsBigInteger() {
-        final int value = Integer.MIN_VALUE;
-        final Literal literal = Literal.from(Integer.toString(value), XSD.INTEGER);
-        assertEquals(BigInteger.valueOf(value), map(literal));
-    }
-
-    @Test
-    void mapReturnsUnsignedLongAsBigInteger() {
-        final long value = System.currentTimeMillis();
-        final Literal literal = Literal.from(Long.toString(value), XSD.UNSIGNED_LONG);
-        assertEquals(BigInteger.valueOf(value), map(literal));
-    }
-
-    @Test
-    void mapReturnsXsdStringAsString() {
-        final String value = "test";
-        final Literal literal = Literal.from(value, XSD.STRING);
-        assertEquals(value, map(literal));
-    }
-
-    @Test
-    void mapReturnsXsdNormalizedStringAsString() {
-        final String value = "test";
-        final Literal literal = Literal.from(value, XSD.NORMALIZED_STRING);
-        assertEquals(value, map(literal));
-    }
-
-    @Test
-    void mapReturnsLocalDateForXsdDate() {
-        final LocalDate date = LocalDate.now();
-        final Literal literal = Literal.from(date.format(DateTimeFormatter.ISO_DATE), XSD.DATE);
-        assertEquals(date, map(literal));
-    }
-
-    @Test
-    void mapReturnsOffsetTimeForXsdTime() {
-        final OffsetTime time = OffsetTime.of(12, 45, 15, 0, ZoneOffset.UTC);
-        assertEquals(time, map(Literal.from(time.format(DateTimeFormatter.ISO_TIME), XSD.TIME)));
-    }
-
-    @Test
-    void mapReturnsOffsetDateTimeForXsdDateTime() {
-        final OffsetDateTime dateTime = OffsetDateTime.of(2021, 11, 17, 12, 23, 10, 0, ZoneOffset.UTC);
-        assertEquals(dateTime,
-                     map(Literal.from(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), XSD.DATETIME)));
-    }
-
-    @Test
-    void mapReturnsDurationForXsdDuration() {
-        final Duration duration = Duration.ofHours(24).plusMinutes(15).plusSeconds(44);
-        assertEquals(duration, map(Literal.from(duration.toString(), XSD.DURATION)));
-    }
-
-    @Test
-    void mapReturnsUriForXsdAnyUri() {
-        final String uri = "https://www.w3.org/TR/xmlschema-2/#anyURI";
-        assertEquals(URI.create(uri), map(Literal.from(uri, XSD.ANY_URI)));
-    }
-
-    /**
-     * Bug #108
-     */
-    @ParameterizedTest
-    @MethodSource("floatingPointSpecialValuesGenerator")
-    void mapSupportsSpecialFloatingPointValuesMapping(Literal literal, Number expected) {
-        assertEquals(expected, map(literal));
-    }
-
-    private static Stream<Arguments> floatingPointSpecialValuesGenerator() {
-        return Stream.of(
-                Arguments.of(Literal.from("NaN", XSD.FLOAT), Float.NaN),
-                Arguments.of(Literal.from("-INF", XSD.FLOAT), Float.NEGATIVE_INFINITY),
-                Arguments.of(Literal.from("INF", XSD.FLOAT), Float.POSITIVE_INFINITY),
-                Arguments.of(Literal.from("NaN", XSD.DOUBLE), Double.NaN),
-                Arguments.of(Literal.from("-INF", XSD.DOUBLE), Double.NEGATIVE_INFINITY),
-                Arguments.of(Literal.from("INF", XSD.DOUBLE), Double.POSITIVE_INFINITY)
-        );
     }
 }

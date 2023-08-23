@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.exception.QueryParserException;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -25,19 +24,15 @@ import java.util.Map;
  */
 class SoqlFunctionTranslator {
 
-    private static final Map<String, String> FUNCTION_MAP = initFunctions();
-
-    private static Map<String, String> initFunctions() {
-        final Map<String, String> map = new HashMap<>();
-        map.put(SoqlConstants.Functions.UPPER, "UCASE");
-        map.put(SoqlConstants.Functions.LOWER, "LCASE");
-        map.put(SoqlConstants.Functions.LENGTH, "STRLEN");
-        map.put(SoqlConstants.Functions.ABS, "ABS");
-        map.put(SoqlConstants.Functions.CEIL, "CEIL");
-        map.put(SoqlConstants.Functions.FLOOR, "FLOOR");
-        map.put(SoqlConstants.Functions.LANG, "lang");
-        return map;
-    }
+    private static final Map<String, String> FUNCTION_MAP = Map.of(
+            SoqlConstants.Functions.UPPER, "UCASE",
+            SoqlConstants.Functions.LOWER, "LCASE",
+            SoqlConstants.Functions.LENGTH, "STRLEN",
+            SoqlConstants.Functions.ABS, "ABS",
+            SoqlConstants.Functions.CEIL, "CEIL",
+            SoqlConstants.Functions.FLOOR, "FLOOR",
+            SoqlConstants.Functions.LANG, "lang"
+    );
 
     private SoqlFunctionTranslator() {
         throw new AssertionError();

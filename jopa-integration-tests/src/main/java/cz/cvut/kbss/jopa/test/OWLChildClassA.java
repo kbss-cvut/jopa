@@ -21,12 +21,18 @@ import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_CHILD_A)
 public class OWLChildClassA implements OWLParentA, OWLParentB {
-    @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
-    private Set<String> pluralAnnotationProperty;
-    @OWLDataProperty(iri = Vocabulary.P_E_STRING_ATTRIBUTE)
-    private String stringAttribute;
+
     @Id
     private URI id;
+
+    @Types(fetchType = FetchType.EAGER)
+    private Set<String> types;
+
+    @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+    private Set<String> pluralAnnotationProperty;
+
+    @OWLDataProperty(iri = Vocabulary.P_E_STRING_ATTRIBUTE)
+    private String stringAttribute;
 
     public URI getId() {
         return id;
@@ -35,8 +41,6 @@ public class OWLChildClassA implements OWLParentA, OWLParentB {
     public void setId(URI id) {
         this.id = id;
     }
-    @Types(fetchType = FetchType.EAGER)
-    private Set<String> types;
 
     public Set<String> getTypes() {
         return types;
@@ -65,5 +69,4 @@ public class OWLChildClassA implements OWLParentA, OWLParentB {
     public void setPluralAnnotationProperty(Set<String> pluralAnnotationProperty) {
         this.pluralAnnotationProperty = pluralAnnotationProperty;
     }
-
 }

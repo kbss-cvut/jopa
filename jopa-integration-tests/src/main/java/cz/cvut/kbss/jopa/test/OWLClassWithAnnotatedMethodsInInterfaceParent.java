@@ -25,21 +25,21 @@ import java.util.Set;
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_PART_CONSTR_IN_PARENT)
 public class OWLClassWithAnnotatedMethodsInInterfaceParent implements OWLInterfaceE {
 
+    @Id
+    private URI uri;
+
     protected OWLClassWithUnProperties data;
     protected Set<OWLClassWithUnProperties> dataList;
     protected ZoneOffset withConverter;
     protected Color ordinalEnumAttribute;
     protected List<URI> simpleList;
 
-    public OWLClassWithAnnotatedMethodsInInterfaceParent(URI uri) {
-        this.uri = uri;
-    }
-
     public OWLClassWithAnnotatedMethodsInInterfaceParent() {
     }
 
-    @Id
-    private URI uri;
+    public OWLClassWithAnnotatedMethodsInInterfaceParent(URI uri) {
+        this.uri = uri;
+    }
 
     public URI getUri() {
         return uri;

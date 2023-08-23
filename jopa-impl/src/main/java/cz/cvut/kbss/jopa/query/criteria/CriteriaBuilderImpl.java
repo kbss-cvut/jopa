@@ -100,25 +100,33 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass) {
-        if (paramClass == null) throw new IllegalArgumentException("Class must be defined.");
+        if (paramClass == null) {
+            throw new IllegalArgumentException("Class must be defined.");
+        }
         return new ParameterExpressionImpl<>(paramClass, null, this);
     }
 
     @Override
     public <T> ParameterExpression<T> parameter(Class<T> paramClass, String name) {
-        if (paramClass == null) throw new IllegalArgumentException("Class must be defined.");
+        if (paramClass == null) {
+            throw new IllegalArgumentException("Class must be defined.");
+        }
         return new ParameterExpressionImpl<>(paramClass, name, this);
     }
 
     @Override
     public <T> Expression<T> literal(T value) {
-        if (value == null) throw new IllegalArgumentException("Literal cannot be null.");
+        if (value == null) {
+            throw new IllegalArgumentException("Literal cannot be null.");
+        }
         return new ExpressionLiteralImpl<>(value, this);
     }
 
     @Override
     public Expression<String> literal(String value, String languageTag) {
-        if (value == null) throw new IllegalArgumentException("Literal cannot be null.");
+        if (value == null) {
+            throw new IllegalArgumentException("Literal cannot be null.");
+        }
         return new ExpressionLiteralImpl<>(value, languageTag, this);
     }
 
@@ -158,8 +166,11 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
 
     @Override
     public Predicate and(Predicate... restrictions) {
-        if (restrictions.length == 1) return new SimplePredicateImpl(restrictions[0], this);
-        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(restrictions), this);
+        if (restrictions.length == 1) {
+            return new SimplePredicateImpl(restrictions[0], this);
+        } else {
+            return new CompoundedPredicateImpl(Predicate.BooleanOperator.AND, Arrays.asList(restrictions), this);
+        }
     }
 
     @Override
@@ -169,9 +180,11 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
 
     @Override
     public Predicate or(Predicate... restrictions) {
-        if (restrictions.length == 1)
+        if (restrictions.length == 1) {
             return new SimplePredicateImpl(Predicate.BooleanOperator.OR, restrictions[0], this);
-        else return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions), this);
+        } else {
+            return new CompoundedPredicateImpl(Predicate.BooleanOperator.OR, Arrays.asList(restrictions), this);
+        }
     }
 
     @Override
@@ -190,7 +203,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public Predicate equal(Expression<?> x, String y, String languageTag) {
         return new SimplePredicateImpl(
                 new ExpressionEqualImpl((AbstractExpression<?>) x, new ExpressionLiteralImpl<>(y, languageTag, this),
-                                        this), this);
+                        this), this);
     }
 
     @Override
@@ -218,7 +231,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public Predicate like(Expression<String> x, String pattern) {
         return new SimplePredicateImpl(
                 new ExpressionLikeImpl((AbstractExpression<String>) x, new ExpressionLiteralImpl<>(pattern, this),
-                                       this), this);
+                        this), this);
     }
 
     @Override
@@ -232,7 +245,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public Predicate notLike(Expression<String> x, String pattern) {
         return new SimplePredicateImpl(
                 new ExpressionNotLikeImpl((AbstractExpression<String>) x, new ExpressionLiteralImpl<>(pattern, this),
-                                          this), this);
+                        this), this);
     }
 
     @Override
@@ -289,7 +302,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public <Y extends Comparable<? super Y>> Predicate greaterThanOrEqual(Expression<? extends Y> x, Y y) {
         return new SimplePredicateImpl(
                 new ExpressionGreaterThanOrEqualImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this),
-                                                     this), this);
+                        this), this);
     }
 
     @Override
@@ -316,7 +329,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public <Y extends Comparable<? super Y>> Predicate lessThanOrEqual(Expression<? extends Y> x, Y y) {
         return new SimplePredicateImpl(
                 new ExpressionLessThanOrEqualImpl((AbstractExpression<Y>) x, new ExpressionLiteralImpl<>(y, this),
-                                                  this), this);
+                        this), this);
     }
 
 
@@ -335,7 +348,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         } else if (expression instanceof AbstractPathExpression) {
             return new SimplePredicateImpl(
                     new ExpressionEqualImpl((AbstractExpression) expression, (AbstractExpression) this.literal(true),
-                                            this), this);
+                            this), this);
         } else {
             return new SimplePredicateImpl(expression, this);
         }

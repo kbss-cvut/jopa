@@ -51,7 +51,7 @@ public class Type {
         }
     }
 
-    private TypeMirror getUpperBound(TypeMirror type) {
+    private static TypeMirror getUpperBound(TypeMirror type) {
         if (type instanceof TypeVariable) {
             return ((TypeVariable) type).getUpperBound();
         }
@@ -82,7 +82,7 @@ public class Type {
         this.types = types;
     }
 
-    private boolean isSimple(String name) {
+    private static boolean isSimple(String name) {
         return !name.contains(Set.class.getName())
                 && !name.contains(List.class.getName())
                 && !name.contains(Stack.class.getName())
