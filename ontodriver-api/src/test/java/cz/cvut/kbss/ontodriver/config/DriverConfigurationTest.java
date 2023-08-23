@@ -60,4 +60,25 @@ class DriverConfigurationTest {
     void getAsBooleanReturnsFalseForUnknownProperty() {
         assertFalse(configuration.is(DriverConfigParam.AUTO_COMMIT));
     }
+
+    @Test
+    void getPropertyAsIntegerReturnsParsedPropertyValue() {
+        configuration.setProperty(TestConfigParameter.INTEGER_PARAM, "117");
+        assertEquals(117, configuration.getProperty(TestConfigParameter.INTEGER_PARAM, 1));
+    }
+
+    @Test
+    void getPropertyAsIntegerReturnsDefaultValueWhenPropertyIsNotConfigured() {
+        assertEquals(1, configuration.getProperty(TestConfigParameter.INTEGER_PARAM, 1));
+    }
+
+    @Test
+    void getPropertyAsIntegerThrowsIllegalArgumentExceptionWhenConfiguredPropertyValueIsNotInteger() {
+        configuration.setProperty(TestConfigParameter.INTEGER_PARAM, "dkde");
+        assertThrows(IllegalArgumentException.class, () -> configuration.getProperty(TestConfigParameter.INTEGER_PARAM, 1));
+    }
+
+    private enum TestConfigParameter implements ConfigurationParameter {
+        INTEGER_PARAM
+    }
 }
