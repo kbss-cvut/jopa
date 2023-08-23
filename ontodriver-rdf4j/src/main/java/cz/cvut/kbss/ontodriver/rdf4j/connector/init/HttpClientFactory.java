@@ -56,7 +56,7 @@ class HttpClientFactory {
 
     private static int getMaxConnections(DriverConfiguration config) {
         final int defaultMaxConnections = Math.max(Constants.DEFAULT_MAX_CONNECTIONS, Runtime.getRuntime()
-                                                                                             .availableProcessors());
+                                                                                             .availableProcessors() * 2);
         return config.getProperty(Rdf4jConfigParam.MAX_CONNECTION_POOL_SIZE, defaultMaxConnections);
     }
 
