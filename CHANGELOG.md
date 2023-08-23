@@ -1,5 +1,10 @@
 # JOPA - Change Log
 
+## 1.1.1 - 2023-08-23
+- Fix a possible deadlock in case RDF4J's HTTP client connection pool is exhausted by concurrent requests (Bug #191).
+- Introduce a marker `@Property` annotation used on all OWL property mapping annotations.
+- Dependency updates: AspectJ 1.9.20, RDF4J 4.3.5.
+
 ## 1.1.0 - 2023-07-28
 - Add support for MEMBER OF in SOQL/Criteria API (Enhancement #176).
 - Support language matching in SOQL/Criteria API (Enhancement #161).
