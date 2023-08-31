@@ -28,7 +28,7 @@ import java.lang.annotation.*;
 public @interface OWLClass {
 
     /**
-     * IIR of the ontological class
+     * IRI of the ontological class
      *
      * @return IRI of the referenced class
      */
