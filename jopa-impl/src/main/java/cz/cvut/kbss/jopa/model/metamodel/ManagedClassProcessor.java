@@ -61,13 +61,30 @@ public class ManagedClassProcessor {
      * @return Namespace resolver containing detected namespaces
      */
     public static <T> NamespaceResolver detectNamespaces(Class<T> cls) {
-        Objects.requireNonNull(cls);
         final NamespaceResolver resolver = new NamespaceResolver();
-        if (cls.getPackage() != null) {
-            resolveNamespaces(cls.getPackage(), resolver);
-        }
-        resolveNamespaces(cls, resolver);
+        detectNamespaces(cls, resolver);
         return resolver;
+    }
+
+    /**
+     * Detects namespace declarations relevant to the specified class and registers them with the specified {@link
+     * NamespaceResolver}.
+     * <p>
+     * This means namespaces declared on the class itself, namespaces it inherited from super types, as well as
+     * namespaces declared for the package that contains the specified class.
+     * <p>
+     * Namespaces declared directly by {@link Namespace} as well as in {@link Namespaces} are considered.
+     *
+     * @param cls               Class to detect namespaces for
+     * @param namespaceResolver Namespace resolver containing detected namespaces
+     */
+    public static <T> void detectNamespaces(Class<T> cls, NamespaceResolver namespaceResolver) {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(namespaceResolver);
+        if (cls.getPackage() != null) {
+            resolveNamespaces(cls.getPackage(), namespaceResolver);
+        }
+        resolveNamespaces(cls, namespaceResolver);
     }
 
     private static void resolveNamespaces(AnnotatedElement target, NamespaceResolver namespaceResolver) {
