@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -25,13 +23,14 @@ import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Utility methods for processing managed types for metamodel construction.
  */
-class ManagedClassProcessor {
+public class ManagedClassProcessor {
 
     private ManagedClassProcessor() {
         throw new AssertionError();
@@ -50,13 +49,42 @@ class ManagedClassProcessor {
         return new TypeBuilderContext<>(type, resolver);
     }
 
-    private static <T> NamespaceResolver detectNamespaces(Class<T> cls) {
+    /**
+     * Detects namespace declarations relevant to the specified class.
+     * <p>
+     * This means namespaces declared on the class itself, namespaces it inherited from super types, as well as
+     * namespaces declared for the package that contains the specified class.
+     * <p>
+     * Namespaces declared directly by {@link Namespace} as well as in {@link Namespaces} are considered.
+     *
+     * @param cls Class to detect namespaces for
+     * @return Namespace resolver containing detected namespaces
+     */
+    public static <T> NamespaceResolver detectNamespaces(Class<T> cls) {
         final NamespaceResolver resolver = new NamespaceResolver();
-        if (cls.getPackage() != null) {
-            resolveNamespaces(cls.getPackage(), resolver);
-        }
-        resolveNamespaces(cls, resolver);
+        detectNamespaces(cls, resolver);
         return resolver;
+    }
+
+    /**
+     * Detects namespace declarations relevant to the specified class and registers them with the specified {@link
+     * NamespaceResolver}.
+     * <p>
+     * This means namespaces declared on the class itself, namespaces it inherited from super types, as well as
+     * namespaces declared for the package that contains the specified class.
+     * <p>
+     * Namespaces declared directly by {@link Namespace} as well as in {@link Namespaces} are considered.
+     *
+     * @param cls               Class to detect namespaces for
+     * @param namespaceResolver Namespace resolver containing detected namespaces
+     */
+    public static <T> void detectNamespaces(Class<T> cls, NamespaceResolver namespaceResolver) {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(namespaceResolver);
+        if (cls.getPackage() != null) {
+            resolveNamespaces(cls.getPackage(), namespaceResolver);
+        }
+        resolveNamespaces(cls, namespaceResolver);
     }
 
     private static void resolveNamespaces(AnnotatedElement target, NamespaceResolver namespaceResolver) {
@@ -104,20 +132,47 @@ class ManagedClassProcessor {
         }
         return null;
     }
+
     public static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
-       return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
-                                          .map(clazz -> (Class<? super T>) clazz)
-                                          .collect(Collectors.toSet());
+        return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
+                     .map(clazz -> (Class<? super T>) clazz)
+                     .collect(Collectors.toSet());
     }
-    static boolean isManagedType(Class<?> cls) {
+
+    /**
+     * Checks whether the specified class is a managed type.
+     * <p>
+     * That is, if it is an entity type (annotated with {@link OWLClass}) or a mapped superclass (annotated with {@link
+     * MappedSuperclass}).
+     *
+     * @param cls Class to check
+     * @return {@code true} if the class is a managed type, {@code false} otherwise
+     */
+    public static boolean isManagedType(Class<?> cls) {
         return isEntityType(cls) || isMappedSuperclassType(cls);
     }
 
-    private static boolean isEntityType(Class<?> cls) {
-        return cls.getDeclaredAnnotation(OWLClass.class) != null;
+    /**
+     * Checks whether the specified class is an entity type.
+     * <p>
+     * An entity is annotated with {@link OWLClass}.
+     *
+     * @param cls Class to check
+     * @return {@code true} if the class is an entity type, {@code false} otherwise
+     */
+    public static boolean isEntityType(Class<?> cls) {
+        return cls != null && cls.getDeclaredAnnotation(OWLClass.class) != null;
     }
 
-    private static boolean isMappedSuperclassType(Class<?> cls) {
-        return cls.getDeclaredAnnotation(MappedSuperclass.class) != null;
+    /**
+     * Checks whether the specified class is a managed superclass.
+     * <p>
+     * An entity is annotated with {@link MappedSuperclass}.
+     *
+     * @param cls Class to check
+     * @return {@code true} if the class is a mapped superclass, {@code false} otherwise
+     */
+    public static boolean isMappedSuperclassType(Class<?> cls) {
+        return cls != null && cls.getDeclaredAnnotation(MappedSuperclass.class) != null;
     }
 }
