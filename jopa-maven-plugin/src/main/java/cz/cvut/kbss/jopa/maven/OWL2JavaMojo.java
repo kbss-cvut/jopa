@@ -40,46 +40,46 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String GENERATE_ANNOTATION_FIELDS = "generate-annotation-fields";
     private static final String GENERATE_THING = "generate-thing";
 
-    @Parameter(alias = MAPPING_FILE_PARAM)
+    @Parameter(name = MAPPING_FILE_PARAM)
     private String pMappingFile;
 
-    @Parameter(alias = PACKAGE_PARAM, required = true)
+    @Parameter(name = PACKAGE_PARAM, required = true)
     private String pPackage;
 
-    @Parameter(alias = CONTEXT_PARAM)
+    @Parameter(name = CONTEXT_PARAM)
     private String pContextName;
 
-    @Parameter(alias = ONTOLOGY_PARAM)
+    @Parameter(name = ONTOLOGY_PARAM)
     private String pOntologyIRI;
 
-    @Parameter(alias = OUTPUT_PARAM, defaultValue = "${project.basedir}/src/main/generated-sources")
+    @Parameter(name = OUTPUT_PARAM, defaultValue = "${project.basedir}/src/main/generated-sources")
     private String pOutputDirectory;
 
-    @Parameter(alias = W_OWLAPI_PARAM, defaultValue = "false")
+    @Parameter(name = W_OWLAPI_PARAM, defaultValue = "false")
     private boolean pWithOWLAPI;
 
-    @Parameter(alias = ALL_IC_PARAM, defaultValue = "false")
+    @Parameter(name = ALL_IC_PARAM, defaultValue = "false")
     private boolean pWholeOntologyAsICS;
 
-    @Parameter(alias = VOCABULARY_PARAM, defaultValue = "false")
+    @Parameter(name = VOCABULARY_PARAM, defaultValue = "false")
     private boolean pVocabularyOnly;
 
-    @Parameter(alias = IGNORE_FAILED_IMPORTS_PARAM, defaultValue = "false")
+    @Parameter(name = IGNORE_FAILED_IMPORTS_PARAM, defaultValue = "false")
     private boolean ignoreFailedImports;
 
-    @Parameter(alias = PROPERTIES_TYPE, defaultValue = "string")
+    @Parameter(name = PROPERTIES_TYPE, defaultValue = "string")
     private String pPropertiesType;
 
-    @Parameter(alias = GENERATE_JAVADOC, defaultValue = "true")
+    @Parameter(name = GENERATE_JAVADOC, defaultValue = "true")
     private boolean generateJavadoc;
 
-    @Parameter(alias = PREFER_MULTILINGUAL_STRINGS, defaultValue = "true")
+    @Parameter(name = PREFER_MULTILINGUAL_STRINGS, defaultValue = "true")
     private boolean preferMultilingualStrings;
 
-    @Parameter(alias = GENERATE_ANNOTATION_FIELDS, defaultValue = "true")
+    @Parameter(name = GENERATE_ANNOTATION_FIELDS, defaultValue = "true")
     private boolean generateAnnotationFields;
 
-    @Parameter(alias = GENERATE_THING, defaultValue = "true")
+    @Parameter(name = GENERATE_THING, defaultValue = "true")
     private boolean generateThing;
 
     @Override
