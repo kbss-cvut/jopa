@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -20,20 +18,33 @@ import com.sun.codemodel.JType;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import cz.cvut.kbss.jopa.vocabulary.SKOS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class JavaTransformerTest {
 
@@ -240,12 +251,36 @@ class JavaTransformerTest {
 
     @Test
     void generateModelDoesNotGenerateThingEntityClassWhenDisabled() {
-        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false).build());
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false)
+                                                                  .build());
         final ContextDefinition context = new ContextDefinition();
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
                 result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + "Thing");
         assertNull(resultClass);
+    }
+
+    @Test
+    void generateModelDisambiguateClassesWithIdenticalJavaName() {
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false)
+                                                                  .build());
+        final String className = "Concept";
+        final IRI iriOne = IRI.create(PREFIX + className);
+        final IRI iriTwo = IRI.create(SKOS.CONCEPT);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriOne)));
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriTwo)));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iriOne));
+        context.add(dataFactory.getOWLClass(iriTwo));
+        context.parse();
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final Iterator<JDefinedClass> classIterator = result.getCodeModel()._package(Constants.MODEL_PACKAGE).classes();
+        final List<JDefinedClass> classes = new ArrayList<>();
+        while (classIterator.hasNext()) {
+            classes.add(classIterator.next());
+        }
+        assertEquals(2, classes.size());
+        assertEquals(2, classes.stream().filter(cls -> cls.name().startsWith(className)).count());
     }
 }
