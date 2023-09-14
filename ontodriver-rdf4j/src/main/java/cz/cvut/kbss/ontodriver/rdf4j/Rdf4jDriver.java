@@ -37,7 +37,8 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
             .asList(DriverConfigParam.AUTO_COMMIT, Rdf4jConfigParam.USE_INFERENCE,
                     Rdf4jConfigParam.USE_VOLATILE_STORAGE, Rdf4jConfigParam.LOAD_ALL_THRESHOLD,
                     Rdf4jConfigParam.RECONNECT_ATTEMPTS, Rdf4jConfigParam.REPOSITORY_CONFIG,
-                    Rdf4jConfigParam.INFERENCE_IN_DEFAULT_CONTEXT);
+                    Rdf4jConfigParam.INFERENCE_IN_DEFAULT_CONTEXT,
+                    Rdf4jConfigParam.MAX_CONNECTION_POOL_SIZE, Rdf4jConfigParam.CONNECTION_REQUEST_TIMEOUT);
 
     private final DriverConfiguration configuration;
     private boolean open;

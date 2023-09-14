@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+## 1.1.2 - 2023-09-14
+- Fix missing processing of connection pool configuration in RDF4J driver.
+- Disambiguate classes of the same name in OWL2Java using a default suffix (Bug #199).
+- Modify JOPA Maven plugin parameter mapping so that it does not confuse IDEs (GH #198).
+- Provide access to entity class namespace detection (Enhancement #196).
+- Dependency updates: RDf4J 4.3.6.
+
 ## 1.1.1 - 2023-08-23
 - Fix a possible deadlock in case RDF4J's HTTP client connection pool is exhausted by concurrent requests (Bug #191).
 - Introduce a marker `@Property` annotation used on all OWL property mapping annotations.

@@ -40,46 +40,46 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String GENERATE_ANNOTATION_FIELDS = "generate-annotation-fields";
     private static final String GENERATE_THING = "generate-thing";
 
-    @Parameter(alias = MAPPING_FILE_PARAM)
-    private String pMappingFile;
+    @Parameter(name = MAPPING_FILE_PARAM)
+    private String mappingFile;
 
-    @Parameter(alias = PACKAGE_PARAM, required = true)
+    @Parameter(name = PACKAGE_PARAM, required = true)
     private String pPackage;
 
-    @Parameter(alias = CONTEXT_PARAM)
-    private String pContextName;
+    @Parameter(name = CONTEXT_PARAM)
+    private String contextName;
 
-    @Parameter(alias = ONTOLOGY_PARAM)
-    private String pOntologyIRI;
+    @Parameter(name = ONTOLOGY_PARAM)
+    private String ontologyIri;
 
-    @Parameter(alias = OUTPUT_PARAM, defaultValue = "${project.basedir}/src/main/generated-sources")
-    private String pOutputDirectory;
+    @Parameter(name = OUTPUT_PARAM, defaultValue = "${project.basedir}/src/main/generated-sources")
+    private String outputDirectory;
 
-    @Parameter(alias = W_OWLAPI_PARAM, defaultValue = "false")
-    private boolean pWithOWLAPI;
+    @Parameter(name = W_OWLAPI_PARAM, defaultValue = "false")
+    private boolean withOwlapi;
 
-    @Parameter(alias = ALL_IC_PARAM, defaultValue = "false")
-    private boolean pWholeOntologyAsICS;
+    @Parameter(name = ALL_IC_PARAM, defaultValue = "false")
+    private boolean wholeOntologyAsIcs;
 
-    @Parameter(alias = VOCABULARY_PARAM, defaultValue = "false")
-    private boolean pVocabularyOnly;
+    @Parameter(name = VOCABULARY_PARAM, defaultValue = "false")
+    private boolean vocabularyOnly;
 
-    @Parameter(alias = IGNORE_FAILED_IMPORTS_PARAM, defaultValue = "false")
+    @Parameter(name = IGNORE_FAILED_IMPORTS_PARAM, defaultValue = "false")
     private boolean ignoreFailedImports;
 
-    @Parameter(alias = PROPERTIES_TYPE, defaultValue = "string")
-    private String pPropertiesType;
+    @Parameter(name = PROPERTIES_TYPE, defaultValue = "string")
+    private String propertiesType;
 
-    @Parameter(alias = GENERATE_JAVADOC, defaultValue = "true")
-    private boolean generateJavadoc;
+    @Parameter(name = GENERATE_JAVADOC, defaultValue = "true")
+    private boolean javadocFromRdfsComment;
 
-    @Parameter(alias = PREFER_MULTILINGUAL_STRINGS, defaultValue = "true")
+    @Parameter(name = PREFER_MULTILINGUAL_STRINGS, defaultValue = "true")
     private boolean preferMultilingualStrings;
 
-    @Parameter(alias = GENERATE_ANNOTATION_FIELDS, defaultValue = "true")
+    @Parameter(name = GENERATE_ANNOTATION_FIELDS, defaultValue = "true")
     private boolean generateAnnotationFields;
 
-    @Parameter(alias = GENERATE_THING, defaultValue = "true")
+    @Parameter(name = GENERATE_THING, defaultValue = "true")
     private boolean generateThing;
 
     @Override
@@ -88,35 +88,35 @@ public class OWL2JavaMojo extends AbstractMojo {
 
         printParameterValues();
 
-        if (pOntologyIRI == null) {
+        if (ontologyIri == null) {
             getLog().error("The parameter 'ontology-iri' is invalid. Must not be null.");
             getLog().error("Skipping OWL2Java transformation.");
             return;
         }
         owl2java.ignoreMissingImports(ignoreFailedImports);
 
-        if (pMappingFile != null && !pMappingFile.isEmpty()) {
-            owl2java.setOntology(pOntologyIRI, pMappingFile);
+        if (mappingFile != null && !mappingFile.isEmpty()) {
+            owl2java.setOntology(ontologyIri, mappingFile);
         } else {
-            owl2java.setOntology(pOntologyIRI, null);
+            owl2java.setOntology(ontologyIri, null);
         }
 
         final TransformationConfiguration.TransformationConfigurationBuilder builder =
                 TransformationConfiguration.builder();
-        if (!pWholeOntologyAsICS) {
-            builder.context(pContextName);
+        if (!wholeOntologyAsIcs) {
+            builder.context(contextName);
         }
 
-        if (pPropertiesType != null) {
-            builder.propertiesType(PropertiesType.valueOf(pPropertiesType));
+        if (propertiesType != null) {
+            builder.propertiesType(PropertiesType.valueOf(propertiesType));
         }
 
         final TransformationConfiguration config =
-                builder.packageName(pPackage).targetDir(pOutputDirectory).addOwlapiIris(pWithOWLAPI)
-                       .generateJavadoc(generateJavadoc).preferMultilingualStrings(preferMultilingualStrings)
+                builder.packageName(pPackage).targetDir(outputDirectory).addOwlapiIris(withOwlapi)
+                       .generateJavadoc(javadocFromRdfsComment).preferMultilingualStrings(preferMultilingualStrings)
                        .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing).build();
 
-        if (pVocabularyOnly) {
+        if (vocabularyOnly) {
             owl2java.generateVocabulary(config);
         } else {
             owl2java.transform(config);
@@ -126,19 +126,27 @@ public class OWL2JavaMojo extends AbstractMojo {
     }
 
     private void printParameterValues() {
-        Utils.logParameterValue(MAPPING_FILE_PARAM, pMappingFile, getLog());
+        Utils.logParameterValue(MAPPING_FILE_PARAM, mappingFile, getLog());
         Utils.logParameterValue(PACKAGE_PARAM, pPackage, getLog());
-        Utils.logParameterValue(CONTEXT_PARAM, pContextName, getLog());
-        Utils.logParameterValue(ONTOLOGY_PARAM, pOntologyIRI, getLog());
-        Utils.logParameterValue(OUTPUT_PARAM, pOutputDirectory, getLog());
-        Utils.logParameterValue(W_OWLAPI_PARAM, pWithOWLAPI, getLog());
-        Utils.logParameterValue(ALL_IC_PARAM, pWholeOntologyAsICS, getLog());
-        Utils.logParameterValue(VOCABULARY_PARAM, pVocabularyOnly, getLog());
+        Utils.logParameterValue(CONTEXT_PARAM, contextName, getLog());
+        Utils.logParameterValue(ONTOLOGY_PARAM, ontologyIri, getLog());
+        Utils.logParameterValue(OUTPUT_PARAM, outputDirectory, getLog());
+        Utils.logParameterValue(W_OWLAPI_PARAM, withOwlapi, getLog());
+        Utils.logParameterValue(ALL_IC_PARAM, wholeOntologyAsIcs, getLog());
+        Utils.logParameterValue(VOCABULARY_PARAM, vocabularyOnly, getLog());
         Utils.logParameterValue(IGNORE_FAILED_IMPORTS_PARAM, ignoreFailedImports, getLog());
-        Utils.logParameterValue(PROPERTIES_TYPE,pPropertiesType, getLog());
-        Utils.logParameterValue(GENERATE_JAVADOC, generateJavadoc, getLog());
+        Utils.logParameterValue(PROPERTIES_TYPE, propertiesType, getLog());
+        Utils.logParameterValue(GENERATE_JAVADOC, javadocFromRdfsComment, getLog());
         Utils.logParameterValue(PREFER_MULTILINGUAL_STRINGS, preferMultilingualStrings, getLog());
         Utils.logParameterValue(GENERATE_ANNOTATION_FIELDS, generateAnnotationFields, getLog());
         Utils.logParameterValue(GENERATE_THING, generateThing, getLog());
+    }
+
+    public String getPackage() {
+        return pPackage;
+    }
+
+    public void setPackage(String pPackage) {
+        this.pPackage = pPackage;
     }
 }

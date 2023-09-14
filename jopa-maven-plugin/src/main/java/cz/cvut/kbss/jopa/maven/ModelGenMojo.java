@@ -48,13 +48,13 @@ public class ModelGenMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-    @Parameter(alias = OUTPUT_DIRECTORY_PARAM, defaultValue = "./target/generated-sources/static-metamodel")
+    @Parameter(name = OUTPUT_DIRECTORY_PARAM, defaultValue = "./target/generated-sources/static-metamodel")
     private String outputDirectory;
-    @Parameter(alias = SOURCE_PACKAGE_PARAM)
+    @Parameter(name = SOURCE_PACKAGE_PARAM)
     private String sourcePackage;
-    @Parameter(alias = DEBUG_PARAM, defaultValue = "false")
+    @Parameter(name = DEBUG_PARAM, defaultValue = "false")
     private String debugOption;
-    @Parameter(alias = ADDITIONAL_SOURCES_PARAM)
+    @Parameter(name = ADDITIONAL_SOURCES_PARAM)
     private String additionalSources;
 
 

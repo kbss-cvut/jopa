@@ -14,16 +14,36 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import com.sun.codemodel.*;
+import com.sun.codemodel.JAnnotationArrayMember;
+import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JBlock;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JClassAlreadyExistsException;
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JDocCommentable;
+import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JExpression;
+import com.sun.codemodel.JFieldRef;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
+import com.sun.codemodel.JType;
+import com.sun.codemodel.JVar;
 import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
 import cz.cvut.kbss.jopa.model.MultilingualString;
+import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
@@ -31,19 +51,42 @@ import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.OWLDatatype;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.text.Normalizer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static cz.cvut.kbss.jopa.owl2java.Constants.*;
+import static cz.cvut.kbss.jopa.owl2java.Constants.DESCRIPTION_FIELD_NAME;
+import static cz.cvut.kbss.jopa.owl2java.Constants.ID_FIELD_NAME;
+import static cz.cvut.kbss.jopa.owl2java.Constants.LABEL_FIELD_NAME;
+import static cz.cvut.kbss.jopa.owl2java.Constants.LANGUAGE;
+import static cz.cvut.kbss.jopa.owl2java.Constants.MODEL_PACKAGE;
+import static cz.cvut.kbss.jopa.owl2java.Constants.PACKAGE_SEPARATOR;
+import static cz.cvut.kbss.jopa.owl2java.Constants.PROPERTIES_FIELD_NAME;
+import static cz.cvut.kbss.jopa.owl2java.Constants.TYPES_FIELD_NAME;
+import static cz.cvut.kbss.jopa.owl2java.Constants.VERSION;
+import static cz.cvut.kbss.jopa.owl2java.Constants.VOCABULARY_CLASS;
 
 public class JavaTransformer {
 
@@ -105,6 +148,7 @@ public class JavaTransformer {
     private static final String PREFIX_PROPERTY = "p_";
     private static final String PREFIX_INDIVIDUAL = "i_";
     private static final String PREFIX_DATATYPE = "d_";
+    private static final String DISAMBIGUATION_SUFFIX = "_A";
 
     private JDefinedClass voc;
     private final Map<OWLEntity, JFieldRef> entities = new HashMap<>();
@@ -390,7 +434,7 @@ public class JavaTransformer {
             if (prefix.isEmpty()) {
                 continue;
             }
-            final String sFieldName = ensureUniqueIdentifier(
+            final String sFieldName = ensureVocabularyItemUniqueIdentifier(
                     PREFIX_STRING + prefix.get() + validJavaIDForIRI(c.getIRI()));
 
             final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
@@ -412,7 +456,7 @@ public class JavaTransformer {
                                                       .sorted(Comparator.comparing(IRI::getIRIString))
                                                       .collect(Collectors.toList());
         ontologyIris.forEach(iri -> {
-            final String fieldName = ensureUniqueIdentifier("ONTOLOGY_IRI_" + validJavaIDForIRI(iri));
+            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + validJavaIDForIRI(iri));
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
         });
     }
@@ -435,10 +479,10 @@ public class JavaTransformer {
         return Optional.of("");
     }
 
-    private String ensureUniqueIdentifier(String id) {
+    private String ensureVocabularyItemUniqueIdentifier(String id) {
         final StringBuilder sb = new StringBuilder(id);
         while (voc.fields().containsKey(sb.toString())) {
-            sb.append("_A");
+            sb.append(DISAMBIGUATION_SUFFIX);
         }
         return sb.toString();
     }
@@ -481,7 +525,7 @@ public class JavaTransformer {
                                  final OWLOntology ontology) {
         JDefinedClass cls;
 
-        String name = pkg + PACKAGE_SEPARATOR + javaClassId(ontology, clazz);
+        String name = ensureUniqueClassName(pkg, javaClassId(ontology, clazz), clazz, cm);
 
         try {
             cls = cm._class(name);
@@ -495,6 +539,14 @@ public class JavaTransformer {
             cls = cm._getClass(name);
         }
         return cls;
+    }
+
+    private String ensureUniqueClassName(String pkg, String simpleName, OWLClass clazz, JCodeModel cm) {
+        String fqn = pkg + PACKAGE_SEPARATOR + simpleName;
+        while (cm._getClass(fqn) != null) {
+            fqn  += DISAMBIGUATION_SUFFIX;
+        }
+        return fqn;
     }
 
     /**
