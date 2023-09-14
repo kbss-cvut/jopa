@@ -36,8 +36,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -118,7 +122,7 @@ class DefaultContextInferenceStatementLoaderTest {
                                    VF.createIRI(Generator.generateUri().toString()),
                                    VF.createIRI(Generator.generateUri().toString()))
         );
-        when(connector.findStatements(eq(VF.createIRI(SUBJECT)), any(), any(), eq(true), anyCollection())).thenReturn(
+        when(connector.findStatements(eq(VF.createIRI(SUBJECT)), any(), any(), eq(true), anySet())).thenReturn(
                 statements);
 
         sut.setIncludeInferred(true);

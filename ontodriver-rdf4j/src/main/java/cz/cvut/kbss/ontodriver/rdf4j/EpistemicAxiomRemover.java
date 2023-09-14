@@ -19,13 +19,18 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils.toRdf4jIri;
@@ -50,16 +55,14 @@ class EpistemicAxiomRemover {
 
     void remove(AbstractAxiomDescriptor axiomDescriptor) throws Rdf4jDriverException {
         final Resource individual = toRdf4jIri(axiomDescriptor.getSubject(), valueFactory);
-        final Collection<Statement> toRemove = new HashSet<>();
+        final Collection<SubjectPredicateContext> toRemove = new HashSet<>();
         for (Assertion a : axiomDescriptor.getAssertions()) {
-            final Set<IRI> contexts = axiomDescriptor.getAssertionContexts(a).stream()
+            final Set<Resource> contexts = axiomDescriptor.getAssertionContexts(a).stream()
                                                      .map(uri -> toRdf4jIri(uri, valueFactory))
                                                      .collect(Collectors.toSet());
-            toRemove.addAll(connector.findStatements(individual,
-                                                     toRdf4jIri(a, valueFactory), null, a.isInferred(),
-                                                     contexts));
+            toRemove.add(new SubjectPredicateContext(individual, toRdf4jIri(a, valueFactory), contexts));
         }
-        connector.removeStatements(toRemove);
+        connector.removeStatementsBySubjectAndPredicate(toRemove);
     }
 
     void remove(NamedResource individual, Map<Assertion, Set<Value<?>>> values, java.net.URI context)

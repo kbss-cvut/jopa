@@ -29,6 +29,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
@@ -120,6 +121,7 @@ public class PoolingStorageConnector extends AbstractConnector {
         try {
             centralConnector.begin();
             centralConnector.removeStatements(localModel.getRemovedStatements());
+            centralConnector.removeStatementsBySubjectAndPredicate(localModel.getRemovedSubjectPredicateStatements());
             centralConnector.addStatements(localModel.getAddedStatements());
             centralConnector.commit();
             transaction.afterCommit();
@@ -167,6 +169,11 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
+    public void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) {
+        localModel.removeStatementsBySubjectAndPredicate(spc);
+    }
+
+    @Override
     public Collection<Statement> findStatements(Resource subject, IRI property, Value value, boolean includeInferred)
             throws Rdf4jDriverException {
         return findStatements(subject, property, value, includeInferred, Collections.emptySet());
@@ -174,7 +181,7 @@ public class PoolingStorageConnector extends AbstractConnector {
 
     @Override
     public Collection<Statement> findStatements(Resource subject, IRI property, Value value,
-                                                boolean includeInferred, Collection<IRI> contexts)
+                                                boolean includeInferred, Set<IRI> contexts)
             throws Rdf4jDriverException {
         verifyTransactionActive();
         try {
@@ -190,7 +197,7 @@ public class PoolingStorageConnector extends AbstractConnector {
 
     @Override
     public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
-                                     Collection<IRI> contexts)
+                                     Set<IRI> contexts)
             throws Rdf4jDriverException {
         verifyTransactionActive();
         try {
@@ -211,7 +218,7 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public boolean isInferred(Statement statement, Collection<IRI> contexts) throws Rdf4jDriverException {
+    public boolean isInferred(Statement statement, Set<IRI> contexts) throws Rdf4jDriverException {
         verifyTransactionActive();
         return centralConnector.isInferred(statement, contexts);
     }

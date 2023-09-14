@@ -18,6 +18,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -29,8 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +60,7 @@ public class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    public void removeWithAssertionContextSearchesInContext() throws Exception {
+    public void removeWithAssertionContextSpecifiesContextForSubjectAndPredicateRemoval() throws Exception {
         final URI context = Generator.generateUri();
         final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(PROPERTY), false);
         descriptor.addAssertion(ass);
@@ -67,20 +68,18 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
 
-        verify(connectorMock).findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false,
-                Collections.singleton(vf.createIRI(context.toString())));
-        verify(connectorMock).removeStatements(anyCollection());
+        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
+                vf.createIRI(PROPERTY), Set.of(vf.createIRI(context.toString())))));
     }
 
     @Test
-    public void removeCallsFindStatementsWithoutContextsWhenItIsNotSpecifiedForAssertion() throws Exception {
+    public void removeWithoutAssertionContextUsesEmptyContextCollectionForSubjectAndPredicateRemoval() throws Exception {
         final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(PROPERTY), false);
         descriptor.addAssertion(ass);
 
         axiomRemover.remove(descriptor);
 
-        verify(connectorMock)
-                .findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false, Collections.emptySet());
-        verify(connectorMock).removeStatements(anyCollection());
+        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
+                vf.createIRI(PROPERTY), Collections.emptySet())));
     }
 }
