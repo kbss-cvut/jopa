@@ -43,14 +43,14 @@ public class Constants {
      *
      * @see Rdf4jOntoDriverProperties#MAX_CONNECTION_POOL_SIZE
      */
-    public static final int DEFAULT_MAX_CONNECTIONS = 5;
+    public static final int DEFAULT_MAX_CONNECTIONS = 20;
 
     /**
      * Default connection request timeout (in milliseconds).
      *
      * @see Rdf4jOntoDriverProperties#CONNECTION_REQUEST_TIMEOUT
      */
-    public static final int DEFAULT_CONNECTION_REQUEST_TIMEOUT = 1000;
+    public static final int DEFAULT_CONNECTION_REQUEST_TIMEOUT = 30000;
 
     private Constants() {
         throw new AssertionError();
